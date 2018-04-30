@@ -1,190 +1,88 @@
-﻿using Avalonia.Controls.Utils;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls.Utils;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
     public class GridLayoutTests
     {
+        [Theory]
+        [InlineData("100, 200, 300", 800d, 600d, new[] { 100d, 200d, 300d })]
+        public void MeasureArrange_AllPixelLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
+        [Theory]
+        [InlineData("*,2*,3*", 600d, 0d, new[] { 100d, 200d, 300d })]
+        public void MeasureArrange_AllStarLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
+        [Theory]
+        [InlineData("100,2*,3*", 600d, 100d, new[] { 100d, 200d, 300d })]
+        public void MeasureArrange_MixStarPixelLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
+        [Theory]
+        [InlineData("100,200,Auto", 600d, 300d, new[] { 100d, 200d, 0d })]
+        public void MeasureArrange_MixAutoPixelLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
+        [Theory]
+        [InlineData("*,2*,Auto", 600d, 0d, new[] { 200d, 400d, 0d })]
+        public void MeasureArrange_MixAutoStarLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
+        [Theory]
+        [InlineData("*,200,Auto", 600d, 200d, new[] { 400d, 200d, 0d })]
+        public void MeasureArrange_MixAutoStarPixelLength_Correct(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
+        }
+
         [Fact]
-        public void Measure_AllPixelLength_Correct()
+        public void MeasureArrange_AllPixelLengthButNotEnough_Correct()
         {
             // Arrange
             var layout = new GridLayout(new RowDefinitions("100,200,300"));
 
-            // Action
-            var measure = layout.Measure(800);
-
-            // Assert
-            Assert.Equal(measure, new [] { 100d, 200d, 300d });
-        }
-
-        [Fact]
-        public void Measure_AllStarLength_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("*,2*,3*"));
-
-            // Action
-            var measure = layout.Measure(600);
-
-            // Assert
-            Assert.Equal(measure, new [] { 100d, 200d, 300d });
-        }
-
-        [Fact]
-        public void Measure_MixStarPixelLength_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("100,2*,3*"));
-
-            // Action
-            var measure = layout.Measure(600);
-
-            // Assert
-            Assert.Equal(measure, new [] { 100d, 200d, 300d });
-        }
-
-        [Fact]
-        public void Measure_MixAutoPixelLength_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("100,200,Auto"));
-
-            // Action
-            var measure = layout.Measure(600);
-
-            // Assert
-            Assert.Equal(measure, new [] { 100d, 200d, double.PositiveInfinity });
-        }
-
-        [Fact]
-        public void Measure_MixAutoStarLength_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("*,2*,Auto"));
-
-            // Action
-            var measure = layout.Measure(600);
-
-            // Assert
-            Assert.Equal(measure, new[] { 200d, 400d, double.PositiveInfinity });
-        }
-
-        [Fact]
-        public void Measure_MixAutoStarPixelLength_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("*,200,Auto"));
-
-            // Action
-            var measure = layout.Measure(600);
-
-            // Assert
-            Assert.Equal(measure, new[] { 400d, 200d, double.PositiveInfinity });
-        }
-
-        [Fact]
-        public void Measure_AllPixelLengthButNotEnough_Correct()
-        {
-            // Arrange
-            var layout = new GridLayout(new RowDefinitions("100,200,300"));
-
-            // Action
+            // Measure - Action & Assert
             var measure = layout.Measure(400);
+            Assert.Equal(new[] { 100d, 200d, 300d }, measure.LengthList);
 
-            // Assert
-            Assert.Equal(measure, new[] { 100d, 200d, 300d });
+            // Arrange - Action & Assert
         }
 
-        //[Fact]
-        //public void Arrange_AllPixelLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("100,200,300"));
+        [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
+        private static void TestRowDefinitionsOnly(string length, double containerLength,
+            double expectedDesiredLength, IList<double> expectedLengthList)
+        {
+            // Arrange
+            var layout = new GridLayout(new RowDefinitions(length));
 
-        //    // Action
-        //    var arrange = layout.Arrange(800);
+            // Measure - Action & Assert
+            var measure = layout.Measure(containerLength);
+            Assert.Equal(expectedDesiredLength, measure.DesiredLength);
+            Assert.Equal(expectedLengthList, measure.LengthList);
 
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 100d, 200d, 300d });
-        //}
-
-        //[Fact]
-        //public void Arrange_AllStarLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("*,2*,3*"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(600);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 100d, 200d, 300d });
-        //}
-
-        //[Fact]
-        //public void Arrange_MixStarPixelLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("100,2*,3*"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(600);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 100d, 200d, 300d });
-        //}
-
-        //[Fact]
-        //public void Arrange_MixAutoPixelLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("100,200,Auto"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(600);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 100d, 200d, 300d });
-        //}
-
-        //[Fact]
-        //public void Arrange_MixAutoStarLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("*,2*,Auto"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(600);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 200d, 400d, double.PositiveInfinity });
-        //}
-
-        //[Fact]
-        //public void Arrange_MixAutoStarPixelLength_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("*,200,Auto"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(600);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 400d, 200d, double.PositiveInfinity });
-        //}
-
-        //[Fact]
-        //public void Arrange_AllPixelLengthButNotEnough_Correct()
-        //{
-        //    // Arrange
-        //    var layout = new GridLayout(new RowDefinitions("100,200,300"));
-
-        //    // Action
-        //    var arrange = layout.Arrange(400);
-
-        //    // Assert
-        //    Assert.Equal(arrange, new[] { 100d, 200d, 300d });
-        //}
+            // Arrange - Action & Assert
+            var arrange = layout.Arrange(containerLength, measure);
+            Assert.Equal(expectedLengthList, arrange.LengthList);
+        }
     }
 }

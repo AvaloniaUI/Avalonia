@@ -1,263 +1,328 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {
+    // We have three kind of unit:
+    //     - * means Star  unit. It can be affected by min and max pixel length.
+    //     - A means Auto  unit. It can be affected by min/max pixel length and desired pixel length.
+    //     - P means Pixel unit. It is fixed and can't be affected by any other values.
+    // Notice that some child stands not only one column/row and this affects desired length.
+    // Desired length behaviors like the min pixel length but:
+    //     - This can only be determined after the Measure.
+    // 
+    // This is an example indicates how this class stores data.
+    // +-----------------------------------------------------------+
+    // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+    // +-----------------------------------------------------------+
+    // | min | min |     |           | min |     |  min max  |
+    //                   |<-   desired   ->|
+    // 
+    // During the measuring procedure:
+    //     - * wants as much as possible space in range of min and max.
+    //     - A wants as less as possible space in range of min/desired and max.
+    //     - P wants a fix-size space.
+    // But during the arranging procedure:
+    //     - * behaviors the same.
+    //     - A wants as much as possible space in range of min/desired and max.
+    //     - P behaviors the same.
+    // 
+    /// <summary>
+    /// Contains algorithms that can help to measure and arrange a Grid.
+    /// </summary>
     internal class GridLayout
     {
-        internal GridLayout(LengthDefinitions lengths)
+        internal GridLayout(ColumnDefinitions columns)
         {
-            _lengths = lengths;
+            _conventions = columns.Select(x => new LengthConvention(x.Width, x.MinWidth, x.MaxWidth)).ToList();
         }
 
-        private readonly LengthDefinitions _lengths;
+        internal GridLayout(RowDefinitions rows)
+        {
+            _conventions = rows.Select(x => new LengthConvention(x.Height, x.MinHeight, x.MaxHeight)).ToList();
+        }
+
+        private const double LayoutTolerance = 1.0 / 256.0;
+        private readonly List<LengthConvention> _conventions;
+        private readonly List<AdditionalLengthConvention> _additionalConventions = new List<AdditionalLengthConvention>();
 
         /// <summary>
-        /// Find out which rows/columns should be measured first. These rows/columns are those that marked with "Auto" size.<para/>
-        /// These "Auto" size rows/columns behavior like fix-size rows/columns but they can only be determined after Measure.
+        /// Some elements are not in a single grid cell, they have multiple column/row spans,
+        /// and these elements may affects the grid layout especially the measure procedure.<para/>
+        /// Append these elements into the convention list can help to layout them correctly through their desired size.
+        /// Only a small subset of grid children need to be measured before layout starts and they are called via the <paramref name="getDesiredLength"/> callback.
         /// </summary>
-        /// <returns>The row/column numbers that should be Measure first.</returns>
-        internal List<int> Prepare()
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="getDesiredLength"></param>
+        internal void AppendMeasureConventions<T>(IDictionary<T, (int index, int span)> source,
+            Func<T, double> getDesiredLength)
         {
-            var lengths = _lengths;
-            return Find().ToList();
-
-            IEnumerable<int> Find()
+            // M1/6. Find all the Auto length columns/rows.
+            // Only these columns/rows' layout can be affected by the children desired size.
+            var found = new Dictionary<T, (int index, int span)>();
+            for (var i = 0; i < _conventions.Count; i++)
             {
-                for (var i = 0; i < lengths.Count; i++)
+                var index = i;
+                var convention = _conventions[index];
+                if (convention.Length.IsAuto)
                 {
-                    var unitType = lengths[i].Length.GridUnitType;
-                    if (unitType == GridUnitType.Auto)
+                    foreach (var pair in source.Where(x =>
+                        x.Value.index <= index && index < x.Value.index + x.Value.span))
                     {
-                        yield return i;
+                        found[pair.Key] = pair.Value;
                     }
+                }
+            }
+
+            // Append these layout into the additional convention list.
+            foreach (var pair in found)
+            {
+                var t = pair.Key;
+                var (index, span) = pair.Value;
+                var desiredLength = getDesiredLength(t);
+                if (Math.Abs(desiredLength) > LayoutTolerance)
+                {
+                    _additionalConventions.Add(new AdditionalLengthConvention(index, span, desiredLength));
                 }
             }
         }
 
-        /// <summary>
-        /// Try to calculate the lengths that will be used to measure the children.<para/>
-        /// If the <paramref name="containerLength"/> is not enough, we'll even not compress the measure length.
-        /// So you'd better call <see cref="Prepare"/> first to find out the rows/columns that should be excluded first.
-        /// </summary>
-        /// <param name="containerLength">
-        /// The container length (width or height) excluding some rows/columns.
-        /// Call <see cref="Prepare"/> first to find out the rows/columns that should be excluded.
-        /// </param>
-        /// <returns>The lengths that can be used to measure the children.</returns>
-        [Pure]
-        internal List<double> Measure(double containerLength)
+        internal MeasureResult Measure(double containerLength)
         {
-            var lengths = _lengths.Clone();
+            // Initial.
+            var conventions = _conventions.Select(x => x.Clone()).ToList();
+            var starCount = conventions.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
+            var constraint = containerLength;
+            double starUnitLength;
 
-            // Exclude all the pixel lengths, so that we can calculate the star lengths.
-            containerLength -= lengths
-                .Where(x => x.Length.IsAbsolute)
-                .Aggregate(0.0, (sum, add) => sum + add.Length.Value);
+            // M2/6. Exclude all the pixel lengths, so that we can calculate the star lengths.
+            constraint -= conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
 
-            // Aggregate the star count, so that we can determine the length of each star unit.
-            var starCount = lengths
-                .Where(x => x.Length.IsStar)
-                .Aggregate(0.0, (sum, add) => sum + add.Length.Value);
-            // There is no need to care the (starCount == 0). If this happens, we'll ignore all the stars.
-            var starUnitLength = containerLength / starCount;
-
-            // If there is no stars, just return all pixels.
-            if (Equals(starCount, 0.0))
+            // M3/6. Exclude all the * lengths that have reached min value.
+            var shouldTestStarMin = true;
+            while (shouldTestStarMin)
             {
-                return lengths.Select(x => x.Length.IsAuto ? double.PositiveInfinity : x.Length.Value).ToList();
-            }
-
-            // ---
-            // Warning! The code below will start to change the lengths item value.
-            // ---
-
-            // Exclude the star unit if its min/max length range does not contain the calculated star length.
-            var intermediateStarLengths = lengths.Where(x => x.Length.IsStar).ToList();
-            // Indicate whether all star lengths are in range of min and max or not.
-            var allInRange = false;
-            while (!allInRange)
-            {
-                foreach (var length in intermediateStarLengths)
+                var @fixed = false;
+                starUnitLength = constraint / starCount;
+                foreach (var convention in conventions.Where(x => x.Length.IsStar))
                 {
-                    // Find out if there is any length out of min to max.
-                    var (star, min, max) = (length.Length.Value, length.MinLength, length.MaxLength);
+                    var (star, min) = (convention.Length.Value, convention.MinLength);
                     var starLength = star * starUnitLength;
-                    if (starLength < min || starLength > max)
+                    if (starLength < min)
                     {
-                        // If the star length is out of min to max, change it to a pixel unit.
-                        if (starLength < min)
-                        {
-                            length.Update(min);
-                            starLength = min;
-                        }
-                        else if (starLength > max)
-                        {
-                            length.Update(max);
-                            starLength = max;
-                        }
-
-                        // Update the rest star length info.
-                        intermediateStarLengths.Remove(length);
-                        containerLength -= starLength;
+                        convention.Fix(min);
+                        starLength = min;
+                        constraint -= starLength;
                         starCount -= star;
-                        starUnitLength = containerLength / starCount;
+                        @fixed = true;
                         break;
                     }
                 }
 
-                // All lengths are in range, so that we have enough lengths to measure children.
-                allInRange = true;
-                foreach (var length in intermediateStarLengths)
-                {
-                    length.Update(length.Length.Value * starUnitLength);
-                }
+                shouldTestStarMin = @fixed;
             }
 
-            // Return the modified lengths as measuring lengths.
-            return lengths.Select(x =>
-                x.Length.GridUnitType == GridUnitType.Auto
-                    ? double.PositiveInfinity
-                    : x.Length.Value).ToList();
-        }
-
-        /// <summary>
-        /// Try to calculate the lengths that will be used to measure the children.
-        /// If the <paramref name="containerLength"/> is not enough, we'll even not compress the measure length.
-        /// </summary>
-        /// <param name="containerLength">The container length, width or height.</param>
-        /// <returns>The lengths that can be used to measure the children.</returns>
-        [Pure]
-        internal List<double> Arrange(double containerLength)
-        {
-            var lengths = _lengths.Clone();
-
-            // Exclude all the pixel lengths, so that we can calculate the star lengths.
-            containerLength -= lengths
-                .Where(x => x.Length.IsAbsolute)
-                .Aggregate(0.0, (sum, add) => sum + add.Length.Value);
-
-            // Aggregate the star count, so that we can determine the length of each star unit.
-            var starCount = lengths
-                .Where(x => x.Length.IsStar)
-                .Aggregate(0.0, (sum, add) => sum + add.Length.Value);
-            // There is no need to care the (starCount == 0). If this happens, we'll ignore all the stars.
-            var starUnitLength = containerLength / starCount;
-
-            // If there is no stars, just return all pixels.
-            if (Equals(starCount, 0.0))
+            // M4/6. Exclude all the Auto lengths that have not-zero desired size.
+            var shouldTestAuto = true;
+            while (shouldTestAuto)
             {
-                return lengths.Select(x => x.Length.IsAuto ? double.PositiveInfinity : x.Length.Value).ToList();
-            }
-
-            // ---
-            // Warning! The code below will start to change the lengths item value.
-            // ---
-
-            // Exclude the star unit if its min/max length range does not contain the calculated star length.
-            var intermediateStarLengths = lengths.Where(x => x.Length.IsStar).ToList();
-            // Indicate whether all star lengths are in range of min and max or not.
-            var allInRange = false;
-            while (!allInRange)
-            {
-                foreach (var length in intermediateStarLengths)
+                var @fixed = false;
+                starUnitLength = constraint / starCount;
+                for (var i = 0; i < conventions.Count; i++)
                 {
-                    // Find out if there is any length out of min to max.
-                    var (star, min, max) = (length.Length.Value, length.MinLength, length.MaxLength);
-                    var starLength = star * starUnitLength;
-                    if (starLength < min || starLength > max)
+                    var convention = conventions[i];
+                    if (!convention.Length.IsAuto)
                     {
-                        // If the star length is out of min to max, change it to a pixel unit.
-                        if (starLength < min)
-                        {
-                            length.Update(min);
-                            starLength = min;
-                        }
-                        else if (starLength > max)
-                        {
-                            length.Update(max);
-                            starLength = max;
-                        }
-
-                        // Update the rest star length info.
-                        intermediateStarLengths.Remove(length);
-                        containerLength -= starLength;
-                        starCount -= star;
-                        starUnitLength = containerLength / starCount;
-                        break;
+                        continue;
                     }
+
+                    var index = i;
+                    var more = 0.0;
+                    foreach (var additional in _additionalConventions)
+                    {
+                        // If the additional conventions contains the Auto column/row, try to determine the Auto column/row length.
+                        if (additional.Index <= index && index < additional.Index + additional.Span)
+                        {
+                            var starUnit = starUnitLength;
+                            var min = Enumerable.Range(additional.Index, additional.Span)
+                                .Select(x =>
+                                {
+                                    var c = conventions[x];
+                                    if (c.Length.IsAbsolute) return c.Length.Value;
+                                    if (c.Length.IsStar) return c.Length.Value * starUnit;
+                                    return 0.0;
+                                }).Sum();
+                            more = Math.Max(additional.Min - min, more);
+                        }
+                    }
+
+                    convention.Fix(more);
+                    constraint -= more;
+                    @fixed = true;
+                    break;
                 }
 
-                // All lengths are in range, so that we have enough lengths to measure children.
-                allInRange = true;
-                foreach (var length in intermediateStarLengths)
-                {
-                    length.Update(length.Length.Value * starUnitLength);
-                }
+                shouldTestAuto = @fixed;
             }
 
-            // Return the modified lengths as measuring lengths.
-            return lengths.Select(x =>
-                x.Length.GridUnitType == GridUnitType.Auto
-                    ? double.PositiveInfinity
-                    : x.Length.Value).ToList();
+            // M5/6. Determine the desired length of the grid for current contaienr length. Its value stores in desiredLength.
+            // But if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
+            var desiredLength = constraint >= 0.0 ? containerLength - constraint : containerLength;
+            var greedyDesiredLength = containerLength - constraint;
+
+            // M6/6. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
+            var dynamicConvention = ExpandStars(conventions, containerLength);
+
+            // Stores the measure result.
+            return new MeasureResult(containerLength, desiredLength, greedyDesiredLength, conventions, dynamicConvention);
         }
 
-        internal class LengthDefinitions : IEnumerable<LengthDefinition>, ICloneable
+        public ArrangeResult Arrange(double finalLength, MeasureResult measure)
         {
-            private readonly List<LengthDefinition> _lengths;
-
-            private LengthDefinitions(IEnumerable<LengthDefinition> lengths)
+            // If the arrange final length does not equal to the measure length, we should measure again.
+            if (finalLength - measure.ContainerLength > LayoutTolerance)
             {
-                _lengths = lengths.ToList();
+                // If the final length is larger, we will rerun the whole measure.
+                measure = Measure(finalLength);
+            }
+            else if (finalLength - measure.ContainerLength < -LayoutTolerance)
+            {
+                // If the final length is smaller, we measure the M6/6 procedure only.
+                var dynamicConvention = ExpandStars(measure.LeanLengthList, measure.ContainerLength);
+                measure = new MeasureResult(finalLength, measure.DesiredLength, measure.GreedyDesiredLength,
+                    measure.LeanLengthList, dynamicConvention);
             }
 
-            public LengthDefinition this[int index] => _lengths[index];
-
-            public int Count => _lengths.Count;
-
-            public IEnumerator<LengthDefinition> GetEnumerator() => _lengths.GetEnumerator();
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-            object ICloneable.Clone() => Clone();
-
-            public LengthDefinitions Clone() => new LengthDefinitions(
-                _lengths.Select(x => new LengthDefinition(x.Length, x.MinLength, x.MaxLength)));
-
-            public static implicit operator LengthDefinitions(RowDefinitions rows)
-                => new LengthDefinitions(rows.Select(x => (LengthDefinition) x));
-
-            public static implicit operator LengthDefinitions(ColumnDefinitions rows)
-                => new LengthDefinitions(rows.Select(x => (LengthDefinition)x));
+            return new ArrangeResult(measure.LengthList);
         }
 
-        internal class LengthDefinition
+        [Pure]
+        private static List<LengthConvention> ExpandStars(IEnumerable<LengthConvention> conventions, double constraint)
         {
-            internal LengthDefinition(GridLength length, double minLength, double maxLength)
+            // Initial.
+            var dynamicConvention = conventions.Select(x => x.Clone()).ToList();
+            constraint -= dynamicConvention.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
+            var starUnitLength = 0.0;
+
+            // M6/6.
+            if (constraint >= 0)
+            {
+                var starCount = dynamicConvention.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
+
+                var shouldTestStarMax = true;
+                while (shouldTestStarMax)
+                {
+                    var @fixed = false;
+                    starUnitLength = constraint / starCount;
+                    foreach (var convention in dynamicConvention.Where(x => x.Length.IsStar && !double.IsPositiveInfinity(x.MaxLength)))
+                    {
+                        var (star, max) = (convention.Length.Value, convention.MaxLength);
+                        var starLength = star * starUnitLength;
+                        if (starLength > max)
+                        {
+                            convention.Fix(max);
+                            starLength = max;
+                            constraint -= starLength;
+                            starCount -= star;
+                            @fixed = true;
+                            break;
+                        }
+                    }
+
+                    shouldTestStarMax = @fixed;
+                }
+            }
+
+            foreach (var convention in dynamicConvention.Where(x => x.Length.IsStar))
+            {
+                convention.Fix(starUnitLength * convention.Length.Value);
+            }
+
+            Debug.Assert(dynamicConvention.All(x => x.Length.IsAbsolute));
+
+            return dynamicConvention;
+        }
+
+        internal class LengthConvention : ICloneable
+        {
+            public LengthConvention(GridLength length, double minLength, double maxLength)
             {
                 Length = length;
                 MinLength = minLength;
                 MaxLength = maxLength;
+                if (length.IsAbsolute)
+                {
+                    _isFixed = true;
+                }
             }
 
             internal GridLength Length { get; private set; }
             internal double MinLength { get; }
             internal double MaxLength { get; }
 
-            public static implicit operator LengthDefinition(RowDefinition row)
-                => new LengthDefinition(row.Height, row.MinHeight, row.MaxHeight);
-
-            public static implicit operator LengthDefinition(ColumnDefinition row)
-                => new LengthDefinition(row.Width, row.MinWidth, row.MaxWidth);
-
-            public void Update(double pixel)
+            public void Fix(double pixel)
             {
+                if (_isFixed)
+                {
+                    throw new InvalidOperationException("Cannot fix the length convention if it is fixed.");
+                }
+
                 Length = new GridLength(pixel);
+                _isFixed = true;
             }
+
+            private bool _isFixed;
+
+            object ICloneable.Clone() => Clone();
+
+            internal LengthConvention Clone() => new LengthConvention(Length, MinLength, MaxLength);
+        }
+
+        internal struct AdditionalLengthConvention
+        {
+            public int Index { get; }
+            public int Span { get; }
+            public double Min { get; }
+
+            public AdditionalLengthConvention(int index, int span, double min)
+            {
+                Index = index;
+                Span = span;
+                Min = min;
+            }
+        }
+
+        internal class MeasureResult
+        {
+            internal MeasureResult(double containerLength, double desiredLength, double greedyDesiredLength,
+                IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<LengthConvention> expandedConventions)
+            {
+                ContainerLength = containerLength;
+                DesiredLength = desiredLength;
+                GreedyDesiredLength = greedyDesiredLength;
+                LeanLengthList = leanConventions;
+                LengthList = expandedConventions.Select(x => x.Length.Value).ToList();
+            }
+
+            public double ContainerLength { get; }
+            public double DesiredLength { get; }
+            public double GreedyDesiredLength { get; }
+            public IReadOnlyList<LengthConvention> LeanLengthList { get; }
+            public IReadOnlyList<double> LengthList { get; }
+        }
+
+        internal class ArrangeResult
+        {
+            public ArrangeResult(IReadOnlyList<double> lengthList)
+            {
+                LengthList = lengthList;
+            }
+
+            public IReadOnlyList<double> LengthList { get; }
         }
     }
 }

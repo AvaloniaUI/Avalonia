@@ -186,6 +186,9 @@ namespace Avalonia.Controls
             element.SetValue(RowSpanProperty, value);
         }
 
+        private GridLayout.MeasureResult _columnMeasureCache;
+        private GridLayout.MeasureResult _rowMeasureCache;
+
         /// <summary>
         /// Measures the grid.
         /// </summary>
@@ -193,97 +196,45 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size constraint)
         {
-            // +------- 1. Prepare the children status -------+
-            // +                                              +
-            // +------- ------------------------------ -------+
+            var measureCache = new Dictionary<Control, Size>();
+            var (safeColumns, safeRows) = GetSafeColumnRows();
 
-            // Normalize the column/columnspan and row/rowspan.
-            var columnCount = ColumnDefinitions.Count;
-            var rowCount = RowDefinitions.Count;
-            var safeColumns = Children.OfType<Control>().ToDictionary(child => child,
-                child => GetSafeSpan(columnCount, GetColumn(child), GetColumnSpan(child)));
-            var safeRows = Children.OfType<Control>().ToDictionary(child => child,
-                child => GetSafeSpan(rowCount, GetRow(child), GetRowSpan(child)));
-
-            // +------- 2.                             -------+
-            // +                                              +
-            // +------- ------------------------------ -------+
-
-            // Find out the children that should be Measure first (those rows/columns are Auto size.)
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
-            var autoSizeColumns = columnLayout.Prepare();
-            var autoSizeRows = rowLayout.Prepare();
+            columnLayout.AppendMeasureConventions(safeColumns, child => MeasureOnce(child, constraint).Width);
+            rowLayout.AppendMeasureConventions(safeRows, child => MeasureOnce(child, constraint).Height);
 
-            foreach (var pair in safeColumns)
+            var columnResult = columnLayout.Measure(constraint.Width);
+            var rowResult = rowLayout.Measure(constraint.Height);
+
+            foreach (var child in Children.OfType<Control>())
             {
-                var child = pair.Key;
-                var (column, columnSpan) = pair.Value;
-                var columnLast = column + columnSpan - 1;
-                if (autoSizeColumns.Contains(columnLast))
-                {
-                    
-                }
+                var (column, columnSpan) = safeColumns[child];
+                var (row, rowSpan) = safeRows[child];
+                var width = Enumerable.Range(column, columnSpan)
+                    .Select(x => columnResult.LengthList[x].Length.Value).Sum();
+                var height = Enumerable.Range(row, rowSpan)
+                    .Select(x => rowResult.LengthList[x].Length.Value).Sum();
+
+                MeasureOnce(child, new Size(width, height));
             }
 
-            // Calculate row height list and column width list.
-            var widthList = columnLayout.Measure(constraint.Width);
-            var heightList = rowLayout.Measure(constraint.Height);
+            _columnMeasureCache = columnResult;
+            _rowMeasureCache = rowResult;
+            return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
 
-            // Calculate the available width list and height list for every child.
-            var childrenAvailableWidths = Children.OfType<Control>().ToDictionary(child => child, child =>
+            Size MeasureOnce(Control child, Size size)
             {
-                var (column, columnSpan) = GetSafeSpan(widthList.Count, GetColumn(child), GetColumnSpan(child));
-                return Span(widthList, column, columnSpan).Sum();
-            });
-            var childrenAvailableHeights = Children.OfType<Control>().ToDictionary(child => child, child =>
-            {
-                var (row, rowSpan) = GetSafeSpan(heightList.Count, GetRow(child), GetRowSpan(child));
-                return Span(heightList, row, rowSpan).Sum();
-            });
-
-            // Measure the children.
-            var availableWidth = constraint.Width;
-            var availableHeight = constraint.Height;
-            var desiredWidth = 0.0;
-            var desiredHeight = 0.0;
-            var sortedChildren = Children.OfType<Control>()
-                .OrderBy(GetColumn).ThenBy(GetRow)
-                .ToDictionary(child => child, child => (GetColumn(child), GetRow(child)));
-
-            var currentDesiredWidth = 0.0;
-            var currentDesiredHeight = 0.0;
-            var currentColumn = 0;
-            var currentRow = 0;
-            foreach (var pair in sortedChildren)
-            {
-                var child = pair.Key;
-                var (column, row) = pair.Value;
-                child.Measure(new Size(childrenAvailableWidths[child], childrenAvailableHeights[child]));
-                var desiredSize = child.DesiredSize;
-
-                if (column == currentColumn)
+                if (measureCache.TryGetValue(child, out var desiredSize))
                 {
-                    currentDesiredWidth = Math.Max(desiredSize.Width, currentDesiredWidth);
-                }
-                else
-                {
-                    currentDesiredWidth = desiredSize.Width;
-                    currentColumn = column;
-                    availableWidth -= desiredSize.Width;
-                    desiredHeight -= desiredSize.Width;
+                    return desiredSize;
                 }
 
-                if (availableWidth < desiredSize.Width)
-                {
-                    
-                }
-
-                availableHeight -= desiredSize.Height;
-                desiredHeight -= desiredSize.Width;
+                child.Measure(size);
+                desiredSize = child.DesiredSize;
+                measureCache[child] = desiredSize;
+                return desiredSize;
             }
-
-            return constraint;
         }
 
         /// <summary>
@@ -293,25 +244,39 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            // Calculate row height list and column width list.
-            var rowLayout = new GridLayout(RowDefinitions);
+            var (safeColumns, safeRows) = GetSafeColumnRows();
+
             var columnLayout = new GridLayout(ColumnDefinitions);
-            var heightList = rowLayout.Measure(finalSize.Height);
-            var widthList = columnLayout.Measure(finalSize.Width);
+            var rowLayout = new GridLayout(RowDefinitions);
 
-            var rowMeasure = new Dictionary<Control, (double row, double rowspan)>();
-            var columnMeasure = new Dictionary<Control, (double column, double columnspan)>();
-            foreach (var child in Children.OfType<Control>().OrderBy(GetRow))
+            var columnResult = columnLayout.Arrange(finalSize.Width, _columnMeasureCache);
+            var rowResult = rowLayout.Arrange(finalSize.Height, _rowMeasureCache);
+
+            foreach (var child in Children.OfType<Control>())
             {
-                var (row, rowSpan) = GetSafeSpan(heightList.Count, GetRow(child), GetRowSpan(child));
-                rowMeasure.Add(child, (row, rowSpan));
-            }
-            foreach (var child in Children.OfType<Control>().OrderBy(GetColumn))
-            {
-                var (column, columnSpan) = GetSafeSpan(widthList.Count, GetColumn(child), GetColumnSpan(child));
-                columnMeasure.Add(child, (column, columnSpan));
+                var (column, columnSpan) = safeColumns[child];
+                var (row, rowSpan) = safeRows[child];
+                var width = Enumerable.Range(column, columnSpan)
+                    .Select(x => columnResult.LengthList[x].Length.Value).Sum();
+                var height = Enumerable.Range(row, rowSpan)
+                    .Select(x => rowResult.LengthList[x].Length.Value).Sum();
+
+                child.Arrange(new Rect(0, 0, width, height));
             }
 
+            return finalSize;
+        }
+
+        private (Dictionary<Control, (int index, int span)> safeColumns,
+            Dictionary<Control, (int index, int span)> safeRows) GetSafeColumnRows()
+        {
+            var columnCount = ColumnDefinitions.Count;
+            var rowCount = RowDefinitions.Count;
+            var safeColumns = Children.OfType<Control>().ToDictionary(child => child,
+                child => GetSafeSpan(columnCount, GetColumn(child), GetColumnSpan(child)));
+            var safeRows = Children.OfType<Control>().ToDictionary(child => child,
+                child => GetSafeSpan(rowCount, GetRow(child), GetRowSpan(child)));
+            return (safeColumns, safeRows);
         }
 
         /// <summary>
@@ -338,32 +303,6 @@ namespace Avalonia.Controls
             }
 
             return (index, span);
-        }
-
-        /// <summary>
-        /// Return part of a list from the specified start index and its span length.
-        /// If Avalonia upgrade .NET Core to 2.1 and introduce C# 7.2, we can use Span to do this.
-        /// </summary>
-        [Pure]
-        private static IEnumerable<double> Span(IList<double> list, int index, int span)
-        {
-#if DEBUG
-            // We do not verify arguments in RELEASE because this is a private method,
-            // and we must write the correct code before publishing.
-            if (index >= list.Count) throw new ArgumentOutOfRangeException(nameof(index));
-            if (span <= 1) throw new ArgumentException("Argument span should not be smaller than 1.", nameof(span));
-            if (index + span > list.Count) throw new ArgumentOutOfRangeException(nameof(index));
-#endif
-            if (span == 1)
-            {
-                yield return list[index];
-                yield break;
-            }
-
-            for (var i = index; i < index + span; i++)
-            {
-                yield return list[i];
-            }
         }
 
         private static double Clamp(double val, double min, double max)
