@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
+using SharpDX;
 using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
@@ -21,28 +23,56 @@ namespace Avalonia.Direct2D1.Media
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text;
+
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
-            using (var format = new DWrite.TextFormat(
-                factory,
-                typeface?.FontFamilyName ?? "Courier New",
-                (DWrite.FontWeight)(typeface?.Weight ?? FontWeight.Normal),
-                (DWrite.FontStyle)(typeface?.Style ?? FontStyle.Normal),
-                (float)(typeface?.FontSize ?? 12)))
+            if (typeface.FontFamily.BaseUri != null)
             {
-                format.WordWrapping = wrapping == TextWrapping.Wrap ? 
-                    DWrite.WordWrapping.Wrap :
-                    DWrite.WordWrapping.NoWrap;
+                var fontLoader = new ResourceFontLoader(factory, typeface.FontFamily.BaseUri);
 
-                TextLayout = new DWrite.TextLayout(
-                    factory,
-                    text ?? string.Empty,
-                    format,
-                    (float)constraint.Width,
-                    (float)constraint.Height)
+                var fontCollection = new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);
+
+                using (var textFormat =
+                    new DWrite.TextFormat(factory, typeface.FontFamily.Name, fontCollection, DWrite.FontWeight.Normal,
+                        DWrite.FontStyle.Normal, DWrite.FontStretch.Normal, (float)typeface.FontSize))
                 {
-                    TextAlignment = textAlignment.ToDirect2D()
-                };
+                    textFormat.TextAlignment = DWrite.TextAlignment.Center;
+                    textFormat.ParagraphAlignment = DWrite.ParagraphAlignment.Center;
+
+                    textFormat.WordWrapping = wrapping == TextWrapping.Wrap ?
+                        DWrite.WordWrapping.Wrap :
+                        DWrite.WordWrapping.NoWrap;
+
+                    TextLayout = new DWrite.TextLayout(factory, Text ?? string.Empty, textFormat, (float)constraint.Width,
+                        (float)constraint.Height)
+                    {
+                        TextAlignment = textAlignment.ToDirect2D()
+                    };
+                }
+            }
+            else
+            {
+                using (var format = new DWrite.TextFormat(
+                    factory,
+                    typeface?.FontFamily.Name ?? "Courier New",
+                    (DWrite.FontWeight)(typeface.Weight),
+                    (DWrite.FontStyle)(typeface.Style),
+                    (float)typeface.FontSize))
+                {
+                    format.WordWrapping = wrapping == TextWrapping.Wrap ?
+                        DWrite.WordWrapping.Wrap :
+                        DWrite.WordWrapping.NoWrap;
+
+                    TextLayout = new DWrite.TextLayout(
+                        factory,
+                        text ?? string.Empty,
+                        format,
+                        (float)constraint.Width,
+                        (float)constraint.Height)
+                    {
+                        TextAlignment = textAlignment.ToDirect2D()
+                    };
+                }
             }
 
             if (spans != null)
@@ -138,6 +168,247 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new Size(width, TextLayout.Metrics.Height);
+        }
+    }
+
+    public class ResourceFontLoader : CallbackBase, DWrite.FontCollectionLoader, DWrite.FontFileLoader
+    {
+        private readonly List<ResourceFontFileStream> _fontStreams = new List<ResourceFontFileStream>();
+        private readonly List<ResourceFontFileEnumerator> _enumerators = new List<ResourceFontFileEnumerator>();
+        private readonly DataStream _keyStream;
+        private readonly DWrite.Factory _factory;
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceFontLoader"/> class.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        /// <param name="fontResource"></param>
+        public ResourceFontLoader(DWrite.Factory factory, Uri fontResource)
+        {
+            _factory = factory;
+
+            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+            var resourceStream = assets.Open(fontResource);
+
+            var dataStream = new DataStream((int)resourceStream.Length, true, true);
+
+            resourceStream.CopyTo(dataStream);
+
+            dataStream.Position = 0;
+
+            _fontStreams.Add(new ResourceFontFileStream(dataStream));
+
+            // Build a Key storage that stores the index of the font
+            _keyStream = new DataStream(sizeof(int) * _fontStreams.Count, true, true);
+
+            for (int i = 0; i < _fontStreams.Count; i++)
+            {
+                _keyStream.Write(i);
+            }
+
+            _keyStream.Position = 0;
+
+            // Register the 
+            _factory.RegisterFontFileLoader(this);
+            _factory.RegisterFontCollectionLoader(this);
+        }
+
+
+        /// <summary>
+        /// Gets the key used to identify the FontCollection as well as storing index for fonts.
+        /// </summary>
+        /// <value>The key.</value>
+        public DataStream Key
+        {
+            get
+            {
+                return _keyStream;
+            }
+        }
+
+        /// <summary>
+        /// Creates a font file enumerator object that encapsulates a collection of font files. The font system calls back to this interface to create a font collection.
+        /// </summary>
+        /// <param name="factory">Pointer to the <see cref="SharpDX.DirectWrite.Factory"/> object that was used to create the current font collection.</param>
+        /// <param name="collectionKey">A font collection key that uniquely identifies the collection of font files within the scope of the font collection loader being used. The buffer allocated for this key must be at least  the size, in bytes, specified by collectionKeySize.</param>
+        /// <returns>
+        /// a reference to the newly created font file enumerator.
+        /// </returns>
+        /// <unmanaged>HRESULT IDWriteFontCollectionLoader::CreateEnumeratorFromKey([None] IDWriteFactory* factory,[In, Buffer] const void* collectionKey,[None] int collectionKeySize,[Out] IDWriteFontFileEnumerator** fontFileEnumerator)</unmanaged>
+        DWrite.FontFileEnumerator DWrite.FontCollectionLoader.CreateEnumeratorFromKey(DWrite.Factory factory, DataPointer collectionKey)
+        {
+            var enumerator = new ResourceFontFileEnumerator(factory, this, collectionKey);
+
+            _enumerators.Add(enumerator);
+
+            return enumerator;
+        }
+
+        /// <summary>
+        /// Creates a font file stream object that encapsulates an open file resource.
+        /// </summary>
+        /// <param name="fontFileReferenceKey">A reference to a font file reference key that uniquely identifies the font file resource within the scope of the font loader being used. The buffer allocated for this key must at least be the size, in bytes, specified by  fontFileReferenceKeySize.</param>
+        /// <returns>
+        /// a reference to the newly created <see cref="SharpDX.DirectWrite.FontFileStream"/> object.
+        /// </returns>
+        /// <remarks>
+        /// The resource is closed when the last reference to fontFileStream is released.
+        /// </remarks>
+        /// <unmanaged>HRESULT IDWriteFontFileLoader::CreateStreamFromKey([In, Buffer] const void* fontFileReferenceKey,[None] int fontFileReferenceKeySize,[Out] IDWriteFontFileStream** fontFileStream)</unmanaged>
+        DWrite.FontFileStream DWrite.FontFileLoader.CreateStreamFromKey(DataPointer fontFileReferenceKey)
+        {
+            var index = SharpDX.Utilities.Read<int>(fontFileReferenceKey.Pointer);
+
+            return _fontStreams[index];
+        }
+    }
+
+    /// <summary>
+    /// This FontFileStream implem is reading data from a <see cref="DataStream"/>.
+    /// </summary>
+    public class ResourceFontFileStream : CallbackBase, DWrite.FontFileStream
+    {
+        private readonly DataStream _stream;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceFontFileStream"/> class.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        public ResourceFontFileStream(DataStream stream)
+        {
+            this._stream = stream;
+        }
+
+        /// <summary>
+        /// Reads a fragment from a font file.
+        /// </summary>
+        /// <param name="fragmentStart">When this method returns, contains an address of a  reference to the start of the font file fragment.  This parameter is passed uninitialized.</param>
+        /// <param name="fileOffset">The offset of the fragment, in bytes, from the beginning of the font file.</param>
+        /// <param name="fragmentSize">The size of the file fragment, in bytes.</param>
+        /// <param name="fragmentContext">When this method returns, contains the address of</param>
+        /// <remarks>
+        /// Note that ReadFileFragment implementations must check whether the requested font file fragment is within the file bounds. Otherwise, an error should be returned from ReadFileFragment.   {{DirectWrite}} may invoke <see cref="SharpDX.DirectWrite.FontFileStream"/> methods on the same object from multiple threads simultaneously. Therefore, ReadFileFragment implementations that rely on internal mutable state must serialize access to such state across multiple threads. For example, an implementation that uses separate Seek and Read operations to read a file fragment must place the code block containing Seek and Read calls under a lock or a critical section.
+        /// </remarks>
+        /// <unmanaged>HRESULT IDWriteFontFileStream::ReadFileFragment([Out, Buffer] const void** fragmentStart,[None] __int64 fileOffset,[None] __int64 fragmentSize,[Out] void** fragmentContext)</unmanaged>
+        void DWrite.FontFileStream.ReadFileFragment(out IntPtr fragmentStart, long fileOffset, long fragmentSize, out IntPtr fragmentContext)
+        {
+            lock (this)
+            {
+                fragmentContext = IntPtr.Zero;
+
+                _stream.Position = fileOffset;
+
+                fragmentStart = _stream.PositionPointer;
+
+            }
+        }
+
+        /// <summary>
+        /// Releases a fragment from a file.
+        /// </summary>
+        /// <param name="fragmentContext">A reference to the client-defined context of a font fragment returned from {{ReadFileFragment}}.</param>
+        /// <unmanaged>void IDWriteFontFileStream::ReleaseFileFragment([None] void* fragmentContext)</unmanaged>
+        void DWrite.FontFileStream.ReleaseFileFragment(IntPtr fragmentContext)
+        {
+            // Nothing to release. No context are used
+        }
+
+        /// <summary>
+        /// Obtains the total size of a file.
+        /// </summary>
+        /// <returns>the total size of the file.</returns>
+        /// <remarks>
+        /// Implementing GetFileSize() for asynchronously loaded font files may require downloading the complete file contents. Therefore, this method should be used only for operations that either require a complete font file to be loaded (for example, copying a font file) or that need to make decisions based on the value of the file size (for example, validation against a persisted file size).
+        /// </remarks>
+        /// <unmanaged>HRESULT IDWriteFontFileStream::GetFileSize([Out] __int64* fileSize)</unmanaged>
+        long DWrite.FontFileStream.GetFileSize()
+        {
+            return _stream.Length;
+        }
+
+        /// <summary>
+        /// Obtains the last modified time of the file.
+        /// </summary>
+        /// <returns>
+        /// the last modified time of the file in the format that represents the number of 100-nanosecond intervals since January 1, 1601 (UTC).
+        /// </returns>
+        /// <remarks>
+        /// The "last modified time" is used by DirectWrite font selection algorithms to determine whether one font resource is more up to date than another one.
+        /// </remarks>
+        /// <unmanaged>HRESULT IDWriteFontFileStream::GetLastWriteTime([Out] __int64* lastWriteTime)</unmanaged>
+        long DWrite.FontFileStream.GetLastWriteTime()
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Resource FontFileEnumerator.
+    /// </summary>
+    public class ResourceFontFileEnumerator : CallbackBase, DWrite.FontFileEnumerator
+    {
+        private DWrite.Factory _factory;
+        private DWrite.FontFileLoader _loader;
+        private DataStream keyStream;
+        private DWrite.FontFile _currentFontFile;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResourceFontFileEnumerator"/> class.
+        /// </summary>
+        /// <param name="factory">The factory.</param>
+        /// <param name="loader">The loader.</param>
+        /// <param name="key">The key.</param>
+        public ResourceFontFileEnumerator(DWrite.Factory factory, DWrite.FontFileLoader loader, DataPointer key)
+        {
+            _factory = factory;
+
+            _loader = loader;
+
+            keyStream = new DataStream(key.Pointer, key.Size, true, false);
+        }
+
+        /// <summary>
+        /// Advances to the next font file in the collection. When it is first created, the enumerator is positioned before the first element of the collection and the first call to MoveNext advances to the first file.
+        /// </summary>
+        /// <returns>
+        /// the value TRUE if the enumerator advances to a file; otherwise, FALSE if the enumerator advances past the last file in the collection.
+        /// </returns>
+        /// <unmanaged>HRESULT IDWriteFontFileEnumerator::MoveNext([Out] BOOL* hasCurrentFile)</unmanaged>
+        bool DWrite.FontFileEnumerator.MoveNext()
+        {
+            bool moveNext = keyStream.RemainingLength != 0;
+
+            if (moveNext)
+            {
+                if (_currentFontFile != null)
+                {
+                    _currentFontFile.Dispose();
+                }
+
+                _currentFontFile = new DWrite.FontFile(_factory, keyStream.PositionPointer, 4, _loader);
+
+                keyStream.Position += 4;
+            }
+
+            return moveNext;
+        }
+
+        /// <summary>
+        /// Gets a reference to the current font file.
+        /// </summary>
+        /// <value></value>
+        /// <returns>a reference to the newly created <see cref="SharpDX.DirectWrite.FontFile"/> object.</returns>
+        /// <unmanaged>HRESULT IDWriteFontFileEnumerator::GetCurrentFontFile([Out] IDWriteFontFile** fontFile)</unmanaged>
+        DWrite.FontFile DWrite.FontFileEnumerator.CurrentFontFile
+        {
+            get
+            {
+                ((IUnknown)_currentFontFile).AddReference();
+
+                return _currentFontFile;
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// </summary>
     public class Typeface
     {
-        public Typeface(FontFamily fontFamily, double fontSize, FontStyle style = FontStyle.Normal,
+        public Typeface(FontFamily fontFamily, double fontSize = 12, FontStyle style = FontStyle.Normal,
         FontWeight weight = FontWeight.Normal)
         {
             if (fontSize <= 0)
@@ -35,7 +35,7 @@ namespace Avalonia.Media
         /// <param name="weight">The font weight.</param>
         public Typeface(
             string fontFamilyName,
-            double fontSize,
+            double fontSize = 12,
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal) : this(new FontFamily(fontFamilyName), fontSize, style, weight) { }
 

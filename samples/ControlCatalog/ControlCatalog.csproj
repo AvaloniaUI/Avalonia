@@ -11,6 +11,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\kooten.ttf" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />

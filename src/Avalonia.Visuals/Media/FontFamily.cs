@@ -26,18 +26,9 @@ namespace Avalonia.Media
 
         internal FontFamilyKey FontFamilyKey { get; }
 
-        internal IFontFamily LoadedFamily
-        {
-            get
-            {
-                if (_loadedFamily == null)
-                {
-                    _loadedFamily = AvaloniaLocator.Current.GetService<IFontFamilyLoader>().LoadFontFamily(FontFamilyKey);
-                }
-
-                return _loadedFamily;
-            }
-        }
+        internal IFontFamily LoadedFamily => _loadedFamily ?? (_loadedFamily = AvaloniaLocator.Current
+                                                 .GetService<IFontFamilyLoader>()
+                                                 .LoadFontFamily(FontFamilyKey));
 
         public IEnumerable<FamilyTypeface> AvailableTypefaces => LoadedFamily.SupportedTypefaces;
     }
@@ -85,6 +76,18 @@ namespace Avalonia.Media
         public SystemFont() : this(new List<FamilyTypeface> { new FamilyTypeface() }) { }
 
         public SystemFont(IEnumerable<FamilyTypeface> supportedTypefaces)
+        {
+            SupportedTypefaces = new ReadOnlyCollection<FamilyTypeface>(new List<FamilyTypeface>(supportedTypefaces));
+        }
+
+        public IEnumerable<FamilyTypeface> SupportedTypefaces { get; }
+    }
+
+    internal class CustomFont : IFontFamily
+    {
+        public CustomFont() : this(new List<FamilyTypeface> { new FamilyTypeface() }) { }
+
+        public CustomFont(IEnumerable<FamilyTypeface> supportedTypefaces)
         {
             SupportedTypefaces = new ReadOnlyCollection<FamilyTypeface>(new List<FamilyTypeface>(supportedTypefaces));
         }
