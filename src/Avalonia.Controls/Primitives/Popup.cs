@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
-        /// Degines the <see cref="ObeyScreenEdges"/> property.
+        /// Defines the <see cref="ObeyScreenEdges"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
