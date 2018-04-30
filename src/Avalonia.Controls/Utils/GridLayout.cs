@@ -96,18 +96,18 @@ namespace Avalonia.Controls.Utils
             // Initial.
             var conventions = _conventions.Select(x => x.Clone()).ToList();
             var starCount = conventions.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
-            var constraint = containerLength;
+            var aggregatedLength = 0.0;
             double starUnitLength;
 
             // M2/6. Exclude all the pixel lengths, so that we can calculate the star lengths.
-            constraint -= conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
+            aggregatedLength += conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
 
             // M3/6. Exclude all the * lengths that have reached min value.
             var shouldTestStarMin = true;
             while (shouldTestStarMin)
             {
                 var @fixed = false;
-                starUnitLength = constraint / starCount;
+                starUnitLength = (containerLength - aggregatedLength) / starCount;
                 foreach (var convention in conventions.Where(x => x.Length.IsStar))
                 {
                     var (star, min) = (convention.Length.Value, convention.MinLength);
@@ -116,7 +116,7 @@ namespace Avalonia.Controls.Utils
                     {
                         convention.Fix(min);
                         starLength = min;
-                        constraint -= starLength;
+                        aggregatedLength += starLength;
                         starCount -= star;
                         @fixed = true;
                         break;
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.Utils
             while (shouldTestAuto)
             {
                 var @fixed = false;
-                starUnitLength = constraint / starCount;
+                starUnitLength = (containerLength - aggregatedLength) / starCount;
                 for (var i = 0; i < conventions.Count; i++)
                 {
                     var convention = conventions[i];
@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Utils
                     }
 
                     convention.Fix(more);
-                    constraint -= more;
+                    aggregatedLength += more;
                     @fixed = true;
                     break;
                 }
@@ -171,8 +171,8 @@ namespace Avalonia.Controls.Utils
 
             // M5/6. Determine the desired length of the grid for current contaienr length. Its value stores in desiredLength.
             // But if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
-            var desiredLength = constraint >= 0.0 ? containerLength - constraint : containerLength;
-            var greedyDesiredLength = containerLength - constraint;
+            var desiredLength = containerLength - aggregatedLength >= 0.0 ? aggregatedLength : containerLength;
+            var greedyDesiredLength = aggregatedLength;
 
             // M6/6. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
             var dynamicConvention = ExpandStars(conventions, containerLength);
@@ -220,7 +220,8 @@ namespace Avalonia.Controls.Utils
                 {
                     var @fixed = false;
                     starUnitLength = constraint / starCount;
-                    foreach (var convention in dynamicConvention.Where(x => x.Length.IsStar && !double.IsPositiveInfinity(x.MaxLength)))
+                    foreach (var convention in dynamicConvention.Where(x =>
+                        x.Length.IsStar && !double.IsPositiveInfinity(x.MaxLength)))
                     {
                         var (star, max) = (convention.Length.Value, convention.MaxLength);
                         var starLength = star * starUnitLength;
@@ -237,6 +238,11 @@ namespace Avalonia.Controls.Utils
 
                     shouldTestStarMax = @fixed;
                 }
+            }
+
+            if (double.IsInfinity(starUnitLength))
+            {
+                starUnitLength = 0.0;
             }
 
             foreach (var convention in dynamicConvention.Where(x => x.Length.IsStar))

@@ -8,6 +8,8 @@ namespace Avalonia.Controls.UnitTests
     public class GridLayoutTests
     {
         [Theory]
+        [InlineData("100, 200, 300", double.PositiveInfinity, 600d, new[] { 100d, 200d, 300d })]
+        [InlineData("100, 200, 300", 0d, 0d, new[] { 0d, 0d, 0d })]
         [InlineData("100, 200, 300", 800d, 600d, new[] { 100d, 200d, 300d })]
         [InlineData("100, 200, 300", 600d, 600d, new[] { 100d, 200d, 300d })]
         [InlineData("100, 200, 300", 400d, 400d, new[] { 100d, 200d, 100d })]
@@ -18,6 +20,8 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Theory]
+        [InlineData("*,2*,3*", double.PositiveInfinity, 0d, new[] { 0d, 0d, 0d })]
+        [InlineData("*,2*,3*", 0d, 0d, new[] { 0d, 0d, 0d })]
         [InlineData("*,2*,3*", 600d, 0d, new[] { 100d, 200d, 300d })]
         public void MeasureArrange_AllStarLength_Correct(string length, double containerLength,
             double expectedDesiredLength, IList<double> expectedLengthList)
