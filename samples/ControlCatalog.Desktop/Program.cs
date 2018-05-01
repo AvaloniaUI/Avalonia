@@ -23,7 +23,7 @@ namespace ControlCatalog
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect().UseSkia();
+            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
