@@ -28,7 +28,11 @@ namespace Avalonia.Direct2D1.Media
 
             if (typeface.FontFamily.BaseUri != null)
             {
-                var fontLoader = new ResourceFontLoader(factory, typeface.FontFamily.BaseUri);
+                var fontFamily = AvaloniaLocator.Current.GetService<IFontFamilyCache>().GetOrAddFontFamily(typeface.FontFamily);
+
+                fontFamily.TryGetFamilyTypeface(out var familyTypeface);
+
+                var fontLoader = new ResourceFontLoader(factory, familyTypeface.ResourceUri);
 
                 var fontCollection = new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);
 

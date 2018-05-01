@@ -2,15 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Avalonia.Media
 {
     public class FontFamily
     {
-        private IFontFamily _loadedFamily;
-
         public FontFamily(string familyName) : this(familyName, null) { }
 
         public FontFamily(string familyName, Uri baseUri)
@@ -25,30 +25,20 @@ namespace Avalonia.Media
         public Uri BaseUri => FontFamilyKey.BaseUri;
 
         internal FontFamilyKey FontFamilyKey { get; }
-
-        internal IFontFamily LoadedFamily => _loadedFamily ?? (_loadedFamily = AvaloniaLocator.Current
-                                                 .GetService<IFontFamilyLoader>()
-                                                 .LoadFontFamily(FontFamilyKey));
-
-        public IEnumerable<FamilyTypeface> AvailableTypefaces => LoadedFamily.SupportedTypefaces;
     }
 
     public class FamilyTypeface
     {
-        public FamilyTypeface()
+        public FamilyTypeface(Uri resourceUri = null, FontWeight fontWeight = FontWeight.Normal, FontStyle fontStyle = FontStyle.Normal)
         {
-            FontStyle = FontStyle.Normal;
-            FontWeight = FontWeight.Normal;
+            ResourceUri = resourceUri;
+            FontStyle = fontStyle;
+            FontWeight = fontWeight;
         }
 
-        public FamilyTypeface(Typeface typeface)
-        {
-            FontStyle = typeface.Style;
-            FontWeight = typeface.Weight;
-        }
-
-        public FontStyle FontStyle { get; }
+        public Uri ResourceUri { get; }
         public FontWeight FontWeight { get; }
+        public FontStyle FontStyle { get; }
     }
 
     public class FontFamilyKey
@@ -64,39 +54,118 @@ namespace Avalonia.Media
         public string FriendlyName { get; }
 
         public Uri BaseUri { get; }
-    }
 
-    internal interface IFontFamily
-    {
-        IEnumerable<FamilyTypeface> SupportedTypefaces { get; }
-    }
-
-    internal class SystemFont : IFontFamily
-    {
-        public SystemFont() : this(new List<FamilyTypeface> { new FamilyTypeface() }) { }
-
-        public SystemFont(IEnumerable<FamilyTypeface> supportedTypefaces)
+        public override int GetHashCode()
         {
-            SupportedTypefaces = new ReadOnlyCollection<FamilyTypeface>(new List<FamilyTypeface>(supportedTypefaces));
+            unchecked
+            {
+                var hash = (int)2166136261;
+
+                if (FriendlyName != null)
+                {
+                    hash = (hash * 16777619) ^ FriendlyName.GetHashCode();
+                }
+
+                if (BaseUri != null)
+                {
+                    hash = (hash * 16777619) ^ BaseUri.GetHashCode();
+                }
+
+                return hash;
+            }
         }
 
-        public IEnumerable<FamilyTypeface> SupportedTypefaces { get; }
+        public override bool Equals(object obj)
+        {
+            if (!(obj is FontFamilyKey other)) return false;
+
+            if (FriendlyName != other.FriendlyName) return false;
+
+            if (BaseUri != other.BaseUri) return false;
+
+            return true;
+        }
     }
 
-    internal class CustomFont : IFontFamily
+    public class FamilyTypefaceKey
     {
-        public CustomFont() : this(new List<FamilyTypeface> { new FamilyTypeface() }) { }
-
-        public CustomFont(IEnumerable<FamilyTypeface> supportedTypefaces)
+        public FamilyTypefaceKey(FontWeight fontWeight = FontWeight.Normal, FontStyle fontStyle = FontStyle.Normal)
         {
-            SupportedTypefaces = new ReadOnlyCollection<FamilyTypeface>(new List<FamilyTypeface>(supportedTypefaces));
+            FontWeight = fontWeight;
+            FontStyle = fontStyle;
         }
 
-        public IEnumerable<FamilyTypeface> SupportedTypefaces { get; }
+        public FontWeight FontWeight { get; }
+
+        public FontStyle FontStyle { get; }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = (int)2166136261;
+
+                hash = (hash * 16777619) ^ FontWeight.GetHashCode();
+
+                hash = (hash * 16777619) ^ FontStyle.GetHashCode();
+
+                return hash;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is FamilyTypefaceKey other)) return false;
+
+            if (FontWeight != other.FontWeight) return false;
+
+            if (FontStyle != other.FontStyle) return false;
+
+            return true;
+        }
     }
 
-    internal interface IFontFamilyLoader
+    public class CachedFontFamily
     {
-        IFontFamily LoadFontFamily(FontFamilyKey fontFamilyKey);
+        private readonly ConcurrentDictionary<FamilyTypefaceKey, FamilyTypeface> _typefaces =
+            new ConcurrentDictionary<FamilyTypefaceKey, FamilyTypeface>();
+
+        public IEnumerable<FamilyTypeface> SupportedTypefaces => _typefaces.Values;
+
+        public bool TryGetFamilyTypeface(out FamilyTypeface typeface, FontWeight fontWeight = FontWeight.Normal,
+            FontStyle fontStyle = FontStyle.Normal)
+        {
+            return _typefaces.TryGetValue(new FamilyTypefaceKey(fontWeight, fontStyle), out typeface);
+        }
+
+        public FamilyTypeface GetOrAddFamilyTypeface(Uri resourceUri, FontWeight fontWeight = FontWeight.Normal, FontStyle fontStyle = FontStyle.Normal)
+        {
+            return _typefaces.GetOrAdd(new FamilyTypefaceKey(fontWeight, fontStyle), x => CreateFamilyTypeface(x, resourceUri));
+        }
+
+        private static FamilyTypeface CreateFamilyTypeface(FamilyTypefaceKey familyTypefaceKey, Uri resourceUri)
+        {
+            return new FamilyTypeface(resourceUri, familyTypefaceKey.FontWeight, familyTypefaceKey.FontStyle);
+        }
+    }
+
+    public interface IFontFamilyCache
+    {
+        CachedFontFamily GetOrAddFontFamily(FontFamily fontFamily);
+    }
+
+    public class FontFamilyCache : IFontFamilyCache
+    {
+        private readonly ConcurrentDictionary<FontFamilyKey, CachedFontFamily> _cachedFontFamilies = new ConcurrentDictionary<FontFamilyKey, CachedFontFamily>();
+
+        public CachedFontFamily GetOrAddFontFamily(FontFamily fontFamily)
+        {
+            return _cachedFontFamilies.GetOrAdd(fontFamily.FontFamilyKey, CreateCachedFontFamily);
+        }
+
+        private static CachedFontFamily CreateCachedFontFamily(FontFamilyKey fontFamilyKey)
+        {
+            return new CachedFontFamily();
+        }
     }
 }

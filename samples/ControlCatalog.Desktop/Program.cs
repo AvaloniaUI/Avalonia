@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Serilog;
 
@@ -15,6 +16,7 @@ namespace ControlCatalog
         {
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
+            AvaloniaLocator.CurrentMutable.Bind<IFontFamilyCache>().ToConstant(new FontFamilyCache());
             BuildAvaloniaApp().Start<MainWindow>();
         }
 
@@ -28,7 +30,7 @@ namespace ControlCatalog
         {
             AvaloniaLocator.CurrentMutable
                 .GetService<IAssetLoader>()
-                .SetDefaultAssembly(typeof(App).Assembly);
+                .SetDefaultAssembly(typeof(App).Assembly);           
         }
     }
 }
