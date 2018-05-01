@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Layout;
 using JetBrains.Annotations;
 
@@ -348,10 +349,19 @@ namespace Avalonia.Controls.Utils
             return Math.Min(conventions[index].MaxLength, more);
         }
 
-        [Pure]
+        /// <summary>
+        /// Calculate the total desired length of all the * length.
+        /// Bug Warning:
+        /// - The behavior of this method is undefined! Different UI Frameworks have different behaviors.
+        /// - We ignore all the span columns/rows and just take single cells into consideration.
+        /// </summary>
+        /// <param name="conventions">All the conventions that have almost been fixed except the rest *.</param>
+        /// <returns>The total desired length of all the * length.</returns>
+        [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double AggregateAdditionalConventionsForStars(
             IReadOnlyList<LengthConvention> conventions)
         {
+            // Note: The comment in this method is just a draft.
             // +-----------------------------------------------------------+
             // |  *  |  P  |  *  |  P  |  P  |  *  |  P  |     *     |  *  |
             // +-----------------------------------------------------------+
@@ -361,11 +371,10 @@ namespace Avalonia.Controls.Utils
             // _additionalConventions 是上面的 x、y、z…… 集合，只有最小值是可用的。
             // 需要返回所有标记为 * 的方格的累加和的最小值。
 
-            var additionalConventions = _additionalConventions;
-
-            // TODO Calculate the min length of all the desired size.
-
-            return 0;
+            // Before we determine the behavior of this method, we just aggregate the one-span * columns.
+            return _additionalConventions
+                .Where(x => x.Span == 1 && conventions[x.Index].Length.IsStar)
+                .Sum(x => x.Min);
         }
 
         /// <summary>
