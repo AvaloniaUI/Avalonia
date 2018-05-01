@@ -1,13 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
-using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -72,6 +65,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Layout_EmptyColumnRow_LayoutLikeANormalPanel()
+        {
+            // Arrange & Action
+            var grid = GridMock.New(arrange: new Size(600, 200));
+
+            // Assert
+            GridAssert.ChildrenWidth(grid, 600);
+            GridAssert.ChildrenHeight(grid, 200);
+        }
+
+        [Fact]
         public void Layout_PixelRowColumn_BoundsCorrect()
         {
             // Arrange & Action
@@ -81,17 +85,6 @@ namespace Avalonia.Controls.UnitTests
             // Assert
             GridAssert.ChildrenHeight(rowGrid, 100, 200, 300);
             GridAssert.ChildrenWidth(columnGrid, 50, 100, 150);
-        }
-
-        [Fact]
-        public void Layout_NoRowColumn_BoundsCorrect()
-        {
-            // Arrange & Action
-            var grid = GridMock.New(arrange: new Size(600, 200));
-
-            // Assert
-            GridAssert.ChildrenHeight(grid, 600);
-            GridAssert.ChildrenWidth(grid, 200);
         }
 
         [Fact]

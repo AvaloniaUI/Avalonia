@@ -16,6 +16,7 @@ namespace Avalonia.Controls.UnitTests
         internal static Grid New(Size measure = default, Size arrange = default)
         {
             var grid = new Grid();
+            grid.Children.Add(new Border());
             grid.Measure(measure == default ? new Size(double.PositiveInfinity, double.PositiveInfinity) : measure);
             grid.Arrange(new Rect(default, arrange == default ? grid.DesiredSize : arrange));
             return grid;

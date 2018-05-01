@@ -48,10 +48,6 @@ namespace Avalonia.Controls
 
         private RowDefinitions _rowDefinitions;
 
-        private Segment[,] _rowMatrix;
-
-        private Segment[,] _colMatrix;
-
         /// <summary>
         /// Gets or sets the columns definitions for the grid.
         /// </summary>
@@ -186,7 +182,16 @@ namespace Avalonia.Controls
             element.SetValue(RowSpanProperty, value);
         }
 
+        /// <summary>
+        /// Gets the result of last column measuring produce.
+        /// Use this result to reduce the arrange calculation.
+        /// </summary>
         private GridLayout.MeasureResult _columnMeasureCache;
+
+        /// <summary>
+        /// Gets the result of last row measuring produce.
+        /// Use this result to reduce the arrange calculation.
+        /// </summary>
         private GridLayout.MeasureResult _rowMeasureCache;
 
         /// <summary>
@@ -196,11 +201,32 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size constraint)
         {
+            // If the grid doesn't have any column/row definitions, it behaviors like a nomal panel.
+
+            if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
+            {
+                var maxWidth = 0.0;
+                var maxHeight = 0.0;
+                foreach (var child in Children.OfType<Control>())
+                {
+                    child.Measure(constraint);
+                    maxWidth = Math.Max(maxWidth, child.DesiredSize.Width);
+                    maxHeight = Math.Max(maxHeight, child.DesiredSize.Height);
+                }
+
+                maxWidth = Math.Min(maxWidth, constraint.Width);
+                maxHeight = Math.Min(maxHeight, constraint.Height);
+                return new Size(maxWidth, maxHeight);
+            }
+
+            // If the grid defines some columns or rows.
+
             var measureCache = new Dictionary<Control, Size>();
             var (safeColumns, safeRows) = GetSafeColumnRows();
 
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
+            // Note: If a child stays in a * or Auto column/row, use constraint to measure it.
             columnLayout.AppendMeasureConventions(safeColumns, child => MeasureOnce(child, constraint).Width);
             rowLayout.AppendMeasureConventions(safeRows, child => MeasureOnce(child, constraint).Height);
 
@@ -221,6 +247,8 @@ namespace Avalonia.Controls
             _rowMeasureCache = rowResult;
             return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
 
+            // Measure each child only once.
+            // If a child has been measured, it will just return the desired size.
             Size MeasureOnce(Control child, Size size)
             {
                 if (measureCache.TryGetValue(child, out var desiredSize))
@@ -242,6 +270,20 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            // If the grid doesn't have any column/row definitions, it behaviors like a nomal panel.
+
+            if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
+            {
+                foreach (var child in Children.OfType<Control>())
+                {
+                    child.Arrange(new Rect(finalSize));
+                }
+
+                return finalSize;
+            }
+
+            // If the grid defines some columns or rows.
+
             var (safeColumns, safeRows) = GetSafeColumnRows();
 
             var columnLayout = new GridLayout(ColumnDefinitions);
@@ -263,6 +305,10 @@ namespace Avalonia.Controls
             return finalSize;
         }
 
+        /// <summary>
+        /// Get the safe column/columnspan and safe row/rowspan.
+        /// The result of this method ensure that none of the children has a column/row out of the definitions.
+        /// </summary>
         private (Dictionary<Control, (int index, int span)> safeColumns,
             Dictionary<Control, (int index, int span)> safeRows) GetSafeColumnRows()
         {
@@ -301,22 +347,6 @@ namespace Avalonia.Controls
             return (index, span);
         }
 
-        private static double Clamp(double val, double min, double max)
-        {
-            if (val < min)
-            {
-                return min;
-            }
-            else if (val > max)
-            {
-                return max;
-            }
-            else
-            {
-                return val;
-            }
-        }
-
         private static int ValidateColumn(AvaloniaObject o, int value)
         {
             if (value < 0)
@@ -335,377 +365,6 @@ namespace Avalonia.Controls
             }
 
             return value;
-        }
-
-        private void CreateMatrices(int rowCount, int colCount)
-        {
-            if (_rowMatrix == null || _colMatrix == null ||
-                _rowMatrix.GetLength(0) != rowCount ||
-                _colMatrix.GetLength(0) != colCount)
-            {
-                _rowMatrix = new Segment[rowCount, rowCount];
-                _colMatrix = new Segment[colCount, colCount];
-            }
-            else
-            {
-                Array.Clear(_rowMatrix, 0, _rowMatrix.Length);
-                Array.Clear(_colMatrix, 0, _colMatrix.Length);
-            }
-        }
-
-        private void ExpandStarCols(Size availableSize)
-        {
-            int matrixCount = _colMatrix.GetLength(0);
-            int columnsCount = ColumnDefinitions.Count;
-            double width = availableSize.Width;
-
-            for (int i = 0; i < matrixCount; i++)
-            {
-                if (_colMatrix[i, i].Type == GridUnitType.Star)
-                {
-                    _colMatrix[i, i].OfferedSize = 0;
-                }
-                else
-                {
-                    width = Math.Max(width - _colMatrix[i, i].OfferedSize, 0);
-                }
-            }
-
-            AssignSize(_colMatrix, 0, matrixCount - 1, ref width, GridUnitType.Star, false);
-            width = Math.Max(0, width);
-
-            if (columnsCount > 0)
-            {
-                for (int i = 0; i < matrixCount; i++)
-                {
-                    if (_colMatrix[i, i].Type == GridUnitType.Star)
-                    {
-                        ColumnDefinitions[i].ActualWidth = _colMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-        }
-
-        private void ExpandStarRows(Size availableSize)
-        {
-            int matrixCount = _rowMatrix.GetLength(0);
-            int rowCount = RowDefinitions.Count;
-            double height = availableSize.Height;
-
-            // When expanding star rows, we need to zero out their height before
-            // calling AssignSize. AssignSize takes care of distributing the
-            // available size when there are Mins and Maxs applied.
-            for (int i = 0; i < matrixCount; i++)
-            {
-                if (_rowMatrix[i, i].Type == GridUnitType.Star)
-                {
-                    _rowMatrix[i, i].OfferedSize = 0.0;
-                }
-                else
-                {
-                    height = Math.Max(height - _rowMatrix[i, i].OfferedSize, 0);
-                }
-            }
-
-            AssignSize(_rowMatrix, 0, matrixCount - 1, ref height, GridUnitType.Star, false);
-
-            if (rowCount > 0)
-            {
-                for (int i = 0; i < matrixCount; i++)
-                {
-                    if (_rowMatrix[i, i].Type == GridUnitType.Star)
-                    {
-                        RowDefinitions[i].ActualHeight = _rowMatrix[i, i].OfferedSize;
-                    }
-                }
-            }
-        }
-
-        private void AssignSize(
-            Segment[,] matrix,
-            int start,
-            int end,
-            ref double size,
-            GridUnitType type,
-            bool desiredSize)
-        {
-            double count = 0;
-            bool assigned;
-
-            // Count how many segments are of the correct type. If we're measuring Star rows/cols
-            // we need to count the number of stars instead.
-            for (int i = start; i <= end; i++)
-            {
-                double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
-                if (segmentSize < matrix[i, i].Max)
-                {
-                    count += type == GridUnitType.Star ? matrix[i, i].Stars : 1;
-                }
-            }
-
-            do
-            {
-                double contribution = size / count;
-
-                assigned = false;
-
-                for (int i = start; i <= end; i++)
-                {
-                    double segmentSize = desiredSize ? matrix[i, i].DesiredSize : matrix[i, i].OfferedSize;
-
-                    if (!(matrix[i, i].Type == type && segmentSize < matrix[i, i].Max))
-                    {
-                        continue;
-                    }
-
-                    double newsize = segmentSize;
-                    newsize += contribution * (type == GridUnitType.Star ? matrix[i, i].Stars : 1);
-                    double newSizeIgnoringMinMax = newsize;
-                    newsize = Math.Min(newsize, matrix[i, i].Max);
-                    newsize = Math.Max(newsize, matrix[i, i].Min);
-                    assigned |= !Equals(newsize, newSizeIgnoringMinMax);
-                    size -= newsize - segmentSize;
-
-                    if (desiredSize)
-                    {
-                        matrix[i, i].DesiredSize = newsize;
-                    }
-                    else
-                    {
-                        matrix[i, i].OfferedSize = newsize;
-                    }
-                }
-            }
-            while (assigned);
-        }
-
-        private void AllocateDesiredSize(int rowCount, int colCount)
-        {
-            // First allocate the heights of the RowDefinitions, then allocate
-            // the widths of the ColumnDefinitions.
-            for (int i = 0; i < 2; i++)
-            {
-                Segment[,] matrix = i == 0 ? _rowMatrix : _colMatrix;
-                int count = i == 0 ? rowCount : colCount;
-
-                for (int row = count - 1; row >= 0; row--)
-                {
-                    for (int col = row; col >= 0; col--)
-                    {
-                        bool spansStar = false;
-                        for (int j = row; j >= col; j--)
-                        {
-                            spansStar |= matrix[j, j].Type == GridUnitType.Star;
-                        }
-
-                        // This is the amount of pixels which must be available between the grid rows
-                        // at index 'col' and 'row'. i.e. if 'row' == 0 and 'col' == 2, there must
-                        // be at least 'matrix [row][col].size' pixels of height allocated between
-                        // all the rows in the range col -> row.
-                        double current = matrix[row, col].DesiredSize;
-
-                        // Count how many pixels have already been allocated between the grid rows
-                        // in the range col -> row. The amount of pixels allocated to each grid row/column
-                        // is found on the diagonal of the matrix.
-                        double totalAllocated = 0;
-
-                        for (int k = row; k >= col; k--)
-                        {
-                            totalAllocated += matrix[k, k].DesiredSize;
-                        }
-
-                        // If the size requirement has not been met, allocate the additional required
-                        // size between 'pixel' rows, then 'star' rows, finally 'auto' rows, until all
-                        // height has been assigned.
-                        if (totalAllocated < current)
-                        {
-                            double additional = current - totalAllocated;
-
-                            if (spansStar)
-                            {
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Star, true);
-                            }
-                            else
-                            {
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Pixel, true);
-                                AssignSize(matrix, col, row, ref additional, GridUnitType.Auto, true);
-                            }
-                        }
-                    }
-                }
-            }
-
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int r = 0; r < rowMatrixDim; r++)
-            {
-                _rowMatrix[r, r].OfferedSize = _rowMatrix[r, r].DesiredSize;
-            }
-
-            for (int c = 0; c < colMatrixDim; c++)
-            {
-                _colMatrix[c, c].OfferedSize = _colMatrix[c, c].DesiredSize;
-            }
-        }
-
-        private void SaveMeasureResults()
-        {
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int i = 0; i < rowMatrixDim; i++)
-            {
-                for (int j = 0; j < rowMatrixDim; j++)
-                {
-                    _rowMatrix[i, j].OriginalSize = _rowMatrix[i, j].OfferedSize;
-                }
-            }
-
-            for (int i = 0; i < colMatrixDim; i++)
-            {
-                for (int j = 0; j < colMatrixDim; j++)
-                {
-                    _colMatrix[i, j].OriginalSize = _colMatrix[i, j].OfferedSize;
-                }
-            }
-        }
-
-        private void RestoreMeasureResults()
-        {
-            int rowMatrixDim = _rowMatrix.GetLength(0);
-            int colMatrixDim = _colMatrix.GetLength(0);
-
-            for (int i = 0; i < rowMatrixDim; i++)
-            {
-                for (int j = 0; j < rowMatrixDim; j++)
-                {
-                    _rowMatrix[i, j].OfferedSize = _rowMatrix[i, j].OriginalSize;
-                }
-            }
-
-            for (int i = 0; i < colMatrixDim; i++)
-            {
-                for (int j = 0; j < colMatrixDim; j++)
-                {
-                    _colMatrix[i, j].OfferedSize = _colMatrix[i, j].OriginalSize;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Stores the layout values of of <see cref="RowDefinitions"/> of <see cref="ColumnDefinitions"/>.
-        /// </summary>
-        private struct Segment
-        {
-            /// <summary>
-            /// Gets or sets the base size of this segment.
-            /// The value is from the user's code or from the stored measuring values.
-            /// </summary>
-            public double OriginalSize;
-
-            /// <summary>
-            /// Gets the maximum size of this segment.
-            /// The value is from the user's code.
-            /// </summary>
-            public readonly double Max;
-
-            /// <summary>
-            /// Gets the minimum size of this segment.
-            /// The value is from the user's code.
-            /// </summary>
-            public readonly double Min;
-
-            /// <summary>
-            /// Gets or sets the row/column partial desired size of the <see cref="Grid"/>.
-            /// </summary>
-            public double DesiredSize;
-
-            /// <summary>
-            /// Gets or sets the row/column offered size that will be used to measure the children.
-            /// </summary>
-            public double OfferedSize;
-
-            /// <summary>
-            /// Gets or sets the star unit size if the <see cref="Type"/> is <see cref="GridUnitType.Star"/>.
-            /// </summary>
-            public double Stars;
-
-            /// <summary>
-            /// Gets the segment size unit type.
-            /// </summary>
-            public readonly GridUnitType Type;
-
-            public Segment(double offeredSize, double min, double max, GridUnitType type)
-            {
-                OriginalSize = 0;
-                Min = min;
-                Max = max;
-                DesiredSize = 0;
-                OfferedSize = offeredSize;
-                Stars = 0;
-                Type = type;
-            }
-        }
-
-        private struct GridNode
-        {
-            public readonly int Row;
-            public readonly int Column;
-            public readonly double Size;
-            public readonly Segment[,] Matrix;
-
-            public GridNode(Segment[,] matrix, int row, int col, double size)
-            {
-                Matrix = matrix;
-                Row = row;
-                Column = col;
-                Size = size;
-            }
-        }
-
-        private class GridWalker
-        {
-            public GridWalker(Grid grid, Segment[,] rowMatrix, Segment[,] colMatrix)
-            {
-                int rowMatrixDim = rowMatrix.GetLength(0);
-                int colMatrixDim = colMatrix.GetLength(0);
-
-                foreach (Control child in grid.Children)
-                {
-                    bool starCol = false;
-                    bool starRow = false;
-                    bool autoCol = false;
-                    bool autoRow = false;
-
-                    int col = Math.Min(GetColumn(child), colMatrixDim - 1);
-                    int row = Math.Min(GetRow(child), rowMatrixDim - 1);
-                    int colspan = Math.Min(GetColumnSpan(child), colMatrixDim - 1);
-                    int rowspan = Math.Min(GetRowSpan(child), rowMatrixDim - 1);
-
-                    for (int r = row; r < row + rowspan; r++)
-                    {
-                        starRow |= rowMatrix[r, r].Type == GridUnitType.Star;
-                        autoRow |= rowMatrix[r, r].Type == GridUnitType.Auto;
-                    }
-
-                    for (int c = col; c < col + colspan; c++)
-                    {
-                        starCol |= colMatrix[c, c].Type == GridUnitType.Star;
-                        autoCol |= colMatrix[c, c].Type == GridUnitType.Auto;
-                    }
-
-                    HasAutoAuto |= autoRow && autoCol && !starRow && !starCol;
-                    HasStarAuto |= starRow && autoCol;
-                    HasAutoStar |= autoRow && starCol;
-                }
-            }
-
-            public bool HasAutoAuto { get; }
-
-            public bool HasStarAuto { get; }
-
-            public bool HasAutoStar { get; }
         }
     }
 }

@@ -20,7 +20,9 @@ namespace Avalonia.Controls.Utils
         internal GridLayout([NotNull] ColumnDefinitions columns)
         {
             if (columns == null) throw new ArgumentNullException(nameof(columns));
-            _conventions = columns.Select(x => new LengthConvention(x.Width, x.MinWidth, x.MaxWidth)).ToList();
+            _conventions = columns.Count == 0
+                ? new List<LengthConvention> { new LengthConvention() }
+                : columns.Select(x => new LengthConvention(x.Width, x.MinWidth, x.MaxWidth)).ToList();
         }
 
         /// <summary>
@@ -30,7 +32,9 @@ namespace Avalonia.Controls.Utils
         internal GridLayout([NotNull] RowDefinitions rows)
         {
             if (rows == null) throw new ArgumentNullException(nameof(rows));
-            _conventions = rows.Select(x => new LengthConvention(x.Height, x.MinHeight, x.MaxHeight)).ToList();
+            _conventions = rows.Count == 0
+                ? new List<LengthConvention> { new LengthConvention() }
+                : rows.Select(x => new LengthConvention(x.Height, x.MinHeight, x.MaxHeight)).ToList();
         }
 
         /// <summary>
@@ -49,7 +53,8 @@ namespace Avalonia.Controls.Utils
         /// Gets all the length conventions that come from the grid children.
         /// </summary>
         [NotNull]
-        private readonly List<AdditionalLengthConvention> _additionalConventions = new List<AdditionalLengthConvention>();
+        private readonly List<AdditionalLengthConvention> _additionalConventions =
+            new List<AdditionalLengthConvention>();
 
         /// <summary>
         /// Some elements are not only in a single grid cell, they have one or more column/row spans,
@@ -451,6 +456,7 @@ namespace Avalonia.Controls.Utils
             {
                 return;
             }
+
             var measureLength = 0.0;
             for (var i = 0; i < lengthList.Count; i++)
             {
@@ -474,6 +480,16 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         internal class LengthConvention : ICloneable
         {
+            /// <summary>
+            /// Initialize a new instance of <see cref="LengthConvention"/>.
+            /// </summary>
+            public LengthConvention()
+            {
+                Length = new GridLength(1.0, GridUnitType.Star);
+                MinLength = 0.0;
+                MaxLength = double.PositiveInfinity;
+            }
+
             /// <summary>
             /// Initialize a new instance of <see cref="LengthConvention"/>.
             /// </summary>
