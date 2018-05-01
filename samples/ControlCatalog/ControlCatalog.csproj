@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\kooten.ttf" />
+    <None Remove="Assets\octin_stencil_free.ttf" />
   </ItemGroup>
 
   <ItemGroup>

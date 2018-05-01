@@ -27,8 +27,8 @@
               Padding="16">
                 <StackPanel>
                     <TextBlock FontSize="14">Rounded Corners</TextBlock>
-                    <TextBlock FontWeight="Bold" FontSize="14" FontFamily="Arial">Rounded Corners</TextBlock>
-                    <TextBlock FontSize="14" FontFamily="res:///ControlCatalog/Assets/kooten.ttf#Kootenay">Rounded Corners</TextBlock>
+                    <TextBlock FontSize="14" FontFamily="resm:ControlCatalog.Assets.octin_stencil_free.ttf#Octin Stencil Free">Rounded Corners</TextBlock>
+                    <TextBlock FontSize="14" FontFamily="resm:ControlCatalog.Assets.kooten.ttf#Kootenay">Rounded Corners</TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -16,7 +16,6 @@ namespace ControlCatalog
         {
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            AvaloniaLocator.CurrentMutable.Bind<IFontFamilyCache>().ToConstant(new FontFamilyCache());
             BuildAvaloniaApp().Start<MainWindow>();
         }
 

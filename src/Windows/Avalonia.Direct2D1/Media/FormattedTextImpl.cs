@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -26,58 +26,45 @@ namespace Avalonia.Direct2D1.Media
 
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
+            DWrite.TextFormat textFormat;
+
             if (typeface.FontFamily.BaseUri != null)
             {
-                var fontFamily = AvaloniaLocator.Current.GetService<IFontFamilyCache>().GetOrAddFontFamily(typeface.FontFamily);
+                var fontCollection = Direct2D1CustomFontResourceCache.GetOrAddCustomFontResource(typeface.FontFamily, factory);
 
-                fontFamily.TryGetFamilyTypeface(out var familyTypeface);
-
-                var fontLoader = new ResourceFontLoader(factory, familyTypeface.ResourceUri);
-
-                var fontCollection = new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);
-
-                using (var textFormat =
-                    new DWrite.TextFormat(factory, typeface.FontFamily.Name, fontCollection, DWrite.FontWeight.Normal,
-                        DWrite.FontStyle.Normal, DWrite.FontStretch.Normal, (float)typeface.FontSize))
-                {
-                    textFormat.TextAlignment = DWrite.TextAlignment.Center;
-                    textFormat.ParagraphAlignment = DWrite.ParagraphAlignment.Center;
-
-                    textFormat.WordWrapping = wrapping == TextWrapping.Wrap ?
-                        DWrite.WordWrapping.Wrap :
-                        DWrite.WordWrapping.NoWrap;
-
-                    TextLayout = new DWrite.TextLayout(factory, Text ?? string.Empty, textFormat, (float)constraint.Width,
-                        (float)constraint.Height)
-                    {
-                        TextAlignment = textAlignment.ToDirect2D()
-                    };
-                }
+                textFormat = new DWrite.TextFormat(
+                        factory,
+                        typeface.FontFamily.Name,
+                        fontCollection,
+                        (DWrite.FontWeight)typeface.Weight,
+                        (DWrite.FontStyle)typeface.Style,
+                        DWrite.FontStretch.Normal,
+                        (float)typeface.FontSize);
             }
             else
             {
-                using (var format = new DWrite.TextFormat(
+                textFormat = new DWrite.TextFormat(
                     factory,
-                    typeface?.FontFamily.Name ?? "Courier New",
-                    (DWrite.FontWeight)(typeface.Weight),
-                    (DWrite.FontStyle)(typeface.Style),
-                    (float)typeface.FontSize))
-                {
-                    format.WordWrapping = wrapping == TextWrapping.Wrap ?
-                        DWrite.WordWrapping.Wrap :
-                        DWrite.WordWrapping.NoWrap;
-
-                    TextLayout = new DWrite.TextLayout(
-                        factory,
-                        text ?? string.Empty,
-                        format,
-                        (float)constraint.Width,
-                        (float)constraint.Height)
-                    {
-                        TextAlignment = textAlignment.ToDirect2D()
-                    };
-                }
+                    typeface.FontFamily.Name,
+                    (DWrite.FontWeight)typeface.Weight,
+                    (DWrite.FontStyle)typeface.Style,
+                    (float)typeface.FontSize);
             }
+
+            textFormat.TextAlignment = DWrite.TextAlignment.Center;
+            textFormat.ParagraphAlignment = DWrite.ParagraphAlignment.Center;
+
+            textFormat.WordWrapping = wrapping == TextWrapping.Wrap ?
+                DWrite.WordWrapping.Wrap :
+                DWrite.WordWrapping.NoWrap;
+
+            TextLayout = new DWrite.TextLayout(factory, Text ?? string.Empty, textFormat, (float)constraint.Width,
+                (float)constraint.Height)
+            {
+                TextAlignment = textAlignment.ToDirect2D()
+            };
+
+            textFormat.Dispose();
 
             if (spans != null)
             {
@@ -98,10 +85,10 @@ namespace Avalonia.Direct2D1.Media
 
         public DWrite.TextLayout TextLayout { get; }
 
-        public void Dispose()
-        {
-            TextLayout.Dispose();
-        }
+        //public void Dispose()
+        //{
+        //    TextLayout.Dispose();
+        //}
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -111,14 +98,11 @@ namespace Avalonia.Direct2D1.Media
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            SharpDX.Mathematics.Interop.RawBool isTrailingHit;
-            SharpDX.Mathematics.Interop.RawBool isInside;
-
             var result = TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
-                out isTrailingHit,
-                out isInside);
+                out var isTrailingHit,
+                out var isInside);
 
             return new TextHitTestResult
             {
@@ -130,14 +114,7 @@ namespace Avalonia.Direct2D1.Media
 
         public Rect HitTestTextPosition(int index)
         {
-            float x;
-            float y;
-
-            var result = TextLayout.HitTestTextPosition(
-                index,
-                false,
-                out x,
-                out y);
+            var result = TextLayout.HitTestTextPosition(index, false, out _, out _);
 
             return new Rect(result.Left, result.Top, result.Width, result.Height);
         }
@@ -175,12 +152,29 @@ namespace Avalonia.Direct2D1.Media
         }
     }
 
+    internal static class Direct2D1CustomFontResourceCache
+    {
+        private static readonly ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection> s_cachedFonts =
+            new ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection>();
+
+        public static DWrite.FontCollection GetOrAddCustomFontResource(FontFamily fontFamily, DWrite.Factory factory)
+        {
+            return s_cachedFonts.GetOrAdd(fontFamily.Key, x => CreateCustomFontResource(x, factory));
+        }
+
+        private static DWrite.FontCollection CreateCustomFontResource(FontFamilyKey fontFamilyKey, DWrite.Factory factory)
+        {
+            var fontLoader = new ResourceFontLoader(factory, fontFamilyKey.BaseUri);
+
+            return new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);
+        }
+    }
+
     public class ResourceFontLoader : CallbackBase, DWrite.FontCollectionLoader, DWrite.FontFileLoader
     {
         private readonly List<ResourceFontFileStream> _fontStreams = new List<ResourceFontFileStream>();
         private readonly List<ResourceFontFileEnumerator> _enumerators = new List<ResourceFontFileEnumerator>();
         private readonly DataStream _keyStream;
-        private readonly DWrite.Factory _factory;
 
 
         /// <summary>
@@ -190,7 +184,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="fontResource"></param>
         public ResourceFontLoader(DWrite.Factory factory, Uri fontResource)
         {
-            _factory = factory;
+            var factory1 = factory;
 
             var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
@@ -215,8 +209,8 @@ namespace Avalonia.Direct2D1.Media
             _keyStream.Position = 0;
 
             // Register the 
-            _factory.RegisterFontFileLoader(this);
-            _factory.RegisterFontCollectionLoader(this);
+            factory1.RegisterFontFileLoader(this);
+            factory1.RegisterFontCollectionLoader(this);
         }
 
 
@@ -224,13 +218,7 @@ namespace Avalonia.Direct2D1.Media
         /// Gets the key used to identify the FontCollection as well as storing index for fonts.
         /// </summary>
         /// <value>The key.</value>
-        public DataStream Key
-        {
-            get
-            {
-                return _keyStream;
-            }
-        }
+        public DataStream Key => _keyStream;
 
         /// <summary>
         /// Creates a font file enumerator object that encapsulates a collection of font files. The font system calls back to this interface to create a font collection.
@@ -282,7 +270,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="stream">The stream.</param>
         public ResourceFontFileStream(DataStream stream)
         {
-            this._stream = stream;
+            _stream = stream;
         }
 
         /// <summary>
@@ -384,19 +372,15 @@ namespace Avalonia.Direct2D1.Media
         {
             bool moveNext = keyStream.RemainingLength != 0;
 
-            if (moveNext)
-            {
-                if (_currentFontFile != null)
-                {
-                    _currentFontFile.Dispose();
-                }
+            if (!moveNext) return false;
 
-                _currentFontFile = new DWrite.FontFile(_factory, keyStream.PositionPointer, 4, _loader);
+            _currentFontFile?.Dispose();
 
-                keyStream.Position += 4;
-            }
+            _currentFontFile = new DWrite.FontFile(_factory, keyStream.PositionPointer, 4, _loader);
 
-            return moveNext;
+            keyStream.Position += 4;
+
+            return true;
         }
 
         /// <summary>
