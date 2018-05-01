@@ -227,16 +227,17 @@ namespace Avalonia.Controls
 
             var measureCache = new Dictionary<Control, Size>();
             var (safeColumns, safeRows) = GetSafeColumnRows();
-
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
             // Note: If a child stays in a * or Auto column/row, use constraint to measure it.
             columnLayout.AppendMeasureConventions(safeColumns, child => MeasureOnce(child, constraint).Width);
             rowLayout.AppendMeasureConventions(safeRows, child => MeasureOnce(child, constraint).Height);
 
+            // Calculate for measuring result.
             var columnResult = columnLayout.Measure(constraint.Width);
             var rowResult = rowLayout.Measure(constraint.Height);
 
+            // Use the measure result to measure the rest children.
             foreach (var child in Children.OfType<Control>())
             {
                 var (column, columnSpan) = safeColumns[child];
@@ -247,6 +248,7 @@ namespace Avalonia.Controls
                 MeasureOnce(child, new Size(width, height));
             }
 
+            // Cache the measure result and return the desired size.
             _columnMeasureCache = columnResult;
             _rowMeasureCache = rowResult;
             return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
@@ -292,14 +294,15 @@ namespace Avalonia.Controls
             // Situation 2/2:
             // If the grid defines some columns or rows.
 
-            // 
             var (safeColumns, safeRows) = GetSafeColumnRows();
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
 
+            // Calculate for arranging result.
             var columnResult = columnLayout.Arrange(finalSize.Width, _columnMeasureCache);
             var rowResult = rowLayout.Arrange(finalSize.Height, _rowMeasureCache);
 
+            // Arrange the children.
             foreach (var child in Children.OfType<Control>())
             {
                 var (column, columnSpan) = safeColumns[child];
@@ -312,16 +315,19 @@ namespace Avalonia.Controls
                 child.Arrange(new Rect(x, y, width, height));
             }
 
+            // Assign the actual width.
             for (var i = 0; i < ColumnDefinitions.Count; i++)
             {
                 ColumnDefinitions[i].ActualWidth = columnResult.LengthList[i];
             }
 
+            // Assign the actual height.
             for (var i = 0; i < RowDefinitions.Count; i++)
             {
                 RowDefinitions[i].ActualHeight = rowResult.LengthList[i];
             }
 
+            // Return the render size.
             return finalSize;
         }
 
