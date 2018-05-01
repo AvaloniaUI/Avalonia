@@ -201,7 +201,10 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size constraint)
         {
-            // If the grid doesn't have any column/row definitions, it behaviors like a nomal panel.
+            // Situation 1/2:
+            // If the grid doesn't have any column/row definitions,
+            // it behaviors like a nomal panel.
+            // GridLayout supports this situation but we handle this separately for performance.
 
             if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
             {
@@ -219,6 +222,7 @@ namespace Avalonia.Controls
                 return new Size(maxWidth, maxHeight);
             }
 
+            // Situation 2/2:
             // If the grid defines some columns or rows.
 
             var measureCache = new Dictionary<Control, Size>();
@@ -270,7 +274,10 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            // If the grid doesn't have any column/row definitions, it behaviors like a nomal panel.
+            // Situation 1/2:
+            // If the grid doesn't have any column/row definitions,
+            // it behaviors like a nomal panel.
+            // GridLayout supports this situation but we handle this separately for performance.
 
             if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
             {
@@ -282,10 +289,11 @@ namespace Avalonia.Controls
                 return finalSize;
             }
 
+            // Situation 2/2:
             // If the grid defines some columns or rows.
 
+            // 
             var (safeColumns, safeRows) = GetSafeColumnRows();
-
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
 
@@ -296,10 +304,22 @@ namespace Avalonia.Controls
             {
                 var (column, columnSpan) = safeColumns[child];
                 var (row, rowSpan) = safeRows[child];
-                var width = Enumerable.Range(column, columnSpan).Select(x => columnResult.LengthList[x]).Sum();
-                var height = Enumerable.Range(row, rowSpan).Select(x => rowResult.LengthList[x]).Sum();
+                var x = Enumerable.Range(0, column).Sum(c => columnResult.LengthList[c]);
+                var y = Enumerable.Range(0, row).Sum(r => rowResult.LengthList[r]);
+                var width = Enumerable.Range(column, columnSpan).Sum(c => columnResult.LengthList[c]);
+                var height = Enumerable.Range(row, rowSpan).Sum(r => rowResult.LengthList[r]);
 
-                child.Arrange(new Rect(0, 0, width, height));
+                child.Arrange(new Rect(x, y, width, height));
+            }
+
+            for (var i = 0; i < ColumnDefinitions.Count; i++)
+            {
+                ColumnDefinitions[i].ActualWidth = columnResult.LengthList[i];
+            }
+
+            for (var i = 0; i < RowDefinitions.Count; i++)
+            {
+                RowDefinitions[i].ActualHeight = rowResult.LengthList[i];
             }
 
             return finalSize;
