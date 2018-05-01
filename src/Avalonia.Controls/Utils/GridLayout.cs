@@ -2,67 +2,100 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Avalonia.Layout;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {
-    // We have three kind of unit:
-    //     - * means Star  unit. It can be affected by min and max pixel length.
-    //     - A means Auto  unit. It can be affected by min/max pixel length and desired pixel length.
-    //     - P means Pixel unit. It is fixed and can't be affected by any other values.
-    // Notice that some child stands not only one column/row and this affects desired length.
-    // Desired length behaviors like the min pixel length but:
-    //     - This can only be determined after the Measure.
-    // 
-    // This is an example indicates how this class stores data.
-    // +-----------------------------------------------------------+
-    // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
-    // +-----------------------------------------------------------+
-    // | min | min |     |           | min |     |  min max  |
-    //                   |<-   desired   ->|
-    // 
-    // During the measuring procedure:
-    //     - * wants as much as possible space in range of min and max.
-    //     - A wants as less as possible space in range of min/desired and max.
-    //     - P wants a fix-size space.
-    // But during the arranging procedure:
-    //     - * behaviors the same.
-    //     - A wants as much as possible space in range of min/desired and max.
-    //     - P behaviors the same.
-    // 
     /// <summary>
     /// Contains algorithms that can help to measure and arrange a Grid.
     /// </summary>
     internal class GridLayout
     {
-        internal GridLayout(ColumnDefinitions columns)
+        /// <summary>
+        /// Initialize a new <see cref="GridLayout"/> instance from the column definitions.
+        /// <see cref="GridLayout"/> will forget that the layout data comes from the columns.
+        /// </summary>
+        internal GridLayout([NotNull] ColumnDefinitions columns)
         {
+            if (columns == null) throw new ArgumentNullException(nameof(columns));
             _conventions = columns.Select(x => new LengthConvention(x.Width, x.MinWidth, x.MaxWidth)).ToList();
         }
 
-        internal GridLayout(RowDefinitions rows)
+        /// <summary>
+        /// Initialize a new <see cref="GridLayout"/> instance from the row definitions.
+        /// <see cref="GridLayout"/> will forget that the layout data comes from the rows.
+        /// </summary>
+        internal GridLayout([NotNull] RowDefinitions rows)
         {
+            if (rows == null) throw new ArgumentNullException(nameof(rows));
             _conventions = rows.Select(x => new LengthConvention(x.Height, x.MinHeight, x.MaxHeight)).ToList();
         }
 
+        /// <summary>
+        /// Gets the layout tolerance. If any length offset is less than this value, we will treat them the same.
+        /// </summary>
         private const double LayoutTolerance = 1.0 / 256.0;
+
+        /// <summary>
+        /// Gets all the length conventions that come from column/row definitions.
+        /// These conventions provide limitations of each grid cell.
+        /// </summary>
+        [NotNull]
         private readonly List<LengthConvention> _conventions;
+
+        /// <summary>
+        /// Gets all the length conventions that come from the grid children.
+        /// </summary>
+        [NotNull]
         private readonly List<AdditionalLengthConvention> _additionalConventions = new List<AdditionalLengthConvention>();
 
         /// <summary>
-        /// Some elements are not in a single grid cell, they have multiple column/row spans,
-        /// and these elements may affects the grid layout especially the measure procedure.<para/>
-        /// Append these elements into the convention list can help to layout them correctly through their desired size.
-        /// Only a small subset of grid children need to be measured before layout starts and they are called via the <paramref name="getDesiredLength"/> callback.
+        /// Some elements are not only in a single grid cell, they have one or more column/row spans,
+        /// and these elements may affect the grid layout especially the measuring procedure.<para/>
+        /// Append these elements into the convention list can help to layout them correctly through
+        /// their desired size. Only a small subset of grid children need to be measured before layout
+        /// starts and they will be called via the<paramref name="getDesiredLength"/> callback.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="getDesiredLength"></param>
-        internal void AppendMeasureConventions<T>(IDictionary<T, (int index, int span)> source,
-            Func<T, double> getDesiredLength)
+        /// <typeparam name="T">The grid children type.</typeparam>
+        /// <param name="source">
+        /// Contains the safe column/row index and its span.
+        /// Notice that we will not verify whether the range is in the column/row count,
+        /// so you should get the safe column/row info first.
+        /// </param>
+        /// <param name="getDesiredLength">
+        /// This callback will be called if the <see cref="GridLayout"/> thinks that a child should be
+        /// measured first. Usually, these are the children that have the * or Auto length.
+        /// </param>
+        internal void AppendMeasureConventions<T>([NotNull] IDictionary<T, (int index, int span)> source,
+            [NotNull] Func<T, double> getDesiredLength)
         {
-            // M1/6. Find all the Auto length columns/rows.
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (getDesiredLength == null) throw new ArgumentNullException(nameof(getDesiredLength));
+
+            // M1/7. Find all the Auto and * length columns/rows.
             // Only these columns/rows' layout can be affected by the children desired size.
+            // 
+            // Find all columns/rows that has the length Auto or *. We'll measure the children in advance.
+            // Only these kind of columns/rows will affects the Grid layout.
+            // Please note:
+            // - The columns/rows of Auto length will definitely be affected by the children size;
+            // - However, only the Grid.DesiredSize can be affected by the *-length columns/rows unless the Grid has very much space (Infinitely).
+
+            //               +-----------------------------------------------------------+
+            //               |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            //               +-----------------------------------------------------------+
+            // _conventions: | min | max |     |           | min |     |  min max  | max |
+            // _additionalC:                   |<-   desired   ->|     |< desired >|
+            // _additionalC:       |< desired >|           |<-        desired          ->|
+
+            // 寻找所有行列范围中包含 Auto 和 * 的元素，使用全部可用尺寸提前测量。
+            // 因为只有这部分元素的布局才会被 Grid 的子元素尺寸影响。
+            // 请注意：
+            // - Auto 长度的行列必定会受到子元素布局影响，会影响到行列的布局长度；
+            // - 而对于 * 长度，一般只有 Grid.DesiredSize 会受到子元素布局影响，只有在 Grid 布局空间充足时行列长度才会被子元素布局影响。
+
+            // Find all the Auto and * length columns/rows.
             var found = new Dictionary<T, (int index, int span)>();
             for (var i = 0; i < _conventions.Count; i++)
             {
@@ -91,21 +124,57 @@ namespace Avalonia.Controls.Utils
             }
         }
 
+        /// <summary>
+        /// Run measure procedure according to the <paramref name="containerLength"/> and gets the <see cref="MeasureResult"/>.
+        /// </summary>
+        /// <param name="containerLength">
+        /// The container length. Usually, it is the constraint of the <see cref="Layoutable.MeasureOverride"/> method.
+        /// </param>
+        /// <returns>
+        /// The measured result that containing the desired size and all the column/row length.
+        /// </returns>
+        [NotNull]
         internal MeasureResult Measure(double containerLength)
         {
-            // Initial.
+            // Prepare all the variables that this method needs to use.
             var conventions = _conventions.Select(x => x.Clone()).ToList();
             var starCount = conventions.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
             var aggregatedLength = 0.0;
             double starUnitLength;
 
-            // M2/7. Exclude all the pixel lengths, so that we can calculate the star lengths.
+            // M2/7. Aggregate all the pixel lengths. Then we can get the rest length by `containerLength - aggregatedLength`.
+            // We mark the aggregated length as "fix" because we can completely determine their values. Same as below.
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            //                   |#fix#|           |#fix#|
+            //
+            // 将全部的固定像素长度的行列长度累加。这样，containerLength - aggregatedLength 便能得到剩余长度。
+            // 我们会将所有能够确定下长度的行列标记为 fix。下同。
+            // 请注意：
+            // - 我们并没有直接从 containerLength 一直减下去，而是使用 aggregatedLength 进行累加，是因为无穷大相减得到的是 NaN，不利于后续计算。
+
             aggregatedLength += conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
 
-            // M3/7. Exclude all the * lengths that have reached min value.
+            // M3/7. Fix all the * lengths that have reached the minimum.
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // | min | max |     |           | min |     |  min max  | max |
+            //                   | fix |     |#fix#| fix |
+
             var shouldTestStarMin = true;
             while (shouldTestStarMin)
             {
+                // Calculate the unit * length to estimate the length of each column/row that has * length.
+                // Under this estimated length, look for if there is a minimum value that has a length less than its constraint.
+                // If there is such a *, then fix the size of this cell, and then loop it again until there is no * that can be constrained by the minimum value.
+                //
+                // 计算单位 * 的长度，以便预估出每一个 * 行列的长度。
+                // 在此预估的长度下，从前往后寻找是否存在某个 * 长度已经小于其约束的最小值。
+                // 如果发现存在这样的 *，那么将此单元格的尺寸固定下来（Fix），然后循环重来，直至再也没有能被最小值约束的 *。
                 var @fixed = false;
                 starUnitLength = (containerLength - aggregatedLength) / starCount;
                 foreach (var convention in conventions.Where(x => x.Length.IsStar))
@@ -126,7 +195,14 @@ namespace Avalonia.Controls.Utils
                 shouldTestStarMin = @fixed;
             }
 
-            // M4/7. Exclude all the Auto lengths that have not-zero desired size.
+            // M3/7. Fix all the Auto lengths that the children on its column/row have a zero or non-zero length.
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // | min | max |     |           | min |     |  min max  | max |
+            //       |#fix#|     | fix |#fix#| fix | fix |
+
             var shouldTestAuto = true;
             while (shouldTestAuto)
             {
@@ -151,26 +227,66 @@ namespace Avalonia.Controls.Utils
             }
 
             // M5/7. Expand the stars according to the additional conventions (usually the child desired length).
+            // We can't fix this kind of length, so we just mark them as desired (des).
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // | min | max |     |           | min |     |  min max  | max |
+            // |#des#| fix |#des#| fix | fix | fix | fix |   #des#   |#des#|
+
             var desiredStarMin = AggregateAdditionalConventionsForStars(conventions);
             aggregatedLength += desiredStarMin;
-            
 
-            // M6/7. Determine the desired length of the grid for current contaienr length. Its value stores in desiredLength.
-            // But if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
+            // M6/7. Determine the desired length of the grid for current container length. Its value stores in desiredLength.
+            // Assume if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // | min | max |     |           | min |     |  min max  | max |
+            // |#des#| fix |#des#| fix | fix | fix | fix |   #des#   |#des#|
+            // 
+            // desiredLength = Math.Max(0.0, des + fix + des + fix + fix + fix + fix + des + des)
+            // greedyDesiredLength = des + fix + des + fix + fix + fix + fix + des + des
+
             var desiredLength = containerLength - aggregatedLength >= 0.0 ? aggregatedLength : containerLength;
             var greedyDesiredLength = aggregatedLength;
 
-            // M7/7. Expand all the left stars. These stars have no conventions or only have max value so they can be expanded from zero to constrant.
+            // M7/7. Expand all the rest stars. These stars have no conventions or only have
+            // max value they can be expanded from zero to constraint.
+            //
+            // +-----------------------------------------------------------+
+            // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
+            // +-----------------------------------------------------------+
+            // | min | max |     |           | min |     |  min max  | max |
+            // |#fix#| fix |#fix#| fix | fix | fix | fix |   #fix#   |#fix#|
+
             var dynamicConvention = ExpandStars(conventions, containerLength);
             Clip(dynamicConvention, containerLength);
 
-            // Stores the measuring result.
+            // Returns the measuring result.
             return new MeasureResult(containerLength, desiredLength, greedyDesiredLength,
                 conventions, dynamicConvention);
         }
 
-        public ArrangeResult Arrange(double finalLength, MeasureResult measure)
+        /// <summary>
+        /// Run arrange procedure according to the <paramref name="measure"/> and gets the <see cref="ArrangeResult"/>.
+        /// </summary>
+        /// <param name="finalLength">
+        /// The container length. Usually, it is the finalSize of the <see cref="Layoutable.ArrangeOverride"/> method.
+        /// </param>
+        /// <param name="measure">
+        /// The result that the measuring procedure returns. If it is null, a new measure procedure will run.
+        /// </param>
+        /// <returns>
+        /// The measured result that containing the desired size and all the column/row length.
+        /// </returns>
+        [NotNull]
+        public ArrangeResult Arrange(double finalLength, [CanBeNull] MeasureResult measure)
         {
+            measure = measure ?? Measure(finalLength);
+
             // If the arrange final length does not equal to the measure length, we should measure again.
             if (finalLength - measure.ContainerLength > LayoutTolerance)
             {
@@ -210,7 +326,7 @@ namespace Avalonia.Controls.Utils
                 }
             }
 
-            return more;
+            return Math.Min(conventions[index].MaxLength, more);
         }
 
         [Pure]
