@@ -593,6 +593,7 @@ namespace Avalonia.Controls.Utils
         /// This result can be used to measure children and assign the desired size.
         /// Passing this result to <see cref="Arrange"/> can reduce calculation.
         /// </summary>
+        [DebuggerDisplay("{" + nameof(LengthList) + ",nq}")]
         internal class MeasureResult
         {
             /// <summary>
@@ -641,6 +642,7 @@ namespace Avalonia.Controls.Utils
         /// Stores the result of the measuring procedure.
         /// This result can be used to arrange children and assign the render size.
         /// </summary>
+        [DebuggerDisplay("{" + nameof(LengthList) + ",nq}")]
         internal class ArrangeResult
         {
             /// <summary>
