@@ -246,6 +246,7 @@ namespace Avalonia.Controls.Utils
             // +-----------------------------------------------------------+
             // | min | max |     |           | min |     |  min max  | max |
             // |#des#| fix |#des#| fix | fix | fix | fix |   #des#   |#des#|
+            // Note: This table will be stored as the intermediate result into the MeasureResult and it will be reused by Arrange procedure.
             // 
             // desiredLength = Math.Max(0.0, des + fix + des + fix + fix + fix + fix + des + des)
             // greedyDesiredLength = des + fix + des + fix + fix + fix + fix + des + des
@@ -261,6 +262,7 @@ namespace Avalonia.Controls.Utils
             // +-----------------------------------------------------------+
             // | min | max |     |           | min |     |  min max  | max |
             // |#fix#| fix |#fix#| fix | fix | fix | fix |   #fix#   |#fix#|
+            // Note: This table will be stored as the final result into the MeasureResult.
 
             var dynamicConvention = ExpandStars(conventions, containerLength);
             Clip(dynamicConvention, containerLength);
@@ -304,10 +306,27 @@ namespace Avalonia.Controls.Utils
             return new ArrangeResult(measure.LengthList);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="conventions"></param>
+        /// <param name="index"></param>
+        /// <param name="starUnitLength"></param>
+        /// <returns></returns>
         [Pure]
         private double ApplyAdditionalConventionsForAuto(IReadOnlyList<LengthConvention> conventions,
             int index, double starUnitLength)
         {
+            // 1. Calculate all the * length with starUnitLength.
+            // 2. Exclude all the fixed length and all the * length.
+            // 3. The rest of the desired length.
+            // +-----------------+
+            // |  *  |  A  |  *  |
+            // +-----------------+
+            // | exl |     | exl |
+            // |< desired >|
+            //       |< desired >|
+
             var more = 0.0;
             foreach (var additional in _additionalConventions)
             {
@@ -349,6 +368,13 @@ namespace Avalonia.Controls.Utils
             return 150;
         }
 
+        /// <summary>
+        /// This method implement the last procedure (M7/7) of measure.
+        /// It expand all the * length to the fixed length according to the <paramref name="constraint"/>.
+        /// </summary>
+        /// <param name="conventions">All the conventions that have almost been fixed except the rest *.</param>
+        /// <param name="constraint">The container length.</param>
+        /// <returns>The final pixel length list.</returns>
         [Pure]
         private static List<double> ExpandStars(IEnumerable<LengthConvention> conventions, double constraint)
         {
@@ -403,7 +429,14 @@ namespace Avalonia.Controls.Utils
             return result;
         }
 
-        private static void Clip(IList<double> lengthList, double constraint)
+        /// <summary>
+        /// If the container length is not infinity. It may be not enough to contain all the columns/rows.
+        /// We should clip the columns/rows that have been out of the container bounds.
+        /// Note: This method may change the items value of <paramref name="lengthList"/>.
+        /// </summary>
+        /// <param name="lengthList">All the column width list or the row height list with fixed pixel length.</param>
+        /// <param name="constraint">the container length. It can be positive infinity.</param>
+        private static void Clip([NotNull] IList<double> lengthList, double constraint)
         {
             if (double.IsInfinity(constraint))
             {
@@ -425,8 +458,16 @@ namespace Avalonia.Controls.Utils
             }
         }
 
+        /// <summary>
+        /// Contains the convention of each column/row.
+        /// This is mostly the same as <see cref="RowDefinition"/> or <see cref="ColumnDefinition"/>.
+        /// We use this because we can treat the column and the row the same.
+        /// </summary>
         internal class LengthConvention : ICloneable
         {
+            /// <summary>
+            /// Initialize a new instance of <see cref="LengthConvention"/>.
+            /// </summary>
             public LengthConvention(GridLength length, double minLength, double maxLength)
             {
                 Length = length;
@@ -438,10 +479,31 @@ namespace Avalonia.Controls.Utils
                 }
             }
 
+            /// <summary>
+            /// Gets the <see cref="GridLength"/> of a column or a row.
+            /// </summary>
             internal GridLength Length { get; private set; }
+
+            /// <summary>
+            /// Gets the minimum convention for a column or a row.
+            /// </summary>
             internal double MinLength { get; }
+
+            /// <summary>
+            /// Gets the maximum convention for a column or a row.
+            /// </summary>
             internal double MaxLength { get; }
 
+            /// <summary>
+            /// Fix the <see cref="LengthConvention"/>. If all columns/rows are fixed,
+            /// we can get the double pixel list of all columns/row.
+            /// </summary>
+            /// <param name="pixel">
+            /// The pixel length that should be used to fix the convention.
+            /// </param>
+            /// <exception cref="InvalidOperationException">
+            /// If the convention is pixel length, this exception will throw.
+            /// </exception>
             public void Fix(double pixel)
             {
                 if (_isFixed)
@@ -453,29 +515,64 @@ namespace Avalonia.Controls.Utils
                 _isFixed = true;
             }
 
+            /// <summary>
+            /// Gets a value that indicates whether this convention is fixed.
+            /// </summary>
             private bool _isFixed;
 
+            /// <inheritdoc />
             object ICloneable.Clone() => Clone();
 
+            /// <summary>
+            /// Get a deep copy of this convention list.
+            /// We need this because we want to store some intermediate states.
+            /// </summary>
             internal LengthConvention Clone() => new LengthConvention(Length, MinLength, MaxLength);
         }
 
+        /// <summary>
+        /// Contains the convention that comes from the grid children.
+        /// Some child span multiple columns or rows, so even a simple column/row can have multiple conventions.
+        /// </summary>
         internal struct AdditionalLengthConvention
         {
-            public int Index { get; }
-            public int Span { get; }
-            public double Min { get; }
-
+            /// <summary>
+            /// Initialize a new instance of <see cref="AdditionalLengthConvention"/>.
+            /// </summary>
             public AdditionalLengthConvention(int index, int span, double min)
             {
                 Index = index;
                 Span = span;
                 Min = min;
             }
+
+            /// <summary>
+            /// Gets the start index of this additional convention.
+            /// </summary>
+            public int Index { get; }
+
+            /// <summary>
+            /// Gets the span of this additional convention.
+            /// </summary>
+            public int Span { get; }
+
+            /// <summary>
+            /// Gets the minimum length of this additional convention.
+            /// This value is usually provided by the child's desired length.
+            /// </summary>
+            public double Min { get; }
         }
 
+        /// <summary>
+        /// Stores the result of the measuring procedure.
+        /// This result can be used to measure children and assign the desired size.
+        /// Passing this result to <see cref="Arrange"/> can reduce calculation.
+        /// </summary>
         internal class MeasureResult
         {
+            /// <summary>
+            /// Initialize a new instance of <see cref="MeasureResult"/>.
+            /// </summary>
             internal MeasureResult(double containerLength, double desiredLength, double greedyDesiredLength,
                 IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<double> expandedConventions)
             {
@@ -486,20 +583,52 @@ namespace Avalonia.Controls.Utils
                 LengthList = expandedConventions;
             }
 
+            /// <summary>
+            /// Gets the container length for this result.
+            /// This property exists because a measure result is related to it.
+            /// </summary>
             public double ContainerLength { get; }
+
+            /// <summary>
+            /// Gets the desired length of this result.
+            /// Just return this value as the desired size in <see cref="Layoutable.MeasureOverride"/>.
+            /// </summary>
             public double DesiredLength { get; }
+
+            /// <summary>
+            /// Gets the desired length if the container has infinite length.
+            /// </summary>
             public double GreedyDesiredLength { get; }
+
+            /// <summary>
+            /// Contains the column/row calculation intermediate result.
+            /// This value is used by <see cref="Arrange"/> for reducing repeat calculation.
+            /// </summary>
             public IReadOnlyList<LengthConvention> LeanLengthList { get; }
+
+            /// <summary>
+            /// Gets the length list for each column/row.
+            /// </summary>
             public IReadOnlyList<double> LengthList { get; }
         }
 
+        /// <summary>
+        /// Stores the result of the measuring procedure.
+        /// This result can be used to arrange children and assign the render size.
+        /// </summary>
         internal class ArrangeResult
         {
-            public ArrangeResult(IReadOnlyList<double> lengthList)
+            /// <summary>
+            /// Initialize a new instance of <see cref="ArrangeResult"/>.
+            /// </summary>
+            internal ArrangeResult(IReadOnlyList<double> lengthList)
             {
                 LengthList = lengthList;
             }
 
+            /// <summary>
+            /// Gets the length list for each column/row.
+            /// </summary>
             public IReadOnlyList<double> LengthList { get; }
         }
     }
