@@ -26,7 +26,7 @@ namespace Avalonia.Skia
             Text = Text.Replace((char)0, (char)0x200B);
 
             var skiaTypeface = TypefaceCache.GetTypeface(
-                typeface.FontFamily.Name ?? "monospace",
+                typeface.FontFamily,
                 typeface.Style,
                 typeface.Weight);
 
@@ -37,7 +37,7 @@ namespace Avalonia.Skia
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
             _paint.IsAntialias = true;            
-            _paint.LcdRenderText = true;            
+            _paint.LcdRenderText = true;
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
             _paint.TextSize = (float)typeface.FontSize;

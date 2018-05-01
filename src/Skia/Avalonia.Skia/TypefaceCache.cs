@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -15,9 +16,9 @@ namespace Avalonia.Skia
             public readonly SKFontStyleSlant Slant;
             public readonly SKFontStyleWeight Weight;
 
-            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant  slant)
+            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant slant)
             {
-                Slant  = slant;
+                Slant = slant;
                 Weight = weight;
             }
 
@@ -44,29 +45,31 @@ namespace Avalonia.Skia
             // Equals and GetHashCode ommitted
         }
 
-        unsafe static SKTypeface GetTypeface(string name, FontKey key)
+        unsafe static SKTypeface GetTypeface(FontFamily fontFamily, FontKey key)
         {
-            if (name == null)
+            var familyKey = fontFamily.Key.ToString();
+
+            if (!Cache.TryGetValue(familyKey, out var entry))
             {
-                name = "Arial";
+                Cache[familyKey] = entry = new Dictionary<FontKey, SKTypeface>();
             }
 
-            Dictionary<FontKey, SKTypeface> entry;
-
-            if (!Cache.TryGetValue(name, out entry))
+            if (!entry.TryGetValue(key, out var typeface))
             {
-                Cache[name] = entry = new Dictionary<FontKey, SKTypeface>();
-            }
-
-            SKTypeface typeface = null;
-
-            if (!entry.TryGetValue(key, out typeface))
-            {
-                typeface = SKTypeface.FromFamilyName(name, key.Weight, SKFontStyleWidth.Normal, key.Slant);
-
-                if (typeface == null)
+                if (fontFamily.BaseUri != null)
                 {
-                    typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
+                    var stream = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(fontFamily.BaseUri);
+
+                    typeface = SKTypeface.FromStream(stream);
+                }
+                else
+                {
+                    typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
+
+                    if (typeface == null)
+                    {
+                        typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
+                    }
                 }
 
                 entry[key] = typeface;
@@ -75,11 +78,11 @@ namespace Avalonia.Skia
             return typeface;
         }
 
-        public static SKTypeface GetTypeface(string name, FontStyle style, FontWeight weight)
+        public static SKTypeface GetTypeface(FontFamily fontFamily, FontStyle style, FontWeight weight)
         {
             SKFontStyleSlant skStyle = SKFontStyleSlant.Upright;
 
-            switch(style)
+            switch (style)
             {
                 case FontStyle.Italic:
                     skStyle = SKFontStyleSlant.Italic;
@@ -90,7 +93,7 @@ namespace Avalonia.Skia
                     break;
             }
 
-            return GetTypeface(name, new FontKey((SKFontStyleWeight)weight, skStyle));
+            return GetTypeface(fontFamily, new FontKey((SKFontStyleWeight)weight, skStyle));
         }
 
     }
