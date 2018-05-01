@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Utils
                 shouldTestStarMin = @fixed;
             }
 
-            // M3/7. Fix all the Auto lengths that the children on its column/row have a zero or non-zero length.
+            // M4/7. Fix all the Auto lengths that the children on its column/row have a zero or non-zero length.
             //
             // +-----------------------------------------------------------+
             // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
@@ -307,19 +307,19 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// 
+        /// Use the <see cref="_additionalConventions"/> to calculate the fixed length of the Auto column/row.
         /// </summary>
-        /// <param name="conventions"></param>
-        /// <param name="index"></param>
-        /// <param name="starUnitLength"></param>
-        /// <returns></returns>
+        /// <param name="conventions">The convention list that has same length fixed.</param>
+        /// <param name="index">The column/row index that should be fixed.</param>
+        /// <param name="starUnitLength">The unit * length for the current rest length.</param>
+        /// <returns>The final length of the Auto length column/row.</returns>
         [Pure]
         private double ApplyAdditionalConventionsForAuto(IReadOnlyList<LengthConvention> conventions,
             int index, double starUnitLength)
         {
             // 1. Calculate all the * length with starUnitLength.
             // 2. Exclude all the fixed length and all the * length.
-            // 3. The rest of the desired length.
+            // 3. Compare the rest of the desired length and the convention.
             // +-----------------+
             // |  *  |  A  |  *  |
             // +-----------------+
@@ -365,7 +365,7 @@ namespace Avalonia.Controls.Utils
 
             // TODO Calculate the min length of all the desired size.
 
-            return 150;
+            return 0;
         }
 
         /// <summary>
