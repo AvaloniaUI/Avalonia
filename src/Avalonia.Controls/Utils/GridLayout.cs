@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Utils
         /// <returns>
         /// The measured result that containing the desired size and all the column/row length.
         /// </returns>
-        [NotNull]
+        [NotNull, Pure]
         internal MeasureResult Measure(double containerLength)
         {
             // Prepare all the variables that this method needs to use.
@@ -290,7 +290,7 @@ namespace Avalonia.Controls.Utils
         /// <returns>
         /// The measured result that containing the desired size and all the column/row length.
         /// </returns>
-        [NotNull]
+        [NotNull, Pure]
         public ArrangeResult Arrange(double finalLength, [CanBeNull] MeasureResult measure)
         {
             measure = measure ?? Measure(finalLength);
