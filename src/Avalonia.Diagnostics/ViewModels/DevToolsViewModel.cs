@@ -86,7 +86,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateFocusedControl()
         {
-            _focusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
+            FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
         }
     }
 }

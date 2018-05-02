@@ -10,6 +10,7 @@ namespace ControlCatalog
 {
     internal class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args

@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Portable.Xaml;
@@ -378,8 +379,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = AvaloniaXamlLoader.Parse<UserControl>(xaml);
             var bk = control.Background;
-            Assert.IsType<SolidColorBrush>(bk);
-            Assert.Equal(Colors.White, (bk as SolidColorBrush).Color);
+            Assert.IsType<ImmutableSolidColorBrush>(bk);
+            Assert.Equal(Colors.White, (bk as ISolidColorBrush).Color);
         }
 
         [Fact]
@@ -515,7 +516,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.NotNull(brush);
 
-            Assert.Equal(Colors.White, ((SolidColorBrush)brush).Color);
+            Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
             style.TryGetResource("Double", out var d);
 
