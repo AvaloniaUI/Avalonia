@@ -41,12 +41,12 @@ namespace Avalonia.Rendering
         {
             add
             {
+                _tick += value;
+
                 if (_subscriberCount++ == 0)
                 {
                     Start();
                 }
-
-                _tick += value;
             }
 
             remove

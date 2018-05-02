@@ -2,15 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#endif
 
 namespace Avalonia.Win32
 {
