@@ -51,12 +51,8 @@ namespace Avalonia.Direct2D1.Media
                     (float)typeface.FontSize);
             }
 
-            textFormat.TextAlignment = DWrite.TextAlignment.Center;
-            textFormat.ParagraphAlignment = DWrite.ParagraphAlignment.Center;
-
-            textFormat.WordWrapping = wrapping == TextWrapping.Wrap ?
-                DWrite.WordWrapping.Wrap :
-                DWrite.WordWrapping.NoWrap;
+            textFormat.WordWrapping =
+                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
             TextLayout = new DWrite.TextLayout(factory, Text ?? string.Empty, textFormat, (float)constraint.Width,
                 (float)constraint.Height)
