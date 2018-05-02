@@ -7,10 +7,10 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Gap="16">
-      <TreeView Items="{Binding}" Width="250" Height="350">
+      <TreeView Items="{Binding Items}" SelectedItem="{Binding SelectedItem}" Width="250" Height="350">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
-            <TextBlock Text="{Binding Header}"/>
+            <TextBlock Text="{Binding Name}"/>
           </TreeDataTemplate>
         </TreeView.ItemTemplate>
       </TreeView>
