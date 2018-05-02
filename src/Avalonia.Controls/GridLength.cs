@@ -180,9 +180,8 @@ namespace Avalonia.Controls
         /// Parses a string to return a <see cref="GridLength"/>.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="GridLength"/>.</returns>
-        public static GridLength Parse(string s, CultureInfo culture)
+        public static GridLength Parse(string s)
         {
             s = s.ToUpperInvariant();
 
@@ -193,12 +192,12 @@ namespace Avalonia.Controls
             else if (s.EndsWith("*"))
             {
                 var valueString = s.Substring(0, s.Length - 1).Trim();
-                var value = valueString.Length > 0 ? double.Parse(valueString, culture) : 1;
+                var value = valueString.Length > 0 ? double.Parse(valueString, CultureInfo.InvariantCulture) : 1;
                 return new GridLength(value, GridUnitType.Star);
             }
             else
             {
-                var value = double.Parse(s, culture);
+                var value = double.Parse(s, CultureInfo.InvariantCulture);
                 return new GridLength(value, GridUnitType.Pixel);
             }
         }
@@ -209,13 +208,13 @@ namespace Avalonia.Controls
         /// <param name="s">The string.</param>
         /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="GridLength"/>.</returns>
-        public static IEnumerable<GridLength> ParseLengths(string s, CultureInfo culture)
+        public static IEnumerable<GridLength> ParseLengths(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture))
             {
                 while (tokenizer.TryReadString(out var item))
                 {
-                    yield return Parse(item, culture);
+                    yield return Parse(item);
                 }
             }
         }

@@ -316,9 +316,9 @@ namespace Avalonia
         /// <param name="s">The string.</param>
         /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Matrix"/>.</returns>
-        public static Matrix Parse(string s, CultureInfo culture)
+        public static Matrix Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Matrix"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
                     tokenizer.ReadDouble(),
