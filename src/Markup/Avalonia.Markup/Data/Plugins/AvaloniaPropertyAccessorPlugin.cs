@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Data;
 
@@ -15,9 +16,9 @@ namespace Avalonia.Markup.Data.Plugins
         /// <inheritdoc/>
         public bool Match(object obj, string propertyName)
         {
-            if (obj is AvaloniaObject a)
+            if (obj is AvaloniaObject o)
             {
-                return AvaloniaPropertyRegistry.Instance.FindRegistered(a, propertyName) != null;
+                return LookupProperty(o, propertyName) != null;
             }
 
             return false;
@@ -39,7 +40,7 @@ namespace Avalonia.Markup.Data.Plugins
 
             var instance = reference.Target;
             var o = (AvaloniaObject)instance;
-            var p = AvaloniaPropertyRegistry.Instance.FindRegistered(o, propertyName);
+            var p = LookupProperty(o, propertyName);
 
             if (p != null)
             {
@@ -55,6 +56,54 @@ namespace Avalonia.Markup.Data.Plugins
             {
                 return null;
             }
+        }
+
+        private static AvaloniaProperty LookupProperty(AvaloniaObject o, string propertyName)
+        {
+            if (!propertyName.Contains("."))
+            {
+                return AvaloniaPropertyRegistry.Instance.FindRegistered(o, propertyName);
+            }
+            else
+            {
+                var split = propertyName.Split('.');
+
+                if (split.Length == 2)
+                {
+                    // HACK: We need a way to resolve types here using something like IXamlTypeResolver.
+                    // We don't currently have that so we have to make our best guess.
+                    var type = split[0];
+                    var name = split[1];
+                    var registry = AvaloniaPropertyRegistry.Instance;
+                    var registered = registry.GetRegisteredAttached(o.GetType())
+                        .Concat(registry.GetRegistered(o.GetType()));
+
+                    foreach (var p in registered)
+                    {
+                        if (p.Name == name && IsOfType(p.OwnerType, type))
+                        {
+                            return p;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsOfType(Type type, string typeName)
+        {
+            while (type != null)
+            {
+                if (type.Name == typeName)
+                {
+                    return true;
+                }
+
+                type = type.BaseType;
+            }
+
+            return false;
         }
 
         private class Accessor : PropertyAccessorBase
