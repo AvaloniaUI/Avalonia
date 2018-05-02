@@ -206,7 +206,6 @@ namespace Avalonia.Controls
         /// Parses a string to return a collection of <see cref="GridLength"/>s.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="GridLength"/>.</returns>
         public static IEnumerable<GridLength> ParseLengths(string s)
         {
