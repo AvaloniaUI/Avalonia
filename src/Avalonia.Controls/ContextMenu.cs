@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         {
             ContextMenuProperty.Changed.Subscribe(ContextMenuChanged);
 
-            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick, handledEventsToo: true);            
+            MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick, handledEventsToo: true);
         }
 
         /// <summary>
@@ -75,13 +75,14 @@ namespace Avalonia.Controls
         {
             if (control != null)
             {
-                if(_popup == null)
+                if (_popup == null)
                 {
                     _popup = new Popup()
                     {
                         PlacementMode = PlacementMode.Pointer,
                         PlacementTarget = control,
-                        StaysOpen = false                                         
+                        StaysOpen = false,
+                        ObeyScreenEdges = true
                     };
 
                     _popup.Closed += PopupClosed;
