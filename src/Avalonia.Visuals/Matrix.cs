@@ -314,7 +314,6 @@ namespace Avalonia
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {

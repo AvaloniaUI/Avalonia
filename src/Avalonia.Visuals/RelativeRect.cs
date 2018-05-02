@@ -167,7 +167,6 @@ namespace Avalonia
         /// Parses a <see cref="RelativeRect"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
         public static RelativeRect Parse(string s)
         {
