@@ -53,10 +53,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 }
             }
 
-            // First look for non-attached property on the type and then look for an attached property.
-            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, s) ??
-                           AvaloniaPropertyRegistry.Instance.GetAttached(type)
-                           .FirstOrDefault(x => x.Name == propertyName);
+            AvaloniaProperty property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, propertyName);
 
             if (property == null)
             {
