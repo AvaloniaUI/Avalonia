@@ -1,0 +1,5 @@
+<Window xmlns="https://github.com/avaloniaui" Title="Avalonia Window">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Text="This is a child window." />
+  </StackPanel>
+</Window>
