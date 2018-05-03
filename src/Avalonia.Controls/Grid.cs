@@ -340,6 +340,8 @@ namespace Avalonia.Controls
         {
             var columnCount = ColumnDefinitions.Count;
             var rowCount = RowDefinitions.Count;
+            columnCount = columnCount == 0 ? 1 : columnCount;
+            rowCount = rowCount == 0 ? 1 : rowCount;
             var safeColumns = Children.OfType<Control>().ToDictionary(child => child,
                 child => GetSafeSpan(columnCount, GetColumn(child), GetColumnSpan(child)));
             var safeRows = Children.OfType<Control>().ToDictionary(child => child,
@@ -360,14 +362,26 @@ namespace Avalonia.Controls
         {
             var index = userIndex;
             var span = userSpan;
-            if (userIndex > length)
+
+            if (index < 0)
             {
-                index = length;
+                span = index + span;
+                index = 0;
+            }
+
+            if (span <= 0)
+            {
+                span = 1;
+            }
+
+            if (userIndex >= length)
+            {
+                index = length - 1;
                 span = 1;
             }
             else if (userIndex + userSpan > length)
             {
-                span = length - userIndex + 1;
+                span = length - userIndex;
             }
 
             return (index, span);
