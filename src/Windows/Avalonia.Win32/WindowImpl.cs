@@ -28,8 +28,7 @@ namespace Avalonia.Win32
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private IInputRoot _owner;
-        private IWindowImpl _parent;
+        private IInputRoot _owner;        
         private bool _trackingMouse;
         private bool _decorated = true;
         private double _scaling = 1;
@@ -399,7 +398,7 @@ namespace Avalonia.Win32
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
-                _parent == null ? IntPtr.Zero : _parent.Handle.Handle,
+                IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
@@ -821,16 +820,7 @@ namespace Avalonia.Win32
 
         public void SetOwner(IWindowImpl owner)
         {
-            _parent = owner;
-
-            var flags = UnmanagedMethods.GetWindowLong(_hwnd, -16);
-
-            flags &= ~((uint)UnmanagedMethods.WindowStyles.WS_POPUP);
-
-            flags |= (uint)UnmanagedMethods.WindowStyles.WS_CHILD;
-
-            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint)flags);
-            UnmanagedMethods.SetParent(_hwnd, owner.Handle.Handle);
+            UnmanagedMethods.SetWindowLong(_hwnd, -8, (uint)owner.Handle.Handle);
         }
     }
 }
