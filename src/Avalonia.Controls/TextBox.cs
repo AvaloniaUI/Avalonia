@@ -32,7 +32,7 @@ namespace Avalonia.Controls
                 (o, v) => o.CaretIndex = v);
 
         public static readonly StyledProperty<char> PasswordCharProperty =
-            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));        
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
@@ -84,7 +84,7 @@ namespace Avalonia.Controls
 
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
         }
-        
+
         private string _text;
         private int _caretIndex;
         private int _selectionStart;
@@ -93,7 +93,7 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
-        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
+        private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
         static TextBox()
         {
@@ -267,7 +267,7 @@ namespace Avalonia.Controls
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
 
-            if(IsFocused)
+            if (IsFocused)
             {
                 _presenter.ShowCaret();
             }
@@ -608,7 +608,7 @@ namespace Avalonia.Controls
                 DataValidationErrors.SetError(this, status.Error);
             }
         }
-        
+
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
@@ -862,9 +862,9 @@ namespace Avalonia.Controls
         private void SetTextInternal(string value)
         {
             try
-            {                
+            {
                 _ignoreTextChanges = true;
-                SetAndRaise(TextProperty, ref _text, value);                
+                SetAndRaise(TextProperty, ref _text, value);
             }
             finally
             {
