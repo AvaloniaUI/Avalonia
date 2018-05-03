@@ -167,11 +167,10 @@ namespace Avalonia
         /// Parses a <see cref="RelativeRect"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The parsed <see cref="RelativeRect"/>.</returns>
-        public static RelativeRect Parse(string s, CultureInfo culture)
+        public static RelativeRect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid RelativeRect"))
+            using (var tokenizer = new StringTokenizer(s, exceptionMessage: "Invalid RelativeRect"))
             {
                 var x = tokenizer.ReadString();
                 var y = tokenizer.ReadString();
@@ -202,10 +201,10 @@ namespace Avalonia
                 }
 
                 return new RelativeRect(
-                    double.Parse(x, culture) * scale,
-                    double.Parse(y, culture) * scale,
-                    double.Parse(width, culture) * scale,
-                    double.Parse(height, culture) * scale,
+                    double.Parse(x, CultureInfo.InvariantCulture) * scale,
+                    double.Parse(y, CultureInfo.InvariantCulture) * scale,
+                    double.Parse(width, CultureInfo.InvariantCulture) * scale,
+                    double.Parse(height, CultureInfo.InvariantCulture) * scale,
                     unit);
             }
         }
