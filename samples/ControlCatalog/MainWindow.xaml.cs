@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using System;
 
 namespace ControlCatalog
@@ -13,6 +14,20 @@ namespace ControlCatalog
             this.AttachDevTools();
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+
+            var window = new MainWindow(false);
+
+            window.Owner = this;
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                window.ShowDialog();
+            });
+        }
+
+        public MainWindow (bool childWindow)
+        {
+            this.InitializeComponent();
         }
 
         private void InitializeComponent()

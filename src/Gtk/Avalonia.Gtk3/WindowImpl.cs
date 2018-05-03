@@ -61,7 +61,11 @@ namespace Avalonia.Gtk3
         }
 
         public void ShowTaskbarIcon(bool value) => Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
-        
+
+        public void SetOwner(IWindowImpl owner)
+        {
+            throw new NotImplementedException();
+        }
 
         class EmptyDisposable : IDisposable
         {

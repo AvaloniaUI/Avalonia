@@ -112,5 +112,10 @@ namespace Avalonia.MonoMac
             NSApplication.SharedApplication.RunModalForWindow(Window);
             return new ModalDisposable(this);
         }
+
+        public void SetOwner(IWindowImpl owner)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
