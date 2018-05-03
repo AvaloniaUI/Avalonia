@@ -28,7 +28,7 @@ namespace Avalonia.Win32
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
-        private IInputRoot _owner;        
+        private IInputRoot _owner;
         private bool _trackingMouse;
         private bool _decorated = true;
         private double _scaling = 1;
