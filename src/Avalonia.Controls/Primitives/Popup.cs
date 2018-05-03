@@ -41,6 +41,12 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, PlacementMode>(nameof(PlacementMode), defaultValue: PlacementMode.Bottom);
 
         /// <summary>
+        /// Defines the <see cref="ObeyScreenEdges"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
+
+        /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
         /// </summary>
         public static readonly StyledProperty<double> HorizontalOffsetProperty =
@@ -137,6 +143,16 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the popup positions itself within the nearest screen boundary
+        /// when its opened at a position where it would otherwise overlap the screen edge.
+        /// </summary>
+        public bool ObeyScreenEdges
+        {
+            get => GetValue(ObeyScreenEdgesProperty);
+            set => SetValue(ObeyScreenEdgesProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the Horizontal offset of the popup in relation to the <see cref="PlacementTarget"/>
         /// </summary>
         public double HorizontalOffset
@@ -216,12 +232,12 @@ namespace Avalonia.Controls.Primitives
                 var window = _topLevel as Window;
                 if (window != null)
                 {
-                    window.Deactivated += WindowDeactivated;                  
+                    window.Deactivated += WindowDeactivated;
                 }
                 else
                 {
                     var parentPopuproot = _topLevel as PopupRoot;
-                    if(parentPopuproot != null && parentPopuproot.Parent!=null)
+                    if (parentPopuproot != null && parentPopuproot.Parent != null)
                     {
                         ((Popup)(parentPopuproot.Parent)).Closed += ParentClosed;
                     }
@@ -234,13 +250,18 @@ namespace Avalonia.Controls.Primitives
 
             _popupRoot.Show();
 
+            if (ObeyScreenEdges)
+            {
+                _popupRoot.SnapInsideScreenEdges();
+            }
+
             _ignoreIsOpenChanged = true;
             IsOpen = true;
             _ignoreIsOpenChanged = false;
 
             Opened?.Invoke(this, EventArgs.Empty);
         }
-        
+
         /// <summary>
         /// Closes the popup.
         /// </summary>
@@ -346,8 +367,10 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The popup's position in screen coordinates.</returns>
         protected virtual Point GetPosition()
         {
-            return GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot, 
+            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot,
                 HorizontalOffset, VerticalOffset);
+
+            return result;
         }
 
         internal static Point GetPosition(Control target, PlacementMode placement, PopupRoot popupRoot, double horizontalOffset, double verticalOffset)
@@ -399,8 +422,8 @@ namespace Avalonia.Controls.Primitives
         {
             if (!StaysOpen)
             {
-                if(!IsChildOrThis((IVisual)e.Source))
-                {                     
+                if (!IsChildOrThis((IVisual)e.Source))
+                {
                     Close();
                     e.Handled = true;
                 }
@@ -412,12 +435,12 @@ namespace Avalonia.Controls.Primitives
             IVisual root = child.GetVisualRoot();
             while (root is PopupRoot)
             {
-                if (root == PopupRoot) return true;              
+                if (root == PopupRoot) return true;
                 root = ((PopupRoot)root).Parent.GetVisualRoot();
             }
             return false;
         }
-        
+
         private void WindowDeactivated(object sender, EventArgs e)
         {
             if (!StaysOpen)
