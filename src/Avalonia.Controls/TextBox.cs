@@ -345,7 +345,7 @@ namespace Avalonia.Controls
         private async void Copy()
         {
             await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(GetSelection());            
+                .SetTextAsync(GetSelection());
         }
 
         private async void Paste()
