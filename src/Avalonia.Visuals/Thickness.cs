@@ -165,25 +165,27 @@ namespace Avalonia
         /// Parses a <see cref="Thickness"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Thickness"/>.</returns>
-        public static Thickness Parse(string s, CultureInfo culture)
+        public static Thickness Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Thickness"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Thickness"))
             {
-                var a = tokenizer.ReadDouble();
-
-                if (tokenizer.TryReadDouble(out var b))
+                if(tokenizer.TryReadDouble(out var a))
                 {
-                    if (tokenizer.TryReadDouble(out var c))
+                    if (tokenizer.TryReadDouble(out var b))
                     {
-                        return new Thickness(a, b, c, tokenizer.ReadDouble());
+                        if (tokenizer.TryReadDouble(out var c))
+                        {
+                            return new Thickness(a, b, c, tokenizer.ReadDouble());
+                        }
+
+                        return new Thickness(a, b);
                     }
 
-                    return new Thickness(a, b);
+                    return new Thickness(a);
                 }
-                
-                return new Thickness(a);
+
+                throw new FormatException("Invalid Thickness.");
             }
         }
 
