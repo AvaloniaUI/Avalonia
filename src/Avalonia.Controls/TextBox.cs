@@ -126,7 +126,7 @@ namespace Avalonia.Controls
 
             this.GetObservable(TextProperty).Subscribe(text =>
             {
-                if (PasswordChar != default(char))
+                if (IsPasswordBox)
                 {
                     DisplayText = new string(PasswordChar, text.Length);
                 }
@@ -345,7 +345,7 @@ namespace Avalonia.Controls
         private async void Copy()
         {
             await ((IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)))
-                .SetTextAsync(GetSelection());
+                .SetTextAsync(GetSelection());            
         }
 
         private async void Paste()
@@ -379,7 +379,10 @@ namespace Avalonia.Controls
                 case Key.C:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                        }
                         handled = true;
                     }
                     break;
@@ -387,8 +390,11 @@ namespace Avalonia.Controls
                 case Key.X:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
-                        DeleteSelection();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                            DeleteSelection();
+                        }
                         handled = true;
                     }
                     break;
@@ -885,6 +891,8 @@ namespace Avalonia.Controls
             MoveHorizontal(1, modifiers);
             SelectionEnd = CaretIndex;
         }
+
+        private bool IsPasswordBox => PasswordChar != default(char);
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
