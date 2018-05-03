@@ -38,12 +38,12 @@
                              Text="{TemplateBinding Watermark}"
                              IsVisible="{TemplateBinding Path=Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
-                                 Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 Text="{TemplateBinding DisplayText, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
                                  SelectionStart="{TemplateBinding SelectionStart}"
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
-                                 TextWrapping="{TemplateBinding TextWrapping}"/>
+                                 TextWrapping="{TemplateBinding TextWrapping}"/>                                   
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>

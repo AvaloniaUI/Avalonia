@@ -15,9 +15,10 @@
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
 
-        <PasswordBox Width="200"
+        <TextBox Width="200"
                  Watermark="Password Box"
                  UseFloatingWatermark="True"
+                 PasswordChar="*"
                  Text="Password" />
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />

@@ -30,7 +30,10 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
-        
+
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));        
+
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
@@ -52,6 +55,9 @@ namespace Avalonia.Controls
                 (o, v) => o.Text = v,
                 defaultBindingMode: BindingMode.TwoWay,
                 enableDataValidation: true);
+
+        public static readonly StyledProperty<string> DisplayTextProperty =
+            AvaloniaProperty.Register<TextBox, string>(nameof(DisplayText));
 
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
@@ -78,7 +84,7 @@ namespace Avalonia.Controls
 
             public bool Equals(UndoRedoState other) => ReferenceEquals(Text, other.Text) || Equals(Text, other.Text);
         }
-
+        
         private string _text;
         private int _caretIndex;
         private int _selectionStart;
@@ -117,6 +123,18 @@ namespace Avalonia.Controls
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
+
+            this.GetObservable(TextProperty).Subscribe(text =>
+            {
+                if (PasswordChar != default(char))
+                {
+                    DisplayText = new string(PasswordChar, text.Length);
+                }
+                else
+                {
+                    DisplayText = Text;
+                }
+            });
         }
 
         public bool AcceptsReturn
@@ -147,7 +165,13 @@ namespace Avalonia.Controls
                     _undoRedoHelper.UpdateLastState();
             }
         }
-        
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
+        }
+
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
@@ -206,6 +230,12 @@ namespace Avalonia.Controls
                     }
                 }
             }
+        }
+
+        public string DisplayText
+        {
+            get => GetValue(DisplayTextProperty);
+            set => SetValue(DisplayTextProperty, value);
         }
 
         public TextAlignment TextAlignment
@@ -832,9 +862,9 @@ namespace Avalonia.Controls
         private void SetTextInternal(string value)
         {
             try
-            {
+            {                
                 _ignoreTextChanges = true;
-                SetAndRaise(TextProperty, ref _text, value);
+                SetAndRaise(TextProperty, ref _text, value);                
             }
             finally
             {
