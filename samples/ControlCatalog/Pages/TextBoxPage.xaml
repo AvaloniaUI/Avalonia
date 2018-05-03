@@ -14,9 +14,14 @@
                  Watermark="Floating Watermark" 
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+        <PasswordBox Width="200"
+                 Watermark="Password Box"
+                 UseFloatingWatermark="True"
+                 Text="Password" />
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
-        <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
+        <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />        
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Gap="8">
