@@ -337,8 +337,8 @@ namespace Avalonia.Controls.Utils
             var more = 0.0;
             foreach (var additional in _additionalConventions)
             {
-                // If the additional conventions contains the Auto column/row, try to determine the Auto column/row length.
-                if (additional.Index <= index && index < additional.Index + additional.Span)
+                // If the additional convention's last column/row contains the Auto column/row, try to determine the Auto column/row length.
+                if (index == additional.Index + additional.Span - 1)
                 {
                     var min = Enumerable.Range(additional.Index, additional.Span)
                         .Select(x =>
