@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Serilog;
 
@@ -28,7 +29,7 @@ namespace ControlCatalog
         {
             AvaloniaLocator.CurrentMutable
                 .GetService<IAssetLoader>()
-                .SetDefaultAssembly(typeof(App).Assembly);
+                .SetDefaultAssembly(typeof(App).Assembly);           
         }
     }
 }

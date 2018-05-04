@@ -10,14 +10,14 @@
       <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16">
         <TextBlock>Border</TextBlock>
       </Border>
-      <Border Background="{DynamicResource ThemeAccentBrush2}" 
-              BorderBrush="{DynamicResource ThemeAccentBrush}" 
-              BorderThickness="4" 
+      <Border Background="{DynamicResource ThemeAccentBrush2}"
+              BorderBrush="{DynamicResource ThemeAccentBrush}"
+              BorderThickness="4"
               Padding="16">
         <TextBlock>Border and Background</TextBlock>
       </Border>
       <Border BorderBrush="{DynamicResource ThemeAccentBrush}"
-              BorderThickness="4" 
+              BorderThickness="4"
               CornerRadius="8"
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
@@ -27,6 +27,6 @@
               Padding="16">
         <TextBlock>Rounded Corners</TextBlock>
       </Border>
-    </StackPanel>    
+    </StackPanel>
   </StackPanel>
 </UserControl>
