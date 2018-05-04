@@ -224,6 +224,9 @@ namespace Avalonia.Controls
 
             // Situation 2/2:
             // If the grid defines some columns or rows.
+            // Debug Tip:
+            //     - GridLayout doesn't hold any states, so you can drag the debugger execution
+            //       arrow back to any statements and re-run them without any side-effect.
 
             var measureCache = new Dictionary<Control, Size>();
             var (safeColumns, safeRows) = GetSafeColumnRows();
@@ -293,6 +296,9 @@ namespace Avalonia.Controls
 
             // Situation 2/2:
             // If the grid defines some columns or rows.
+            // Debug Tip:
+            //     - GridLayout doesn't hold any states, so you can drag the debugger execution
+            //       arrow back to any statements and re-run them without any side-effect.
 
             var (safeColumns, safeRows) = GetSafeColumnRows();
             var columnLayout = new GridLayout(ColumnDefinitions);

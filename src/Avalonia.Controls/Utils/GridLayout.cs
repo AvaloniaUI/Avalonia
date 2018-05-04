@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Layout;
@@ -478,6 +479,7 @@ namespace Avalonia.Controls.Utils
         /// This is mostly the same as <see cref="RowDefinition"/> or <see cref="ColumnDefinition"/>.
         /// We use this because we can treat the column and the row the same.
         /// </summary>
+        [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
         internal class LengthConvention : ICloneable
         {
             /// <summary>
@@ -545,6 +547,12 @@ namespace Avalonia.Controls.Utils
             /// </summary>
             private bool _isFixed;
 
+            /// <summary>
+            /// Helps the debugger to display the intermediate column/row calculation result.
+            /// </summary>
+            private string DebuggerDisplay =>
+                $"{(_isFixed ? Length.Value.ToString(CultureInfo.InvariantCulture) : (Length.GridUnitType == GridUnitType.Auto ? "Auto" : $"{Length.Value}*"))}, ∈[{MinLength}, {MaxLength}]";
+
             /// <inheritdoc />
             object ICloneable.Clone() => Clone();
 
@@ -559,6 +567,7 @@ namespace Avalonia.Controls.Utils
         /// Contains the convention that comes from the grid children.
         /// Some child span multiple columns or rows, so even a simple column/row can have multiple conventions.
         /// </summary>
+        [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
         internal struct AdditionalLengthConvention
         {
             /// <summary>
@@ -586,6 +595,12 @@ namespace Avalonia.Controls.Utils
             /// This value is usually provided by the child's desired length.
             /// </summary>
             public double Min { get; }
+
+            /// <summary>
+            /// Helps the debugger to display the intermediate column/row calculation result.
+            /// </summary>
+            private string DebuggerDisplay =>
+                $"{{{string.Join(",", Enumerable.Range(Index, Span))}}}, ∈[{Min},∞)";
         }
 
         /// <summary>
