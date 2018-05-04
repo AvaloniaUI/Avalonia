@@ -125,12 +125,12 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
-            var asset = assetLocator.OpenWithAssembly(uri, baseUri);
-            using (var stream = asset.Item2)
+            var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
+            using (var stream = asset.Item1)
             {
                 try
                 {
-                    return Load(stream, asset.Item1, rootInstance, uri);
+                    return Load(stream, asset.Item2, rootInstance, uri);
                 }
                 catch (Exception e)
                 {
@@ -153,7 +153,7 @@ namespace Avalonia.Markup.Xaml
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(string xaml, Assembly localAssembly, object rootInstance = null)
+        public object Load(string xaml, Assembly localAssembly = null, object rootInstance = null)
         {
             Contract.Requires<ArgumentNullException>(xaml != null);
 
@@ -230,7 +230,7 @@ namespace Avalonia.Markup.Xaml
         public static object Parse(string xaml, Assembly localAssembly = null)
             => new AvaloniaXamlLoader().Load(xaml, localAssembly);
 
-        public static T Parse<T>(string xaml, Assembly localAssembly)
+        public static T Parse<T>(string xaml, Assembly localAssembly = null)
             => (T)Parse(xaml, localAssembly);
     }
 }

@@ -44,6 +44,20 @@ namespace Avalonia.Platform
         /// </exception>
         Stream Open(Uri uri, Uri baseUri = null);
 
-        Tuple<Assembly, Stream> OpenWithAssembly(Uri uri, Uri baseUri = null);
+        /// <summary>
+        /// Opens the resource with the requested URI and returns the resource string and the
+        /// assembly containing the resource.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
+        /// <returns>
+        /// The stream containing the resource contents together with the assembly.
+        /// </returns>
+        /// <exception cref="FileNotFoundException">
+        /// The resource was not found.
+        /// </exception>
+        Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null);
     }
 }

@@ -29,7 +29,7 @@
         <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
             <Link>Properties\SharedAssemblyInfo.cs</Link>
         </Compile>
-        <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
+        <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\MatrixTypeConverter.cs" />
         <Compile Include="Converters\RectTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
