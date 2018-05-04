@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest"
-        xmlns:local="clr-namespace:BindingTest;assembly=BindingTest">
+        xmlns:vm="clr-namespace:BindingTest.ViewModels"
+        xmlns:local="clr-namespace:BindingTest">
   <Window.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="18"/>
