@@ -11,26 +11,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         public static AvaloniaXamlObjectWriter Create(
             XamlSchemaContext schemaContext,
-            AvaloniaXamlContext context)
-        {
-            var nameScope = new AvaloniaNameScope { Instance = context?.RootInstance };
-
-            var writerSettings = new XamlObjectWriterSettings()
-            {
-                ExternalNameScope = nameScope,
-                RegisterNamesOnExternalNamescope = true,
-                RootObjectInstance = context?.RootInstance
-            };
-
-            return new AvaloniaXamlObjectWriter(schemaContext,
-                                                writerSettings.WithContext(context),
-                                                nameScope);
-        }
-
-        public static AvaloniaXamlObjectWriter Create(
-            XamlSchemaContext schemaContext,
             AvaloniaXamlContext context,
-            IAmbientProvider parentAmbientProvider)
+            IAmbientProvider parentAmbientProvider = null)
         {
             var nameScope = new AvaloniaNameScope { Instance = context?.RootInstance };
 
@@ -55,7 +37,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             XamlSchemaContext schemaContext,
             XamlObjectWriterSettings settings,
             AvaloniaNameScope nameScope,
-            IAmbientProvider parentAmbientProvider = null)
+            IAmbientProvider parentAmbientProvider)
             : base(schemaContext, settings, parentAmbientProvider)
         {
             _nameScope = nameScope;
