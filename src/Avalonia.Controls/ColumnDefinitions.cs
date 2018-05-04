@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         public ColumnDefinitions(string s)
             : this()
         {
-            AddRange(GridLength.ParseLengths(s, CultureInfo.InvariantCulture).Select(x => new ColumnDefinition(x)));
+            AddRange(GridLength.ParseLengths(s).Select(x => new ColumnDefinition(x)));
         }
     }
 }

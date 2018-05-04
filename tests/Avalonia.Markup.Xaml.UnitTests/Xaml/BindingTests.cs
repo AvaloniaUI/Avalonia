@@ -215,5 +215,71 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("bar", textBlock.Text);
             }
         }
+
+        [Fact]
+        public void Binding_To_Namespaced_Attached_Property_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock local:AttachedPropertyOwner.Double='{Binding}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.DataContext = 5.6;
+                window.ApplyTemplate();
+
+                Assert.Equal(5.6, AttachedPropertyOwner.GetDouble(textBlock));
+            }
+        }
+
+        [Fact]
+        public void Binding_To_AddOwnered_Attached_Property_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <local:TestControl Double='{Binding}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var testControl = (TestControl)window.Content;
+
+                window.DataContext = 5.6;
+                window.ApplyTemplate();
+
+                Assert.Equal(5.6, testControl.Double);
+            }
+        }
+
+        [Fact]
+        public void Binding_To_Attached_Property_Using_AddOwnered_Type_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock local:TestControl.Double='{Binding}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.DataContext = 5.6;
+                window.ApplyTemplate();
+
+                Assert.Equal(5.6, AttachedPropertyOwner.GetDouble(textBlock));
+            }
+        }
     }
 }

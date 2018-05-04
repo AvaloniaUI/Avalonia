@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Avalonia
 {
     /// <summary>
@@ -13,6 +15,11 @@ namespace Avalonia
         /// Gets a value indicating whether the property is read-only.
         /// </summary>
         bool IsReadOnly { get; }
+
+        /// <summary>
+        /// Gets the class that registered the property.
+        /// </summary>
+        Type Owner { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.

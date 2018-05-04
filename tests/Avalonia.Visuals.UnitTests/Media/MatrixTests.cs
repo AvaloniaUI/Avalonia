@@ -8,7 +8,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parse_Parses()
         {
-            var matrix = Matrix.Parse("1,2,3,-4,5 6", CultureInfo.CurrentCulture);
+            var matrix = Matrix.Parse("1,2,3,-4,5 6");
             var expected = new Matrix(1, 2, 3, -4, 5, 6);
             Assert.Equal(expected, matrix);
         }

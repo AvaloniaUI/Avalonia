@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         public RowDefinitions(string s)
             : this()
         {
-            AddRange(GridLength.ParseLengths(s, CultureInfo.InvariantCulture).Select(x => new RowDefinition(x)));
+            AddRange(GridLength.ParseLengths(s).Select(x => new RowDefinition(x)));
         }
     }
 }
