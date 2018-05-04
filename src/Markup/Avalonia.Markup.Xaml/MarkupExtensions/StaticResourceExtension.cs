@@ -36,13 +36,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             // Look upwards though the ambient context for IResourceProviders which might be able
             // to give us the resource.
-            //
-            // TODO: If we're in a template then only the ambient values since the root of the
-            // template wil be included here. We need some way to get hold of the parent ambient
-            // context and search that. See the test:
-            //
-            //   StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File
-            //
             foreach (var ambientValue in ambientValues)
             {
                 // We override XamlType.CanAssignTo in BindingXamlType so the results we get back

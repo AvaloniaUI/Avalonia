@@ -194,11 +194,12 @@ namespace Avalonia.Markup.Xaml
             return result;
         }
 
-        internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null)
+        internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null, IAmbientProvider parentAmbientProvider = null)
         {
             var writer = AvaloniaXamlObjectWriter.Create(
                                     reader.SchemaContext,
-                                    context);
+                                    context,
+                                    parentAmbientProvider);
 
             XamlServices.Transform(reader, writer);
             writer.ApplyAllDelayedProperties();

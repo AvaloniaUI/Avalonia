@@ -115,6 +115,8 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_title(GtkWindow gtkWindow, Utf8Buffer title);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_resizable(GtkWindow gtkWindow, bool resizable);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_decorated(GtkWindow gtkWindow, bool decorated);
@@ -395,6 +397,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_screen_get_monitor_geometry GdkScreenGetMonitorGeometry;
         public static D.gdk_screen_get_monitor_workarea GdkScreenGetMonitorWorkarea;
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
+        public static D.gtk_window_set_resizable GtkWindowSetResizable;
         public static D.gtk_window_set_skip_taskbar_hint GtkWindowSetSkipTaskbarHint;
         public static D.gtk_window_get_skip_taskbar_hint GtkWindowGetSkipTaskbarHint;
         public static D.gtk_window_set_skip_pager_hint GtkWindowSetSkipPagerHint;
