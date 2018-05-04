@@ -265,7 +265,7 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_close(GtkWindow window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
@@ -424,6 +424,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_set_override_redirect GdkWindowSetOverrideRedirect;
         public static D.gtk_widget_set_size_request GtkWindowSetSizeRequest;
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
+        public static D.gtk_window_set_geometry_hints GtkWindowSetGeometryHints;
         public static D.gtk_window_get_position GtkWindowGetPosition;
         public static D.gtk_window_move GtkWindowMove;
         public static D.gtk_file_chooser_dialog_new GtkFileChooserDialogNew;
@@ -505,6 +506,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.cairo_set_font_size CairoSetFontSize;
         public static D.cairo_move_to CairoMoveTo;
         public static D.cairo_destroy CairoDestroy;
+
         public const int G_TYPE_OBJECT = 80;
     }
 
@@ -742,19 +744,19 @@ namespace Avalonia.Gtk3.Interop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct GdkGeometry
+    public struct GdkGeometry
     {
-        gint min_width;
-        gint min_height;
-        gint max_width;
-        gint max_height;
-        gint base_width;
-        gint base_height;
-        gint width_inc;
-        gint height_inc;
-        gdouble min_aspect;
-        gdouble max_aspect;
-        gint win_gravity;
+        public gint min_width;
+        public gint min_height;
+        public gint max_width;
+        public gint max_height;
+        public gint base_width;
+        public gint base_height;
+        public gint width_inc;
+        public gint height_inc;
+        public gdouble min_aspect;
+        public gdouble max_aspect;
+        public gint win_gravity;
     }
 
     enum GdkWindowHints

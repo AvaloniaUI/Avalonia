@@ -36,6 +36,9 @@ namespace Avalonia.Win32
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
         private OleDropTarget _dropTarget;
+        private Size _minSize;
+        private Size _maxSize;
+
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
 #endif
@@ -101,6 +104,12 @@ namespace Avalonia.Win32
                 UnmanagedMethods.GetClientRect(_hwnd, out rect);
                 return new Size(rect.right, rect.bottom) / Scaling;
             }
+        }
+
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+            _minSize = minSize;
+            _maxSize = maxSize;
         }
 
         public IScreenImpl Screen
@@ -618,7 +627,26 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
-                    
+
+                case UnmanagedMethods.WindowsMessage.WM_GETMINMAXINFO:
+
+                    MINMAXINFO mmi = Marshal.PtrToStructure<UnmanagedMethods.MINMAXINFO>(lParam);
+
+                    if  (_minSize.Width > 0)
+                        mmi.ptMinTrackSize.X = (int)((_minSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+
+                    if (_minSize.Height > 0)
+                        mmi.ptMinTrackSize.Y = (int)((_minSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+
+                    if (!Double.IsInfinity(_maxSize.Width) && _maxSize.Width > 0)
+                        mmi.ptMaxTrackSize.X = (int)((_maxSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
+
+                    if (!Double.IsInfinity(_maxSize.Height) && _maxSize.Height > 0)
+                        mmi.ptMaxTrackSize.Y = (int)((_maxSize.Height * Scaling) + BorderThickness.Top + BorderThickness.Bottom);
+
+                    Marshal.StructureToPtr(mmi, lParam, true);
+                    return IntPtr.Zero;
+
                 case UnmanagedMethods.WindowsMessage.WM_DISPLAYCHANGE:
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
