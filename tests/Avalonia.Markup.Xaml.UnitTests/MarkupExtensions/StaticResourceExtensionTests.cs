@@ -361,9 +361,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (SolidColorBrush)border.Background;
-
-                // To make this work we somehow need to be able to get hold of the parent ambient
-                // context from Portable.Xaml. See TODO in StaticResourceExtension.
+                
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }
