@@ -31,6 +31,7 @@ namespace Avalonia.Win32
         private IInputRoot _owner;
         private bool _trackingMouse;
         private bool _decorated = true;
+        private bool _resizable = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private FramebufferManager _framebuffer;
@@ -77,8 +78,8 @@ namespace Avalonia.Win32
         {
             get
             {
-                var style = UnmanagedMethods.GetWindowLong(_hwnd, -16);
-                var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, -20);
+                var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+                var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
                 var padding = new UnmanagedMethods.RECT();
 
                 if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
@@ -235,13 +236,19 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -16);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
 
-            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+            var systemDecorationStyles = UnmanagedMethods.WindowStyles.WS_OVERLAPPED
+                | UnmanagedMethods.WindowStyles.WS_CAPTION
+                | UnmanagedMethods.WindowStyles.WS_SYSMENU
+                | UnmanagedMethods.WindowStyles.WS_MINIMIZEBOX
+                | UnmanagedMethods.WindowStyles.WS_MAXIMIZEBOX;
+
+            style |= systemDecorationStyles;
 
             if (!value)
             {
-                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+                style ^= systemDecorationStyles;
             }
 
             UnmanagedMethods.RECT windowRect;
@@ -251,7 +258,7 @@ namespace Avalonia.Win32
             Rect newRect;
             var oldThickness = BorderThickness;
 
-            UnmanagedMethods.SetWindowLong(_hwnd, -16, (uint)style);
+            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
 
             if (value)
             {
@@ -798,11 +805,11 @@ namespace Avalonia.Win32
 
         public void ShowTaskbarIcon(bool value)
         {
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, -20);
-            
-            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);   
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
 
-            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;   
+            style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);
+
+            style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
             if (value)
                 style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
             else
@@ -813,9 +820,27 @@ namespace Avalonia.Win32
             {
                 //Toggle to make the styles stick
                 UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
-                UnmanagedMethods.SetWindowLong(_hwnd, -20, (uint)style);
+                UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE, (uint)style);
                 UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
             }
+        }
+
+        public void CanResize(bool value)
+        {
+            if (value == _resizable)
+            {
+                return;
+            }
+
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            
+            if (value)
+                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+            
+            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            _resizable = value;
         }
     }
 }
