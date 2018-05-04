@@ -3,7 +3,6 @@ using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using IDataObject = Avalonia.Input.IDataObject;
-using IOleDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32
 {
