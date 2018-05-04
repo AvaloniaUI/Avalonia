@@ -59,7 +59,7 @@ namespace Avalonia.Controls.Utils
 
         public void UpdateLastState()
         {
-            _states.Last.Value = _host.UndoRedoState;
+            UpdateLastState(_host.UndoRedoState);
         }
 
         public void DiscardRedo()
@@ -94,6 +94,7 @@ namespace Avalonia.Controls.Utils
         public void Clear()
         {
             _states.Clear();
+            _currentNode = null;
         }
 
         bool WeakTimer.IWeakTimerSubscriber.Tick()

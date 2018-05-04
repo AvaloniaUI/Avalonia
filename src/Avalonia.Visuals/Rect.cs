@@ -487,11 +487,10 @@ namespace Avalonia
         /// Parses a <see cref="Rect"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The parsed <see cref="Rect"/>.</returns>
-        public static Rect Parse(string s, CultureInfo culture)
+        public static Rect Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Rect"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect"))
             {
                 return new Rect(
                     tokenizer.ReadDouble(),

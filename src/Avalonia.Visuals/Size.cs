@@ -150,11 +150,10 @@ namespace Avalonia
         /// Parses a <see cref="Size"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Size"/>.</returns>
-        public static Size Parse(string s, CultureInfo culture)
+        public static Size Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Size"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size"))
             {
                 return new Size(
                     tokenizer.ReadDouble(),
