@@ -18,6 +18,7 @@ namespace Avalonia.MonoMac
     {
         public TopLevelView View { get; }
         private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+        private readonly IDragDropDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -39,6 +40,7 @@ namespace Avalonia.MonoMac
             private NSTrackingArea _area;
             private NSCursor _cursor;
             private bool _nonUiRedrawQueued;
+            private bool _isMouseOver;
 
             public CGSize PixelSize { get; set; }
 
@@ -52,6 +54,10 @@ namespace Avalonia.MonoMac
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+                
+                RegisterForDraggedTypes(new string[] {
+                    "public.data" // register for any kind of data.
+                });
             }
 
             protected override void Dispose(bool disposing)
@@ -133,7 +139,11 @@ namespace Avalonia.MonoMac
             {
                 ResetCursorRects();
                 if (_cursor != null)
+                {
                     AddCursorRect(Frame, _cursor);
+                    if (_isMouseOver)
+                        _cursor.Set();
+                }
             }
 
             static readonly NSCursor ArrowCursor = NSCursor.ArrowCursor;
@@ -143,6 +153,48 @@ namespace Avalonia.MonoMac
                 _cursor = cursor ?? ArrowCursor;
                 UpdateCursor();
             }
+
+            private NSDragOperation SendRawDragEvent(NSDraggingInfo sender, RawDragEventType type)
+            {
+                Action<RawInputEventArgs> input = _tl.Input;
+                IDragDropDevice dragDevice = _tl._dragDevice;
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || dragDevice == null || input == null)
+                    return NSDragOperation.None;
+                
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                var pt = TranslateLocalPoint(info.Location);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp);
+                input(args);
+                return DraggingInfo.ConvertDragOperation(args.Effects);
+            }
+
+            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragEnter);
+            }
+
+            public override NSDragOperation DraggingUpdated(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver);
+            }
+
+            public override void DraggingExited(NSDraggingInfo sender)
+            {
+                SendRawDragEvent(sender, RawDragEventType.DragLeave);
+            }
+
+            public override bool PrepareForDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver) != NSDragOperation.None;
+            }
+
+            public override bool PerformDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.Drop) != NSDragOperation.None;
+            }
+            
 
             public override void SetFrameSize(CGSize newSize)
             {
@@ -299,8 +351,15 @@ namespace Avalonia.MonoMac
 
             public override void MouseExited(NSEvent theEvent)
             {
+                _isMouseOver = false;
                 MouseEvent(theEvent, RawMouseEventType.LeaveWindow);
                 base.MouseExited(theEvent);
+            }
+
+            public override void MouseEntered(NSEvent theEvent)
+            {
+                _isMouseOver = true;
+                base.MouseEntered(theEvent);
             }
 
             void KeyboardEvent(RawKeyEventType type, NSEvent ev)

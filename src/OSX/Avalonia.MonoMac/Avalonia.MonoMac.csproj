@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -7,9 +7,6 @@
   <ItemGroup>
     <Compile Include="..\..\Shared\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
     <Compile Include="..\..\Shared\WindowResizeDragHelper.cs" Link="WindowResizeDragHelper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MonoMac.NetStandard" Version="0.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />

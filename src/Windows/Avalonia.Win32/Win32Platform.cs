@@ -1,26 +1,23 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
-using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
-using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#else
-using System.ComponentModel;
-#endif
+using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia
 {
@@ -40,7 +37,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static uint _uiThread;
@@ -87,6 +84,9 @@ namespace Avalonia.Win32
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
+
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
         }
 
         public bool HasMessages()
@@ -205,5 +205,40 @@ namespace Avalonia.Win32
         {
             return new PopupImpl();
         }
+
+        public IWindowIconImpl LoadIcon(string fileName)
+        {
+            using (var stream = File.OpenRead(fileName))
+            {
+                return CreateIconImpl(stream);
+            }
+        }
+
+        public IWindowIconImpl LoadIcon(Stream stream)
+        {
+            return CreateIconImpl(stream);
+        }
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream);
+                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+            }
+        }
+
+        private static IconImpl CreateIconImpl(Stream stream)
+        {
+            try
+            {
+                return new IconImpl(new System.Drawing.Icon(stream));
+            }
+            catch (ArgumentException)
+            {
+                return new IconImpl(new System.Drawing.Bitmap(stream));
+            }
+        }
+
     }
 }

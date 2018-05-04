@@ -39,6 +39,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
         public Size MaxClientSize { get; } = new Size(4096, 4096);
@@ -66,6 +67,10 @@ namespace Avalonia.DesignerSupport.Remote
             RenderIfNeeded();
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IScreenImpl Screen { get; } = new ScreenStub();
 
         public void Activate()
@@ -90,6 +95,10 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void ShowTaskbarIcon(bool value)
+        {
+        }
+
+        public void CanResize(bool value)
         {
         }
     }

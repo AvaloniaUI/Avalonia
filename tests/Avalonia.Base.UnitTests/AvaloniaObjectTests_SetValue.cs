@@ -31,6 +31,16 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void SetValue_Sets_Attached_Value()
+        {
+            Class2 target = new Class2();
+
+            target.SetValue(AttachedOwner.AttachedProperty, "newvalue");
+
+            Assert.Equal("newvalue", target.GetValue(AttachedOwner.AttachedProperty));
+        }
+
+        [Fact]
         public void SetValue_Raises_PropertyChanged()
         {
             Class1 target = new Class1();
@@ -84,14 +94,27 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void SetValue_Throws_Exception_For_Unregistered_Property()
+        public void SetValue_Allows_Setting_Unregistered_Property()
         {
             Class1 target = new Class1();
 
-            Assert.Throws<ArgumentException>(() =>
-            {
-                target.SetValue(Class2.BarProperty, "invalid");
-            });
+            Assert.False(AvaloniaPropertyRegistry.Instance.IsRegistered(target, Class2.BarProperty));
+
+            target.SetValue(Class2.BarProperty, "bar");
+
+            Assert.Equal("bar", target.GetValue(Class2.BarProperty));
+        }
+
+        [Fact]
+        public void SetValue_Allows_Setting_Unregistered_Attached_Property()
+        {
+            Class1 target = new Class1();
+
+            Assert.False(AvaloniaPropertyRegistry.Instance.IsRegistered(target, AttachedOwner.AttachedProperty));
+
+            target.SetValue(AttachedOwner.AttachedProperty, "bar");
+
+            Assert.Equal("bar", target.GetValue(AttachedOwner.AttachedProperty));
         }
 
         [Fact]
@@ -187,6 +210,12 @@ namespace Avalonia.Base.UnitTests
                 get { return (Class1)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
+        }
+
+        private class AttachedOwner
+        {
+            public static readonly AttachedProperty<string> AttachedProperty =
+                AvaloniaProperty.RegisterAttached<AttachedOwner, Class2, string>("Attached");
         }
 
         private class ImplictDouble

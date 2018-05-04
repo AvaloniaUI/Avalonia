@@ -30,6 +30,7 @@
             <Link>Properties\SharedAssemblyInfo.cs</Link>
         </Compile>
         <Compile Include="AvaloniaXamlLoader.cs" />
+        <Compile Include="Converters\CornerRadiusTypeConverter.cs" />
         <Compile Include="Converters\MatrixTypeConverter.cs" />
         <Compile Include="Converters\RectTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />

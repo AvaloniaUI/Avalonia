@@ -12,6 +12,7 @@ namespace Avalonia.MonoMac
         private readonly TopLevelImpl.TopLevelView _view;
         private readonly CGSize _logicalSize;
         private readonly bool _isDeferred;
+        private readonly IUnmanagedBlob _blob;
 
         [DllImport("libc")]
         static extern void memset(IntPtr p, int c, IntPtr size);
@@ -29,13 +30,13 @@ namespace Avalonia.MonoMac
             Dpi = new Vector(96 * pixelSize.Width / _logicalSize.Width, 96 * pixelSize.Height / _logicalSize.Height);
             Format = PixelFormat.Rgba8888;
             var size = Height * RowBytes;
-            Address = Marshal.AllocHGlobal(size);
+            _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size);
             memset(Address, 0, new IntPtr(size));
         }
         
         public void Dispose()
         {
-            if (Address == IntPtr.Zero)
+            if (_blob.IsDisposed)
                 return;
             var nfo = (int) CGBitmapFlags.ByteOrder32Big | (int) CGImageAlphaInfo.PremultipliedLast;
             CGImage image = null;
@@ -71,14 +72,13 @@ namespace Avalonia.MonoMac
                     else
                         _view.SetBackBufferImage(new SavedImage(image, _logicalSize));
                 }
-                Marshal.FreeHGlobal(Address);
-                Address = IntPtr.Zero;
+                _blob.Dispose();
             }
 
 
         }
 
-        public IntPtr Address { get; private set; }
+        public IntPtr Address => _blob.Address;
         public int Width { get; }
         public int Height { get; }
         public int RowBytes { get; }

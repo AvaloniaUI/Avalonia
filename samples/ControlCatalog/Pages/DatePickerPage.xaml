@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">DatePicker</TextBlock>
+    <TextBlock Classes="h2">A control for selecting dates with a calendar drop-down</TextBlock>
+        
+    <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Gap="16">
+      <StackPanel Orientation="Vertical"
+                  Width="200">
+        <TextBlock Text="SelectedDateFormat: Short"/>
+        <DatePicker Name="DatePicker1"
+                    SelectedDateFormat="Short"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectedDateFormat: Long"/>
+        <DatePicker Name="DatePicker2"
+                    SelectedDateFormat="Long"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="SelectedDateFormat: Custom"/>
+        <DatePicker Name="DatePicker3"
+                    SelectedDateFormat="Custom"
+                    CustomDateFormatString="ddd, MMM d"
+                    Margin="0,0,0,8"/>
+
+        <TextBlock Text="Blackout Dates"/>
+        <DatePicker Name="DatePicker4"
+                    Margin="0,0,0,8"/>
+
+        <DatePicker Margin="0,0,0,8"
+                    Watermark="Watermark"/>
+        <DatePicker Margin="0,0,0,8"
+                    Name="DatePicker5"
+                    Watermark="Floating Watermark"
+                    UseFloatingWatermark="True"/>
+                
+        <TextBlock Text="Disabled"/>
+        <DatePicker IsEnabled="False"/>
+      </StackPanel>
+
+    </StackPanel> 
+  </StackPanel>
+</UserControl>

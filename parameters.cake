@@ -97,7 +97,7 @@ public class Parameters
             else
             {
                 // Use AssemblyVersion with Build as version
-                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-alpha";
+                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-beta";
             }
         }
 

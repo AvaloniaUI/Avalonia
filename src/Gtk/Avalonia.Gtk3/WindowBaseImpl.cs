@@ -33,11 +33,11 @@ namespace Avalonia.Gtk3
         private readonly AutoResetEvent _canSetNextOperation = new AutoResetEvent(true);
         internal IntPtr? GdkWindowHandle;
         private bool _overrideRedirect;
+        private uint? _tickCallback;
         public WindowBaseImpl(GtkWindow gtkWidget)
         {
             
             GtkWidget = gtkWidget;
-            Disposables.Add(gtkWidget);
             _framebuffer = new FramebufferManager(this);
             _imContext = Native.GtkImMulticontextNew();
             Disposables.Add(_imContext);
@@ -54,6 +54,7 @@ namespace Avalonia.Gtk3
             ConnectEvent("key-press-event", OnKeyEvent);
             ConnectEvent("key-release-event", OnKeyEvent);
             ConnectEvent("leave-notify-event", OnLeaveNotifyEvent);
+            ConnectEvent("delete-event", OnClosingEvent);
             Connect<Native.D.signal_generic>("destroy", OnDestroy);
             Native.GtkWidgetRealize(gtkWidget);
             GdkWindowHandle = this.Handle.Handle;
@@ -62,7 +63,7 @@ namespace Avalonia.Gtk3
             {
                 Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
                 _gcHandle = GCHandle.Alloc(this);
-                Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
+                _tickCallback = Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
                 
             }
         }
@@ -103,7 +104,7 @@ namespace Avalonia.Gtk3
 
         private bool OnDestroy(IntPtr gtkwidget, IntPtr userdata)
         {
-            Dispose();
+            DoDispose(true);
             return false;
         }
 
@@ -123,6 +124,12 @@ namespace Avalonia.Gtk3
             if (state.HasFlag(GdkModifierType.Button3Mask))
                 rv |= InputModifiers.MiddleMouseButton;
             return rv;
+        }
+
+        private unsafe bool OnClosingEvent(IntPtr w, IntPtr ev, IntPtr userdata)
+        {
+            bool? preventClosing = Closing?.Invoke();
+            return preventClosing ?? false;
         }
 
         private unsafe bool OnButton(IntPtr w, IntPtr ev, IntPtr userdata)
@@ -297,14 +304,28 @@ namespace Avalonia.Gtk3
         }
 
 
-        public void Dispose()
+        public void Dispose() => DoDispose(false);
+        
+        void DoDispose(bool fromDestroy)
         {
+            if (_tickCallback.HasValue)
+            {
+                if (!GtkWidget.IsClosed)
+                    Native.GtkWidgetRemoveTickCallback(GtkWidget, _tickCallback.Value);
+                _tickCallback = null;
+            }
+            
             //We are calling it here, since signal handler will be detached
             if (!GtkWidget.IsClosed)
                 Closed?.Invoke();
             foreach(var d in Disposables.AsEnumerable().Reverse())
                 d.Dispose();
             Disposables.Clear();
+            
+            if (!fromDestroy && !GtkWidget.IsClosed)
+                Native.GtkWindowClose(GtkWidget);
+            GtkWidget.Dispose();
+            
             if (_gcHandle.IsAllocated)
             {
                 _gcHandle.Free();
@@ -320,6 +341,20 @@ namespace Avalonia.Gtk3
             }
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+            if (GtkWidget.IsClosed)
+                return;
+
+            GdkGeometry geometry = new GdkGeometry();
+            geometry.min_width = minSize.Width > 0 ? (int)minSize.Width : -1;
+            geometry.min_height = minSize.Height > 0 ? (int)minSize.Height : -1;
+            geometry.max_width = !Double.IsInfinity(maxSize.Width) && maxSize.Width > 0 ? (int)maxSize.Width : 999999;
+            geometry.max_height = !Double.IsInfinity(maxSize.Height) && maxSize.Height > 0 ? (int)maxSize.Height : 999999;
+
+            Native.GtkWindowSetGeometryHints(GtkWidget, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
+        } 
+
         public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
 
         public double Scaling => LastKnownScaleFactor = (int) (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
@@ -329,6 +364,7 @@ namespace Avalonia.Gtk3
         string IPlatformHandle.HandleDescriptor => "HWND";
 
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action Deactivated { get; set; }
         public Action<RawInputEventArgs> Input { get; set; }
@@ -409,6 +445,7 @@ namespace Avalonia.Gtk3
         {
             if (GtkWidget.IsClosed)
                 return;
+         
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
             if (OverrideRedirect)
             {

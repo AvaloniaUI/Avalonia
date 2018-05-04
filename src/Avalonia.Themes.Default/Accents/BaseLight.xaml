@@ -20,7 +20,7 @@
     <SolidColorBrush x:Key="ErrorBrush">Red</SolidColorBrush>
     <SolidColorBrush x:Key="ErrorBrushLight">#10ff0000</SolidColorBrush>
 
-    <sys:Double x:Key="ThemeBorderThickness">2</sys:Double>
+    <Thickness x:Key="ThemeBorderThickness">2</Thickness>
     <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
 
     <sys:Double x:Key="FontSizeSmall">10</sys:Double>

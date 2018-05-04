@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -151,6 +152,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates a skew matrix from the given axis skew angles in radians.
+        /// </summary>
+        /// <param name="xAngle">The amount of skew along the X-axis, in radians.</param>
+        /// <param name="yAngle">The amount of skew along the Y-axis, in radians.</param>
+        /// <returns>A rotation matrix.</returns>
+        public static Matrix CreateSkew(double xAngle, double yAngle)
+        {
+            double tanX = Math.Tan(xAngle);
+            double tanY = Math.Tan(yAngle);
+            return new Matrix(1.0, tanY, tanX, 1.0, 0.0, 0.0);
+        }
+
+        /// <summary>
         /// Creates a scale matrix from the given X and Y components.
         /// </summary>
         /// <param name="xScale">Value to scale by on the X-axis.</param>
@@ -214,7 +228,6 @@ namespace Avalonia
         {
             return (_m11 * _m22) - (_m12 * _m21);
         }
-
 
         /// <summary>
         /// Returns a boolean indicating whether the matrix is equal to the other given matrix.
@@ -301,27 +314,19 @@ namespace Avalonia
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Matrix"/>.</returns>
-        public static Matrix Parse(string s, CultureInfo culture)
+        public static Matrix Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            if (parts.Length == 6)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
-                    double.Parse(parts[0], culture), 
-                    double.Parse(parts[1], culture), 
-                    double.Parse(parts[2], culture), 
-                    double.Parse(parts[3], culture), 
-                    double.Parse(parts[4], culture), 
-                    double.Parse(parts[5], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Matrix.");
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
             }
         }
     }
