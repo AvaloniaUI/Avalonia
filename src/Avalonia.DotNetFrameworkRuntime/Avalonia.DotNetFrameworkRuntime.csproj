@@ -7,14 +7,12 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\Shared\SharedAssemblyInfo.cs">
-            <Link>Properties\SharedAssemblyInfo.cs</Link>
-        </Compile>
         <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
         <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
         <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
         <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     </ItemGroup>
+    <Import Project="..\Shared\Shared.props" />
     <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
     <Import Project="..\..\build\Rx.props" />
     <Import Project="..\..\build\NetFX.props" />
