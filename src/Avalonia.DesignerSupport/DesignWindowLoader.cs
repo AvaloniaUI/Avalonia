@@ -31,7 +31,7 @@ namespace Avalonia.DesignerSupport
                         new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(assemblyPath));
                 }
 
-                var localAsm = assemblyPath != null ? Assembly.LoadFile(assemblyPath) : null;
+                var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
                 var loaded = loader.Load(stream, localAsm, null, baseUri);
                 var styles = loaded as Styles;
                 if (styles != null)
