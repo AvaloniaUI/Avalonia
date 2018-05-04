@@ -14,6 +14,10 @@ namespace Avalonia.iOS
             
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IDisposable ShowDialog()
         {
             return Disposable.Empty;

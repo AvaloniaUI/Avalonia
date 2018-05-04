@@ -341,6 +341,20 @@ namespace Avalonia.Gtk3
             }
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+            if (GtkWidget.IsClosed)
+                return;
+
+            GdkGeometry geometry = new GdkGeometry();
+            geometry.min_width = minSize.Width > 0 ? (int)minSize.Width : -1;
+            geometry.min_height = minSize.Height > 0 ? (int)minSize.Height : -1;
+            geometry.max_width = !Double.IsInfinity(maxSize.Width) && maxSize.Width > 0 ? (int)maxSize.Width : 999999;
+            geometry.max_height = !Double.IsInfinity(maxSize.Height) && maxSize.Height > 0 ? (int)maxSize.Height : 999999;
+
+            Native.GtkWindowSetGeometryHints(GtkWidget, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
+        } 
+
         public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
 
         public double Scaling => LastKnownScaleFactor = (int) (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
@@ -431,6 +445,7 @@ namespace Avalonia.Gtk3
         {
             if (GtkWidget.IsClosed)
                 return;
+         
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
             if (OverrideRedirect)
             {
