@@ -8,15 +8,14 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
-using IDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 
 namespace Avalonia.Win32
 {
     class OleDataObject : Avalonia.Input.IDataObject
     {
-        private IDataObject _wrapped;
+        private IOleDataObject _wrapped;
 
-        public OleDataObject(IDataObject wrapped)
+        public OleDataObject(IOleDataObject wrapped)
         {
             _wrapped = wrapped;
         }
