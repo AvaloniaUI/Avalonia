@@ -43,7 +43,9 @@ namespace Avalonia.Gtk3
                 }
             }
         }
-        
+
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         public IDisposable ShowDialog()
         {
             Native.GtkWindowSetModal(GtkWidget, true);

@@ -17,6 +17,11 @@ namespace Avalonia.Platform
         WindowState WindowState { get; set; }
 
         /// <summary>
+        /// Gets or sets a method called when the <see cref="WindowState"/> changes.
+        /// </summary>
+        Action<WindowState> WindowStateChanged { get; set; }
+
+        /// <summary>
         /// Sets the title of the window.
         /// </summary>
         /// <param name="title">The title.</param>

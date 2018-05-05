@@ -77,6 +77,8 @@ namespace Avalonia.Win32
 
         public Action<Point> PositionChanged { get; set; }
 
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         public Thickness BorderThickness
         {
             get
@@ -626,6 +628,25 @@ namespace Avalonia.Win32
                     }
 
                     return IntPtr.Zero;
+
+                case UnmanagedMethods.WindowsMessage.WM_SYSCOMMAND:
+                    if (WindowStateChanged != null)
+                    {
+                        switch ((SysCommands)wParam)
+                        {
+                            case SysCommands.SC_MINIMIZE:
+                                WindowStateChanged(WindowState.Minimized);
+                                break;
+                            case SysCommands.SC_MAXIMIZE:
+                                WindowStateChanged(WindowState.Maximized);
+                                break;
+                            case SysCommands.SC_RESTORE:
+                                WindowStateChanged(WindowState.Normal);
+                                break;
+                        }
+                    }
+
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
                     PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));

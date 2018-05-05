@@ -49,6 +49,8 @@ namespace Avalonia.MonoMac
             }
         }
 
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         bool IsZoomed => IsDecorated ? Window.IsZoomed : UndecoratedIsMaximized;
 
         public bool UndecoratedIsMaximized => Window.Frame == Window.Screen.VisibleFrame;

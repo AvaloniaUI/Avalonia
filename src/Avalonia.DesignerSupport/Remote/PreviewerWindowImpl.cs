@@ -42,6 +42,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Func<bool> Closing { get; set; }
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxClientSize { get; } = new Size(4096, 4096);
         public event Action LostFocus;
 
