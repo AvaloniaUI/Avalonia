@@ -558,7 +558,18 @@ namespace Avalonia.Win32.Interop
         {
             DIB_RGB_COLORS = 0,     /* color table in RGBs */
             DIB_PAL_COLORS          /* color table in palette indices */
-        };
+        }
+
+        public enum WindowLongParam
+        {
+            GWL_WNDPROC = -4,
+            GWL_HINSTANCE = -6,
+            GWL_HWNDPARENT = -8,
+            GWL_ID = -12,
+            GWL_STYLE = -16,
+            GWL_EXSTYLE = -20,
+            GWL_USERDATA = -21
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
@@ -613,6 +624,16 @@ namespace Avalonia.Win32.Interop
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
             public uint[] cols;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
         }
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
@@ -977,7 +998,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        public static extern void DoDragDrop(IDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        public static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
 
 
 
@@ -1369,13 +1390,13 @@ namespace Avalonia.Win32.Interop
     internal interface IDropTarget
     {
         [PreserveSig]
-        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
+        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
         [PreserveSig]
         UnmanagedMethods.HRESULT DragOver([MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
         [PreserveSig]
         UnmanagedMethods.HRESULT DragLeave();
         [PreserveSig]
-        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
+        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
     }
 
     [ComImport]
@@ -1387,6 +1408,27 @@ namespace Avalonia.Win32.Interop
         int QueryContinueDrag(int fEscapePressed, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState);
         [PreserveSig]
         int GiveFeedback([MarshalAs(UnmanagedType.U4)] [In] int dwEffect);
+    }
+
+
+    [ComImport]
+    [Guid("0000010E-0000-0000-C000-000000000046")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IOleDataObject
+    {
+        void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
+        void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);
+        [PreserveSig]
+        int QueryGetData([In] ref FORMATETC format);
+        [PreserveSig]
+        int GetCanonicalFormatEtc([In] ref FORMATETC formatIn, out FORMATETC formatOut);
+        void SetData([In] ref FORMATETC formatIn, [In] ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
+        IEnumFORMATETC EnumFormatEtc(DATADIR direction);
+        [PreserveSig]
+        int DAdvise([In] ref FORMATETC pFormatetc, ADVF advf, IAdviseSink adviseSink, out int connection);
+        void DUnadvise(int connection);
+        [PreserveSig]
+        int EnumDAdvise(out IEnumSTATDATA enumAdvise);
     }
 
 
