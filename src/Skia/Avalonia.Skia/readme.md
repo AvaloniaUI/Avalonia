@@ -4,9 +4,6 @@ BitmapImpl
 - constructor from Width/Height
 - Save
 
-StreamGeometryImpl
-- Hit testing in Geometry missing as SkiaSharp does not expose this
-
 DrawingContextImpl
 - Alpha support missing as SkiaSharp does not expose this
 - Gradient Shader caching?

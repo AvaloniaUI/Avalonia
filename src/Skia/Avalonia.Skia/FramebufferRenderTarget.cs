@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
@@ -51,7 +52,7 @@ namespace Avalonia.Skia
             public void Dispose()
             {
                 using (var tmp = _bitmap.Copy(_nfo.ColorType))
-                    tmp.CopyPixelsTo(_fb, _nfo.BytesPerPixel * _nfo.Height * _rowBytes, _rowBytes);
+                    tmp.CopyPixelsTo(_fb, _nfo.BytesSize, _nfo.RowBytes);
                 _bitmap.Dispose();
             }
             
