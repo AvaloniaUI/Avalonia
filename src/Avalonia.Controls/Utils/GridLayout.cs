@@ -378,9 +378,10 @@ namespace Avalonia.Controls.Utils
             // 需要返回所有标记为 * 的方格的累加和的最小值。
 
             // Before we determine the behavior of this method, we just aggregate the one-span * columns.
-            return _additionalConventions
+            var lookup = _additionalConventions
                 .Where(x => x.Span == 1 && conventions[x.Index].Length.IsStar)
-                .Sum(x => x.Min);
+                .ToLookup(x => x.Index);
+            return lookup.Select(group => group.Max(x => x.Min)).Sum();
         }
 
         /// <summary>
