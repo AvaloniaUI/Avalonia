@@ -40,8 +40,8 @@ namespace Avalonia.Skia
         public IGeometryImpl Intersect(IGeometryImpl geometry)
         {
             var result = EffectivePath.Op(((GeometryImpl) geometry).EffectivePath, SKPathOp.Intersect);
-            
-            return new StreamGeometryImpl(result);
+
+            return result == null ? null : new StreamGeometryImpl(result);
         }
 
         /// <inheritdoc />
