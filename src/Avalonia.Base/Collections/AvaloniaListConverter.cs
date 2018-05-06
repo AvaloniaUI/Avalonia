@@ -2,16 +2,16 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
-using Avalonia.Collections;
 using Avalonia.Utilities;
 
-namespace Avalonia.Markup.Xaml.Converters
+namespace Avalonia.Collections
 {
-    using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
-
-    public class AvaloniaListTypeConverter<T> : TypeConverter
+    /// <summary>
+    /// Creates an <see cref="AvaloniaList{T}"/> from a string representation.
+    /// </summary>
+    public class AvaloniaListConverter<T> : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -21,13 +21,13 @@ namespace Avalonia.Markup.Xaml.Converters
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var result = new AvaloniaList<T>();
+
+            // TODO: Use StringTokenizer here.
             var values = ((string)value).Split(',');
 
             foreach (var s in values)
             {
-                object v;
-
-                if (TypeUtilities.TryConvert(typeof(T), s, culture, out v))
+                if (TypeUtilities.TryConvert(typeof(T), s, culture, out var v))
                 {
                     result.Add((T)v);
                 }

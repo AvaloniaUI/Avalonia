@@ -2,14 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
-using Avalonia.Controls;
 
-namespace Avalonia.Markup.Xaml.Converters
+namespace Avalonia.Media
 {
-	using System.ComponentModel;
-
-    public class GridLengthTypeConverter : TypeConverter
+    /// <summary>
+    /// Creates an <see cref="IBrush"/> from a string representation.
+    /// </summary>
+    public class BrushConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -18,7 +19,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return GridLength.Parse((string)value);
+            return Brush.Parse((string)value);
         }
     }
 }

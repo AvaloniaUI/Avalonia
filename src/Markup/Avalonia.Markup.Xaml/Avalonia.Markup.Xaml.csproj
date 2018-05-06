@@ -30,10 +30,10 @@
             <Link>Properties\SharedAssemblyInfo.cs</Link>
         </Compile>
         <Compile Include="AvaloniaXamlLoader.cs" />
-        <Compile Include="Converters\CornerRadiusTypeConverter.cs" />
-        <Compile Include="Converters\MatrixTypeConverter.cs" />
-        <Compile Include="Converters\RectTypeConverter.cs" />
+        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
+        <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
+        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Data\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -42,32 +42,15 @@
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
-        <Compile Include="PortableXaml\AvaloniaDefaultTypeConverters.cs" />
+        <Compile Include="AvaloniaTypeConverters.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlObjectWriter.cs" />
         <Compile Include="PortableXaml\AvaloniaRuntimeTypeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlSchemaContext.cs" />
         <Compile Include="Converters\BitmapTypeConverter.cs" />
-        <Compile Include="Converters\BrushTypeConverter.cs" />
-        <Compile Include="Converters\ClassesTypeConverter.cs" />
-        <Compile Include="Converters\ColorTypeConverter.cs" />
-        <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
-        <Compile Include="Converters\CursorTypeConverter.cs" />
-        <Compile Include="Converters\GeometryTypeConverter.cs" />
-        <Compile Include="Converters\GridLengthTypeConverter.cs" />
         <Compile Include="Converters\IconTypeConverter.cs" />
-        <Compile Include="Converters\KeyGestureConverter.cs" />
-        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
-        <Compile Include="Converters\AvaloniaListTypeConverter.cs" />
         <Compile Include="Converters\AvaloniaPropertyTypeConverter.cs" />
         <Compile Include="Converters\PointsListTypeConverter.cs" />
-        <Compile Include="Converters\SizeTypeConverter.cs" />
-        <Compile Include="Converters\PointTypeConverter.cs" />
-        <Compile Include="Converters\RelativePointTypeConverter.cs" />
-        <Compile Include="Converters\RelativeRectTypeConverter.cs" />
-        <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
         <Compile Include="Converters\SelectorTypeConverter.cs" />
-        <Compile Include="Converters\ThicknessTypeConverter.cs" />
-        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Data\Binding.cs" />
         <Compile Include="Data\DelayedBinding.cs" />
         <Compile Include="Data\MultiBinding.cs" />
