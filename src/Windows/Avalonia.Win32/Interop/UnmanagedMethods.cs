@@ -870,6 +870,9 @@ namespace Avalonia.Win32.Interop
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
 
+        [DllImport("user32.dll", EntryPoint = "SetCursor")]
+        internal static extern IntPtr SetCursor(IntPtr hCursor);
+
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);

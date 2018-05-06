@@ -399,8 +399,11 @@ namespace Avalonia.Win32
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR,
-                cursor?.Handle ?? DefaultCursor);
+            var hCursor = cursor?.Handle ?? DefaultCursor;
+            UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR, hCursor);
+
+            if (_owner.IsPointerOver)
+                UnmanagedMethods.SetCursor(hCursor);
         }
 
         protected virtual IntPtr CreateWindowOverride(ushort atom)
