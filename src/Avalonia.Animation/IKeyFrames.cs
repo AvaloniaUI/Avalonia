@@ -7,7 +7,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Interface for Keyframe group object
     /// </summary>
-    internal interface IKeyFrames
+    public interface IKeyFrames
     {
         /// <summary>
         /// Applies the current KeyFrame group to the specified control.

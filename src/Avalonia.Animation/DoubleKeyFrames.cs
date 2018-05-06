@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     {
 
         /// <inheritdocs/>
-        public override double DoInterpolation(double t)
+        protected override double DoInterpolation(double t)
         {
             var pair = GetKFPairAndIntraKFTime(t);
             double y0 = pair.KFPair.FirstKeyFrame.Value;
