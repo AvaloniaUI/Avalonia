@@ -19,11 +19,11 @@ namespace Avalonia.Input
             return null;
         }
         
-        private DragDropEffects RaiseDragEvent(Interactive target, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data)
+        private DragDropEffects RaiseDragEvent(Interactive target, Point targetLocation, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data)
         {
             if (target == null)
                 return DragDropEffects.None;
-            var args = new DragEventArgs(routedEvent, data)
+            var args = new DragEventArgs(routedEvent, data, target, targetLocation)
             {
                 RoutedEvent = routedEvent,
                 DragEffects = operation
@@ -35,7 +35,7 @@ namespace Avalonia.Input
         private DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
         {
             _lastTarget = GetTarget(inputRoot, point);
-            return RaiseDragEvent(_lastTarget, DragDrop.DragEnterEvent, effects, data);
+            return RaiseDragEvent(_lastTarget, _lastTarget != null ? inputRoot.TranslatePoint(point, _lastTarget) : point, DragDrop.DragEnterEvent, effects, data);
         }
 
         private DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
@@ -43,13 +43,13 @@ namespace Avalonia.Input
             var target = GetTarget(inputRoot, point);
 
             if (target == _lastTarget)
-                return RaiseDragEvent(target, DragDrop.DragOverEvent, effects, data);
+                return RaiseDragEvent(target, _lastTarget != null ? inputRoot.TranslatePoint(point, _lastTarget) : point, DragDrop.DragOverEvent, effects, data);
             
             try
             {
                 if (_lastTarget != null)
                     _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
-                return RaiseDragEvent(target, DragDrop.DragEnterEvent, effects, data);
+                return RaiseDragEvent(target, _lastTarget != null ? inputRoot.TranslatePoint(point, _lastTarget) : point, DragDrop.DragEnterEvent, effects, data);
             }
             finally
             {
@@ -75,7 +75,7 @@ namespace Avalonia.Input
         {
             try
             {
-                return RaiseDragEvent(_lastTarget, DragDrop.DropEvent, effects, data);
+                return RaiseDragEvent(_lastTarget, _lastTarget != null ? inputRoot.TranslatePoint(point, _lastTarget) : point, DragDrop.DropEvent, effects, data);
             }
             finally 
             {
