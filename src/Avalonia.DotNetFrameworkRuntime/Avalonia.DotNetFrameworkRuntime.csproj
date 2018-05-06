@@ -11,8 +11,7 @@
         <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
         <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
         <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    </ItemGroup>
-    <Import Project="..\Shared\Shared.props" />
+    </ItemGroup>    
     <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
     <Import Project="..\..\build\Rx.props" />
     <Import Project="..\..\build\NetFX.props" />

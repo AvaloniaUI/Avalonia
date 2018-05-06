@@ -4,7 +4,6 @@
     <AssemblyName>Avalonia.Base</AssemblyName>
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\Shared\Shared.props" />
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />

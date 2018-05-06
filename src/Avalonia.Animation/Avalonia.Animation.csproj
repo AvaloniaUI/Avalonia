@@ -5,6 +5,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
-  <Import Project="..\Shared\Shared.props" />
   <Import Project="..\..\build\Rx.props" />
 </Project>

@@ -17,6 +17,5 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
-  <Import Project="..\..\Shared\Shared.props" />
   <Import Project="..\..\..\build\MonoMac.props" />
 </Project>

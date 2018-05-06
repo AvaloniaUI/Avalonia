@@ -10,6 +10,5 @@
     <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-  </ItemGroup>
-  <Import Project="..\..\Shared\Shared.props" />
+  </ItemGroup>  
 </Project>

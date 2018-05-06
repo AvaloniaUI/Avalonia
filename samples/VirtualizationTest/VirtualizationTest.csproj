@@ -22,8 +22,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj" />
   </ItemGroup>
-  <Import Project="..\..\src\Shared\Shared.props" />
-  <Import Project="..\..\src\Shared\CompileXaml.props" />
+  <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />

@@ -6,7 +6,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-  </ItemGroup>
-  <Import Project="..\Shared\Shared.props" />
+  </ItemGroup>  
   <Import Project="..\..\build\Serilog.props" />
 </Project>
