@@ -56,21 +56,21 @@ namespace Avalonia.Skia
 
             if (!entry.TryGetValue(key, out var typeface))
             {
-                if (fontFamily.BaseUri != null)
-                {
-                    var stream = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(fontFamily.BaseUri);
+                //if (fontFamily.BaseUri != null)
+                //{
+                //    var stream = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(fontFamily.BaseUri);
 
-                    typeface = SKTypeface.FromStream(stream);
-                }
-                else
-                {
+                //    typeface = SKTypeface.FromStream(stream);
+                //}
+                //else
+                //{
                     typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
 
                     if (typeface == null)
                     {
                         typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
                     }
-                }
+                //}
 
                 entry[key] = typeface;
             }

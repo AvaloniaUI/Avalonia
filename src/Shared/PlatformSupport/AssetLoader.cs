@@ -106,9 +106,8 @@ namespace Avalonia.Shared.PlatformSupport
             if (uri != null)
             {
                 var qs = ParseQueryString(uri);
-                string assemblyName;
 
-                if (qs.TryGetValue("assembly", out assemblyName))
+                if (qs.TryGetValue("assembly", out var assemblyName))
                 {
                     return GetAssembly(assemblyName);
                 }
@@ -124,8 +123,7 @@ namespace Avalonia.Shared.PlatformSupport
                 return _defaultAssembly;
             }
 
-            AssemblyDescriptor rv;
-            if (!AssemblyNameCache.TryGetValue(name, out rv))
+            if (!AssemblyNameCache.TryGetValue(name, out var rv))
             {
                 var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
@@ -199,5 +197,5 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> Resources { get; }
             public string Name { get; }
         }
-    }
+    }  
 }

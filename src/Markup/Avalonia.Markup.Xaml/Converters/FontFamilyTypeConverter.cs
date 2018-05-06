@@ -18,13 +18,16 @@ namespace Avalonia.Markup.Xaml.Converters
 
             if (string.IsNullOrEmpty(s)) throw new ArgumentException("Specified family is not supported.");
 
-            if (!s.StartsWith("resm:")) return new FontFamily(s);
-
             var fontFamilyExpression = s.Split('#');
+
+            if (fontFamilyExpression.Length == 1)
+            {
+                return new FontFamily(s);
+            }
 
             string familyName;
 
-            Uri baseUri = null;
+            Uri source = null;
 
             switch (fontFamilyExpression.Length)
             {
@@ -35,7 +38,7 @@ namespace Avalonia.Markup.Xaml.Converters
                     }
                 case 2:
                     {
-                        baseUri = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
+                        source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
                         familyName = fontFamilyExpression[1];
                         break;
                     }
@@ -45,7 +48,7 @@ namespace Avalonia.Markup.Xaml.Converters
                     }
             }
 
-            return new FontFamily(familyName, baseUri);
+            return new FontFamily(familyName, source);
         }
     }
 }

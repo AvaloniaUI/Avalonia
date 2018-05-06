@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SharpDX;
@@ -24,13 +26,17 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
+            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();          
 
             DWrite.TextFormat textFormat;
 
-            if (typeface.FontFamily.BaseUri != null)
+            if (typeface.FontFamily.Key != null)
             {
-                var fontCollection = Direct2D1CustomFontResourceCache.GetOrAddCustomFontResource(typeface.FontFamily, factory);
+                var fontFamilyCache = new FontFamilyCache();
+
+                var fontFamily = fontFamilyCache.GetOrAddFontFamily(typeface.FontFamily.Key);
+
+                var fontCollection = Direct2D1CustomFontCollectionCache.GetOrAddCustomFontCollection(fontFamily, factory);
 
                 textFormat = new DWrite.TextFormat(
                         factory,
@@ -80,11 +86,6 @@ namespace Avalonia.Direct2D1.Media
         public string Text { get; }
 
         public DWrite.TextLayout TextLayout { get; }
-
-        //public void Dispose()
-        //{
-        //    TextLayout.Dispose();
-        //}
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -148,19 +149,19 @@ namespace Avalonia.Direct2D1.Media
         }
     }
 
-    internal static class Direct2D1CustomFontResourceCache
+    internal static class Direct2D1CustomFontCollectionCache
     {
         private static readonly ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection> s_cachedFonts =
             new ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection>();
 
-        public static DWrite.FontCollection GetOrAddCustomFontResource(FontFamily fontFamily, DWrite.Factory factory)
+        public static DWrite.FontCollection GetOrAddCustomFontCollection(CachedFontFamily fontFamily, DWrite.Factory factory)
         {
-            return s_cachedFonts.GetOrAdd(fontFamily.Key, x => CreateCustomFontResource(x, factory));
+            return s_cachedFonts.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(fontFamily, factory));
         }
 
-        private static DWrite.FontCollection CreateCustomFontResource(FontFamilyKey fontFamilyKey, DWrite.Factory factory)
+        private static DWrite.FontCollection CreateCustomFontCollection(CachedFontFamily fontFamily, DWrite.Factory factory)
         {
-            var fontLoader = new ResourceFontLoader(factory, fontFamilyKey.BaseUri);
+            var fontLoader = new ResourceFontLoader(factory, fontFamily.FontResources);
 
             return new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);
         }
@@ -172,27 +173,29 @@ namespace Avalonia.Direct2D1.Media
         private readonly List<ResourceFontFileEnumerator> _enumerators = new List<ResourceFontFileEnumerator>();
         private readonly DataStream _keyStream;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceFontLoader"/> class.
         /// </summary>
         /// <param name="factory">The factory.</param>
-        /// <param name="fontResource"></param>
-        public ResourceFontLoader(DWrite.Factory factory, Uri fontResource)
+        /// <param name="fontResources"></param>
+        public ResourceFontLoader(DWrite.Factory factory, IEnumerable<FontResource> fontResources)
         {
             var factory1 = factory;
 
-            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            var resourceStream = assets.Open(fontResource);
+            foreach (var font in fontResources)
+            {
+                var resourceStream = assetLoader.Open(font.Source);
 
-            var dataStream = new DataStream((int)resourceStream.Length, true, true);
+                var dataStream = new DataStream((int)resourceStream.Length, true, true);
 
-            resourceStream.CopyTo(dataStream);
+                resourceStream.CopyTo(dataStream);
 
-            dataStream.Position = 0;
+                dataStream.Position = 0;
 
-            _fontStreams.Add(new ResourceFontFileStream(dataStream));
+                _fontStreams.Add(new ResourceFontFileStream(dataStream));
+            }
 
             // Build a Key storage that stores the index of the font
             _keyStream = new DataStream(sizeof(int) * _fontStreams.Count, true, true);
