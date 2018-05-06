@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
-        Title="Avalonia Virtualization Test">
+        Title="AvaloniaUI Virtualization Test">
     <DockPanel LastChildFill="True" Margin="16">
         <StackPanel DockPanel.Dock="Right" 
                     Margin="16 0 0 0" 
