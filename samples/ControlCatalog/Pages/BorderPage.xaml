@@ -26,11 +26,11 @@
               CornerRadius="8"
               Padding="16">
                 <StackPanel>
-                    <TextBlock FontFamily="resm:ControlCatalog.Fonts?assembly=ControlCatalog#Pixel Operator">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="resm:ControlCatalog.Fonts?assembly=ControlCatalog#Pixel Operator" FontWeight="Bold">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="resm:ControlCatalog.Fonts.Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="resm:ControlCatalog.Fonts.Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold" FontStyle="Italic">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="resm:ControlCatalog.Fonts.Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontStyle="Italic">Rounded Corners</TextBlock>
+                    <TextBlock FontFamily="res:/Fonts?assembly=ControlCatalog#Pixel Operator">Rounded Corners</TextBlock>
+                    <TextBlock FontFamily="res:/Fonts?assembly=ControlCatalog#Pink Highway" FontWeight="Bold">Rounded Corners</TextBlock>
+                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold">Rounded Corners</TextBlock>
+                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold" FontStyle="Italic">Rounded Corners</TextBlock>
+                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontStyle="Italic">Rounded Corners</TextBlock>
                 </StackPanel>
             </Border>
         </StackPanel>

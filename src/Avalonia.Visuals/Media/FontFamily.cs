@@ -44,19 +44,18 @@ namespace Avalonia.Media
         {
             if (source.AbsolutePath.Contains(".ttf"))
             {
-                var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");
-
-                if (source.Scheme == "resm")
-                {
-                    var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
-                    FileName = fileNameWithoutExtension + ".ttf";
-                    Location = new Uri(source.OriginalString.Replace("." + FileName, ""), UriKind.RelativeOrAbsolute);
-                }
-
                 if (source.Scheme == "res")
                 {
                     FileName = source.AbsolutePath.Split('/').Last();
                 }
+                else
+                {
+                    var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");
+                    var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
+                    FileName = fileNameWithoutExtension + ".ttf";
+                }
+
+                Location = new Uri(source.OriginalString.Replace("." + FileName, ""), UriKind.RelativeOrAbsolute);
             }
             else
             {
@@ -202,7 +201,7 @@ namespace Avalonia.Media
         {
             var assembly = GetAssembly(location);
 
-            var compareTo = fileName.Split('*').First();
+            var compareTo = GetLocationPath(location) + fileName.Split('*').First();
 
             var matchingResources = assembly.Resources.Where(x => x.Contains(compareTo));
 
@@ -218,18 +217,9 @@ namespace Avalonia.Media
         {
             if (uri.Scheme == "resm") return uri.AbsolutePath;
 
-            var path = new StringBuilder();
+            var path = uri.AbsolutePath.Replace("/", ".");
 
-            for (var index = 0; index < uri.Segments.Length; index++)
-            {
-                path.Append(uri.Segments[index]);
-                if (index < uri.Segments.Length - 1)
-                {
-                    path.Append('.');
-                }
-            }
-
-            return path.ToString();
+            return path;
         }
 
         private AssemblyDescriptor GetAssembly(Uri uri)
