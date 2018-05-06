@@ -23,7 +23,7 @@ namespace Avalonia.Input
         {
             if (target == null)
                 return DragDropEffects.None;
-            var args = new DragEventArgs(routedEvent, data, target, target != null ? inputRoot.TranslatePoint(point, target) : point)
+            var args = new DragEventArgs(routedEvent, data, target, inputRoot.TranslatePoint(point, target))
             {
                 RoutedEvent = routedEvent,
                 DragEffects = operation
