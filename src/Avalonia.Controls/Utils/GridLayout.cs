@@ -16,7 +16,8 @@ namespace Avalonia.Controls.Utils
     {
         /// <summary>
         /// Initialize a new <see cref="GridLayout"/> instance from the column definitions.
-        /// <see cref="GridLayout"/> will forget that the layout data comes from the columns.
+        /// The instance doesn't care about whether the definitions are rows or columns.
+        /// It will not calculate the column or row differently.
         /// </summary>
         internal GridLayout([NotNull] ColumnDefinitions columns)
         {
@@ -28,7 +29,8 @@ namespace Avalonia.Controls.Utils
 
         /// <summary>
         /// Initialize a new <see cref="GridLayout"/> instance from the row definitions.
-        /// <see cref="GridLayout"/> will forget that the layout data comes from the rows.
+        /// The instance doesn't care about whether the definitions are rows or columns.
+        /// It will not calculate the column or row differently.
         /// </summary>
         internal GridLayout([NotNull] RowDefinitions rows)
         {
@@ -46,6 +48,7 @@ namespace Avalonia.Controls.Utils
         /// <summary>
         /// Gets all the length conventions that come from column/row definitions.
         /// These conventions provide limitations of each grid cell.
+        /// Limitations: the expected pixel length, the min/max pixel length, the * count.
         /// </summary>
         [NotNull]
         private readonly List<LengthConvention> _conventions;
@@ -81,10 +84,10 @@ namespace Avalonia.Controls.Utils
             if (getDesiredLength == null) throw new ArgumentNullException(nameof(getDesiredLength));
 
             // M1/7. Find all the Auto and * length columns/rows.
-            // Only these columns/rows' layout can be affected by the children desired size.
+            // Only these columns/rows' layout can be affected by the child desired size.
             // 
-            // Find all columns/rows that has the length Auto or *. We'll measure the children in advance.
-            // Only these kind of columns/rows will affects the Grid layout.
+            // Find all columns/rows that have Auto or * length. We'll measure the children in advance.
+            // Only these kind of columns/rows will affect the Grid layout.
             // Please note:
             // - The columns/rows of Auto length will definitely be affected by the children size;
             // - However, only the Grid.DesiredSize can be affected by the *-length columns/rows unless the Grid has very much space (Infinitely).
@@ -99,8 +102,8 @@ namespace Avalonia.Controls.Utils
             // 寻找所有行列范围中包含 Auto 和 * 的元素，使用全部可用尺寸提前测量。
             // 因为只有这部分元素的布局才会被 Grid 的子元素尺寸影响。
             // 请注意：
-            // - Auto 长度的行列必定会受到子元素布局影响，会影响到行列的布局长度；
-            // - 而对于 * 长度，一般只有 Grid.DesiredSize 会受到子元素布局影响，只有在 Grid 布局空间充足时行列长度才会被子元素布局影响。
+            // - Auto 长度的行列必定会受到子元素布局影响，会影响到行列的布局长度和 Grid 本身的 DesiredSize；
+            // - 而对于 * 长度，只有 Grid.DesiredSize 会受到子元素布局影响，而行列长度不会受影响。
 
             // Find all the Auto and * length columns/rows.
             var found = new Dictionary<T, (int index, int span)>();
@@ -138,7 +141,7 @@ namespace Avalonia.Controls.Utils
         /// The container length. Usually, it is the constraint of the <see cref="Layoutable.MeasureOverride"/> method.
         /// </param>
         /// <returns>
-        /// The measured result that containing the desired size and all the column/row length.
+        /// The measured result that containing the desired size and all the column/row lengths.
         /// </returns>
         [NotNull, Pure]
         internal MeasureResult Measure(double containerLength)
@@ -149,7 +152,7 @@ namespace Avalonia.Controls.Utils
             var aggregatedLength = 0.0;
             double starUnitLength;
 
-            // M2/7. Aggregate all the pixel lengths. Then we can get the rest length by `containerLength - aggregatedLength`.
+            // M2/7. Aggregate all the pixel lengths. Then we can get the remaining length by `containerLength - aggregatedLength`.
             // We mark the aggregated length as "fix" because we can completely determine their values. Same as below.
             //
             // +-----------------------------------------------------------+
@@ -176,7 +179,7 @@ namespace Avalonia.Controls.Utils
             while (shouldTestStarMin)
             {
                 // Calculate the unit * length to estimate the length of each column/row that has * length.
-                // Under this estimated length, look for if there is a minimum value that has a length less than its constraint.
+                // Under this estimated length, check if there is a minimum value that has a length less than its constraint.
                 // If there is such a *, then fix the size of this cell, and then loop it again until there is no * that can be constrained by the minimum value.
                 //
                 // 计算单位 * 的长度，以便预估出每一个 * 行列的长度。
@@ -245,7 +248,7 @@ namespace Avalonia.Controls.Utils
             var desiredStarMin = AggregateAdditionalConventionsForStars(conventions);
             aggregatedLength += desiredStarMin;
 
-            // M6/7. Determine the desired length of the grid for current container length. Its value stores in desiredLength.
+            // M6/7. Determine the desired length of the grid for current container length. Its value is stored in desiredLength.
             // Assume if the container has infinite length, the grid desired length is stored in greedyDesiredLength.
             //
             // +-----------------------------------------------------------+
@@ -370,7 +373,7 @@ namespace Avalonia.Controls.Utils
             // 1. Determine all one-span column's desired widths or row's desired heights.
             // 2. Order the multi-span conventions by its last index
             //    (Notice that the sorting data source is much smaller than the original children source.)
-            // 3. Determin each multi-span last index by calculating the maximun desired size.
+            // 3. Determine each multi-span last index by calculating the maximun desired size.
 
             // Before we determine the behavior of this method, we just aggregate the one-span * columns.
 
@@ -401,10 +404,10 @@ namespace Avalonia.Controls.Utils
         }
 
         /// <summary>
-        /// This method implement the last procedure (M7/7) of measure.
-        /// It expand all the * length to the fixed length according to the <paramref name="constraint"/>.
+        /// This method implements the last procedure (M7/7) of measure.
+        /// It expands all the * length to the fixed length according to the <paramref name="constraint"/>.
         /// </summary>
-        /// <param name="conventions">All the conventions that have almost been fixed except the rest *.</param>
+        /// <param name="conventions">All the conventions that have almost been fixed except the remaining *.</param>
         /// <param name="constraint">The container length.</param>
         /// <returns>The final pixel length list.</returns>
         [Pure]
@@ -466,7 +469,7 @@ namespace Avalonia.Controls.Utils
         /// We should clip the columns/rows that have been out of the container bounds.
         /// Note: This method may change the items value of <paramref name="lengthList"/>.
         /// </summary>
-        /// <param name="lengthList">All the column width list or the row height list with fixed pixel length.</param>
+        /// <param name="lengthList">A list of all the column widths and row heights with a fixed pixel length</param>
         /// <param name="constraint">the container length. It can be positive infinity.</param>
         private static void Clip([NotNull] IList<double> lengthList, double constraint)
         {
@@ -582,7 +585,7 @@ namespace Avalonia.Controls.Utils
 
         /// <summary>
         /// Contains the convention that comes from the grid children.
-        /// Some child span multiple columns or rows, so even a simple column/row can have multiple conventions.
+        /// Some children span multiple columns or rows, so even a simple column/row can have multiple conventions.
         /// </summary>
         [DebuggerDisplay("{" + nameof(DebuggerDisplay) + ",nq}")]
         internal struct AdditionalLengthConvention

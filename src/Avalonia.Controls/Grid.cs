@@ -183,13 +183,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the result of last column measuring procedure.
+        /// Gets the result of the last column measurement.
         /// Use this result to reduce the arrange calculation.
         /// </summary>
         private GridLayout.MeasureResult _columnMeasureCache;
 
         /// <summary>
-        /// Gets the result of last row measuring procedure.
+        /// Gets the result of the last row measurement.
         /// Use this result to reduce the arrange calculation.
         /// </summary>
         private GridLayout.MeasureResult _rowMeasureCache;
@@ -202,8 +202,7 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size constraint)
         {
             // Situation 1/2:
-            // If the grid doesn't have any column/row definitions,
-            // it behaviors like a nomal panel.
+            // If the grid doesn't have any column/row definitions, it behaves like a normal panel.
             // GridLayout supports this situation but we handle this separately for performance.
 
             if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
@@ -225,7 +224,7 @@ namespace Avalonia.Controls
             // Situation 2/2:
             // If the grid defines some columns or rows.
             // Debug Tip:
-            //     - GridLayout doesn't hold any states, so you can drag the debugger execution
+            //     - GridLayout doesn't hold any state, so you can drag the debugger execution
             //       arrow back to any statements and re-run them without any side-effect.
 
             var measureCache = new Dictionary<Control, Size>();
@@ -236,11 +235,11 @@ namespace Avalonia.Controls
             columnLayout.AppendMeasureConventions(safeColumns, child => MeasureOnce(child, constraint).Width);
             rowLayout.AppendMeasureConventions(safeRows, child => MeasureOnce(child, constraint).Height);
 
-            // Calculate for measuring result.
+            // Calculate measurement.
             var columnResult = columnLayout.Measure(constraint.Width);
             var rowResult = rowLayout.Measure(constraint.Height);
 
-            // Use the measure result to measure the rest children.
+            // Use the results of the measurement to measure the rest of the children.
             foreach (var child in Children.OfType<Control>())
             {
                 var (column, columnSpan) = safeColumns[child];
@@ -280,8 +279,7 @@ namespace Avalonia.Controls
         protected override Size ArrangeOverride(Size finalSize)
         {
             // Situation 1/2:
-            // If the grid doesn't have any column/row definitions,
-            // it behaviors like a nomal panel.
+            // If the grid doesn't have any column/row definitions, it behaves like a normal panel.
             // GridLayout supports this situation but we handle this separately for performance.
 
             if (ColumnDefinitions.Count == 0 && RowDefinitions.Count == 0)
@@ -297,14 +295,14 @@ namespace Avalonia.Controls
             // Situation 2/2:
             // If the grid defines some columns or rows.
             // Debug Tip:
-            //     - GridLayout doesn't hold any states, so you can drag the debugger execution
+            //     - GridLayout doesn't hold any state, so you can drag the debugger execution
             //       arrow back to any statements and re-run them without any side-effect.
 
             var (safeColumns, safeRows) = GetSafeColumnRows();
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
 
-            // Calculate for arranging result.
+            // Calculate for arrange result.
             var columnResult = columnLayout.Arrange(finalSize.Width, _columnMeasureCache);
             var rowResult = rowLayout.Arrange(finalSize.Height, _rowMeasureCache);
 
@@ -339,8 +337,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Get the safe column/columnspan and safe row/rowspan.
-        /// The result of this method ensure that none of the children has a column/row out of the definitions.
+        /// This method ensures that none of the children has a column/row outside the bounds of the definitions.
         /// </summary>
+        [Pure]
         private (Dictionary<Control, (int index, int span)> safeColumns,
             Dictionary<Control, (int index, int span)> safeRows) GetSafeColumnRows()
         {
@@ -357,9 +356,9 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the safe row/column and rowspan/columnspan for a specified range.
-        /// The user may assign the row/column properties out of the row count or column cout, this method helps to keep them in.
+        /// The user may assign row/column properties outside the bounds of the row/column count, this method coerces them inside.
         /// </summary>
-        /// <param name="length">The rows count or the columns count.</param>
+        /// <param name="length">The row or column count.</param>
         /// <param name="userIndex">The row or column that the user assigned.</param>
         /// <param name="userSpan">The rowspan or columnspan that the user assigned.</param>
         /// <returns>The safe row/column and rowspan/columnspan.</returns>
