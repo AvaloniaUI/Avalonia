@@ -183,13 +183,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the result of last column measuring produce.
+        /// Gets the result of last column measuring procedure.
         /// Use this result to reduce the arrange calculation.
         /// </summary>
         private GridLayout.MeasureResult _columnMeasureCache;
 
         /// <summary>
-        /// Gets the result of last row measuring produce.
+        /// Gets the result of last row measuring procedure.
         /// Use this result to reduce the arrange calculation.
         /// </summary>
         private GridLayout.MeasureResult _rowMeasureCache;
