@@ -2,7 +2,9 @@
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:vm="clr-namespace:BindingTest.ViewModels"
         xmlns:local="clr-namespace:BindingTest"
-        Title="AvaloniaUI Bindings Test">
+        Title="AvaloniaUI Bindings Test"
+        Width="800"
+        Height="600">
   <Window.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="18"/>

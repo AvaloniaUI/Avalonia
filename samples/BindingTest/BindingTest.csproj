@@ -7,7 +7,8 @@
     <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     
     <ProjectReference Condition="'$(TargetFramework)'=='netcoreapp2.0'"
-     Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+                      Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+                      
     <ProjectReference Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
 
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
