@@ -7,5 +7,7 @@
     <PackageLicenseUrl>https://github.com/AvaloniaUI/Avalonia/blob/master/licence.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 </Project>
