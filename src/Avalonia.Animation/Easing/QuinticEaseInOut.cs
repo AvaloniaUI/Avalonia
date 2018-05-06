@@ -13,15 +13,16 @@ namespace Avalonia.Animation.Easings
         public override double Ease(double progress)
         {
             double p = progress;
-
-            if (progress < 0.5d)
+            if (p < 0.5d)
             {
-                return 16d * p * p * p * p * p;
+                double p2 = p * p;
+                return 16d * p2 * p2 * p;
             }
             else
             {
-                double f = ((2d * p) - 2d);
-                return 0.5d * f * f * f * f * f + 1d;
+                double f = 2d * p - 2d;
+                double f2 = f * f;
+                return 0.5d * f2 * f2 * f + 1d;
             }
         }
     }

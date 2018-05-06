@@ -16,13 +16,15 @@ namespace Avalonia.Animation.Easings
 
             if (p < 0.5d)
             {
-                return 8d * p * p * p * p;
+                double p2 = p * p;
+                return 8d * p2 * p2;
             }
             else
             {
-                double f = (p - 1d);
-                return -8d * f * f * f * f + 1d;
-            }           
+                double f = p - 1d;
+                double f2 = f * f;
+                return -8d * f2 * f2 + 1d;
+            }
         }
 
     }

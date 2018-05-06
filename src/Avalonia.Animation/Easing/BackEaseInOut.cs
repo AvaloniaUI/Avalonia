@@ -19,12 +19,12 @@ namespace Avalonia.Animation.Easings
             if (p < 0.5d)
             {
                 double f = 2d * p;
-                return 0.5d * (f * f * f - f * Math.Sin(f * Math.PI));
+                return 0.5d * f * (f * f - Math.Sin(f * Math.PI));
             }
             else
             {
                 double f = (1d - (2d * p - 1d));
-                return 0.5d * (1d - (f * f * f - f * Math.Sin(f * Math.PI))) + 0.5d;
+                return 0.5d * (1d - f * (f * f - Math.Sin(f * Math.PI))) + 0.5d;
             }
         }
 

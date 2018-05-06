@@ -15,7 +15,7 @@ namespace Avalonia.Animation.Easings
         public override double Ease(double progress)
         {
             double p = 1d - progress;
-            return 1 - (p * p * p - p * Math.Sin(p * Math.PI));
+            return 1 - p * (p * p - Math.Sin(p * Math.PI));
         }
     }
 }

@@ -19,12 +19,13 @@ namespace Avalonia.Animation.Easings
 
             if (p < 0.5d)
             {
-                return 0.5d * Math.Sin(13d * EasingUtils.HALFPI * (2d * p)) * Math.Pow(2d, 10d * ((2d * p) - 1d));
+                double t = 2d * p;
+                return 0.5d * Math.Sin(13d * EasingUtils.HALFPI * t) * Math.Pow(2d, 10d * (t - 1d));
             }
             else
             {
                 return 0.5d * (Math.Sin(-13d * EasingUtils.HALFPI * ((2d * p - 1d) + 1d)) * Math.Pow(2d, -10d * (2d * p - 1d)) + 2d);
-            }            
+            }
         }
 
     }

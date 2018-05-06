@@ -12,10 +12,9 @@ namespace Avalonia.Animation.Easings
     public class BackEaseIn : Easing
     {
         /// <inheritdoc/>
-        public override double Ease(double progress)
+        public override double Ease(double p)
         {
-            double p = progress;
-            return p * p * p - p * Math.Sin(p * Math.PI); 
+            return p * (p * p - Math.Sin(p * Math.PI)); 
         }
     }
 }

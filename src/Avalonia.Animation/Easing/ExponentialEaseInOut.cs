@@ -18,11 +18,11 @@ namespace Avalonia.Animation.Easings
 
             if (p < 0.5d)
             {
-                return 0.5d * Math.Pow(2d, (20d * p) - 10d);
+                return 0.5d * Math.Pow(2d, 20d * p - 10d);
             }
             else
             {
-                return -0.5d * Math.Pow(2d, (-20d * p) + 10d) + 1d;
+                return -0.5d * Math.Pow(2d, -20d * p + 10d) + 1d;
             }
         }
 

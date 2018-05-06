@@ -12,8 +12,8 @@ namespace Avalonia.Animation.Easings
         /// <inheritdoc/>
         public override double Ease(double progress)
         {
-            return progress * progress * progress * progress;
-            
+            double p2 = progress * progress;
+            return p2 * p2;
         }
 
     }

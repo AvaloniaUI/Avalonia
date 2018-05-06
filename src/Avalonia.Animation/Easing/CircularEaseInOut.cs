@@ -17,11 +17,12 @@ namespace Avalonia.Animation.Easings
             double p = progress;
             if (p < 0.5d)
             {
-                return 0.5d * (1d - Math.Sqrt(1d - 4d * (p * p)));
+                return 0.5d * (1d - Math.Sqrt(1d - 4d * p * p));
             }
             else
             {
-                return 0.5d * (Math.Sqrt(-((2d * p) - 3d) * ((2d * p) - 1d)) + 1d);
+                double t = 2d * p;
+                return 0.5d * (Math.Sqrt((3d - t) * (t - 1d)) + 1d);
             }
         }
 

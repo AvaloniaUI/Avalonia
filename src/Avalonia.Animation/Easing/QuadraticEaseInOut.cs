@@ -20,7 +20,7 @@ namespace Avalonia.Animation.Easings
             }
             else
             {
-                return (-2d * p * p) + (4d * p) - 1d;
+                return p * (-2d * p + 4d) - 1d;
             }           
         }
 
