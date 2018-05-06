@@ -558,7 +558,18 @@ namespace Avalonia.Win32.Interop
         {
             DIB_RGB_COLORS = 0,     /* color table in RGBs */
             DIB_PAL_COLORS          /* color table in palette indices */
-        };
+        }
+
+        public enum WindowLongParam
+        {
+            GWL_WNDPROC = -4,
+            GWL_HINSTANCE = -6,
+            GWL_HWNDPARENT = -8,
+            GWL_ID = -12,
+            GWL_STYLE = -16,
+            GWL_EXSTYLE = -20,
+            GWL_USERDATA = -21
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
@@ -613,6 +624,16 @@ namespace Avalonia.Win32.Interop
 
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
             public uint[] cols;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MINMAXINFO
+        {
+            public POINT ptReserved;
+            public POINT ptMaxSize;
+            public POINT ptMaxPosition;
+            public POINT ptMinTrackSize;
+            public POINT ptMaxTrackSize;
         }
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
@@ -848,6 +869,9 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
+
+        [DllImport("user32.dll", EntryPoint = "SetCursor")]
+        internal static extern IntPtr SetCursor(IntPtr hCursor);
 
         [DllImport("ole32.dll", PreserveSig = true)]
         internal static extern int CoCreateInstance(ref Guid clsid,
