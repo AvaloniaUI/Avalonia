@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SharpDX;
 using DWrite = SharpDX.DirectWrite;
@@ -26,17 +27,13 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();          
+            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
             DWrite.TextFormat textFormat;
 
             if (typeface.FontFamily.Key != null)
             {
-                var fontFamilyCache = new FontFamilyCache();
-
-                var fontFamily = fontFamilyCache.GetOrAddFontFamily(typeface.FontFamily.Key);
-
-                var fontCollection = Direct2D1CustomFontCollectionCache.GetOrAddCustomFontCollection(fontFamily, factory);
+                var fontCollection = Direct2D1CustomFontCollectionCache.GetOrAddCustomFontCollection(typeface.FontFamily.Key, factory);
 
                 textFormat = new DWrite.TextFormat(
                         factory,
@@ -54,6 +51,7 @@ namespace Avalonia.Direct2D1.Media
                     typeface.FontFamily.Name,
                     (DWrite.FontWeight)typeface.Weight,
                     (DWrite.FontStyle)typeface.Style,
+                    DWrite.FontStretch.Normal,
                     (float)typeface.FontSize);
             }
 
@@ -154,13 +152,15 @@ namespace Avalonia.Direct2D1.Media
         private static readonly ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection> s_cachedFonts =
             new ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection>();
 
-        public static DWrite.FontCollection GetOrAddCustomFontCollection(CachedFontFamily fontFamily, DWrite.Factory factory)
+        public static DWrite.FontCollection GetOrAddCustomFontCollection(FontFamilyKey key, DWrite.Factory factory)
         {
-            return s_cachedFonts.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(fontFamily, factory));
+            return s_cachedFonts.GetOrAdd(key, x => CreateCustomFontCollection(key, factory));
         }
 
-        private static DWrite.FontCollection CreateCustomFontCollection(CachedFontFamily fontFamily, DWrite.Factory factory)
+        private static DWrite.FontCollection CreateCustomFontCollection(FontFamilyKey key, DWrite.Factory factory)
         {
+            var fontFamily = FontFamilyCache.GetOrAddFontFamily(key);
+
             var fontLoader = new ResourceFontLoader(factory, fontFamily.FontResources);
 
             return new DWrite.FontCollection(factory, fontLoader, fontLoader.Key);

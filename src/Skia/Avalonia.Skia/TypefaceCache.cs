@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -47,7 +48,7 @@ namespace Avalonia.Skia
 
         unsafe static SKTypeface GetTypeface(FontFamily fontFamily, FontKey key)
         {
-            var familyKey = fontFamily.Key.ToString();
+            var familyKey = fontFamily.Name;
 
             if (!Cache.TryGetValue(familyKey, out var entry))
             {
@@ -56,21 +57,41 @@ namespace Avalonia.Skia
 
             if (!entry.TryGetValue(key, out var typeface))
             {
-                //if (fontFamily.BaseUri != null)
-                //{
-                //    var stream = AvaloniaLocator.Current.GetService<IAssetLoader>().Open(fontFamily.BaseUri);
+                if (fontFamily.Key != null)
+                {
+                    var cachedFontFamily = FontFamilyCache.GetOrAddFontFamily(fontFamily.Key);
 
-                //    typeface = SKTypeface.FromStream(stream);
-                //}
-                //else
-                //{
-                    typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
+                    var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+
+                    foreach (var fontResource in cachedFontFamily.FontResources)
+                    {
+                        var stream = assetLoader.Open(fontResource.Source);
+
+                        typeface = SKTypeface.FromStream(stream);
+
+                        if (typeface.FamilyName != familyKey) continue;
+
+                        var fontKey = new FontKey((SKFontStyleWeight)typeface.FontWeight, typeface.FontSlant);
+
+                        entry[fontKey] = typeface;
+                    }
+
+                    entry.TryGetValue(key, out typeface);
 
                     if (typeface == null)
                     {
-                        typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
+                        typeface = SKTypeface.FromFamilyName(null);
                     }
-                //}
+
+                    return typeface;
+                }
+
+                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
+
+                if (typeface == null)
+                {
+                    typeface = SKTypeface.FromFamilyName(null);
+                }
 
                 entry[key] = typeface;
             }
