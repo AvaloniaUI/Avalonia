@@ -27,6 +27,11 @@ namespace Avalonia.UnitTests
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(_assets[uri]));
         }
+        
+        public Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        {
+            return Tuple.Create(Open(uri, baseUri), (Assembly)null);
+        }
 
         public void SetDefaultAssembly(Assembly asm)
         {

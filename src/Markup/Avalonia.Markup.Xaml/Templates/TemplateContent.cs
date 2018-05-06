@@ -10,8 +10,10 @@ namespace Avalonia.Markup.Xaml.Templates
 
     public class TemplateContent
     {
-        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader)
+        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader,
+            IAmbientProvider ambientProvider)
         {
+            ParentAmbientProvider = ambientProvider;
             List = new XamlNodeList(reader.SchemaContext);
 
             //we need to rpeserve all namespace and prefixes to writer
@@ -26,9 +28,11 @@ namespace Avalonia.Markup.Xaml.Templates
 
         public XamlNodeList List { get; }
 
+        private IAmbientProvider ParentAmbientProvider { get; }
+
         public IControl Load()
         {
-            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader());
+            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader(), parentAmbientProvider: ParentAmbientProvider);
         }
 
         public static IControl Load(object templateContent)
