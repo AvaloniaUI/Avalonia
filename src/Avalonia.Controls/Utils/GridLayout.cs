@@ -367,21 +367,37 @@ namespace Avalonia.Controls.Utils
         private double AggregateAdditionalConventionsForStars(
             IReadOnlyList<LengthConvention> conventions)
         {
-            // Note: The comment in this method is just a draft.
-            // +-----------------------------------------------------------+
-            // |  *  |  P  |  *  |  P  |  P  |  *  |  P  |     *     |  *  |
-            // +-----------------------------------------------------------+
-            // |<-      x      ->|                 |<-         z         ->|
-            //       |<-         y         ->|
-            // conveniences 是上面看到的那个列表，所有能够确定的 A、P 和 * 都已经转换成了 P；剩下的 * 只有 Max 是没确定的。
-            // _additionalConventions 是上面的 x、y、z…… 集合，只有最小值是可用的。
-            // 需要返回所有标记为 * 的方格的累加和的最小值。
+            // 1. Determine all one-span column's desired widths or row's desired heights.
+            // 2. Order the multi-span conventions by its last index
+            //    (Notice that the sorting data source is much smaller than the original children source.)
+            // 3. Determin each multi-span last index by calculating the maximun desired size.
 
             // Before we determine the behavior of this method, we just aggregate the one-span * columns.
-            var lookup = _additionalConventions
+
+            var fixedLength = conventions.Where(x => x.Length.IsAbsolute).Sum(x => x.Length.Value);
+
+            // Prepare a lengthList variable indicating the fixed length of each column/row.
+            var lengthList = conventions.Select(x => x.Length.IsAbsolute ? x.Length.Value : 0.0).ToList();
+            foreach (var group in _additionalConventions
                 .Where(x => x.Span == 1 && conventions[x.Index].Length.IsStar)
-                .ToLookup(x => x.Index);
-            return lookup.Select(group => group.Max(x => x.Min)).Sum();
+                .ToLookup(x => x.Index))
+            {
+                lengthList[group.Key] = Math.Max(lengthList[group.Key], group.Max(x => x.Min));
+            }
+
+            // Now the lengthList is fixed by every one-span columns/rows.
+            // Then we should determine the multi-span column's/row's length.
+            foreach (var group in _additionalConventions
+                .Where(x => x.Span > 1)
+                .ToLookup(x => x.Index + x.Span - 1)
+                // Order the multi-span columns/rows by last index.
+                .OrderBy(x => x.Key))
+            {
+                var length = group.Max(x => x.Min - Enumerable.Range(x.Index, x.Span - 1).Sum(r => lengthList[r]));
+                lengthList[group.Key] = Math.Max(lengthList[group.Key], length > 0 ? length : 0);
+            }
+
+            return lengthList.Sum() - fixedLength;
         }
 
         /// <summary>
