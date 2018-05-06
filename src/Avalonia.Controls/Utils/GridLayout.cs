@@ -89,8 +89,10 @@ namespace Avalonia.Controls.Utils
             // Find all columns/rows that have Auto or * length. We'll measure the children in advance.
             // Only these kind of columns/rows will affect the Grid layout.
             // Please note:
-            // - The columns/rows of Auto length will definitely be affected by the children size;
-            // - However, only the Grid.DesiredSize can be affected by the *-length columns/rows unless the Grid has very much space (Infinitely).
+            // - If the column / row has Auto length, the Grid.DesiredSize and the column width
+            //   will be affected by the child's desired size.
+            // - If the column / row has* length, the Grid.DesiredSize will be affected by the
+            //   child's desired size but the column width not.
 
             //               +-----------------------------------------------------------+
             //               |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
@@ -205,7 +207,7 @@ namespace Avalonia.Controls.Utils
                 shouldTestStarMin = @fixed;
             }
 
-            // M4/7. Fix all the Auto lengths that the children on its column/row have a zero or non-zero length.
+            // M4/7. Determine the absolute pixel size of all columns/rows that have an Auto length.
             //
             // +-----------------------------------------------------------+
             // |  *  |  A  |  *  |  P  |  A  |  *  |  P  |     *     |  *  |
@@ -319,7 +321,7 @@ namespace Avalonia.Controls.Utils
         /// <summary>
         /// Use the <see cref="_additionalConventions"/> to calculate the fixed length of the Auto column/row.
         /// </summary>
-        /// <param name="conventions">The convention list that has same length fixed.</param>
+        /// <param name="conventions">The convention list that all the * with minimum length are fixed.</param>
         /// <param name="index">The column/row index that should be fixed.</param>
         /// <param name="starUnitLength">The unit * length for the current rest length.</param>
         /// <returns>The final length of the Auto length column/row.</returns>
@@ -372,7 +374,7 @@ namespace Avalonia.Controls.Utils
         {
             // 1. Determine all one-span column's desired widths or row's desired heights.
             // 2. Order the multi-span conventions by its last index
-            //    (Notice that the sorting data source is much smaller than the original children source.)
+            //    (Notice that the sorted data is much smaller than the source.)
             // 3. Determine each multi-span last index by calculating the maximun desired size.
 
             // Before we determine the behavior of this method, we just aggregate the one-span * columns.
@@ -542,8 +544,8 @@ namespace Avalonia.Controls.Utils
             internal double MaxLength { get; }
 
             /// <summary>
-            /// Fix the <see cref="LengthConvention"/>. If all columns/rows are fixed,
-            /// we can get the double pixel list of all columns/row.
+            /// Fix the <see cref="LengthConvention"/>.
+            /// If all columns/rows are fixed, we can get the size of all columns/rows in pixels.
             /// </summary>
             /// <param name="pixel">
             /// The pixel length that should be used to fix the convention.
