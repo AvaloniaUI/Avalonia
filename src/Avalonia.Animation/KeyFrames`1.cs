@@ -17,17 +17,17 @@ namespace Avalonia.Animation
     public abstract class KeyFrames<T> : AvaloniaList<KeyFrame>, IKeyFrames
     {
         
-        private bool _isVerfifiedAndConverted;
-
-        /// <summary>
-        /// Target property.
-        /// </summary>
-        public AvaloniaProperty Property { get; set; }
-
         /// <summary>
         /// List of type-converted keyframes.
         /// </summary>
-        public Dictionary<double, T> ConvertedKeyframes = new Dictionary<double, T>();
+        private Dictionary<double, T> _convertedKeyframes = new Dictionary<double, T>();
+
+        private bool _isVerfifiedAndConverted;
+
+        /// <summary>
+        /// Gets or sets the target property for the keyframe.
+        /// </summary>
+        public AvaloniaProperty Property { get; set; }
 
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
@@ -47,38 +47,38 @@ namespace Avalonia.Animation
 
         /// <summary>
         /// Get the nearest pair of cue-time ordered keyframes 
-        /// according to the given time parameter that is relative to
+        /// according to the given time parameter that is relative to the
         /// total animation time and the normalized intra-keyframe pair time 
         /// (i.e., the normalized time between the selected keyframes, relative to the
         /// time parameter).
         /// </summary>
         /// <param name="t">The time parameter, relative to the total animation time</param>
-        public (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
+        protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
         {
             KeyValuePair<double, T> firstCue, lastCue;
-            int kvCount = ConvertedKeyframes.Count();
+            int kvCount = _convertedKeyframes.Count();
             if (kvCount > 2)
             {
                 if (DoubleUtils.AboutEqual(t, 0.0) || t < 0.0)
                 {
-                    firstCue = ConvertedKeyframes.First();
-                    lastCue = ConvertedKeyframes.Skip(1).First();
+                    firstCue = _convertedKeyframes.First();
+                    lastCue = _convertedKeyframes.Skip(1).First();
                 }
                 else if (DoubleUtils.AboutEqual(t, 1.0) || t > 1.0)
                 {
-                    firstCue = ConvertedKeyframes.Skip(kvCount - 2).First();
-                    lastCue = ConvertedKeyframes.Last();
+                    firstCue = _convertedKeyframes.Skip(kvCount - 2).First();
+                    lastCue = _convertedKeyframes.Last();
                 }
                 else
                 {
-                    firstCue = ConvertedKeyframes.Where(j => j.Key <= t).Last();
-                    lastCue = ConvertedKeyframes.Where(j => j.Key >= t).First();
+                    firstCue = _convertedKeyframes.Where(j => j.Key <= t).Last();
+                    lastCue = _convertedKeyframes.Where(j => j.Key >= t).First();
                 }
             }
             else
             {
-                firstCue = ConvertedKeyframes.First();
-                lastCue = ConvertedKeyframes.Last();
+                firstCue = _convertedKeyframes.First();
+                lastCue = _convertedKeyframes.Last();
             }
 
             double t0 = firstCue.Key;
@@ -91,7 +91,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        public IDisposable RunKeyFrames(Animation animation, Animatable control)
+        private IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
             var _kfStateMach = new KeyFramesStateMachine<T>();
             _kfStateMach.Initialize(animation, control, this);
@@ -109,12 +109,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Interpolates a value given the desired time.
         /// </summary>
-        public abstract T DoInterpolation(double time);
-
-
-        // public abstract IObservable<T> DoInterpolation(IObservable<double> timer, Animation animation,
-        //                                                Animatable control);
-
+        protected abstract T DoInterpolation(double time);
 
         /// <summary>
         /// Verifies and converts keyframe values according to this class's target type.
@@ -144,11 +139,11 @@ namespace Avalonia.Animation
                     _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
                 }
 
-                ConvertedKeyframes.Add(_normalizedCue.CueValue, convertedValue);
+                _convertedKeyframes.Add(_normalizedCue.CueValue, convertedValue);
 
             }
 
-            SortKeyFrameCues(ConvertedKeyframes);
+            SortKeyFrameCues(_convertedKeyframes);
             _isVerfifiedAndConverted = true;
 
         }
@@ -158,9 +153,8 @@ namespace Avalonia.Animation
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
 
-            // this can be optional later, by making the default start/end keyframes
-            // to have a neutral value (a.k.a. the value prior to the animation).
-            foreach (var converted in ConvertedKeyframes.Keys)
+            // Make start and end keyframe mandatory.
+            foreach (var converted in _convertedKeyframes.Keys)
             {
                 if (DoubleUtils.AboutEqual(converted, 0.0))
                 {
@@ -177,8 +171,8 @@ namespace Avalonia.Animation
                     ($"{this.GetType().Name} must have a starting (0% cue) and ending (100% cue) keyframe.");
 
             // Sort Cues, in case users don't order it by themselves.
-            ConvertedKeyframes = ConvertedKeyframes.OrderBy(p => p.Key)
-                                                   .ToDictionary((k) => k.Key, (v) => v.Value);
+            _convertedKeyframes = _convertedKeyframes.OrderBy(p => p.Key)
+                                                     .ToDictionary((k) => k.Key, (v) => v.Value);
         }
 
     }

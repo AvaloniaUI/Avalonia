@@ -88,11 +88,8 @@ namespace Avalonia.Styling
             {
                 return _animations ?? (_animations = new List<IAnimation>());
             }
-            set
-            {
-                _animations = value;
-            }
         }
+
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;
 
@@ -118,8 +115,7 @@ namespace Avalonia.Styling
 
                     foreach (var animation in Animations)
                     {
-                        // TODO: Needs more work in passing the appropriate
-                        //       observable.
+
                         IObservable<bool> obsMatch = match.ObservableResult;
 
                         if (match.ImmediateResult == true)

@@ -11,7 +11,7 @@ using Avalonia.Media;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Key frames that handles <see cref="double"/> properties.
+    /// Keyframes that handles <see cref="Transform"/> properties.
     /// </summary>
     public class TransformKeyFrames : KeyFrames<double>
     {
@@ -29,7 +29,7 @@ namespace Avalonia.Animation
 
                 if (childKeyFrames == null)
                 {
-                    InitializeInternalDoubleKeyFrames();
+                    InitializeChildKeyFrames();
                 }
 
                 // It's a transform object so let's target that.
@@ -49,6 +49,7 @@ namespace Avalonia.Animation
                     }
                 }
 
+                //TODO: determine correctly when to throw this error.
                 //throw new InvalidOperationException($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
 
                 return null;
@@ -56,11 +57,11 @@ namespace Avalonia.Animation
             }
             else
             {
-                throw new Exception($"Unsupported property {Property}");
+                throw new Exception($"Cannot apply keyframe: property {Property} is not a Transform");
             }
         }
 
-        void InitializeInternalDoubleKeyFrames()
+        void InitializeChildKeyFrames()
         {
             childKeyFrames = new DoubleKeyFrames();
 
@@ -73,6 +74,6 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public override double DoInterpolation(double time) => 0;
+        protected override double DoInterpolation(double time) => 0;
     }
 }

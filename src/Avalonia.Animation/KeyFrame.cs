@@ -64,7 +64,4 @@ namespace Avalonia.Animation
         public object Value { get; set; }
 
     }
-
-
-
 }

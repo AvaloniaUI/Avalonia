@@ -23,7 +23,7 @@ namespace Avalonia.Animation
         /// </summary>
         public Animatable()
         {
-            Transitions = new Transitions.Transitions();
+            Transitions = new Transitions();
             AnimatableTimer = Timing.AnimationStateTimer
                                 .Select(p =>
                                 {
