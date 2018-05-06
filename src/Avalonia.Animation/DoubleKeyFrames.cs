@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Avalonia.Animation.Utils;
 using Avalonia.Data;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Key frames that handles <see cref="double"/> properties.

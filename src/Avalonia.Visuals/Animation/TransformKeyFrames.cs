@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 using System.Linq;
 using Avalonia.Media;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Key frames that handles <see cref="double"/> properties.

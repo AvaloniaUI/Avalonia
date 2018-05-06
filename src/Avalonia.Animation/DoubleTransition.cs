@@ -5,19 +5,19 @@ using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 
-namespace Avalonia.Animation.Transitions
+namespace Avalonia.Animation
 {
     /// <summary>
-    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="float"/> types.
+    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="double"/> types.
     /// </summary>  
-    public class FloatTransition : Transition<float>
+    public class DoubleTransition : Transition<double>
     {
         /// <inheritdocs/>
-        public override IObservable<float> DoTransition(IObservable<double> progress, float oldValue, float newValue)
+        public override IObservable<double> DoTransition(IObservable<double> progress, double oldValue, double newValue)
         {
             var delta = newValue - oldValue;
             return progress
-                .Select(p => (float)Easing.Ease(p) * delta + oldValue);
+                .Select(p => Easing.Ease(p) * delta + oldValue);
         }
     }
 }

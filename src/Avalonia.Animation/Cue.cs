@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// A Cue object for <see cref="KeyFrame"/>. 

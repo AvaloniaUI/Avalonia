@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.Data;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Provides statefulness for an iteration of a keyframe group animation.

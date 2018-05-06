@@ -6,7 +6,7 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 
-namespace Avalonia.Animation.Transitions
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Defines how a property should be animated using a transition.

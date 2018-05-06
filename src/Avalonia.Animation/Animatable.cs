@@ -6,7 +6,7 @@ using Avalonia.Data;
 using System;
 using System.Reactive.Linq;
 using Avalonia.Collections;
-using Avalonia.Animation.Transitions;
+using Avalonia.Animation;
 using System.Collections.Generic;
 using System.Threading;
 using System.Collections.Concurrent;

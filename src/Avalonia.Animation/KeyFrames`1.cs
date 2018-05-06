@@ -9,13 +9,15 @@ using System.Linq;
 using Avalonia.Data;
 using System.Reactive.Disposables;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Base class for KeyFrames objects
     /// </summary>
     public abstract class KeyFrames<T> : AvaloniaList<KeyFrame>, IKeyFrames
     {
+        
+        private bool _isVerfifiedAndConverted;
 
         /// <summary>
         /// Target property.
@@ -27,13 +29,10 @@ namespace Avalonia.Animation.Keyframes
         /// </summary>
         public Dictionary<double, T> ConvertedKeyframes = new Dictionary<double, T>();
 
-        private bool IsVerfifiedAndConverted;
-
-
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
-            if (!IsVerfifiedAndConverted)
+            if (!_isVerfifiedAndConverted)
                 VerifyConvertKeyFrames(animation, typeof(T));
 
             return obsMatch
@@ -150,7 +149,7 @@ namespace Avalonia.Animation.Keyframes
             }
 
             SortKeyFrameCues(ConvertedKeyframes);
-            IsVerfifiedAndConverted = true;
+            _isVerfifiedAndConverted = true;
 
         }
 

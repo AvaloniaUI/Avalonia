@@ -9,7 +9,7 @@ using System.Linq;
 using Avalonia.Data;
 using System.Reactive.Disposables;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
     /// <summary>
     /// Represents a pair of keyframe, usually the

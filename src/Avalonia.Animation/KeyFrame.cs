@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 
-namespace Avalonia.Animation.Keyframes
+namespace Avalonia.Animation
 {
 
     /// <summary>
