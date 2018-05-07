@@ -12,7 +12,6 @@ using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -218,11 +217,6 @@ namespace Avalonia
             }
             else
             {
-                if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-                {
-                    ThrowNotRegistered(property);
-                }
-
                 return GetValueInternal(property);
             }
         }
@@ -376,11 +370,6 @@ namespace Avalonia
             else
             {
                 PriorityValue v;
-
-                if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-                {
-                    ThrowNotRegistered(property);
-                }
 
                 if (!_values.TryGetValue(property, out v))
                 {
@@ -804,11 +793,6 @@ namespace Avalonia
 
             var originalValue = value;
 
-            if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-            {
-                ThrowNotRegistered(property);
-            }
-
             if (!TypeUtilities.TryConvertImplicit(property.PropertyType, value, out value))
             {
                 throw new ArgumentException(string.Format(
@@ -836,18 +820,32 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Given a <see cref="AvaloniaProperty"/> returns a registered avalonia property that is
-        /// equal or throws if not found.
+        /// Given a direct property, returns a registered avalonia property that is equivalent or
+        /// throws if not found.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The registered property.</returns>
-        public AvaloniaProperty GetRegistered(AvaloniaProperty property)
+        private AvaloniaProperty GetRegistered(AvaloniaProperty property)
         {
-            var result = AvaloniaPropertyRegistry.Instance.FindRegistered(this, property);
+            var direct = property as IDirectPropertyAccessor;
+
+            if (direct == null)
+            {
+                throw new AvaloniaInternalException(
+                    "AvaloniaObject.GetRegistered should only be called for direct properties");
+            }
+
+            if (property.OwnerType.IsAssignableFrom(GetType()))
+            {
+                return property;
+            }
+
+            var result =  AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                .FirstOrDefault(x => x == property);
 
             if (result == null)
             {
-                ThrowNotRegistered(property);
+                throw new ArgumentException($"Property '{property.Name} not registered on '{this.GetType()}");
             }
 
             return result;
@@ -897,16 +895,6 @@ namespace Avalonia
                 property,
                 value,
                 priority);
-        }
-
-        /// <summary>
-        /// Throws an exception indicating that the specified property is not registered on this
-        /// object.
-        /// </summary>
-        /// <param name="p">The property</param>
-        private void ThrowNotRegistered(AvaloniaProperty p)
-        {
-            throw new ArgumentException($"Property '{p.Name} not registered on '{this.GetType()}");
         }
     }
 }

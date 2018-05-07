@@ -13,7 +13,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return CornerRadius.Parse((string)value, culture);
+            return CornerRadius.Parse((string)value);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -53,31 +54,26 @@ namespace Avalonia
             return $"{TopLeft},{TopRight},{BottomRight},{BottomLeft}";
         }
 
-        public static CornerRadius Parse(string s, CultureInfo culture)
+        public static CornerRadius Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            switch (parts.Count)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Thickness"))
             {
-                case 1:
-                    var uniform = double.Parse(parts[0], culture);
-                    return new CornerRadius(uniform);
-                case 2:
-                    var top = double.Parse(parts[0], culture);
-                    var bottom = double.Parse(parts[1], culture);
-                    return new CornerRadius(top, bottom);
-                case 4:
-                    var topLeft = double.Parse(parts[0], culture);
-                    var topRight = double.Parse(parts[1], culture);
-                    var bottomRight = double.Parse(parts[2], culture);
-                    var bottomLeft = double.Parse(parts[3], culture);
-                    return new CornerRadius(topLeft, topRight, bottomRight, bottomLeft);
-                default:
+                if (tokenizer.TryReadDouble(out var a))
+                {
+                    if (tokenizer.TryReadDouble(out var b))
                     {
-                        throw new FormatException("Invalid CornerRadius.");
+                        if (tokenizer.TryReadDouble(out var c))
+                        {
+                            return new CornerRadius(a, b, c, tokenizer.ReadDouble());
+                        }
+
+                        return new CornerRadius(a, b);
                     }
+
+                    return new CornerRadius(a);
+                }
+
+                throw new FormatException("Invalid CornerRadius.");
             }
         }
 
@@ -85,7 +81,7 @@ namespace Avalonia
         {
             return cr1.TopLeft.Equals(cr2.TopLeft)
                    && cr1.TopRight.Equals(cr2.TopRight)
-                   && cr1.BottomRight.Equals(cr2.BottomRight) 
+                   && cr1.BottomRight.Equals(cr2.BottomRight)
                    && cr1.BottomLeft.Equals(cr2.BottomLeft);
         }
 
