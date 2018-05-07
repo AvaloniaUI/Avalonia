@@ -60,7 +60,7 @@ namespace Avalonia.Platform
         {
             _lastPosition = pt;
 
-            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects);
+            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, modifiers);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl.PlatformImpl.Input(rawEvent);
 
