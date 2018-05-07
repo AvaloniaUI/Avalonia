@@ -14,41 +14,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var s = (string)value;
-
-            if (string.IsNullOrEmpty(s)) throw new ArgumentException("Specified family is not supported.");
-
-            var fontFamilyExpression = s.Split('#');
-
-            if (fontFamilyExpression.Length == 1)
-            {
-                return new FontFamily(s);
-            }
-
-            string familyName;
-
-            Uri source = null;
-
-            switch (fontFamilyExpression.Length)
-            {
-                case 1:
-                    {
-                        familyName = fontFamilyExpression[0];
-                        break;
-                    }
-                case 2:
-                    {
-                        source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
-                        familyName = fontFamilyExpression[1];
-                        break;
-                    }
-                default:
-                    {
-                        throw new ArgumentException("Specified family is not supported.");
-                    }
-            }
-
-            return new FontFamily(familyName, source);
+            return FontFamily.Parse((string)value);
         }
     }
 }

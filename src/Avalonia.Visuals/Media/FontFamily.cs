@@ -60,5 +60,50 @@ namespace Avalonia.Media
 
             return Name;
         }
+
+        /// <summary>
+        /// Parses a <see cref="FontFamily"/> string.
+        /// </summary>
+        /// <param name="s">The <see cref="FontFamily"/> string.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">
+        /// Specified family is not supported.
+        /// </exception>
+        public static FontFamily Parse(string s)
+        {
+            if (string.IsNullOrEmpty(s)) throw new ArgumentException("Specified family is not supported.");
+
+            var fontFamilyExpression = s.Split('#');
+
+            if (fontFamilyExpression.Length == 1)
+            {
+                return new FontFamily(s);
+            }
+
+            string familyName;
+
+            Uri source = null;
+
+            switch (fontFamilyExpression.Length)
+            {
+                case 1:
+                {
+                    familyName = fontFamilyExpression[0];
+                    break;
+                }
+                case 2:
+                {
+                    source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
+                    familyName = fontFamilyExpression[1];
+                    break;
+                }
+                default:
+                {
+                    throw new ArgumentException("Specified family is not supported.");
+                }
+            }
+
+            return new FontFamily(familyName, source);
+        }
     }
 }
