@@ -47,8 +47,7 @@ namespace Avalonia.Controls.Utils
 
         /// <summary>
         /// Gets all the length conventions that come from column/row definitions.
-        /// These conventions provide limitations of each grid cell.
-        /// Limitations: the expected pixel length, the min/max pixel length, the * count.
+        /// These conventions provide cell limitations, such as the expected pixel length, the min/max pixel length and the * count.
         /// </summary>
         [NotNull]
         private readonly List<LengthConvention> _conventions;
@@ -61,11 +60,13 @@ namespace Avalonia.Controls.Utils
             new List<AdditionalLengthConvention>();
 
         /// <summary>
+        /// Appending these elements into the convention list helps lay them out according to their desired sizes.
+        /// <para/>
         /// Some elements are not only in a single grid cell, they have one or more column/row spans,
         /// and these elements may affect the grid layout especially the measuring procedure.<para/>
         /// Append these elements into the convention list can help to layout them correctly through
-        /// their desired size. Only a small subset of grid children need to be measured before layout
-        /// starts and they will be called via the<paramref name="getDesiredLength"/> callback.
+        /// their desired size. Only a small subset of children need to be measured before layout starts
+        /// and they will be called via the<paramref name="getDesiredLength"/> callback.
         /// </summary>
         /// <typeparam name="T">The grid children type.</typeparam>
         /// <param name="source">
@@ -83,7 +84,7 @@ namespace Avalonia.Controls.Utils
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (getDesiredLength == null) throw new ArgumentNullException(nameof(getDesiredLength));
 
-            // M1/7. Find all the Auto and * length columns/rows.
+            // M1/7. Find all the Auto and * length columns/rows. (M1/7 means the 1st procedure of measurement.)
             // Only these columns/rows' layout can be affected by the child desired size.
             // 
             // Find all columns/rows that have Auto or * length. We'll measure the children in advance.
@@ -648,7 +649,7 @@ namespace Avalonia.Controls.Utils
 
             /// <summary>
             /// Gets the container length for this result.
-            /// This property exists because a measure result is related to it.
+            /// This property will be used by <see cref="Arrange"/> to determine whether to measure again or not.
             /// </summary>
             public double ContainerLength { get; }
 
