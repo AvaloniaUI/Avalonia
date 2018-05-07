@@ -11,24 +11,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Fonts\Aspergit_Bold.ttf" />
-    <None Remove="Fonts\Aspergit_Bold_Italic.ttf" />
-    <None Remove="Fonts\Aspergit_Italic.ttf" />
-    <None Remove="Fonts\BolshevikBd.ttf" />
-    <None Remove="Fonts\PinkHighwayBold.ttf" />
-    <None Remove="Fonts\PixelOperator-Bold.ttf" />
-    <None Remove="Fonts\PixelOperator.ttf" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Fonts\Aspergit_Bold_Italic.ttf" />
-    <EmbeddedResource Include="Fonts\Aspergit_Bold.ttf" />
-    <EmbeddedResource Include="Fonts\Aspergit_Italic.ttf" />
-    <EmbeddedResource Include="Fonts\BolshevikBd.ttf" />
-    <EmbeddedResource Include="Fonts\PinkHighwayBold.ttf" />
-    <EmbeddedResource Include="Fonts\PixelOperator-Bold.ttf" />
-    <EmbeddedResource Include="Fonts\PixelOperator.ttf" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
