@@ -3,7 +3,6 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Serilog;
 
@@ -23,13 +22,13 @@ namespace ControlCatalog
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect().UseSkia();
+            => AppBuilder.Configure<App>().LogToDebug().UsePlatformDetect();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
             AvaloniaLocator.CurrentMutable
                 .GetService<IAssetLoader>()
-                .SetDefaultAssembly(typeof(App).Assembly);           
+                .SetDefaultAssembly(typeof(App).Assembly);
         }
     }
 }

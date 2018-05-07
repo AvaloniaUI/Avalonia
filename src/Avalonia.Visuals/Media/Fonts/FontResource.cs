@@ -5,6 +5,9 @@ using System;
 
 namespace Avalonia.Media.Fonts
 {
+    /// <summary>
+    /// Represents a font resource
+    /// </summary>
     public class FontResource
     {
         public FontResource(Uri source)
@@ -12,6 +15,9 @@ namespace Avalonia.Media.Fonts
             Source = source;
         }
 
+        /// <summary>
+        /// Source of the font resource.
+        /// </summary>
         public Uri Source { get; }
     }
 }

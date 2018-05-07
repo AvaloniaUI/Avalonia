@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace Avalonia.Media.Fonts
 {
+    /// <summary>
+    /// Represents a collection of <see cref="FontResource"/> that is identified by a unique <see cref="FontFamilyKey"/>
+    /// </summary>
     public class FontResourceCollection
     {
         private Dictionary<Uri, FontResource> _fontResources;
@@ -17,8 +20,20 @@ namespace Avalonia.Media.Fonts
             Key = key;
         }
 
+        /// <summary>
+        /// Gets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
         public FontFamilyKey Key { get; }
 
+        /// <summary>
+        /// Gets the font resources.
+        /// </summary>
+        /// <value>
+        /// The font resources.
+        /// </value>
         public IEnumerable<FontResource> FontResources
         {
             get
@@ -32,6 +47,10 @@ namespace Avalonia.Media.Fonts
             }
         }
 
+        /// <summary>
+        /// Creates the font resources.
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<Uri, FontResource> CreateFontResources()
         {
             return _fontResourceLoader.GetFontResources(Key).ToDictionary(x => x.Source);

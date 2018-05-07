@@ -1,38 +1,32 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-    <StackPanel Orientation="Vertical" Gap="4">
-        <TextBlock Classes="h1">Border</TextBlock>
-        <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">Border</TextBlock>
+    <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
 
-        <StackPanel Orientation="Vertical"
+    <StackPanel Orientation="Vertical"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Gap="16">
-            <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16">
-                <TextBlock>Border</TextBlock>
-            </Border>
-            <Border Background="{DynamicResource ThemeAccentBrush2}"
-              BorderBrush="{DynamicResource ThemeAccentBrush}"
-              BorderThickness="4"
+      <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16">
+        <TextBlock>Border</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource ThemeAccentBrush2}" 
+              BorderBrush="{DynamicResource ThemeAccentBrush}" 
+              BorderThickness="4" 
               Padding="16">
-                <TextBlock>Border and Background</TextBlock>
-            </Border>
-            <Border BorderBrush="{DynamicResource ThemeAccentBrush}"
-              BorderThickness="4"
+        <TextBlock>Border and Background</TextBlock>
+      </Border>
+      <Border BorderBrush="{DynamicResource ThemeAccentBrush}"
+              BorderThickness="4" 
               CornerRadius="8"
               Padding="16">
-                <TextBlock>Rounded Corners</TextBlock>
-            </Border>
-            <Border Background="{DynamicResource ThemeAccentBrush2}"
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+      <Border Background="{DynamicResource ThemeAccentBrush2}"
               CornerRadius="8"
               Padding="16">
-                <StackPanel>
-                    <TextBlock FontFamily="res:/Fonts?assembly=ControlCatalog#Pixel Operator">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="res:/Fonts?assembly=ControlCatalog#Pink Highway" FontWeight="Bold">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontWeight="Bold" FontStyle="Italic">Rounded Corners</TextBlock>
-                    <TextBlock FontFamily="res:/Fonts/Aspergit*.ttf?assembly=ControlCatalog#Aspergit" FontStyle="Italic">Rounded Corners</TextBlock>
-                </StackPanel>
-            </Border>
-        </StackPanel>
-    </StackPanel>
+        <TextBlock>Rounded Corners</TextBlock>
+      </Border>
+    </StackPanel>    
+  </StackPanel>
 </UserControl>
