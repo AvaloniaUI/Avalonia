@@ -170,11 +170,10 @@ namespace Avalonia
         /// Parses a <see cref="Point"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Thickness"/>.</returns>
-        public static Point Parse(string s, CultureInfo culture)
+        public static Point Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, culture, exceptionMessage: "Invalid Point"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point"))
             {
                 return new Point(
                     tokenizer.ReadDouble(),

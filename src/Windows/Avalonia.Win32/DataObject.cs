@@ -7,7 +7,6 @@ using System.Text;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
 using IDataObject = Avalonia.Input.IDataObject;
-using IOleDataObject = System.Runtime.InteropServices.ComTypes.IDataObject;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 

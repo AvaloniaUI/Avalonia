@@ -207,7 +207,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="control">The control.</param>
         /// <returns>The property value.</returns>
         /// <see cref="SetIsTemplateFocusTarget(Control, bool)"/>
-        public bool GetIsTemplateFocusTarget(Control control)
+        public static bool GetIsTemplateFocusTarget(Control control)
         {
             return control.GetValue(IsTemplateFocusTargetProperty);
         }
@@ -223,7 +223,7 @@ namespace Avalonia.Controls.Primitives
         /// attached property is set to true on an element in the control template, then the focus
         /// adorner will be shown around that control instead.
         /// </remarks>
-        public void SetIsTemplateFocusTarget(Control control, bool value)
+        public static void SetIsTemplateFocusTarget(Control control, bool value)
         {
             control.SetValue(IsTemplateFocusTargetProperty, value);
         }

@@ -55,7 +55,7 @@ namespace Avalonia.Platform
         /// Gets the platform window handle.
         /// </summary>
         IPlatformHandle Handle { get; }
-        
+       
         /// <summary>
         /// Gets the maximum size of a window on the system.
         /// </summary>
@@ -65,7 +65,13 @@ namespace Avalonia.Platform
         /// Sets the client size of the toplevel.
         /// </summary>
         void Resize(Size clientSize);
-        
+
+        /// <summary>
+        /// Minimum width of the window.
+        /// </summary>
+        /// 
+        void SetMinMaxSize(Size minSize, Size maxSize);
+
         /// <summary>
         /// Gets platform specific display information
         /// </summary>
