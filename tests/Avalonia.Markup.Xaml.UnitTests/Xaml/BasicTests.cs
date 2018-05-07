@@ -82,6 +82,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namspace()
+        {
+            // Test for issue #1548
+            var xaml =
+@"<UserControl xmlns='https://github.com/avaloniaui'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+  <local:TestControl Grid.Column='2' />
+</UserControl>";
+
+            var target = AvaloniaXamlLoader.Parse<UserControl>(xaml);
+
+            Assert.Equal(2, Grid.GetColumn((TestControl)target.Content));
+        }
+
+        [Fact]
         public void Attached_Property_With_Namespace_Is_Set()
         {
             var xaml =
