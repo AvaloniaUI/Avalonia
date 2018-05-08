@@ -1,0 +1,13 @@
+<Style xmlns="https://github.com/avaloniaui" xmlns:cont="clr-namespace:ControlCatalog;assembly=ControlCatalog" 
+       Selector="cont|ViewModelViewHost">
+  <Setter Property="Template">
+    <ControlTemplate>
+      <ContentControl Name="PART_ContentPresenter"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Content="{TemplateBinding Content}"
+                        Padding="{TemplateBinding Padding}"/>
+    </ControlTemplate>
+  </Setter>
+</Style>

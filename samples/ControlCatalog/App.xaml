@@ -2,8 +2,10 @@
   <Application.Styles>
     <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
     <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
+        <StyleInclude Source="resm:ControlCatalog.Controls.DocumentTabControl.xaml?assembly=ControlCatalog"/>
+        <StyleInclude Source="resm:ControlCatalog.Controls.DocumentTabItem.xaml?assembly=ControlCatalog"/>
 
-    <Style Selector="TextBlock.h1">
+        <Style Selector="TextBlock.h1">
       <Setter Property="Foreground" Value="#212121"/>
       <Setter Property="FontSize" Value="20"/>
       <Setter Property="FontWeight" Value="Medium"/>

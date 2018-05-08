@@ -1,0 +1,31 @@
+﻿<Styles xmlns:local="clr-namespace:ControlCatalog.Controls;assembly=ControlCatalog" xmlns="https://github.com/avaloniaui">
+    <Style Selector="local|DocumentTabControl">
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TabStrip Name="strip"  Items="{TemplateBinding Items}"  SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}" ItemTemplate="{TemplateBinding HeaderTemplate}">
+                            <TabStrip.Styles>
+                                <Style Selector="TabStripItem">
+                                    <Setter Property="DockPanel.Dock" Value="{Binding Dock}" />
+                                </Style>
+                            </TabStrip.Styles>
+                            <TabStrip.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <DockPanel  LastChildFill="false" />
+                                </ItemsPanelTemplate>
+                            </TabStrip.ItemsPanel>
+                        </TabStrip>
+
+                        <ContentControl Content="{TemplateBinding HeaderSeperatorContent}" />
+                    </StackPanel>
+
+                    <Carousel Name="PART_Carousel"  Items="{TemplateBinding Items}" SelectedIndex="{TemplateBinding Path=SelectedIndex}" IsVirtualized="false" ItemTemplate="{TemplateBinding ItemTemplate}" />
+                </DockPanel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>
