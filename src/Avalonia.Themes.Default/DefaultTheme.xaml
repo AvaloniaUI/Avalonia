@@ -26,6 +26,8 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.Slider.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ScrollBar.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ScrollViewer.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.StatusBar.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.StatusBarItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TabStrip.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TabStripItem.xaml?assembly=Avalonia.Themes.Default"/>
   <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->

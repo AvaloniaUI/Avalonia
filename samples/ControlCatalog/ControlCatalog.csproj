@@ -16,6 +16,7 @@
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
+    <None Remove="Pages\StatusBarPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +34,12 @@
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\StatusBarPage.xaml.cs">
+      <DependentUpon>StatusBarPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   
   <Import Project="..\..\build\Serilog.props" />

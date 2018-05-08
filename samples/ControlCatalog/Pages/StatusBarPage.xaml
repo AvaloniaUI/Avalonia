@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid>
+    <StatusBar Height="30" Background="LightGray" Margin="0,0,10,10" VerticalAlignment="Bottom">
+      <StatusBarItem VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+          <Image Source="resm:ControlCatalog.Assets.test_icon.ico" Width="20"/>
+          <TextBlock Margin="10,0,0,0" VerticalAlignment="Center">Ready</TextBlock>
+        </StackPanel>
+      </StatusBarItem>
+      
+      <StatusBarItem HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal" Height="30">
+          <StatusBarItem Content="Ln 8" VerticalAlignment="Center" Width="60" />
+          <StatusBarItem Content="Col 34" VerticalAlignment="Center"  Width="70" />
+
+          <Image Source="resm:ControlCatalog.Assets.github_icon.png" Width="20" Height="20"/>
+          <StatusBarItem Content="branch" VerticalAlignment="Center" />
+          <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True" Width="20" Height="20"/>
+          <StatusBarItem Content="repository" VerticalAlignment="Center" />
+        </StackPanel>
+      </StatusBarItem>
+    </StatusBar>
+  </Grid>
+</UserControl>
