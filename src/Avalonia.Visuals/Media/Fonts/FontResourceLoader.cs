@@ -58,7 +58,9 @@ namespace Avalonia.Media.Fonts
         {
             var assembly = GetAssembly(location);
 
-            var locationPath = GetLocationPath(location);
+            if (assembly == null) return Enumerable.Empty<FontResource>();
+
+            var locationPath = location.AbsolutePath;
 
             var matchingResources = assembly.Resources.Where(x => x.Contains(locationPath));
 
@@ -76,7 +78,9 @@ namespace Avalonia.Media.Fonts
         {
             var assembly = GetAssembly(location);
 
-            var compareTo = GetLocationPath(location) + "." + fileName.Split('*').First();
+            if (assembly == null) return Enumerable.Empty<FontResource>();
+
+            var compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
 
             var matchingResources = assembly.Resources.Where(x => x.Contains(compareTo));
 
@@ -95,20 +99,6 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Translates a given <see cref="Uri"/> to a <see cref="Uri"/> that follows the resm scheme.
-        /// </summary>
-        /// <param name="uri"></param>
-        /// <returns></returns>
-        private static string GetLocationPath(Uri uri)
-        {
-            if (uri.Scheme == "resm") return uri.AbsolutePath;
-
-            var path = uri.AbsolutePath.Replace("/", ".");
-
-            return path;
-        }
-
-        /// <summary>
         /// Extracts a <see cref="AssemblyDescriptor"/> from a given <see cref="Uri"/>
         /// </summary>
         /// <param name="uri"></param>
@@ -119,7 +109,7 @@ namespace Avalonia.Media.Fonts
 
             var parameters = ParseParameters(uri);
 
-            return parameters.TryGetValue("assembly", out var assemblyName) ? GetAssembly(assemblyName) : null;
+            return parameters.TryGetValue("assembly", out var assemblyName) ? GetAssembly(assemblyName) : _defaultAssembly;
         }
 
         /// <summary>

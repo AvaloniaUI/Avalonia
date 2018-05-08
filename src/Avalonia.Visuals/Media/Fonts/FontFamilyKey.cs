@@ -19,18 +19,10 @@ namespace Avalonia.Media.Fonts
         {
             if (source.AbsolutePath.Contains(".ttf"))
             {
-                if (source.Scheme == "res")
-                {
-                    FileName = source.AbsolutePath.Split('/').Last();
-                    Location = new Uri(source.OriginalString.Replace("/" + FileName, ""), UriKind.RelativeOrAbsolute);
-                }
-                else
-                {
-                    var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");
-                    var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
-                    FileName = fileNameWithoutExtension + ".ttf";
-                    Location = new Uri(source.OriginalString.Replace("." + FileName, ""), UriKind.RelativeOrAbsolute);
-                }            
+                var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");
+                var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
+                FileName = fileNameWithoutExtension + ".ttf";
+                Location = new Uri(source.OriginalString.Replace("." + FileName, ""), UriKind.RelativeOrAbsolute);
             }
             else
             {
@@ -96,12 +88,7 @@ namespace Avalonia.Media.Fonts
         {
             if (FileName != null)
             {
-                if (Location.Scheme == "resm")
-                {
-                    return Location.AbsolutePath + "." + FileName;
-                }
-
-                return Location.AbsolutePath + "/" + FileName;
+                return Location.AbsolutePath + "." + FileName;
             }
 
             return Location.AbsolutePath;
