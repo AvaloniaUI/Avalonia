@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Portable.Xaml;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
@@ -123,6 +124,24 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Empty(target.Children);
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
+        }
+
+        [Fact]
+        public void NonExistent_Property_Throws()
+        {
+            var xaml =
+        @"<ContentControl xmlns='https://github.com/avaloniaui' DoesntExist='foo'/>";
+
+            Assert.Throws<XamlObjectWriterException>(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
+        }
+
+        [Fact]
+        public void Non_Attached_Property_With_Attached_Property_Syntax_Throws()
+        {
+            var xaml =
+        @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.Text='foo'/>";
+
+            Assert.Throws<XamlObjectWriterException>(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
         }
 
         [Fact]
