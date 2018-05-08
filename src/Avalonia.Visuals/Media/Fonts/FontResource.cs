@@ -8,7 +8,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Represents a font resource
     /// </summary>
-    public class FontResource
+    internal class FontResource
     {
         public FontResource(Uri source)
         {

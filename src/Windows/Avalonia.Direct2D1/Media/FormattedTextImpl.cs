@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -33,7 +31,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (typeface.FontFamily.Key != null)
             {
-                var fontCollection = Direct2D1CustomFontCollectionCache.GetOrAddCustomFontCollection(typeface.FontFamily.Key, factory);
+                var fontCollection = Direct2D1CustomFontCollectionCache.GetOrAddCustomFontCollection(typeface.FontFamily, factory);
 
                 textFormat = new DWrite.TextFormat(
                         factory,
@@ -152,9 +150,9 @@ namespace Avalonia.Direct2D1.Media
         private static readonly ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection> s_cachedFonts =
             new ConcurrentDictionary<FontFamilyKey, DWrite.FontCollection>();
 
-        public static DWrite.FontCollection GetOrAddCustomFontCollection(FontFamilyKey key, DWrite.Factory factory)
+        public static DWrite.FontCollection GetOrAddCustomFontCollection(FontFamily fontFamily, DWrite.Factory factory)
         {
-            return s_cachedFonts.GetOrAdd(key, x => CreateCustomFontCollection(key, factory));
+            return s_cachedFonts.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(x, factory));
         }
 
         private static DWrite.FontCollection CreateCustomFontCollection(FontFamilyKey key, DWrite.Factory factory)
@@ -167,7 +165,7 @@ namespace Avalonia.Direct2D1.Media
         }
     }
 
-    public class ResourceFontLoader : CallbackBase, DWrite.FontCollectionLoader, DWrite.FontFileLoader
+    internal class ResourceFontLoader : CallbackBase, DWrite.FontCollectionLoader, DWrite.FontFileLoader
     {
         private readonly List<ResourceFontFileStream> _fontStreams = new List<ResourceFontFileStream>();
         private readonly List<ResourceFontFileEnumerator> _enumerators = new List<ResourceFontFileEnumerator>();

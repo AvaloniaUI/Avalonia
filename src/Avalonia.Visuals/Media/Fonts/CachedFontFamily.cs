@@ -8,7 +8,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Holds a quantity of <see cref="FontResource"/> that belongs to a specific <see cref="FontFamilyKey"/>
     /// </summary>
-    public class CachedFontFamily
+    internal class CachedFontFamily
     {
         private readonly FontResourceCollection _fontResourceCollection;
 

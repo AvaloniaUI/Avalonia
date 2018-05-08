@@ -13,7 +13,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Implementation of <see cref="T:Avalonia.Media.Fonts.IFontResourceLoader" />
     /// </summary>
-    public class FontResourceLoader : IFontResourceLoader
+    internal class FontResourceLoader : IFontResourceLoader
     {
         private static readonly Dictionary<string, AssemblyDescriptor> s_assemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();

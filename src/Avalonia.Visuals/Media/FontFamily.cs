@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
@@ -15,7 +16,14 @@ namespace Avalonia.Media
         /// <exception cref="ArgumentNullException">name</exception>
         public FontFamily(string name = "Courier New")
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            FamilyNames = new FamilyNameList(name);
+        }
+
+        public FontFamily(IEnumerable<string> names)
+        {
+            if (names == null) throw new ArgumentNullException(nameof(names));
+            FamilyNames = new FamilyNameList(names);
         }
 
         /// <inheritdoc />
@@ -35,7 +43,7 @@ namespace Avalonia.Media
         /// <value>
         /// The name.
         /// </value>
-        public string Name { get; }
+        public string Name => FamilyNames.FirstFamilyName;
 
         /// <summary>
         /// Gets the key.
@@ -43,7 +51,9 @@ namespace Avalonia.Media
         /// <value>
         /// The key.
         /// </value>
-        public FontFamilyKey Key { get; }
+        internal FontFamilyKey Key { get; }
+
+        internal FamilyNameList FamilyNames { get; }
 
         /// <summary>
         /// Returns a <see cref="string" /> that represents this instance.
@@ -61,6 +71,22 @@ namespace Avalonia.Media
             return Name;
         }
 
+        internal class FamilyNameList : List<string>
+        {
+            public FamilyNameList(string familyName)
+            {
+                Add(familyName);
+                FirstFamilyName = familyName;
+            }
+
+            public FamilyNameList(IEnumerable<string> familyNames) : base(familyNames)
+            {
+                FirstFamilyName = this[0];
+            }
+
+            public string FirstFamilyName { get; }
+        }
+
         /// <summary>
         /// Parses a <see cref="FontFamily"/> string.
         /// </summary>
@@ -75,35 +101,23 @@ namespace Avalonia.Media
 
             var fontFamilyExpression = s.Split('#');
 
-            if (fontFamilyExpression.Length == 1)
-            {
-                return new FontFamily(s);
-            }
-
-            string familyName;
-
-            Uri source = null;
-
             switch (fontFamilyExpression.Length)
             {
                 case 1:
-                {
-                    familyName = fontFamilyExpression[0];
-                    break;
-                }
+                    {
+                        var familyNames = fontFamilyExpression[0].Split(';');
+                        return new FontFamily(familyNames);
+                    }
                 case 2:
-                {
-                    source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
-                    familyName = fontFamilyExpression[1];
-                    break;
-                }
+                    {
+                        var source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
+                        return new FontFamily(fontFamilyExpression[1], source);
+                    }
                 default:
-                {
-                    throw new ArgumentException("Specified family is not supported.");
-                }
+                    {
+                        throw new ArgumentException("Specified family is not supported.");
+                    }
             }
-
-            return new FontFamily(familyName, source);
         }
     }
 }

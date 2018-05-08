@@ -10,7 +10,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Represents a collection of <see cref="FontResource"/> that is identified by a unique <see cref="FontFamilyKey"/>
     /// </summary>
-    public class FontResourceCollection
+    internal class FontResourceCollection
     {
         private Dictionary<Uri, FontResource> _fontResources;
         private readonly IFontResourceLoader _fontResourceLoader = new FontResourceLoader();

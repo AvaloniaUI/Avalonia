@@ -8,7 +8,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Loads <see cref="FontResource"/> that can be identified by a given <see cref="FontFamilyKey"/>
     /// </summary>
-    public interface IFontResourceLoader
+    internal interface IFontResourceLoader
     {
         /// <summary>
         /// Returns a quanity of <see cref="FontResource"/> that belongs to a given <see cref="FontFamilyKey"/>

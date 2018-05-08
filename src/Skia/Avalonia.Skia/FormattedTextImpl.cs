@@ -25,10 +25,20 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var skiaTypeface = TypefaceCache.GetTypeface(
-                typeface.FontFamily,
-                typeface.Style,
-                typeface.Weight);
+            SKTypeface skiaTypeface;
+
+            if (typeface.FontFamily.Key != null)
+            {
+                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+                skiaTypeface = typefaces.GetTypeFace(typeface);
+            }
+            else
+            {
+                skiaTypeface = TypefaceCache.GetTypeface(
+                    typeface.FontFamily,
+                    typeface.Style,
+                    typeface.Weight);
+            }          
 
             _paint = new SKPaint();
 

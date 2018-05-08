@@ -9,7 +9,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Unique idetifier for a quantity of <see cref="FontResource"/> that is stored at a given location.
     /// </summary>
-    public class FontFamilyKey
+    internal class FontFamilyKey
     {
         /// <summary>
         /// Creates a new instance of <see cref="FontFamilyKey"/> and extracts <see cref="Location"/> and <see cref="FileName"/> from given <see cref="Uri"/>

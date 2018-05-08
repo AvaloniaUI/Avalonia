@@ -8,7 +8,7 @@ namespace Avalonia.Media.Fonts
     /// <summary>
     /// Caches all <see cref="CachedFontFamily"/> instances to reduce memory usage and speed up loading times of custom font families
     /// </summary>
-    public static class FontFamilyCache
+    internal static class FontFamilyCache
     {
         private static readonly ConcurrentDictionary<FontFamilyKey, CachedFontFamily> s_cachedFontFamilies = new ConcurrentDictionary<FontFamilyKey, CachedFontFamily>();
 
