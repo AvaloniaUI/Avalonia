@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"             
-             xmlns:cont="clr-namespace:ControlCatalog.Controls;assembly=ControlCatalog">
+             xmlns:cont="clr-namespace:ControlCatalog.Controls;assembly=ControlCatalog"
+             xmlns:cc="clr-namespace:ControlCatalog;assembly=ControlCatalog">
     <UserControl.Styles>
         <Style Selector="cont|DocumentTabControl /template/ TabStripItem">
             <Setter Property="Height" Value="20" />
@@ -68,7 +69,7 @@
         </cont:DocumentTabControl.HeaderSeperatorContent>
         <cont:DocumentTabControl.ItemTemplate>
             <DataTemplate>
-                <cont:ViewModelViewHost IsVisible="{Binding IsVisible}" />
+                <cc:ViewModelViewHost IsVisible="{Binding IsVisible}" />
             </DataTemplate>
         </cont:DocumentTabControl.ItemTemplate>
     </cont:DocumentTabControl>
