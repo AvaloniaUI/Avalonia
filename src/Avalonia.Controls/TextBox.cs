@@ -31,11 +31,11 @@ namespace Avalonia.Controls
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
-        public static readonly StyledProperty<char> PasswordCharProperty =
-            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
-
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -166,16 +166,16 @@ namespace Avalonia.Controls
             }
         }
 
-        public char PasswordChar
-        {
-            get => GetValue(PasswordCharProperty);
-            set => SetValue(PasswordCharProperty, value);
-        }
-
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
             set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
