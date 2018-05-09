@@ -37,10 +37,14 @@ namespace Avalonia.Base.UnitTests
             Assert.True(raised);
         }
 
-        private class Class1 : AvaloniaObject
+        private class Base : AvaloniaObject
+        {
+        }
+
+        private class Class1 : Base
         {
             public static readonly AttachedProperty<string> FooProperty =
-                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, string>(
+                AvaloniaProperty.RegisterAttached<Class1, Base, string>(
                     "Foo",
                     "foodefault",
                     validate: ValidateFoo);
@@ -56,13 +60,13 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
-        private class Class2 : AvaloniaObject
+        private class Class2 : Base
         {
             public static readonly AttachedProperty<string> FooProperty =
                 Class1.FooProperty.AddOwner<Class2>();
         }
 
-        private class Class3 : AvaloniaObject
+        private class Class3 : Base
         {
         }
     }
