@@ -24,10 +24,23 @@ namespace Avalonia.Base.UnitTests
             Assert.Throws<IndexOutOfRangeException>(() => target.SetValue(Class2.FooProperty, "throw"));
         }
 
+        [Fact]
+        public void AvaloniaProperty_Initialized_Is_Called_For_Attached_Property()
+        {
+            bool raised = false;
+
+            using (Class1.FooProperty.Initialized.Subscribe(x => raised = true))
+            {
+                new Class3();
+            }
+
+            Assert.True(raised);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly AttachedProperty<string> FooProperty =
-                AvaloniaProperty.RegisterAttached<Class1, Class2, string>(
+                AvaloniaProperty.RegisterAttached<Class1, AvaloniaObject, string>(
                     "Foo",
                     "foodefault",
                     validate: ValidateFoo);
@@ -47,6 +60,10 @@ namespace Avalonia.Base.UnitTests
         {
             public static readonly AttachedProperty<string> FooProperty =
                 Class1.FooProperty.AddOwner<Class2>();
+        }
+
+        private class Class3 : AvaloniaObject
+        {
         }
     }
 }
