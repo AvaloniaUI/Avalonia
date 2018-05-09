@@ -17,6 +17,9 @@ namespace Avalonia.Controls.Presenters
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
+
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
                 o => o.SelectionStart,
@@ -61,6 +64,12 @@ namespace Avalonia.Controls.Presenters
                 value = CoerceCaretIndex(value);
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
             }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
@@ -204,6 +213,11 @@ namespace Avalonia.Controls.Presenters
 
         protected override FormattedText CreateFormattedText(Size constraint)
         {
+            if (PasswordChar != default(char))
+            {
+                Text = new string(PasswordChar, Text.Length);
+            }
+
             var result = base.CreateFormattedText(constraint);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;

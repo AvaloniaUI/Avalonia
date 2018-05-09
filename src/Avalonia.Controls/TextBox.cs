@@ -56,9 +56,6 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay,
                 enableDataValidation: true);
 
-        public static readonly StyledProperty<string> DisplayTextProperty =
-            AvaloniaProperty.Register<TextBox, string>(nameof(DisplayText));
-
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
 
@@ -122,19 +119,7 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
-            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
-
-            this.GetObservable(TextProperty).Subscribe(text =>
-            {
-                if (IsPasswordBox)
-                {
-                    DisplayText = new string(PasswordChar, text.Length);
-                }
-                else
-                {
-                    DisplayText = Text;
-                }
-            });
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);            
         }
 
         public bool AcceptsReturn
@@ -230,12 +215,6 @@ namespace Avalonia.Controls
                     }
                 }
             }
-        }
-
-        public string DisplayText
-        {
-            get => GetValue(DisplayTextProperty);
-            set => SetValue(DisplayTextProperty, value);
         }
 
         public TextAlignment TextAlignment
