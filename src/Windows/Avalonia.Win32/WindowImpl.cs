@@ -245,19 +245,13 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);            
 
-            var systemDecorationStyles = UnmanagedMethods.WindowStyles.WS_OVERLAPPED
-                | UnmanagedMethods.WindowStyles.WS_CAPTION
-                | UnmanagedMethods.WindowStyles.WS_SYSMENU
-                | UnmanagedMethods.WindowStyles.WS_MINIMIZEBOX
-                | UnmanagedMethods.WindowStyles.WS_MAXIMIZEBOX;
-
-            style |= systemDecorationStyles;
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             if (!value)
             {
-                style ^= systemDecorationStyles;
+                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
             }
 
             UnmanagedMethods.RECT windowRect;
