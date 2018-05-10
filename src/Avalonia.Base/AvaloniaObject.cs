@@ -71,7 +71,8 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
+
+            void Notify(AvaloniaProperty property)
             {
                 object value = property.IsDirect ?
                     ((IDirectPropertyAccessor)property).GetValue(this) :
@@ -85,6 +86,16 @@ namespace Avalonia
                     BindingPriority.Unset);
 
                 property.NotifyInitialized(e);
+            }
+
+            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
+            {
+                Notify(property);
+            }
+
+            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()))
+            {
+                Notify(property);
             }
         }
 
