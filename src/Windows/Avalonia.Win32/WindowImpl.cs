@@ -29,6 +29,7 @@ namespace Avalonia.Win32
         private string _className;
         private IntPtr _hwnd;
         private IInputRoot _owner;
+        private IntPtr _ownerHandle;
         private bool _trackingMouse;
         private bool _decorated = true;
         private bool _resizable = true;
@@ -876,7 +877,14 @@ namespace Avalonia.Win32
 
         public void SetOwner(IWindowImpl owner)
         {
-            UnmanagedMethods.SetWindowLong(_hwnd, -8, (uint)owner.Handle.Handle);
+            if(_ownerHandle == IntPtr.Zero && owner.Handle.Handle == IntPtr.Zero)
+            {
+                return; // this would cause a failure Error 1400.
+            }
+
+            UnmanagedMethods.SetWindowLong(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, (uint)owner.Handle.Handle);
+
+            _ownerHandle = owner.Handle.Handle;
         }
     }
 }
