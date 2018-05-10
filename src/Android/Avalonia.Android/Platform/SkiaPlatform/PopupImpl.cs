@@ -36,7 +36,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _clientSize = value;
             UpdateParams();
         }
-        
+
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IScreenImpl Screen { get; }
 
         public Point Position

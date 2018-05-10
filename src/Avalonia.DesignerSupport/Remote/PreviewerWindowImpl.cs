@@ -67,6 +67,10 @@ namespace Avalonia.DesignerSupport.Remote
             RenderIfNeeded();
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IScreenImpl Screen { get; } = new ScreenStub();
 
         public void Activate()
@@ -91,6 +95,10 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void ShowTaskbarIcon(bool value)
+        {
+        }
+
+        public void CanResize(bool value)
         {
         }
 

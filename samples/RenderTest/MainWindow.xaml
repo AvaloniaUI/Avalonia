@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         Title="Avalonia Render Test"
-        xmlns:pages="clr-namespace:RenderTest.Pages;assembly=RenderTest">
+        xmlns:pages="clr-namespace:RenderTest.Pages">
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="Rendering">

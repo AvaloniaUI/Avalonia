@@ -9,6 +9,7 @@ namespace Avalonia.MonoMac
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         public bool IsDecorated = true;
+        public bool IsResizable = true;
         public CGRect? UndecoratedLastUnmaximizedFrame;
 
         public WindowImpl()
@@ -76,15 +77,26 @@ namespace Avalonia.MonoMac
 
         protected override NSWindowStyle GetStyle()
         {
+            var windowStyle = NSWindowStyle.Borderless;
+
             if (IsDecorated)
-                return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable |
-                       NSWindowStyle.Titled;
-            return NSWindowStyle.Borderless;
+                windowStyle |= NSWindowStyle.Closable | NSWindowStyle.Miniaturizable | NSWindowStyle.Titled;
+
+            if (IsResizable)
+                windowStyle |= NSWindowStyle.Resizable;
+
+            return windowStyle;
         }
 
         public void SetSystemDecorations(bool enabled)
         {
             IsDecorated = enabled;
+            UpdateStyle();
+        }
+
+        public void CanResize(bool value)
+        {
+            IsResizable = value;
             UpdateStyle();
         }
 
