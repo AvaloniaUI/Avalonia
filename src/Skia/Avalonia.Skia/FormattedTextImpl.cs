@@ -36,8 +36,8 @@ namespace Avalonia.Skia
             //Paint.TextEncoding = SKTextEncoding.Utf8;
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
-            _paint.IsAntialias = true;            
-            _paint.LcdRenderText = true;            
+            _paint.IsAntialias = true;
+            _paint.LcdRenderText = true;
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
             _paint.TextSize = (float)(typeface?.FontSize ?? 12);
@@ -226,7 +226,26 @@ namespace Avalonia.Skia
                         {
                             float currX = x;
                             string subStr;
+                            float measure;
                             int len;
+                            float factor;
+                            switch (paint.TextAlign)
+                            {
+                                case SKTextAlign.Left:
+                                    factor = 0;
+                                    break;
+                                case SKTextAlign.Center:
+                                    factor = 0.5f;
+                                    break;
+                                case SKTextAlign.Right:
+                                    factor = 1;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            var textLine = Text.Substring(line.Start, line.Length);
+                            currX -= paint.MeasureText(textLine) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {
@@ -244,13 +263,15 @@ namespace Avalonia.Skia
                                 }
 
                                 subStr = Text.Substring(i, len);
+                                measure = paint.MeasureText(subStr);
+                                currX += measure * factor;
 
                                 ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
-                                
+
                                 canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
 
                                 i += len;
-                                currX += paint.MeasureText(subStr);
+                                currX += measure * (1 - factor);
                             }
                         }
                     }
