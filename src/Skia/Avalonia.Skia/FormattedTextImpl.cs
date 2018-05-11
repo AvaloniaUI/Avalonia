@@ -559,11 +559,11 @@ namespace Avalonia.Skia
                 measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
 
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
+                line.Start = curOff;
                 line.TextLength = measured;
 
                 subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
-                line.Start = curOff;
                 line.Length = measured - trailingnumber;
                 line.Width = lineWidth;
                 line.Height = _lineHeight;
