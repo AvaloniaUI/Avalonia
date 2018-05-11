@@ -25,7 +25,7 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            SKTypeface skiaTypeface;
+            SKTypeface skiaTypeface = TypefaceCache.Default;
 
             if (typeface.FontFamily.Key != null)
             {
@@ -34,11 +34,25 @@ namespace Avalonia.Skia
             }
             else
             {
-                skiaTypeface = TypefaceCache.GetTypeface(
-                    typeface.FontFamily,
-                    typeface.Style,
-                    typeface.Weight);
-            }          
+                if (typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    foreach (var familyName in typeface.FontFamily.FamilyNames)
+                    {
+                        skiaTypeface = TypefaceCache.GetTypeface(
+                            familyName,
+                            typeface.Style,
+                            typeface.Weight);
+                        if (skiaTypeface != TypefaceCache.Default) break;
+                    }
+                }
+                else
+                {
+                    skiaTypeface = TypefaceCache.GetTypeface(
+                        typeface.FontFamily.Name,
+                        typeface.Style,
+                        typeface.Weight);
+                }
+            }
 
             _paint = new SKPaint();
 
@@ -46,7 +60,7 @@ namespace Avalonia.Skia
             //Paint.TextEncoding = SKTextEncoding.Utf8;
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
-            _paint.IsAntialias = true;            
+            _paint.IsAntialias = true;
             _paint.LcdRenderText = true;
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
@@ -256,7 +270,7 @@ namespace Avalonia.Skia
                                 subStr = Text.Substring(i, len);
 
                                 ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
-                                
+
                                 canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
 
                                 i += len;

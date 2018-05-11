@@ -9,40 +9,19 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    /// <inheritdoc />
-    /// <summary>
-    /// Implementation of <see cref="T:Avalonia.Media.Fonts.IFontResourceLoader" />
-    /// </summary>
-    internal class FontResourceLoader : IFontResourceLoader
+    internal static class FontFamilyLoader
     {
         private static readonly Dictionary<string, AssemblyDescriptor> s_assemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();
 
-        private readonly AssemblyDescriptor _defaultAssembly;
+        private static readonly AssemblyDescriptor s_defaultAssembly;     
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FontResourceLoader"/> class.
-        /// </summary>
-        /// <param name="assembly">The default assembly.</param>
-        public FontResourceLoader(Assembly assembly = null)
+        static FontFamilyLoader()
         {
-            if (assembly == null)
-            {
-                assembly = Assembly.GetEntryAssembly();
-            }
-            if (assembly != null)
-            {
-                _defaultAssembly = new AssemblyDescriptor(assembly);
-            }
+            s_defaultAssembly = new AssemblyDescriptor(Assembly.GetEntryAssembly());       
         }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Returns a quanity of <see cref="T:Avalonia.Media.Fonts.FontResource" /> that belongs to a given <see cref="T:Avalonia.Media.Fonts.FontFamilyKey" />
-        /// </summary>
-        /// <param name="fontFamilyKey"></param>
-        /// <returns></returns>
-        public IEnumerable<FontResource> GetFontResources(FontFamilyKey fontFamilyKey)
+        public static IEnumerable<FontResource> GetFontResources(FontFamilyKey fontFamilyKey)
         {
             return fontFamilyKey.FileName != null
                 ? GetFontResourcesByFileName(fontFamilyKey.Location, fontFamilyKey.FileName)
@@ -54,7 +33,7 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        private IEnumerable<FontResource> GetFontResourcesByLocation(Uri location)
+        private static IEnumerable<FontResource> GetFontResourcesByLocation(Uri location)
         {
             var assembly = GetAssembly(location);
 
@@ -64,7 +43,7 @@ namespace Avalonia.Media.Fonts
 
             var matchingResources = assembly.Resources.Where(x => x.Contains(locationPath));
 
-            return matchingResources.Select(x => new FontResource(GetResourceUri(x, assembly.Name)));
+            return matchingResources.Select(x => CreateResource(GetResourceUri(x, assembly.Name)));
         }
 
         /// <summary>
@@ -74,7 +53,7 @@ namespace Avalonia.Media.Fonts
         /// <param name="location"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private IEnumerable<FontResource> GetFontResourcesByFileName(Uri location, string fileName)
+        private static IEnumerable<FontResource> GetFontResourcesByFileName(Uri location, string fileName)
         {
             var assembly = GetAssembly(location);
 
@@ -84,7 +63,12 @@ namespace Avalonia.Media.Fonts
 
             var matchingResources = assembly.Resources.Where(x => x.Contains(compareTo));
 
-            return matchingResources.Select(x => new FontResource(GetResourceUri(x, assembly.Name)));
+            return matchingResources.Select(x => CreateResource(GetResourceUri(x, assembly.Name)));
+        }
+
+        private static FontResource CreateResource(Uri source)
+        {
+            return new FontResource(source);
         }
 
         /// <summary>
@@ -103,13 +87,13 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="uri"></param>
         /// <returns></returns>
-        private AssemblyDescriptor GetAssembly(Uri uri)
+        private static AssemblyDescriptor GetAssembly(Uri uri)
         {
             if (uri == null) return null;
 
             var parameters = ParseParameters(uri);
 
-            return parameters.TryGetValue("assembly", out var assemblyName) ? GetAssembly(assemblyName) : _defaultAssembly;
+            return parameters.TryGetValue("assembly", out var assemblyName) ? GetAssembly(assemblyName) : s_defaultAssembly;
         }
 
         /// <summary>
@@ -120,11 +104,11 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        private AssemblyDescriptor GetAssembly(string name)
+        private static AssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
             {
-                return _defaultAssembly;
+                return s_defaultAssembly;
             }
 
             if (!s_assemblyNameCache.TryGetValue(name, out var rv))

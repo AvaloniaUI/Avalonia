@@ -7,7 +7,7 @@ using System.Linq;
 namespace Avalonia.Media.Fonts
 {
     /// <summary>
-    /// Unique idetifier for a quantity of <see cref="FontResource"/> that is stored at a given location.
+    /// Represents an idetifier for a <see cref="FontFamily"/>
     /// </summary>
     internal class FontFamilyKey
     {
@@ -16,7 +16,7 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="source"></param>
         public FontFamilyKey(Uri source)
-        {
+        {         
             if (source.AbsolutePath.Contains(".ttf"))
             {
                 var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");

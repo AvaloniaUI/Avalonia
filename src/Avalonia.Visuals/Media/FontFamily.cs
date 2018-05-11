@@ -3,57 +3,73 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
     public class FontFamily
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FontFamily"/> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <exception cref="ArgumentNullException">name</exception>
-        public FontFamily(string name = "Courier New")
-        {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            FamilyNames = new FamilyNameList(name);
-        }
+        internal static FontFamily Default = new FontFamily("Courier New");
 
-        public FontFamily(IEnumerable<string> names)
-        {
-            if (names == null) throw new ArgumentNullException(nameof(names));
-            FamilyNames = new FamilyNameList(names);
-        }
-
-        /// <inheritdoc />
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="source">The source.</param>
+        /// <param name="name">The name of the <see cref="FontFamily"/>.</param>
+        /// <exception cref="T:System.ArgumentNullException">name</exception>
+        public FontFamily(string name)
+        {
+            if (name == null) throw new ArgumentNullException();
+            FamilyNames = new FamilyNameCollection(new[] { name });
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
+        /// </summary>
+        /// <param name="names">The names of the <see cref="FontFamily"/>.</param>
+        /// <exception cref="T:System.ArgumentNullException">name</exception>
+        public FontFamily(IEnumerable<string> names)
+        {
+            if (names == null) throw new ArgumentNullException();
+            FamilyNames = new FamilyNameCollection(names);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="FontFamily"/>.</param>
+        /// <param name="source">The source of font resources.</param>
         public FontFamily(string name, Uri source) : this(name)
         {
             Key = new FontFamilyKey(source);
         }
 
         /// <summary>
-        /// Gets the name.
+        /// Gets the name of the font family.
         /// </summary>
         /// <value>
-        /// The name.
+        /// The name of the font family.
         /// </value>
-        public string Name => FamilyNames.FirstFamilyName;
+        public string Name => FamilyNames.PrimaryFamilyName;
 
         /// <summary>
-        /// Gets the key.
+        /// Gets the family names.
         /// </summary>
         /// <value>
-        /// The key.
+        /// The family familyNames.
+        /// </value>
+        internal FamilyNameCollection FamilyNames
+        {
+            get;
+        }
+
+        /// <summary>
+        /// Gets the key for associated resources.
+        /// </summary>
+        /// <value>
+        /// The family familyNames.
         /// </value>
         internal FontFamilyKey Key { get; }
-
-        internal FamilyNameList FamilyNames { get; }
 
         /// <summary>
         /// Returns a <see cref="string" /> that represents this instance.
@@ -63,34 +79,13 @@ namespace Avalonia.Media
         /// </returns>
         public override string ToString()
         {
-            if (Key != null)
-            {
-                return Key + "#" + Name;
-            }
-
             return Name;
         }
 
-        internal class FamilyNameList : List<string>
-        {
-            public FamilyNameList(string familyName)
-            {
-                Add(familyName);
-                FirstFamilyName = familyName;
-            }
-
-            public FamilyNameList(IEnumerable<string> familyNames) : base(familyNames)
-            {
-                FirstFamilyName = this[0];
-            }
-
-            public string FirstFamilyName { get; }
-        }
-
         /// <summary>
-        /// Parses a <see cref="FontFamily"/> string.
+        /// Parses a <see cref="T:Avalonia.Media.FontFamily"/> string.
         /// </summary>
-        /// <param name="s">The <see cref="FontFamily"/> string.</param>
+        /// <param name="s">The <see cref="T:Avalonia.Media.FontFamily"/> string.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">
         /// Specified family is not supported.
@@ -99,19 +94,20 @@ namespace Avalonia.Media
         {
             if (string.IsNullOrEmpty(s)) throw new ArgumentException("Specified family is not supported.");
 
-            var fontFamilyExpression = s.Split('#');
+            var segments = s.Split('#');
 
-            switch (fontFamilyExpression.Length)
+            switch (segments.Length)
             {
                 case 1:
-                    {
-                        var familyNames = fontFamilyExpression[0].Split(';');
-                        return new FontFamily(familyNames);
+                {
+                    var names = segments[0].Split(',')
+                        .Select(x => x.Trim())
+                        .Where(x => !string.IsNullOrWhiteSpace(x));
+                        return new FontFamily(names);
                     }
                 case 2:
                     {
-                        var source = new Uri(fontFamilyExpression[0], UriKind.RelativeOrAbsolute);
-                        return new FontFamily(fontFamilyExpression[1], source);
+                        return new FontFamily(segments[1], new Uri(segments[0], UriKind.RelativeOrAbsolute));
                     }
                 default:
                     {
