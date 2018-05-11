@@ -92,7 +92,7 @@ namespace Avalonia.Shared.PlatformSupport
             public void Dispose()
             {
 #if DEBUG
-                if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
+                if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId && !IsDisposed)
                 {
                     Console.Error.WriteLine("Native blob disposal from finalizer thread\nBacktrace: "
                                             + Environment.StackTrace
@@ -106,7 +106,10 @@ namespace Avalonia.Shared.PlatformSupport
             ~UnmanagedBlob()
             {
 #if DEBUG
-                Console.Error.WriteLine("Undisposed native blob created by " + _backtrace);
+                if (!IsDisposed)
+                {
+                    Console.Error.WriteLine("Undisposed native blob created by " + _backtrace); 
+                }
 #endif
                 DoDispose();
             }
