@@ -16,7 +16,9 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="source"></param>
         public FontFamilyKey(Uri source)
-        {         
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+
             if (source.AbsolutePath.Contains(".ttf"))
             {
                 var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");

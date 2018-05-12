@@ -22,7 +22,7 @@ namespace Avalonia.Skia
 
         private static SKTypefaceCollection CreateCustomFontCollection(FontFamily fontFamily)
         {
-            var resources = FontFamilyLoader.GetFontResources(fontFamily.Key);
+            var resources = FontFamilyLoader.LoadFontResources(fontFamily.Key);
 
             var typeFaceCollection = new SKTypefaceCollection();
 

@@ -21,7 +21,7 @@ namespace Avalonia.Media.Fonts
             s_defaultAssembly = new AssemblyDescriptor(Assembly.GetEntryAssembly());       
         }
 
-        public static IEnumerable<FontResource> GetFontResources(FontFamilyKey fontFamilyKey)
+        public static IEnumerable<FontResource> LoadFontResources(FontFamilyKey fontFamilyKey)
         {
             return fontFamilyKey.FileName != null
                 ? GetFontResourcesByFileName(fontFamilyKey.Location, fontFamilyKey.FileName)
