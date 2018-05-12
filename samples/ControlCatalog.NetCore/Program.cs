@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
+using Avalonia.Skia;
 
 namespace ControlCatalog.NetCore
 {
@@ -37,7 +38,7 @@ namespace ControlCatalog.NetCore
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().UsePlatformDetect().UseReactiveUI();
+            => AppBuilder.Configure<App>().UsePlatformDetect().UseSkia(RenderBackendType.OpenGL).UseReactiveUI();
 
         static void ConsoleSilencer()
         {

@@ -106,6 +106,7 @@ public class Packages
 
         context.Information("Setting NuGet package dependencies versions:");
 
+        var OpenTKNetCoreVersion = packageVersions["OpenTK.NETCore"].FirstOrDefault().Item1;
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
         var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
         var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
@@ -372,7 +373,8 @@ public class Packages
                 Id = "Avalonia.Win32",
                 Dependencies = new DependencyBuilder(this)
                 {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "OpenTK.NetCore", Version = OpenTKNetCoreVersion },
                 }.Deps(new string[]{null}, "System.Drawing.Common"),
                 Files = new []
                 {

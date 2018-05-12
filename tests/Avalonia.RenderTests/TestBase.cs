@@ -34,7 +34,7 @@ namespace Avalonia.Direct2D1.RenderTests
         static TestBase()
         {
 #if AVALONIA_SKIA
-            SkiaPlatform.Initialize();
+            SkiaPlatform.Initialize(RenderBackendType.Raster);
 #else
             Direct2D1Platform.Initialize();
 #endif

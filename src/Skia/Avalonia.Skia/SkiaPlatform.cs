@@ -1,47 +1,62 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Rendering;
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia
-{
-    public static class SkiaApplicationExtensions
-    {
-        public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
-        {
-            builder.UseRenderingSubsystem(Skia.SkiaPlatform.Initialize, "Skia");
-            return builder;
-        }
-    }
-}
+using Avalonia.Platform;
+using Avalonia.Platform.Gpu;
+using Avalonia.Skia.Gpu;
 
 namespace Avalonia.Skia
 {
+    /// <summary>
+    /// Skia backend types.
+    /// </summary>
+    public enum RenderBackendType
+    {
+        /// <summary>
+        /// Cpu based raster backend.
+        /// </summary>
+        Raster,
+
+        /// <summary>
+        /// Gpu accelerated backend.
+        /// </summary>
+        OpenGL
+    }
+
+    /// <summary>
+    /// Skia platform initializer.
+    /// </summary>
     public static class SkiaPlatform
     {
-        private static bool s_forceSoftwareRendering;
-
-        public static void Initialize()
+        /// <summary>
+        /// Initialize Skia platform.
+        /// </summary>
+        /// <param name="preferredBackendType">Preferred backend type - will fallback to raster if platform has not support for it..</param>
+        public static void Initialize(RenderBackendType preferredBackendType)
         {
-            var renderInterface = new PlatformRenderInterface();
+            IGpuRenderBackend renderBackend = null;
+            
+            // Check if platform has OpenGL support
+            if (preferredBackendType == RenderBackendType.OpenGL)
+            {
+                var openGLPlatform = AvaloniaLocator.Current.GetService<IOpenGLPlatform>();
+                var windowingPlatform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+
+                if (openGLPlatform != null && windowingPlatform != null)
+                {
+                    renderBackend = new OpenGLRenderBackend(openGLPlatform, windowingPlatform);
+                }
+            }
+
+            var renderInterface = new PlatformRenderInterface(renderBackend);
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
         }
 
-        public static bool ForceSoftwareRendering
-        {
-            get { return s_forceSoftwareRendering; }
-            set
-            {
-                s_forceSoftwareRendering = value;
-
-                // TODO: I left this property here as place holder. Do we still need the ability to Force software rendering? 
-                // Is it even possible with SkiaSharp? Perhaps kekekes can answer as part of the HW accel work. 
-                // 
-                throw new NotImplementedException();
-            }
-        }
+        /// <summary>
+        /// Default DPI.
+        /// </summary>
+        public static Vector DefaultDpi => new Vector(96.0f, 96.0f);
     }
 }

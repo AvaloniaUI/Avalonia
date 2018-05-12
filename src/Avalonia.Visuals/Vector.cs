@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Xml.Linq;
 
 namespace Avalonia
 {
@@ -120,6 +119,38 @@ namespace Avalonia
         public static Vector operator -(Vector a, Vector b)
         {
             return new Vector(a._x - b._x, a._y - b._y);
+        }
+
+        public bool Equals(Vector other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _x == other._x && _y == other._y;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+
+            return obj is Vector vector && Equals(vector);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (_x.GetHashCode() * 397) ^ _y.GetHashCode();
+            }
+        }
+
+        public static bool operator ==(Vector left, Vector right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Vector left, Vector right)
+        {
+            return !left.Equals(right);
         }
 
         /// <summary>
