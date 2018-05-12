@@ -6,11 +6,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
     
-    <ProjectReference Condition="'$(TargetFramework)'=='netcoreapp2.0'"
-                      Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)'=='netcoreapp2.0'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
                       
-    <ProjectReference Condition="'$(TargetFramework)'=='net461'"
-                      Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
+    <ProjectReference Condition="'$(TargetFramework)'=='net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
 
     <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
@@ -28,6 +26,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj" />
   </ItemGroup>
+  <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\Rx.props" />
