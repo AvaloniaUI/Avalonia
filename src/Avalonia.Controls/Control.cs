@@ -9,6 +9,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Collections;
+using Avalonia.Visuals.Effects;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -17,6 +18,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -87,6 +89,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
             RoutedEvent.Register<Control, RequestBringIntoViewEventArgs>("RequestBringIntoView", RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect> EffectProperty =
+            AvaloniaProperty.Register<Control, IEffect>(nameof(Effect));
 
         private int _initCount;
         private string _name;
@@ -295,6 +303,15 @@ namespace Avalonia.Controls
                     _styles.ResourcesChanged += ThisResourcesChanged;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a Effect to the control.
+        /// </summary>
+        public IEffect Effect
+        {
+            get { return GetValue(EffectProperty); }
+            set { SetValue(EffectProperty, value); }
         }
 
         /// <summary>

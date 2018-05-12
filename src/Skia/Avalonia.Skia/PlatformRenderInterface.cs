@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -91,6 +92,11 @@ namespace Avalonia.Skia
         public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
         {
             return new BitmapImpl(width, height, new Vector(96, 96), format);
+        }
+
+        public IEffectImpl CreateDropShadowEffect()
+        {
+            return new DropShadowEffectImpl();
         }
     }
 }

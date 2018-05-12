@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -100,7 +101,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             {
@@ -120,7 +121,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect, IEffectImpl effect = null)
         {
             using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource.Value))
@@ -145,7 +146,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2, IEffectImpl effect = null)
         {
             if (pen != null)
             {
@@ -173,7 +174,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IEffectImpl effect = null)
         {
             if (brush != null)
             {
@@ -207,7 +208,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius, IEffectImpl effect = null)
         {
             using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
@@ -263,7 +264,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius, IEffectImpl effect = null)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -99,13 +100,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IEffectImpl effect = null)
         {
             var next = NextDrawAs<GeometryNode>();
 
             if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush), effect));
             }
             else
             {
@@ -114,13 +115,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null)
         {
             var next = NextDrawAs<ImageNode>();
 
             if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, effect));
             }
             else
             {
@@ -129,20 +130,20 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect sourceRect, IEffectImpl effect = null)
         {
             // This method is currently only used to composite layers so shouldn't be called here.
             throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2, IEffectImpl effect = null)
         {
             var next = NextDrawAs<LineNode>();
 
             if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
             {
-                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
+                Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush), effect));
             }
             else
             {
@@ -151,13 +152,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0, IEffectImpl effect = null)
         {
             var next = NextDrawAs<RectangleNode>();
 
             if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
+                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush), effect));
             }
             else
             {
@@ -181,13 +182,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IEffectImpl effect = null)
         {
             var next = NextDrawAs<RectangleNode>();
 
             if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush), effect));
             }
             else
             {

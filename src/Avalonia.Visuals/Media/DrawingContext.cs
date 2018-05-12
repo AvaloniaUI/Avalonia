@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Media
 {
@@ -68,11 +69,11 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, IEffect effect = null)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect);
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, effect?.PlatformImpl());
         }
 
         /// <summary>
@@ -81,11 +82,11 @@ namespace Avalonia.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2, IEffect effect = null)
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawLine(pen, p1, p2);
+                PlatformImpl.DrawLine(pen, p1, p2, effect?.PlatformImpl());
             }
         }
 
@@ -95,11 +96,11 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry, IEffect effect = null)
         {
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
+                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl, effect?.PlatformImpl());
             }
         }
 
@@ -109,11 +110,11 @@ namespace Avalonia.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IEffect effect = null)
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
+                PlatformImpl.DrawRectangle(pen, rect, cornerRadius, effect?.PlatformImpl());
             }
         }
 
@@ -139,11 +140,11 @@ namespace Avalonia.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IEffect effect = null)
         {
             if (brush != null && rect != Rect.Empty)
             {
-                PlatformImpl.FillRectangle(brush, rect, cornerRadius);
+                PlatformImpl.FillRectangle(brush, rect, cornerRadius, effect?.PlatformImpl());
             }
         }
 

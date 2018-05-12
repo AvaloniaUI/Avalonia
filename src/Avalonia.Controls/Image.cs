@@ -68,7 +68,7 @@ namespace Avalonia.Controls
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterRect(new Rect(destRect.Size / scale));
 
-                context.DrawImage(source, 1, sourceRect, destRect);
+                context.DrawImage(source, 1, sourceRect, destRect, Effect);
             }
         }
 

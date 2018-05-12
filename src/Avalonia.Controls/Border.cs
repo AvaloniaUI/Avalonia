@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush, Effect);
         }
 
         /// <summary>

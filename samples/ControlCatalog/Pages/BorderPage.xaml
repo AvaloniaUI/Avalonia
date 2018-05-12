@@ -20,7 +20,9 @@
               BorderThickness="4" 
               CornerRadius="8"
               Padding="16">
-        <TextBlock>Rounded Corners</TextBlock>
+        <Border.Effect>
+          <DropShadowEffect/>
+        </Border.Effect>
       </Border>
       <Border Background="{DynamicResource ThemeAccentBrush2}"
               CornerRadius="8"

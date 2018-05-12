@@ -16,3 +16,4 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Primitives")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Shapes")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Templates")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Effects")]

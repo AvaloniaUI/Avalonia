@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -29,7 +30,8 @@ namespace Avalonia.Rendering.SceneGraph
             Pen pen,
             Rect rect,
             float cornerRadius,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene> childScenes = null,
+            IEffectImpl effect = null)
             : base(rect, transform, pen)
         {
             Transform = transform;

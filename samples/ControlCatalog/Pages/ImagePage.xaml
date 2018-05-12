@@ -7,18 +7,26 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Gap="16">
-      <StackPanel Orientation="Vertical">
+      <StackPanel Orientation="Vertical" ClipToBounds="false">
         <TextBlock>No Stretch</TextBlock>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"
                Width="100" Height="200"
-               Stretch="None"/>
+               Stretch="None">
+          <Image.Effect>
+            <DropShadowEffect/>
+          </Image.Effect>
+        </Image>       
       </StackPanel>
 
       <StackPanel Orientation="Vertical">
         <TextBlock>Fill</TextBlock>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"
-               Width="100" Height="200"
-               Stretch="Fill"/>
+            Width="100" Height="200"
+            Stretch="Fill" Margin="0 0 20 20">
+            <Image.Effect>
+                <DropShadowEffect/>
+            </Image.Effect>
+        </Image>
       </StackPanel>
 
       <StackPanel Orientation="Vertical">

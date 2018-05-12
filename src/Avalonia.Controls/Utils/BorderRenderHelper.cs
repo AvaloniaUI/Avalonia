@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Media;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Controls.Utils
 {
@@ -70,20 +71,20 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
+        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush, IEffect effect = null)
         {
             if (_useComplexRendering)
             {
                 var backgroundGeometry = _backgroundGeometryCache;
                 if (backgroundGeometry != null)
                 {
-                    context.DrawGeometry(background, null, backgroundGeometry);
+                    context.DrawGeometry(background, null, backgroundGeometry, effect);
                 }
 
                 var borderGeometry = _borderGeometryCache;
                 if (borderGeometry != null)
                 {
-                    context.DrawGeometry(borderBrush, null, borderGeometry);
+                    context.DrawGeometry(borderBrush, null, borderGeometry, effect);
                 }
             }
             else
@@ -94,12 +95,12 @@ namespace Avalonia.Controls.Utils
 
                 if (background != null)
                 {
-                    context.FillRectangle(background, rect.Deflate(borders), cornerRadius);
+                    context.FillRectangle(background, rect.Deflate(borders), cornerRadius, effect);
                 }
 
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius);
+                    context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius, effect);
                 }
             }
         }

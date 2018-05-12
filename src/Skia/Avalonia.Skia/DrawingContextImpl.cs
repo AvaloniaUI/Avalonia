@@ -7,6 +7,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Skia
 {
@@ -35,39 +36,40 @@ namespace Avalonia.Skia
             Transform = Matrix.Identity;
         }
 
-        public void Clear(Color color)
+         public void Clear(Color color)
         {
             Canvas.Clear(color.ToSKColor());
         }
 
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null)
         {
             var impl = (BitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
-            using (var paint = new SKPaint()
-                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity)) })
+            using (var paint = new SKPaint(){ Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity)) })
             {
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint);
                 Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
             }
         }
 
-        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect, IEffectImpl effect = null)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, effect);
             PopOpacityMask();
         }
 
-        public void DrawLine(Pen pen, Point p1, Point p2)
+        public void DrawLine(Pen pen, Point p1, Point p2, IEffectImpl effect = null)
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint.Paint);
                 Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IEffectImpl effect = null)
         {
             var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
@@ -77,10 +79,12 @@ namespace Avalonia.Skia
             {
                 if (fill.Paint != null)
                 {
+                    ((ISkiaPlatformEffectImpl)effect)?.Render(fill.Paint);
                     Canvas.DrawPath(impl.EffectivePath, fill.Paint);
                 }
                 if (stroke.Paint != null)
                 {
+                    ((ISkiaPlatformEffectImpl)effect)?.Render(stroke.Paint);
                     Canvas.DrawPath(impl.EffectivePath, stroke.Paint);
                 }
             }
@@ -314,11 +318,12 @@ namespace Avalonia.Skia
             return rv;
         }
 
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0, IEffectImpl effect = null)
         {
             using (var paint = CreatePaint(pen, rect.Size))
             {
                 var rc = rect.ToSKRect();
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint.Paint);
                 if (cornerRadius == 0)
                 {
                     Canvas.DrawRect(rc, paint.Paint);
@@ -330,11 +335,12 @@ namespace Avalonia.Skia
             }
         }
 
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IEffectImpl effect = null)
         {
             using (var paint = CreatePaint(brush, rect.Size))
             {
                 var rc = rect.ToSKRect();
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint.Paint);
                 if (cornerRadius == 0)
                 {
                     Canvas.DrawRect(rc, paint.Paint);
