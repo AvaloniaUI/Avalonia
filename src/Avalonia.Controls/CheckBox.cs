@@ -10,5 +10,9 @@ namespace Avalonia.Controls
     /// </summary>
     public class CheckBox : ToggleButton
     {
+        public CheckBox()
+        {
+            //this is commit 1
+        }
     }
 }
