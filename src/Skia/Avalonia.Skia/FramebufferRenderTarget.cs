@@ -17,6 +17,7 @@ namespace Avalonia.Skia
     {
         private readonly IFramebufferPlatformSurface _platformSurface;
         private SKImageInfo _currentImageInfo;
+        private IntPtr _currentFramebufferAddress;
         private SKSurface _framebufferSurface;
         private PixelFormatConversionShim _conversionShim;
         private IDisposable _preFramebufferCopyHandler;
@@ -82,14 +83,16 @@ namespace Avalonia.Skia
         /// <param name="framebuffer">Backing framebuffer.</param>
         private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
         {
-            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo))
+            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) && _currentFramebufferAddress == framebuffer.Address)
             {
                 return;
             }
-
+            
             FreeSurface();
+            
+            _currentFramebufferAddress = framebuffer.Address;
 
-            var surface = SKSurface.Create(desiredImageInfo, framebuffer.Address, framebuffer.RowBytes);
+            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, framebuffer.RowBytes);
 
             // If surface cannot be created - try to create a compatibilty shim first
             if (surface == null)
@@ -123,6 +126,7 @@ namespace Avalonia.Skia
             }
 
             _framebufferSurface = null;
+            _currentFramebufferAddress = IntPtr.Zero;
         }
 
         /// <summary>
