@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -27,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             Pen pen,
             Point p1,
             Point p2,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene> childScenes = null, IEffectImpl effect = null)
             : base(new Rect(p1, p2), transform, pen)
         {
             Transform = transform;
@@ -60,6 +61,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
+        public IEffectImpl Effect;
+
         /// <summary>
         /// Determines if this draw operation equals another.
         /// </summary>
@@ -80,7 +83,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawLine(Pen, P1, P2);
+            context.DrawLine(Pen, P1, P2, Effect);
         }
 
         public override bool HitTest(Point p)

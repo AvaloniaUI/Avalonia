@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -27,7 +28,8 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush brush,
             Pen pen,
             IGeometryImpl geometry,
-            IDictionary<IVisual, Scene> childScenes = null)
+            IDictionary<IVisual, Scene> childScenes = null,
+            IEffectImpl effect = null)
             : base(geometry.GetRenderBounds(pen), transform, null)
         {
             Transform = transform;
@@ -57,6 +59,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public IGeometryImpl Geometry { get; }
 
+        public IEffectImpl Effect { get; }
+
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
@@ -84,7 +88,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGeometry(Brush, Pen, Geometry);
+            context.DrawGeometry(Brush, Pen, Geometry, Effect);
         }
 
         /// <inheritdoc/>

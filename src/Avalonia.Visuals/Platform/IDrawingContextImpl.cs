@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Platform
 {
@@ -30,7 +31,7 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -39,7 +40,7 @@ namespace Avalonia.Platform
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
+        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect, IEffectImpl effect = null);
 
         /// <summary>
         /// Draws a line.
@@ -47,7 +48,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="p1">The first point of the line.</param>
         /// <param name="p2">The second point of the line.</param>
-        void DrawLine(Pen pen, Point p1, Point p2);
+        void DrawLine(Pen pen, Point p1, Point p2, IEffectImpl effect = null);
 
         /// <summary>
         /// Draws a geometry.
@@ -55,7 +56,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry);
+        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IEffectImpl effect = null);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -63,7 +64,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f);
+        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IEffectImpl effect = null);
 
         /// <summary>
         /// Draws text.
@@ -79,7 +80,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
+        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IEffectImpl effect = null);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer

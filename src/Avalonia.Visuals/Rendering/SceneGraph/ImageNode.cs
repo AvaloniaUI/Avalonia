@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -20,14 +21,15 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
-            : base(destRect, transform, null)
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null)
+            : base(effect == null ? destRect : effect.UpdateBounds(destRect), transform, null)
         {
             Transform = transform;
             Source = source.Clone();
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
+            Effect = effect;
         }
 
         /// <summary>
@@ -54,6 +56,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the destination rect.
         /// </summary>
         public Rect DestRect { get; }
+
+
+        public IEffectImpl Effect { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -83,7 +88,7 @@ namespace Avalonia.Rendering.SceneGraph
             // TODO: Probably need to introduce some kind of locking mechanism in the case of
             // WriteableBitmap.
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect);
+            context.DrawImage(Source, Opacity, SourceRect, DestRect, Effect);
         }
 
         /// <inheritdoc/>
