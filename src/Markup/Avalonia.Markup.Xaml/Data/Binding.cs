@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Data;
 using Avalonia.VisualTree;
 
@@ -234,8 +235,28 @@ namespace Avalonia.Markup.Xaml.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            IObservable<object> controlLocator;
+
+            switch (relativeSource.Tree)
+            {
+                case TreeType.Logical:
+                    controlLocator = ControlLocator.Track(
+                        (ILogical)target,
+                        relativeSource.AncestorLevel - 1,
+                        relativeSource.AncestorType);
+                    break;
+                case TreeType.Visual:
+                    controlLocator = ControlLocator.Track(
+                        (IVisual)target,
+                        relativeSource.AncestorLevel - 1,
+                        relativeSource.AncestorType);
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid tree to traverse.");
+            }
+
             return new ExpressionObserver(
-                ControlLocator.Track(target, relativeSource.Tree, relativeSource.AncestorLevel - 1, relativeSource.AncestorType),
+                controlLocator,
                 path,
                 enableDataValidation);
         }
