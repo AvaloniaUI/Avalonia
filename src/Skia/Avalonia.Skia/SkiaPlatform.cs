@@ -31,8 +31,8 @@ namespace Avalonia.Skia
         /// <summary>
         /// Initialize Skia platform.
         /// </summary>
-        /// <param name="preferredBackendType">Preferred backend type - will fallback to raster if platform has not support for it..</param>
-        public static void Initialize(RenderBackendType preferredBackendType)
+        /// <param name="preferredBackendType">Preferred backend type - will fallback to raster if platform has not support for it.</param>
+        public static void Initialize(RenderBackendType preferredBackendType = RenderBackendType.Raster)
         {
             IGpuRenderBackend renderBackend = null;
             
