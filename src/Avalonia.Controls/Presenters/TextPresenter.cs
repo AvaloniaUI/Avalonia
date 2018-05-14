@@ -211,6 +211,12 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <summary>
+        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// </summary>
+        /// <param name="constraint">The constraint of the text.</param>
+        /// <param name="text">The text to generated the <see cref="FormattedText"/> for.</param>
+        /// <returns>A <see cref="FormattedText"/> object.</returns>
         protected override FormattedText CreateFormattedText(Size constraint, string text)
         {
             FormattedText result = null;
