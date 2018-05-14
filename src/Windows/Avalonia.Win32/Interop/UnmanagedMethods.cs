@@ -1187,27 +1187,21 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum OpenFileNameFlags
         {
-
             OFN_ALLOWMULTISELECT = 0x00000200,
-
             OFN_EXPLORER = 0x00080000,
-
             OFN_HIDEREADONLY = 0x00000004,
-
             OFN_NOREADONLYRETURN = 0x00008000,
-
             OFN_OVERWRITEPROMPT = 0x00000002
-
         }
 
-        public enum HRESULT : long
+        public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
             S_OK = 0x0000,
             E_INVALIDARG = 0x80070057,
             E_OUTOFMEMORY = 0x8007000E,
             E_NOTIMPL = 0x80004001,
-            E_UNEXPECTED = 0x8000FFFF,
+            E_UNEXPECTED = 0x8000FFFF
         }
 
         public enum Icons
