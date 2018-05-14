@@ -11,6 +11,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Pages\DataGridPage.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />

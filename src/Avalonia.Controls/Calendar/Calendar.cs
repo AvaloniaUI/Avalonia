@@ -1048,12 +1048,13 @@ namespace Avalonia.Controls
         {
             Debug.Assert(sender is Calendar, "The sender should be a Calendar!");
 
-            var size = Bounds.Size;
-            RectangleGeometry rg = new RectangleGeometry();
-            rg.Rect = new Rect(0, 0, size.Width, size.Height);
-
             if (Root != null)
             {
+                var size = Bounds.Size;
+                RectangleGeometry rg = new RectangleGeometry
+                {
+                    Rect = new Rect(0, 0, size.Width, size.Height)
+                };
                 Root.Clip = rg;
             }
         }
@@ -1189,7 +1190,7 @@ namespace Avalonia.Controls
         {
             if (HoverEnd != null && HoverStart != null)
             {
-                int startIndex, endIndex, i;
+                int i;
                 CalendarDayButton b;
                 DateTime? d;
                 CalendarItem monthControl = MonthControl;
@@ -1197,7 +1198,7 @@ namespace Avalonia.Controls
                 // This assumes a contiguous set of dates:
                 if (HoverEndIndex != null && HoverStartIndex != null)
                 {
-                    SortHoverIndexes(out startIndex, out endIndex);
+                    SortHoverIndexes(out int startIndex, out int endIndex);
 
                     for (i = startIndex; i <= endIndex; i++)
                     {
@@ -1601,7 +1602,7 @@ namespace Avalonia.Controls
             base.OnPointerWheelChanged(e);
             if (!e.Handled)
             {
-                CalendarExtensions.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
+                KeyboardHelper.GetMetaKeyState(e.InputModifiers, out bool ctrl, out bool shift);
 
                 if (!ctrl)
                 {
@@ -1658,7 +1659,7 @@ namespace Avalonia.Controls
             // Some keys (e.g. Left/Right) need to be translated in RightToLeft mode
             Key invariantKey = e.Key;  //InteractionHelper.GetLogicalKey(FlowDirection, e.Key);
 
-            CalendarExtensions.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
+            KeyboardHelper.GetMetaKeyState(e.Modifiers, out bool ctrl, out bool shift);
 
             switch (invariantKey)
             {

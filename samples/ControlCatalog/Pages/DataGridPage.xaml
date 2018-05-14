@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">Button</TextBlock>
+    <TextBlock Classes="h2">A button control</TextBlock>
+
+    <DataGrid
+      Name="dataGrid1"
+      Width="500"
+      Height="500">
+
+      <DataGrid.Columns>
+        <DataGridTextColumn
+          Header="First Name"
+          Binding="{Binding FirstName}" 
+          Width="2*"/>
+        <DataGridTextColumn
+          Header="Last"
+          Binding="{Binding LastName}"
+          Width="*"/>
+      </DataGrid.Columns>
+      
+    </DataGrid>
+      
+      
+    
+  </StackPanel>
+</UserControl>
