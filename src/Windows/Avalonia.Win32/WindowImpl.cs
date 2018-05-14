@@ -245,19 +245,13 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);            
 
-            var systemDecorationStyles = UnmanagedMethods.WindowStyles.WS_OVERLAPPED
-                | UnmanagedMethods.WindowStyles.WS_CAPTION
-                | UnmanagedMethods.WindowStyles.WS_SYSMENU
-                | UnmanagedMethods.WindowStyles.WS_MINIMIZEBOX
-                | UnmanagedMethods.WindowStyles.WS_MAXIMIZEBOX;
-
-            style |= systemDecorationStyles;
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             if (!value)
             {
-                style ^= systemDecorationStyles;
+                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
             }
 
             UnmanagedMethods.RECT windowRect;
@@ -293,6 +287,21 @@ namespace Avalonia.Win32
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
 
             _decorated = value;
+
+            if(_decorated)
+            {
+                if (_resizable)
+                {
+                    // If we switch decorations back on we need to restore WS_SizeFrame.
+                    _resizable = false;
+                    CanResize(true);
+                }
+                else
+                {
+                    _resizable = true;
+                    CanResize(false);
+                }
+            }
         }
 
         public void Invalidate(Rect rect)
@@ -863,14 +872,18 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-            
-            if (value)
-                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
-            else
-                style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
-            
-            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            if (_decorated)
+            {
+                var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+
+                if (value)
+                    style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+                else
+                    style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+
+                UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            }
+
             _resizable = value;
         }
     }
