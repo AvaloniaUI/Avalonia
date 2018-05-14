@@ -211,14 +211,19 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override FormattedText CreateFormattedText(Size constraint)
+        protected override FormattedText CreateFormattedText(Size constraint, string text)
         {
+            FormattedText result = null;
+
             if (PasswordChar != default(char))
             {
-                Text = new string(PasswordChar, Text.Length);
+                result = base.CreateFormattedText(constraint, new string(PasswordChar, Text.Length));
+            }
+            else
+            {
+                result = base.CreateFormattedText(constraint, Text);
             }
 
-            var result = base.CreateFormattedText(constraint);
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);

@@ -83,16 +83,9 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected override FormattedText CreateFormattedText(Size constraint)
+        protected override FormattedText CreateFormattedText(Size constraint, string text)
         {
-            return new FormattedText
-            {
-                Constraint = constraint,
-                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
-                Text = StripAccessKey(Text),
-                TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
-            };
+            return base.CreateFormattedText(constraint, StripAccessKey(text));
         }
 
         /// <summary>
