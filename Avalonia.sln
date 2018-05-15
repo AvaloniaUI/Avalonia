@@ -76,7 +76,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup", "src\Mark
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Markup.UnitTests", "tests\Avalonia.Markup.UnitTests\Avalonia.Markup.UnitTests.csproj", "{8EF392D5-1416-45AA-9956-7CBBC3229E8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BindingTest", "samples\BindingTest\BindingTest.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BindingTest", "samples\BindingTest\BindingTest.csproj", "{08B3E6B9-1CD5-443C-9F61-6D49D1C5F162}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RenderHelpers", "src\Shared\RenderHelpers\RenderHelpers.shproj", "{3C4C0CB4-0C0F-4450-A37B-148C84FF905F}"
 EndProject
@@ -114,7 +114,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{A0CC0258-D18C-4AB3-854F-7101680FC3F9}"
 EndProject
@@ -122,7 +122,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsInteropTest", "sampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DotNetFrameworkRuntime", "src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj", "{4A1ABB09-9047-4BD5-A4AD-A055E52C5EE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RenderTest", "samples\RenderTest\RenderTest.csproj", "{F1FDC5B0-4654-416F-AE69-E3E9BBD87801}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RenderTest", "samples\RenderTest\RenderTest.csproj", "{F1FDC5B0-4654-416F-AE69-E3E9BBD87801}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Android", "samples\ControlCatalog.Android\ControlCatalog.Android.csproj", "{29132311-1848-4FD6-AE0C-4FF841151BD3}"
 EndProject
@@ -146,11 +146,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
 		build\Moq.props = build\Moq.props
 		build\NetCore.props = build\NetCore.props
+		build\NetFX.props = build\NetFX.props
 		build\ReactiveUI.props = build\ReactiveUI.props
 		build\Rx.props = build\Rx.props
+		build\SampleApp.props = build\SampleApp.props
 		build\Serilog.props = build\Serilog.props
 		build\SharpDX.props = build\SharpDX.props
-		build\SkiaSharp.Desktop.props = build\SkiaSharp.Desktop.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\Splat.props = build\Splat.props
 		build\Sprache.props = build\Sprache.props
@@ -2590,6 +2591,7 @@ Global
 		{E2999E4A-9086-401F-898C-AEB0AD38E676} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{050CC912-FF49-4A8B-B534-9544017446DD} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 		{F40FC0A2-1BC3-401C-BFC1-928EC4D4A9CE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{CBFD5788-567D-401B-9DFA-74E4224025A0} = {A59C4C0A-64DF-4621-B450-2BA00D6F61E2}
 		{4ADA61C8-D191-428D-9066-EF4F0D86520F} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
