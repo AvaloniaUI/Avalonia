@@ -69,24 +69,31 @@ namespace Avalonia.Controls
 
             set
             {
-                if (_selectedItem != null)
-                {
-                    var container = ItemContainerGenerator.Index.ContainerFromItem(_selectedItem);
-                    MarkContainerSelected(container, false);
-                }
-
-                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
-
-                if (_selectedItem != null)
-                {
-                    var container = ItemContainerGenerator.Index.ContainerFromItem(_selectedItem);
-                    MarkContainerSelected(container, true);
-
-                    if (AutoScrollToSelectedItem && container != null)
+                SetAndRaise(SelectedItemProperty, ref _selectedItem,
+                    (object val, ref object backing, Action<Action> notifier) =>
                     {
-                        container.BringIntoView();
-                    }
-                }
+                        var old = backing;
+                        if (old != null)
+                        {
+                            var container = ItemContainerGenerator.Index.ContainerFromItem(backing);
+                            MarkContainerSelected(container, false);
+                        }
+
+                        backing = val;
+
+                        notifier(() => RaisePropertyChanged(SelectedItemProperty, old, val));
+
+                        if (val != null)
+                        {
+                            var container = ItemContainerGenerator.Index.ContainerFromItem(val);
+                            MarkContainerSelected(container, true);
+
+                            if (AutoScrollToSelectedItem && container != null)
+                            {
+                                container.BringIntoView();
+                            }
+                        }
+                    }, value);
             }
         }
 
@@ -168,15 +175,7 @@ namespace Avalonia.Controls
 
             if (item != null)
             {
-                if (SelectedItem != null)
-                {
-                    var old = ItemContainerGenerator.Index.ContainerFromItem(SelectedItem);
-                    MarkContainerSelected(old, false);
-                }
-
                 SelectedItem = item;
-
-                MarkContainerSelected(container, true);
             }
         }
 
