@@ -5,7 +5,6 @@
     <RootNamespace>Avalonia.Skia</RootNamespace>
     <AssemblyName>Avalonia.Skia</AssemblyName>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
-    <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
