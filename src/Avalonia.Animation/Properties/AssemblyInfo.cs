@@ -3,8 +3,6 @@
 
 using Avalonia.Metadata;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Avalonia.Visuals")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Animation.Easings")]
