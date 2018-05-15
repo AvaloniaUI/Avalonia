@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Metadata;
 
-[assembly: AssemblyTitle("Avalonia.Controls")]
 [assembly: InternalsVisibleTo("Avalonia.Controls.UnitTests")]
 [assembly: InternalsVisibleTo("Avalonia.DesignerSupport")]
 

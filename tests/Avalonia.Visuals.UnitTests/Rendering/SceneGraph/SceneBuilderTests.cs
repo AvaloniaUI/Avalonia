@@ -83,6 +83,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(10, 20, 30, 40),
                         Child = canvas = new Canvas
                         {
+                            ClipToBounds = true,
                             Background = Brushes.AliceBlue,
                         }
                     }
@@ -129,6 +130,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -173,6 +175,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -254,6 +257,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(24, 26),
                         Child = target = new Border
                         {
+                            ClipToBounds = true,
                             Margin = new Thickness(26, 24),
                             Width = 100,
                             Height = 100,
@@ -516,6 +520,50 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Update_ClipBounds_For_Negative_Margin()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            ClipToBounds = true,
+                            Margin = new Thickness(0, -5, 0, 0),
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 5, 100, 95), borderNode.ClipBounds);
+
+                border.Margin = new Thickness(0, -8, 0, 0);
+                layout.ExecuteLayoutPass();
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, border);
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 2, 100, 98), borderNode.ClipBounds);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Descendent_Tranform_When_Margin_Changed()
         {
             using (TestApplication())
@@ -653,6 +701,43 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
                 Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+            }
+        }
+
+        [Fact]
+        public void Setting_Opacity_Should_Add_Descendent_Bounds_To_DirtyRects()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            Width = 100,
+                            Height = 100,
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                decorator.Opacity = 0.5;
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                Assert.NotEmpty(scene.Layers.Single().Dirty);
+                var dirty = scene.Layers.Single().Dirty.Single();
+                Assert.Equal(new Rect(0, 0, 100, 100), dirty);
             }
         }
 

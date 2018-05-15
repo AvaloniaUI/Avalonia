@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -486,25 +487,17 @@ namespace Avalonia
         /// Parses a <see cref="Rect"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The parsed <see cref="Rect"/>.</returns>
-        public static Rect Parse(string s, CultureInfo culture)
+        public static Rect Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 4)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect"))
             {
                 return new Rect(
-                    double.Parse(parts[0], culture),
-                    double.Parse(parts[1], culture),
-                    double.Parse(parts[2], culture),
-                    double.Parse(parts[3], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Rect.");
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
             }
         }
     }

@@ -224,6 +224,26 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Extent_Should_Include_Content_Margin()
+        {
+            var target = new ScrollContentPresenter
+            {
+                Content = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    Margin = new Thickness(5),
+                }
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 50, 50));
+
+            Assert.Equal(new Size(110, 110), target.Extent);
+        }
+
+        [Fact]
         public void Extent_Width_Should_Be_Arrange_Width_When_CanScrollHorizontally_False()
         {
             var child = new WrapPanel

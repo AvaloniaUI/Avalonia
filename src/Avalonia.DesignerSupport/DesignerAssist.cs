@@ -24,7 +24,7 @@ namespace Avalonia.DesignerSupport
 
                 var loader = new AvaloniaXamlLoader();
                 var baseLight = (IStyle)loader.Load(
-                    new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
+                    new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"), null);
                 Styles.Add(baseLight);
             }
         }

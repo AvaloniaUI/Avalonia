@@ -323,7 +323,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal(0xff506070, brush.Color.ToUint32());
         }
 
-        [Fact(Skip = "Not yet supported by Portable.Xaml")]
+        [Fact]
         public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
             var styleXaml = @"
@@ -361,9 +361,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
                 var border = (Border)button.GetVisualChildren().Single();
                 var brush = (SolidColorBrush)border.Background;
-
-                // To make this work we somehow need to be able to get hold of the parent ambient
-                // context from Portable.Xaml. See TODO in StaticResourceExtension.
+                
                 Assert.Equal(0xff506070, brush.Color.ToUint32());
             }
         }
@@ -414,6 +412,79 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 window.ApplyTemplate();
 
                 Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void StaticResource_Can_Be_Assigned_To_Binding_Converter_In_DataTemplate()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Resources>
+        <local:TestValueConverter x:Key='converter' Append='bar'/>
+        <DataTemplate x:Key='PurpleData'>
+          <TextBlock Name='textBlock' Text='{Binding Converter={StaticResource converter}}'/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <ContentPresenter Name='presenter' Content='foo' ContentTemplate='{StaticResource PurpleData}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+
+                window.DataContext = "foo";
+                var presenter = window.FindControl<ContentPresenter>("presenter");
+
+                window.Show();
+
+                var textBlock = (TextBlock)presenter.GetVisualChildren().Single();
+
+                Assert.NotNull(textBlock);
+                Assert.Equal("foobar", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void StaticResource_Is_Correctly_Chosen_From_Within_DataTemplate()
+        {
+            // this tests if IAmbientProviders in DataTemplate contexts are in correct order
+            // if they wouldn't be, Purple brush would be bound to
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Resources>
+        <local:TestValueConverter x:Key='converter' Append='-bar'/>
+        <SolidColorBrush x:Key='brush' Color='Purple'/>
+        <DataTemplate x:Key='WhiteData'>
+          <Border>
+            <Border.Resources>
+              <SolidColorBrush x:Key='brush' Color='White'/>
+            </Border.Resources>
+            <TextBlock Name='textBlock' Text='{Binding Color, Source={StaticResource brush}, Converter={StaticResource converter}}' Foreground='{StaticResource brush}' />
+          </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <ContentPresenter Content='foo' ContentTemplate='{StaticResource WhiteData}'/>
+</Window>";
+
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+
+                window.Show();
+
+                var textBlock = window.GetVisualDescendants().OfType<TextBlock>().Single();
+
+                Assert.NotNull(textBlock);
+                Assert.Equal("White-bar", textBlock.Text);
             }
         }
 

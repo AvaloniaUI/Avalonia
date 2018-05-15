@@ -45,7 +45,8 @@
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    StaysOpen="True"
-                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}">
+                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
+                   ObeyScreenEdges="True">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
@@ -92,7 +93,8 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True">
+                   StaysOpen="True" 
+                   ObeyScreenEdges="True">
               <Border Background="{TemplateBinding Background}"
                       BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
@@ -132,5 +134,9 @@
 
   <Style Selector="MenuItem:empty /template/ Path#rightArrow">
     <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="MenuItem:disabled">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

@@ -15,6 +15,9 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Control that implements support for transformations as if applied by LayoutTransform.
+    /// </summary>
     public class LayoutTransformControl : ContentControl
     {
         public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
@@ -26,6 +29,9 @@ namespace Avalonia.Controls
                 .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
         }
 
+        /// <summary>
+        /// Gets or sets a graphics transformation that should apply to this element when layout is performed.
+        /// </summary>
         public Transform LayoutTransform
         {
             get { return GetValue(LayoutTransformProperty); }

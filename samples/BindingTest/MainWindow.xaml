@@ -1,11 +1,18 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:vm="clr-namespace:BindingTest.ViewModels;assembly=BindingTest"
-        xmlns:local="clr-namespace:BindingTest;assembly=BindingTest">
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:vm="clr-namespace:BindingTest.ViewModels"
+        xmlns:local="clr-namespace:BindingTest"
+        Title="AvaloniaUI Bindings Test"
+        Width="800"
+        Height="600">
   <Window.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="18"/>
     </Style>
   </Window.Styles>
+  <Window.Resources>
+    <vm:TestItem x:Key="SharedItem" StringValue="shared" />
+  </Window.Resources>
   
   <TabControl>
     <TabItem Header="Basic">
@@ -40,6 +47,10 @@
             <TextBlock FontSize="16" Text="Binding Sources"/>
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
+            <TextBox Watermark="Value of SharedItem.StringValue" UseFloatingWatermark="True"
+                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay}"/>
+            <TextBox Watermark="Value of SharedItem.StringValue (duplicate)" UseFloatingWatermark="True"
+                     Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay}"/>
           </StackPanel>
           <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>

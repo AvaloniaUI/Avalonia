@@ -66,7 +66,6 @@ namespace Avalonia.MonoMac
                 var ev = app.NextEvent(NSEventMask.AnyEvent, NSDate.DistantFuture, NSRunLoop.NSDefaultRunLoopMode, true);
                 if (ev != null)
                 {
-                    Console.WriteLine("NSEVENT");
                     app.SendEvent(ev);
                     ev.Dispose();
                 }

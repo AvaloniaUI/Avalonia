@@ -115,6 +115,8 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_title(GtkWindow gtkWindow, Utf8Buffer title);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_resizable(GtkWindow gtkWindow, bool resizable);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_decorated(GtkWindow gtkWindow, bool decorated);
@@ -219,7 +221,10 @@ namespace Avalonia.Gtk3.Interop
             public delegate void gtk_widget_queue_draw_area(GtkWidget widget, int x, int y, int width, int height);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
-            public delegate void gtk_widget_add_tick_callback(GtkWidget widget, TickCallback callback, IntPtr userData, IntPtr destroy);
+            public delegate uint gtk_widget_add_tick_callback(GtkWidget widget, TickCallback callback, IntPtr userData, IntPtr destroy);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate uint gtk_widget_remove_tick_callback(GtkWidget widget, uint id);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate GtkImContext gtk_im_multicontext_new();
@@ -256,8 +261,11 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_unmaximize(GtkWindow window);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_close(GtkWindow window);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
@@ -341,6 +349,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public delegate ulong g_free(IntPtr data);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gobject)]
+            public delegate bool g_type_check_instance_is_fundamentally_a(IntPtr instance, IntPtr type);
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Glib)]
             public unsafe delegate void g_slist_free(GSList* data);
@@ -386,6 +397,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_screen_get_monitor_geometry GdkScreenGetMonitorGeometry;
         public static D.gdk_screen_get_monitor_workarea GdkScreenGetMonitorWorkarea;
         public static D.gtk_window_set_decorated GtkWindowSetDecorated;
+        public static D.gtk_window_set_resizable GtkWindowSetResizable;
         public static D.gtk_window_set_skip_taskbar_hint GtkWindowSetSkipTaskbarHint;
         public static D.gtk_window_get_skip_taskbar_hint GtkWindowGetSkipTaskbarHint;
         public static D.gtk_window_set_skip_pager_hint GtkWindowSetSkipPagerHint;
@@ -412,6 +424,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_set_override_redirect GdkWindowSetOverrideRedirect;
         public static D.gtk_widget_set_size_request GtkWindowSetSizeRequest;
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
+        public static D.gtk_window_set_geometry_hints GtkWindowSetGeometryHints;
         public static D.gtk_window_get_position GtkWindowGetPosition;
         public static D.gtk_window_move GtkWindowMove;
         public static D.gtk_file_chooser_dialog_new GtkFileChooserDialogNew;
@@ -427,6 +440,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.g_timeout_add GTimeoutAdd;
         public static D.g_timeout_add_full GTimeoutAddFull;
         public static D.g_free GFree;
+        public static D.g_type_check_instance_is_fundamentally_a GTypeCheckInstanceIsFundamentallyA;
         public static D.g_slist_free GSlistFree;
         public static D.g_memory_input_stream_new_from_data GMemoryInputStreamNewFromData;
         public static D.gtk_widget_set_double_buffered GtkWidgetSetDoubleBuffered;
@@ -434,6 +448,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_invalidate_rect GdkWindowInvalidateRect;
         public static D.gtk_widget_queue_draw_area GtkWidgetQueueDrawArea;
         public static D.gtk_widget_add_tick_callback GtkWidgetAddTickCallback;
+        public static D.gtk_widget_remove_tick_callback GtkWidgetRemoveTickCallback;
         public static D.gtk_widget_activate GtkWidgetActivate;
         public static D.gtk_clipboard_get_for_display GtkClipboardGetForDisplay;
         public static D.gtk_clipboard_request_text GtkClipboardRequestText;
@@ -456,6 +471,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_deiconify GtkWindowDeiconify;
         public static D.gtk_window_maximize GtkWindowMaximize;
         public static D.gtk_window_unmaximize GtkWindowUnmaximize;
+        public static D.gtk_window_close GtkWindowClose;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
@@ -490,6 +506,8 @@ namespace Avalonia.Gtk3.Interop
         public static D.cairo_set_font_size CairoSetFontSize;
         public static D.cairo_move_to CairoMoveTo;
         public static D.cairo_destroy CairoDestroy;
+
+        public const int G_TYPE_OBJECT = 80;
     }
 
     public enum GtkWindowType
@@ -726,19 +744,19 @@ namespace Avalonia.Gtk3.Interop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct GdkGeometry
+    public struct GdkGeometry
     {
-        gint min_width;
-        gint min_height;
-        gint max_width;
-        gint max_height;
-        gint base_width;
-        gint base_height;
-        gint width_inc;
-        gint height_inc;
-        gdouble min_aspect;
-        gdouble max_aspect;
-        gint win_gravity;
+        public gint min_width;
+        public gint min_height;
+        public gint max_width;
+        public gint max_height;
+        public gint base_width;
+        public gint base_height;
+        public gint width_inc;
+        public gint height_inc;
+        public gdouble min_aspect;
+        public gdouble max_aspect;
+        public gint win_gravity;
     }
 
     enum GdkWindowHints
