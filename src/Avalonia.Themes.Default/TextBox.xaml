@@ -11,7 +11,7 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
           <DockPanel Margin="{TemplateBinding Padding}">
-            
+
             <TextBlock Name="floatingWatermark"
                        Foreground="{DynamicResource ThemeAccentBrush}"
                        FontSize="{DynamicResource FontSizeSmall}"
@@ -31,7 +31,7 @@
             <DataValidationErrors>
               <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                
+
                 <Panel>
                   <TextBlock Name="watermark"
                              Opacity="0.5"
@@ -43,7 +43,8 @@
                                  SelectionStart="{TemplateBinding SelectionStart}"
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
-                                 TextWrapping="{TemplateBinding TextWrapping}"/>
+                                 TextWrapping="{TemplateBinding TextWrapping}"
+                                 PasswordChar="{TemplateBinding PasswordChar}"/>
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>

@@ -30,9 +30,12 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
-        
+
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -87,7 +90,7 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
-        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
+        private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
         static TextBox()
         {
@@ -116,7 +119,7 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
-            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);            
         }
 
         public bool AcceptsReturn
@@ -147,11 +150,17 @@ namespace Avalonia.Controls
                     _undoRedoHelper.UpdateLastState();
             }
         }
-        
+
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
             set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
@@ -237,7 +246,7 @@ namespace Avalonia.Controls
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
 
-            if(IsFocused)
+            if (IsFocused)
             {
                 _presenter.ShowCaret();
             }
@@ -349,7 +358,10 @@ namespace Avalonia.Controls
                 case Key.C:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                        }
                         handled = true;
                     }
                     break;
@@ -357,8 +369,11 @@ namespace Avalonia.Controls
                 case Key.X:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
-                        DeleteSelection();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                            DeleteSelection();
+                        }
                         handled = true;
                     }
                     break;
@@ -578,7 +593,7 @@ namespace Avalonia.Controls
                 DataValidationErrors.SetError(this, status.Error);
             }
         }
-        
+
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
@@ -855,6 +870,8 @@ namespace Avalonia.Controls
             MoveHorizontal(1, modifiers);
             SelectionEnd = CaretIndex;
         }
+
+        private bool IsPasswordBox => PasswordChar != default(char);
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
