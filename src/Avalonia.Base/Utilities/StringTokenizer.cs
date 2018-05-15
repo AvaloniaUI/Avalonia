@@ -52,9 +52,16 @@ namespace Avalonia.Utilities
 
         public bool TryReadInt32(out Int32 result, char? separator = null)
         {
-            var success = TryReadString(out var stringResult, separator);
-            result = success ? int.Parse(stringResult, _formatProvider) : 0;
-            return success;
+            if (TryReadString(out var stringResult, separator) &&
+                int.TryParse(stringResult, NumberStyles.Integer, _formatProvider, out result))
+            {
+                return true;
+            }
+            else
+            {
+                result = default(Int32);
+                return false;
+            }
         }
 
         public int ReadInt32(char? separator = null)
@@ -69,16 +76,16 @@ namespace Avalonia.Utilities
 
         public bool TryReadDouble(out double result, char? separator = null)
         {
-            var success = TryReadString(out var stringResult, separator);
-
-            if (success)
+            if (TryReadString(out var stringResult, separator) &&
+                double.TryParse(stringResult, NumberStyles.Float, _formatProvider, out result))
             {
-                success = double.TryParse(stringResult, NumberStyles.Float, _formatProvider, out result);
-                return success;
+                return true;
             }
-
-            result = default(double);
-            return false;
+            else
+            {
+                result = default(double);
+                return false;
+            }
         }
 
         public double ReadDouble(char? separator = null)
