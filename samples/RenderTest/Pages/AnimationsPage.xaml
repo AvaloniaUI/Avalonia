@@ -41,7 +41,7 @@
         <Setter Property="Background" Value="Cyan"/>
         <Setter Property="Child" Value="{StaticResource Acorn}"/>
       </Style>
-      <Style Selector="Border.Rect1:pointerover">
+      <Style Selector="Border.Rect1">
         <Style.Animations>
           <Animation Duration="0:0:2.5" 
                      RepeatBehavior="Repeat"
