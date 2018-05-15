@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Controls;
 
 namespace Avalonia.Markup.Data
 {
@@ -30,6 +29,22 @@ namespace Avalonia.Markup.Data
         /// The binding will be to an ancestor of the control in the visual tree.
         /// </summary>
         FindAncestor,
+    }
+
+
+    /// <summary>
+    /// The type of tree via which to track a control.
+    /// </summary>
+    public enum TreeType
+    {
+        /// <summary>
+        /// The visual tree.
+        /// </summary>
+        Visual,
+        /// <summary>
+        /// The logical tree.
+        /// </summary>
+        Logical,
     }
 
     /// <summary>

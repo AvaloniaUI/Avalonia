@@ -10,12 +10,12 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ControlTests_Resources
+    public class StyledElementTests_Resources
     {
         [Fact]
         public void FindResource_Should_Find_Control_Resource()
         {
-            var target = new Control
+            var target = new StyledElement
             {
                 Resources =
                 {
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FindResource_Should_Find_Style_Resource()
         {
-            var target = new Control
+            var target = new StyledElement
             {
                 Styles =
                 {
@@ -92,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void FindResource_Should_Find_Styles_Resource()
         {
-            var target = new Control
+            var target = new StyledElement
             {
                 Styles =
                 {
@@ -188,7 +188,7 @@ namespace Avalonia.Controls.UnitTests
         public void Adding_Resource_To_Nested_Style_Should_Raise_ResourceChanged()
         {
             Style style;
-            var target = new Decorator
+            var target = new StyledElement
             {
                 Styles =
                 {
@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_Logical_Parent_Subscribes_To_Parents_ResourceChanged_Event()
         {
             var parent = new ContentControl();
-            var child = new Border();
+            var child = new StyledElement();
 
             ((ISetLogicalParent)child).SetParent(parent);
             var raisedOnChild = false;

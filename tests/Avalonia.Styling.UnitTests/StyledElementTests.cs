@@ -9,15 +9,16 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 using Avalonia.LogicalTree;
+using Avalonia.Controls;
 
-namespace Avalonia.Controls.UnitTests
+namespace Avalonia.Styling.UnitTests
 {
-    public class ControlTests
+    public class StyledElementTests
     {
         [Fact]
         public void Classes_Should_Initially_Be_Empty()
         {
-            var target = new Control();
+            var target = new StyledElement();
 
             Assert.Empty(target.Classes);
         }
@@ -116,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                 raised.Add("attached");
             };
 
-            child.GetObservable(Control.ParentProperty).Skip(1).Subscribe(_ => raised.Add("parent"));
+            child.GetObservable(StyledElement.ParentProperty).Skip(1).Subscribe(_ => raised.Add("parent"));
 
             root.Child = child;
 
@@ -354,7 +355,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var called = new List<string>();
-            void Record(object sender, EventArgs e) => called.Add(((Control)sender).Name);
+            void Record(object sender, EventArgs e) => called.Add(((StyledElement)sender).Name);
 
             root.DataContextChanged += Record;
 
@@ -396,9 +397,9 @@ namespace Avalonia.Controls.UnitTests
 
             foreach (IDataContextEvents c in root.GetSelfAndLogicalDescendants())
             {
-                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((Control)s).Name);
-                c.DataContextChanged += (s, e) => called.Add("changed " + ((Control)s).Name);
-                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((Control)s).Name);
+                c.DataContextBeginUpdate += (s, e) => called.Add("begin " + ((StyledElement)s).Name);
+                c.DataContextChanged += (s, e) => called.Add("changed " + ((StyledElement)s).Name);
+                c.DataContextEndUpdate += (s, e) => called.Add("end " + ((StyledElement)s).Name);
             }
 
             root.DataContext = "foo";

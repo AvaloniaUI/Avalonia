@@ -24,8 +24,8 @@ namespace Avalonia.Markup.Data
     /// </remarks>
     public static class DelayedBinding
     {
-        private static ConditionalWeakTable<IControl, List<Entry>> _entries = 
-            new ConditionalWeakTable<IControl, List<Entry>>();
+        private static ConditionalWeakTable<IStyledElement, List<Entry>> _entries = 
+            new ConditionalWeakTable<IStyledElement, List<Entry>>();
 
         /// <summary>
         /// Adds a delayed binding to a control.
@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Data
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
         /// <param name="binding">The binding.</param>
-        public static void Add(IControl target, AvaloniaProperty property, IBinding binding)
+        public static void Add(IStyledElement target, AvaloniaProperty property, IBinding binding)
         {
             if (target.IsInitialized)
             {
@@ -41,9 +41,8 @@ namespace Avalonia.Markup.Data
             }
             else
             {
-                List<Entry> bindings;
 
-                if (!_entries.TryGetValue(target, out bindings))
+                if (!_entries.TryGetValue(target, out List<Entry> bindings))
                 {
                     bindings = new List<Entry>();
                     _entries.Add(target, bindings);
@@ -62,7 +61,7 @@ namespace Avalonia.Markup.Data
         /// <param name="target">The control.</param>
         /// <param name="property">The property on the control to bind to.</param>
         /// <param name="value">A function which returns the value.</param>
-        public static void Add(IControl target, PropertyInfo property, Func<IControl, object> value)
+        public static void Add(IStyledElement target, PropertyInfo property, Func<IStyledElement, object> value)
         {
             if (target.IsInitialized)
             {
@@ -89,7 +88,7 @@ namespace Avalonia.Markup.Data
         /// Applies any delayed bindings to a control.
         /// </summary>
         /// <param name="control">The control.</param>
-        public static void ApplyBindings(IControl control)
+        public static void ApplyBindings(IStyledElement control)
         {
             List<Entry> entries;
 
@@ -106,14 +105,14 @@ namespace Avalonia.Markup.Data
 
         private static void ApplyBindings(object sender, EventArgs e)
         {
-            var target = (IControl)sender;
+            var target = (IStyledElement)sender;
             ApplyBindings(target);
             target.Initialized -= ApplyBindings;
         }
 
         private abstract class Entry
         {
-            public abstract void Apply(IControl control);
+            public abstract void Apply(IStyledElement control);
         }
 
         private class BindingEntry : Entry
@@ -127,7 +126,7 @@ namespace Avalonia.Markup.Data
             public IBinding Binding { get; }
             public AvaloniaProperty Property { get; }
 
-            public override void Apply(IControl control)
+            public override void Apply(IStyledElement control)
             {
                 control.Bind(Property, Binding);
             }
@@ -135,16 +134,16 @@ namespace Avalonia.Markup.Data
 
         private class ClrPropertyValueEntry : Entry
         {
-            public ClrPropertyValueEntry(PropertyInfo property, Func<IControl, object> value)
+            public ClrPropertyValueEntry(PropertyInfo property, Func<IStyledElement, object> value)
             {
                 Property = property;
                 Value = value;
             }
 
             public PropertyInfo Property { get; }
-            public Func<IControl, object> Value { get; }
+            public Func<IStyledElement, object> Value { get; }
 
-            public override void Apply(IControl control)
+            public override void Apply(IStyledElement control)
             {
                 try
                 {

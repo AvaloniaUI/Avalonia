@@ -184,7 +184,7 @@ namespace Avalonia.Markup.UnitTests.Data
             // When binding to DataContext and the target isn't found, the binding should produce
             // null rather than UnsetValue in order to not propagate incorrect DataContexts from
             // parent controls while things are being set up. This logic is implemented in 
-            // `Avalonia.Markup.Xaml.Binding.Initiate`.
+            // `Avalonia.Markup.Data.Binding.Initiate`.
             Assert.True(child.IsSet(Control.DataContextProperty));
 
             root.Child = child;

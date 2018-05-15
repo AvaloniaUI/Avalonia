@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class ControlTests_NameScope
+    public class StyledElementTests_NameScope
     {
         [Fact]
         public void Controls_Should_Register_With_NameScope()
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.UnitTests
 
             root.ApplyTemplate();
 
-            Assert.Null(NameScope.GetNameScope((Control)root.Presenter).Find("foo"));
+            Assert.Null(NameScope.GetNameScope((StyledElement)root.Presenter).Find("foo"));
         }
 
         [Fact]

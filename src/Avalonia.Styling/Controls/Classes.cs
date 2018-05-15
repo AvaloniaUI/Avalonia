@@ -9,7 +9,7 @@ using Avalonia.Collections;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Holds a collection of style classes for an <see cref="IControl"/>.
+    /// Holds a collection of style classes for an <see cref="IStyledElement"/>.
     /// </summary>
     /// <remarks>
     /// Similar to CSS, each control may have any number of styling classes applied.
@@ -54,7 +54,7 @@ namespace Avalonia.Controls
         /// <param name="name">The class name.</param>
         /// <remarks>
         /// Only standard classes may be added via this method. To add pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void Add(string name)
@@ -73,7 +73,7 @@ namespace Avalonia.Controls
         /// <param name="names">The class names.</param>
         /// <remarks>
         /// Only standard classes may be added via this method. To add pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void AddRange(IEnumerable<string> names)
@@ -114,7 +114,7 @@ namespace Avalonia.Controls
         /// <param name="name">The class name.</param>
         /// <remarks>
         /// Only standard classes may be added via this method. To add pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void Insert(int index, string name)
@@ -134,7 +134,7 @@ namespace Avalonia.Controls
         /// <param name="names">The class names.</param>
         /// <remarks>
         /// Only standard classes may be added via this method. To add pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void InsertRange(int index, IEnumerable<string> names)
@@ -160,7 +160,7 @@ namespace Avalonia.Controls
         /// <param name="name">The class name.</param>
         /// <remarks>
         /// Only standard classes may be removed via this method. To remove pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override bool Remove(string name)
@@ -175,7 +175,7 @@ namespace Avalonia.Controls
         /// <param name="names">The class name.</param>
         /// <remarks>
         /// Only standard classes may be removed via this method. To remove pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void RemoveAll(IEnumerable<string> names)
@@ -201,7 +201,7 @@ namespace Avalonia.Controls
         /// <param name="index">The index of the class in the collection.</param>
         /// <remarks>
         /// Only standard classes may be removed via this method. To remove pseudoclasses (classes
-        /// beginning with a ':' character) use the protected <see cref="Control.PseudoClasses"/>
+        /// beginning with a ':' character) use the protected <see cref="StyledElement.PseudoClasses"/>
         /// property.
         /// </remarks>
         public override void RemoveAt(int index)

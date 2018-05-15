@@ -104,7 +104,7 @@ namespace Avalonia.Markup.Data
             if (ElementName != null)
             {
                 observer = CreateElementObserver(
-                    (target as IControl) ?? (anchor as IControl),
+                    (target as IStyledElement) ?? (anchor as IStyledElement),
                     ElementName,
                     Path,
                     enableDataValidation);
@@ -115,10 +115,10 @@ namespace Avalonia.Markup.Data
             }
             else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
-                observer = CreateDataContexObserver(
+                observer = CreateDataContextObserver(
                     target,
                     Path,
-                    targetProperty == Control.DataContextProperty,
+                    targetProperty == StyledElement.DataContextProperty,
                     anchor,
                     enableDataValidation);
             }
@@ -138,7 +138,7 @@ namespace Avalonia.Markup.Data
                 }
 
                 observer = CreateFindAncestorObserver(
-                    (target as IControl) ?? (anchor as IControl),
+                    (target as IStyledElement) ?? (anchor as IStyledElement),
                     RelativeSource,
                     Path,
                     enableDataValidation);
@@ -153,8 +153,8 @@ namespace Avalonia.Markup.Data
             // If we're binding to DataContext and our fallback is UnsetValue then override
             // the fallback value to null, as broken bindings to DataContext must reset the
             // DataContext in order to not propagate incorrect DataContexts to child controls.
-            // See Avalonia.Markup.Xaml.UnitTests.Data.DataContext_Binding_Should_Produce_Correct_Results.
-            if (targetProperty == Control.DataContextProperty && fallback == AvaloniaProperty.UnsetValue)
+            // See Avalonia.Markup.UnitTests.Data.DataContext_Binding_Should_Produce_Correct_Results.
+            if (targetProperty == StyledElement.DataContextProperty && fallback == AvaloniaProperty.UnsetValue)
             {
                 fallback = null;
             }
@@ -170,7 +170,7 @@ namespace Avalonia.Markup.Data
             return new InstancedBinding(subject, Mode, Priority);
         }
 
-        private ExpressionObserver CreateDataContexObserver(
+        private ExpressionObserver CreateDataContextObserver(
             IAvaloniaObject target,
             string path,
             bool targetIsDataContext,
@@ -179,9 +179,9 @@ namespace Avalonia.Markup.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            if (!(target is IControl))
+            if (!(target is IStyledElement))
             {
-                target = anchor as IControl;
+                target = anchor as IStyledElement;
 
                 if (target == null)
                 {
@@ -191,11 +191,11 @@ namespace Avalonia.Markup.Data
 
             if (!targetIsDataContext)
             {
-                var update = target.GetObservable(Control.DataContextProperty)
+                var update = target.GetObservable(StyledElement.DataContextProperty)
                     .Skip(1)
                     .Select(_ => Unit.Default);
                 var result = new ExpressionObserver(
-                    () => target.GetValue(Control.DataContextProperty),
+                    () => target.GetValue(StyledElement.DataContextProperty),
                     path,
                     update,
                     enableDataValidation);
@@ -212,7 +212,7 @@ namespace Avalonia.Markup.Data
         }
 
         private ExpressionObserver CreateElementObserver(
-            IControl target,
+            IStyledElement target,
             string elementName,
             string path,
             bool enableDataValidation)
@@ -229,7 +229,7 @@ namespace Avalonia.Markup.Data
         }
 
         private ExpressionObserver CreateFindAncestorObserver(
-            IControl target,
+            IStyledElement target,
             RelativeSource relativeSource,
             string path,
             bool enableDataValidation)
@@ -247,7 +247,7 @@ namespace Avalonia.Markup.Data
                         relativeSource.AncestorType);
                     break;
                 case TreeType.Visual:
-                    controlLocator = ControlLocator.Track(
+                    controlLocator = VisualLocator.Track(
                         (IVisual)target,
                         relativeSource.AncestorLevel - 1,
                         relativeSource.AncestorType);
@@ -279,12 +279,12 @@ namespace Avalonia.Markup.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
-            var update = target.GetObservable(Control.TemplatedParentProperty)
+            var update = target.GetObservable(StyledElement.TemplatedParentProperty)
                 .Skip(1)
                 .Select(_ => Unit.Default);
 
             var result = new ExpressionObserver(
-                () => target.GetValue(Control.TemplatedParentProperty),
+                () => target.GetValue(StyledElement.TemplatedParentProperty),
                 path,
                 update,
                 enableDataValidation);
@@ -303,16 +303,9 @@ namespace Avalonia.Markup.Data
             return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
-                    return (x as IAvaloniaObject)?.GetObservable(Control.DataContextProperty) ?? 
+                    return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ?? 
                            Observable.Return((object)null);
                 }).Switch();
-        }
-
-        private class PathInfo
-        {
-            public string Path { get; set; }
-            public string ElementName { get; set; }
-            public RelativeSource RelativeSource { get; set; }
         }
     }
 }

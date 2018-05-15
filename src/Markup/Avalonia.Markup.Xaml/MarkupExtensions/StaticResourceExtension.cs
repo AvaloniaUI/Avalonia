@@ -69,7 +69,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
-        private object GetValue(IControl control)
+        private object GetValue(IStyledElement control)
         {
             return control.FindResource(ResourceKey);
         }

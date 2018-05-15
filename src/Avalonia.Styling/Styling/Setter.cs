@@ -65,7 +65,7 @@ namespace Avalonia.Styling
 
             set
             {
-                if (value is IStyleable)
+                if (value is IRequiresTemplateInStyle)
                 {
                     throw new ArgumentException(
                         "Cannot assign a control to Style.Value. Wrap the control in a <Template>.",
@@ -105,7 +105,7 @@ namespace Avalonia.Styling
                 if (template != null && !isPropertyOfTypeITemplate)
                 {
                     var materialized = template.Build();
-                    NameScope.SetNameScope((Visual)materialized, new NameScope());
+                    NameScope.SetNameScope((StyledElement)materialized, new NameScope());
                     value = materialized;
                 }
 

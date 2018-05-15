@@ -6,26 +6,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 
-namespace Avalonia.Controls
+namespace Avalonia.LogicalTree
 {
-    /// <summary>
-    /// The type of tree via which to track a control.
-    /// </summary>
-    public enum TreeType
-    {
-        /// <summary>
-        /// The visual tree.
-        /// </summary>
-        Visual,
-        /// <summary>
-        /// The logical tree.
-        /// </summary>
-        Logical,
-    }
-
     /// <summary>
     /// Locates controls relative to other controls.
     /// </summary>
@@ -92,40 +75,6 @@ namespace Avalonia.Controls
                     return null;
                 }
             });
-        }
-
-        public static IObservable<IVisual> Track(IVisual relativeTo, int ancestorLevel, Type ancestorType = null)
-        {
-            return TrackAttachmentToTree(relativeTo).Select(isAttachedToTree =>
-            {
-                if (isAttachedToTree)
-                {
-                    return relativeTo.GetVisualAncestors()
-                        .Where(x => ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
-                        .ElementAtOrDefault(ancestorLevel);
-                }
-                else
-                {
-                    return null;
-                }
-            });
-        }
-
-        private static IObservable<bool> TrackAttachmentToTree(IVisual relativeTo)
-        {
-            var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.AttachedToVisualTree += x,
-                x => relativeTo.AttachedToVisualTree -= x)
-                .Select(x => true)
-                .StartWith(relativeTo.IsAttachedToVisualTree);
-
-            var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.DetachedFromVisualTree += x,
-                x => relativeTo.DetachedFromVisualTree -= x)
-                .Select(x => false);
-
-            var attachmentStatus = attached.Merge(detached);
-            return attachmentStatus;
         }
 
         private static IObservable<bool> TrackAttachmentToTree(ILogical relativeTo)

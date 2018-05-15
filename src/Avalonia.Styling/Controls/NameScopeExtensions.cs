@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -73,7 +72,7 @@ namespace Avalonia.Controls
             Contract.Requires<ArgumentNullException>(control != null);
 
             return control.GetSelfAndLogicalAncestors()
-                .OfType<Visual>()
+                .OfType<StyledElement>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
                 .FirstOrDefault(x => x != null);
         }
