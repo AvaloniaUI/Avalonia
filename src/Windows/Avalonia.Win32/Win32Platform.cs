@@ -1,27 +1,23 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
-using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
-using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using System.IO;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#else
-using System.ComponentModel;
-#endif
+using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia
 {
@@ -86,11 +82,11 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
 
-            if (OleContext.Current != null)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
+
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
         }
 
         public bool HasMessages()

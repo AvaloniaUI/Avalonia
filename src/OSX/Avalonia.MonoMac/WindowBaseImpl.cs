@@ -161,6 +161,10 @@ namespace Avalonia.MonoMac
             Position = pos;
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IScreenImpl Screen
         {
             get;

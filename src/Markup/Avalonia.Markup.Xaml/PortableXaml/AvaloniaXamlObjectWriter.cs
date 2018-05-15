@@ -11,7 +11,8 @@ namespace Avalonia.Markup.Xaml.PortableXaml
     {
         public static AvaloniaXamlObjectWriter Create(
             XamlSchemaContext schemaContext,
-            AvaloniaXamlContext context)
+            AvaloniaXamlContext context,
+            IAmbientProvider parentAmbientProvider = null)
         {
             var nameScope = new AvaloniaNameScope { Instance = context?.RootInstance };
 
@@ -23,8 +24,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             };
 
             return new AvaloniaXamlObjectWriter(schemaContext,
-                                                writerSettings.WithContext(context),
-                                                nameScope);
+                writerSettings.WithContext(context),
+                nameScope,
+                parentAmbientProvider);
         }
 
         private readonly DelayedValuesHelper _delayedValuesHelper = new DelayedValuesHelper();
@@ -34,9 +36,9 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         private AvaloniaXamlObjectWriter(
             XamlSchemaContext schemaContext,
             XamlObjectWriterSettings settings,
-            AvaloniaNameScope nameScope
-            )
-            : base(schemaContext, settings)
+            AvaloniaNameScope nameScope,
+            IAmbientProvider parentAmbientProvider)
+            : base(schemaContext, settings, parentAmbientProvider)
         {
             _nameScope = nameScope;
         }

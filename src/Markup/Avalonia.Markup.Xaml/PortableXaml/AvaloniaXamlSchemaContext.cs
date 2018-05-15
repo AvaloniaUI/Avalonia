@@ -200,8 +200,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             var type = (getter ?? setter).DeclaringType;
 
-            var prop = AvaloniaPropertyRegistry.Instance.GetAttached(type)
-                    .FirstOrDefault(v => v.Name == attachablePropertyName);
+            var prop = AvaloniaPropertyRegistry.Instance.FindRegistered(type, attachablePropertyName);
 
             if (prop != null)
             {
