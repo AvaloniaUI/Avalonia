@@ -95,6 +95,9 @@ namespace Avalonia.Controls
                 o => o.WindowStartupLocation,
                 (o, v) => o.WindowStartupLocation = v);
 
+        public static readonly StyledProperty<bool> CanResizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
@@ -113,6 +116,8 @@ namespace Avalonia.Controls
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
+
+            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
         }
 
         /// <summary>
@@ -206,6 +211,17 @@ namespace Avalonia.Controls
                 if (PlatformImpl != null)
                     PlatformImpl.WindowState = value;
             }
+        }
+
+        /// <summary>
+        /// Enables or disables resizing of the window.
+        /// Note that if <see cref="HasSystemDecorations"/> is set to False then this property
+        /// has no effect and should be treated as a recommendation for the user setting HasSystemDecorations.
+        /// </summary>
+        public bool CanResize
+        {
+            get { return GetValue(CanResizeProperty); }
+            set { SetValue(CanResizeProperty, value); }
         }
 
         /// <summary>

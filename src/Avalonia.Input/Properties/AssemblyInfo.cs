@@ -4,5 +4,4 @@
 using System.Reflection;
 using Avalonia.Metadata;
 
-[assembly: AssemblyTitle("Avalonia.Input")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Input")]

@@ -4,14 +4,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DefineConstants>$(DefineConstants);DOTNETCORE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetCoreRuntime.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
@@ -20,7 +12,7 @@
     <ProjectReference Include="..\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj" />
     <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
-  </ItemGroup>
+  </ItemGroup>  
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
 </Project>

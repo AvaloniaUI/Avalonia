@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return RelativePoint.Parse((string)value, culture);
+            return RelativePoint.Parse((string)value);
         }
     }
 }

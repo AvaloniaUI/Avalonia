@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -26,8 +27,11 @@ namespace Avalonia.Win32
 
         private OleContext()
         {
-            if (UnmanagedMethods.OleInitialize(IntPtr.Zero) != UnmanagedMethods.HRESULT.S_OK)
-                throw new SystemException("Failed to initialize OLE");
+            UnmanagedMethods.HRESULT res = UnmanagedMethods.OleInitialize(IntPtr.Zero);
+
+            if (res != UnmanagedMethods.HRESULT.S_OK &&
+                res != UnmanagedMethods.HRESULT.S_FALSE /*already initialized*/)
+                throw new Win32Exception((int)res, "Failed to initialize OLE");
         }
 
         private static bool IsValidOleThread()

@@ -92,14 +92,13 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_Throws_Exception_For_Unregistered_Property()
+        public void Bind_Does_Not_Throw_Exception_For_Unregistered_Property()
         {
             Class1 target = new Class1();
 
-            Assert.Throws<ArgumentException>(() =>
-            {
-                target.Bind(Class2.BarProperty, Observable.Return("foo"));
-            });
+            target.Bind(Class2.BarProperty, Observable.Never<string>().StartWith("foo"));
+
+            Assert.Equal("foo", target.GetValue(Class2.BarProperty));
         }
 
         [Fact]

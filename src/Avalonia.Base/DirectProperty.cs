@@ -75,6 +75,9 @@ namespace Avalonia
         /// </summary>
         public Action<TOwner, TValue> Setter { get; }
 
+        /// <inheritdoc/>
+        Type IDirectPropertyAccessor.Owner => typeof(TOwner);
+
         /// <summary>
         /// Registers the direct property on another type.
         /// </summary>

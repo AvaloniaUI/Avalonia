@@ -9,7 +9,7 @@ namespace Avalonia
     /// An attached avalonia property.
     /// </summary>
     /// <typeparam name="TValue">The type of the property's value.</typeparam>
-    public class AttachedProperty<TValue> : StyledPropertyBase<TValue>
+    public class AttachedProperty<TValue> : StyledProperty<TValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AttachedProperty{TValue}"/> class.
@@ -35,11 +35,10 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="TOwner">The owner type.</typeparam>
         /// <returns>The property.</returns>
-        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : IAvaloniaObject
+        public new AttachedProperty<TValue> AddOwner<TOwner>() where TOwner : IAvaloniaObject
         {
-            var result = new StyledProperty<TValue>(this, typeof(TOwner));
-            AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
-            return result;
+            AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
+            return this;
         }
     }
 }
