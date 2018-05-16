@@ -65,6 +65,11 @@ namespace Avalonia.Gtk3
         public void CanResize(bool value) => Native.GtkWindowSetResizable(GtkWidget, value);
         
 
+        public void SetOwner(IWindowImpl owner)
+        {
+            throw new NotImplementedException();
+        }
+
         class EmptyDisposable : IDisposable
         {
             public void Dispose()

@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+  <StackPanel Orientation="Vertical" Gap="4">
+    <Button Content="Open Window" Command="{Binding OpenWindowCommand}" />
+    <Button Content="Open Window Modal" Command="{Binding OpenModalWindowCommand}" />
+    <Button Content="Open Owned Window" Command="{Binding OpenOwnedWindowCommand}" />
+    <Button Content="Open Owned Window Modal" Command="{Binding OpenOwnedModalWindowCommand}" />
+  </StackPanel>
+</UserControl>

@@ -118,6 +118,11 @@ namespace Avalonia.Controls
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
 
             CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
+
+            OwnerProperty.Changed.AddClassHandler<Window>((s, e) =>
+            {
+                s.PlatformImpl?.SetOwner(((Window)e.NewValue).PlatformImpl);
+            });
         }
 
         /// <summary>
@@ -384,6 +389,14 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             SetWindowStartupLocation();
+            
+            if(Owner?.PlatformImpl is IWindowImpl owner)
+            {
+                PlatformImpl.SetOwner(owner);
+
+                Owner.IsEnabled = false;
+            }
+
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -394,6 +407,7 @@ namespace Avalonia.Controls
                 SetIsEnabled(affectedWindows, false);
 
                 var modal = PlatformImpl?.ShowDialog();
+
                 var result = new TaskCompletionSource<TResult>();
 
                 Renderer?.Start();
@@ -408,6 +422,11 @@ namespace Avalonia.Controls
                         SetIsEnabled(affectedWindows, true);
                         activated?.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
+
+                        if(Owner != null)
+                        {
+                            Owner.IsEnabled = true;
+                        }
                     });
 
                 return result.Task;

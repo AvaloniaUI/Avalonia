@@ -22,6 +22,8 @@ namespace Avalonia.Platform
         /// <param name="title">The title.</param>
         void SetTitle(string title);
 
+        void SetOwner(IWindowImpl owner);
+
         /// <summary>
         /// Shows the window as a dialog.
         /// </summary>

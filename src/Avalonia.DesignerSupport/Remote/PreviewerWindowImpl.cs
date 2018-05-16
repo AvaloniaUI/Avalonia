@@ -101,5 +101,10 @@ namespace Avalonia.DesignerSupport.Remote
         public void CanResize(bool value)
         {
         }
+
+        public void SetOwner(IWindowImpl owner)
+        {
+            
+        }
     }
 }
