@@ -320,7 +320,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        public struct UpdateState : IDisposable
+        public readonly struct UpdateState : IDisposable
         {
             public UpdateState(
                 DeferredDrawingContextImpl owner,

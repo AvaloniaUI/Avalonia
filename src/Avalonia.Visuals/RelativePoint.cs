@@ -28,7 +28,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a point that may be defined relative to a containing element.
     /// </summary>
-    public struct RelativePoint : IEquatable<RelativePoint>
+    public readonly struct RelativePoint : IEquatable<RelativePoint>
     {
         /// <summary>
         /// A point at the top left of the containing element.
@@ -45,7 +45,7 @@ namespace Avalonia
         /// </summary>
         public static readonly RelativePoint BottomRight = new RelativePoint(1, 1, RelativeUnit.Relative);
 
-        private Point _point;
+        private readonly Point _point;
 
         private readonly RelativeUnit _unit;
 

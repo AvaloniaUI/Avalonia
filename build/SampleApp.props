@@ -1,0 +1,13 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net461'" >
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <!-- Should be a Condition="'$(TargetFramework)'=='net461'" here but that doesn't work due
+       to https://github.com/dotnet/sdk/issues/1227 -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
+    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
+  </ItemGroup>
+  <Import Condition="'$(TargetFramework)'=='net461'" Project="SharpDX.props" />
+</Project>

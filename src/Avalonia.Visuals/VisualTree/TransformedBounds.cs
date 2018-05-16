@@ -8,7 +8,7 @@ namespace Avalonia.VisualTree
     /// <summary>
     /// Holds information about the bounds of a control, together with a transform and a clip.
     /// </summary>
-    public struct TransformedBounds
+    public readonly struct TransformedBounds
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransformedBounds"/> struct.

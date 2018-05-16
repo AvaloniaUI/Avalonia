@@ -3,7 +3,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,9 +25,6 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
-            <Link>Properties\SharedAssemblyInfo.cs</Link>
-        </Compile>
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\CornerRadiusTypeConverter.cs" />
         <Compile Include="Converters\MatrixTypeConverter.cs" />
