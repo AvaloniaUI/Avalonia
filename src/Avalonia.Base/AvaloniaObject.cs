@@ -139,8 +139,9 @@ namespace Avalonia
                     {
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
-
-                    var inherited = (from property in AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                        .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
+                    var inherited = (from property in properties
                                      where property.Inherits
                                      select new
                                      {
