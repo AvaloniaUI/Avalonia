@@ -4,7 +4,6 @@
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -31,7 +30,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue:  new FontFamily("Courier New"),
+                defaultValue:  FontFamily.Default,
                 inherits: true);
 
         /// <summary>
@@ -278,7 +277,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
         /// <returns>The font family.</returns>
-        public static void SetFontFamily(Control control, string value)
+        public static void SetFontFamily(Control control, FontFamily value)
         {
             control.SetValue(FontFamilyProperty, value);
         }

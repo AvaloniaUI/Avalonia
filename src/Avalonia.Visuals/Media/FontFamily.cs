@@ -10,7 +10,7 @@ namespace Avalonia.Media
 {
     public class FontFamily
     {
-        internal static FontFamily Default = new FontFamily("Courier New");
+        public static FontFamily Default => new FontFamily("Courier New");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
