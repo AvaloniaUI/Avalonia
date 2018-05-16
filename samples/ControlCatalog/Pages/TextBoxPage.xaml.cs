@@ -14,7 +14,7 @@ namespace ControlCatalog.Pages
         {
             AvaloniaXamlLoader.Load(this);
 
-//            TextBlock.SetFontFamily(this, "Arial");
+            TextBlock.SetFontFamily(this, "Arial");
         }
     }
 }
