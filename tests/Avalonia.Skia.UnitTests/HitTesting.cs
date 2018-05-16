@@ -14,7 +14,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (AvaloniaLocator.EnterScope())
             {
-                SkiaPlatform.Initialize(RenderBackendType.Raster);
+                SkiaPlatform.Initialize(RenderBackendType.Cpu);
 
                 var root = new TestRoot
                 {
@@ -47,7 +47,7 @@ namespace Avalonia.Skia.UnitTests
         {
             using (AvaloniaLocator.EnterScope())
             {
-                SkiaPlatform.Initialize(RenderBackendType.Raster);
+                SkiaPlatform.Initialize(RenderBackendType.Cpu);
 
                 var root = new TestRoot
                 {

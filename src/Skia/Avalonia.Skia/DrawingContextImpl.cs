@@ -25,7 +25,7 @@ namespace Avalonia.Skia
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
         private readonly Matrix? _postTransform;
-        private readonly IGpuRenderContext _renderContext;
+        private readonly IGpuRenderContextBase _renderContext;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private double _currentOpacity = 1.0f;
         private readonly bool _canTextUseLcdRendering;
@@ -54,7 +54,7 @@ namespace Avalonia.Skia
             /// <summary>
             /// Render context.
             /// </summary>
-            public IGpuRenderContext RenderContext;
+            public IGpuRenderContextBase RenderContext;
 
             /// <summary>
             /// Render text without Lcd rendering.
@@ -680,8 +680,6 @@ namespace Avalonia.Skia
                 }
                 else
                 {
-                    Debug.Assert(false);
-
                     // ReSharper disable once HeuristicUnreachableCode
                     throw new InvalidOperationException(
                         "PaintWrapper disposable object limit reached. You need to add extra struct fields to support more disposables.");

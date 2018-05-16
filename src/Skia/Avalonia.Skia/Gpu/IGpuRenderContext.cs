@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Platform;
 using Avalonia.Platform.Gpu;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
 {
     /// <summary>
-    /// Render context for Gpu accelerated Skia rendering.
+    /// Render context base for Gpu accelerated Skia rendering.
     /// </summary>
-    public interface IGpuRenderContext : IDisposable
+    public interface IGpuRenderContextBase
     {
         /// <summary>
         /// Skia graphics context.
@@ -19,36 +18,31 @@ namespace Avalonia.Skia.Gpu
         GRContext Context { get; }
 
         /// <summary>
-        /// Platform handle bound to given context.
-        /// </summary>
-        IPlatformHandle PlatformHandle { get; }
-
-        /// <summary>
-        /// Get primary framebuffer (usually window) parameters.
-        /// </summary>
-        /// <returns>Framebuffer parameters.</returns>
-        FramebufferParameters GetPrimaryFramebufferDescriptor();
-
-        /// <summary>
-        /// Notify context that backing framebuffer was resized.
-        /// </summary>
-        void NotifyResize();
-
-        /// <summary>
         /// Prepare context for rendering commands.
         /// </summary>
-        void PrepareForRendering();
+        bool PrepareForRendering();
+    }
+
+    /// <summary>
+    /// Render context for Gpu accelerated Skia rendering.
+    /// </summary>
+    public interface IGpuRenderContext : IGpuRenderContextBase, IDisposable
+    {
+        /// <summary>
+        /// Get framebuffer parameters.
+        /// </summary>
+        /// <returns>Framebuffer parameters.</returns>
+        FramebufferParameters GetFramebufferParameters();
         
         /// <summary>
         /// Present rendering results to framebuffer.
         /// </summary>
-        void Present();
+        bool Present();
 
         /// <summary>
         /// Get size of window framebuffer.
         /// </summary>
-        /// <param name="platformHandle">Platform handle.</param>
         /// <returns>Size of a framebuffer</returns>
-        Size GetFramebufferSize(IPlatformHandle platformHandle);
+        Size GetFramebufferSize();
     }
 }

@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Gpu;
 using Avalonia.Skia.Helpers;
+using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -24,19 +25,9 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create new window render target that will render to given handle using passed render backend.
         /// </summary>
-        /// <param name="platformHandle">Platform handle to render to.</param>
-        /// <param name="renderBackend">Render backend to use.</param>
-        public WindowRenderTarget(IPlatformHandle platformHandle, IGpuRenderBackend renderBackend)
+        public WindowRenderTarget([NotNull] IGpuRenderContext renderContext)
         {
-            if (platformHandle == null) throw new ArgumentNullException(nameof(platformHandle));
-            if (renderBackend == null) throw new ArgumentNullException(nameof(renderBackend));
-            
-            _renderContext = renderBackend.CreateRenderContext(platformHandle);
-
-            if (_renderContext == null)
-            {
-                throw new InvalidOperationException("Failed to create Skia render context");
-            }
+            _renderContext = renderContext ?? throw new ArgumentNullException(nameof(renderContext));
             
             _rtDesc = CreateInitialRenderTargetDesc();
             _postRenderHandler = new LambdaDisposable(Flush);
@@ -44,7 +35,9 @@ namespace Avalonia.Skia
 
         private GRBackendRenderTargetDesc CreateInitialRenderTargetDesc()
         {
-            var framebufferDesc = _renderContext.GetPrimaryFramebufferDescriptor();
+            _renderContext.PrepareForRendering();
+
+            var framebufferDesc = _renderContext.GetFramebufferParameters();
             
             var pixelConfig = SKImageInfo.PlatformColorType == SKColorType.Bgra8888
                 ? GRPixelConfig.Bgra8888
@@ -69,7 +62,7 @@ namespace Avalonia.Skia
         {
             _renderContext.PrepareForRendering();
 
-            _canvas?.Dispose();
+             _canvas?.Dispose();
             _surface?.Dispose();
             _renderContext.Dispose();
         }
@@ -88,7 +81,7 @@ namespace Avalonia.Skia
         /// </summary>
         private void CreateSurface()
         {
-            var newSize = _renderContext.GetFramebufferSize(_renderContext.PlatformHandle);
+            var newSize = _renderContext.GetFramebufferSize();
             var newWidth = (int)newSize.Width;
             var newHeight = (int)newSize.Height;
 
@@ -99,9 +92,7 @@ namespace Avalonia.Skia
 
                 _rtDesc.Width = newWidth;
                 _rtDesc.Height = newHeight;
-
-                _renderContext.NotifyResize();
-
+                
                 _surface = SKSurface.Create(_renderContext.Context, _rtDesc);
 
                 _canvas = _surface?.Canvas;

@@ -83,7 +83,7 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance)
-                .Bind<IOpenGLPlatform>().ToSingleton<OpenGLPlatform>();
+                .Bind<IEGLPlatform>().ToSingleton<EGLPlatform>();
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();

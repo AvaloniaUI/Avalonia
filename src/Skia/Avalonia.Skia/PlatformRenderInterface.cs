@@ -95,7 +95,7 @@ namespace Avalonia.Skia
                 Width = width,
                 Height = height,
                 Dpi = dpi,
-                RenderContext = HasGpuSupport ? _renderBackend.ResourceRenderContext : null,
+                RenderContext = HasGpuSupport ? _renderBackend.CreateOffscreenRenderContext() : null,
                 DisableTextLcdRendering = !HasGpuSupport
             };
             
@@ -107,9 +107,16 @@ namespace Avalonia.Skia
         {
             foreach (var surface in surfaces)
             {
-                if (HasGpuSupport && surface is IPlatformHandle platformHandle)
+                IGpuRenderContext renderContext = null;
+
+                if (HasGpuSupport)
                 {
-                    return new WindowRenderTarget(platformHandle, _renderBackend);
+                    renderContext = _renderBackend.CreateRenderContext(surfaces);
+                }
+
+                if (renderContext != null)
+                {
+                    return new WindowRenderTarget(renderContext);
                 }
 
                 if (surface is IFramebufferPlatformSurface framebufferSurface)

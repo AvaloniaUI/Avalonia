@@ -17,7 +17,7 @@ namespace Avalonia.Skia
     public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
         private readonly Vector _dpi;
-        private readonly IGpuRenderContext _renderContext;
+        private readonly IGpuRenderContextBase _renderContext;
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
@@ -52,7 +52,7 @@ namespace Avalonia.Skia
         /// <param name="format">Format.</param>
         /// <param name="renderContext">Render context.</param>
         /// <returns></returns>
-        private static SKSurface CreateSurface(int width, int height, PixelFormat? format, IGpuRenderContext renderContext)
+        private static SKSurface CreateSurface(int width, int height, PixelFormat? format, IGpuRenderContextBase renderContext)
         {
             var imageInfo = MakeImageInfo(width, height, format);
 
@@ -172,7 +172,7 @@ namespace Avalonia.Skia
             /// <summary>
             /// Optional render context, when passed surface will use Gpu acceleration.
             /// </summary>
-            public IGpuRenderContext RenderContext;
+            public IGpuRenderContextBase RenderContext;
 
             /// <summary>
             /// Render text without Lcd rendering.

@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Platform.Gpu;
 using Avalonia.Skia.Gpu;
@@ -13,14 +15,14 @@ namespace Avalonia.Skia
     public enum RenderBackendType
     {
         /// <summary>
-        /// Cpu based raster backend.
+        /// Cpu based backend.
         /// </summary>
-        Raster,
+        Cpu,
 
         /// <summary>
-        /// Gpu accelerated backend.
+        /// Gpu based backend.
         /// </summary>
-        OpenGL
+        Gpu
     }
 
     /// <summary>
@@ -31,25 +33,34 @@ namespace Avalonia.Skia
         /// <summary>
         /// Initialize Skia platform.
         /// </summary>
-        /// <param name="preferredBackendType">Preferred backend type - will fallback to raster if platform has not support for it.</param>
-        public static void Initialize(RenderBackendType preferredBackendType = RenderBackendType.Raster)
+        /// <param name="preferredBackendType">Preferred backend type - will fallback to cpu if platform has not support for it.</param>
+        public static void Initialize(RenderBackendType preferredBackendType = RenderBackendType.Cpu)
         {
             IGpuRenderBackend renderBackend = null;
-            
-            // Check if platform has OpenGL support
-            if (preferredBackendType == RenderBackendType.OpenGL)
-            {
-                var openGLPlatform = AvaloniaLocator.Current.GetService<IOpenGLPlatform>();
-                var windowingPlatform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
 
-                if (openGLPlatform != null && windowingPlatform != null)
+            Logger.Information(LogArea.Visual, null, "SkiaRuntime initializing with backend: {backendType}", preferredBackendType);
+
+            if (preferredBackendType == RenderBackendType.Gpu)
+            {
+                var eglPlatform = AvaloniaLocator.Current.GetService<IEGLPlatform>();
+
+                if (eglPlatform != null)
                 {
-                    renderBackend = new OpenGLRenderBackend(openGLPlatform, windowingPlatform);
+                    try
+                    {
+                        eglPlatform.Initialize();
+
+                        renderBackend = new EGLRenderBackend(eglPlatform);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Warning(LogArea.Visual, null, "Failed to start EGL platform due to {e}", e);
+                    }
                 }
             }
 
             var renderInterface = new PlatformRenderInterface(renderBackend);
-            
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformRenderInterface>().ToConstant(renderInterface);
         }

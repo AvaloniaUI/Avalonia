@@ -14,5 +14,9 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\OpenTK.props" />
+
+  <ItemGroup>
+    <PackageReference Include="AvaloniaUI.Win32.Natives" Version="0.0.1" />
+  </ItemGroup>
+
 </Project>

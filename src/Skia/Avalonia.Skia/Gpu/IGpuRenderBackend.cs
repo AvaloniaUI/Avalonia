@@ -1,7 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Platform;
+using System.Collections.Generic;
 
 namespace Avalonia.Skia.Gpu
 {
@@ -13,13 +13,14 @@ namespace Avalonia.Skia.Gpu
         /// <summary>
         /// Create render context for given platform handle.
         /// </summary>
-        /// <param name="platformHandle">Platform handle to use.</param>
-        /// <returns></returns>
-        IGpuRenderContext CreateRenderContext(IPlatformHandle platformHandle);
+        /// <param name="surfaces">Surfaces that will be used by this context.</param>
+        /// <returns>Created Gpu render context.</returns>
+        IGpuRenderContext CreateRenderContext(IEnumerable<object> surfaces);
 
         /// <summary>
-        /// Resource render context for offscreen rendering.
+        /// Create offscreen render context.
         /// </summary>
-        IGpuRenderContext ResourceRenderContext { get; }
+        /// <returns>Created Gpu render context.</returns>
+        IGpuRenderContextBase CreateOffscreenRenderContext();
     }
 }
