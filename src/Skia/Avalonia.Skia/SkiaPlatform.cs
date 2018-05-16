@@ -48,7 +48,8 @@ namespace Avalonia.Skia
                 {
                     try
                     {
-                        eglPlatform.Initialize();
+                        // TODO: Fix this - OpenGL cannot initialize on main thread
+                        //eglPlatform.Initialize();
 
                         renderBackend = new EGLRenderBackend(eglPlatform);
                     }

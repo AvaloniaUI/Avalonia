@@ -170,7 +170,7 @@ namespace Avalonia.Win32.Gpu
                 Logger.Warning(LogArea.Visual, this, "Failed to create EGL surface. Error {errorCode}", errorCode);
             }
 
-            return surfaceHandle == (IntPtr)EGL.NO_SURFACE ? null : new EGLSurface(surfaceHandle, platformHandle);
+            return wasCreated ? new EGLSurface(surfaceHandle, platformHandle) : null;
         }
 
         /// <inheritdoc />
@@ -184,16 +184,34 @@ namespace Avalonia.Win32.Gpu
         {
             var surfaceImpl = (EGLSurface)surface;
             var surfaceHandle = surfaceImpl?.SurfaceHandle ?? (IntPtr)EGL.NO_SURFACE;
+            
+            var isOk = EGL.MakeCurrent(s_display, surfaceHandle, surfaceHandle, s_context);
 
-            return EGL.MakeCurrent(s_display, surfaceHandle, surfaceHandle, s_context);
+            if (!isOk)
+            {
+                var code = EGL.GetError();
+
+                Logger.Warning(LogArea.Visual, this, "Failed to make context current. Error: {code}", code);
+            }
+
+            return isOk;
         }
 
         /// <inheritdoc />
         public bool SwapBuffers(IEGLSurface surface)
         {
             var surfaceImpl = (EGLSurface)surface;
+            
+            var isOk = EGL.SwapBuffers(s_display, surfaceImpl.SurfaceHandle);
 
-            return EGL.SwapBuffers(s_display, surfaceImpl.SurfaceHandle);
+            if (!isOk)
+            {
+                var code = EGL.GetError();
+
+                Logger.Warning(LogArea.Visual, this, "Failed to swap buffers. Error: {code}", code);
+            }
+
+            return isOk;
         }
 
         /// <inheritdoc />

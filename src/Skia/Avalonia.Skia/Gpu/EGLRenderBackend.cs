@@ -16,6 +16,7 @@ namespace Avalonia.Skia.Gpu
         private readonly IEGLPlatform _platform;
         private GRGlInterface _interface;
         private GRContext _context;
+        private bool _initialized;
 
         /// <summary>
         /// Create new EGL render backend.
@@ -24,13 +25,30 @@ namespace Avalonia.Skia.Gpu
         public EGLRenderBackend(IEGLPlatform platform)
         {
             _platform = platform ?? throw new ArgumentNullException(nameof(platform));
-            _platform.MakeCurrent(null);
-
-            CreateSkiaContext();
         }
 
         /// <summary>
-        /// Create Skia context using EGL
+        /// Ensure that backend is initialized.
+        /// </summary>
+        private void EnsureInitialized()
+        {
+            // Due to threading issues on OpenGL the platform must be initialized on render thread
+            // Probably we need to add a check in constructor to make sure that context "could" be created, otherwise fallback to cpu won't work.
+            if (_initialized)
+            {
+                return;
+            }
+            
+            _platform.Initialize();
+            _platform.MakeCurrent(null);
+
+            CreateSkiaContext();
+
+            _initialized = true;
+        }
+
+        /// <summary>
+        /// Create Skia context using EGL.
         /// </summary>
         private void CreateSkiaContext()
         {
@@ -82,6 +100,8 @@ namespace Avalonia.Skia.Gpu
         /// <inheritdoc />
         public IGpuRenderContext CreateRenderContext(IEnumerable<object> surfaces)
         {
+            EnsureInitialized();
+
             var surface = _platform.CreateSurface(surfaces);
 
             return surface != null ? new EGLRenderContext(surface, _platform, _context) : null;
@@ -90,6 +110,8 @@ namespace Avalonia.Skia.Gpu
         /// <inheritdoc />
         public IGpuRenderContextBase CreateOffscreenRenderContext()
         {
+            EnsureInitialized();
+
             return new EGLRenderContextBase(_platform, _context);
         }
     }

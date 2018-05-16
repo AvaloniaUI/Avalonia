@@ -6,7 +6,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Gpu;
 using Avalonia.Skia.Helpers;
-using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -26,7 +25,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create new window render target that will render to given handle using passed render backend.
         /// </summary>
-        public WindowRenderTarget([NotNull] IGpuRenderContext renderContext)
+        public WindowRenderTarget(IGpuRenderContext renderContext)
         {
             _renderContext = renderContext ?? throw new ArgumentNullException(nameof(renderContext));
             
@@ -90,6 +89,12 @@ namespace Avalonia.Skia
 
             if (_surface == null || newWidth != _rtDesc.Width || newHeight != _rtDesc.Height || newDpi != _surfaceDpi)
             {
+                // Workaround around ANGLE weirdness
+                if (_surface != null)
+                {
+                    _renderContext.Present();
+                }
+                
                 _canvas?.Dispose();
                 _surface?.Dispose();
 
