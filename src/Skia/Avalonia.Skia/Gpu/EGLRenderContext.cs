@@ -7,24 +7,9 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
 {
-    public class EGLRenderContextBase : IGpuRenderContextBase
-    {
-        protected IEGLPlatform Platform { get; }
-
-        public EGLRenderContextBase(IEGLPlatform platform, GRContext context)
-        {
-            Platform = platform ?? throw new ArgumentNullException(nameof(platform));
-            Context = context ?? throw new ArgumentNullException(nameof(context));
-        }
-
-        public GRContext Context { get; }
-
-        public virtual bool PrepareForRendering()
-        {
-            return true; // I think we don't need to set context current, need to test it.
-        }
-    }
-
+    /// <summary>
+    /// EGL render context.
+    /// </summary>
     public class EGLRenderContext : EGLRenderContextBase, IGpuRenderContext
     {
         private readonly IEGLSurface _surface;
@@ -34,34 +19,47 @@ namespace Avalonia.Skia.Gpu
         {
             _surface = surface ?? throw new ArgumentNullException(nameof(surface));
         }
-        
+
+        /// <inheritdoc />
         public void Dispose()
         {
             PrepareForRendering();
 
             Platform.DestroySurface(_surface);
         }
-       
+
+        /// <inheritdoc />
         public FramebufferParameters GetFramebufferParameters()
         {
             return _surface.GetFramebufferParameters();
         }
 
+        /// <inheritdoc />
         public override bool PrepareForRendering()
         {
             return Platform.MakeCurrent(_surface);
         }
 
+        /// <inheritdoc />
         public bool Present()
         {
             return Platform.SwapBuffers(_surface);
         }
 
+        /// <inheritdoc />
         public Size GetFramebufferSize()
         {
             var (width, height) = _surface.GetSize();
 
             return new Size(width, height);
+        }
+
+        /// <inheritdoc />
+        public Size GetFramebufferDpi()
+        {
+            var (x, y) = _surface.GetDpi();
+
+            return new Size(x, y);
         }
     }
 }

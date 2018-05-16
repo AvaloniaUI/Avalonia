@@ -26,6 +26,27 @@ namespace Avalonia.Win32.Gpu
             return (clientSize.right - clientSize.left, clientSize.bottom - clientSize.top);
         }
 
+        public (int x, int y) GetDpi()
+        {
+            if (UnmanagedMethods.ShCoreAvailable)
+            {
+                var monitor = UnmanagedMethods.MonitorFromWindow(
+                    PlatformHandle.Handle,
+                    UnmanagedMethods.MONITOR.MONITOR_DEFAULTTONEAREST);
+
+                if (UnmanagedMethods.GetDpiForMonitor(
+                        monitor,
+                        UnmanagedMethods.MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out var dpix,
+                        out var dpiy) == 0)
+                {
+                    return ((int)dpix, (int)dpiy);
+                }
+            }
+
+            return (96, 96);
+        }
+
         public FramebufferParameters GetFramebufferParameters()
         {
             var data = new int[1];

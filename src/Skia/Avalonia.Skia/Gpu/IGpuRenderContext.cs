@@ -3,26 +3,9 @@
 
 using System;
 using Avalonia.Platform.Gpu;
-using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
 {
-    /// <summary>
-    /// Render context base for Gpu accelerated Skia rendering.
-    /// </summary>
-    public interface IGpuRenderContextBase
-    {
-        /// <summary>
-        /// Skia graphics context.
-        /// </summary>
-        GRContext Context { get; }
-
-        /// <summary>
-        /// Prepare context for rendering commands.
-        /// </summary>
-        bool PrepareForRendering();
-    }
-
     /// <summary>
     /// Render context for Gpu accelerated Skia rendering.
     /// </summary>
@@ -44,5 +27,11 @@ namespace Avalonia.Skia.Gpu
         /// </summary>
         /// <returns>Size of a framebuffer</returns>
         Size GetFramebufferSize();
+
+        /// <summary>
+        /// Get dpi of window framebuffer.
+        /// </summary>
+        /// <returns>Dpi of a framebuffer</returns>
+        Size GetFramebufferDpi();
     }
 }

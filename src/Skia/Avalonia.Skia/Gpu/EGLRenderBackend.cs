@@ -8,6 +8,9 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu
 {
+    /// <summary>
+    /// Skia EGL render backend.
+    /// </summary>
     public class EGLRenderBackend : IGpuRenderBackend
     {
         private readonly IEGLPlatform _platform;
@@ -21,15 +24,17 @@ namespace Avalonia.Skia.Gpu
         public EGLRenderBackend(IEGLPlatform platform)
         {
             _platform = platform ?? throw new ArgumentNullException(nameof(platform));
-
-            _platform.Initialize();
             _platform.MakeCurrent(null);
 
             CreateSkiaContext();
         }
 
+        /// <summary>
+        /// Create Skia context using EGL
+        /// </summary>
         private void CreateSkiaContext()
         {
+            // Long story short - on OpenGL the GrContext cannot be created from AssembleInterface for some reason.
             var (context, glInterface) = TryCreateContext(() => GRGlInterface.AssembleInterface((o, name) => EGL.GetProcAddress(name)));
 
             if (context == null || glInterface == null)
@@ -47,6 +52,11 @@ namespace Avalonia.Skia.Gpu
             _context = context;
         }
 
+        /// <summary>
+        /// Try creating Skia context.
+        /// </summary>
+        /// <param name="interfaceFactory">Interface factory.</param>
+        /// <returns>Context and interface if creation worked.</returns>
         private (GRContext context, GRGlInterface glInterface) TryCreateContext(Func<GRGlInterface> interfaceFactory)
         {
             var glInterface = interfaceFactory();
@@ -77,6 +87,7 @@ namespace Avalonia.Skia.Gpu
             return surface != null ? new EGLRenderContext(surface, _platform, _context) : null;
         }
 
+        /// <inheritdoc />
         public IGpuRenderContextBase CreateOffscreenRenderContext()
         {
             return new EGLRenderContextBase(_platform, _context);

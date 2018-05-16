@@ -8,8 +8,14 @@
         /// <summary>
         /// Get size of a surface.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Size of a surface.</returns>
         (int width, int height) GetSize();
+
+        /// <summary>
+        /// Get dpi of a surface.
+        /// </summary>
+        /// <returns>Dpi of a surface</returns>
+        (int x, int y) GetDpi();
 
         /// <summary>
         /// Get framebuffer parameters.

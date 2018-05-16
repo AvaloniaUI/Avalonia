@@ -21,6 +21,7 @@ namespace Avalonia.Skia
         private GRBackendRenderTargetDesc _rtDesc;
         private SKSurface _surface;
         private SKCanvas _canvas;
+        private Size _surfaceDpi;
         
         /// <summary>
         /// Create new window render target that will render to given handle using passed render backend.
@@ -85,13 +86,16 @@ namespace Avalonia.Skia
             var newWidth = (int)newSize.Width;
             var newHeight = (int)newSize.Height;
 
-            if (_surface == null || newWidth != _rtDesc.Width || newHeight != _rtDesc.Height)
+            var newDpi = _renderContext.GetFramebufferDpi();
+
+            if (_surface == null || newWidth != _rtDesc.Width || newHeight != _rtDesc.Height || newDpi != _surfaceDpi)
             {
                 _canvas?.Dispose();
                 _surface?.Dispose();
 
                 _rtDesc.Width = newWidth;
                 _rtDesc.Height = newHeight;
+                _surfaceDpi = newDpi;
                 
                 _surface = SKSurface.Create(_renderContext.Context, _rtDesc);
 
@@ -117,7 +121,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = SkiaPlatform.DefaultDpi,
+                Dpi = new Vector(_surfaceDpi.Width, _surfaceDpi.Height),
                 VisualBrushRenderer = visualBrushRenderer,
                 RenderContext = _renderContext
             };
