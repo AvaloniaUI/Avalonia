@@ -6,9 +6,14 @@
     <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
-              Gap="16">
+              Gap="16">       
+        
       <StackPanel Orientation="Vertical" Gap="8">
-        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+                <TextBlock FontFamily="resm:ControlCatalog.Assets.SourceSansPro-Regular.ttf#Source Sans Pro" Text="Using Embedded Font" />
+                <TextBlock FontFamily="resm:ControlCatalog.Assets.SourceSansPro-Regular.ttf#Source Sans Pro" FontWeight="Bold"  Text="Using Embedded Font with Bold" />
+                <TextBlock FontFamily="resm:ControlCatalog.Assets.SourceSansPro-Regular.ttf#Source Sans Pro" FontSize="20"  Text="Using Embedded Font with Size" />
+
+                <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
         <TextBox Width="200" Watermark="Watermark" />
         <TextBox Width="200"
                  Watermark="Floating Watermark"
