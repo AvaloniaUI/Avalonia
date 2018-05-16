@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net461</TargetFramework>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetFrameworkRuntime.xml</DocumentationFile>
         <DefineConstants>$(DefineConstants);FULLDOTNET</DefineConstants>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

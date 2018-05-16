@@ -9,5 +9,6 @@
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 </Project>

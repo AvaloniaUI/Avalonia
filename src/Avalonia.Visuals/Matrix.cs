@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public struct Matrix
+    public readonly struct Matrix
     {
         private readonly double _m11;
         private readonly double _m12;

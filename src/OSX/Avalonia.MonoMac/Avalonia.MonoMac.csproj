@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Shared\WindowResizeDragHelper.cs" Link="WindowResizeDragHelper.cs" />

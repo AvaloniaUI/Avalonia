@@ -5,7 +5,6 @@ using System.Reflection;
 using Avalonia.Metadata;
 using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Avalonia.Markup.Xaml")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.Data")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.MarkupExtensions")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Markup.Xaml.Styling")]
