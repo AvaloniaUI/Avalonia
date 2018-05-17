@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a rectangle that may be defined relative to a containing element.
     /// </summary>
-    public struct RelativeRect : IEquatable<RelativeRect>
+    public readonly struct RelativeRect : IEquatable<RelativeRect>
     {
         private static readonly char[] PercentChar = { '%' };
 

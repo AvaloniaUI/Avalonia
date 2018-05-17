@@ -17,7 +17,7 @@ namespace Avalonia.Platform
         WindowState WindowState { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the <see cref="WindowState"/> changes.
+        /// Gets or sets a method called when the minimized/maximized state of the window changes.
         /// </summary>
         Action<WindowState> WindowStateChanged { get; set; }
 

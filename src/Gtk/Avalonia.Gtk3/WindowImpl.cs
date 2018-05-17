@@ -1,16 +1,32 @@
 ﻿using System;
-using System.Linq.Expressions;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Gtk3
 {
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
+        private WindowState _lastWindowState;
+
         public WindowImpl() : base(Native.GtkWindowNew(GtkWindowType.TopLevel))
         {
+        }
+
+        protected unsafe override bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var windowStateEvent = (GdkEventWindowState*)pev;
+            var newWindowState = windowStateEvent->new_window_state;
+            var windowState = newWindowState.HasFlag(GdkWindowState.Iconified) ? WindowState.Minimized
+                : (newWindowState.HasFlag(GdkWindowState.Maximized) ? WindowState.Maximized : WindowState.Normal);
+
+            if (windowState != _lastWindowState)
+            {
+                _lastWindowState = windowState;
+                WindowStateChanged?.Invoke(windowState);
+            }
+
+            return base.OnStateChanged(w, pev, userData);
         }
 
         public void SetTitle(string title)

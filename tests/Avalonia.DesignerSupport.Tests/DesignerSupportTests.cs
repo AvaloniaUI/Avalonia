@@ -13,8 +13,8 @@ namespace Avalonia.DesignerSupport.Tests
     {
         [Theory,
          InlineData(@"Avalonia.DesignerSupport.TestApp.exe", @"..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml"),
-         InlineData(@"..\..\samples\ControlCatalog.Desktop\bin\$BUILD\ControlCatalog.dll", @"..\..\samples\ControlCatalog\MainWindow.xaml")]
-        public void DesgignerApiShoudBeOperational(string outputDir, string xamlFile)
+         InlineData(@"..\..\samples\ControlCatalog.Desktop\bin\$BUILD\net461\ControlCatalog.dll", @"..\..\samples\ControlCatalog\MainWindow.xaml")]
+        public void DesignerApiShoudBeOperational(string outputDir, string xamlFile)
         {
             var xaml = File.ReadAllText(xamlFile);
 #if DEBUG

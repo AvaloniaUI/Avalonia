@@ -296,7 +296,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
             var target = new BindingExpression(
-                new ExpressionObserver(data, "DoubleValue"), 
+                new ExpressionObserver(data, "DoubleValue"),
                 typeof(string),
                 converter.Object,
                 converterParameter: "foo");

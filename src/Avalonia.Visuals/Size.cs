@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a size.
     /// </summary>
-    public struct Size
+    public readonly struct Size
     {
         /// <summary>
         /// A size representing infinity.
