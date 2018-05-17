@@ -51,10 +51,10 @@ namespace Avalonia.Markup.Data.Parsers
                     }
                 }
 
-                throw new ExpressionParseException(r.Position, "Expected ']'.");
+                throw new ExpressionParseException(r.Position, $"Expected '{close}'.");
             }
 
-            return null;
+            throw new ExpressionParseException(r.Position, $"Expected '{open}'.");
         }
     }
 }
