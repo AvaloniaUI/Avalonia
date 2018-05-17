@@ -145,22 +145,33 @@ namespace Avalonia.Win32.Gpu
             s_isInitialized = true;
         }
 
+        /// <inheritdoc />
         public IEGLSurface CreateSurface(IEnumerable<object> surfaces)
         {
             var platformHandle = surfaces.OfType<IPlatformHandle>().FirstOrDefault();
 
+            return CreateSurface(platformHandle);
+        }
+
+        /// <summary>
+        /// Create a surface for given platform handle.
+        /// </summary>
+        /// <param name="platformHandle">Platform handle to use.</param>
+        /// <returns>Created surface for given platform handle.</returns>
+        private IEGLSurface CreateSurface(IPlatformHandle platformHandle)
+        {
             if (platformHandle == null)
             {
                 return null;
             }
-            
+
             var surfaceAttribs = new[]
             {
                 EGL.NONE
             };
 
             var surfaceHandle = EGL.CreateWindowSurface(s_display, s_config, platformHandle.Handle, surfaceAttribs);
-            var wasCreated = surfaceHandle != (IntPtr) EGL.NO_SURFACE;
+            var wasCreated = surfaceHandle != (IntPtr)EGL.NO_SURFACE;
 
             if (!wasCreated)
             {
@@ -168,10 +179,10 @@ namespace Avalonia.Win32.Gpu
 
                 Logger.Warning(LogArea.Visual, this, "Failed to create EGL surface. Error {errorCode}", errorCode);
             }
-            
+
             EGL.GetConfigAttrib(s_display, s_config, EGL.STENCIL_SIZE, out int stencilBits);
             EGL.GetConfigAttrib(s_display, s_config, EGL.SAMPLES, out int sampleCount);
-            
+
             return wasCreated ? new EGLSurface(surfaceHandle, platformHandle, stencilBits, sampleCount) : null;
         }
 
@@ -234,6 +245,21 @@ namespace Avalonia.Win32.Gpu
 
                 Logger.Warning(LogArea.Visual, this, "Failed to destroy EGL surface with handle {handle}. Error: {error}", surfaceImpl.SurfaceHandle, error);
             }
+        }
+
+        /// <inheritdoc />
+        public IEGLSurface RecreateSurface(IEGLSurface surface)
+        {
+            if (surface == null)
+            {
+                return null;
+            }
+
+            var surfaceImpl = (EGLSurface)surface;
+
+            DestroySurface(surface);
+
+            return CreateSurface(surfaceImpl.PlatformHandle);
         }
     }
 }

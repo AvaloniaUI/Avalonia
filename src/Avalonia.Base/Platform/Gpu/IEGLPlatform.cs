@@ -41,5 +41,12 @@ namespace Avalonia.Platform.Gpu
         /// </summary>
         /// <param name="surface">Surface to destroy.</param>
         void DestroySurface(IEGLSurface surface);
+
+        /// <summary>
+        /// Recreate given surface.
+        /// </summary>
+        /// <param name="surface">Surface to recreate.</param>
+        /// <returns>Recreated surface.</returns>
+        IEGLSurface RecreateSurface(IEGLSurface surface);
     }
 }

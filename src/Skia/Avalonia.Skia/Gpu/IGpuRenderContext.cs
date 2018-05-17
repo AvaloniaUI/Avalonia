@@ -33,5 +33,10 @@ namespace Avalonia.Skia.Gpu
         /// </summary>
         /// <returns>Dpi of a framebuffer</returns>
         Size GetFramebufferDpi();
+
+        /// <summary>
+        /// Recreate backing surface.
+        /// </summary>
+        void RecreateSurface();
     }
 }

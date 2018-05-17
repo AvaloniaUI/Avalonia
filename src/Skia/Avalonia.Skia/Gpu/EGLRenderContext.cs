@@ -12,7 +12,7 @@ namespace Avalonia.Skia.Gpu
     /// </summary>
     public class EGLRenderContext : EGLRenderContextBase, IGpuRenderContext
     {
-        private readonly IEGLSurface _surface;
+        private IEGLSurface _surface;
         
         public EGLRenderContext(IEGLSurface surface, IEGLPlatform platform, GRContext context)
             : base(platform, context)
@@ -60,6 +60,17 @@ namespace Avalonia.Skia.Gpu
             var (x, y) = _surface.GetDpi();
 
             return new Size(x, y);
+        }
+
+        /// <inheritdoc />
+        public void RecreateSurface()
+        {
+            _surface = Platform.RecreateSurface(_surface);
+
+            if (_surface == null)
+            {
+                throw new InvalidOperationException("Failed to recreate a surface");
+            }
         }
     }
 }

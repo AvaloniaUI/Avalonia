@@ -89,11 +89,8 @@ namespace Avalonia.Skia
 
             if (_surface == null || newWidth != _rtDesc.Width || newHeight != _rtDesc.Height || newDpi != _surfaceDpi)
             {
-                // Workaround around ANGLE weirdness
-                if (_surface != null)
-                {
-                    _renderContext.Present();
-                }
+                _renderContext.RecreateSurface();
+                _renderContext.PrepareForRendering();
                 
                 _canvas?.Dispose();
                 _surface?.Dispose();
