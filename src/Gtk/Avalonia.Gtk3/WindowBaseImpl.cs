@@ -241,7 +241,7 @@ namespace Avalonia.Gtk3
             return true;
         }
 
-        void ConnectEvent(string name, Native.D.signal_onevent handler) 
+        protected void ConnectEvent(string name, Native.D.signal_onevent handler) 
             => Disposables.Add(Signal.Connect<Native.D.signal_onevent>(GtkWidget, name, handler));
         void Connect<T>(string name, T handler) => Disposables.Add(Signal.Connect(GtkWidget, name, handler));
 

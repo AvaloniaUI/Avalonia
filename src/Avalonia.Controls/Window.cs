@@ -67,13 +67,19 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
-        
+
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
-        
+
+        /// <summary>
+        /// Enables or disables the taskbar icon
+        /// </summary>
+        public static readonly StyledProperty<WindowState> WindowStateProperty =
+            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
+
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
@@ -118,6 +124,9 @@ namespace Avalonia.Controls
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
 
             CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
+
+            WindowStateProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
         }
 
         /// <summary>
@@ -138,8 +147,11 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
-        }
 
+            if (PlatformImpl != null)
+                PlatformImpl.WindowStateChanged = s => WindowState = s;
+        }
+        
         /// <inheritdoc/>
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
@@ -205,12 +217,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowState WindowState
         {
-            get { return PlatformImpl?.WindowState ?? WindowState.Normal; }
-            set
-            {
-                if (PlatformImpl != null)
-                    PlatformImpl.WindowState = value;
-            }
+            get { return GetValue(WindowStateProperty); }
+            set { SetValue(WindowStateProperty, value); }
         }
 
         /// <summary>
