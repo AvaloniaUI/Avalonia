@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -72,18 +73,34 @@ namespace Avalonia.Markup.Data
             string expression,
             bool enableDataValidation = false,
             string description = null)
+            : this(root, Parse(expression, enableDataValidation), description ?? expression)
         {
             Contract.Requires<ArgumentNullException>(expression != null);
+            Expression = expression;
+        }
 
+        private ExpressionObserver(
+            object root,
+            ExpressionNode node,
+            string description = null)
+        {
             if (root == AvaloniaProperty.UnsetValue)
             {
                 root = null;
             }
 
-            Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
+            _node = node;
+            Description = description;
             _root = new WeakReference(root);
+        }
+
+        public static ExpressionObserver CreateFromExpression<T, U>(
+            T root,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            return new ExpressionObserver(root, Parse(expression, enableDataValidation), description ?? expression.ToString());
         }
 
         /// <summary>
@@ -100,15 +117,38 @@ namespace Avalonia.Markup.Data
             string expression,
             bool enableDataValidation = false,
             string description = null)
+            : this(rootObservable, Parse(expression, enableDataValidation), description ?? expression)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
             Contract.Requires<ArgumentNullException>(expression != null);
 
             Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
+        }
+
+        private ExpressionObserver(
+            IObservable<object> rootObservable,
+            ExpressionNode node,
+            string description)
+        {
+            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            
+            _node = node;
+            Description = description;
             _root = rootObservable;
+            _finished = new Subject<Unit>();
+        }
+        
+        public static ExpressionObserver CreateFromExpression<T, U>(
+            IObservable<T> rootObservable,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            return new ExpressionObserver(
+                rootObservable.Select(o => (object)o),
+                Parse(expression, enableDataValidation),
+                description ?? expression.ToString());
         }
 
         /// <summary>
@@ -127,18 +167,43 @@ namespace Avalonia.Markup.Data
             IObservable<Unit> update,
             bool enableDataValidation = false,
             string description = null)
+            : this(rootGetter, Parse(expression, enableDataValidation), update, description ?? expression)
         {
-            Contract.Requires<ArgumentNullException>(rootGetter != null);
             Contract.Requires<ArgumentNullException>(expression != null);
-            Contract.Requires<ArgumentNullException>(update != null);
 
             Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
+        }
 
+        private ExpressionObserver(
+            Func<object> rootGetter,
+            ExpressionNode node,
+            IObservable<Unit> update,
+            string description)
+        {
+            Contract.Requires<ArgumentNullException>(rootGetter != null);
+            Contract.Requires<ArgumentNullException>(update != null);
+
+            Description = description;
+            _node = node;
+            _finished = new Subject<Unit>();
             _node.Target = new WeakReference(rootGetter());
             _root = update.Select(x => rootGetter());
+        }
+        
+        public static ExpressionObserver CreateFromExpression<T, U>(
+            Func<T> rootGetter,
+            Expression<Func<T, U>> expression,
+            IObservable<Unit> update,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            Contract.Requires<ArgumentNullException>(rootGetter != null);
+
+            return new ExpressionObserver(
+                () => rootGetter(),
+                Parse(expression, enableDataValidation),
+                update,
+                description ?? expression.ToString());
         }
 
         /// <summary>
@@ -236,6 +301,11 @@ namespace Avalonia.Markup.Data
             {
                 return new EmptyExpressionNode();
             }
+        }
+
+        private static ExpressionNode Parse(LambdaExpression expression, bool enableDataValidation)
+        {
+            return ExpressionNodeBuilder.Build(expression, enableDataValidation);
         }
 
         private static object ToWeakReference(object o)

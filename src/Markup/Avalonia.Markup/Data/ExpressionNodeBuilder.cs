@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq.Expressions;
 using Avalonia.Markup.Data.Parsers;
 
 namespace Avalonia.Markup.Data
@@ -25,6 +26,13 @@ namespace Avalonia.Markup.Data
             }
 
             return node;
+        }
+
+        public static ExpressionNode Build(LambdaExpression expression, bool enableValidation = false)
+        {
+            var parser = new ExpressionTreeParser(enableValidation);
+
+            return parser.Parse(expression);
         }
     }
 }
