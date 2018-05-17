@@ -10,11 +10,15 @@ namespace Avalonia.Win32.Gpu
     /// </summary>
     public class EGLSurface : IEGLSurface
     {
+        private readonly int _stencilBits;
+        private readonly int _sampleCount;
         public IntPtr SurfaceHandle { get; }
         public IPlatformHandle PlatformHandle { get; }
 
-        public EGLSurface(IntPtr surfaceHandle, IPlatformHandle platformHandle)
+        public EGLSurface(IntPtr surfaceHandle, IPlatformHandle platformHandle, int stencilBits, int sampleCount)
         {
+            _stencilBits = stencilBits;
+            _sampleCount = sampleCount;
             SurfaceHandle = surfaceHandle;
             PlatformHandle = platformHandle;
         }
@@ -51,14 +55,13 @@ namespace Avalonia.Win32.Gpu
         {
             var data = new int[1];
             GL.GetIntegerv(GL.FRAMEBUFFER_BINDING, data);
-
-            // TODO: Sample and stencil bits
-
+            var framebufferHandle = (IntPtr)data[0];
+            
             return new FramebufferParameters
             {
-                FramebufferHandle = (IntPtr)data[0],
-                SampleCount = 0,
-                StencilBits = 0
+                FramebufferHandle = framebufferHandle,
+                SampleCount = _sampleCount,
+                StencilBits = _stencilBits
             };
         }
     }

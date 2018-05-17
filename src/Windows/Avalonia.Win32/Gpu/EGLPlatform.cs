@@ -160,7 +160,6 @@ namespace Avalonia.Win32.Gpu
             };
 
             var surfaceHandle = EGL.CreateWindowSurface(s_display, s_config, platformHandle.Handle, surfaceAttribs);
-
             var wasCreated = surfaceHandle != (IntPtr) EGL.NO_SURFACE;
 
             if (!wasCreated)
@@ -169,8 +168,11 @@ namespace Avalonia.Win32.Gpu
 
                 Logger.Warning(LogArea.Visual, this, "Failed to create EGL surface. Error {errorCode}", errorCode);
             }
-
-            return wasCreated ? new EGLSurface(surfaceHandle, platformHandle) : null;
+            
+            EGL.GetConfigAttrib(s_display, s_config, EGL.STENCIL_SIZE, out int stencilBits);
+            EGL.GetConfigAttrib(s_display, s_config, EGL.SAMPLES, out int sampleCount);
+            
+            return wasCreated ? new EGLSurface(surfaceHandle, platformHandle, stencilBits, sampleCount) : null;
         }
 
         /// <inheritdoc />
@@ -228,7 +230,9 @@ namespace Avalonia.Win32.Gpu
 
             if (!wasDestroyed)
             {
-                Logger.Warning(LogArea.Visual, this, "Failed to destroy EGL surface with handle {handle}", surfaceImpl.SurfaceHandle);
+                var error = EGL.GetError();
+
+                Logger.Warning(LogArea.Visual, this, "Failed to destroy EGL surface with handle {handle}. Error: {error}", surfaceImpl.SurfaceHandle, error);
             }
         }
     }

@@ -18,11 +18,29 @@ namespace Avalonia.Platform.Gpu
             internal delegate void glGetIntegerv(int pname, int[] data);
 
             internal static glGetIntegerv pglGetIntegerv;
+
+            internal delegate void glViewport(int x, int y, int width, int height);
+
+            internal static glViewport pglViewport;
+
+            internal delegate void glFlush();
+
+            internal static glFlush pglFlush;
         }
 
         public static void GetIntegerv(int name, int[] data)
         {
             Native.pglGetIntegerv(name, data);
+        }
+
+        public static void Flush()
+        {
+            Native.pglFlush();
+        }
+
+        public static void Viewport(int x, int y, int width, int height)
+        {
+            Native.pglViewport(x, y, width, height);
         }
 
         public static void Initialize(Func<string, IntPtr> loader)

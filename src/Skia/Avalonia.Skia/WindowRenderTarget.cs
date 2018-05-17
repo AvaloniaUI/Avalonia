@@ -116,9 +116,9 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            CreateSurface();
-
             _renderContext.PrepareForRendering();
+
+            CreateSurface();
             
             _canvas.RestoreToCount(-1);
             _canvas.ResetMatrix();

@@ -33,6 +33,7 @@ namespace Avalonia.Platform.Gpu
         public const int NO_DISPLAY = 0;
         public const int NO_CONTEXT = 0;
         public const int EXTENSIONS = 0x3055;
+        public const int SAMPLES = 0x3031;
 
         public const int PLATFORM_ANGLE_ANGLE = 0x3202;
         public const int PLATFORM_ANGLE_TYPE_ANGLE = 0x3203;
@@ -97,6 +98,9 @@ namespace Avalonia.Platform.Gpu
 
             [DllImport(Library)]
             internal static extern bool eglDestroySurface(IntPtr dpy, IntPtr surface);
+
+            [DllImport(Library)]
+            internal static extern bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, out int value);
         }
         
         public static IntPtr GetDisplay(IntPtr displayId)
@@ -167,6 +171,11 @@ namespace Avalonia.Platform.Gpu
         public static bool DestroySurface(IntPtr display, IntPtr surface)
         {
             return Native.eglDestroySurface(display, surface);
+        }
+
+        public static bool GetConfigAttrib(IntPtr display, IntPtr config, int attribute, out int value)
+        {
+            return Native.eglGetConfigAttrib(display, config, attribute, out value);
         }
     }
 }
