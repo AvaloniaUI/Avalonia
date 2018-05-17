@@ -11,9 +11,9 @@ namespace Avalonia.DesignerSupport.Tests
 {
     public class DesignerSupportTests
     {
-        [Theory(Skip = "Skipping for now as failing on AppVeyor"),
+        [Theory,
          InlineData(@"Avalonia.DesignerSupport.TestApp.exe", @"..\..\tests\Avalonia.DesignerSupport.TestApp\MainWindow.xaml"),
-         InlineData(@"..\..\samples\ControlCatalog.Desktop\bin\$BUILD\ControlCatalog.dll", @"..\..\samples\ControlCatalog\MainWindow.xaml")]
+         InlineData(@"..\..\samples\ControlCatalog.Desktop\bin\$BUILD\net461\ControlCatalog.dll", @"..\..\samples\ControlCatalog\MainWindow.xaml")]
         public void DesignerApiShoudBeOperational(string outputDir, string xamlFile)
         {
             var xaml = File.ReadAllText(xamlFile);

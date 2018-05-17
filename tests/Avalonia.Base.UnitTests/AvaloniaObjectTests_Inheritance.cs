@@ -39,6 +39,26 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Setting_InheritanceParent_Raises_PropertyChanged_For_Attached_Property_When_Value_Changed_In_Parent()
+        {
+            bool raised = false;
+
+            Class1 parent = new Class1();
+            parent.SetValue(AttachedOwner.AttachedProperty, "changed");
+
+            Class2 child = new Class2();
+            child.PropertyChanged += (s, e) =>
+                raised = s == child &&
+                         e.Property == AttachedOwner.AttachedProperty &&
+                         (string)e.OldValue == null &&
+                         (string)e.NewValue == "changed";
+
+            child.Parent = parent;
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void Setting_InheritanceParent_Doesnt_Raise_PropertyChanged_When_Local_Value_Set()
         {
             bool raised = false;
@@ -75,6 +95,26 @@ namespace Avalonia.Base.UnitTests
             Assert.True(raised);
         }
 
+        [Fact]
+        public void Setting_Value_Of_Attached_Property_In_InheritanceParent_Raises_PropertyChanged()
+        {
+            bool raised = false;
+
+            Class1 parent = new Class1();
+
+            Class2 child = new Class2();
+            child.PropertyChanged += (s, e) =>
+                raised = s == child &&
+                         e.Property == AttachedOwner.AttachedProperty &&
+                         (string)e.OldValue == null &&
+                         (string)e.NewValue == "changed";
+            child.Parent = parent;
+
+            parent.SetValue(AttachedOwner.AttachedProperty, "changed");
+
+            Assert.True(raised);
+        }
+
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
@@ -96,6 +136,12 @@ namespace Avalonia.Base.UnitTests
                 get { return (Class1)InheritanceParent; }
                 set { InheritanceParent = value; }
             }
+        }
+
+        private class AttachedOwner : AvaloniaObject
+        {
+            public static readonly AttachedProperty<string> AttachedProperty =
+                AvaloniaProperty.RegisterAttached<AttachedOwner, Class1, string>("Attached", inherits: true);
         }
     }
 }

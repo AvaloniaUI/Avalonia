@@ -26,17 +26,17 @@ namespace Avalonia.Controls.Utils
 
                 var boundRect = new Rect(finalSize);
                 var innerRect = boundRect.Deflate(borderThickness);
-                var innerCoordinates = new BorderCoordinates(cornerRadius, borderThickness, false);
-
+                BorderGeometryKeypoints backgroundKeypoints = null;
                 StreamGeometry backgroundGeometry = null;
 
                 if (innerRect.Width != 0 && innerRect.Height != 0)
                 {
                     backgroundGeometry = new StreamGeometry();
+                    backgroundKeypoints = new BorderGeometryKeypoints(innerRect, borderThickness, cornerRadius, true);
 
                     using (var ctx = backgroundGeometry.Open())
                     {
-                        CreateGeometry(ctx, innerRect, innerCoordinates);
+                        CreateGeometry(ctx, innerRect, backgroundKeypoints);
                     }
 
                     _backgroundGeometryCache = backgroundGeometry;
@@ -48,16 +48,16 @@ namespace Avalonia.Controls.Utils
 
                 if (boundRect.Width != 0 && innerRect.Height != 0)
                 {
-                    var outerCoordinates = new BorderCoordinates(cornerRadius, borderThickness, true);
+                    var borderGeometryKeypoints = new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
                     var borderGeometry = new StreamGeometry();
 
                     using (var ctx = borderGeometry.Open())
                     {
-                        CreateGeometry(ctx, boundRect, outerCoordinates);
+                        CreateGeometry(ctx, boundRect, borderGeometryKeypoints);
 
                         if (backgroundGeometry != null)
                         {
-                            CreateGeometry(ctx, innerRect, innerCoordinates);
+                            CreateGeometry(ctx, innerRect, backgroundKeypoints);
                         }
                     }
 
@@ -104,176 +104,156 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderCoordinates borderCoordinates)
-        {
-            var topLeft = new Point(borderCoordinates.LeftTop, 0);
-            var topRight = new Point(boundRect.Width - borderCoordinates.RightTop, 0);
-            var rightTop = new Point(boundRect.Width, borderCoordinates.TopRight);
-            var rightBottom = new Point(boundRect.Width, boundRect.Height - borderCoordinates.BottomRight);
-            var bottomRight = new Point(boundRect.Width - borderCoordinates.RightBottom, boundRect.Height);
-            var bottomLeft = new Point(borderCoordinates.LeftBottom, boundRect.Height);
-            var leftBottom = new Point(0, boundRect.Height - borderCoordinates.BottomLeft);
-            var leftTop = new Point(0, borderCoordinates.TopLeft);
-
-
-            if (topLeft.X > topRight.X)
-            {
-                var scaledX = borderCoordinates.LeftTop / (borderCoordinates.LeftTop + borderCoordinates.RightTop) * boundRect.Width;
-                topLeft = new Point(scaledX, topLeft.Y);
-                topRight = new Point(scaledX, topRight.Y);
-            }
-
-            if (rightTop.Y > rightBottom.Y)
-            {
-                var scaledY = borderCoordinates.TopRight / (borderCoordinates.TopRight + borderCoordinates.BottomRight) * boundRect.Height;
-                rightTop = new Point(rightTop.X, scaledY);
-                rightBottom = new Point(rightBottom.X, scaledY);
-            }
-
-            if (bottomRight.X < bottomLeft.X)
-            {
-                var scaledX = borderCoordinates.LeftBottom / (borderCoordinates.LeftBottom + borderCoordinates.RightBottom) * boundRect.Width;
-                bottomRight = new Point(scaledX, bottomRight.Y);
-                bottomLeft = new Point(scaledX, bottomLeft.Y);
-            }
-
-            if (leftBottom.Y < leftTop.Y)
-            {
-                var scaledY = borderCoordinates.TopLeft / (borderCoordinates.TopLeft + borderCoordinates.BottomLeft) * boundRect.Height;
-                leftBottom = new Point(leftBottom.X, scaledY);
-                leftTop = new Point(leftTop.X, scaledY);
-            }
-
-            var offset = new Vector(boundRect.TopLeft.X, boundRect.TopLeft.Y);
-            topLeft += offset;
-            topRight += offset;
-            rightTop += offset;
-            rightBottom += offset;
-            bottomRight += offset;
-            bottomLeft += offset;
-            leftBottom += offset;
-            leftTop += offset;
-
-            context.BeginFigure(topLeft, true);
-
-            //Top
-            context.LineTo(topRight);
-
-            //TopRight corner
-            var radiusX = boundRect.TopRight.X - topRight.X;
-            var radiusY = rightTop.Y - boundRect.TopRight.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(rightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            //Right
-            context.LineTo(rightBottom);
-
-            //BottomRight corner
-            radiusX = boundRect.BottomRight.X - bottomRight.X;
-            radiusY = boundRect.BottomRight.Y - rightBottom.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(bottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            //Bottom
-            context.LineTo(bottomLeft);
-
-            //BottomLeft corner
-            radiusX = bottomLeft.X - boundRect.BottomLeft.X;
-            radiusY = boundRect.BottomLeft.Y - leftBottom.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(leftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            //Left
-            context.LineTo(leftTop);
-
-            //TopLeft corner
-            radiusX = topLeft.X - boundRect.TopLeft.X;
-            radiusY = leftTop.Y - boundRect.TopLeft.Y;
-
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(topLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            context.EndFigure(true);
-        }
-
-        private struct BorderCoordinates
-        {
-            internal BorderCoordinates(CornerRadius cornerRadius, Thickness borderThickness, bool isOuter)
+        private class BorderGeometryKeypoints
+        {           
+            internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius, bool inner)
             {
                 var left = 0.5 * borderThickness.Left;
                 var top = 0.5 * borderThickness.Top;
                 var right = 0.5 * borderThickness.Right;
                 var bottom = 0.5 * borderThickness.Bottom;
 
-                if (isOuter)
+                double leftTopY;
+                double topLeftX;
+                double topRightX;
+                double rightTopY;
+                double rightBottomY;
+                double bottomRightX;
+                double bottomLeftX;
+                double leftBottomY;
+
+                if (inner)
                 {
-                    if (cornerRadius.TopLeft == 0)
-                    {
-                        LeftTop = TopLeft = 0.0;
-                    }
-                    else
-                    {
-                        LeftTop = cornerRadius.TopLeft + left;
-                        TopLeft = cornerRadius.TopLeft + top;
-                    }
-                    if (cornerRadius.TopRight == 0)
-                    {
-                        TopRight = RightTop = 0;
-                    }
-                    else
-                    {
-                        TopRight = cornerRadius.TopRight + top;
-                        RightTop = cornerRadius.TopRight + right;
-                    }
-                    if (cornerRadius.BottomRight == 0)
-                    {
-                        RightBottom = BottomRight = 0;
-                    }
-                    else
-                    {
-                        RightBottom = cornerRadius.BottomRight + right;
-                        BottomRight = cornerRadius.BottomRight + bottom;
-                    }
-                    if (cornerRadius.BottomLeft == 0)
-                    {
-                        BottomLeft = LeftBottom = 0;
-                    }
-                    else
-                    {
-                        BottomLeft = cornerRadius.BottomLeft + bottom;
-                        LeftBottom = cornerRadius.BottomLeft + left;
-                    }
+                    leftTopY = Math.Max(0, cornerRadius.TopLeft - top) + boundRect.TopLeft.Y;
+                    topLeftX = Math.Max(0, cornerRadius.TopLeft - left) + boundRect.TopLeft.X;
+                    topRightX = boundRect.Width - Math.Max(0, cornerRadius.TopRight - top) + boundRect.TopLeft.X;
+                    rightTopY = Math.Max(0, cornerRadius.TopRight - right) + boundRect.TopLeft.Y;
+                    rightBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomRight - bottom) + boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - Math.Max(0, cornerRadius.BottomRight - right) + boundRect.TopLeft.X;
+                    bottomLeftX = Math.Max(0, cornerRadius.BottomLeft - left) + boundRect.TopLeft.X;
+                    leftBottomY = boundRect.Height - Math.Max(0, cornerRadius.BottomLeft - bottom) + boundRect.TopLeft.Y;
                 }
                 else
                 {
-                    LeftTop = Math.Max(0, cornerRadius.TopLeft - left);
-                    TopLeft = Math.Max(0, cornerRadius.TopLeft - top);
-                    TopRight = Math.Max(0, cornerRadius.TopRight - top);
-                    RightTop = Math.Max(0, cornerRadius.TopRight - right);
-                    RightBottom = Math.Max(0, cornerRadius.BottomRight - right);
-                    BottomRight = Math.Max(0, cornerRadius.BottomRight - bottom);
-                    BottomLeft = Math.Max(0, cornerRadius.BottomLeft - bottom);
-                    LeftBottom = Math.Max(0, cornerRadius.BottomLeft - left);
+                   
+                    leftTopY = cornerRadius.TopLeft + top + boundRect.TopLeft.Y;
+                    topLeftX = cornerRadius.TopLeft + left + boundRect.TopLeft.X;                   
+                    topRightX = boundRect.Width - (cornerRadius.TopRight + right) + boundRect.TopLeft.X;
+                    rightTopY = cornerRadius.TopRight + top + boundRect.TopLeft.Y;                                   
+                    rightBottomY = boundRect.Height - (cornerRadius.BottomRight + bottom) + boundRect.TopLeft.Y;
+                    bottomRightX = boundRect.Width - (cornerRadius.BottomRight + right) + boundRect.TopLeft.X;                
+                    bottomLeftX = cornerRadius.BottomLeft + left + boundRect.TopLeft.X;               
+                    leftBottomY = boundRect.Height - (cornerRadius.BottomLeft + bottom) + boundRect.TopLeft.Y;
+                }              
+
+                var leftTopX = boundRect.TopLeft.X;               
+                var topLeftY = boundRect.TopLeft.Y;              
+                var topRightY = boundRect.TopLeft.Y;
+                var rightTopX = boundRect.Width + boundRect.TopLeft.X;              
+                var rightBottomX = boundRect.Width + boundRect.TopLeft.X;                             
+                var bottomRightY = boundRect.Height + boundRect.TopLeft.Y;            
+                var bottomLeftY = boundRect.Height + boundRect.TopLeft.Y;
+                var leftBottomX = boundRect.TopLeft.X;           
+
+                LeftTop = new Point(leftTopX, leftTopY);
+                TopLeft = new Point(topLeftX, topLeftY);
+                TopRight = new Point(topRightX, topRightY);
+                RightTop = new Point(rightTopX, rightTopY);
+                RightBottom = new Point(rightBottomX, rightBottomY);
+                BottomRight = new Point(bottomRightX, bottomRightY);
+                BottomLeft = new Point(bottomLeftX, bottomLeftY);
+                LeftBottom = new Point(leftBottomX, leftBottomY);
+
+                //Fix overlap
+                if (TopLeft.X > TopRight.X)
+                {
+                    var scaledX = topLeftX / (topLeftX + topRightX) * boundRect.Width;
+                    TopLeft = new Point(scaledX, TopLeft.Y);
+                    TopRight = new Point(scaledX, TopRight.Y);
+                }
+
+                if (RightTop.Y > RightBottom.Y)
+                {
+                    var scaledY = rightBottomY / (rightTopY + rightBottomY) * boundRect.Height;
+                    RightTop = new Point(RightTop.X, scaledY);
+                    RightBottom = new Point(RightBottom.X, scaledY);
+                }
+
+                if (BottomRight.X < BottomLeft.X)
+                {
+                    var scaledX = bottomLeftX / (bottomLeftX + bottomRightX) * boundRect.Width;
+                    BottomRight = new Point(scaledX, BottomRight.Y);
+                    BottomLeft = new Point(scaledX, BottomLeft.Y);
+                }
+
+                if (LeftBottom.Y < LeftTop.Y)
+                {
+                    var scaledY = leftTopY / (leftTopY + leftBottomY) * boundRect.Height;
+                    LeftBottom = new Point(LeftBottom.X, scaledY);
+                    LeftTop = new Point(LeftTop.X, scaledY);
                 }
             }
 
-            internal readonly double LeftTop;
-            internal readonly double TopLeft;
-            internal readonly double TopRight;
-            internal readonly double RightTop;
-            internal readonly double RightBottom;
-            internal readonly double BottomRight;
-            internal readonly double BottomLeft;
-            internal readonly double LeftBottom;
+            internal Point LeftTop { get; private set; }
+            internal Point TopLeft { get; private set; }
+            internal Point TopRight { get; private set; }
+            internal Point RightTop { get; private set; }
+            internal Point RightBottom { get; private set; }
+            internal Point BottomRight { get; private set; }
+            internal Point BottomLeft { get; private set; }
+            internal Point LeftBottom { get; private set; }
         }
 
+        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
+        {
+            context.BeginFigure(keypoints.TopLeft, true);
+
+            //Top
+            context.LineTo(keypoints.TopRight);
+
+            //TopRight corner
+            var radiusX = boundRect.TopRight.X - keypoints.TopRight.X;
+            var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            //Right
+            context.LineTo(keypoints.RightBottom);
+
+            //BottomRight corner
+            radiusX = boundRect.BottomRight.X - keypoints.BottomRight.X;
+            radiusY = boundRect.BottomRight.Y - keypoints.RightBottom.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.BottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            //Bottom
+            context.LineTo(keypoints.BottomLeft);
+
+            //BottomLeft corner
+            radiusX = keypoints.BottomLeft.X - boundRect.BottomLeft.X;
+            radiusY = boundRect.BottomLeft.Y - keypoints.LeftBottom.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.LeftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            //Left
+            context.LineTo(keypoints.LeftTop);
+
+            //TopLeft corner
+            radiusX = keypoints.TopLeft.X - boundRect.TopLeft.X;
+            radiusY = keypoints.LeftTop.Y - boundRect.TopLeft.Y;
+
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.TopLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            context.EndFigure(true);
+        }
     }
 }

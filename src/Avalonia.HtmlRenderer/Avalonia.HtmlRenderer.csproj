@@ -3,7 +3,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>False</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWarn>CS0436</NoWarn>
   </PropertyGroup>
   <ItemGroup>
