@@ -117,7 +117,7 @@ namespace Avalonia.Direct2D1
         }
 
         public IFormattedTextImpl CreateFormattedText(
-            string text,           
+            string text,
             Typeface typeface,
             TextAlignment textAlignment,
             TextWrapping wrapping,

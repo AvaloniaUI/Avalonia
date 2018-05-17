@@ -7,6 +7,13 @@ namespace Avalonia.Media
     /// </summary>
     public class Typeface
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Typeface"/> class.
+        /// </summary>
+        /// <param name="fontFamily">The font family.</param>
+        /// <param name="fontSize">The font size, in DIPs.</param>
+        /// <param name="style">The font style.</param>
+        /// <param name="weight">The font weight.</param>
         public Typeface(FontFamily fontFamily, double fontSize = 12, FontStyle style = FontStyle.Normal,
         FontWeight weight = FontWeight.Normal)
         {

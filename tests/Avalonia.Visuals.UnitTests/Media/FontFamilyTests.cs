@@ -25,6 +25,14 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
+        public void ShouldImplicitlyConvertToString()
+        {
+            var fontFamily = new FontFamily("Arial");        
+
+            Assert.Equal("Arial", fontFamily);
+        }
+
+        [Fact]
         public void Parse_Parses_FontFamily_With_Name()
         {
             var fontFamily = FontFamily.Parse("Courier New");

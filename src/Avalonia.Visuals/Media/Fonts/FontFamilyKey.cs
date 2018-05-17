@@ -88,12 +88,13 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override string ToString()
         {
-            if (FileName != null)
-            {
-                return Location.AbsolutePath + "." + FileName;
-            }
+            if (FileName == null) return Location.PathAndQuery;
 
-            return Location.AbsolutePath;
+            var builder = new UriBuilder(Location);
+
+            builder.Path += "." + FileName;
+
+            return builder.ToString();
         }
     }
 }

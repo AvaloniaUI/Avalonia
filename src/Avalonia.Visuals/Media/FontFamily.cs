@@ -79,7 +79,21 @@ namespace Avalonia.Media
         /// </returns>
         public override string ToString()
         {
+            if (Key != null)
+            {
+                return Key + "#" + Name;
+            }
+
             return Name;
+        }
+
+        /// <summary>
+        /// Implicit conversion of FontFamily to string
+        /// </summary>
+        /// <param name="fontFamily"></param>
+        public static implicit operator string(FontFamily fontFamily)
+        {
+            return fontFamily.ToString();
         }
 
         /// <summary>

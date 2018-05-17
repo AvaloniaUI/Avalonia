@@ -216,5 +216,5 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> Resources { get; }
             public string Name { get; }
         }
-    }  
+    }
 }
