@@ -41,7 +41,7 @@
         <Setter Property="Background" Value="Cyan"/>
         <Setter Property="Child" Value="{StaticResource Acorn}"/>
       </Style>
-      <Style Selector="Border.Rect1">
+      <Style Selector="Border.Rect1:pointerover">
         <Style.Animations>
           <Animation Duration="0:0:2.5" 
                      RepeatBehavior="Repeat"
@@ -132,8 +132,7 @@
               <ScaleTransform/>
             </TransformGroup>
           </Border.RenderTransform>
-          <!-- <Border.Transitions><Transitions><DoubleTransition Property="Border.Opacity" Duration="0:0:2.5"/></Transitions></Border.Transitions> -->
-        </Border>
+         </Border>
         <Border Classes="Test Rect2a" Background="Transparent">
           <Border.RenderTransform>
             <ScaleTransform/>
