@@ -6,7 +6,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
     public class TextPresenter_Tests
     {
         [Fact]
-        public void TextPresenter_can_contain_null_with_password_char_set()
+        public void TextPresenter_Can_Contain_Null_With_Password_Char_Set()
         {
             var target = new TextPresenter
             {
@@ -17,7 +17,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void TextPresenter_can_contain_null_without_password_char_set()
+        public void TextPresenter_Can_Contain_Null_WithOut_Password_Char_Set()
         {
             var target = new TextPresenter();
 
@@ -25,7 +25,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
-        public void Text_presenter_replaces_formatted_text_with_password_char()
+        public void Text_Presenter_Replaces_Formatted_Text_With_Password_Char()
         {
             var target = new TextPresenter
             {
