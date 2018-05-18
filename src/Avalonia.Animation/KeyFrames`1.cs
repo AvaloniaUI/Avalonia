@@ -22,6 +22,8 @@ namespace Avalonia.Animation
         private Dictionary<double, T> _convertedKeyframes = new Dictionary<double, T>();
 
         private bool _isVerfifiedAndConverted;
+        private Animation _animation;
+        private Animatable _target;
 
         /// <summary>
         /// Gets or sets the target property for the keyframe.
@@ -32,7 +34,11 @@ namespace Avalonia.Animation
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
             if (!_isVerfifiedAndConverted)
-                VerifyConvertKeyFrames(animation, typeof(T));
+            {
+                this._animation = animation;
+                this._target = control;
+                VerifyConvertKeyFrames(typeof(T));
+            }
 
             return obsMatch
                 .Where(p => p == true)
@@ -40,7 +46,7 @@ namespace Avalonia.Animation
                 .Where(p => Timing.GetGlobalPlayState() != PlayState.Pause)
                 .Subscribe(_ =>
                 {
-                    var timerObs = RunKeyFrames(animation, control);
+                    var timerObs = RunKeyFrames();
                 });
         }
 
@@ -56,6 +62,7 @@ namespace Avalonia.Animation
         {
             KeyValuePair<double, T> firstCue, lastCue;
             int kvCount = _convertedKeyframes.Count();
+
             if (kvCount > 2)
             {
                 if (DoubleUtils.AboutEqual(t, 0.0) || t < 0.0)
@@ -90,10 +97,10 @@ namespace Avalonia.Animation
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control)
+        private IDisposable RunKeyFrames()
         {
             var _kfStateMach = new KeyFramesStateMachine<T>();
-            _kfStateMach.Initialize(animation, control, this);
+            _kfStateMach.Initialize(_animation, _target, this);
 
             Timing.AnimationStateTimer
                         .TakeWhile(_ => !_kfStateMach._unsubscribe)
@@ -102,7 +109,7 @@ namespace Avalonia.Animation
                             _kfStateMach.Step(p, DoInterpolation);
                         });
 
-            return control.Bind(Property, _kfStateMach, BindingPriority.Animation);
+            return _target.Bind(Property, _kfStateMach, BindingPriority.Animation);
         }
 
         /// <summary>
@@ -113,7 +120,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Verifies and converts keyframe values according to this class's target type.
         /// </summary>
-        private void VerifyConvertKeyFrames(Animation animation, Type type)
+        private void VerifyConvertKeyFrames(Type type)
         {
             var typeConv = TypeDescriptor.GetConverter(type);
 
@@ -134,7 +141,7 @@ namespace Avalonia.Animation
 
                 if (k.timeSpanSet)
                 {
-                    _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
+                    _normalizedCue = new Cue(k.KeyTime.Ticks / _animation.Duration.Ticks);
                 }
 
                 _convertedKeyframes.Add(_normalizedCue.CueValue, convertedValue);
@@ -150,7 +157,6 @@ namespace Avalonia.Animation
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
 
-            // Make start and end keyframe mandatory.
             foreach (var converted in _convertedKeyframes.Keys)
             {
                 if (DoubleUtils.AboutEqual(converted, 0.0))
@@ -163,14 +169,26 @@ namespace Avalonia.Animation
                 }
             }
 
-            if (!hasStartKey && !hasEndKey)
-                throw new InvalidOperationException
-                    ($"{this.GetType().Name} must have a starting (0% cue) and ending (100% cue) keyframe.");
+            if (!hasStartKey || !hasEndKey)
+                AddNeutralKeyFrames(hasStartKey, hasEndKey);
 
-            // Sort Cues, in case users don't order it by themselves.
             _convertedKeyframes = _convertedKeyframes.OrderBy(p => p.Key)
                                                      .ToDictionary((k) => k.Key, (v) => v.Value);
         }
 
+        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey)
+        {
+            var neutralValue = (T)_target.GetValue(Property);
+
+            if (!hasStartKey)
+            {
+                _convertedKeyframes.Add(0.0d, neutralValue);
+            }
+
+            if (!hasEndKey)
+            {
+                _convertedKeyframes.Add(1.0d, neutralValue);
+            }
+        }
     }
 }
