@@ -15,6 +15,5 @@ namespace Avalonia.Animation.Easings
             double p2 = progress * progress;
             return p2 * p2;
         }
-
     }
 }

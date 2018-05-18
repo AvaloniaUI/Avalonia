@@ -25,6 +25,5 @@ namespace Avalonia.Animation.Easings
                 return -0.5d * Math.Pow(2d, -20d * p + 10d) + 1d;
             }
         }
-
     }
 }

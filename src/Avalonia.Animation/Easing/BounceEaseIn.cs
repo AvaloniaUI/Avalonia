@@ -17,6 +17,5 @@ namespace Avalonia.Animation.Easings
         {
             return 1 - BounceEaseUtils.Bounce(1 - progress);
         }
-
     }
 }

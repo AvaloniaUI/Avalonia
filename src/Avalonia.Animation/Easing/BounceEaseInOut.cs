@@ -24,6 +24,5 @@ namespace Avalonia.Animation.Easings
                 return 0.5f * BounceEaseUtils.Bounce(p * 2 - 1) + 0.5f;
             }
         }
-
     }
 }

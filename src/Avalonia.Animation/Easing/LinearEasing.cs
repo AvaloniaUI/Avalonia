@@ -14,5 +14,4 @@ namespace Avalonia.Animation.Easings
             return progress;
         }
     }
-
 }

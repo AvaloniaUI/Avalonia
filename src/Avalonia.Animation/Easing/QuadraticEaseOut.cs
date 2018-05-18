@@ -14,6 +14,5 @@ namespace Avalonia.Animation.Easings
         {
             return -(progress * (progress - 2d));
         }
-
     }
 }

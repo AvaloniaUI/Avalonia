@@ -27,6 +27,5 @@ namespace Avalonia.Animation.Easings
                 return 0.5d * (1d - f * (f * f - Math.Sin(f * Math.PI))) + 0.5d;
             }
         }
-
     }
 }

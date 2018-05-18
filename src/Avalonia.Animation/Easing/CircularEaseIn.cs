@@ -17,6 +17,5 @@ namespace Avalonia.Animation.Easings
         {
             return 1d - Math.Sqrt(1d - p * p);
         }
-
     }
 }

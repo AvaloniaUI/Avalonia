@@ -34,7 +34,7 @@ namespace Avalonia.Animation.Easings
             {
                 _easingTypes = new Dictionary<string, Type>();
 
-                var derivedTypes = AppDomain.CurrentDomain.GetAssemblies()
+                var derivedTypes = AppDomain.CurrentDomain.GetAssemblies()z
                                       .SelectMany(p => p.GetTypes())
                                       .Where(p => p.Namespace == s_thisType.Namespace)
                                       .Where(p => p.IsSubclassOf(s_thisType))
@@ -54,6 +54,5 @@ namespace Avalonia.Animation.Easings
                 throw new FormatException($"Easing \"{e}\" was not found in {s_thisType.Namespace} namespace.");
             }
         }
-
     }
 }

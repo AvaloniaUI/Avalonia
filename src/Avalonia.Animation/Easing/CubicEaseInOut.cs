@@ -25,5 +25,4 @@ namespace Avalonia.Animation.Easings
             }
         }
     }
-
 }

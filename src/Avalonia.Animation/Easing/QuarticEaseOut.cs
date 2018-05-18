@@ -16,6 +16,5 @@ namespace Avalonia.Animation.Easings
             double f2 = f * f;
             return -f2 * f2 + 1d;
         }
-
     }
 }

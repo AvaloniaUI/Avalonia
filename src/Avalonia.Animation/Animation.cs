@@ -63,7 +63,10 @@ namespace Avalonia.Animation
         /// </summary>
         public void Dispose()
         {
-            foreach (var sub in _subscription) sub.Dispose();
+            foreach (var sub in _subscription) 
+            {
+                sub.Dispose();
+            }
         }
 
         /// <inheritdocs/>

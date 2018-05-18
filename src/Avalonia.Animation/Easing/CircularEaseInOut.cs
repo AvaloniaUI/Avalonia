@@ -25,6 +25,5 @@ namespace Avalonia.Animation.Easings
                 return 0.5d * (Math.Sqrt((3d - t) * (t - 1d)) + 1d);
             }
         }
-
     }
 }

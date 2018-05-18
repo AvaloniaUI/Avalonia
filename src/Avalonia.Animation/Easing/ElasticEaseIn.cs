@@ -19,5 +19,4 @@ namespace Avalonia.Animation.Easings
             return Math.Sin(13d * EasingUtils.HALFPI * p) * Math.Pow(2d, 10d * (p - 1));            
         }
     }
-
 }
