@@ -7,6 +7,7 @@ using Avalonia.Animation.Utils;
 using System.Reactive.Linq;
 using System.Linq;
 using Avalonia.Media;
+using Avalonia.Logging;
 
 namespace Avalonia.Animation
 {
@@ -18,13 +19,28 @@ namespace Avalonia.Animation
         DoubleKeyFrames childKeyFrames;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control,  IObservable<bool> obsMatch)
+        public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
             var ctrl = (Visual)control;
 
             // Check if the Target Property is Transform derived.
-            if (typeof(Transform).IsAssignableFrom(Property.OwnerType) && ctrl.RenderTransform != null)
+            if (typeof(Transform).IsAssignableFrom(Property.OwnerType))
             {
+                if (ctrl.RenderTransform == null)
+                {
+                    var normalTransform = new TransformGroup();
+
+                    // Add the transforms according to MS Expression Blend's 
+                    // default RenderTransform order.
+
+                    normalTransform.Children.Add(new ScaleTransform());
+                    normalTransform.Children.Add(new SkewTransform()); 
+                    normalTransform.Children.Add(new RotateTransform());
+                    normalTransform.Children.Add(new TranslateTransform());
+
+                    ctrl.RenderTransform = normalTransform;
+                }
+
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
                 if (childKeyFrames == null)
@@ -35,7 +51,7 @@ namespace Avalonia.Animation
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform,  obsMatch);
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -44,21 +60,24 @@ namespace Avalonia.Animation
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform,  obsMatch);
+                            return childKeyFrames.Apply(animation, transform, obsMatch);
                         }
                     }
                 }
 
-                //TODO: determine correctly when to throw this error.
-                //throw new InvalidOperationException($"TransformKeyFrame hasn't found an appropriate Transform object with type {Property.OwnerType} in target {control}.");
-
-                return null;
-
+                Logger.Warning(
+                    LogArea.Animations,
+                    control,
+                    $"Cannot find the appropriate transform: \"{Property.OwnerType}\" in {control}.");
             }
             else
             {
-                throw new Exception($"Cannot apply keyframe: property {Property} is not a Transform");
+                Logger.Error(
+                    LogArea.Animations,
+                    control,
+                    $"Cannot apply animation: Target property owner {Property.OwnerType} is not a Transform object.");
             }
+            return null;
         }
 
         void InitializeChildKeyFrames()
