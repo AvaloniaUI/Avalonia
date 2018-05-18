@@ -23,5 +23,18 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.NotNull(target.FormattedText);
         }
+
+        [Fact]
+        public void Text_presenter_replaces_formatted_text_with_password_char()
+        {
+            var target = new TextPresenter
+            {
+                PasswordChar = '*',
+                Text = "Test"
+            };
+
+            Assert.NotNull(target.FormattedText);
+            Assert.Equal("****", target.FormattedText.Text);
+        }
     }
 }
