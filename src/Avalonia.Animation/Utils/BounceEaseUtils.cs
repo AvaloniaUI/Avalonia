@@ -33,7 +33,6 @@ namespace Avalonia.Animation.Utils
             {
                 return (54d / 5.0d * p * p) - (513d / 25.0d * p) + 268d / 25.0d;
             }
-        }
- 
+        } 
     }
 }

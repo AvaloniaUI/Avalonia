@@ -16,7 +16,6 @@ namespace Avalonia.Animation
     /// </summary>
     public abstract class KeyFrames<T> : AvaloniaList<KeyFrame>, IKeyFrames
     {
-        
         /// <summary>
         /// List of type-converted keyframes.
         /// </summary>
@@ -120,7 +119,6 @@ namespace Avalonia.Animation
 
             foreach (KeyFrame k in this)
             {
-
                 if (k.Value == null)
                 {
                     throw new ArgumentNullException($"KeyFrame value can't be null.");
@@ -140,7 +138,6 @@ namespace Avalonia.Animation
                 }
 
                 _convertedKeyframes.Add(_normalizedCue.CueValue, convertedValue);
-
             }
 
             SortKeyFrameCues(_convertedKeyframes);

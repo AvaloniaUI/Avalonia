@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Numerics;
 using System.Reflection;
 
 namespace Avalonia.Media
@@ -81,7 +80,7 @@ namespace Avalonia.Media
                 (byte)(value & 0xff)
             );
         }
-        
+
         /// <summary>
         /// Parses a color string.
         /// </summary>

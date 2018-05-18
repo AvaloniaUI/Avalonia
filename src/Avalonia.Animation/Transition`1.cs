@@ -64,8 +64,5 @@ namespace Avalonia.Animation
             var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue).Select(p => (object)p);
             return control.Bind(Property, transition, Data.BindingPriority.Animation);
         }
-
     }
-
-
 }

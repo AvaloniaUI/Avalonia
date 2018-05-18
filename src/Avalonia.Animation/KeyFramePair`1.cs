@@ -17,7 +17,6 @@ namespace Avalonia.Animation
     /// </summary>
     public struct KeyFramePair<T>
     {
-
         /// <summary>
         /// Initializes this <see cref="KeyFramePair{T}"/>
         /// </summary>
@@ -38,6 +37,5 @@ namespace Avalonia.Animation
         /// Second <see cref="KeyFrame"/> object.
         /// </summary>
         public KeyValuePair<double, T> SecondKeyFrame { get; private set; }
-
     }
 }

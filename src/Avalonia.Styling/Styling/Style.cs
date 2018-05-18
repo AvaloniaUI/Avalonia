@@ -115,7 +115,6 @@ namespace Avalonia.Styling
 
                     foreach (var animation in Animations)
                     {
-
                         IObservable<bool> obsMatch = match.ObservableResult;
 
                         if (match.ImmediateResult == true)
@@ -125,7 +124,6 @@ namespace Avalonia.Styling
 
                         var sub = animation.Apply((Animatable)control, obsMatch);
                         subs.Add(sub);
-
                     }
 
                     foreach (var setter in Setters)

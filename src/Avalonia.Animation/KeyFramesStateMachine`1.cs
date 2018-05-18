@@ -12,21 +12,23 @@ namespace Avalonia.Animation
         object _lastInterpValue;
         object _firstKFValue;
 
-        private ulong _delayTotalFrameCount,
-            _durationTotalFrameCount,
-            _delayFrameCount,
-            _durationFrameCount,
-            _repeatCount,
-            _currentIteration;
+        private ulong _delayTotalFrameCount;
+        private ulong _durationTotalFrameCount;
+        private ulong _delayFrameCount;
+        private ulong _durationFrameCount;
+        private ulong _repeatCount;
+        private ulong _currentIteration;
 
-        private bool _isLooping,
-                     _isRepeating,
-                     _isReversed,
-                     _checkLoopAndRepeat,
-                     _gotFirstKFValue;
+        private bool _isLooping;
+        private bool _isRepeating;
+        private bool _isReversed;
+        private bool _checkLoopAndRepeat;
+        private bool _gotFirstKFValue;
+
         private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
-        private KeyFramesStates _currentState, _savedState;
+        private KeyFramesStates _currentState;
+        private KeyFramesStates _savedState;
         private KeyFrames<T> _parent;
         private Animation _targetAnimation;
         private Animatable _targetControl;
@@ -91,7 +93,6 @@ namespace Avalonia.Animation
                 _currentState = KeyFramesStates.DoDelay;
             else
                 _currentState = KeyFramesStates.DoRun;
-
         }
 
         public void Step(PlayState _playState, Func<double, T> Interpolator)
@@ -108,7 +109,6 @@ namespace Avalonia.Animation
 
         private void InternalStep(PlayState _playState, Func<double, T> Interpolator)
         {
-
             if (!_gotFirstKFValue)
             {
                 _firstKFValue = _parent.First().Value;
@@ -158,7 +158,6 @@ namespace Avalonia.Animation
                         goto checkstate;
                     }
                     _delayFrameCount++;
-
                     break;
 
                 case KeyFramesStates.DoRun:
@@ -251,7 +250,6 @@ namespace Avalonia.Animation
                     _targetObserver.OnCompleted();
                     break;
             }
-
         }
 
         public IDisposable Subscribe(IObserver<object> observer)
@@ -264,7 +262,6 @@ namespace Avalonia.Animation
         {
             _unsubscribe = true;
             _currentState = KeyFramesStates.Disposed;
-        }
-        
+        } 
     }
 }
