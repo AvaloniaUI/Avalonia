@@ -93,6 +93,6 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        protected override double DoInterpolation(double time) => 0;
+        protected override double DoInterpolation(double time, double neutralValue) => 0;
     }
 }

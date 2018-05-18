@@ -32,6 +32,7 @@ namespace Avalonia.Animation
         private KeyFrames<T> _parent;
         private Animation _targetAnimation;
         private Animatable _targetControl;
+        private T _neutralValue;
         internal bool _unsubscribe = false;
         private IObserver<object> _targetObserver;
 
@@ -55,6 +56,7 @@ namespace Avalonia.Animation
             _parent = keyframes;
             _targetAnimation = animation;
             _targetControl = control;
+            _neutralValue = (T)_targetControl.GetValue(_parent.Property);
 
             _delayTotalFrameCount = (ulong)(animation.Delay.Ticks / Timing.FrameTick.Ticks);
             _durationTotalFrameCount = (ulong)(animation.Duration.Ticks / Timing.FrameTick.Ticks);
@@ -95,7 +97,7 @@ namespace Avalonia.Animation
                 _currentState = KeyFramesStates.DoRun;
         }
 
-        public void Step(PlayState _playState, Func<double, T> Interpolator)
+        public void Step(PlayState _playState, Func<double, T, T> Interpolator)
         {
             try
             {
@@ -107,7 +109,7 @@ namespace Avalonia.Animation
             }
         }
 
-        private void InternalStep(PlayState _playState, Func<double, T> Interpolator)
+        private void InternalStep(PlayState _playState, Func<double, T, T> Interpolator)
         {
             if (!_gotFirstKFValue)
             {
@@ -200,7 +202,7 @@ namespace Avalonia.Animation
                     _easedTime = _targetAnimation.Easing.Ease(_tempDuration);
 
                     _durationFrameCount++;
-                    _lastInterpValue = Interpolator(_easedTime);
+                    _lastInterpValue = Interpolator(_easedTime, _neutralValue);
                     _targetObserver.OnNext(_lastInterpValue);
                     _currentState = KeyFramesStates.DoRun;
 
@@ -262,6 +264,6 @@ namespace Avalonia.Animation
         {
             _unsubscribe = true;
             _currentState = KeyFramesStates.Disposed;
-        } 
+        }
     }
 }
