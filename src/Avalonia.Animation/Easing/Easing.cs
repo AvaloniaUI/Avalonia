@@ -34,7 +34,7 @@ namespace Avalonia.Animation.Easings
             {
                 _easingTypes = new Dictionary<string, Type>();
 
-                var derivedTypes = AppDomain.CurrentDomain.GetAssemblies()z
+                var derivedTypes = AppDomain.CurrentDomain.GetAssemblies()
                                       .SelectMany(p => p.GetTypes())
                                       .Where(p => p.Namespace == s_thisType.Namespace)
                                       .Where(p => p.IsSubclassOf(s_thisType))
