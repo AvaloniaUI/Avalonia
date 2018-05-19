@@ -257,9 +257,12 @@ namespace Avalonia.Rendering
 
                     foreach (var operation in node.DrawOperations)
                     {
-                        _currentDraw = operation;
-                        operation.Item.Render(context);
-                        _currentDraw = null;
+                        if (!clipBounds.Intersect(operation.Item.Bounds).IsEmpty)
+                        {
+                            _currentDraw = operation;
+                            operation.Item.Render(context);
+                            _currentDraw = null;
+                        }
                     }
 
                     foreach (var child in node.Children)
