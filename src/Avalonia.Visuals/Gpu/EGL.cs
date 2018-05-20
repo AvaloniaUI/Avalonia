@@ -53,9 +53,7 @@ namespace Avalonia.Gpu
 
         public const int PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE = 0x3204;
         public const int PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE = 0x3205;
-
-        private static bool s_isInitialized;
-
+        
         private static class Native
         {
             public const string Library = "libEGL";
