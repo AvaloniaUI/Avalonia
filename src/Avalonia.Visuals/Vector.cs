@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using JetBrains.Annotations;
 
 namespace Avalonia
 {
@@ -121,11 +122,29 @@ namespace Avalonia
             return new Vector(a._x - b._x, a._y - b._y);
         }
 
+        /// <summary>
+        /// Check if two vectors are equal (bitwise).
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Equals(Vector other)
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return _x == other._x && _y == other._y;
             // ReSharper restore CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
+        /// Check if two vectors are nearly equal (numerically).
+        /// </summary>
+        /// <param name="other">The other vector.</param>
+        /// <returns>True if vectors are nearly equal.</returns>
+        [Pure]
+        public bool NearlyEquals(Vector other)
+        {
+            const float tolerance = float.Epsilon;
+
+            return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
         }
 
         public override bool Equals(object obj)

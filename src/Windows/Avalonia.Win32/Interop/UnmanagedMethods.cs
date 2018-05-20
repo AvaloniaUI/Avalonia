@@ -311,6 +311,7 @@ namespace Avalonia.Win32.Interop
             WS_EX_NOACTIVATE = 0x08000000
         }
 
+        [Flags]
         public enum ClassStyles : uint
         {
             CS_VREDRAW = 0x0001,

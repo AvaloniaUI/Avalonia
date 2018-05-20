@@ -18,6 +18,13 @@ namespace Avalonia.Win32.Gpu
         public IntPtr SurfaceHandle { get; }
         public IPlatformHandle PlatformHandle { get; }
 
+        /// <summary>
+        /// Create new <see cref="EGLSurface"/> instance.
+        /// </summary>
+        /// <param name="surfaceHandle">Native surface handle.</param>
+        /// <param name="platformHandle">Platform handle.</param>
+        /// <param name="stencilBits">Surface stencil bits.</param>
+        /// <param name="sampleCount">Surface sample count.</param>
         public EGLSurface(IntPtr surfaceHandle, IPlatformHandle platformHandle, int stencilBits, int sampleCount)
         {
             _stencilBits = stencilBits;
@@ -26,13 +33,18 @@ namespace Avalonia.Win32.Gpu
             PlatformHandle = platformHandle;
         }
 
+        /// <inheritdoc />
         public (int width, int height) GetSize()
         {
             UnmanagedMethods.GetClientRect(PlatformHandle.Handle, out UnmanagedMethods.RECT clientSize);
 
-            return (clientSize.right - clientSize.left, clientSize.bottom - clientSize.top);
+            var width = clientSize.right - clientSize.left;
+            var height = clientSize.bottom - clientSize.top;
+
+            return (width, height);
         }
 
+        /// <inheritdoc />
         public (int x, int y) GetDpi()
         {
             if (UnmanagedMethods.ShCoreAvailable)
@@ -54,15 +66,14 @@ namespace Avalonia.Win32.Gpu
             return (96, 96);
         }
 
+        /// <inheritdoc />
         public FramebufferParameters GetFramebufferParameters()
         {
-            var data = new int[1];
-            GL.GetIntegerv(GL.FRAMEBUFFER_BINDING, data);
-            var framebufferHandle = (IntPtr)data[0];
+            GL.GetIntegerv(GL.FRAMEBUFFER_BINDING, out int framebufferHandle);
             
             return new FramebufferParameters
             {
-                FramebufferHandle = framebufferHandle,
+                FramebufferHandle = (IntPtr)framebufferHandle,
                 SampleCount = _sampleCount,
                 StencilBits = _stencilBits
             };

@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Platform.Gpu
 {
+    /// <summary>
+    /// OpenGL wrapper class. Bare minimum is exposed currently.
+    /// </summary>
     public static class GL
     {
         public const int FRAMEBUFFER_BINDING = 0x8CA6;
@@ -15,7 +18,7 @@ namespace Avalonia.Platform.Gpu
 
         private static class Native
         {
-            internal delegate void glGetIntegerv(int pname, int[] data);
+            internal delegate void glGetIntegerv(int pname, out int data);
 
             internal static glGetIntegerv pglGetIntegerv;
 
@@ -30,7 +33,12 @@ namespace Avalonia.Platform.Gpu
 
         public static void GetIntegerv(int name, int[] data)
         {
-            Native.pglGetIntegerv(name, data);
+            Native.pglGetIntegerv(name, out data[0]);
+        }
+
+        public static void GetIntegerv(int name, out int data)
+        {
+            Native.pglGetIntegerv(name, out data);
         }
 
         public static void Flush()
@@ -43,6 +51,10 @@ namespace Avalonia.Platform.Gpu
             Native.pglViewport(x, y, width, height);
         }
 
+        /// <summary>
+        /// Initialize OpenGL binding with given loader.
+        /// </summary>
+        /// <param name="loader">Function pointer loader.</param>
         public static void Initialize(Func<string, IntPtr> loader)
         {
             if (s_isInitialized)
@@ -62,6 +74,11 @@ namespace Avalonia.Platform.Gpu
             s_isInitialized = true;
         }
 
+        /// <summary>
+        /// Load and bind function to <see cref="Native"/> field.
+        /// </summary>
+        /// <param name="loader">Loader to use.</param>
+        /// <param name="field">Field to bind.</param>
         private static void BindApiFunction(Func<string, IntPtr> loader, FieldInfo field)
         {
             var functionName = field.FieldType.Name;

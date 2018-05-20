@@ -19,11 +19,28 @@ namespace Avalonia.Win32.Gpu
         private static IntPtr s_context;
         private static IntPtr s_display;
         private static IntPtr s_config;
-        
+
+        public bool IsSupported()
+        {
+            try
+            {
+                EnsureInitialized(isCheckRun: true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning(LogArea.Visual, this, "Support check failed due to exception. {ex}", ex);
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Ensure that EGL was initialized.
+        /// <param name="isCheckRun">Just check if context could be created.</param>
         /// </summary>
-        private void EnsureInitialized()
+        private void EnsureInitialized(bool isCheckRun)
         {
             if (s_isInitialized)
             {
@@ -36,7 +53,7 @@ namespace Avalonia.Win32.Gpu
             var platformType = EGLPlatformType.Default;
 
             platformHooks?.InspectPlatformType(ref platformType);
-            
+
             // Try to create display
             IntPtr display;
 
@@ -89,9 +106,6 @@ namespace Avalonia.Win32.Gpu
 
             platformHooks?.InspectVersion(majorVersion, minorVersion);
 
-            // Load OpenGL through EGL
-            GL.Initialize(EGL.GetProcAddress);
-
             var configAttribs = new[]
             {
                 EGL.SURFACE_TYPE, EGL.WINDOW_BIT,
@@ -109,11 +123,11 @@ namespace Avalonia.Win32.Gpu
             if (!configFound || numConfigs == 0)
             {
                 var errorCode = EGL.GetError();
-                
+
                 throw new InvalidOperationException($"Failed to find config for EGL platform: {platformType}. Error: {errorCode}");
             }
 
-            s_config = configs[0];
+            var config = configs[0];
 
             var contextAttribs = new[]
             {
@@ -121,25 +135,38 @@ namespace Avalonia.Win32.Gpu
                 EGL.NONE
             };
 
-            var context = EGL.CreateContext(display, configs[0], (IntPtr)EGL.NO_CONTEXT, contextAttribs);
+            var context = EGL.CreateContext(display, config, (IntPtr)EGL.NO_CONTEXT, contextAttribs);
 
             if (context == (IntPtr)EGL.NO_CONTEXT)
             {
                 var errorCode = EGL.GetError();
-                
+
                 throw new InvalidOperationException($"Failed to create context for EGL platform: {platformType}. Error: {errorCode}");
             }
 
-            var isCurrent = EGL.MakeCurrent(display, (IntPtr) EGL.NO_SURFACE, (IntPtr) EGL.NO_SURFACE, context);
-            
+            var isCurrent = EGL.MakeCurrent(display, (IntPtr)EGL.NO_SURFACE, (IntPtr)EGL.NO_SURFACE, context);
+
             if (!isCurrent)
             {
-                // TODO: Destroy context
                 var errorCode = EGL.GetError();
-                
+
+                EGL.DestroyContext(display, context);
+
                 throw new InvalidOperationException($"Failed to make EGL context current. Error: {errorCode}");
             }
 
+            if (isCheckRun)
+            {
+                EGL.Terminate(display);
+                EGL.ReleaseThread();
+
+                return;
+            }
+
+            // Load OpenGL through EGL
+            GL.Initialize(EGL.GetProcAddress);
+
+            s_config = config;
             s_display = display;
             s_context = context;
             s_isInitialized = true;
@@ -189,7 +216,7 @@ namespace Avalonia.Win32.Gpu
         /// <inheritdoc />
         public void Initialize()
         {
-            EnsureInitialized();
+            EnsureInitialized(isCheckRun: false);
         }
 
         /// <inheritdoc />
@@ -197,14 +224,14 @@ namespace Avalonia.Win32.Gpu
         {
             var surfaceImpl = (EGLSurface)surface;
             var surfaceHandle = surfaceImpl?.SurfaceHandle ?? (IntPtr)EGL.NO_SURFACE;
-            
+
             var isOk = EGL.MakeCurrent(s_display, surfaceHandle, surfaceHandle, s_context);
 
             if (!isOk)
             {
-                var code = EGL.GetError();
+                var errorCode = EGL.GetError();
 
-                Logger.Warning(LogArea.Visual, this, "Failed to make context current. Error: {code}", code);
+                Logger.Warning(LogArea.Visual, this, "Failed to make context current. Error: {code}", errorCode);
             }
 
             return isOk;
@@ -214,14 +241,14 @@ namespace Avalonia.Win32.Gpu
         public bool SwapBuffers(IEGLSurface surface)
         {
             var surfaceImpl = (EGLSurface)surface;
-            
+
             var isOk = EGL.SwapBuffers(s_display, surfaceImpl.SurfaceHandle);
 
             if (!isOk)
             {
-                var code = EGL.GetError();
+                var errorCode = EGL.GetError();
 
-                Logger.Warning(LogArea.Visual, this, "Failed to swap buffers. Error: {code}", code);
+                Logger.Warning(LogArea.Visual, this, "Failed to swap buffers. Error: {code}", errorCode);
             }
 
             return isOk;
@@ -254,6 +281,8 @@ namespace Avalonia.Win32.Gpu
             {
                 return null;
             }
+
+            MakeCurrent(null);
 
             var surfaceImpl = (EGLSurface)surface;
 

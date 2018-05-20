@@ -18,6 +18,12 @@ namespace Avalonia.Platform.Gpu
         IEGLSurface CreateSurface(IEnumerable<object> surfaces);
 
         /// <summary>
+        /// Check if platform is supported.
+        /// </summary>
+        /// <returns>True if platform is supported.</returns>
+        bool IsSupported();
+
+        /// <summary>
         /// Initialize platform.
         /// </summary>
         void Initialize();

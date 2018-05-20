@@ -82,7 +82,7 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Invalid create info - no Canvas provided", nameof(createInfo));
             }
 
-            if (_dpi != SkiaPlatform.DefaultDpi)
+            if (!_dpi.NearlyEquals(SkiaPlatform.DefaultDpi))
             {
                 _postTransform =
                     Matrix.CreateScale(_dpi.X / SkiaPlatform.DefaultDpi.X, _dpi.Y / SkiaPlatform.DefaultDpi.Y);

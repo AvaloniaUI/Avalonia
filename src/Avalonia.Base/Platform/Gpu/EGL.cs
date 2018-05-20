@@ -6,6 +6,10 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Platform.Gpu
 {
+    /// <summary>
+    /// EGL wrapper class. Only small part of API is exposed currently.
+    /// https://www.khronos.org/registry/EGL
+    /// </summary>
     public static class EGL
     {
         public const int DEFAULT_DISPLAY = 0;
@@ -54,34 +58,40 @@ namespace Avalonia.Platform.Gpu
 
         private static class Native
         {
-            public const string Library = "libEGL.dll";
+            public const string Library = "libEGL";
             
             [DllImport(Library)]
             internal static extern IntPtr eglGetDisplay(IntPtr display_id);
             
             [DllImport(Library)]
-            internal static extern bool eglInitialize(IntPtr dpy, out int major, out int minor);
+            internal static extern bool eglInitialize(IntPtr display, out int major, out int minor);
 
             [DllImport(Library)]
-            internal static extern IntPtr eglCreateContext(IntPtr dpy, IntPtr config, IntPtr share_context, int[] attrib_list);
+            internal static extern bool eglTerminate(IntPtr display);
 
             [DllImport(Library)]
-            internal static extern bool eglChooseConfig(IntPtr dpy, int[] attrib_list, IntPtr[] configs, int config_size, out int num_config);
+            internal static extern IntPtr eglCreateContext(IntPtr display, IntPtr config, IntPtr share_context, int[] attrib_list);
 
             [DllImport(Library)]
-            internal static extern IntPtr eglCreatePbufferSurface(IntPtr dpy, IntPtr config, int[] attrib_list);
+            internal static extern bool eglDestroyContext(IntPtr display, IntPtr context);
 
             [DllImport(Library)]
-            internal static extern bool eglMakeCurrent(IntPtr dpy, IntPtr draw, IntPtr read, IntPtr ctx);
+            internal static extern bool eglChooseConfig(IntPtr display, int[] attrib_list, IntPtr[] configs, int config_size, out int num_config);
+
+            [DllImport(Library)]
+            internal static extern IntPtr eglCreatePbufferSurface(IntPtr display, IntPtr config, int[] attrib_list);
+
+            [DllImport(Library)]
+            internal static extern bool eglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr ctx);
 
             [DllImport(Library)]
             internal static extern IntPtr eglGetProcAddress(string funcname);
 
             [DllImport(Library)]
-            internal static extern bool eglSwapBuffers(IntPtr dpy, IntPtr surface);
+            internal static extern bool eglSwapBuffers(IntPtr display, IntPtr surface);
 
             [DllImport(Library)]
-            internal static extern IntPtr eglCreateWindowSurface(IntPtr dpy, IntPtr config, IntPtr win, int[] attrib_list);
+            internal static extern IntPtr eglCreateWindowSurface(IntPtr display, IntPtr config, IntPtr win, int[] attrib_list);
 
             [DllImport(Library)]
             internal static extern int eglGetError();
@@ -90,16 +100,28 @@ namespace Avalonia.Platform.Gpu
             internal static extern bool eglBindAPI(uint api);
 
             [DllImport(Library)]
-            internal static extern IntPtr eglQueryString(IntPtr dpy, int name);
+            internal static extern IntPtr eglQueryString(IntPtr display, int name);
+
+            [DllImport(Library)]
+            internal static extern bool eglQuerySurface(IntPtr display, IntPtr surface, int attribute, out int value);
 
             [DllImport(Library)]
             internal static extern IntPtr eglGetPlatformDisplayEXT(uint platform, IntPtr native_display, int[] attrib_list);
 
             [DllImport(Library)]
-            internal static extern bool eglDestroySurface(IntPtr dpy, IntPtr surface);
+            internal static extern bool eglDestroySurface(IntPtr display, IntPtr surface);
 
             [DllImport(Library)]
-            internal static extern bool eglGetConfigAttrib(IntPtr dpy, IntPtr config, int attribute, out int value);
+            internal static extern bool eglGetConfigAttrib(IntPtr display, IntPtr config, int attribute, out int value);
+
+            [DllImport(Library)]
+            internal static extern bool eglSwapInterval(IntPtr display, int interval);
+
+            [DllImport(Library)]
+            internal static extern bool eglReleaseThread();
+
+            [DllImport(Library)]
+            internal static extern bool eglWaitClient();
         }
         
         public static IntPtr GetDisplay(IntPtr displayId)
@@ -112,9 +134,19 @@ namespace Avalonia.Platform.Gpu
             return Native.eglInitialize(display, out major, out minor);
         }
 
+        public static bool Terminate(IntPtr display)
+        {
+            return Native.eglTerminate(display);
+        }
+
         public static IntPtr CreateContext(IntPtr display, IntPtr config, IntPtr shareContext, int[] attributeList)
         {
             return Native.eglCreateContext(display, config, shareContext, attributeList);
+        }
+
+        public static bool DestroyContext(IntPtr display, IntPtr context)
+        {
+            return Native.eglDestroyContext(display, context);
         }
 
         public static bool ChooseConfig(IntPtr display, int[] attributeList, IntPtr[] configs, int configsSize, out int numConfigs)
@@ -162,6 +194,11 @@ namespace Avalonia.Platform.Gpu
             return Marshal.PtrToStringAnsi(Native.eglQueryString(display, name));
         }
 
+        public static bool QuerySurface(IntPtr display, IntPtr surfcae, int attribute, out int value)
+        {
+            return Native.eglQuerySurface(display, surfcae, attribute, out value);
+        }
+
         public static IntPtr GetPlatformDisplayEXT(uint platform, IntPtr nativeDisplay, int[] attributeList)
         {
             return Native.eglGetPlatformDisplayEXT(platform, nativeDisplay, attributeList);
@@ -175,6 +212,21 @@ namespace Avalonia.Platform.Gpu
         public static bool GetConfigAttrib(IntPtr display, IntPtr config, int attribute, out int value)
         {
             return Native.eglGetConfigAttrib(display, config, attribute, out value);
+        }
+
+        public static bool SwapInterval(IntPtr display, int interval)
+        {
+            return Native.eglSwapInterval(display, interval);
+        }
+
+        public static bool ReleaseThread()
+        {
+            return Native.eglReleaseThread();
+        }
+
+        public static bool WaitClient()
+        {
+            return Native.eglWaitClient();
         }
     }
 }
