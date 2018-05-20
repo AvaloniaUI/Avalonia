@@ -338,6 +338,18 @@ namespace Avalonia.Markup.UnitTests.Data
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public async Task Indexer_Only_Binding_Works()
+        {
+            var data = new[] { 1, 2, 3 };
+
+            var target = new ExpressionObserver(data, "[1]");
+
+            var value = await target.Take(1);
+
+            Assert.Equal(data[1], value);
+        }
+
         private class NonIntegerIndexer : NotifyingBase
         {
             private readonly Dictionary<string, string> _storage = new Dictionary<string, string>();

@@ -223,11 +223,11 @@ namespace Avalonia.Controls.Presenters
 
             if (PasswordChar != default(char))
             {
-                result = base.CreateFormattedText(constraint, new string(PasswordChar, Text.Length));
+                result = base.CreateFormattedText(constraint, new string(PasswordChar, text?.Length ?? 0));
             }
             else
             {
-                result = base.CreateFormattedText(constraint, Text);
+                result = base.CreateFormattedText(constraint, text);
             }
 
             var selectionStart = SelectionStart;
