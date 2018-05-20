@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Avalonia.Platform.Gpu
+namespace Avalonia.Gpu
 {
     /// <summary>
     /// Framebuffer descriptor info.

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Avalonia.Platform.Gpu;
+using Avalonia.Gpu;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Gpu

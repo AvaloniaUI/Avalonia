@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Avalonia.Platform.Gpu
+namespace Avalonia.Gpu
 {
     /// <summary>
     /// OpenGL wrapper class. Bare minimum is exposed currently.

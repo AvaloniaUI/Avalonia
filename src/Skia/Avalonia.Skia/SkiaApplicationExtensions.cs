@@ -4,6 +4,7 @@
 using Avalonia.Controls;
 using Avalonia.Skia;
 
+// ReSharper disable once CheckNamespace
 namespace Avalonia
 {
     /// <summary>

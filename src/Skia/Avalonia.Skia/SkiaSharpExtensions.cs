@@ -6,7 +6,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 
-namespace Avalonia
+namespace Avalonia.Skia
 {
     public static class SkiaSharpExtensions
     {

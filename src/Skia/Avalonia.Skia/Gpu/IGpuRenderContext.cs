@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Platform.Gpu;
+using Avalonia.Gpu;
 
 namespace Avalonia.Skia.Gpu
 {

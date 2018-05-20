@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Gpu;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using Avalonia.Platform.Gpu;
 
 namespace Avalonia.Win32.Gpu
 {

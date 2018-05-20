@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Avalonia.Platform.Gpu
+namespace Avalonia.Gpu
 {
     /// <summary>
     /// EGL wrapper class. Only small part of API is exposed currently.

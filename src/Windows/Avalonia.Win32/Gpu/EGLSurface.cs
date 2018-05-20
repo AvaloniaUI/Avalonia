@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Gpu;
 using Avalonia.Platform;
-using Avalonia.Platform.Gpu;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Gpu

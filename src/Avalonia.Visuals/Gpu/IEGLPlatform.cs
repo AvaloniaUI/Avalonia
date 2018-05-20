@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Avalonia.Platform.Gpu
+namespace Avalonia.Gpu
 {
     /// <summary>
     /// OpenGL support platform.
