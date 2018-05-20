@@ -40,6 +40,10 @@ namespace Avalonia.Markup.Data.Parsers
                     case State.AttachedProperty:
                         state = ParseAttachedProperty(r, nodes);
                         break;
+
+                    case State.Indexer:
+                        state = ParseIndexer(r, nodes);
+                        break;
                 }
             }
 
@@ -67,6 +71,10 @@ namespace Avalonia.Markup.Data.Parsers
             {
                 return State.AttachedProperty;
             }
+            else if (PeekOpenBracket(r))
+            {
+                return State.Indexer;
+            }
             else
             {
                 var identifier = IdentifierParser.Parse(r);
@@ -92,20 +100,9 @@ namespace Avalonia.Markup.Data.Parsers
                 nodes.Add(new StreamNode());
                 return State.AfterMember;
             }
-            else
+            else if (PeekOpenBracket(r))
             {
-                var args = ArgumentListParser.Parse(r, '[', ']');
-
-                if (args != null)
-                {
-                    if (args.Count == 0)
-                    {
-                        throw new ExpressionParseException(r.Position, "Indexer may not be empty.");
-                    }
-
-                    nodes.Add(new IndexerNode(args));
-                    return State.AfterMember;
-                }
+                return State.Indexer;
             }
 
             return State.End;
@@ -151,6 +148,19 @@ namespace Avalonia.Markup.Data.Parsers
             return State.AfterMember;
         }
 
+        private State ParseIndexer(Reader r, List<ExpressionNode> nodes)
+        {
+            var args = ArgumentListParser.Parse(r, '[', ']');
+
+            if (args.Count == 0)
+            {
+                throw new ExpressionParseException(r.Position, "Indexer may not be empty.");
+            }
+
+            nodes.Add(new IndexerNode(args));
+            return State.AfterMember;
+        }
+        
         private static bool ParseNot(Reader r)
         {
             return !r.End && r.TakeIf('!');
@@ -166,6 +176,11 @@ namespace Avalonia.Markup.Data.Parsers
             return !r.End && r.TakeIf('(');
         }
 
+        private static bool PeekOpenBracket(Reader r)
+        {
+            return !r.End && r.Peek == '[';
+        }
+
         private static bool ParseStreamOperator(Reader r)
         {
             return !r.End && r.TakeIf('^');
@@ -177,6 +192,7 @@ namespace Avalonia.Markup.Data.Parsers
             AfterMember,
             BeforeMember,
             AttachedProperty,
+            Indexer,
             End,
         }
     }

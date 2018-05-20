@@ -25,7 +25,7 @@
                                   Padding="{TemplateBinding Padding}"
                                   TextBlock.Foreground="{TemplateBinding Foreground}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </ControlTemplate>
         </Setter>
     </Style>

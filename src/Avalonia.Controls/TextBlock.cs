@@ -111,6 +111,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
+            _text = string.Empty;
+
             Observable.Merge(
                 this.GetObservable(TextProperty).Select(_ => Unit.Default),
                 this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
@@ -197,7 +199,7 @@ namespace Avalonia.Controls
             {
                 if (_formattedText == null)
                 {
-                    _formattedText = CreateFormattedText(_constraint);
+                    _formattedText = CreateFormattedText(_constraint, Text);
                 }
 
                 return _formattedText;
@@ -348,14 +350,15 @@ namespace Avalonia.Controls
         /// Creates the <see cref="FormattedText"/> used to render the text.
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
+        /// <param name="text">The text to format.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected virtual FormattedText CreateFormattedText(Size constraint)
+        protected virtual FormattedText CreateFormattedText(Size constraint, string text)
         {
             return new FormattedText
             {
                 Constraint = constraint,
                 Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
-                Text = Text ?? string.Empty,
+                Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
                 Wrapping = TextWrapping,
             };
