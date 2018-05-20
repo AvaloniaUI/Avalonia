@@ -5,19 +5,19 @@ using System;
 
 namespace Avalonia.Media.Fonts
 {
-    internal class FontResource
+    internal class FontAsset
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FontResource"/> class.
+        /// Initializes a new instance of the <see cref="FontAsset"/> class.
         /// </summary>
         /// <param name="source">The source.</param>
-        public FontResource(Uri source)
+        public FontAsset(Uri source)
         {
             Source = source;
         }
 
         /// <summary>
-        /// Gets the source.
+        /// Gets the source of the asset.
         /// </summary>
         /// <value>
         /// The source.

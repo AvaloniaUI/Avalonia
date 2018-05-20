@@ -24,9 +24,9 @@ namespace Avalonia.Direct2D1.Media
 
         private static SharpDX.DirectWrite.FontCollection CreateFontCollection(FontFamilyKey key)
         {            
-            var resources = FontFamilyLoader.LoadFontResources(key);
+            var assets = FontFamilyLoader.LoadFontAssets(key);
 
-            var fontLoader = new DWriteResourceFontLoader(s_factory, resources);
+            var fontLoader = new DWriteResourceFontLoader(s_factory, assets);
 
             return new SharpDX.DirectWrite.FontCollection(s_factory, fontLoader, fontLoader.Key);
         }

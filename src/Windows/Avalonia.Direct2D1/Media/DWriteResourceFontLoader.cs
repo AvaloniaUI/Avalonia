@@ -16,20 +16,20 @@ namespace Avalonia.Direct2D1.Media
         /// Initializes a new instance of the <see cref="DWriteResourceFontLoader"/> class.
         /// </summary>
         /// <param name="factory">The factory.</param>
-        /// <param name="fontResources"></param>
-        public DWriteResourceFontLoader(Factory factory, IEnumerable<FontResource> fontResources)
+        /// <param name="fontAssets"></param>
+        public DWriteResourceFontLoader(Factory factory, IEnumerable<FontAsset> fontAssets)
         {
             var factory1 = factory;
 
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            foreach (var font in fontResources)
+            foreach (var font in fontAssets)
             {
-                var resourceStream = assetLoader.Open(font.Source);
+                var assetStream = assetLoader.Open(font.Source);
 
-                var dataStream = new DataStream((int)resourceStream.Length, true, true);
+                var dataStream = new DataStream((int)assetStream.Length, true, true);
 
-                resourceStream.CopyTo(dataStream);
+                assetStream.CopyTo(dataStream);
 
                 dataStream.Position = 0;
 

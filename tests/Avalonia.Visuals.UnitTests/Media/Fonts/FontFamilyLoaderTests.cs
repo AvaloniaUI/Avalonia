@@ -22,7 +22,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 
                 var key = new FontFamilyKey(source);
 
-                var resources = FontFamilyLoader.LoadFontResources(key);
+                var resources = FontFamilyLoader.LoadFontAssets(key);
 
                 Assert.Single(resources);
             }

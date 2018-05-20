@@ -19,7 +19,8 @@ namespace Avalonia.Media
         /// <exception cref="T:System.ArgumentNullException">name</exception>
         public FontFamily(string name)
         {
-            if (name == null) throw new ArgumentNullException();
+            Contract.Requires<ArgumentNullException>(name != null);
+
             FamilyNames = new FamilyNameCollection(new[] { name });
         }
 
@@ -30,14 +31,16 @@ namespace Avalonia.Media
         /// <exception cref="T:System.ArgumentNullException">name</exception>
         public FontFamily(IEnumerable<string> names)
         {
-            if (names == null) throw new ArgumentNullException();
+            Contract.Requires<ArgumentNullException>(names != null);
+
             FamilyNames = new FamilyNameCollection(names);
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
         /// </summary>
-        /// <param name="name">The name of the <see cref="FontFamily"/>.</param>
+        /// <param name="name">The name of the <see cref="T:Avalonia.Media.FontFamily" />.</param>
         /// <param name="source">The source of font resources.</param>
         public FontFamily(string name, Uri source) : this(name)
         {
@@ -64,7 +67,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the key for associated resources.
+        /// Gets the key for associated assets.
         /// </summary>
         /// <value>
         /// The family familyNames.

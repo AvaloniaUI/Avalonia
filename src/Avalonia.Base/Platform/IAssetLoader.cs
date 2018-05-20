@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -58,6 +59,13 @@ namespace Avalonia.Platform
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null);
+        (Stream Stream, Assembly Assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null);
+
+        /// <summary>
+        /// Gets all assets at a specific location.
+        /// </summary>
+        /// <param name="location">The location of resources.</param>
+        /// <returns>A tuple containing the absolute path to the resource and the owner assembly</returns>
+        IEnumerable<(string AbsolutePath, Assembly Assembly)> GetAssets(Uri location);
     }
 }

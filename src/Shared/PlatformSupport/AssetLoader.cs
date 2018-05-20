@@ -67,8 +67,8 @@ namespace Avalonia.Shared.PlatformSupport
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).Item1;
-        
+        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).Stream;
+
         /// <summary>
         /// Opens the resource with the requested URI and returns the resource string and the
         /// assembly containing the resource.
@@ -83,7 +83,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        public Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        public (Stream Stream, Assembly Assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
             var asset = GetAsset(uri, baseUri);
 
@@ -92,8 +92,17 @@ namespace Avalonia.Shared.PlatformSupport
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
             }
 
-            return Tuple.Create(asset.GetStream(), asset.Assembly);
+            return (asset.GetStream(), asset.Assembly);
         }
+
+        public IEnumerable<(string AbsolutePath, Assembly Assembly)> GetAssets(Uri location)
+        {
+            var assembly = GetAssembly(location);
+
+            return assembly?.Resources.Select(x => (x.Key, x.Value.Assembly)) ??
+                   Enumerable.Empty<(string AbsolutePath, Assembly Assembly)>();
+        }
+
 
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
         {

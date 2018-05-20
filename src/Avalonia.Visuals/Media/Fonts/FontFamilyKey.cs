@@ -33,15 +33,21 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Location of stored <see cref="FontResource"/> that belong to a <see cref="FontFamily"/>
+        /// Location of stored <see cref="FontAsset"/> that belong to a <see cref="FontFamily"/>
         /// </summary>
         public Uri Location { get; }
 
         /// <summary>
-        /// Optional filename for <see cref="FontResource"/> that belong to a <see cref="FontFamily"/>
+        /// Optional filename for <see cref="FontAsset"/> that belong to a <see cref="FontFamily"/>
         /// </summary>
         public string FileName { get; }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             unchecked

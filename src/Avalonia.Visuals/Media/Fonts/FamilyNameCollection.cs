@@ -13,13 +13,23 @@ namespace Avalonia.Media.Fonts
     {
         private readonly ReadOnlyCollection<string> _familyNames;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
+        /// </summary>
+        /// <param name="familyNames">The family names.</param>
+        /// <exception cref="ArgumentException">familyNames</exception>
         public FamilyNameCollection(IEnumerable<string> familyNames)
         {
-            if (familyNames == null) throw new ArgumentNullException(nameof(familyNames));
+            Contract.Requires<ArgumentNullException>(familyNames != null);
+
             var names = new List<string>(familyNames);
+
             if (names.Count == 0) throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
+
             _familyNames = new ReadOnlyCollection<string>(names);
+
             PrimaryFamilyName = _familyNames.First();
+
             HasFallbacks = _familyNames.Count > 1;
         }
 
@@ -39,11 +49,25 @@ namespace Avalonia.Media.Fonts
         /// </value>
         public bool HasFallbacks { get; }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// An enumerator that can be used to iterate through the collection.
+        /// </returns>
         public IEnumerator<string> GetEnumerator()
         {
             return _familyNames.GetEnumerator();
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator"></see> object that can be used to iterate through the collection.
+        /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

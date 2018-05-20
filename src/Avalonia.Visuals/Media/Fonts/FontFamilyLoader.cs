@@ -11,181 +11,68 @@ namespace Avalonia.Media.Fonts
 {
     internal static class FontFamilyLoader
     {
-        private static readonly Dictionary<string, AssemblyDescriptor> s_assemblyNameCache
-            = new Dictionary<string, AssemblyDescriptor>();
-
-        private static readonly AssemblyDescriptor s_defaultAssembly;     
+        private static readonly IAssetLoader s_assetLoader;
 
         static FontFamilyLoader()
         {
-            s_defaultAssembly = new AssemblyDescriptor(Assembly.GetEntryAssembly());       
+            s_assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
         }
 
-        public static IEnumerable<FontResource> LoadFontResources(FontFamilyKey fontFamilyKey)
+        public static IEnumerable<FontAsset> LoadFontAssets(FontFamilyKey fontFamilyKey)
         {
             return fontFamilyKey.FileName != null
-                ? GetFontResourcesByFileName(fontFamilyKey.Location, fontFamilyKey.FileName)
-                : GetFontResourcesByLocation(fontFamilyKey.Location);
+                ? GetFontAssetsByFileName(fontFamilyKey.Location, fontFamilyKey.FileName)
+                : GetFontAssetsByLocation(fontFamilyKey.Location);
         }
 
         /// <summary>
-        /// Searches for font resources at a given location and returns a quanity of found resources
+        /// Searches for font assets at a given location and returns a quanity of found assets
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        private static IEnumerable<FontResource> GetFontResourcesByLocation(Uri location)
+        private static IEnumerable<FontAsset> GetFontAssetsByLocation(Uri location)
         {
-            var assembly = GetAssembly(location);
-
-            if (assembly == null) return Enumerable.Empty<FontResource>();
+            var availableAssets = s_assetLoader.GetAssets(location);
 
             var locationPath = location.AbsolutePath;
 
-            var matchingResources = assembly.Resources.Where(x => x.Contains(locationPath));
+            var mathchingAssets = availableAssets.Where(x => x.AbsolutePath.Contains(locationPath) && x.AbsolutePath.EndsWith(".ttf"));
 
-            return matchingResources.Select(x => CreateResource(GetResourceUri(x, assembly.Name)));
+            return mathchingAssets.Select(x => CreateFontAsset(GetAssetUri(x.AbsolutePath, x.Assembly)));
         }
 
         /// <summary>
-        /// Searches for font resources at a given location and only accepts resources that fit to a given filename expression.
+        /// Searches for font assets at a given location and only accepts assets that fit to a given filename expression.
         /// <para>Filenames can target multible files with * wildcard. For example "FontFile*.ttf"</para>
         /// </summary>
         /// <param name="location"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private static IEnumerable<FontResource> GetFontResourcesByFileName(Uri location, string fileName)
+        private static IEnumerable<FontAsset> GetFontAssetsByFileName(Uri location, string fileName)
         {
-            var assembly = GetAssembly(location);
-
-            if (assembly == null) return Enumerable.Empty<FontResource>();
+            var availableResources = s_assetLoader.GetAssets(location);
 
             var compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
 
-            var matchingResources = assembly.Resources.Where(x => x.Contains(compareTo));
+            var matchingResources = availableResources.Where(x => x.AbsolutePath.Contains(compareTo));
 
-            return matchingResources.Select(x => CreateResource(GetResourceUri(x, assembly.Name)));
+            return matchingResources.Select(x => CreateFontAsset(GetAssetUri(x.AbsolutePath, x.Assembly)));
         }
 
-        private static FontResource CreateResource(Uri source)
+        private static FontAsset CreateFontAsset(Uri source)
         {
-            return new FontResource(source);
-        }
-
-        /// <summary>
-        /// Returns a valid resource <see cref="Uri"/> that follows the resm scheme
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="assemblyName"></param>
-        /// <returns></returns>
-        private static Uri GetResourceUri(string path, string assemblyName)
-        {
-            return new Uri("resm:" + path + "?assembly=" + assemblyName);
+            return new FontAsset(source);
         }
 
         /// <summary>
-        /// Extracts a <see cref="AssemblyDescriptor"/> from a given <see cref="Uri"/>
+        /// Returns a <see cref="Uri"/> for a font asset that follows the resm scheme
         /// </summary>
-        /// <param name="uri"></param>
+        /// <param name="absolutePath"></param>
+        /// <param name="assembly"></param>
         /// <returns></returns>
-        private static AssemblyDescriptor GetAssembly(Uri uri)
+        private static Uri GetAssetUri(string absolutePath, Assembly assembly)
         {
-            if (uri == null) return null;
-
-            var parameters = ParseParameters(uri);
-
-            return parameters.TryGetValue("assembly", out var assemblyName) ? GetAssembly(assemblyName) : s_defaultAssembly;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="AssemblyDescriptor"/> that is identified by a given name.
-        /// <para>
-        /// If name is <value>null</value> the default assembly is used.
-        /// </para>
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        private static AssemblyDescriptor GetAssembly(string name)
-        {
-            if (name == null)
-            {
-                return s_defaultAssembly;
-            }
-
-            if (!s_assemblyNameCache.TryGetValue(name, out var rv))
-            {
-                var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
-                var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
-                if (match != null)
-                {
-                    s_assemblyNameCache[name] = rv = new AssemblyDescriptor(match);
-                }
-                else
-                {
-                    // iOS does not support loading assemblies dynamically!
-                    //
-#if NETCOREAPP1_0
-                    s_assemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
-#elif __IOS__
-                    throw new InvalidOperationException(
-                        $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
-#else
-                    s_assemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(name));
-#endif
-                }
-            }
-
-            return rv;
-        }
-
-        /// <summary>
-        /// Parses the parameters.
-        /// </summary>
-        /// <param name="uri">The URI.</param>
-        /// <returns></returns>
-        private static Dictionary<string, string> ParseParameters(Uri uri)
-        {
-            return uri.Query.TrimStart('?')
-                .Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Split('='))
-                .ToDictionary(p => p[0], p => p[1]);
-        }
-
-        private class AssemblyDescriptor
-        {
-            public AssemblyDescriptor(Assembly assembly)
-            {
-                Assembly = assembly;
-
-                if (Assembly == null) return;
-
-                Resources = assembly.GetManifestResourceNames().ToList();
-
-                Name = Assembly.GetName().Name;
-            }
-
-            /// <summary>
-            /// Gets the name.
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string Name { get; }
-
-            /// <summary>
-            /// Gets the assembly.
-            /// </summary>
-            /// <value>
-            /// The assembly.
-            /// </value>
-            public Assembly Assembly { get; }
-
-            /// <summary>
-            /// Gets the resources.
-            /// </summary>
-            /// <value>
-            /// The resources.
-            /// </value>
-            public List<string> Resources { get; }
+            return new Uri("resm:" + absolutePath + "?assembly=" + assembly.GetName().Name, UriKind.RelativeOrAbsolute);
         }
     }
 }

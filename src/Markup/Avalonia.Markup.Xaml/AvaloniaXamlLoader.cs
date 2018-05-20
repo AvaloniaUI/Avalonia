@@ -126,11 +126,11 @@ namespace Avalonia.Markup.Xaml
             }
 
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
-            using (var stream = asset.Item1)
+            using (var stream = asset.Stream)
             {
                 try
                 {
-                    return Load(stream, asset.Item2, rootInstance, uri);
+                    return Load(stream, asset.Assembly, rootInstance, uri);
                 }
                 catch (Exception e)
                 {
