@@ -110,6 +110,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
+            _text = string.Empty;
+
             Observable.Merge(
                 this.GetObservable(TextProperty).Select(_ => Unit.Default),
                 this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
