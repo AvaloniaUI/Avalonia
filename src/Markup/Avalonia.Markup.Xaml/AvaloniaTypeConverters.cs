@@ -58,8 +58,12 @@ namespace Avalonia.Markup.Xaml
                 return result?.MakeGenericType(type.GetGenericArguments());
             }
 
-            // If the type has a static Parse method, use that.
-            if (!type.IsPrimitive && ParseTypeConverter.HasParseMethod(type))
+            // If the type isn't a primitive or a type that XAML already handles, but has a static
+            // Parse method, use that
+            if (!type.IsPrimitive &&
+                type != typeof(DateTime) &&
+                type != typeof(Uri) &&
+                ParseTypeConverter.HasParseMethod(type))
             {
                 result = typeof(ParseTypeConverter<>).MakeGenericType(type);
                 _converters.Add(type, result);
