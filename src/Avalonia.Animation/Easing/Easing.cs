@@ -1,4 +1,4 @@
-﻿using Avalonia.Collections;
+using Avalonia.Collections;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,17 +28,15 @@ namespace Avalonia.Animation.Easings
         /// <returns>Returns the instance of the parsed type.</returns>
         public static Easing Parse(string e)
         {
-            // TODO: There should be a better way to
-            //       find all the subclasses than this method...
             if (_easingTypes == null)
             {
                 _easingTypes = new Dictionary<string, Type>();
 
-                var derivedTypes = AppDomain.CurrentDomain.GetAssemblies()
-                                      .SelectMany(p => p.GetTypes())
+                // Fetch the built-in easings.
+                var derivedTypes = typeof(Easing).Assembly.GetTypes()
                                       .Where(p => p.Namespace == s_thisType.Namespace)
                                       .Where(p => p.IsSubclassOf(s_thisType))
-                                      .Select(p=>p).ToList();
+                                      .Select(p => p).ToList();
 
                 foreach (var easingType in derivedTypes)
                     _easingTypes.Add(easingType.Name, easingType);

@@ -102,11 +102,13 @@ namespace Avalonia.Controls
             UpdateIndicator(Bounds.Size);
         }
 
+        // TODO: Implement Indeterminate Progress animation
+        //       in xaml (most ideal) or if it's not possible
+        //       then on this class.
         private class IndeterminateAnimation : IDisposable
         {
             private WeakReference<ProgressBar> _progressBar;
-            //private IDisposable _indeterminateBindSubscription;
-            //private TimeSpan _startTime;
+
             private bool _disposed;
 
             public bool Disposed => _disposed;
@@ -114,12 +116,7 @@ namespace Avalonia.Controls
             private IndeterminateAnimation(ProgressBar progressBar)
             {
                 _progressBar = new WeakReference<ProgressBar>(progressBar);
-                //_startTime = Animate.Stopwatch.Elapsed;
-                //_indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - _startTime).TotalSeconds <= 4.0)
-                //                                              .Select(GetAnimationRect)
-                //                                              .Finally(() => _startTime = Animate.Stopwatch.Elapsed)
-                //                                              .Repeat()
-                //                                              .Subscribe(AnimationTick);
+
             }
 
             public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)
@@ -129,31 +126,11 @@ namespace Avalonia.Controls
 
             private Rect GetAnimationRect(TimeSpan time)
             {
-                //if (_progressBar.TryGetTarget(out var progressBar))
-                //{
-                //    if (progressBar.Orientation == Orientation.Horizontal)
-                //        return new Rect(-progressBar._indicator.Width - 5 + (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Width + progressBar._indicator.Width + 10), 0, progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                //    else
-                //        return new Rect(0, progressBar.Bounds.Height + 5 - (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Height + progressBar._indicator.Height + 10), progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                //}
-                //else
-                //{
-                //    _indeterminateBindSubscription.Dispose();
                 return Rect.Empty;
-                //}
-            }
-
-            private void AnimationTick(Rect rect)
-            {
-                //if (_progressBar.TryGetTarget(out var progressBar))
-                //    progressBar._indicator.Arrange(rect);
-                //else
-                //    _indeterminateBindSubscription.Dispose();
             }
 
             public void Dispose()
             {
-                //_indeterminateBindSubscription?.Dispose();
                 _disposed = true;
             }
         }

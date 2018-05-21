@@ -74,34 +74,18 @@ namespace Avalonia.Animation
             var distance = Orientation == SlideAxis.Horizontal ? parent.Bounds.Width : parent.Bounds.Height;
             var translateProperty = Orientation == SlideAxis.Horizontal ? TranslateTransform.XProperty : TranslateTransform.YProperty;
 
+
+            // TODO: Implement relevant transition logic here (or discard this class)
+            // in favor of XAML based transition for pages
             if (from != null)
             {
-                //var transform = new TranslateTransform();
-                //from.RenderTransform = transform;
-                //tasks.Add(Animate.Property(
-                //    transform,
-                //    translateProperty,
-                //    0.0,
-                //    forward ? -distance : distance,
-                //    LinearEasing.For<double>(),
-                //    Duration).ToTask());
+
             }
 
             if (to != null)
             {
-                //var transform = new TranslateTransform();
-                //to.RenderTransform = transform;
-                to.IsVisible = true;
-                //tasks.Add(Animate.Property(
-                //    transform,
-                //    translateProperty,
-                //    forward ? distance : -distance,
-                //    0.0,
-                //    LinearEasing.For<double>(),
-                //    Duration).ToTask());
-            }
 
-            //await Task.WhenAll(tasks.ToArray());
+            }
 
             // FIXME: This is temporary until animations are fixed.
             await Task.Delay(1);

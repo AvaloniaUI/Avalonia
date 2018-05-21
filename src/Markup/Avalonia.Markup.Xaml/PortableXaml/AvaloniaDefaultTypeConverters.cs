@@ -1,19 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Reflection;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
-using Portable.Xaml.ComponentModel;
-using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
