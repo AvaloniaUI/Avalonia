@@ -6,6 +6,8 @@ using SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System;
+
     internal class DWriteResourceFontLoader : CallbackBase, FontCollectionLoader, FontFileLoader
     {
         private readonly List<DWriteResourceFontFileStream> _fontStreams = new List<DWriteResourceFontFileStream>();
@@ -17,15 +19,15 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="factory">The factory.</param>
         /// <param name="fontAssets"></param>
-        public DWriteResourceFontLoader(Factory factory, IEnumerable<FontAsset> fontAssets)
+        public DWriteResourceFontLoader(Factory factory, IEnumerable<Uri> fontAssets)
         {
             var factory1 = factory;
 
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            foreach (var font in fontAssets)
+            foreach (var asset in fontAssets)
             {
-                var assetStream = assetLoader.Open(font.Source);
+                var assetStream = assetLoader.Open(asset);
 
                 var dataStream = new DataStream((int)assetStream.Length, true, true);
 

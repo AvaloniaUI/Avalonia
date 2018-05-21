@@ -25,11 +25,19 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void ShouldImplicitlyConvertToString()
+        public void Should_Implicitly_Convert_String_To_FontFamily()
         {
-            var fontFamily = new FontFamily("Arial");        
+            FontFamily fontFamily = "Arial";
 
-            Assert.Equal("Arial", fontFamily);
+            Assert.Equal(new FontFamily("Arial"), fontFamily);
+        }
+
+        [Fact]
+        public void Should_Be_Equal()
+        {
+            var fontFamily = new FontFamily("Arial");
+
+            Assert.Equal(new FontFamily("Arial"), fontFamily);
         }
 
         [Fact]

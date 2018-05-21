@@ -59,13 +59,13 @@ namespace Avalonia.Platform
         /// <exception cref="FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        (Stream Stream, Assembly Assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null);
+        (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null);
 
         /// <summary>
         /// Gets all assets at a specific location.
         /// </summary>
-        /// <param name="location">The location of resources.</param>
+        /// <param name="location">The location of assets.</param>
         /// <returns>A tuple containing the absolute path to the resource and the owner assembly</returns>
-        IEnumerable<(string AbsolutePath, Assembly Assembly)> GetAssets(Uri location);
+        IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location);
     }
 }

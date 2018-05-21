@@ -9,10 +9,10 @@ using System.Linq;
 
 namespace Avalonia.Media.Fonts
 {
-    internal class FamilyNameCollection : IEnumerable<string>
-    {
-        private readonly ReadOnlyCollection<string> _familyNames;
+    using System.Text;
 
+    public class FamilyNameCollection : IEnumerable<string>
+    {    
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
         /// </summary>
@@ -26,11 +26,11 @@ namespace Avalonia.Media.Fonts
 
             if (names.Count == 0) throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
 
-            _familyNames = new ReadOnlyCollection<string>(names);
+            Names = new ReadOnlyCollection<string>(names);
 
-            PrimaryFamilyName = _familyNames.First();
+            PrimaryFamilyName = Names.First();
 
-            HasFallbacks = _familyNames.Count > 1;
+            HasFallbacks = Names.Count > 1;
         }
 
         /// <summary>
@@ -49,6 +49,14 @@ namespace Avalonia.Media.Fonts
         /// </value>
         public bool HasFallbacks { get; }
 
+        /// <summary>
+        /// Gets the internal collection of names.
+        /// </summary>
+        /// <value>
+        /// The names.
+        /// </value>
+        internal ReadOnlyCollection<string> Names { get; }
+
         /// <inheritdoc />
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -58,7 +66,7 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public IEnumerator<string> GetEnumerator()
         {
-            return _familyNames.GetEnumerator();
+            return Names.GetEnumerator();
         }
 
         /// <inheritdoc />
@@ -71,6 +79,53 @@ namespace Avalonia.Media.Fonts
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+
+            for (var index = 0; index < Names.Count; index++)
+            {
+                builder.Append(Names[index]);
+
+                if (index == Names.Count - 1) break;
+
+                builder.Append(", ");
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            if (!(obj is FamilyNameCollection other)) return false;
+
+            return other.ToString().Equals(ToString());
         }
     }
 }

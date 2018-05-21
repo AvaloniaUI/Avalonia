@@ -6,42 +6,7 @@ namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        struct FontKey
-        {
-            public readonly string Name;
-            public readonly SKFontStyleSlant Slant;
-            public readonly SKFontStyleWeight Weight;
-
-            public FontKey(string name, SKFontStyleWeight weight, SKFontStyleSlant slant)
-            {
-                Name = name;
-                Slant = slant;
-                Weight = weight;
-            }
-
-            public override int GetHashCode()
-            {
-                int hash = 17;
-                hash = hash * 31 + Name.GetHashCode();
-                hash = hash * 31 + (int)Slant;
-                hash = hash * 31 + (int)Weight;
-
-                return hash;
-            }
-
-            public override bool Equals(object other)
-            {
-                return other is FontKey ? Equals((FontKey)other) : false;
-            }
-
-            public bool Equals(FontKey other)
-            {
-                return Name == other.Name && Slant == other.Slant &&
-                       Weight == other.Weight;
-            }
-
-            // Equals and GetHashCode ommitted
-        }
+       
 
         private readonly ConcurrentDictionary<FontKey, SKTypeface> _cachedTypefaces =
             new ConcurrentDictionary<FontKey, SKTypeface>();
@@ -71,6 +36,41 @@ namespace Avalonia.Skia
             var key = new FontKey(typeface.FontFamily.Name, (SKFontStyleWeight)typeface.Weight, skStyle);
 
             return _cachedTypefaces.TryGetValue(key, out var skTypeface) ? skTypeface : TypefaceCache.Default;
+        }
+
+        private struct FontKey
+        {
+            public readonly string Name;
+            public readonly SKFontStyleSlant Slant;
+            public readonly SKFontStyleWeight Weight;
+
+            public FontKey(string name, SKFontStyleWeight weight, SKFontStyleSlant slant)
+            {
+                Name = name;
+                Slant = slant;
+                Weight = weight;
+            }
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+                hash = hash * 31 + Name.GetHashCode();
+                hash = hash * 31 + (int)Slant;
+                hash = hash * 31 + (int)Weight;
+
+                return hash;
+            }
+
+            public override bool Equals(object other)
+            {
+                return other is FontKey ? Equals((FontKey)other) : false;
+            }
+
+            private bool Equals(FontKey other)
+            {
+                return Name == other.Name && Slant == other.Slant &&
+                       Weight == other.Weight;
+            }
         }
     }
 }

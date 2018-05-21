@@ -28,8 +28,12 @@ namespace Avalonia.Direct2D1.Media
             textFormat.WordWrapping =
                 wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
-            TextLayout = new DWrite.TextLayout(factory, Text ?? string.Empty, textFormat, (float)constraint.Width,
-                (float)constraint.Height)
+            TextLayout = new DWrite.TextLayout(
+                             factory,
+                             Text ?? string.Empty,
+                             textFormat,
+                             (float)constraint.Width,
+                             (float)constraint.Height)
             {
                 TextAlignment = textAlignment.ToDirect2D()
             };

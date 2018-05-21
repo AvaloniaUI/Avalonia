@@ -9,7 +9,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media.Fonts
 {
-    internal static class FontFamilyLoader
+    public static class FontFamilyLoader
     {
         private static readonly IAssetLoader s_assetLoader;
 
@@ -18,7 +18,7 @@ namespace Avalonia.Media.Fonts
             s_assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
         }
 
-        public static IEnumerable<FontAsset> LoadFontAssets(FontFamilyKey fontFamilyKey)
+        public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey)
         {
             return fontFamilyKey.FileName != null
                 ? GetFontAssetsByFileName(fontFamilyKey.Location, fontFamilyKey.FileName)
@@ -30,38 +30,33 @@ namespace Avalonia.Media.Fonts
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>
-        private static IEnumerable<FontAsset> GetFontAssetsByLocation(Uri location)
+        private static IEnumerable<Uri> GetFontAssetsByLocation(Uri location)
         {
             var availableAssets = s_assetLoader.GetAssets(location);
 
             var locationPath = location.AbsolutePath;
 
-            var mathchingAssets = availableAssets.Where(x => x.AbsolutePath.Contains(locationPath) && x.AbsolutePath.EndsWith(".ttf"));
+            var matchingAssets = availableAssets.Where(x => x.absolutePath.Contains(locationPath) && x.absolutePath.EndsWith(".ttf"));
 
-            return mathchingAssets.Select(x => CreateFontAsset(GetAssetUri(x.AbsolutePath, x.Assembly)));
+            return matchingAssets.Select(x => GetAssetUri(x.absolutePath, x.assembly));
         }
 
         /// <summary>
         /// Searches for font assets at a given location and only accepts assets that fit to a given filename expression.
-        /// <para>Filenames can target multible files with * wildcard. For example "FontFile*.ttf"</para>
+        /// <para>File names can target multiple files with * wildcard. For example "FontFile*.ttf"</para>
         /// </summary>
         /// <param name="location"></param>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        private static IEnumerable<FontAsset> GetFontAssetsByFileName(Uri location, string fileName)
+        private static IEnumerable<Uri> GetFontAssetsByFileName(Uri location, string fileName)
         {
             var availableResources = s_assetLoader.GetAssets(location);
 
             var compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
 
-            var matchingResources = availableResources.Where(x => x.AbsolutePath.Contains(compareTo));
+            var matchingResources = availableResources.Where(x => x.absolutePath.Contains(compareTo));
 
-            return matchingResources.Select(x => CreateFontAsset(GetAssetUri(x.AbsolutePath, x.Assembly)));
-        }
-
-        private static FontAsset CreateFontAsset(Uri source)
-        {
-            return new FontAsset(source);
+            return matchingResources.Select(x => GetAssetUri(x.absolutePath, x.assembly));
         }
 
         /// <summary>

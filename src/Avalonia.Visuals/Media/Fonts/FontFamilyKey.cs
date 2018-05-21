@@ -7,9 +7,9 @@ using System.Linq;
 namespace Avalonia.Media.Fonts
 {
     /// <summary>
-    /// Represents an idetifier for a <see cref="FontFamily"/>
+    /// Represents an identifier for a <see cref="IFontFamily"/>
     /// </summary>
-    internal class FontFamilyKey
+    public class FontFamilyKey
     {
         /// <summary>
         /// Creates a new instance of <see cref="FontFamilyKey"/> and extracts <see cref="Location"/> and <see cref="FileName"/> from given <see cref="Uri"/>
@@ -21,10 +21,10 @@ namespace Avalonia.Media.Fonts
 
             if (source.AbsolutePath.Contains(".ttf"))
             {
-                var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", "");
+                var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", string.Empty);
                 var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
                 FileName = fileNameWithoutExtension + ".ttf";
-                Location = new Uri(source.OriginalString.Replace("." + FileName, ""), UriKind.RelativeOrAbsolute);
+                Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
             }
             else
             {
@@ -33,12 +33,12 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Location of stored <see cref="FontAsset"/> that belong to a <see cref="FontFamily"/>
+        /// Location of stored font asset that belongs to a <see cref="IFontFamily"/>
         /// </summary>
         public Uri Location { get; }
 
         /// <summary>
-        /// Optional filename for <see cref="FontAsset"/> that belong to a <see cref="FontFamily"/>
+        /// Optional filename for a font asset that belongs to a <see cref="IFontFamily"/>
         /// </summary>
         public string FileName { get; }
 

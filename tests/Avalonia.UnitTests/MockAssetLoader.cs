@@ -27,12 +27,12 @@ namespace Avalonia.UnitTests
             return new MemoryStream(Encoding.UTF8.GetBytes(_assets[uri]));
         }
         
-        public (Stream Stream, Assembly Assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
             return (Open(uri, baseUri), (Assembly)null);
         }
 
-        public IEnumerable<(string AbsolutePath, Assembly Assembly)> GetAssets(Uri location)
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
         {
             return _assets.Keys.Select(x => (x.AbsolutePath, Assembly.GetEntryAssembly()));
         }

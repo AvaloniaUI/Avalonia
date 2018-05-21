@@ -40,7 +40,6 @@ namespace Avalonia.Direct2D1.Media
                 _stream.Position = fileOffset;
 
                 fragmentStart = _stream.PositionPointer;
-
             }
         }
 

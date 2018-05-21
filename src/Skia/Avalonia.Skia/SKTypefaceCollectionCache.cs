@@ -15,22 +15,32 @@ namespace Avalonia.Skia
             s_cachedCollections = new ConcurrentDictionary<FontFamilyKey, SKTypefaceCollection>();
         }
 
-        public static SKTypefaceCollection GetOrAddTypefaceCollection(FontFamily fontFamily)
+        /// <summary>
+        /// Gets the or add typeface collection.
+        /// </summary>
+        /// <param name="fontFamily">The font family.</param>
+        /// <returns></returns>
+        public static SKTypefaceCollection GetOrAddTypefaceCollection(IFontFamily fontFamily)
         {
             return s_cachedCollections.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(fontFamily));
         }
 
-        private static SKTypefaceCollection CreateCustomFontCollection(FontFamily fontFamily)
+        /// <summary>
+        /// Creates the custom font collection.
+        /// </summary>
+        /// <param name="fontFamily">The font family.</param>
+        /// <returns></returns>
+        private static SKTypefaceCollection CreateCustomFontCollection(IFontFamily fontFamily)
         {
-            var assets = FontFamilyLoader.LoadFontAssets(fontFamily.Key);
+            var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key);
 
             var typeFaceCollection = new SKTypefaceCollection();
 
             var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
 
-            foreach (var fontAsset in assets)
+            foreach (var asset in fontAssets)
             {
-                var assetStream = assetLoader.Open(fontAsset.Source);
+                var assetStream = assetLoader.Open(asset);
 
                 var typeface = SKTypeface.FromStream(assetStream);
 

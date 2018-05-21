@@ -14,8 +14,11 @@ namespace Avalonia.Media
         /// <param name="fontSize">The font size, in DIPs.</param>
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
-        public Typeface(FontFamily fontFamily, double fontSize = 12, FontStyle style = FontStyle.Normal,
-        FontWeight weight = FontWeight.Normal)
+        public Typeface(
+            IFontFamily fontFamily, 
+            double fontSize = 12, 
+            FontStyle style = FontStyle.Normal,
+            FontWeight weight = FontWeight.Normal)
         {
             if (fontSize <= 0)
             {
@@ -44,12 +47,15 @@ namespace Avalonia.Media
             string fontFamilyName,
             double fontSize = 12,
             FontStyle style = FontStyle.Normal,
-            FontWeight weight = FontWeight.Normal) : this(new FontFamily(fontFamilyName), fontSize, style, weight) { }
+            FontWeight weight = FontWeight.Normal)
+            : this(new FontFamily(fontFamilyName), fontSize, style, weight)
+        {
+        }
 
         /// <summary>
         /// Gets the font family.
         /// </summary>
-        public FontFamily FontFamily { get; }
+        public IFontFamily FontFamily { get; }
 
         /// <summary>
         /// Gets the size of the font in DIPs.

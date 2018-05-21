@@ -8,10 +8,8 @@ using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
-    public class FontFamily
+    public class FontFamily : IFontFamily
     {
-        public static FontFamily Default => new FontFamily("Courier New");
-
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
         /// </summary>
@@ -47,56 +45,25 @@ namespace Avalonia.Media
             Key = new FontFamilyKey(source);
         }
 
-        /// <summary>
-        /// Gets the name of the font family.
-        /// </summary>
-        /// <value>
-        /// The name of the font family.
-        /// </value>
+        public static FontFamily Default => new FontFamily("Courier New");
+
         public string Name => FamilyNames.PrimaryFamilyName;
+      
+        FamilyNameCollection IFontFamily.FamilyNames => FamilyNames;
 
-        /// <summary>
-        /// Gets the family names.
-        /// </summary>
-        /// <value>
-        /// The family familyNames.
-        /// </value>
-        internal FamilyNameCollection FamilyNames
-        {
-            get;
-        }
+        FontFamilyKey IFontFamily.Key => Key;
 
-        /// <summary>
-        /// Gets the key for associated assets.
-        /// </summary>
-        /// <value>
-        /// The family familyNames.
-        /// </value>
+        internal FamilyNameCollection FamilyNames { get; }
+
         internal FontFamilyKey Key { get; }
 
         /// <summary>
-        /// Returns a <see cref="string" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="string" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if (Key != null)
-            {
-                return Key + "#" + Name;
-            }
-
-            return Name;
-        }
-
-        /// <summary>
-        /// Implicit conversion of FontFamily to string
+        /// Implicit conversion of string to FontFamily
         /// </summary>
         /// <param name="fontFamily"></param>
-        public static implicit operator string(FontFamily fontFamily)
+        public static implicit operator FontFamily(string fontFamily)
         {
-            return fontFamily.ToString();
+            return new FontFamily(fontFamily);
         }
 
         /// <summary>
@@ -116,21 +83,74 @@ namespace Avalonia.Media
             switch (segments.Length)
             {
                 case 1:
-                {
-                    var names = segments[0].Split(',')
-                        .Select(x => x.Trim())
-                        .Where(x => !string.IsNullOrWhiteSpace(x));
+                    {
+                        var names = segments[0].Split(',')
+                            .Select(x => x.Trim())
+                            .Where(x => !string.IsNullOrWhiteSpace(x));
                         return new FontFamily(names);
                     }
+
                 case 2:
                     {
                         return new FontFamily(segments[1], new Uri(segments[0], UriKind.RelativeOrAbsolute));
                     }
+
                 default:
                     {
                         throw new ArgumentException("Specified family is not supported.");
                     }
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="string" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="string" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if (Key != null)
+            {
+                return Key + "#" + FamilyNames;
+            }
+
+            return FamilyNames.ToString();
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = (int)2186146271;
+
+                hash = (hash * 15768619) ^ FamilyNames.GetHashCode();
+
+                if (Key != null)
+                {
+                    hash = (hash * 15768619) ^ Key.GetHashCode();
+                }
+
+                return hash;
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is FontFamily other)) return false;
+
+            if (Key != null)
+            {
+                return other.FamilyNames.Equals(FamilyNames) && other.Key.Equals(Key);
+            }
+
+            return other.FamilyNames.Equals(FamilyNames);
         }
     }
 }

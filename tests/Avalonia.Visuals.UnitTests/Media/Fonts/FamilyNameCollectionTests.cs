@@ -21,5 +21,13 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
         {
             Assert.Throws<ArgumentException>(() => new FamilyNameCollection(Enumerable.Empty<string>()));
         }
+
+        [Fact]
+        public void Should_Be_Equal()
+        {
+            var familyNames = new FamilyNameCollection(new[] { "Arial", "Times New Roman" });
+
+            Assert.Equal(new FamilyNameCollection(new[] { "Arial", "Times New Roman" }), familyNames);
+        }
     }
 }
