@@ -103,7 +103,6 @@ namespace Avalonia.Shared.PlatformSupport
                    Enumerable.Empty<(string AbsolutePath, Assembly Assembly)>();
         }
 
-
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
         {
             if (!uri.IsAbsoluteUri || uri.Scheme == "resm")
