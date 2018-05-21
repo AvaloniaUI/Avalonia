@@ -185,7 +185,7 @@ namespace Avalonia.LeakTests
                         Content = new TextBox()
                     };
 
-                    var binding = new Avalonia.Markup.Data.Binding
+                    var binding = new Avalonia.Data.Binding
                     {
                         Path = "Name"
                     };

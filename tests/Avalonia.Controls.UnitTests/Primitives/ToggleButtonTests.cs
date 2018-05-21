@@ -1,4 +1,5 @@
-﻿using Avalonia.Markup.Data;
+﻿using Avalonia.Data;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;

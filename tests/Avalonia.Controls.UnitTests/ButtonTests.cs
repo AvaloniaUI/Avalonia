@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Xunit;
 
