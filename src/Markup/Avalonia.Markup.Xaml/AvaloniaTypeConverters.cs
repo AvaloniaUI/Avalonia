@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml
             }
 
             // If the type has a static Parse method, use that.
-            if (ParseTypeConverter.HasParseMethod(type))
+            if (!type.IsPrimitive && ParseTypeConverter.HasParseMethod(type))
             {
                 result = typeof(ParseTypeConverter<>).MakeGenericType(type);
                 _converters.Add(type, result);

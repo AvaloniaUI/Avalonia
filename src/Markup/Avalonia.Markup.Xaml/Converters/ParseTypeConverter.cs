@@ -32,32 +32,45 @@ namespace Avalonia.Markup.Xaml.Converters
     /// <typeparam name="T">The type with the Parse method.</typeparam>
     public class ParseTypeConverter<T> : ParseTypeConverter
     {
-        private static MethodInfo _parseMethod;
-        private static bool _acceptsCulture;
+        private static Func<string, T> _parse;
+        private static Func<string, IFormatProvider, T> _parseWithFormat;
 
         static ParseTypeConverter()
         {
-            _parseMethod = typeof(T).GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
-            _acceptsCulture = _parseMethod != null;
+            var method = typeof(T).GetMethod("Parse", PublicStatic, null, StringIFormatProviderParameters, null);
 
-            if (_parseMethod == null)
+            if (method != null)
             {
-                _parseMethod = typeof(T).GetMethod("Parse", PublicStatic, null, StringParameter, null);
+                _parseWithFormat = (Func<string, IFormatProvider, T>)method
+                    .CreateDelegate(typeof(Func<string, IFormatProvider, T>));
+                return;
+            }
+
+            method = typeof(T).GetMethod("Parse", PublicStatic, null, StringParameter, null);
+
+            if (method != null)
+            {
+                _parse = (Func<string, T>)method.CreateDelegate(typeof(Func<string, T>));
             }
         }
 
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
-            return _parseMethod != null && sourceType == typeof(string);
+            return sourceType == typeof(string);
         }
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            if (value != null && _parseMethod != null)
+            if (value != null)
             {
-                return _acceptsCulture ?
-                    _parseMethod.Invoke(null, new[] { value, culture }) :
-                    _parseMethod.Invoke(null, new[] { value });
+                if (_parse != null)
+                {
+                    return _parse(value.ToString());
+                }
+                else if (_parseWithFormat != null)
+                {
+                    return _parseWithFormat(value.ToString(), culture);
+                }
             }
 
             return null;
