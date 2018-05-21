@@ -6,7 +6,7 @@ namespace Avalonia.Media.Immutable
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public struct ImmutableSolidColorBrush : ISolidColorBrush
+    public readonly struct ImmutableSolidColorBrush : ISolidColorBrush
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmutableSolidColorBrush"/> class.

@@ -15,5 +15,15 @@ namespace Avalonia.Controls.UnitTests
                 BindingMode.OneWay,
                 TextBlock.TextProperty.GetMetadata(typeof(TextBlock)).DefaultBindingMode);
         }
+
+        [Fact]
+        public void Default_Text_Value_Should_Be_EmptyString()
+        {
+            var textBlock = new TextBlock();
+
+            Assert.Equal(
+                "",
+                textBlock.Text);
+        }
     }
 }

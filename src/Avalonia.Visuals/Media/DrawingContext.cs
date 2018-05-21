@@ -19,7 +19,7 @@ namespace Avalonia.Media
             ? new Stack<TransformContainer>()
             : TransformStackPool.Pop();
 
-        struct TransformContainer
+        readonly struct TransformContainer
         {
             public readonly Matrix LocalTransform;
             public readonly Matrix ContainerTransform;
@@ -147,7 +147,7 @@ namespace Avalonia.Media
             }
         }
 
-        public struct PushedState : IDisposable
+        public readonly struct PushedState : IDisposable
         {
             private readonly int _level;
             private readonly DrawingContext _context;

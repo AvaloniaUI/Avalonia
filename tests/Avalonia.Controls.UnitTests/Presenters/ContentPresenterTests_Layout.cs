@@ -233,7 +233,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(48, 48, 0, 0), content.Bounds);
+            Assert.Equal(new Rect(32, 32, 0, 0), content.Bounds);
         }
     }
 }

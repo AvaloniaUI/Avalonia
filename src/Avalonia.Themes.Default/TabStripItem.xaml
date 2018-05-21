@@ -11,6 +11,8 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding Content}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           Padding="{TemplateBinding Padding}"/>
       </ControlTemplate>
     </Setter>

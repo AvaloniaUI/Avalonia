@@ -34,6 +34,7 @@ namespace Avalonia.Win32
         private bool _resizable = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
+        private WindowState _lastWindowState;
         private FramebufferManager _framebuffer;
         private OleDropTarget _dropTarget;
         private Size _minSize;
@@ -76,6 +77,8 @@ namespace Avalonia.Win32
         public Action<double> ScalingChanged { get; set; }
 
         public Action<Point> PositionChanged { get; set; }
+
+        public Action<WindowState> WindowStateChanged { get; set; }
 
         public Thickness BorderThickness
         {
@@ -245,19 +248,13 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);            
 
-            var systemDecorationStyles = UnmanagedMethods.WindowStyles.WS_OVERLAPPED
-                | UnmanagedMethods.WindowStyles.WS_CAPTION
-                | UnmanagedMethods.WindowStyles.WS_SYSMENU
-                | UnmanagedMethods.WindowStyles.WS_MINIMIZEBOX
-                | UnmanagedMethods.WindowStyles.WS_MAXIMIZEBOX;
-
-            style |= systemDecorationStyles;
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
 
             if (!value)
             {
-                style ^= systemDecorationStyles;
+                style ^= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
             }
 
             UnmanagedMethods.RECT windowRect;
@@ -293,6 +290,21 @@ namespace Avalonia.Win32
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
 
             _decorated = value;
+
+            if(_decorated)
+            {
+                if (_resizable)
+                {
+                    // If we switch decorations back on we need to restore WS_SizeFrame.
+                    _resizable = false;
+                    CanResize(true);
+                }
+                else
+                {
+                    _resizable = true;
+                    CanResize(false);
+                }
+            }
         }
 
         public void Invalidate(Rect rect)
@@ -617,12 +629,23 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
+                    var size = (UnmanagedMethods.SizeCommand)wParam;
+
                     if (Resized != null &&
-                        (wParam == (IntPtr)UnmanagedMethods.SizeCommand.Restored ||
-                         wParam == (IntPtr)UnmanagedMethods.SizeCommand.Maximized))
+                        (size == UnmanagedMethods.SizeCommand.Restored ||
+                         size == UnmanagedMethods.SizeCommand.Maximized))
                     {
                         var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
                         Resized(clientSize / Scaling);
+                    }
+
+                    var windowState = size == SizeCommand.Maximized ? WindowState.Maximized
+                        : (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
+
+                    if (windowState != _lastWindowState)
+                    {
+                        _lastWindowState = windowState;
+                        WindowStateChanged?.Invoke(windowState);
                     }
 
                     return IntPtr.Zero;
@@ -654,6 +677,7 @@ namespace Avalonia.Win32
                     (Screen as ScreenImpl)?.InvalidateScreensCache();
                     return IntPtr.Zero;
             }
+
 #if USE_MANAGED_DRAG
 
             if (_managedDrag.PreprocessInputEvent(ref e))
@@ -863,14 +887,18 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-            
-            if (value)
-                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
-            else
-                style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
-            
-            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            if (_decorated)
+            {
+                var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+
+                if (value)
+                    style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+                else
+                    style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+
+                UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            }
+
             _resizable = value;
         }
     }

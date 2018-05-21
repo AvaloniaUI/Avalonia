@@ -3,6 +3,7 @@
 
 using Avalonia;
 using Avalonia.Controls.Utils;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -99,7 +100,7 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return MeasureOverrideImpl(availableSize, Child, Padding, BorderThickness);
+            return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness);
         }
 
         /// <summary>
@@ -109,32 +110,9 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (Child != null)
-            {
-                var padding = Padding + BorderThickness;
-                Child.Arrange(new Rect(finalSize).Deflate(padding));
-            }
-
             _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
 
-            return finalSize;
-        }
-
-        internal static Size MeasureOverrideImpl(
-            Size availableSize,
-            IControl child,
-            Thickness padding,
-            Thickness borderThickness)
-        {
-            padding += borderThickness;
-
-            if (child != null)
-            {
-                child.Measure(availableSize.Deflate(padding));
-                return child.DesiredSize.Inflate(padding);
-            }
-
-            return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
+            return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
         }
     }
 }
