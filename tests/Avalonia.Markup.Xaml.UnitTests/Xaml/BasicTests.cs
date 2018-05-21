@@ -4,6 +4,7 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Styling;

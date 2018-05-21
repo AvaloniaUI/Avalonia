@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;

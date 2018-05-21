@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Avalonia.Markup.Data
+namespace Avalonia.Data
 {
     /// <summary>
     /// Defines the mode of a <see cref="RelativeSource"/> object.

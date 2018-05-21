@@ -7,13 +7,12 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Markup.Data
+namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding.

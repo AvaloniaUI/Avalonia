@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.UnitTests;

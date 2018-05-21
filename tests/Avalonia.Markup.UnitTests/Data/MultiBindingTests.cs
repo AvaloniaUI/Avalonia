@@ -11,7 +11,7 @@ using Avalonia.Controls;
 using Xunit;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
-using Avalonia.Markup.Data;
+using Avalonia.Data;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
