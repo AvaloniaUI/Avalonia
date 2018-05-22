@@ -72,7 +72,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// </param>
         /// <returns>A stream containing the asset contents.</returns>
         /// <exception cref="T:System.IO.FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
         public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).stream;
 
@@ -90,7 +90,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// The stream containing the asset contents together with the assembly.
         /// </returns>
         /// <exception cref="T:System.IO.FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
         public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
@@ -98,7 +98,7 @@ namespace Avalonia.Shared.PlatformSupport
 
             if (asset == null)
             {
-                throw new FileNotFoundException($"The resource {uri} could not be found.");
+                throw new FileNotFoundException($"The asset {uri} could not be found.");
             }
 
             return (asset.GetStream(), asset.Assembly);
@@ -113,6 +113,8 @@ namespace Avalonia.Shared.PlatformSupport
         public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
         {
             var assembly = GetAssembly(location);
+
+            var availableAssets = assembly?.Assets;
 
             return assembly?.Assets.Where(x => x.Key.Contains(location.AbsolutePath))
                        .Select(x => (x.Key, x.Value.Assembly)) ??
@@ -129,7 +131,7 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     throw new ArgumentException(
                         "No default assembly, entry assembly or explicit assembly specified; " +
-                        "don't know where to look up for the resource, try specifiyng assembly explicitly.");
+                        "don't know where to look up for the asset, try specifiyng assembly explicitly.");
                 }
 
                 IAssetDescriptor rv;
