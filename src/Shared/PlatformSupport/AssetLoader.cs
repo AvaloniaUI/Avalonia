@@ -10,6 +10,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Shared.PlatformSupport
 {
+    /// <inheritdoc />
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
@@ -34,21 +35,26 @@ namespace Avalonia.Shared.PlatformSupport
                 _defaultAssembly = new AssemblyDescriptor(assembly);
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Sets the default assembly from which to load assets for which no assembly is specified.
+        /// We need a way to override the default assembly selected by the host platform
+        /// because right now it is selecting the wrong one for PCL based Apps. The 
+        /// AssetLoader needs a refactor cause right now it lives in 3+ platforms which 
+        /// can all be loaded on Windows. 
         /// </summary>
-        /// <param name="assembly">The default assembly.</param>
+        /// <param name="assembly"></param>
         public void SetDefaultAssembly(Assembly assembly)
         {
             _defaultAssembly = new AssemblyDescriptor(assembly);
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Checks if an asset with the specified URI exists.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
-        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// A base URI to use if <paramref name="uri" /> is relative.
         /// </param>
         /// <returns>True if the asset could be found; otherwise false.</returns>
         public bool Exists(Uri uri, Uri baseUri = null)
@@ -56,34 +62,37 @@ namespace Avalonia.Shared.PlatformSupport
             return GetAsset(uri, baseUri) != null;
         }
 
+        /// <inheritdoc />
         /// <summary>
-        /// Opens the resource with the requested URI.
+        /// Opens the asset with the requested URI.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
-        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// A base URI to use if <paramref name="uri" /> is relative.
         /// </param>
-        /// <returns>A stream containing the resource contents.</returns>
-        /// <exception cref="FileNotFoundException">
+        /// <returns>A stream containing the asset contents.</returns>
+        /// <exception cref="T:System.IO.FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).Item1;
-        
+        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).stream;
+
+
+        /// <inheritdoc />
         /// <summary>
-        /// Opens the resource with the requested URI and returns the resource string and the
-        /// assembly containing the resource.
+        /// Opens the asset with the requested URI and returns the asset stream and the
+        /// assembly containing the asset.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
-        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// A base URI to use if <paramref name="uri" /> is relative.
         /// </param>
         /// <returns>
-        /// The stream containing the resource contents together with the assembly.
+        /// The stream containing the asset contents together with the assembly.
         /// </returns>
-        /// <exception cref="FileNotFoundException">
+        /// <exception cref="T:System.IO.FileNotFoundException">
         /// The resource was not found.
         /// </exception>
-        public Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
             var asset = GetAsset(uri, baseUri);
 
@@ -92,7 +101,22 @@ namespace Avalonia.Shared.PlatformSupport
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
             }
 
-            return Tuple.Create(asset.GetStream(), asset.Assembly);
+            return (asset.GetStream(), asset.Assembly);
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Gets all assets at a specific location.
+        /// </summary>
+        /// <param name="location">The location of assets.</param>
+        /// <returns>A tuple containing the absolute path to the resource and the owner assembly</returns>
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
+        {
+            var assembly = GetAssembly(location);
+
+            return assembly?.Assets.Where(x => x.Key.Contains(location.AbsolutePath))
+                       .Select(x => (x.Key, x.Value.Assembly)) ??
+                   Enumerable.Empty<(string AbsolutePath, Assembly Assembly)>();
         }
 
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
@@ -110,8 +134,8 @@ namespace Avalonia.Shared.PlatformSupport
 
                 IAssetDescriptor rv;
 
-                var resourceKey = uri.AbsolutePath;
-                asm.Resources.TryGetValue(resourceKey, out rv);
+                var assetKey = uri.AbsolutePath;
+                asm.Assets.TryGetValue(assetKey, out rv);
                 return rv;
             }
             throw new ArgumentException($"Invalid uri, see https://github.com/AvaloniaUI/Avalonia/issues/282#issuecomment-166982104", nameof(uri));
@@ -122,9 +146,8 @@ namespace Avalonia.Shared.PlatformSupport
             if (uri != null)
             {
                 var qs = ParseQueryString(uri);
-                string assemblyName;
 
-                if (qs.TryGetValue("assembly", out assemblyName))
+                if (qs.TryGetValue("assembly", out var assemblyName))
                 {
                     return GetAssembly(assemblyName);
                 }
@@ -140,8 +163,7 @@ namespace Avalonia.Shared.PlatformSupport
                 return _defaultAssembly;
             }
 
-            AssemblyDescriptor rv;
-            if (!AssemblyNameCache.TryGetValue(name, out rv))
+            if (!AssemblyNameCache.TryGetValue(name, out var rv))
             {
                 var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
@@ -208,14 +230,14 @@ namespace Avalonia.Shared.PlatformSupport
 
                 if (assembly != null)
                 {
-                    Resources = assembly.GetManifestResourceNames()
+                    Assets = assembly.GetManifestResourceNames()
                         .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
                     Name = assembly.GetName().Name;
                 }
             }
 
             public Assembly Assembly { get; }
-            public Dictionary<string, IAssetDescriptor> Resources { get; }
+            public Dictionary<string, IAssetDescriptor> Assets { get; }
             public string Name { get; }
         }
     }

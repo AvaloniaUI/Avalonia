@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.UnitTests
@@ -27,10 +26,16 @@ namespace Avalonia.UnitTests
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(_assets[uri]));
         }
-        
-        public Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+
+        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
-            return Tuple.Create(Open(uri, baseUri), (Assembly)null);
+            return (Open(uri, baseUri), (Assembly)null);
+        }
+
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
+        {
+            return _assets.Keys.Where(x => x.AbsolutePath.Contains(location.AbsolutePath))
+                .Select(x => (x.AbsolutePath, Assembly.GetEntryAssembly()));
         }
 
         public void SetDefaultAssembly(Assembly asm)
