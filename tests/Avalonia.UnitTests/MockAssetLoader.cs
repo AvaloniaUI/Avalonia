@@ -32,9 +32,9 @@ namespace Avalonia.UnitTests
             return (Open(uri, baseUri), (Assembly)null);
         }
 
-        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri)
         {
-            return _assets.Keys.Where(x => x.AbsolutePath.Contains(location.AbsolutePath))
+            return _assets.Keys.Where(x => x.AbsolutePath.Contains(uri.AbsolutePath))
                 .Select(x => (x.AbsolutePath, Assembly.GetEntryAssembly()));
         }
 

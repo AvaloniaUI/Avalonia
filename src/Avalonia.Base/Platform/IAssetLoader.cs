@@ -62,10 +62,10 @@ namespace Avalonia.Platform
         (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null);
 
         /// <summary>
-        /// Gets all assets at a specific location.
+        /// Gets all assets of a folder and subfolders that match specified uri.
         /// </summary>
-        /// <param name="location">The location of assets.</param>
-        /// <returns>A tuple containing the absolute path to the asset and the owner assembly</returns>
-        IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location);
+        /// <param name="uri">The URI.</param>
+        /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
+        IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri);
     }
 }
