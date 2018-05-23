@@ -19,11 +19,6 @@ namespace Avalonia.Direct2D1.Media
             s_installedFontCollection = s_factory.GetSystemFontCollection(false);
         }
 
-        public static SharpDX.DirectWrite.FontCollection GetOrAddFontCollection(IFontFamily fontFamily)
-        {
-            return fontFamily.Key == null ? s_installedFontCollection : s_cachedCollections.GetOrAdd(fontFamily.Key, CreateFontCollection);
-        }
-
         public static SharpDX.DirectWrite.TextFormat GetTextFormat(Typeface typeface)
         {
             var fontFamily = typeface.FontFamily;
@@ -33,8 +28,13 @@ namespace Avalonia.Direct2D1.Media
             // Should this be cached?
             foreach (var familyName in fontFamily.FamilyNames)
             {
-                if (!fontCollection.FindFamilyName(familyName, out _)) continue;
+                if (!fontCollection.FindFamilyName(familyName, out _))
+                {
+                    continue;
+                }
+
                 fontFamilyName = familyName;
+
                 break;
             }
 
@@ -46,6 +46,11 @@ namespace Avalonia.Direct2D1.Media
                 (SharpDX.DirectWrite.FontStyle)typeface.Style, 
                 SharpDX.DirectWrite.FontStretch.Normal, 
                 (float)typeface.FontSize);
+        }
+
+        private static SharpDX.DirectWrite.FontCollection GetOrAddFontCollection(FontFamily fontFamily)
+        {
+            return fontFamily.Key == null ? s_installedFontCollection : s_cachedCollections.GetOrAdd(fontFamily.Key, CreateFontCollection);
         }
 
         private static SharpDX.DirectWrite.FontCollection CreateFontCollection(FontFamilyKey key)

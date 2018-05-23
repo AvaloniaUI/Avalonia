@@ -15,7 +15,7 @@ namespace Avalonia.Media
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
         public Typeface(
-            IFontFamily fontFamily, 
+            FontFamily fontFamily, 
             double fontSize = 12, 
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal)
@@ -55,7 +55,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the font family.
         /// </summary>
-        public IFontFamily FontFamily { get; }
+        public FontFamily FontFamily { get; }
 
         /// <summary>
         /// Gets the size of the font in DIPs.

@@ -20,7 +20,7 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="fontFamily">The font family.</param>
         /// <returns></returns>
-        public static SKTypefaceCollection GetOrAddTypefaceCollection(IFontFamily fontFamily)
+        public static SKTypefaceCollection GetOrAddTypefaceCollection(FontFamily fontFamily)
         {
             return s_cachedCollections.GetOrAdd(fontFamily.Key, x => CreateCustomFontCollection(fontFamily));
         }
@@ -30,7 +30,7 @@ namespace Avalonia.Skia
         /// </summary>
         /// <param name="fontFamily">The font family.</param>
         /// <returns></returns>
-        private static SKTypefaceCollection CreateCustomFontCollection(IFontFamily fontFamily)
+        private static SKTypefaceCollection CreateCustomFontCollection(FontFamily fontFamily)
         {
             var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key);
 

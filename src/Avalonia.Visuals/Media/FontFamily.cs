@@ -8,7 +8,7 @@ using Avalonia.Media.Fonts;
 
 namespace Avalonia.Media
 {
-    public class FontFamily : IFontFamily
+    public class FontFamily
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
@@ -45,17 +45,34 @@ namespace Avalonia.Media
             Key = new FontFamilyKey(source);
         }
 
+        /// <summary>
+        /// Represents the default font family
+        /// </summary>
         public static FontFamily Default => new FontFamily("Courier New");
 
+        /// <summary>
+        /// Gets the primary family name of the font family.
+        /// </summary>
+        /// <value>
+        /// The primary name of the font family.
+        /// </value>
         public string Name => FamilyNames.PrimaryFamilyName;
-      
-        FamilyNameCollection IFontFamily.FamilyNames => FamilyNames;
 
-        FontFamilyKey IFontFamily.Key => Key;
+        /// <summary>
+        /// Gets the family names.
+        /// </summary>
+        /// <value>
+        /// The family familyNames.
+        /// </value>
+        public FamilyNameCollection FamilyNames { get; }
 
-        internal FamilyNameCollection FamilyNames { get; }
-
-        internal FontFamilyKey Key { get; }
+        /// <summary>
+        /// Gets the key for associated assets.
+        /// </summary>
+        /// <value>
+        /// The family familyNames.
+        /// </value>
+        public FontFamilyKey Key { get; }
 
         /// <summary>
         /// Implicit conversion of string to FontFamily
@@ -76,7 +93,10 @@ namespace Avalonia.Media
         /// </exception>
         public static FontFamily Parse(string s)
         {
-            if (string.IsNullOrEmpty(s)) throw new ArgumentException("Specified family is not supported.");
+            if (string.IsNullOrEmpty(s))
+            {
+                throw new ArgumentException("Specified family is not supported.");
+            }
 
             var segments = s.Split('#');
 
@@ -143,7 +163,10 @@ namespace Avalonia.Media
 
         public override bool Equals(object obj)
         {
-            if (!(obj is FontFamily other)) return false;
+            if (!(obj is FontFamily other))
+            {
+                return false;
+            }
 
             if (Key != null)
             {
