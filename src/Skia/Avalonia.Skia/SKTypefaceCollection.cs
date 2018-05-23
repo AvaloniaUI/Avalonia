@@ -6,8 +6,6 @@ namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-       
-
         private readonly ConcurrentDictionary<FontKey, SKTypeface> _cachedTypefaces =
             new ConcurrentDictionary<FontKey, SKTypeface>();
 
