@@ -12,12 +12,6 @@
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Assets\Fonts\SourceSansPro-Bold.ttf" />
-    <None Remove="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
-    <None Remove="Assets\Fonts\SourceSansPro-Italic.ttf" />
-    <None Remove="Assets\Fonts\SourceSansPro-Regular.ttf" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
