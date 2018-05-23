@@ -57,21 +57,21 @@ namespace Avalonia.Shared.PlatformSupport
         }
 
         /// <summary>
-        /// Opens the resource with the requested URI.
+        /// Opens the asset with the requested URI.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
-        /// <returns>A stream containing the resource contents.</returns>
+        /// <returns>A stream containing the asset contents.</returns>
         /// <exception cref="FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
         public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).Item1;
-        
+
         /// <summary>
-        /// Opens the resource with the requested URI and returns the resource string and the
-        /// assembly containing the resource.
+        /// Opens the asset with the requested URI and returns the asset stream and the
+        /// assembly containing the asset.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
@@ -81,9 +81,9 @@ namespace Avalonia.Shared.PlatformSupport
         /// The stream containing the resource contents together with the assembly.
         /// </returns>
         /// <exception cref="FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
-        public Tuple<Stream, Assembly> OpenAndGetAssembly(Uri uri, Uri baseUri = null)
+        public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
             var asset = GetAsset(uri, baseUri);
 
@@ -92,7 +92,21 @@ namespace Avalonia.Shared.PlatformSupport
                 throw new FileNotFoundException($"The resource {uri} could not be found.");
             }
 
-            return Tuple.Create(asset.GetStream(), asset.Assembly);
+            return (asset.GetStream(), asset.Assembly);
+        }
+
+        /// <summary>
+        /// Gets all assets of a folder and subfolders that match specified uri.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri)
+        {
+            var assembly = GetAssembly(uri);
+
+            return assembly?.Resources.Where(x => x.Key.Contains(uri.AbsolutePath))
+                       .Select(x => (x.Key, x.Value.Assembly)) ??
+                   Enumerable.Empty<(string AbsolutePath, Assembly Assembly)>();
         }
 
         private IAssetDescriptor GetAsset(Uri uri, Uri baseUri)
