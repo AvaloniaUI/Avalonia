@@ -57,21 +57,21 @@ namespace Avalonia.Shared.PlatformSupport
         }
 
         /// <summary>
-        /// Opens the resource with the requested URI.
+        /// Opens the asset with the requested URI.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
-        /// <returns>A stream containing the resource contents.</returns>
+        /// <returns>A stream containing the asset contents.</returns>
         /// <exception cref="FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
-        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).stream;
+        public Stream Open(Uri uri, Uri baseUri = null) => OpenAndGetAssembly(uri, baseUri).Item1;
 
         /// <summary>
-        /// Opens the resource with the requested URI and returns the resource string and the
-        /// assembly containing the resource.
+        /// Opens the asset with the requested URI and returns the asset stream and the
+        /// assembly containing the asset.
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <param name="baseUri">
@@ -81,7 +81,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// The stream containing the resource contents together with the assembly.
         /// </returns>
         /// <exception cref="FileNotFoundException">
-        /// The resource was not found.
+        /// The asset could not be found.
         /// </exception>
         public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
@@ -95,11 +95,17 @@ namespace Avalonia.Shared.PlatformSupport
             return (asset.GetStream(), asset.Assembly);
         }
 
-        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
+        /// <summary>
+        /// Gets all assets of a folder and subfolders that match specified uri.
+        /// </summary>
+        /// <param name="uri">The URI.</param>
+        /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri)
         {
-            var assembly = GetAssembly(location);
+            var assembly = GetAssembly(uri);
 
-            return assembly?.Resources.Select(x => (x.Key, x.Value.Assembly)) ??
+            return assembly?.Resources.Where(x => x.Key.Contains(uri.AbsolutePath))
+                       .Select(x => (x.Key, x.Value.Assembly)) ??
                    Enumerable.Empty<(string AbsolutePath, Assembly Assembly)>();
         }
 
@@ -130,8 +136,9 @@ namespace Avalonia.Shared.PlatformSupport
             if (uri != null)
             {
                 var qs = ParseQueryString(uri);
+                string assemblyName;
 
-                if (qs.TryGetValue("assembly", out var assemblyName))
+                if (qs.TryGetValue("assembly", out assemblyName))
                 {
                     return GetAssembly(assemblyName);
                 }
@@ -147,7 +154,8 @@ namespace Avalonia.Shared.PlatformSupport
                 return _defaultAssembly;
             }
 
-            if (!AssemblyNameCache.TryGetValue(name, out var rv))
+            AssemblyDescriptor rv;
+            if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
                 var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);

@@ -26,15 +26,16 @@ namespace Avalonia.UnitTests
         {
             return new MemoryStream(Encoding.UTF8.GetBytes(_assets[uri]));
         }
-        
+
         public (Stream stream, Assembly assembly) OpenAndGetAssembly(Uri uri, Uri baseUri = null)
         {
             return (Open(uri, baseUri), (Assembly)null);
         }
 
-        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri location)
+        public IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri)
         {
-            return _assets.Keys.Select(x => (x.AbsolutePath, Assembly.GetEntryAssembly()));
+            return _assets.Keys.Where(x => x.AbsolutePath.Contains(uri.AbsolutePath))
+                .Select(x => (x.AbsolutePath, Assembly.GetEntryAssembly()));
         }
 
         public void SetDefaultAssembly(Assembly asm)

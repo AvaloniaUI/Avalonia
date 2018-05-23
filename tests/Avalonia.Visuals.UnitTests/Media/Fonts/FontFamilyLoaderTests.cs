@@ -11,20 +11,50 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 {
     public class FontFamilyLoaderTests
     {
-        [Fact]
-        public void Should_Load_Single_FontResource()
-        {
-            const string resourcePath = "resm:Avalonia.Visuals.UnitTests.Assets.MyFont.ttf?assembly=Avalonia.Visuals.UnitTests#MyFont";
+        private const string fontName = "#MyFont";
+        private const string assembly = "?assembly=Avalonia.Visuals.UnitTests";
+        private const string assetLocation = "resm:Avalonia.Visuals.UnitTests.Assets";
 
-            using (StartWithResources((resourcePath, "MyFont.ttf")))
+        [Fact]
+        public void Should_Load_Single_FontAsset()
+        {
+            const string fontAsset = assetLocation + ".MyFont-Regular.ttf" + assembly + fontName;
+
+            using (StartWithResources((fontAsset, "AssetData")))
             {
-                var source = new Uri(resourcePath, UriKind.RelativeOrAbsolute);
+                var source = new Uri(fontAsset, UriKind.RelativeOrAbsolute);
 
                 var key = new FontFamilyKey(source);
 
-                var resources = FontFamilyLoader.LoadFontAssets(key);
+                var fontAssets = FontFamilyLoader.LoadFontAssets(key);
 
-                Assert.Single(resources);
+                Assert.Single(fontAssets);
+            }
+        }
+
+        [Fact]
+        public void Should_Load_Matching_Assets()
+        {
+            const string assetMyFontRegular = assetLocation + ".MyFont-Regular.ttf" + assembly + fontName;
+            const string assetMyFontBold = assetLocation + ".MyFont-Bold.ttf" + assembly + fontName;
+            const string assetYourFont = assetLocation + ".YourFont.ttf" + assembly + fontName;
+
+            var fontLocations = new[]
+            {
+                (assetMyFontRegular, "AssetData"),
+                (assetMyFontBold, "AssetData"),
+                (assetYourFont, "AssetData")
+            };
+
+            using (StartWithResources(fontLocations))
+            {
+                var source = new Uri(assetLocation + ".MyFont-*.ttf", UriKind.RelativeOrAbsolute);
+
+                var key = new FontFamilyKey(source);
+
+                var fontAssets = FontFamilyLoader.LoadFontAssets(key);
+
+                Assert.Equal(2, fontAssets.Count());
             }
         }
 
