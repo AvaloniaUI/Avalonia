@@ -424,7 +424,6 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":empty", items == null || items.Count() == 0);
             PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
 
-
             var incc = items as INotifyCollectionChanged;
 
             if (incc != null)
