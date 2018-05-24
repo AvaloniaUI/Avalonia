@@ -364,6 +364,7 @@ namespace Avalonia.Controls
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
+            PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
         }
 
         /// <summary>
@@ -421,6 +422,8 @@ namespace Avalonia.Controls
         private void SubscribeToItems(IEnumerable items)
         {
             PseudoClasses.Set(":empty", items == null || items.Count() == 0);
+            PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
+
 
             var incc = items as INotifyCollectionChanged;
 
