@@ -4,6 +4,5 @@ namespace Avalonia.Animation
     {
         AvaloniaProperty Property { get; set; }
         object Value { get; set; }
-
     }
 }

@@ -8,14 +8,18 @@ using Avalonia.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Reflection;
+using System.Linq;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : IDisposable, IAnimation
+    public class Animation : AvaloniaList<KeyFrame>, IDisposable, IAnimation
     {
+
+        private bool _isChildrenChanged = false;
         private List<IDisposable> _subscription = new List<IDisposable>();
         public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
@@ -54,23 +58,44 @@ namespace Avalonia.Animation
         /// </summary> 
         public Easing Easing { get; set; } = new LinearEasing();
 
-        /// <summary>
-        /// A list of <see cref="KeyFrame"/> objects.
-        /// </summary>
-        [Content]
-        public AvaloniaList<KeyFrame> Children { get; set; } = new AvaloniaList<KeyFrame>();
 
         public Animation()
         {
-            InterpretKeyframes();
+            this.CollectionChanged += delegate { _isChildrenChanged = true; };
+        }
+
+        public Animation(IEnumerable<KeyFrame> items) : base(items)
+        {
+            this.CollectionChanged += delegate { _isChildrenChanged = true; };
+        }
+
+        public Animation(params KeyFrame[] items) : base(items)
+        {
+            this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
 
         private void InterpretKeyframes()
         {
-            foreach (var keyframe in Children)
+            var handlerList = new List<Type>();
+
+            foreach (var keyframe in this)
             {
-                
+                foreach (var setter in keyframe)
+                {
+
+                    var custAttr = setter.GetType()
+                                         .GetCustomAttributes()
+                                         .Where(p => p.GetType() == typeof(AnimatorAttribute));
+
+                    if (!custAttr.Any())
+                        throw new InvalidProgramException($"Type {setter.GetType()} doesn't have Animator attribute.");
+
+                    var match = (AnimatorAttribute)custAttr.First();
+                    if (!handlerList.Contains(match.HandlerType))
+                        handlerList.Add(match.HandlerType);
+                }
             }
+
         }
 
         /// <summary>
@@ -87,6 +112,12 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
+            if (_isChildrenChanged)
+            {
+                InterpretKeyframes();
+                _isChildrenChanged = false;
+            }
+
             foreach (IAnimator keyframes in _animators)
             {
                 _subscription.Add(keyframes.Apply(this, control, matchObs));

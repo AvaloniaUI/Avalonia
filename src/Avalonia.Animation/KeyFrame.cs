@@ -12,11 +12,23 @@ namespace Avalonia.Animation
     /// Stores data regarding a specific key
     /// point and value in an animation.
     /// </summary>
-    public class KeyFrame
+    public class KeyFrame : AvaloniaList<IAnimationSetter>
     {
         internal bool timeSpanSet, cueSet;
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
+
+        public KeyFrame()
+        {
+        }
+
+        public KeyFrame(IEnumerable<IAnimationSetter> items) : base(items)
+        {
+        }
+
+        public KeyFrame(params IAnimationSetter[] items) : base(items)
+        {
+        }
 
         /// <summary>
         /// Gets or sets the key time of this <see cref="KeyFrame"/>.
@@ -60,13 +72,15 @@ namespace Avalonia.Animation
             }
         }
 
-        /// <summary>
-        /// The keyframe's target value.
-        /// </summary>
-        public object Value { get; set; }
-
-        [Content]
-        public AvaloniaList<IAnimationSetter> Children { get; set; } = new AvaloniaList<IAnimationSetter>();
 
     }
+
+    public class InternalKeyFrame
+    {
+        public Cue Cue { get; set; }
+        public TimeSpan KeyTime { get; set; }
+        internal bool timeSpanSet, cueSet;
+        public object Value { get; set; }
+    }
+
 }

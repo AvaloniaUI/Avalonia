@@ -40,81 +40,25 @@
         <Setter Property="Height" Value="100"/>
         <Setter Property="Child" Value="{StaticResource Acorn}"/>
       </Style>
-      <Style Selector="Border.Rect1:pointerover">
+      <Style Selector="Border.Rect1">
         <Style.Animations>
           <Animation Duration="0:0:2.5" 
                      RepeatBehavior="Repeat"
-                     RepeatCount="4" FillMode="None" PlaybackDirection="AlternateReverse" Easing="SineEaseInOut">
-            <TransformKeyFrames Property="RotateTransform.Angle">
-              <KeyFrame Cue="0%" Value="0"/>
-              <KeyFrame Cue="100%" Value="0"/>
-              <KeyFrame Cue="20%" Value="45"/>
-              <KeyFrame Cue="80%" Value="120"/>
-            </TransformKeyFrames>
-            <TransformKeyFrames Property="ScaleTransform.ScaleX">
-              <KeyFrame Cue="0%" Value="1"/>
-              <KeyFrame Cue="50%" Value="1.5"/>
-              <KeyFrame Cue="100%" Value="1"/>
-            </TransformKeyFrames>
+                     RepeatCount="4" FillMode="None"
+                     PlaybackDirection="AlternateReverse"
+                     Easing="SineEaseInOut">
+            <KeyFrame Cue="0%">
+              <DoubleSetter Property="Opacity" Value="0"/>
+            </KeyFrame> 
+            <KeyFrame Cue="0%">
+              <TransformSetter Property="RotateTransform.Angle" Value="360"/>
+            </KeyFrame> 
+            <KeyFrame Cue="100%">
+              <DoubleSetter Property="Opacity" Value="1"/>
+            </KeyFrame> 
           </Animation>
         </Style.Animations>
-      </Style>
-      <Style Selector="Border.Rect2:pointerover">
-        <Style.Animations>
-          <Animation Duration="0:0:0.5" Easing="SineEaseInOut">
-            <TransformKeyFrames Property="ScaleTransform.ScaleX">
-              <KeyFrame Cue="0%" Value="1"/>
-              <KeyFrame Cue="50%" Value="0.8"/>
-              <KeyFrame Cue="100%" Value="1"/>
-            </TransformKeyFrames>
-            <TransformKeyFrames Property="ScaleTransform.ScaleY">
-              <KeyFrame Cue="0%" Value="1"/>
-              <KeyFrame Cue="50%" Value="0.8"/>
-              <KeyFrame Cue="100%" Value="1"/>
-            </TransformKeyFrames>
-          </Animation>
-        </Style.Animations>
-      </Style>
-      <Style Selector="Border.Rect3">
-        <Setter Property="Child" Value="{StaticResource Heart}"/>
-        <Style.Animations>
-          <Animation Duration="0:0:0.5" Easing="QuadraticEaseInOut" RepeatBehavior="Loop">
-            <TransformKeyFrames Property="ScaleTransform.ScaleX">
-              <KeyFrame Cue="0%" Value="1"/>
-              <KeyFrame Cue="50%" Value="0.8"/>
-              <KeyFrame Cue="100%" Value="1"/>
-            </TransformKeyFrames>
-            <TransformKeyFrames Property="ScaleTransform.ScaleY">
-              <KeyFrame Cue="0%" Value="1"/>
-              <KeyFrame Cue="50%" Value="0.8"/>
-              <KeyFrame Cue="100%" Value="1"/>
-            </TransformKeyFrames>
-          </Animation>
-        </Style.Animations>
-      </Style>
-      <Style Selector="Border.Rect4:pointerover">
-        <Style.Animations>
-          <Animation Duration="0:0:3" Easing="BounceEaseInOut">
-            <TransformKeyFrames Property="TranslateTransform.Y">
-              <KeyFrame Cue="0%" Value="0"/>
-              <KeyFrame Cue="48%" Value="-100"/>
-              <KeyFrame Cue="100%" Value="0"/>
-            </TransformKeyFrames>
-          </Animation>
-        </Style.Animations>
-      </Style>
-      <Style Selector="Border.Rect5:pointerover">
-        <Style.Animations>
-          <Animation Duration="0:0:3" Easing="CircularEaseInOut">
-            <TransformKeyFrames Property="SkewTransform.AngleX">
-              <KeyFrame Cue="0%" Value="0"/>
-              <KeyFrame Cue="25%" Value="-20"/>
-              <KeyFrame Cue="75%" Value="20"/>
-              <KeyFrame Cue="100%" Value="0"/>
-            </TransformKeyFrames>
-          </Animation>
-        </Style.Animations>
-      </Style>
+      </Style> 
     </Styles>
   </UserControl.Styles>
   <Grid>
