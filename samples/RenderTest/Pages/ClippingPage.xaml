@@ -4,17 +4,16 @@
     <Grid.Styles>
       <Styles>
         <Style Selector="Border#clipped :pointerover">
-          <Setter Property="Border.Background" Value="Crimson"/>   
+          <Setter Property="Border.Background" Value="Crimson"/>
         </Style>
         <Style Selector="Border#clipChild">
-          <!-- <Style.Animations>
+          <Style.Animations>
             <Animation Duration="0:0:2" RepeatBehavior="Loop">
-              <TransformKeyFrames Property="RotateTransform.Angle">
-                <KeyFrame Cue="0%" Value="0"/>
-                <KeyFrame Cue="100%" Value="360"/>
-              </TransformKeyFrames>
+              <KeyFrame Cue="100%">
+                <TransformSetter Property="RotateTransform.Angle" Value="360"/>
+              </KeyFrame>
             </Animation>
-          </Style.Animations> -->
+          </Style.Animations>
         </Style>
       </Styles>
     </Grid.Styles>
