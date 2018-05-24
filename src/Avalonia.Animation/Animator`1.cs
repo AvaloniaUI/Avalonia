@@ -14,7 +14,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Base class for KeyFrames objects
     /// </summary>
-    public abstract class KeyFrames<T> : AvaloniaList<KeyFrame>, IKeyFrames
+    public abstract class Animator<T> : AvaloniaList<KeyFrame>, IAnimator
     {
         /// <summary>
         /// List of type-converted keyframes.
@@ -92,7 +92,7 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
-            var _kfStateMach = new KeyFramesStateMachine<T>();
+            var _kfStateMach = new AnimatorStateMachine<T>();
             _kfStateMach.Initialize(animation, control, this);
 
             Timing.AnimationStateTimer

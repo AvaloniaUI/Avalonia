@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
+using Avalonia.Metadata;
+using Avalonia.Collections;
 
 namespace Avalonia.Animation
 {
@@ -62,6 +64,9 @@ namespace Avalonia.Animation
         /// The keyframe's target value.
         /// </summary>
         public object Value { get; set; }
+
+        [Content]
+        public AvaloniaList<IAnimationSetter> Children { get; set; } = new AvaloniaList<IAnimationSetter>();
 
     }
 }

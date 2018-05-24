@@ -13,7 +13,7 @@ namespace Avalonia.Animation
 {
     /// <summary>
     /// Represents a pair of keyframe, usually the
-    /// Start and End keyframes of a <see cref="KeyFrames{T}"/> object.
+    /// Start and End keyframes of a <see cref="Animator{T}"/> object.
     /// </summary>
     public struct KeyFramePair<T>
     {

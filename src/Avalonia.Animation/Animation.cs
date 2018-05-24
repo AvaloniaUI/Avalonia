@@ -7,6 +7,7 @@ using Avalonia.Collections;
 using Avalonia.Metadata;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 namespace Avalonia.Animation
 {
@@ -16,6 +17,7 @@ namespace Avalonia.Animation
     public class Animation : IDisposable, IAnimation
     {
         private List<IDisposable> _subscription = new List<IDisposable>();
+        public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
         /// <summary>
         /// Run time of this animation.
@@ -53,17 +55,30 @@ namespace Avalonia.Animation
         public Easing Easing { get; set; } = new LinearEasing();
 
         /// <summary>
-        /// A list of <see cref="IKeyFrames"/> objects.
+        /// A list of <see cref="KeyFrame"/> objects.
         /// </summary>
         [Content]
-        public AvaloniaList<IKeyFrames> Children { get; set; } = new AvaloniaList<IKeyFrames>();
+        public AvaloniaList<KeyFrame> Children { get; set; } = new AvaloniaList<KeyFrame>();
+
+        public Animation()
+        {
+            InterpretKeyframes();
+        }
+
+        private void InterpretKeyframes()
+        {
+            foreach (var keyframe in Children)
+            {
+                
+            }
+        }
 
         /// <summary>
         /// Cancels the animation.
         /// </summary>
         public void Dispose()
         {
-            foreach (var sub in _subscription) 
+            foreach (var sub in _subscription)
             {
                 sub.Dispose();
             }
@@ -72,12 +87,11 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            foreach (IKeyFrames keyframes in Children)
+            foreach (IAnimator keyframes in _animators)
             {
                 _subscription.Add(keyframes.Apply(this, control, matchObs));
             }
             return this;
         }
-
     }
 }

@@ -5,9 +5,9 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Provides statefulness for an iteration of a keyframe group animation.
+    /// Provides statefulness for an iteration of a keyframe animation.
     /// </summary>
-    internal class KeyFramesStateMachine<T> : IObservable<object>, IDisposable
+    internal class AnimatorStateMachine<T> : IObservable<object>, IDisposable
     {
         object _lastInterpValue;
         object _firstKFValue;
@@ -29,7 +29,7 @@ namespace Avalonia.Animation
         private PlaybackDirection _animationDirection;
         private KeyFramesStates _currentState;
         private KeyFramesStates _savedState;
-        private KeyFrames<T> _parent;
+        private Animator<T> _parent;
         private Animation _targetAnimation;
         private Animatable _targetControl;
         private T _neutralValue;
@@ -51,7 +51,7 @@ namespace Avalonia.Animation
             Disposed
         }
 
-        public void Initialize(Animation animation, Animatable control, KeyFrames<T> keyframes)
+        public void Initialize(Animation animation, Animatable control, Animator<T> keyframes)
         {
             _parent = keyframes;
             _targetAnimation = animation;

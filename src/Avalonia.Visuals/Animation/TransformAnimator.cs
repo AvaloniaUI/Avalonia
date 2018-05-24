@@ -12,11 +12,11 @@ using Avalonia.Logging;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Keyframes that handles <see cref="Transform"/> properties.
+    /// Animator that handles <see cref="Transform"/> properties.
     /// </summary>
-    public class TransformKeyFrames : KeyFrames<double>
+    public class TransformAnimator : Animator<double>
     {
-        DoubleKeyFrames childKeyFrames;
+        DoubleAnimator childKeyFrames;
 
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
@@ -82,7 +82,7 @@ namespace Avalonia.Animation
 
         void InitializeChildKeyFrames()
         {
-            childKeyFrames = new DoubleKeyFrames();
+            childKeyFrames = new DoubleAnimator();
 
             foreach (KeyFrame keyframe in this)
             {

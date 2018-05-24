@@ -10,9 +10,9 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Key frames that handles <see cref="double"/> properties.
+    /// Animator that handles <see cref="double"/> properties.
     /// </summary>
-    public class DoubleKeyFrames : KeyFrames<double>
+    public class DoubleAnimator : Animator<double>
     {
 
         /// <inheritdocs/>
