@@ -75,12 +75,4 @@ namespace Avalonia.Animation
 
     }
 
-    public class InternalKeyFrame
-    {
-        public Cue Cue { get; set; }
-        public TimeSpan KeyTime { get; set; }
-        internal bool timeSpanSet, cueSet;
-        public object Value { get; set; }
-    }
-
 }

@@ -74,9 +74,12 @@ namespace Avalonia.Animation
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
 
+
         private void InterpretKeyframes()
         {
-            var handlerList = new List<Type>();
+            var handlerList = new List<(Type, AvaloniaProperty)>();
+            var kfList = new List<AnimatorKeyFrame>();
+
 
             foreach (var keyframe in this)
             {
@@ -90,11 +93,44 @@ namespace Avalonia.Animation
                     if (!custAttr.Any())
                         throw new InvalidProgramException($"Type {setter.GetType()} doesn't have Animator attribute.");
 
-                    var match = (AnimatorAttribute)custAttr.First();
-                    if (!handlerList.Contains(match.HandlerType))
-                        handlerList.Add(match.HandlerType);
+                    var handler = ((AnimatorAttribute)custAttr.First()).HandlerType;
+                    if (!handlerList.Contains((handler, setter.Property)))
+                        handlerList.Add((handler, setter.Property));
+
+                    var newKF = new AnimatorKeyFrame()
+                    {
+                        Handler = handler,
+                        Property = setter.Property,
+                        Cue = keyframe.Cue,
+                        KeyTime = keyframe.KeyTime,
+                        timeSpanSet = keyframe.timeSpanSet,
+                        cueSet = keyframe.cueSet,
+                        Value = setter.Value
+                    };
+
+                    kfList.Add(newKF);
                 }
             }
+
+            var newAnimatorInstances = new List<(Type handler, AvaloniaProperty prop, IAnimator inst)>();
+
+            foreach (var handler in handlerList)
+            {
+                var newInstance = (IAnimator)Activator.CreateInstance(handler.Item1);
+                newInstance.Property = handler.Item2;
+                newAnimatorInstances.Add((handler.Item1, handler.Item2, newInstance));
+            }
+
+            foreach (var kf in kfList)
+            {
+                var parent = newAnimatorInstances.Where(p=>p.handler == kf.Handler &&
+                                                           p.prop == kf.Property)
+                                                 .First();
+                parent.inst.Add(kf);
+            }
+
+            foreach(var instance in newAnimatorInstances)
+                _animators.Add(instance.inst);
 
         }
 

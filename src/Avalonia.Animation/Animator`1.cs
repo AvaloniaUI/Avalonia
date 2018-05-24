@@ -14,7 +14,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Base class for KeyFrames objects
     /// </summary>
-    public abstract class Animator<T> : AvaloniaList<InternalKeyFrame>, IAnimator
+    public abstract class Animator<T> : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
         /// <summary>
         /// List of type-converted keyframes.
@@ -117,7 +117,7 @@ namespace Avalonia.Animation
         {
             var typeConv = TypeDescriptor.GetConverter(type);
 
-            foreach (InternalKeyFrame k in this)
+            foreach (AnimatorKeyFrame k in this)
             {
                 if (k.Value == null)
                 {

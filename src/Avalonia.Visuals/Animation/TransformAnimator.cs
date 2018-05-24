@@ -84,7 +84,7 @@ namespace Avalonia.Animation
         {
             childKeyFrames = new DoubleAnimator();
 
-            foreach (InternalKeyFrame keyframe in this)
+            foreach (AnimatorKeyFrame keyframe in this)
             {
                 childKeyFrames.Add(keyframe);
             }

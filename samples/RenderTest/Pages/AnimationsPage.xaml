@@ -52,6 +52,8 @@
             </KeyFrame> 
             <KeyFrame Cue="0%">
               <TransformSetter Property="RotateTransform.Angle" Value="360"/>
+              <TransformSetter Property="ScaleTransform.ScaleX" Value="2"/>
+              <TransformSetter Property="ScaleTransform.ScaleY" Value="2"/>
             </KeyFrame> 
             <KeyFrame Cue="100%">
               <DoubleSetter Property="Opacity" Value="1"/>
