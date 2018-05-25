@@ -49,13 +49,13 @@ namespace Avalonia.Controls.UnitTests
                     new StatusBarItem { Content = "bar" },
                 }
             };
-            
+
             var checkType = target.ItemsPanel.Build();
             Assert.True(checkType is DockPanel);
             var dp = (DockPanel)checkType;
             Assert.Equal<Dock>(Dock.Bottom, dp.GetValue(DockPanel.DockProperty));
         }
-        
+
         private Control CreateStatusBarTemplate(StatusBar parent)
         {
             return new StackPanel
@@ -69,6 +69,122 @@ namespace Avalonia.Controls.UnitTests
                     }
                 }
             };
+        }
+
+        [Fact]
+        public void LogicalChildren_Should_Be_Set_For_DataTemplate_Generated_Items()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var target = new StatusBar
+                {
+                    Template = StatusBarTemplate(),
+                    Items = new[] { "Foo", "Bar" },
+                };
+
+                Prepare(target);
+
+                Assert.Equal(2, target.GetLogicalChildren().Count());
+
+                foreach (var child in target.GetLogicalChildren())
+                {
+                    Assert.IsType<StatusBarItem>(child);
+                }
+            }
+        }
+
+
+        [Fact]
+        public void DataContexts_Should_Be_Correctly_Set()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new object[]
+                {
+                    "Foo",
+                    new Item("Bar"),
+                    new TextBlock { Text = "Baz" },
+                    new StatusBarItem { Content = "Qux" },
+                };
+
+                var target = new StatusBar
+                {
+                    Template = StatusBarTemplate(),
+                    DataContext = "Base",
+                    DataTemplates =
+                    {
+                        new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    },
+                    Items = items,
+                };
+
+                Prepare(target);
+
+                var dataContexts = target.Presenter.Panel.Children
+                    .Cast<Control>()
+                    .Select(x => x.DataContext)
+                    .ToList();
+
+                Assert.Equal(
+                    new object[] { items[0], items[1], "Base", "Base" },
+                    dataContexts);
+            }
+        }
+
+
+        private FuncControlTemplate StatusBarTemplate()
+        {
+            return new FuncControlTemplate<StatusBar>(parent =>
+                 new ItemsPresenter
+                 {
+                     Name = "PART_ItemsPresenter",
+                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
+                     [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding()
+                 });
+        }
+
+        private FuncControlTemplate StatusBarItemTemplate()
+        {
+            return new FuncControlTemplate<StatusBarItem>(parent =>
+                new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [!ContentPresenter.ContentProperty] = parent[!StatusBarItem.ContentProperty],
+                    [!ContentPresenter.ContentTemplateProperty] = parent[!StatusBarItem.ContentTemplateProperty],
+                });
+        }
+
+
+        private void Prepare(StatusBar target)
+        {
+            // The StatusBar needs to be part of a rooted visual tree.
+            var root = new TestRoot();
+            root.Child = target;
+
+            // Apply the template to the StatusBar itself.
+            target.ApplyTemplate();
+
+            // Now the ItemsPresenter should be reigstered, so apply its template.
+            target.Presenter.ApplyTemplate();
+            
+            // Now set and apply the item templates.
+            foreach (StatusBarItem item in target.Presenter.Panel.Children)
+            {
+                item.Template = StatusBarItemTemplate();
+                item.ApplyTemplate();
+                item.Presenter.ApplyTemplate();
+                ((ContentPresenter)item.Presenter).UpdateChild();
+            }
+        }
+
+        private class Item
+        {
+            public Item(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
         }
     }
 }

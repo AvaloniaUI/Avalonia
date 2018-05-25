@@ -16,10 +16,7 @@ namespace Avalonia.Controls
     public class StatusBar : ItemsControl
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => {
-                var panel = new DockPanel();
-                panel.SetValue(DockPanel.DockProperty, Dock.Bottom);
-                return panel; });
+            new FuncTemplate<IPanel>(() => new DockPanel() { [DockPanel.DockProperty] = Dock.Bottom });
 
         static StatusBar()
         {
@@ -32,5 +29,12 @@ namespace Avalonia.Controls
             base.OnPointerPressed(e);
         }
 
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator<StatusBarItem>(
+                this,
+                StatusBarItem.ContentProperty,
+                StatusBarItem.ContentTemplateProperty);
+        }
     }
 }

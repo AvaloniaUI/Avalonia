@@ -11,13 +11,5 @@ namespace Avalonia.Controls
     public class StatusBarItem : ContentControl
     {
 
-        /// <summary>
-        /// Initializes static members of the <see cref="StatusBarItem"/> class.
-        /// </summary>
-        static StatusBarItem()
-        {
-
-        }
-
     }
 }
