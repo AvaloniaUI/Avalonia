@@ -25,6 +25,11 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
+        public static MemberSelector Parse(string s)
+        {
+            return new MemberSelector { MemberName = s };
+        }
+
         public object Select(object o)
         {
             if (string.IsNullOrEmpty(MemberName))

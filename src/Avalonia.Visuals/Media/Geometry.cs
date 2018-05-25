@@ -70,6 +70,13 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Creates a <see cref="Geometry"/> from a string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>A <see cref="StreamGeometry"/>.</returns>
+        public static Geometry Parse(string s) => StreamGeometry.Parse(s);
+
+        /// <summary>
         /// Clones the geometry.
         /// </summary>
         /// <returns>A cloned geometry.</returns>
