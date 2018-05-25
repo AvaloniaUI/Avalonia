@@ -8,7 +8,7 @@
         <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
           <Ellipse Name="border"
                    Stroke="{TemplateBinding BorderBrush}"
-                   StrokeThickness="{TemplateBinding BorderThickness}"
+                   StrokeThickness="1"
                    Width="18"
                    Height="18"
                    VerticalAlignment="Center"/>
