@@ -61,17 +61,6 @@ namespace Avalonia.Controls
         private IControl _focusAdorner;
 
         /// <summary>
-        /// Initializes static members of the <see cref="Control"/> class.
-        /// </summary>
-        static Control()
-        {
-            AffectsMeasure(IsVisibleProperty);
-            PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
-            PseudoClass(IsFocusedProperty, ":focus");
-            PseudoClass(IsPointerOverProperty, ":pointerover");
-        }
-
-        /// <summary>
         /// Gets or sets the control's focus adorner.
         /// </summary>
         public ITemplate<IControl> FocusAdorner
