@@ -240,4 +240,11 @@ namespace Avalonia
                 .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
         }
     }
+
+    public enum ShutdownMode
+    {
+        OnLastWindowClose,
+        OnMainWindowClose,
+        OnExplicitShutdown
+    }
 }
