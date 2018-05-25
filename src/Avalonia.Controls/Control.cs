@@ -30,7 +30,6 @@ namespace Avalonia.Controls
     /// The control class extends <see cref="InputElement"/> and adds the following features:
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
-
     /// </remarks>
     public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, IRequiresTemplateInStyle
     {
