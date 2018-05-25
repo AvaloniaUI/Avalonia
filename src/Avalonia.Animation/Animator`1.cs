@@ -28,6 +28,12 @@ namespace Avalonia.Animation
         /// </summary>
         public AvaloniaProperty Property { get; set; }
 
+        public Animator()
+        {
+            // Invalidate keyframes when changed.
+            this.CollectionChanged += delegate { _isVerfifiedAndConverted = false; };
+        }
+
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
         {
@@ -182,6 +188,5 @@ namespace Avalonia.Animation
                 convertedKeyframes.Add(1.0d, (default(T), true));
             }
         }
-
     }
 }

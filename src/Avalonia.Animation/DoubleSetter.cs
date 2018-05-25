@@ -9,9 +9,13 @@ using Avalonia.Data;
 
 namespace Avalonia.Animation
 {
+    /// <summary>
+    /// Setter that handles <see cref="double"/> properties
+    /// in the target.
+    /// </summary>
     [Animator(typeof(DoubleAnimator))]
-    public class DoubleSetter : Setter
-    { 
-        
+    public class DoubleSetter : AnimationSetter
+    {
+
     }
 }

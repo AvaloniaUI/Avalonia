@@ -7,15 +7,17 @@ using Avalonia.Collections;
 
 namespace Avalonia.Animation
 {
-    
+    /// <summary>
+    /// Defines a KeyFrame that is used for
+    /// <see cref="Animators"/> objects.
+    /// </summary>
     public class AnimatorKeyFrame
     {
         public Type Handler;
         public Cue Cue;
         public TimeSpan KeyTime;
         internal bool timeSpanSet, cueSet;
-        internal AvaloniaProperty Property;
+        public AvaloniaProperty Property;
         public object Value;
     }
-
 }
