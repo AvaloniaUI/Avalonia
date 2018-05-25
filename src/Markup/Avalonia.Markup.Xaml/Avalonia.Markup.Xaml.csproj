@@ -28,7 +28,6 @@
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
         <Compile Include="Converters\ParseTypeConverter.cs" />
-        <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Data\ResourceInclude.cs" />
