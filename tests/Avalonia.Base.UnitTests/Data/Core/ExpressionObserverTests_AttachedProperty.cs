@@ -127,7 +127,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         private static class Owner
         {
             public static readonly AttachedProperty<string> FooProperty =
-                AvaloniaProperty.RegisterAttached<AvaloniaObject, string>(
+                AvaloniaProperty.RegisterAttached<Class1, string>(
                     "Foo", 
                     typeof(Owner), 
                     defaultValue: "foo");
