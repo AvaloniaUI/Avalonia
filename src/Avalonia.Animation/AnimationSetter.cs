@@ -9,7 +9,7 @@ using Avalonia.Data;
 
 namespace Avalonia.Animation
 {
-    public abstract class Setter : IAnimationSetter
+    public abstract class AnimationSetter : IAnimationSetter
     {
         public AvaloniaProperty Property { get; set; }
         public object Value { get; set; }

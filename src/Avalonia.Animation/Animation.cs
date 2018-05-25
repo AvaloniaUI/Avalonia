@@ -63,12 +63,10 @@ namespace Avalonia.Animation
             var handlerList = new List<(Type, AvaloniaProperty)>();
             var kfList = new List<AnimatorKeyFrame>();
 
-
             foreach (var keyframe in this)
             {
                 foreach (var setter in keyframe)
                 {
-
                     var custAttr = setter.GetType()
                                          .GetCustomAttributes()
                                          .Where(p => p.GetType() == typeof(AnimatorAttribute));
@@ -106,8 +104,8 @@ namespace Avalonia.Animation
 
             foreach (var kf in kfList)
             {
-                var parent = newAnimatorInstances.Where(p=>p.handler == kf.Handler &&
-                                                           p.prop == kf.Property)
+                var parent = newAnimatorInstances.Where(p => p.handler == kf.Handler &&
+                                                             p.prop == kf.Property)
                                                  .First();
                 parent.inst.Add(kf);
             }

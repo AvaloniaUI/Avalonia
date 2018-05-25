@@ -6,11 +6,16 @@ using System.Reactive.Linq;
 using System.Diagnostics;
 using Avalonia.Animation.Utils;
 using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Animation
 {
+    /// <summary>
+    /// Setter that handles <see cref="Transform"/> objects
+    /// in the target.
+    /// </summary>
     [Animator(typeof(TransformAnimator))]
-    public class TransformSetter : Setter
+    public class TransformSetter : AnimationSetter
     { 
         
     }

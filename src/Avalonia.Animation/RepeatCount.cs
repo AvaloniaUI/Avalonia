@@ -21,13 +21,13 @@ namespace Avalonia.Animation
     }
 
     /// <summary>
-    /// Determines the repeat behavior of an animation.
+    /// Determines the number of iterations of an animation.
+    /// Also defines its repeat behavior. 
     /// </summary>
     [TypeConverter(typeof(RepeatCountTypeConverter))]
     public struct RepeatCount : IEquatable<RepeatCount>
     {
         private readonly RepeatType _type;
-
         private readonly ulong _value;
 
         /// <summary>
@@ -60,7 +60,6 @@ namespace Avalonia.Animation
         /// should repeat forever.
         /// </summary>
         public static RepeatCount Loop => new RepeatCount(0, RepeatType.Loop);
-
 
         /// <summary>
         /// Gets an instance of <see cref="RepeatCount"/> that indicates that an animation
@@ -189,7 +188,7 @@ namespace Avalonia.Animation
             else
             {
                 if(s.StartsWith("-"))
-                    throw new InvalidCastException("RepeatCount iterations can't be a negative number.");
+                    throw new InvalidCastException("RepeatCount can't be a negative number.");
 
                 var value = ulong.Parse(s, CultureInfo.InvariantCulture);
              
