@@ -18,7 +18,7 @@ namespace Avalonia.Rendering
         {
             _fpsText = new FormattedText
             {
-                Typeface = new Typeface(null, 18),
+                Typeface = s_fpsTypeface
             };
         }
 

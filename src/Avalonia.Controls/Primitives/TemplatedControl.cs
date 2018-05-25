@@ -38,7 +38,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> FontFamilyProperty =
+        public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
         /// </summary>
-        public string FontFamily
+        public FontFamily FontFamily
         {
             get { return GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
