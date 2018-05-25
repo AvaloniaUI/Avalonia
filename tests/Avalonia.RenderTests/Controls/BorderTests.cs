@@ -204,7 +204,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Center,
                     }
@@ -231,7 +231,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Center,
                     }
@@ -258,7 +258,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                     }
@@ -285,7 +285,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Stretch,
                     }
@@ -312,7 +312,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Left,
                     }
@@ -339,7 +339,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         HorizontalAlignment = HorizontalAlignment.Right,
                     }
@@ -366,7 +366,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Top,
                     }
@@ -393,7 +393,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                     {
                         Text = "Foo",
                         Background = Brushes.Red,
-                        FontFamily = "Segoe UI",
+                        FontFamily = new FontFamily("Segoe UI"),
                         FontSize = 12,
                         VerticalAlignment = VerticalAlignment.Bottom,
                     }

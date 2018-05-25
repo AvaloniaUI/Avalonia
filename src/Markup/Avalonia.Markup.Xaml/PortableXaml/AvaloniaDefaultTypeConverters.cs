@@ -49,6 +49,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             { typeof(Cursor), typeof(CursorTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
             //{ typeof(FontWeight), typeof(FontWeightConverter) },
+            { typeof(FontFamily), typeof(FontFamilyTypeConverter)}
         };
 
         public static Type GetTypeConverter(Type type)
