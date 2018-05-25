@@ -43,7 +43,6 @@
       <Style Selector="Border.Rect1:pointerover">
         <Style.Animations>
           <Animation Duration="0:0:2.5" 
-                     RepeatBehavior="Repeat"
                      RepeatCount="4" 
                      FillMode="None"
                      PlaybackDirection="AlternateReverse" 
@@ -73,7 +72,9 @@
       <Style Selector="Border.Rect3">
         <Setter Property="Child" Value="{StaticResource Heart}"/>
         <Style.Animations>
-          <Animation Duration="0:0:0.5" Easing="QuadraticEaseInOut" RepeatBehavior="Loop">
+          <Animation Duration="0:0:0.5"
+                     Easing="QuadraticEaseInOut"
+                     RepeatCount="Loop">
             <KeyFrame Cue="50%">
               <TransformSetter Property="ScaleTransform.ScaleX" Value="0.8"/>
               <TransformSetter Property="ScaleTransform.ScaleY" Value="0.8"/>

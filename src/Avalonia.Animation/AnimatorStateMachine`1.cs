@@ -61,29 +61,16 @@ namespace Avalonia.Animation
             _delayTotalFrameCount = (ulong)(animation.Delay.Ticks / Timing.FrameTick.Ticks);
             _durationTotalFrameCount = (ulong)(animation.Duration.Ticks / Timing.FrameTick.Ticks);
 
-            switch (animation.RepeatBehavior)
+            switch (animation.RepeatCount.RepeatType)
             {
-                case RepeatBehavior.Loop:
+                case RepeatType.Loop:
                     _isLooping = true;
                     _checkLoopAndRepeat = true;
                     break;
-                case RepeatBehavior.Repeat:
-                    if (animation.RepeatCount != null)
-                    {
-                        if (animation.RepeatCount == 0)
-                        {
-                            throw new InvalidOperationException
-                                ($"RepeatCount should be greater than zero when RepeatBehavior is set to Repeat.");
-                        }
-                        _isRepeating = true;
-                        _checkLoopAndRepeat = true;
-                        _repeatCount = (ulong)animation.RepeatCount;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException
-                            ($"RepeatCount should be defined when RepeatBehavior is set to Repeat.");
-                    }
+                case RepeatType.Repeat:
+                    _isRepeating = true;
+                    _checkLoopAndRepeat = true;
+                    _repeatCount = animation.RepeatCount.Value;
                     break;
             }
 
