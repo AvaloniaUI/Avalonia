@@ -42,6 +42,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Parses a classes string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="Classes"/>.</returns>
+        public static Classes Parse(string s) => new Classes(s.Split(' '));
+
+        /// <summary>
         /// Adds a style class to the collection.
         /// </summary>
         /// <param name="name">The class name.</param>

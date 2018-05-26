@@ -530,7 +530,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             style.TryGetResource("Brush", out var brush);
 
             Assert.NotNull(brush);
-
+            Assert.IsType<SolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
             style.TryGetResource("Double", out var d);
