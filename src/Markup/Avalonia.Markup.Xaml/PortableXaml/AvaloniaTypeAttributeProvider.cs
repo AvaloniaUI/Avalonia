@@ -46,7 +46,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
                 if (result == null)
                 {
-                    var convType = AvaloniaDefaultTypeConverters.GetTypeConverter(_type);
+                    var convType = AvaloniaTypeConverters.GetTypeConverter(_type);
 
                     if (convType != null)
                     {
