@@ -49,14 +49,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static List<Window> s_windows = new List<Window>();
-
-        /// <summary>
-        /// Retrieves an enumeration of all Windows in the currently running application.
-        /// </summary>
-        public static IReadOnlyList<Window> OpenWindows => s_windows;
-
-        /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
         public static readonly StyledProperty<SizeToContent> SizeToContentProperty =
@@ -75,7 +67,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
 
         /// <summary>
-        /// Enables or disables the taskbar icon
+        /// Represents the current window state (normal, minimized, maximized)
         /// </summary>
         public static readonly StyledProperty<WindowState> WindowStateProperty =
             AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
@@ -117,7 +109,7 @@ namespace Avalonia.Controls
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
+                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool)e.NewValue));
 
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
@@ -151,7 +143,7 @@ namespace Avalonia.Controls
             if (PlatformImpl != null)
                 PlatformImpl.WindowStateChanged = s => WindowState = s;
         }
-        
+
         /// <inheritdoc/>
         event EventHandler<NameScopeEventArgs> INameScope.Registered
         {
@@ -201,7 +193,7 @@ namespace Avalonia.Controls
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
         }
-        
+
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
@@ -261,6 +253,20 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<CancelEventArgs> Closing;
 
+        internal static void AddWindow(Window window)
+        {
+            if (Application.Current == null) return;
+
+            Application.Current.Windows.Add(window);
+        }
+
+        internal static void RemoveWindow(Window window)
+        {
+            if (Application.Current == null) return;
+
+            Application.Current.Windows.Remove(window);
+        }
+
         /// <summary>
         /// Closes the window.
         /// </summary>
@@ -300,10 +306,9 @@ namespace Avalonia.Controls
             finally
             {
                 if (ignoreCancel || !cancelClosing)
-                {
-                    s_windows.Remove(this);
+                {                  
                     PlatformImpl?.Dispose();
-                    IsVisible = false;
+                    HandleClosed();
                 }
             }
         }
@@ -347,7 +352,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            s_windows.Add(this);
+            AddWindow(this);
 
             EnsureInitialized();
             SetWindowStartupLocation();
@@ -388,7 +393,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The window is already being shown.");
             }
 
-            s_windows.Add(this);
+            AddWindow(this);
 
             EnsureInitialized();
             SetWindowStartupLocation();
@@ -397,7 +402,7 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var affectedWindows = Application.Current.Windows.Where(w => w.IsEnabled && w != this).ToList();
                 var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
                 SetIsEnabled(affectedWindows, false);
 
@@ -501,8 +506,8 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            IsVisible = false;
-            s_windows.Remove(this);
+            RemoveWindow(this);
+
             base.HandleClosed();
         }
 

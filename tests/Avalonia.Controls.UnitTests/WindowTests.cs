@@ -129,7 +129,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Show();
 
-                Assert.Equal(new[] { window }, Window.OpenWindows);
+                Assert.Equal(new[] { window }, Application.Current.Windows);
             }
         }
 
@@ -145,7 +145,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 window.IsVisible = true;
 
-                Assert.Equal(new[] { window }, Window.OpenWindows);
+                Assert.Equal(new[] { window }, Application.Current.Windows);
 
                 window.Close();
             }
@@ -162,7 +162,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 window.Close();
 
-                Assert.Empty(Window.OpenWindows);
+                Assert.Empty(Application.Current.Windows);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 windowImpl.Object.Closed();
 
-                Assert.Empty(Window.OpenWindows);
+                Assert.Empty(Application.Current.Windows);
             }
         }
 
@@ -339,7 +339,10 @@ namespace Avalonia.Controls.UnitTests
         {
             // HACK: We really need a decent way to have "statics" that can be scoped to
             // AvaloniaLocator scopes.
-            ((IList<Window>)Window.OpenWindows).Clear();
+            while (Application.Current.Windows.Count > 0)
+            {
+                Application.Current.Windows[0].Close();
+            }
         }
     }
 }
