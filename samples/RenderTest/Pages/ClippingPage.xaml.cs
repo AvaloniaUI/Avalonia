@@ -16,25 +16,12 @@ namespace RenderTest.Pages
         public ClippingPage()
         {
             InitializeComponent();
-            CreateAnimations();
             WireUpCheckbox();
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void CreateAnimations()
-        {
-            var clipped = this.FindControl<Border>("clipChild");
-            var degrees = Animate.Timer.Select(x => x.TotalMilliseconds / 5);
-            clipped.RenderTransform = new RotateTransform();
-            clipped.RenderTransform.Bind(RotateTransform.AngleProperty, degrees, BindingPriority.Animation);
-            clipped.Bind(
-                Border.BackgroundProperty,
-                clipped.GetObservable(Control.IsPointerOverProperty)
-                    .Select(x => x ? Brushes.Crimson : AvaloniaProperty.UnsetValue));
         }
 
         private void WireUpCheckbox()

@@ -6,14 +6,14 @@ using Avalonia.Collections;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// A collection of <see cref="PropertyTransition"/> definitions.
+    /// A collection of <see cref="ITransition"/> definitions.
     /// </summary>
-    public class PropertyTransitions : AvaloniaList<PropertyTransition>
+    public class Transitions : AvaloniaList<ITransition>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyTransitions"/> class.
+        /// Initializes a new instance of the <see cref="Transitions"/> class.
         /// </summary>
-        public PropertyTransitions()
+        public Transitions()
         {
             ResetBehavior = ResetBehavior.Remove;
         }

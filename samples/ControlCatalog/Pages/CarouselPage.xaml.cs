@@ -37,13 +37,13 @@ namespace ControlCatalog.Pages
             switch (_transition.SelectedIndex)
             {
                 case 0:
-                    _carousel.Transition = null;
+                    _carousel.PageTransition = null;
                     break;
                 case 1:
-                    _carousel.Transition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
+                    _carousel.PageTransition = new PageSlide(TimeSpan.FromSeconds(0.25), _orientation.SelectedIndex == 0 ? PageSlide.SlideAxis.Horizontal : PageSlide.SlideAxis.Vertical);
                     break;
                 case 2:
-                    _carousel.Transition = new CrossFade(TimeSpan.FromSeconds(0.25));
+                    _carousel.PageTransition = new CrossFade(TimeSpan.FromSeconds(0.25));
                     break;
             }
         }
