@@ -219,6 +219,11 @@ namespace Avalonia
             _mainLoopCancellationTokenSource = new CancellationTokenSource();
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
+
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -257,6 +262,11 @@ namespace Avalonia
                 DispatcherPriority.Send);
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
+
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -266,6 +276,11 @@ namespace Avalonia
         public void Run(CancellationToken token)
         {
             Dispatcher.UIThread.MainLoop(token);
+
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
