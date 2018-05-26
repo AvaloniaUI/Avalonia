@@ -37,7 +37,8 @@
         public override Rect GetBounds()
         {
             // adding the Pen's stroke thickness here could yield wrong results due to transforms
-            return Geometry?.GetRenderBounds(0) ?? new Rect();
+            var pen = new Pen(Brushes.Black, 0);
+            return Geometry?.GetRenderBounds(pen) ?? new Rect();
         }
     }
 }

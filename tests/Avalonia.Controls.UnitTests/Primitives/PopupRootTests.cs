@@ -7,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -34,6 +35,25 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var target = CreateTarget();
 
                 Assert.True(target.Presenter.IsAttachedToLogicalTree);
+            }
+        }
+
+        [Fact]
+        public void PopupRoot_StylingParent_Is_Popup()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TemplatedControlWithPopup
+                {
+                    PopupContent = new Canvas(),
+                };
+
+                var root = new TestRoot { Child = target };
+
+                target.ApplyTemplate();
+                target.Popup.Open();
+
+                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.PopupRoot).StylingParent);
             }
         }
 

@@ -9,12 +9,27 @@ namespace Avalonia.MonoMac
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         public bool IsDecorated = true;
+        public bool IsResizable = true;
         public CGRect? UndecoratedLastUnmaximizedFrame;
+
+        private WindowState _lastWindowState;
 
         public WindowImpl()
         {
             UpdateStyle();
             Window.SetCanBecomeKeyAndMain();
+            
+            Window.DidResize += delegate
+            {
+                var windowState = Window.IsMiniaturized ? WindowState.Minimized
+                    : (IsZoomed ? WindowState.Maximized : WindowState.Normal);
+
+                if (windowState != _lastWindowState)
+                {
+                    _lastWindowState = windowState;
+                    WindowStateChanged?.Invoke(windowState);
+                }
+            };
         }
 
         public WindowState WindowState
@@ -48,6 +63,8 @@ namespace Avalonia.MonoMac
             }
         }
 
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         bool IsZoomed => IsDecorated ? Window.IsZoomed : UndecoratedIsMaximized;
 
         public bool UndecoratedIsMaximized => Window.Frame == Window.Screen.VisibleFrame;
@@ -76,15 +93,26 @@ namespace Avalonia.MonoMac
 
         protected override NSWindowStyle GetStyle()
         {
+            var windowStyle = NSWindowStyle.Borderless;
+
             if (IsDecorated)
-                return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable |
-                       NSWindowStyle.Titled;
-            return NSWindowStyle.Borderless;
+                windowStyle |= NSWindowStyle.Closable | NSWindowStyle.Miniaturizable | NSWindowStyle.Titled;
+
+            if (IsResizable)
+                windowStyle |= NSWindowStyle.Resizable;
+
+            return windowStyle;
         }
 
         public void SetSystemDecorations(bool enabled)
         {
             IsDecorated = enabled;
+            UpdateStyle();
+        }
+
+        public void CanResize(bool value)
+        {
+            IsResizable = value;
             UpdateStyle();
         }
 

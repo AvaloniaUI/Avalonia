@@ -15,28 +15,49 @@ namespace Avalonia.Media
         /// Defines the <see cref="Transform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> TransformProperty =
-            AvaloniaProperty.Register<Geometry, Transform>("Transform");
+            AvaloniaProperty.Register<Geometry, Transform>(nameof(Transform));
 
-        /// <summary>
-        /// Initializes static members of the <see cref="Geometry"/> class.
-        /// </summary>
+        private bool _isDirty = true;
+        private IGeometryImpl _platformImpl;
+
         static Geometry()
         {
             TransformProperty.Changed.AddClassHandler<Geometry>(x => x.TransformChanged);
         }
 
         /// <summary>
+        /// Raised when the geometry changes.
+        /// </summary>
+        public event EventHandler Changed;
+
+        /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
-        public Rect Bounds => PlatformImpl.Bounds;
+        public Rect Bounds => PlatformImpl?.Bounds ?? Rect.Empty;
 
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
         /// </summary>
-        public virtual IGeometryImpl PlatformImpl
+        public IGeometryImpl PlatformImpl
         {
-            get;
-            protected set;
+            get
+            {
+                if (_isDirty)
+                {
+                    var geometry = CreateDefiningGeometry();
+                    var transform = Transform;
+
+                    if (geometry != null && transform != null && transform.Value != Matrix.Identity)
+                    {
+                        geometry = geometry.WithTransform(transform.Value);
+                    }
+
+                    _platformImpl = geometry;
+                    _isDirty = false;
+                }
+
+                return _platformImpl;
+            }
         }
 
         /// <summary>
@@ -55,14 +76,11 @@ namespace Avalonia.Media
         public abstract Geometry Clone();
 
         /// <summary>
-        /// Gets the geometry's bounding rectangle with the specified stroke thickness.
+        /// Gets the geometry's bounding rectangle with the specified pen.
         /// </summary>
-        /// <param name="strokeThickness">The stroke thickness.</param>
+        /// <param name="pen">The stroke thickness.</param>
         /// <returns>The bounding rectangle.</returns>
-        public Rect GetRenderBounds(double strokeThickness)
-        {
-            return PlatformImpl.GetRenderBounds(strokeThickness);
-        }
+        public Rect GetRenderBounds(Pen pen) => PlatformImpl?.GetRenderBounds(pen) ?? Rect.Empty;
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
@@ -71,7 +89,7 @@ namespace Avalonia.Media
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         public bool FillContains(Point point)
         {
-            return PlatformImpl.FillContains(point);
+            return PlatformImpl?.FillContains(point) == true;
         }
 
         /// <summary>
@@ -82,13 +100,86 @@ namespace Avalonia.Media
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
         public bool StrokeContains(Pen pen, Point point)
         {
-            return PlatformImpl.StrokeContains(pen, point);
+            return PlatformImpl?.StrokeContains(pen, point) == true;
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the geometry's <see cref="PlatformImpl"/>.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateGeometry"/> to be called on the element.
+        /// </remarks>
+        protected static void AffectsGeometry(params AvaloniaProperty[] properties)
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsGeometryInvalidate);
+            }
+        }
+
+        /// <summary>
+        /// Creates the platform implementation of the geometry, without the transform applied.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract IGeometryImpl CreateDefiningGeometry();
+
+        /// <summary>
+        /// Invalidates the platform implementation of the geometry.
+        /// </summary>
+        protected void InvalidateGeometry()
+        {
+            _isDirty = true;
+            _platformImpl = null;
+            Changed?.Invoke(this, EventArgs.Empty);
         }
 
         private void TransformChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var transform = (Transform)e.NewValue;
-            PlatformImpl = PlatformImpl.WithTransform(transform.Value);
+            var oldValue = (Transform)e.OldValue;
+            var newValue = (Transform)e.NewValue;
+
+            if (oldValue != null)
+            {
+                oldValue.Changed -= TransformChanged;
+            }
+
+            if (newValue != null)
+            {
+                newValue.Changed += TransformChanged;
+            }
+
+            TransformChanged(newValue, EventArgs.Empty);
+        }
+
+        private void TransformChanged(object sender, EventArgs e)
+        {
+            var transform = ((Transform)sender)?.Value;
+
+            if (_platformImpl is ITransformedGeometryImpl t)
+            {
+                if (transform == null || transform == Matrix.Identity)
+                {
+                    _platformImpl = t.SourceGeometry;
+                }
+                else if (transform != t.Transform)
+                {
+                    _platformImpl = t.SourceGeometry.WithTransform(transform.Value);
+                }
+            }
+            else if (_platformImpl != null && transform != null && transform != Matrix.Identity)
+            {
+                _platformImpl = PlatformImpl.WithTransform(transform.Value);
+            }
+
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private static void AffectsGeometryInvalidate(AvaloniaPropertyChangedEventArgs e)
+        {
+            var control = e.Sender as Geometry;
+            control?.InvalidateGeometry();
         }
     }
 }

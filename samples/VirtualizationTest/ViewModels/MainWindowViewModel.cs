@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ReactiveUI;
 
 namespace VirtualizationTest.ViewModels
@@ -17,6 +18,8 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
+        private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
         private Orientation _orientation = Orientation.Vertical;
         private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
@@ -63,6 +66,21 @@ namespace VirtualizationTest.ViewModels
 
         public IEnumerable<Orientation> Orientations =>
             Enum.GetValues(typeof(Orientation)).Cast<Orientation>();
+
+        public ScrollBarVisibility HorizontalScrollBarVisibility
+        {
+            get { return _horizontalScrollBarVisibility; }
+            set { this.RaiseAndSetIfChanged(ref _horizontalScrollBarVisibility, value); }
+        }
+
+        public ScrollBarVisibility VerticalScrollBarVisibility
+        {
+            get { return _verticalScrollBarVisibility; }
+            set { this.RaiseAndSetIfChanged(ref _verticalScrollBarVisibility, value); }
+        }
+
+        public IEnumerable<ScrollBarVisibility> ScrollBarVisibilities =>
+            Enum.GetValues(typeof(ScrollBarVisibility)).Cast<ScrollBarVisibility>();
 
         public ItemVirtualizationMode VirtualizationMode
         {

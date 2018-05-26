@@ -13,12 +13,34 @@ namespace Avalonia.Controls.UnitTests
             var target = new Border
             {
                 Padding = new Thickness(6),
-                BorderThickness = 4,
+                BorderThickness = new Thickness(4)
             };
 
             target.Measure(new Size(100, 100));
 
             Assert.Equal(new Size(20, 20), target.DesiredSize);
+        }
+
+        [Fact]
+        public void Child_Should_Arrange_With_Zero_Height_Width_If_Padding_Greater_Than_Child_Size()
+        {
+            Border content;
+
+            var target = new Border
+            {
+                Padding = new Thickness(6),
+                MaxHeight = 12,
+                MaxWidth = 12,
+                Child = content = new Border
+                {
+                    Height = 0,
+                    Width = 0
+                }
+            };
+
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
         }
     }
 }

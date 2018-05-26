@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -23,6 +25,32 @@ namespace Avalonia.Controls.UnitTests
             ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.IsType<TextBlock>(target.Presenter.Child);
+        }
+
+        [Fact]
+        public void CanHorizontallyScroll_Should_Track_HorizontalScrollBarVisibility()
+        {
+            var target = new ScrollViewer();
+            var values = new List<bool>();
+
+            target.GetObservable(ScrollViewer.CanHorizontallyScrollProperty).Subscribe(x => values.Add(x));
+            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            target.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+            Assert.Equal(new[] { true, false, true }, values);
+        }
+
+        [Fact]
+        public void CanVerticallyScroll_Should_Track_VerticalScrollBarVisibility()
+        {
+            var target = new ScrollViewer();
+            var values = new List<bool>();
+
+            target.GetObservable(ScrollViewer.CanVerticallyScrollProperty).Subscribe(x => values.Add(x));
+            target.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            target.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+            Assert.Equal(new[] { true, false, true }, values);
         }
 
         [Fact]
@@ -59,7 +87,7 @@ namespace Avalonia.Controls.UnitTests
                         [~~ScrollContentPresenter.ExtentProperty] = control[~~ScrollViewer.ExtentProperty],
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
                         [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
-                        [~ScrollContentPresenter.CanScrollHorizontallyProperty] = control[~ScrollViewer.CanScrollHorizontallyProperty],
+                        [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
                     },
                     new ScrollBar
                     {

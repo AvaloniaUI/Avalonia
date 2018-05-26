@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
@@ -68,9 +69,9 @@ namespace Avalonia.Direct2D1
                         for (var y = 0; y < _target.Height; y++)
                         {
                             UnmanagedMethods.CopyMemory(
-                                _target.Address + _target.RowBytes * y,
-                                l.Data.DataPointer + l.Stride * y,
-                                (uint) Math.Min(l.Stride, _target.RowBytes));
+                                (_target.Address + _target.RowBytes * y),
+                                (l.Data.DataPointer + l.Stride * y),
+                                (UIntPtr)Math.Min(l.Stride, _target.RowBytes));
                         }
                     }
                     Dispose();

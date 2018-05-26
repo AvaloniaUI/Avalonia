@@ -8,7 +8,7 @@ namespace Avalonia.VisualTree
     /// <summary>
     /// Holds information about the bounds of a control, together with a transform and a clip.
     /// </summary>
-    public struct TransformedBounds
+    public readonly struct TransformedBounds
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TransformedBounds"/> struct.
@@ -24,17 +24,17 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
-        /// Gets the control's bounds.
+        /// Gets the control's bounds in its local coordinate space.
         /// </summary>
         public Rect Bounds { get; }
 
         /// <summary>
-        /// Gets the control's clip rectangle.
+        /// Gets the control's clip rectangle in global coordinate space.
         /// </summary>
         public Rect Clip { get; }
 
         /// <summary>
-        /// Gets the control's transform.
+        /// Gets the transform from local to global coordinate space.
         /// </summary>
         public Matrix Transform { get; }
 

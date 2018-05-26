@@ -34,14 +34,18 @@ namespace Avalonia.Collections
         /// <param name="reset">
         /// An action called when the collection is reset.
         /// </param>
+        /// <param name="weakSubscription">
+        /// Indicates if a weak subscription should be used to track changes to the collection.
+        /// </param>
         /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable ForEachItem<T>(
             this IAvaloniaReadOnlyList<T> collection,
             Action<T> added,
             Action<T> removed,
-            Action reset)
+            Action reset,
+            bool weakSubscription = false)
         {
-            return collection.ForEachItem((_, i) => added(i), (_, i) => removed(i), reset);
+            return collection.ForEachItem((_, i) => added(i), (_, i) => removed(i), reset, weakSubscription);
         }
 
         /// <summary>
@@ -63,12 +67,16 @@ namespace Avalonia.Collections
         /// An action called when the collection is reset. This will be followed by calls to 
         /// <paramref name="added"/> for each item present in the collection after the reset.
         /// </param>
+        /// <param name="weakSubscription">
+        /// Indicates if a weak subscription should be used to track changes to the collection.
+        /// </param>
         /// <returns>A disposable used to terminate the subscription.</returns>
         public static IDisposable ForEachItem<T>(
             this IAvaloniaReadOnlyList<T> collection,
             Action<int, T> added,
             Action<int, T> removed,
-            Action reset)
+            Action reset,
+            bool weakSubscription = false)
         {
             void Add(int index, IList items)
             {
@@ -118,9 +126,17 @@ namespace Avalonia.Collections
             };
 
             Add(0, (IList)collection);
-            collection.CollectionChanged += handler;
 
-            return Disposable.Create(() => collection.CollectionChanged -= handler);
+            if (weakSubscription)
+            {
+                return collection.WeakSubscribe(handler);
+            }
+            else
+            {
+                collection.CollectionChanged += handler;
+
+                return Disposable.Create(() => collection.CollectionChanged -= handler);
+            }
         }
 
         public static IAvaloniaReadOnlyList<TDerived> CreateDerivedList<TSource, TDerived>(

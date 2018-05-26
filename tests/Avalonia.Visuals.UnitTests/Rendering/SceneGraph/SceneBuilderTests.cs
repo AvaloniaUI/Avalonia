@@ -11,6 +11,8 @@ using Moq;
 using Avalonia.Platform;
 using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Utilities;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 {
@@ -53,15 +55,15 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(1, borderNode.Children.Count);
                 Assert.Equal(1, borderNode.DrawOperations.Count);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.Equal(Brushes.Red, backgroundNode.Brush);
 
-                var textBlockNode = (VisualNode)borderNode.Children[0];
+                var textBlockNode = borderNode.Children[0];
                 Assert.Same(textBlockNode, result.FindNode(textBlock));
                 Assert.Same(textBlock, textBlockNode.Visual);
                 Assert.Equal(1, textBlockNode.DrawOperations.Count);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
                 Assert.NotNull(textNode.Text);
             }
         }
@@ -81,6 +83,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(10, 20, 30, 40),
                         Child = canvas = new Canvas
                         {
+                            ClipToBounds = true,
                             Background = Brushes.AliceBlue,
                         }
                     }
@@ -97,7 +100,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(new Rect(10, 20, 160, 240), canvasNode.ClipBounds);
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
-                result = result.Clone();
+                result = result.CloneScene();
                 Assert.True(sceneBuilder.Update(result, canvas));
 
                 canvasNode = result.FindNode(canvas);
@@ -127,6 +130,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -171,6 +175,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -195,7 +200,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 canvas.Arrange(new Rect(tree.DesiredSize));
 
                 // Initial ClipBounds are correct, make sure they're still correct after updating canvas.
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 Assert.True(sceneBuilder.Update(scene, canvas));
 
                 borderNode = scene.FindNode(border);
@@ -252,6 +257,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(24, 26),
                         Child = target = new Border
                         {
+                            ClipToBounds = true,
                             Margin = new Thickness(26, 24),
                             Width = 100,
                             Height = 100,
@@ -307,7 +313,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 var borderNode = scene.FindNode(border);
                 Assert.Equal(expectedTransform, borderNode.Transform);
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 Assert.True(sceneBuilder.Update(scene, border));
 
                 borderNode = scene.FindNode(border);
@@ -352,21 +358,21 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 border.Background = Brushes.Green;
 
-                var result = initial.Clone();
+                var result = initial.CloneScene();
                 sceneBuilder.Update(result, border);
                 
                 var borderNode = (VisualNode)result.Root.Children[0];
                 Assert.Same(border, borderNode.Visual);
 
-                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0];
+                var backgroundNode = (RectangleNode)borderNode.DrawOperations[0].Item;
                 Assert.NotSame(initialBackgroundNode, backgroundNode);
                 Assert.Equal(Brushes.Green, backgroundNode.Brush);
 
                 var textBlockNode = (VisualNode)borderNode.Children[0];
                 Assert.Same(textBlock, textBlockNode.Visual);
 
-                var textNode = (TextNode)textBlockNode.DrawOperations[0];
-                Assert.Same(initialTextNode, textNode);
+                var textNode = (TextNode)textBlockNode.DrawOperations[0].Item;
+                Assert.Same(initialTextNode.Item, textNode);
             }
         }
 
@@ -400,7 +406,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.Child = decorator;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, decorator));
 
@@ -455,7 +461,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.Child = null;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, decorator));
                 Assert.False(sceneBuilder.Update(result, canvas));
@@ -499,7 +505,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(initial);
 
                 border.IsVisible = false;
-                var result = initial.Clone();
+                var result = initial.CloneScene();
 
                 Assert.True(sceneBuilder.Update(result, border));
                 Assert.False(sceneBuilder.Update(result, canvas));
@@ -510,6 +516,50 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Null(result.FindNode(border));
                 Assert.Null(result.FindNode(canvas));
                 Assert.Equal(new Rect(0, 0, 100, 100), result.Layers.Single().Dirty.Single());
+            }
+        }
+
+        [Fact]
+        public void Should_Update_ClipBounds_For_Negative_Margin()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            ClipToBounds = true,
+                            Margin = new Thickness(0, -5, 0, 0),
+                        }
+                    }
+                };
+
+                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 5, 100, 95), borderNode.ClipBounds);
+
+                border.Margin = new Thickness(0, -8, 0, 0);
+                layout.ExecuteLayoutPass();
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, border);
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 2, 100, 98), borderNode.ClipBounds);
             }
         }
 
@@ -550,7 +600,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 decorator.Margin = new Thickness(0, 20, 0, 0);
                 layout.ExecuteLayoutPass();
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 sceneBuilder.Update(scene, decorator);
 
                 borderNode = scene.FindNode(border);
@@ -598,7 +648,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 decorator.Margin = new Thickness(0, 20, 0, 0);
                 layout.ExecuteLayoutPass();
 
-                scene = scene.Clone();
+                scene = scene.CloneScene();
 
                 sceneBuilder.Update(scene, decorator);
 
@@ -638,7 +688,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 Assert.Equal(new Size(100, 100), scene.Size);
 
                 tree.ClientSize = new Size(110, 120);
-                scene = scene.Clone();
+                scene = scene.CloneScene();
                 sceneBuilder.Update(scene, tree);
 
                 Assert.Equal(new Size(110, 120), scene.Size);
@@ -651,6 +701,43 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 Assert.Equal(expected, scene.Layers[tree].Dirty.ToArray());
                 Assert.Equal(expected, scene.Layers[border].Dirty.ToArray());
+            }
+        }
+
+        [Fact]
+        public void Setting_Opacity_Should_Add_Descendent_Bounds_To_DirtyRects()
+        {
+            using (TestApplication())
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Child = decorator = new Decorator
+                    {
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            Width = 100,
+                            Height = 100,
+                        }
+                    }
+                };
+
+                tree.Measure(Size.Infinity);
+                tree.Arrange(new Rect(tree.DesiredSize));
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                decorator.Opacity = 0.5;
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, decorator);
+
+                Assert.NotEmpty(scene.Layers.Single().Dirty);
+                var dirty = scene.Layers.Single().Dirty.Single();
+                Assert.Equal(new Rect(0, 0, 100, 100), dirty);
             }
         }
 
@@ -675,6 +762,72 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
                 var decoratorNode = scene.FindNode(decorator);
                 Assert.Same(clip.PlatformImpl, decoratorNode.GeometryClip);
+            }
+        }
+
+        [Fact]
+        public void Disposing_Scene_Releases_DrawOperation_References()
+        {
+            using (TestApplication())
+            {
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                Image img;
+                var tree = new TestRoot
+                {
+                    Child = img = new Image
+                    {
+                        Source = new Bitmap(bitmap)
+                    }
+                };
+
+                Assert.Equal(2, bitmap.RefCount);
+                IRef<IDrawOperation> operation;
+
+                using (var scene = new Scene(tree))
+                {
+                    var sceneBuilder = new SceneBuilder();
+                    sceneBuilder.UpdateAll(scene);
+                    operation = scene.FindNode(img).DrawOperations[0];
+                    Assert.Equal(1, operation.RefCount);
+
+                    Assert.Equal(3, bitmap.RefCount);
+                }
+                Assert.Equal(0, operation.RefCount);
+                Assert.Equal(2, bitmap.RefCount);
+            }
+        }
+
+        [Fact]
+        public void Replacing_Control_Releases_DrawOperation_Reference()
+        {
+            using (TestApplication())
+            {
+                var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
+                Image img;
+                var tree = new TestRoot
+                {
+                    Child = img = new Image
+                    {
+                        Source = new Bitmap(bitmap)
+                    }
+                };
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var operation = scene.FindNode(img).DrawOperations[0];
+
+                tree.Child = new Decorator();
+
+                using (var result = scene.CloneScene())
+                {
+                    sceneBuilder.Update(result, img);
+                    scene.Dispose();
+
+                    Assert.Equal(0, operation.RefCount);
+                    Assert.Equal(2, bitmap.RefCount);
+                }
             }
         }
 

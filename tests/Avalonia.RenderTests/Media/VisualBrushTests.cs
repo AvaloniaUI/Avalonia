@@ -42,13 +42,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                         new Border
                         {
                             BorderBrush = Brushes.Blue,
-                            BorderThickness = 2,
+                            BorderThickness = new Thickness(2),
                             HorizontalAlignment = HorizontalAlignment.Center,
                             VerticalAlignment = VerticalAlignment.Center,
                             Child = new TextBlock
                             {
                                 FontSize = 24,
-                                FontFamily = "Arial",
+                                FontFamily = new FontFamily("Arial"),
                                 Background = Brushes.Green,
                                 Foreground = Brushes.Yellow,
                                 Text = "VisualBrush",

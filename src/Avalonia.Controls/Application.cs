@@ -2,16 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.Raw;
 using Avalonia.Layout;
-using Avalonia.Rendering;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -175,6 +176,15 @@ namespace Avalonia
             closable.Closed += (s, e) => source.Cancel();
             Dispatcher.UIThread.MainLoop(source.Token);
         }
+        
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is cancelled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+        }
 
         /// <summary>
         /// Exits the application
@@ -225,7 +235,9 @@ namespace Avalonia
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this)
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
+                .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
         }
     }
 }

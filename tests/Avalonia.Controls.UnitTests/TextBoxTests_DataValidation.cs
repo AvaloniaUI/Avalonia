@@ -42,7 +42,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setter_Exceptions_Should_Set_DataValidationErrors()
+        public void Setter_Exceptions_Should_Set_DataValidationErrors_Errors()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -55,12 +55,36 @@ namespace Avalonia.Controls.UnitTests
 
                 target.ApplyTemplate();
 
-                Assert.Null(target.DataValidationErrors);
+                Assert.Null(DataValidationErrors.GetErrors(target));
                 target.Text = "20";
-                Assert.Single(target.DataValidationErrors);
-                Assert.IsType<InvalidOperationException>(target.DataValidationErrors.Single());
+
+                IEnumerable<Exception> errors = DataValidationErrors.GetErrors(target);
+                Assert.Single(errors);
+                Assert.IsType<InvalidOperationException>(errors.Single());
                 target.Text = "1";
-                Assert.Null(target.DataValidationErrors);
+                Assert.Null(DataValidationErrors.GetErrors(target));
+            }
+        }
+
+        [Fact]
+        public void Setter_Exceptions_Should_Set_DataValidationErrors_HasErrors()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    DataContext = new ExceptionTest(),
+                    [!TextBox.TextProperty] = new Binding(nameof(ExceptionTest.LessThan10), BindingMode.TwoWay),
+                    Template = CreateTemplate(),
+                };
+
+                target.ApplyTemplate();
+
+                Assert.False(DataValidationErrors.GetHasErrors(target));
+                target.Text = "20";
+                Assert.True(DataValidationErrors.GetHasErrors(target));
+                target.Text = "1";
+                Assert.False(DataValidationErrors.GetHasErrors(target));
             }
         }
 

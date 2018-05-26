@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
@@ -99,9 +100,9 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
-            using (var d2d = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             {
                 _renderTarget.DrawBitmap(
                     d2d.Value,
@@ -119,9 +120,9 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmapImpl source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
-            using (var d2dSource = ((BitmapImpl)source).GetDirect2DBitmap(_renderTarget))
+            using (var d2dSource = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             using (var sourceBrush = new BitmapBrush(_renderTarget, d2dSource.Value))
             using (var d2dOpacityMask = CreateBrush(opacityMask, opacityMaskRect.Size))
             using (var geometry = new SharpDX.Direct2D1.RectangleGeometry(_renderTarget.Factory, destRect.ToDirect2D()))
@@ -188,7 +189,7 @@ namespace Avalonia.Direct2D1.Media
 
             if (pen != null)
             {
-                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen.Thickness).Size))
+                using (var d2dBrush = CreateBrush(pen.Brush, geometry.GetRenderBounds(pen).Size))
                 using (var d2dStroke = pen.ToDirect2DStrokeStyle(_renderTarget))
                 {
                     if (d2dBrush.PlatformBrush != null)
@@ -398,7 +399,7 @@ namespace Avalonia.Direct2D1.Media
                 return new ImageBrushImpl(
                     imageBrush,
                     _renderTarget,
-                    (BitmapImpl)imageBrush.Source.PlatformImpl,
+                    (BitmapImpl)imageBrush.Source.PlatformImpl.Item,
                     destinationSize);
             }
             else if (visualBrush != null)

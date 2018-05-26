@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.SceneGraph
     /// <summary>
     /// Represents a node in the low-level scene graph that represents geometry.
     /// </summary>
-    public interface IDrawOperation
+    public interface IDrawOperation : IDisposable
     {
         /// <summary>
         /// Gets the bounds of the visible content in the node in global coordinates.

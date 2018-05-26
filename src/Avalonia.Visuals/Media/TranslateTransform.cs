@@ -15,13 +15,13 @@ namespace Avalonia.Media
         /// Defines the <see cref="X"/> property.
         /// </summary>
         public static readonly StyledProperty<double> XProperty =
-            AvaloniaProperty.Register<TranslateTransform, double>("X");
+            AvaloniaProperty.Register<TranslateTransform, double>(nameof(X));
 
         /// <summary>
         /// Defines the <see cref="Y"/> property.
         /// </summary>
         public static readonly StyledProperty<double> YProperty =
-            AvaloniaProperty.Register<TranslateTransform, double>("Y");
+            AvaloniaProperty.Register<TranslateTransform, double>(nameof(Y));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TranslateTransform"/> class.

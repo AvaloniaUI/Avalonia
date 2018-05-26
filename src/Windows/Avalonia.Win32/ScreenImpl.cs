@@ -2,15 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#endif
 
 namespace Avalonia.Win32
 {
@@ -41,8 +34,8 @@ namespace Avalonia.Win32
                                 Rect avaloniaBounds = new Rect(bounds.left, bounds.top, bounds.right - bounds.left,
                                     bounds.bottom - bounds.top);
                                 Rect avaloniaWorkArea =
-                                    new Rect(workingArea.left, workingArea.top, workingArea.right - bounds.left,
-                                        workingArea.bottom - bounds.top);
+                                    new Rect(workingArea.left, workingArea.top, workingArea.right - workingArea.left,
+                                        workingArea.bottom - workingArea.top);
                                 screens[index] =
                                     new WinScreen(avaloniaBounds, avaloniaWorkArea, monitorInfo.dwFlags == 1,
                                         monitor);

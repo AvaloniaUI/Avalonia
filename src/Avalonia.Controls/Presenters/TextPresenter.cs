@@ -17,6 +17,9 @@ namespace Avalonia.Controls.Presenters
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
+
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
                 o => o.SelectionStart,
@@ -61,6 +64,12 @@ namespace Avalonia.Controls.Presenters
                 value = CoerceCaretIndex(value);
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
             }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
@@ -191,7 +200,7 @@ namespace Avalonia.Controls.Presenters
                     // The measure is currently invalid so there's no point trying to bring the 
                     // current char into view until a measure has been carried out as the scroll
                     // viewer extents may not be up-to-date.
-                    Dispatcher.UIThread.InvokeAsync(
+                    Dispatcher.UIThread.Post(
                         () =>
                         {
                             var rect = FormattedText.HitTestTextPosition(caretIndex);
@@ -202,9 +211,25 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override FormattedText CreateFormattedText(Size constraint)
+        /// <summary>
+        /// Creates the <see cref="FormattedText"/> used to render the text.
+        /// </summary>
+        /// <param name="constraint">The constraint of the text.</param>
+        /// <param name="text">The text to generated the <see cref="FormattedText"/> for.</param>
+        /// <returns>A <see cref="FormattedText"/> object.</returns>
+        protected override FormattedText CreateFormattedText(Size constraint, string text)
         {
-            var result = base.CreateFormattedText(constraint);
+            FormattedText result = null;
+
+            if (PasswordChar != default(char))
+            {
+                result = base.CreateFormattedText(constraint, new string(PasswordChar, text?.Length ?? 0));
+            }
+            else
+            {
+                result = base.CreateFormattedText(constraint, text);
+            }
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);

@@ -39,8 +39,10 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+        public Func<bool> Closing { get; set; }
         public IPlatformHandle Handle { get; }
         public WindowState WindowState { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }
         public Size MaxClientSize { get; } = new Size(4096, 4096);
         public event Action LostFocus;
 
@@ -49,7 +51,7 @@ namespace Avalonia.DesignerSupport.Remote
             // In previewer mode we completely ignore client-side viewport size
             if (obj is ClientViewportAllocatedMessage alloc)
             {
-                Dispatcher.UIThread.InvokeAsync(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
+                Dispatcher.UIThread.Post(() => SetDpi(new Vector(alloc.DpiX, alloc.DpiY)));
                 return;
             }
             base.OnMessage(transport, obj);
@@ -64,6 +66,10 @@ namespace Avalonia.DesignerSupport.Remote
             });
             ClientSize = clientSize;
             RenderIfNeeded();
+        }
+
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
         }
 
         public IScreenImpl Screen { get; } = new ScreenStub();
@@ -90,6 +96,10 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void ShowTaskbarIcon(bool value)
+        {
+        }
+
+        public void CanResize(bool value)
         {
         }
     }

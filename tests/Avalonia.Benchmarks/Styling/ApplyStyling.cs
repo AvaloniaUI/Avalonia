@@ -33,7 +33,7 @@ namespace Avalonia.Benchmarks.Styling
 
             var border = (Border)textBox.GetVisualChildren().Single();
 
-            if (border.BorderThickness != 2)
+            if (border.BorderThickness != new Thickness(2))
             {
                 throw new Exception("Styles not applied.");
             }

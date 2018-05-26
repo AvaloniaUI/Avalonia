@@ -311,7 +311,9 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
-            AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
+            var registry = AvaloniaPropertyRegistry.Instance;
+            registry.Register(typeof(TOwner), result);
+            registry.RegisterAttached(typeof(THost), result);
             return result;
         }
 
@@ -344,7 +346,9 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
-            AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
+            var registry = AvaloniaPropertyRegistry.Instance;
+            registry.Register(ownerType, result);
+            registry.RegisterAttached(typeof(THost), result);
             return result;
         }
 

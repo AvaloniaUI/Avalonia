@@ -28,7 +28,7 @@ namespace Avalonia.Rendering.SceneGraph
             Pen pen,
             IGeometryImpl geometry,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(geometry.GetRenderBounds(pen?.Thickness ?? 0), transform, null)
+            : base(geometry.GetRenderBounds(pen), transform, null)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();

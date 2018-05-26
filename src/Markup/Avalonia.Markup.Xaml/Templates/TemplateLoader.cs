@@ -14,7 +14,8 @@ namespace Avalonia.Markup.Xaml.Templates
         {
             var tdc = (ITypeDescriptorContext)serviceProvider;
             var ns = tdc.GetService<IXamlNamespaceResolver>();
-            return new TemplateContent(ns.GetNamespacePrefixes(), xamlReader);
+            var ambientProvider = tdc.GetService<IAmbientProvider>();
+            return new TemplateContent(ns.GetNamespacePrefixes(), xamlReader, ambientProvider);
         }
 
         public override XamlReader Save(object value, IServiceProvider serviceProvider)

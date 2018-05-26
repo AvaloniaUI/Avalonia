@@ -9,8 +9,10 @@ namespace ControlCatalog.NetCore
 {
     static class Program
     {
+        
         static void Main(string[] args)
         {
+            Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
             {
                 Console.WriteLine("Attach debugger and use 'Set next statement'");
