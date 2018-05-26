@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.Threading;
 
 namespace Avalonia.Reactive
@@ -25,25 +26,35 @@ namespace Avalonia.Reactive
             Contract.Requires<ArgumentNullException>(observer != null);
             Dispatcher.UIThread.VerifyAccess();
 
-            if (_observers == null)
+            var first = false;
+
+            for (; ; )
             {
-                if (_error != null)
+                if (Volatile.Read(ref _observers) == null)
                 {
-                    observer.OnError(_error);
+                    if (_error != null)
+                    {
+                        observer.OnError(_error);
+                    }
+                    else
+                    {
+                        observer.OnCompleted();
+                    }
+
+                    return Disposable.Empty;
                 }
-                else
+
+                lock (this)
                 {
-                    observer.OnCompleted();
+                    if (_observers == null)
+                    {
+                        continue;
+                    }
+
+                    first = _observers.Count == 0;
+                    _observers.Add(observer);
+                    break;
                 }
-
-                return Disposable.Empty;
-            }
-
-            var first = _observers.Count == 0;
-
-            lock (_observers)
-            {
-                _observers.Add(observer);
             }
 
             if (first)
@@ -53,22 +64,57 @@ namespace Avalonia.Reactive
 
             Subscribed(observer, first);
 
-            return Disposable.Create(() =>
-            {
-                if (_observers != null)
-                {
-                    lock (_observers)
-                    {
-                        _observers?.Remove(observer);
+            return new RemoveObserver(this, observer);
+        }
 
-                        if (_observers?.Count == 0)
+        void Remove(IObserver<T> observer)
+        {
+            if (Volatile.Read(ref _observers) != null)
+            {
+                lock (this)
+                {
+                    var observers = _observers;
+
+                    if (observers != null)
+                    {
+                        observers.Remove(observer);
+
+                        if (observers.Count == 0)
                         {
-                            Deinitialize();
-                            _observers.TrimExcess();
+                            observers.TrimExcess();
                         }
+                        else
+                        {
+                            return;
+                        }
+                    } else
+                    {
+                        return;
                     }
                 }
-            });
+
+                Deinitialize();
+            }
+        }
+
+        sealed class RemoveObserver : IDisposable
+        {
+            LightweightObservableBase<T> _parent;
+
+            IObserver<T> _observer;
+
+            public RemoveObserver(LightweightObservableBase<T> parent, IObserver<T> observer)
+            {
+                _parent = parent;
+                Volatile.Write(ref _observer, observer);
+            }
+
+            public void Dispose()
+            {
+                var observer = _observer;
+                Interlocked.Exchange(ref _parent, null)?.Remove(observer);
+                _observer = null;
+            }
         }
 
         protected abstract void Initialize();
@@ -76,12 +122,16 @@ namespace Avalonia.Reactive
 
         protected void PublishNext(T value)
         {
-            if (_observers != null)
+            if (Volatile.Read(ref _observers) != null)
             {
                 IObserver<T>[] observers;
 
-                lock (_observers)
+                lock (this)
                 {
+                    if (_observers == null)
+                    {
+                        return;
+                    }
                     observers = _observers.ToArray();
                 }
 
@@ -94,14 +144,18 @@ namespace Avalonia.Reactive
 
         protected void PublishCompleted()
         {
-            if (_observers != null)
+            if (Volatile.Read(ref _observers) != null)
             {
                 IObserver<T>[] observers;
 
-                lock (_observers)
+                lock (this)
                 {
+                    if (_observers == null)
+                    {
+                        return;
+                    }
                     observers = _observers.ToArray();
-                    _observers = null;
+                    Volatile.Write(ref _observers, null);
                 }
 
                 foreach (var observer in observers)
@@ -115,14 +169,21 @@ namespace Avalonia.Reactive
 
         protected void PublishError(Exception error)
         {
-            if (_observers != null)
+            if (Volatile.Read(ref _observers) != null)
             {
+
                 IObserver<T>[] observers;
 
-                lock (_observers)
+                lock (this)
                 {
+                    if (_observers == null)
+                    {
+                        return;
+                    }
+
+                    _error = error;
                     observers = _observers.ToArray();
-                    _observers = null;
+                    Volatile.Write(ref _observers, null);
                 }
 
                 foreach (var observer in observers)
@@ -130,7 +191,6 @@ namespace Avalonia.Reactive
                     observer.OnError(error);
                 }
 
-                _error = error;
                 Deinitialize();
             }
         }
