@@ -220,10 +220,7 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
+            OnExit?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -237,7 +234,7 @@ namespace Avalonia
                 throw new Exception("Run should only called once");
             }
 
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();          
+            _mainLoopCancellationTokenSource = new CancellationTokenSource();
 
             Dispatcher.UIThread.InvokeAsync(
                 () =>
@@ -263,10 +260,7 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
+            OnExit?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -277,10 +271,7 @@ namespace Avalonia
         {
             Dispatcher.UIThread.MainLoop(token);
 
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
+            OnExit?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -296,8 +287,6 @@ namespace Avalonia
 
                 Windows.RemoveAt(0);
             }
-
-            OnExit?.Invoke(this, EventArgs.Empty);
 
             _mainLoopCancellationTokenSource?.Cancel();
         }
