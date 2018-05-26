@@ -220,7 +220,10 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
-            OnExit?.Invoke(this, EventArgs.Empty);
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -260,7 +263,10 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
-            OnExit?.Invoke(this, EventArgs.Empty);
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -271,7 +277,10 @@ namespace Avalonia
         {
             Dispatcher.UIThread.MainLoop(token);
 
-            OnExit?.Invoke(this, EventArgs.Empty);
+            if (!IsExiting)
+            {
+                OnExit?.Invoke(this, EventArgs.Empty);
+            }       
         }
 
         /// <summary>
@@ -287,6 +296,8 @@ namespace Avalonia
 
                 Windows.RemoveAt(0);
             }
+
+            OnExit?.Invoke(this, EventArgs.Empty);
 
             _mainLoopCancellationTokenSource?.Cancel();
         }
