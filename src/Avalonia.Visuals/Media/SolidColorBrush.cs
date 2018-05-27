@@ -53,6 +53,21 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Parses a brush string.
+        /// </summary>
+        /// <param name="s">The brush string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        /// <remarks>
+        /// Whereas <see cref="Brush.Parse(string)"/> may return an immutable solid color brush,
+        /// this method always returns a mutable <see cref="SolidColorBrush"/>.
+        /// </remarks>
+        public static new SolidColorBrush Parse(string s)
+        {
+            var brush = (ISolidColorBrush)Brush.Parse(s);
+            return brush is SolidColorBrush solid ? solid : new SolidColorBrush(brush.Color);
+        }
+
+        /// <summary>
         /// Returns a string representation of the brush.
         /// </summary>
         /// <returns>A string representation of the brush.</returns>

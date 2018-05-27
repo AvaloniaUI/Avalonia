@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
@@ -21,29 +20,25 @@ namespace Avalonia.Direct2D1.Media
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text;
+
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
-            using (var format = new DWrite.TextFormat(
-                factory,
-                typeface?.FontFamilyName ?? "Courier New",
-                (DWrite.FontWeight)(typeface?.Weight ?? FontWeight.Normal),
-                (DWrite.FontStyle)(typeface?.Style ?? FontStyle.Normal),
-                (float)(typeface?.FontSize ?? 12)))
-            {
-                format.WordWrapping = wrapping == TextWrapping.Wrap ? 
-                    DWrite.WordWrapping.Wrap :
-                    DWrite.WordWrapping.NoWrap;
+            var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
 
-                TextLayout = new DWrite.TextLayout(
-                    factory,
-                    text ?? string.Empty,
-                    format,
-                    (float)constraint.Width,
-                    (float)constraint.Height)
-                {
-                    TextAlignment = textAlignment.ToDirect2D()
-                };
-            }
+            textFormat.WordWrapping =
+                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
+
+            TextLayout = new DWrite.TextLayout(
+                             factory,
+                             Text ?? string.Empty,
+                             textFormat,
+                             (float)constraint.Width,
+                             (float)constraint.Height)
+            {
+                TextAlignment = textAlignment.ToDirect2D()
+            };
+
+            textFormat.Dispose();
 
             if (spans != null)
             {
@@ -64,11 +59,6 @@ namespace Avalonia.Direct2D1.Media
 
         public DWrite.TextLayout TextLayout { get; }
 
-        public void Dispose()
-        {
-            TextLayout.Dispose();
-        }
-
         public IEnumerable<FormattedTextLine> GetLines()
         {
             var result = TextLayout.GetLineMetrics();
@@ -77,14 +67,11 @@ namespace Avalonia.Direct2D1.Media
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            SharpDX.Mathematics.Interop.RawBool isTrailingHit;
-            SharpDX.Mathematics.Interop.RawBool isInside;
-
             var result = TextLayout.HitTestPoint(
                 (float)point.X,
                 (float)point.Y,
-                out isTrailingHit,
-                out isInside);
+                out var isTrailingHit,
+                out var isInside);
 
             return new TextHitTestResult
             {
@@ -96,14 +83,7 @@ namespace Avalonia.Direct2D1.Media
 
         public Rect HitTestTextPosition(int index)
         {
-            float x;
-            float y;
-
-            var result = TextLayout.HitTestTextPosition(
-                index,
-                false,
-                out x,
-                out y);
+            var result = TextLayout.HitTestTextPosition(index, false, out _, out _);
 
             return new Rect(result.Left, result.Top, result.Width, result.Height);
         }
