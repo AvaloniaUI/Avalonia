@@ -1,6 +1,4 @@
 <Project>
   <Import Project="..\build\SharedVersion.props" />
-  <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
-  </ItemGroup>
+  <Import Project="..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
 </Project>
