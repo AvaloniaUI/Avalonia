@@ -30,7 +30,6 @@
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
-        <Compile Include="Data\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -48,12 +47,6 @@
         <Compile Include="Converters\AvaloniaPropertyTypeConverter.cs" />
         <Compile Include="Converters\PointsListTypeConverter.cs" />
         <Compile Include="Converters\SelectorTypeConverter.cs" />
-        <Compile Include="Data\Binding.cs" />
-        <Compile Include="Data\DelayedBinding.cs" />
-        <Compile Include="Data\MultiBinding.cs" />
-        <Compile Include="Data\RelativeSource.cs" />
-        <Compile Include="Converters\ThicknessTypeConverter.cs" />
-        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
