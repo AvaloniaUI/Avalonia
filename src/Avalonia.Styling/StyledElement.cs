@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -16,14 +17,14 @@ using Avalonia.Styling;
 namespace Avalonia
 {
     /// <summary>
-    /// Extends an <see cref="AvaloniaObject"/> with the following features:
+    /// Extends an <see cref="Animatable"/> with the following features:
     /// 
     /// - An inherited <see cref="DataContext"/>.
     /// - Implements <see cref="IStyleable"/> to allow styling to work on the styled element.
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// - A collection of class strings for custom styling.
     /// </summary>
-    public class StyledElement : AvaloniaObject, IStyledElement, ISetLogicalParent, ISetInheritanceParent
+    public class StyledElement : Animatable, IStyledElement, ISetLogicalParent, ISetInheritanceParent
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.

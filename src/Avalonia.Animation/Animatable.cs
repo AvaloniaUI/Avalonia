@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Base class for control which can have property transitions.
     /// </summary>
-    public class Animatable : StyledElement
+    public class Animatable : AvaloniaObject
     {
         /// <summary>
         /// Initializes this <see cref="Animatable"/> object.
