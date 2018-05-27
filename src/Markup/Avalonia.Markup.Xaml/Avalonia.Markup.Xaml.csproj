@@ -32,6 +32,7 @@
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Data\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
@@ -51,11 +52,11 @@
         <Compile Include="Data\DelayedBinding.cs" />
         <Compile Include="Data\MultiBinding.cs" />
         <Compile Include="Data\RelativeSource.cs" />
+        <Compile Include="Converters\ThicknessTypeConverter.cs" />
+        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
-        <Compile Include="Parsers\SelectorGrammar.cs" />
-        <Compile Include="Parsers\SelectorParser.cs" />
         <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
         <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />
@@ -86,6 +87,5 @@
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Markup.props" />
-  <Import Project="..\..\..\build\Sprache.props" />
   <Import Project="..\..\..\build\Rx.props" />
 </Project>

@@ -6,8 +6,8 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Data;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
@@ -46,11 +46,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
 
             return null;
-        }
-
-        public bool IsExpanded(object item)
-        {
-            return true;
         }
 
         public IControl Build(object data)

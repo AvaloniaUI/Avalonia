@@ -5,6 +5,7 @@
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
   <Import Project="..\..\build\Base.props" />
+  <Import Project="..\..\build\Binding.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
 </Project>

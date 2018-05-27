@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
