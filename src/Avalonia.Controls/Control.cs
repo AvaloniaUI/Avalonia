@@ -31,7 +31,7 @@ namespace Avalonia.Controls
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// </remarks>
-    public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, IRequiresTemplateInStyle
+    public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, IRequiresTemplateInSetter
     {
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.

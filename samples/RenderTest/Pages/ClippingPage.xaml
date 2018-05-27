@@ -10,7 +10,7 @@
           <Style.Animations>
             <Animation Duration="0:0:2" RepeatCount="Loop">
               <KeyFrame Cue="100%">
-                <TransformSetter Property="RotateTransform.Angle" Value="360"/>
+                <Setter Property="RotateTransform.Angle" Value="360"/>
               </KeyFrame>
             </Animation>
           </Style.Animations>
