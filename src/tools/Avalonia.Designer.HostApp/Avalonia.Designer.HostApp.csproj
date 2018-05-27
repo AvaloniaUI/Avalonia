@@ -12,7 +12,6 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj" />
     <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
     <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
