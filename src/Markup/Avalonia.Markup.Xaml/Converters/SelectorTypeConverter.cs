@@ -3,12 +3,12 @@
 
 using System;
 using System.Globalization;
-using Avalonia.Markup.Xaml.Parsers;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
     using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
+    using System.ComponentModel;
 
     public class SelectorTypeConverter : TypeConverter
     {

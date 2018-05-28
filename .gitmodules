@@ -1,7 +1,3 @@
-[submodule "src/Avalonia.HtmlRenderer/external"]
-	path = src/Avalonia.HtmlRenderer/external
-	url = https://github.com/AvaloniaUI/HTML-Renderer.git
-	branch = perspex-pcl
 [submodule "src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github"]
 	path = src/Markup/Avalonia.Markup.Xaml/PortableXaml/portable.xaml.github
 	url = https://github.com/AvaloniaUI/Portable.Xaml.git
