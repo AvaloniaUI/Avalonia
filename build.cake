@@ -93,7 +93,6 @@ Task("Clean")
     CleanDirectory(parameters.NugetRoot);
     CleanDirectory(parameters.ZipRoot);
     CleanDirectory(parameters.BinRoot);
-    CleanDirectory(parameters.DesignerTestsRoot);
 });
 
 Task("Restore-NuGet-Packages")
@@ -183,7 +182,6 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Build")
-    .IsDependentOn("Run-Designer-Unit-Tests")
     .IsDependentOn("Run-Render-Tests")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() => {
@@ -209,25 +207,6 @@ Task("Run-Render-Tests")
         RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
         RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", parameters, true);
     });
-
-Task("Run-Designer-Unit-Tests")
-    .IsDependentOn("Build")
-    .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
-    .Does(() =>
-{
-    var toolPath = (parameters.IsPlatformAnyCPU || parameters.IsPlatformX86) ? 
-        Context.Tools.Resolve("xunit.console.x86.exe") :
-        Context.Tools.Resolve("xunit.console.exe");
-
-    var xUnitSettings = new XUnit2Settings 
-    { 
-        ToolPath = toolPath,
-        Parallelism = ParallelismOption.None,
-        ShadowCopy = false,
-    };
-
-    XUnit2("./artifacts/designer-tests/Avalonia.DesignerSupport.Tests.dll", xUnitSettings);
-});
 
 Task("Copy-Files")
     .IsDependentOn("Run-Unit-Tests")
@@ -376,7 +355,6 @@ Task("Inspect")
     {
         var badIssues = new []{"PossibleNullReferenceException"};
         var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\windows\\avalonia.designer",
             "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         

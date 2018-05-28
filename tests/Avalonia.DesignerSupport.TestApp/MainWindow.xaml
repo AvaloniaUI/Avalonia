@@ -1,5 +1,0 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
-        Title="TESTAPP">
-    <Button/>
-</Window>
