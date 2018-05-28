@@ -262,23 +262,6 @@ public class Packages
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.HtmlRenderer
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.HtmlRenderer",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard2.0" }
-                },
-                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard2.0"),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.ReactiveUI
             ///////////////////////////////////////////////////////////////////////////////
             new NuGetPackSettings()

@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Logging;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
