@@ -65,10 +65,6 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
-        <Compile Remove="**\UriTypeConverter.cs" />
-    </ItemGroup>
-    <ItemGroup>
-      <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\Portable.Xaml.ComponentModel\UriTypeConverter.cs" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
