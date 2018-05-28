@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
 {
@@ -63,6 +65,16 @@ namespace Avalonia.Controls
             }
 
             return (T)result;
+        }
+
+        public static INameScope FindNameScope(this ILogical control)
+        {
+            Contract.Requires<ArgumentNullException>(control != null);
+
+            return control.GetSelfAndLogicalAncestors()
+                .OfType<StyledElement>()
+                .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
+                .FirstOrDefault(x => x != null);
         }
     }
 }
