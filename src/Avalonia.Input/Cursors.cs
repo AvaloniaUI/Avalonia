@@ -65,6 +65,13 @@ namespace Avalonia.Input
 
         public IPlatformHandle PlatformCursor { get; }
 
+        public static Cursor Parse(string s)
+        {
+            return Enum.TryParse<StandardCursorType>(s, true, out var t) ?
+                new Cursor(t) :
+                throw new ArgumentException($"Unrecognised cursor type '{s}'.");
+        }
+
         private static IPlatformHandle GetCursor(StandardCursorType type)
         {
             var platform = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();

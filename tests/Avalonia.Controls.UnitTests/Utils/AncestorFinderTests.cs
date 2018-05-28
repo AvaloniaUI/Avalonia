@@ -19,7 +19,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             var grandParent = new Border();
             var grandParent2 = new Border();
 
-            IVisual currentParent = null;
+            IStyledElement currentParent = null;
             var subscription = AncestorFinder.Create(child, typeof (Border)).Subscribe(s => currentParent = s);
 
             Assert.Null(currentParent);

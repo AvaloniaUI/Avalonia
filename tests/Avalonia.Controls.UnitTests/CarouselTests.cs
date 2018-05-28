@@ -102,7 +102,7 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.ItemsProperty] = control[~Carousel.ItemsProperty],
                 [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
-                [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
+                [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
             };
         }
     }

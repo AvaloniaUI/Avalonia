@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Data;

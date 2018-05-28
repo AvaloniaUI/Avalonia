@@ -2,14 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     using System;
+    using Avalonia.Data.Converters;
+    using Avalonia.Markup.Data;
     using Portable.Xaml.Markup;
 
-    [MarkupExtensionReturnType(typeof(Binding))]
+    [MarkupExtensionReturnType(typeof(IBinding))]
     public class TemplateBindingExtension : MarkupExtension
     {
         public TemplateBindingExtension()

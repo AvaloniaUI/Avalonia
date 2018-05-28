@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
+using Avalonia.Data.Core;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Collections
@@ -145,7 +146,7 @@ namespace Avalonia.Base.UnitTests.Collections
             var tracker = new PropertyChangedTracker(target);
             target.Clear();
 
-            Assert.Equal(new[] { "Count", "Item[]" }, tracker.Names);
+            Assert.Equal(new[] { "Count", CommonPropertyNames.IndexerName }, tracker.Names);
         }
     }
 }
