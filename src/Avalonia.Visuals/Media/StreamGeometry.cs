@@ -33,7 +33,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>A <see cref="StreamGeometry"/>.</returns>
-        public static StreamGeometry Parse(string s)
+        public static new StreamGeometry Parse(string s)
         {
             StreamGeometry result = new StreamGeometry();
 

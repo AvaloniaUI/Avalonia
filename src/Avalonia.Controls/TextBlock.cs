@@ -4,7 +4,6 @@
 using System;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -28,10 +27,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly AttachedProperty<string> FontFamilyProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, string>(
+        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue: "Courier New",
+                defaultValue:  FontFamily.Default,
                 inherits: true);
 
         /// <summary>
@@ -111,6 +110,8 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
+            _text = string.Empty;
+
             Observable.Merge(
                 this.GetObservable(TextProperty).Select(_ => Unit.Default),
                 this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
@@ -146,7 +147,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the font family.
         /// </summary>
-        public string FontFamily
+        public FontFamily FontFamily
         {
             get { return GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
@@ -227,7 +228,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <returns>The font family.</returns>
-        public static string GetFontFamily(Control control)
+        public static FontFamily GetFontFamily(Control control)
         {
             return control.GetValue(FontFamilyProperty);
         }
@@ -278,7 +279,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         /// <param name="value">The property value to set.</param>
         /// <returns>The font family.</returns>
-        public static void SetFontFamily(Control control, string value)
+        public static void SetFontFamily(Control control, FontFamily value)
         {
             control.SetValue(FontFamilyProperty, value);
         }

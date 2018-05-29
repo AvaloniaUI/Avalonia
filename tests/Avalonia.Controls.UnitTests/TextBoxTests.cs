@@ -8,7 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
