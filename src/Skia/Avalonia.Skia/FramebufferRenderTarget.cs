@@ -50,8 +50,8 @@ namespace Avalonia.Skia
 
             public void Dispose()
             {
-                using (var tmp = _bitmap.Copy(_nfo.ColorType))
-                    tmp.CopyPixelsTo(_fb, _nfo.BytesPerPixel * _nfo.Height * _rowBytes, _rowBytes);
+                //using (var tmp = _bitmap.Copy(_nfo.ColorType))
+                    //tmp.GetPixels(_fb, _nfo.BytesPerPixel * _nfo.Height * _rowBytes, _rowBytes);
                 _bitmap.Dispose();
             }
             

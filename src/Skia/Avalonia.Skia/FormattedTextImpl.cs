@@ -331,7 +331,7 @@ namespace Avalonia.Skia
             {
                 float measuredWidth;
                 string subText = textInput.Substring(textIndex, stop - textIndex);
-                lengthBreak = (int)paint.BreakText(subText, maxWidth, out measuredWidth) / 2;
+                lengthBreak = (int)paint.BreakText(subText, maxWidth, out measuredWidth);
             }
 
             //Check for white space or line breakers before the lengthBreak
