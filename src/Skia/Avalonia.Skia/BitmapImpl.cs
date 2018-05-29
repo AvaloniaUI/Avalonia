@@ -120,12 +120,10 @@ namespace Avalonia.Skia
             public BitmapFramebuffer(SKBitmap bmp)
             {
                 _bmp = bmp;
-                _bmp.LockPixels();
             }
 
             public void Dispose()
             {
-                _bmp.UnlockPixels();
                 _bmp = null;
             }
 
