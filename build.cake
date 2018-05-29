@@ -194,6 +194,7 @@ Task("Run-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
+        RunCoreTest("./tests/Avalonia.DesignerSupport.UnitTests", parameters, false);
         if (parameters.IsRunningOnWindows)
         {
             RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", parameters, true);
