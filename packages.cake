@@ -174,7 +174,7 @@ public class Packages
         var extensionsToPack = new [] {".dll", ".xml", ".pdb"};
 
         var coreLibrariesFiles = coreLibraries
-            .Zip(extensionsToPack, (lib, ext) => new { lib, ext})
+            .SelectMany(lib => extensionsToPack.Select(ext => new {lib, ext}))
             .Select((lib) => {
                 return (FilePath)context.File(lib.lib[0] + lib.lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard2.0/" + lib.lib[1] + lib.ext);
         }).ToList();
