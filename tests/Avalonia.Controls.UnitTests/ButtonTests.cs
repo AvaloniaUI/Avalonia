@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Data;
+using Avalonia.Markup.Data;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests

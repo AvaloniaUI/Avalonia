@@ -12,7 +12,7 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;

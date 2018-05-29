@@ -67,21 +67,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Finds the name scope for a control by searching up the logical tree.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns>The control's name scope, or null if not found.</returns>
-        public static INameScope FindNameScope(this IControl control)
-        {
-            Contract.Requires<ArgumentNullException>(control != null);
-
-            return control.GetSelfAndLogicalAncestors()
-                .OfType<Control>()
-                .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
-                .FirstOrDefault(x => x != null);
-        }
-
-        /// <summary>
         /// Adds or removes a pseudoclass depending on a boolean value.
         /// </summary>
         /// <param name="classes">The pseudoclasses collection.</param>

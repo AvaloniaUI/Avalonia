@@ -6,7 +6,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;

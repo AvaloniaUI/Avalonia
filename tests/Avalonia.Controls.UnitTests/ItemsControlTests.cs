@@ -74,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
                 root.Content = target;
 
                 var templatedParent = new Button();
-                target.TemplatedParent = templatedParent;
+                target.SetValue(StyledElement.TemplatedParentProperty, templatedParent);
                 target.Template = GetTemplate();
 
                 target.Items = new[] { "Foo" };
@@ -360,7 +360,7 @@ namespace Avalonia.Controls.UnitTests
 
             var presenter = new ItemsPresenter
             {
-                TemplatedParent = target,
+                [StyledElement.TemplatedParentProperty] = target,
                 [~ItemsPresenter.ItemsProperty] = target[~ItemsControl.ItemsProperty],
             };
 

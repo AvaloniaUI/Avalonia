@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup> 
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-  </ItemGroup>  
+    <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
+  </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
 </Project>

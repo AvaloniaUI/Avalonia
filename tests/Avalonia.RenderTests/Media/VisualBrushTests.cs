@@ -48,7 +48,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             Child = new TextBlock
                             {
                                 FontSize = 24,
-                                FontFamily = "Arial",
+                                FontFamily = new FontFamily("Arial"),
                                 Background = Brushes.Green,
                                 Foreground = Brushes.Yellow,
                                 Text = "VisualBrush",

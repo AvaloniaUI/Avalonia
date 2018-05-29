@@ -1,9 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
-
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Avalonia.Media;
 using SkiaSharp;
 
@@ -14,6 +13,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal static class TypefaceCache
     {
+        public static SKTypeface Default = SKTypeface.FromFamilyName(FontFamily.Default.Name);
         static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> Cache = new Dictionary<string, Dictionary<FontKey, SKTypeface>>();
 
         struct FontKey
@@ -21,9 +21,9 @@ namespace Avalonia.Skia
             public readonly SKFontStyleSlant Slant;
             public readonly SKFontStyleWeight Weight;
 
-            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant  slant)
+            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant slant)
             {
-                Slant  = slant;
+                Slant = slant;
                 Weight = weight;
             }
 
@@ -44,35 +44,28 @@ namespace Avalonia.Skia
             public bool Equals(FontKey other)
             {
                 return Slant == other.Slant &&
-                    Weight == other.Weight;
+                       Weight == other.Weight;
             }
 
             // Equals and GetHashCode ommitted
         }
 
-        unsafe static SKTypeface GetTypeface(string name, FontKey key)
+        private static SKTypeface GetTypeface(string name, FontKey key)
         {
-            if (name == null)
+            var familyKey = name;
+
+            if (!Cache.TryGetValue(familyKey, out var entry))
             {
-                name = "Arial";
+                Cache[familyKey] = entry = new Dictionary<FontKey, SKTypeface>();
             }
 
-            Dictionary<FontKey, SKTypeface> entry;
-
-            if (!Cache.TryGetValue(name, out entry))
+            if (!entry.TryGetValue(key, out var typeface))
             {
-                Cache[name] = entry = new Dictionary<FontKey, SKTypeface>();
-            }
+                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
 
-            SKTypeface typeface = null;
-
-            if (!entry.TryGetValue(key, out typeface))
-            {
-                typeface = SKTypeface.FromFamilyName(name, key.Weight, SKFontStyleWidth.Normal, key.Slant);
-
-                if (typeface == null)
+                if (typeface.FamilyName != name)
                 {
-                    typeface = SKTypeface.FromFamilyName(null, SKTypefaceStyle.Normal);
+                    typeface = Default;
                 }
 
                 entry[key] = typeface;
@@ -85,7 +78,7 @@ namespace Avalonia.Skia
         {
             SKFontStyleSlant skStyle = SKFontStyleSlant.Upright;
 
-            switch(style)
+            switch (style)
             {
                 case FontStyle.Italic:
                     skStyle = SKFontStyleSlant.Italic;
