@@ -19,6 +19,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var observer = ExpressionObserver.CreateFromExpression(target, o => o);
 
             Assert.Equal(target, await observer.Take(1));
+            GC.KeepAlive(target);
         }
 
         [Fact]
@@ -62,6 +63,18 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = ExpressionObserver.CreateFromExpression(data, o => o[0]);
 
             Assert.Equal(data[0], await target.Take(1));
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Indexer_List_Accessor_Can_Read_Value()
+        {
+            var data = new List<int> { 1, 2, 3, 4 };
+
+            var target = ExpressionObserver.CreateFromExpression(data, o => o[0]);
+
+            Assert.Equal(data[0], await target.Take(1));
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -76,6 +89,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var target = ExpressionObserver.CreateFromExpression(data, o => o[key]);
 
             Assert.Equal(data[key], await target.Take(1));
+
+            GC.KeepAlive(data);
         }
 
         [Fact]
@@ -93,6 +108,62 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public async Task Inheritance_Casts_Should_Be_Ignored()
+        {
+            NotifyingBase test = new Class1 { Foo = "Test" };
+
+            var target = ExpressionObserver.CreateFromExpression(test, o => ((Class1)o).Foo);
+
+            Assert.Equal("Test", await target.Take(1));
+
+            GC.KeepAlive(test);
+        }
+
+        [Fact]
+        public void Convert_Casts_Should_Error()
+        {
+            var test = 1;
+
+            Assert.Throws<ExpressionParseException>(() => ExpressionObserver.CreateFromExpression(test, o => (double)o));
+        }
+
+        [Fact]
+        public async Task As_Operator_Should_Be_Ignored()
+        {
+            NotifyingBase test = new Class1 { Foo = "Test" };
+
+            var target = ExpressionObserver.CreateFromExpression(test, o => (o as Class1).Foo);
+
+            Assert.Equal("Test", await target.Take(1));
+
+            GC.KeepAlive(test);
+        }
+
+        [Fact]
+        public async Task Avalonia_Property_Indexer_Reads_Avalonia_Property_Value()
+        {
+            var test = new Class2();
+
+            var target = ExpressionObserver.CreateFromExpression(test, o => o[Class2.FooProperty]);
+
+            Assert.Equal("foo", await target.Take(1));
+
+            GC.KeepAlive(test);
+        }
+
+        [Fact]
+        public async Task Complex_Expression_Correctly_Parsed()
+        {
+            var test = new Class1 { Foo = "Test" };
+
+            var target = ExpressionObserver.CreateFromExpression(test, o => o.Foo.Length);
+
+            Assert.Equal(test.Foo.Length, await target.Take(1));
+
+            GC.KeepAlive(test);
+        }
+
         private class Class1 : NotifyingBase
         {
             private string _foo;
@@ -106,6 +177,15 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     RaisePropertyChanged(nameof(Foo));
                 }
             }
+        }
+
+
+        private class Class2 : AvaloniaObject
+        {
+            public static readonly StyledProperty<string> FooProperty =
+                AvaloniaProperty.Register<Class2, string>("Foo", defaultValue: "foo");
+
+            public string ClrProperty { get; } = "clr-property";
         }
     }
 }

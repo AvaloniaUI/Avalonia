@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -28,24 +29,43 @@ namespace Avalonia.Data.Core.Parsers
 
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            if (node.NodeType != ExpressionType.Not || node.Type != typeof(bool))
+            if (node.NodeType == ExpressionType.Not && node.Type == typeof(bool))
             {
-                throw new ExpressionParseException(0, $"Invalid unary operation {node.NodeType} in binding expression");
+                Nodes.Add(new LogicalNotNode());
             }
-
-            Nodes.Add(new LogicalNotNode());
+            else if (node.NodeType == ExpressionType.Convert)
+            {
+                if (node.Operand.Type.IsAssignableFrom(node.Type))
+                {
+                    // Ignore inheritance casts 
+                }
+                else
+                {
+                    throw new ExpressionParseException(0, $"Cannot parse non-inheritance casts in a binding expression.");
+                }
+            }
+            else if (node.NodeType == ExpressionType.TypeAs)
+            {
+                // Ignore as operator.
+            }
+            else
+            {
+                throw new ExpressionParseException(0, $"Unable to parse unary operator {node.NodeType} in a binding expression");
+            }
 
             return base.VisitUnary(node);
         }
 
         protected override Expression VisitMember(MemberExpression node)
         {
+            var visited = base.VisitMember(node);
             Nodes.Add(new PropertyAccessorNode(node.Member.Name, enableDataValidation));
-            return base.VisitMember(node);
+            return visited;
         }
 
         protected override Expression VisitIndex(IndexExpression node)
         {
+            var visited = base.VisitIndex(node);
             if (node.Indexer == AvaloniaObjectIndexer)
             {
                 var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
@@ -56,7 +76,7 @@ namespace Avalonia.Data.Core.Parsers
                 Nodes.Add(new IndexerExpressionNode(node));
             }
 
-            return node;
+            return visited;
         }
 
         private T GetArgumentExpressionValue<T>(Expression expr)
@@ -75,7 +95,8 @@ namespace Avalonia.Data.Core.Parsers
         {
             if (node.NodeType == ExpressionType.ArrayIndex)
             {
-                return base.VisitBinary(node);
+                base.VisitBinary(node);
+                return Visit(Expression.MakeIndex(node.Left, null, new[] { node.Right }));
             }
             throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
         }
@@ -137,7 +158,21 @@ namespace Avalonia.Data.Core.Parsers
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
+            base.VisitMethodCall(node);
+            var property = TryGetPropertyFromMethod(node.Method);
+
+            if (property != null)
+            {
+                return Visit(Expression.MakeIndex(node.Object, property, node.Arguments));
+            }
+
             throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
+        }
+
+        private PropertyInfo TryGetPropertyFromMethod(MethodInfo method)
+        {
+            var type = method.DeclaringType;
+            return type.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);
         }
 
         protected override Expression VisitSwitch(SwitchExpression node)
