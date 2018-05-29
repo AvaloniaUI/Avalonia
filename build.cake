@@ -182,6 +182,7 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Build")
+    .IsDependentOn("Run-Designer-Tests")
     .IsDependentOn("Run-Render-Tests")
     .WithCriteria(() => !parameters.SkipTests)
     .Does(() => {
@@ -194,11 +195,17 @@ Task("Run-Unit-Tests")
         RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.DesignerSupport.UnitTests", parameters, false);
         if (parameters.IsRunningOnWindows)
         {
             RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", parameters, true);
         }
+    });
+
+Task("Run-Designer-Tests")
+    .IsDependentOn("Build")
+    .WithCriteria(() => !parameters.SkipTests)
+    .Does(() => {
+        RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", parameters, false);
     });
 
 Task("Run-Render-Tests")
