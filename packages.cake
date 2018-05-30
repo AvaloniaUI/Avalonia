@@ -345,7 +345,7 @@ public class Packages
                 Dependencies = new DependencyBuilder(this)
                 {
                     new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.OpenGL", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.OpenGL", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Win32.Natives", Version = Win32NativesVersion, TargetFramework="netcoreapp2.0" },
                     new NuSpecDependency() { Id = "Avalonia.Win32.Natives", Version = Win32NativesVersion, TargetFramework="net461" }
                 }.Deps(new string[]{null}, "System.Drawing.Common"),
