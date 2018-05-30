@@ -105,7 +105,7 @@ public class Packages
         });
 
         context.Information("Setting NuGet package dependencies versions:");
-
+        var Win32NativesVersion = packageVersions["AvaloniaUI.Win32.Natives"].FirstOrDefault().Item1;
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
         var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
         var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
@@ -121,6 +121,7 @@ public class Packages
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
 
+        context.Information("Package: AvaloniaUI.Win32.Natives, version: {0}", Win32NativesVersion);
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
@@ -343,7 +344,10 @@ public class Packages
                 Id = "Avalonia.Win32",
                 Dependencies = new DependencyBuilder(this)
                 {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.OpenGL", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Win32.Natives", Version = Win32NativesVersion, TargetFramework="netcoreapp2.0" },
+                    new NuSpecDependency() { Id = "Avalonia.Win32.Natives", Version = Win32NativesVersion, TargetFramework="net461" }
                 }.Deps(new string[]{null}, "System.Drawing.Common"),
                 Files = new []
                 {
@@ -416,6 +420,19 @@ public class Packages
             },
             new NuGetPackSettings()
             {
+                Id = "Avalonia.OpenGL",
+                Dependencies = new []
+                {
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.OpenGL.dll", Target = "lib/netstandard2.0" }
+                },
+                BasePath = context.Directory("./src/OpenGL/Avalonia.OpenGL/bin/" + parameters.DirSuffix + "/netstandard2.0"),
+                OutputDirectory = parameters.NugetRoot
+            },
+            new NuGetPackSettings()
+            {
                 Id = "Avalonia.MonoMac",
                 Dependencies = new DependencyBuilder(this)
                 {
@@ -439,6 +456,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.OpenGL", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.MonoMac", Version = parameters.Version }
                 },

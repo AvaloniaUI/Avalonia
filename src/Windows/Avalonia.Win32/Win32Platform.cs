@@ -13,9 +13,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.Win32.EGL;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 
@@ -25,11 +27,12 @@ namespace Avalonia
     {
         public static T UseWin32<T>(
             this T builder,
-            bool deferredRendering = true) 
+            bool deferredRendering = true,
+            bool useAngle = true)
                 where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(
-                () => Win32.Win32Platform.Initialize(deferredRendering),
+                () => Win32.Win32Platform.Initialize(deferredRendering, useAngle),
                 "Win32");
         }
     }
@@ -69,7 +72,7 @@ namespace Avalonia.Win32
             Initialize(true);
         }
 
-        public static void Initialize(bool deferredRendering = true)
+        public static void Initialize(bool deferredRendering = true, bool useAngle = true)
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
@@ -81,6 +84,15 @@ namespace Avalonia.Win32
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+
+            if (useAngle)
+            {
+                AvaloniaLocator.CurrentMutable.Bind<Func<GlRequest, IGlContextBuilder>>().ToConstant<Func<GlRequest, IGlContextBuilder>>((request) => new EglContextBuilder(request));
+            }
+            else
+            {
+                throw new NotImplementedException("WGL support is not yet implemented!");
+            }
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
