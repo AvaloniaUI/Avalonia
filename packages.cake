@@ -421,9 +421,6 @@ public class Packages
             new NuGetPackSettings()
             {
                 Id = "Avalonia.OpenGL",
-                Dependencies = new []
-                {
-                },
                 Files = new []
                 {
                     new NuSpecContent { Source = "Avalonia.OpenGL.dll", Target = "lib/netstandard2.0" }
