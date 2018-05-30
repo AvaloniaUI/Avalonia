@@ -5,6 +5,7 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.VisualTree
 {
@@ -105,6 +106,11 @@ namespace Avalonia.VisualTree
         /// Gets or sets the Z index of the node.
         /// </summary>
         int ZIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets effect.
+        /// </summary>
+        IEffect Effect { get; set;  }
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.

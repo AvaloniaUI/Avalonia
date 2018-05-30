@@ -11,6 +11,7 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -90,6 +91,12 @@ namespace Avalonia
         /// </summary>
         public static readonly StyledProperty<int> ZIndexProperty =
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
+
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IEffect> EffectProperty =
+            AvaloniaProperty.Register<Visual, IEffect>(nameof(Effect));
 
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
@@ -229,6 +236,15 @@ namespace Avalonia
         {
             get { return GetValue(ZIndexProperty); }
             set { SetValue(ZIndexProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets effect.
+        /// </summary>
+        public IEffect Effect
+        {
+            get { return GetValue(EffectProperty); }
+            set { SetValue(EffectProperty, value); }
         }
 
         /// <summary>

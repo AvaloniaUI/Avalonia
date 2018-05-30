@@ -10,6 +10,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -104,6 +105,7 @@ namespace Avalonia.Skia
             using (var paint =
                 new SKPaint {Color = new SKColor(255, 255, 255, (byte) (255 * opacity * _currentOpacity))})
             {
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint);
                 drawableImage.Draw(this, s, d, paint);
             }
         }
@@ -112,7 +114,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, effect);
             PopOpacityMask();
         }
 

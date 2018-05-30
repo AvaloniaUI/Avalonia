@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Visuals.UnitTests.VisualTree
 {
@@ -50,6 +51,11 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? fmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEffectImpl CreateDropShadowEffect()
         {
             throw new NotImplementedException();
         }

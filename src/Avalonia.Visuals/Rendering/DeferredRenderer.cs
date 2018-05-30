@@ -351,7 +351,8 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
+                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect, node.Effect);
                 }
                 else
                 {

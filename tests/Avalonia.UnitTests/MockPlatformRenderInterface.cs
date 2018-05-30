@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
+        public IEffectImpl CreateDropShadowEffect()
+        {
+            throw new NotImplementedException();
+        }
+
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
