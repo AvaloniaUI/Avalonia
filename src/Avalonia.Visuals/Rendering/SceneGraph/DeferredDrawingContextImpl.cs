@@ -36,6 +36,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public Matrix Transform { get; set; } = Matrix.Identity;
 
+        /// <inheritdoc/>
+        public Matrix BaseTransform { get; set; } = Matrix.Identity;
+
         /// <summary>
         /// Gets the layers in the scene being built.
         /// </summary>
