@@ -252,7 +252,7 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty && node.Opacity > 0)
+                if ((!clipBounds.IsEmpty || node.Effect != null) && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
 
@@ -284,22 +284,42 @@ namespace Avalonia.Rendering
                     var renderTarget = Layers[layer.LayerRoot].Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    if (node != null)
+                    if (node != null && !layer.Dirty.IsEmpty)
                     {
                         using (var context = renderTarget.Item.CreateDrawingContext(this))
                         {
                             foreach (var rect in layer.Dirty)
                             {
                                 context.Transform = Matrix.Identity;
-                                context.PushClip(rect);
-                                context.Clear(Colors.Transparent);
+
+                                if (node.Effect != null)
+                                {
+                                    context.Clear(Colors.Transparent);
+                                    context.PushClip(node.ClipBounds);
+                                }                                    
+                                else
+                                {
+                                    context.PushClip(rect);
+                                    context.Clear(Colors.Transparent);
+                                }
+
                                 Render(context, node, layer.LayerRoot, rect);
+
                                 context.PopClip();
 
                                 if (DrawDirtyRects)
                                 {
                                     _dirtyRectsDisplay.Add(rect);
                                 }
+                            }
+
+                            if (node.Effect != null)
+                            {
+                                var sourceRect = new Rect(0, 0, renderTarget.Item.PixelWidth, renderTarget.Item.PixelHeight);
+                                var clientRect = new Rect(scene.Size);
+                                context.PushClip(node.ClipBounds);
+                                context.DrawImage(renderTarget, layer.Opacity, sourceRect, clientRect, node.Effect);
+                                context.PopClip();
                             }
                         }
                     }
@@ -351,8 +371,7 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
-                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
-                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect, node.Effect);
+                    context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
                 }
                 else
                 {

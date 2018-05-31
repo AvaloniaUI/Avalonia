@@ -22,7 +22,7 @@
         <TextBlock>Fill</TextBlock>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"
             Width="100" Height="200"
-            Stretch="Fill" Margin="0 0 20 20">
+            Stretch="Fill" Margin="0 0 5 15">
             <Image.Effect>
                 <DropShadowEffect/>
             </Image.Effect>
