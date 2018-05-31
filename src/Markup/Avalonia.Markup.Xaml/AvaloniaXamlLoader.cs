@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
 using Portable.Xaml;
@@ -126,11 +126,11 @@ namespace Avalonia.Markup.Xaml
             }
 
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
-            using (var stream = asset.Item1)
+            using (var stream = asset.stream)
             {
                 try
                 {
-                    return Load(stream, asset.Item2, rootInstance, uri);
+                    return Load(stream, asset.assembly, rootInstance, uri);
                 }
                 catch (Exception e)
                 {

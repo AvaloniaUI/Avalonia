@@ -43,7 +43,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parent = new TestItemsControl();
             var target = new CarouselPresenter
             {
-                TemplatedParent = parent,
+                [StyledElement.TemplatedParentProperty] = parent,
             };
 
             Assert.IsType<ItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);

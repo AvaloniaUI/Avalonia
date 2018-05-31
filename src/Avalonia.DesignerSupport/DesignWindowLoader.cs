@@ -36,8 +36,7 @@ namespace Avalonia.DesignerSupport
                 var styles = loaded as Styles;
                 if (styles != null)
                 {
-                    var substitute = Design.GetPreviewWith(styles) ??
-                                     styles.Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
+                    var substitute = styles.OfType<Style>().Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
                     if (substitute != null)
                     {
                         substitute.Styles.AddRange(styles);
