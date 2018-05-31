@@ -33,7 +33,6 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Point> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
-
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {

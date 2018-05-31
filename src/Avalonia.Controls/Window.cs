@@ -148,9 +148,6 @@ namespace Avalonia.Controls
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
-
-            if (PlatformImpl != null)
-                PlatformImpl.WindowStateChanged = s => WindowState = s;
         }
         
         /// <inheritdoc/>
@@ -321,11 +318,13 @@ namespace Avalonia.Controls
 
         protected virtual void HandleWindowStateChanged(WindowState state)
         {
+            WindowState = state;
+
             if (state == WindowState.Minimized)
             {
                 Renderer.Stop();
             }
-            else if (state == WindowState.Normal)
+            else
             {
                 Renderer.Start();
             }
