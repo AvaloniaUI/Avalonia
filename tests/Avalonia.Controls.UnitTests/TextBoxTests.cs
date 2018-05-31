@@ -247,6 +247,59 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Press_Enter_Does_Not_Accept_Return()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = false,
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal("1234", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Press_Enter_Add_Default_Newline()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal(Environment.NewLine, target.Text);
+            }
+        }
+
+        [Fact]
+        public void Press_Enter_Add_Custom_Newline()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true,
+                    NewLine = "Test"
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal("Test", target.Text);
+            }
+        }
+
         [Theory]
         [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
         [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
