@@ -106,7 +106,6 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            // TODO: Handle items changing.           
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Remove:
@@ -118,6 +117,35 @@ namespace Avalonia.Controls.Presenters
                     }
                     break;
 
+                case NotifyCollectionChangedAction.Reset:
+                    if(!IsVirtualized)
+                    {
+                        var generator = ItemContainerGenerator;
+                        var containers = generator.Containers.ToList();
+                        generator.Clear();
+                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Add:
+                    Panel.Children.InsertRange(e.NewStartingIndex, e.NewItems.OfType<IControl>());
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    if (!IsVirtualized)
+                    {
+                        for (var i = 0; i < e.OldItems.Count; ++i)
+                        {
+                            var index = i + e.OldStartingIndex;
+                            var child = (IControl)e.NewItems[i];
+                            Panel.Children[index] = child;
+                        }
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    Panel.Children.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    break;                   
             }
         }
 
