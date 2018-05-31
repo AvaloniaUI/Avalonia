@@ -240,9 +240,9 @@ namespace Avalonia.Controls.Presenters
                 incc.CollectionChanged += ItemsCollectionChanged;
             }
 
-            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            PanelCreated(Panel);
 
-            PanelCreated(Panel);            
+            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));            
         }
 
         /// <summary>
