@@ -124,6 +124,8 @@ namespace Avalonia.Controls.Presenters
                         var containers = generator.Containers.ToList();
                         generator.Clear();
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+
+                        PanelCreated(Panel);
                     }
                     break;
 
