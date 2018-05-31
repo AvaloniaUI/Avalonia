@@ -114,7 +114,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, effect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
             PopOpacityMask();
         }
 

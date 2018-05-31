@@ -318,7 +318,7 @@ namespace Avalonia.Rendering
                                 var sourceRect = new Rect(0, 0, renderTarget.Item.PixelWidth, renderTarget.Item.PixelHeight);
                                 var clientRect = new Rect(scene.Size);
                                 context.PushClip(node.ClipBounds);
-                                context.DrawImage(renderTarget, layer.Opacity, sourceRect, clientRect, node.Effect);
+                                context.DrawEffect(renderTarget, layer.Opacity, sourceRect, clientRect, node.Effect);
                                 context.PopClip();
                             }
                         }

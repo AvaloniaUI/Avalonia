@@ -31,7 +31,7 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect = null);
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -40,7 +40,7 @@ namespace Avalonia.Platform
         /// <param name="opacityMask">The opacity mask to draw with.</param>
         /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect, IEffectImpl effect = null);
+        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -138,5 +138,10 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+
+        /// <summary>
+        /// Draws Effect.
+        /// </summary>
+        void DrawEffect(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect);
     }
 }

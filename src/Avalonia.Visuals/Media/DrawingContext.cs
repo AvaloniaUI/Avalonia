@@ -69,11 +69,11 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, IEffect effect = null)
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, effect?.PlatformImpl());
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect);
         }
 
         /// <summary>
