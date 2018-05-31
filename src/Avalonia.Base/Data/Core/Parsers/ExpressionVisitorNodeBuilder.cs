@@ -65,7 +65,8 @@ namespace Avalonia.Data.Core.Parsers
 
         protected override Expression VisitIndex(IndexExpression node)
         {
-            var visited = base.VisitIndex(node);
+            Visit(node.Object);
+
             if (node.Indexer == AvaloniaObjectIndexer)
             {
                 var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
@@ -76,7 +77,7 @@ namespace Avalonia.Data.Core.Parsers
                 Nodes.Add(new IndexerExpressionNode(node));
             }
 
-            return visited;
+            return node;
         }
 
         private T GetArgumentExpressionValue<T>(Expression expr)
@@ -158,7 +159,6 @@ namespace Avalonia.Data.Core.Parsers
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            base.VisitMethodCall(node);
             var property = TryGetPropertyFromMethod(node.Method);
 
             if (property != null)
