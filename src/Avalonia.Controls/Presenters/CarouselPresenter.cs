@@ -127,10 +127,6 @@ namespace Avalonia.Controls.Presenters
                     }
                     break;
 
-                case NotifyCollectionChangedAction.Add:
-                    Panel.Children.InsertRange(e.NewStartingIndex, e.NewItems.OfType<IControl>());
-                    break;
-
                 case NotifyCollectionChangedAction.Replace:
                     if (!IsVirtualized)
                     {
