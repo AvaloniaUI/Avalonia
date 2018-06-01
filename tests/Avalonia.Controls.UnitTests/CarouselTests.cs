@@ -167,6 +167,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("Bar", ((TextBlock)child).Text);
         }
 
+        [Fact]
+        public void Selected_Item_Changes_To_NextAvailable_Item_If_SelectedItem_Is_Removed_From_Middle()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items,
+                IsVirtualized = false
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectedIndex = 1;
+
+            items.RemoveAt(1);
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("FooBar", target.SelectedItem);
+        }
+
         private Control CreateTemplate(Carousel control)
         {
             return new CarouselPresenter
