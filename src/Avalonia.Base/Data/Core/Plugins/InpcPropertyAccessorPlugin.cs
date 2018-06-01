@@ -52,9 +52,11 @@ namespace Avalonia.Data.Core.Plugins
 
         private class Accessor : PropertyAccessorBase, IWeakSubscriber<PropertyChangedEventArgs>
         {
+            private static readonly object CacheInvalid = new object();
             private readonly WeakReference _reference;
             private readonly PropertyInfo _property;
             private bool _eventRaised;
+            private object _lastValue = CacheInvalid;
 
             public Accessor(WeakReference reference,  PropertyInfo property)
             {
@@ -72,7 +74,7 @@ namespace Avalonia.Data.Core.Plugins
                 get
                 {
                     var o = _reference.Target;
-                    return (o != null) ? _property.GetValue(o) : null;
+                    return (_lastValue = (o != null) ? _property.GetValue(o) : null);
                 }
             }
 
@@ -80,6 +82,11 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (_property.CanWrite)
                 {
+                    if (!ShouldSet(value))
+                    {
+                        return true;
+                    }
+
                     _eventRaised = false;
                     _property.SetValue(_reference.Target, value);
 
@@ -94,11 +101,24 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
+            private bool ShouldSet(object value)
+            {
+                if (PropertyType.IsValueType)
+                {
+                    return !_lastValue.Equals(value);
+                }
+                else
+                {
+                    return !Object.ReferenceEquals(_lastValue, value);
+                }
+            }
+
             void IWeakSubscriber<PropertyChangedEventArgs>.OnEvent(object sender, PropertyChangedEventArgs e)
             {
                 if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
                 {
                     _eventRaised = true;
+                    _lastValue = CacheInvalid;
                     SendCurrentValue();
                 }
             }
