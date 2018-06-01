@@ -287,6 +287,7 @@ namespace Avalonia.Rendering
                         {
                             foreach (var rect in layer.Dirty)
                             {
+                                context.BaseTransform = -node.Visual.TransformedBounds.Value.Transform; 
                                 context.Transform = Matrix.Identity;
                                 context.PushClip(rect);
                                 context.Clear(Colors.Transparent);
@@ -334,8 +335,6 @@ namespace Avalonia.Rendering
 
         private void RenderComposite(Scene scene, IDrawingContextImpl context)
         {
-            var clientRect = new Rect(scene.Size);
-
             foreach (var layer in scene.Layers)
             {
                 var bitmap = Layers[layer.LayerRoot].Bitmap;
@@ -348,6 +347,8 @@ namespace Avalonia.Rendering
 
                 if (layer.OpacityMask == null)
                 {
+                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                    var clientRect = node.Visual.TransformedBounds.Value.Bounds.TransformToAABB(node.Visual.TransformedBounds.Value.Transform);
                     context.DrawImage(bitmap, layer.Opacity, sourceRect, clientRect);
                 }
                 else
@@ -364,12 +365,12 @@ namespace Avalonia.Rendering
             if (_overlay != null)
             {
                 var sourceRect = new Rect(0, 0, _overlay.Item.PixelWidth, _overlay.Item.PixelHeight);
-                context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
+                context.DrawImage(_overlay, 0.5, sourceRect, new Rect(scene.Size));
             }
 
             if (DrawFps)
             {
-                RenderFps(context, clientRect, scene.Layers.Count);
+                RenderFps(context, new Rect(scene.Size), scene.Layers.Count);
             }
         }
 

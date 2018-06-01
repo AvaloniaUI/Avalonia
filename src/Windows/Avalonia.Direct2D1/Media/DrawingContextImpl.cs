@@ -56,15 +56,44 @@ namespace Avalonia.Direct2D1.Media
             _directWriteFactory = directWriteFactory;
             _imagingFactory = imagingFactory;
             _renderTarget.BeginDraw();
+            _baseTransform = Matrix.Identity;
+            _currentTransform = Matrix.Identity;
         }
 
-        /// <summary>
-        /// Gets the current transform of the drawing context.
-        /// </summary>
+        private Matrix _currentTransform;
+
+        /// <inheritdoc/>
         public Matrix Transform
         {
-            get { return _renderTarget.Transform.ToAvalonia(); }
-            set { _renderTarget.Transform = value.ToDirect2D(); }
+            get { return _currentTransform; }
+            set
+            {
+                if (_currentTransform == value)
+                    return;
+
+                _currentTransform = value;
+                var transform = _currentTransform * _baseTransform;
+
+                _renderTarget.Transform = transform.ToDirect2D();
+            }
+        }
+
+        private Matrix _baseTransform;
+
+        /// <inheritdoc/>
+        public Matrix BaseTransform
+        {
+            get { return _baseTransform; }
+            set
+            {
+                if (_baseTransform == value)
+                    return;
+
+                _baseTransform = value;
+                var transform = _currentTransform * _baseTransform;
+
+                _renderTarget.Transform = transform.ToDirect2D();
+            }
         }
 
         /// <inheritdoc/>

@@ -32,7 +32,9 @@ namespace Avalonia.Skia
             _visualBrushRenderer = visualBrushRenderer;
             _disposables = disposables;
             Canvas = canvas;
-            Transform = Matrix.Identity;
+            
+            _baseTransform = Matrix.Identity;
+            _currentTransform = Matrix.Identity;
         }
 
         public void Clear(Color color)
@@ -423,6 +425,7 @@ namespace Avalonia.Skia
 
         private Matrix _currentTransform;
 
+        /// <inheritdoc/>
         public Matrix Transform
         {
             get { return _currentTransform; }
@@ -432,7 +435,27 @@ namespace Avalonia.Skia
                     return;
 
                 _currentTransform = value;
-                var transform = value;
+                var transform = _currentTransform * _baseTransform;
+
+                if (_postTransform.HasValue)
+                    transform *= _postTransform.Value;
+                Canvas.SetMatrix(transform.ToSKMatrix());
+            }
+        }
+
+        private Matrix _baseTransform;
+
+        /// <inheritdoc/>
+        public Matrix BaseTransform {
+            get { return _baseTransform; }
+            set
+            {
+                if (_baseTransform == value)
+                    return;
+
+                _baseTransform = value;
+                var transform = _currentTransform * _baseTransform; 
+
                 if (_postTransform.HasValue)
                     transform *= _postTransform.Value;
                 Canvas.SetMatrix(transform.ToSKMatrix());

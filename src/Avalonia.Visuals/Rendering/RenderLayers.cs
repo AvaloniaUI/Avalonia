@@ -28,13 +28,13 @@ namespace Avalonia.Rendering
 
                 if (!_index.TryGetValue(src.LayerRoot, out layer))
                 {
-                    layer = new RenderLayer(context, scene.Size, scene.Scaling, src.LayerRoot);
+                    layer = new RenderLayer(context, src.LayerRoot.Bounds.Size, scene.Scaling, src.LayerRoot);
                     _inner.Add(layer);
                     _index.Add(src.LayerRoot, layer);
                 }
                 else
                 {
-                    layer.ResizeBitmap(scene.Size, scene.Scaling);
+                    layer.ResizeBitmap(src.LayerRoot.Bounds.Size, scene.Scaling);
                 }
             }
 

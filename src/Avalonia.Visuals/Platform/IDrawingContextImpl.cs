@@ -18,6 +18,11 @@ namespace Avalonia.Platform
         Matrix Transform { get; set; }
 
         /// <summary>
+        /// Gets or sets the base transform of the drawing context.
+        /// </summary>
+        Matrix BaseTransform { get; set; }
+
+        /// <summary>
         /// Clears the render target to the specified color.
         /// </summary>
         /// <param name="color">The color.</param>
