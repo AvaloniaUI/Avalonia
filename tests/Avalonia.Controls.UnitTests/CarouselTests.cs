@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -91,6 +92,79 @@ namespace Avalonia.Controls.UnitTests
             Assert.Single(target.ItemContainerGenerator.Containers);
             target.SelectedIndex = 1;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+        }
+
+        [Fact]
+        public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items =  items,
+                IsVirtualized = false
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Single(target.GetLogicalChildren());
+
+            var child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Foo", ((TextBlock)child).Text);
+
+            var newItems = items.ToList();
+            newItems.RemoveAt(0);
+
+            target.Items = newItems;
+
+            child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Bar", ((TextBlock)child).Text);
+        }
+
+        [Fact]
+        public void Selected_Item_Changes_To_Next_First_Item_When_Item_Removed_From_Beggining_Of_List()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items,
+                IsVirtualized = false
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Single(target.GetLogicalChildren());
+
+            var child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Foo", ((TextBlock)child).Text);
+
+            items.RemoveAt(0);
+
+            child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Bar", ((TextBlock)child).Text);
         }
 
         private Control CreateTemplate(Carousel control)
