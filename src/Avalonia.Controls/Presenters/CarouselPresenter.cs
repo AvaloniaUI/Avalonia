@@ -114,6 +114,8 @@ namespace Avalonia.Controls.Presenters
                         var generator = ItemContainerGenerator;
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+
+                        MoveToPage(-1, 0);
                     }
                     break;
 
@@ -125,25 +127,9 @@ namespace Avalonia.Controls.Presenters
                         generator.Clear();
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
-                        PanelCreated(Panel);
+                        MoveToPage(-1, 0);
                     }
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                    if (!IsVirtualized)
-                    {
-                        for (var i = 0; i < e.OldItems.Count; ++i)
-                        {
-                            var index = i + e.OldStartingIndex;
-                            var child = (IControl)e.NewItems[i];
-                            Panel.Children[index] = child;
-                        }
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Move:
-                    Panel.Children.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
-                    break;                   
+                    break;     
             }
         }
 
