@@ -156,22 +156,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("FooBar", target.SelectedItem);
 
-            IVisual child = target;
-
-            while (true)
-            {
-                if (child.VisualChildren.FirstOrDefault() is TextBlock)
-                {
-                    break;
-                }
-
-                if (child.VisualChildren.Count == 0)
-                {
-                    break;
-
-                }
-                child = child.VisualChildren.FirstOrDefault().VisualChildren.FirstOrDefault();
-            }
+            var child = target.GetVisualDescendants().LastOrDefault();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("FooBar", ((TextBlock)child).Text);
