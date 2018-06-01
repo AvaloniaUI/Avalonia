@@ -242,7 +242,7 @@ namespace Avalonia.Controls.Presenters
 
             PanelCreated(Panel);
 
-            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));            
+            ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         /// <summary>
