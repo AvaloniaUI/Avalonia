@@ -5,9 +5,8 @@
     <RootNamespace>Avalonia</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
 </Project>

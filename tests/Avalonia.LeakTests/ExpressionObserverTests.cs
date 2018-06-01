@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using JetBrains.dotMemoryUnit;

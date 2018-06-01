@@ -18,12 +18,20 @@ namespace Avalonia.Controls.Templates.UnitTests
         public void GetTemplateChildren_Should_Not_Return_Nested_Template_Controls()
         {
             var target = new TestTemplatedControl();
-            var border1 = new Border { Name = "border1", TemplatedParent = target };
-            var inner = new TestTemplatedControl { Name = "inner", TemplatedParent = target };
-            var border2 = new Border { Name = "border2", TemplatedParent = inner };
-            var border3 = new Border { Name = "border3", TemplatedParent = inner };
-            var border4 = new Border { Name = "border4", TemplatedParent = target };
-            var border5 = new Border { Name = "border5", TemplatedParent = null };
+            var border1 = new Border
+            {
+                Name = "border1",
+                [StyledElement.TemplatedParentProperty] = target,
+            };
+            var inner = new TestTemplatedControl
+            {
+                Name = "inner",
+                [StyledElement.TemplatedParentProperty] = target,
+            };
+            var border2 = new Border { Name = "border2", [StyledElement.TemplatedParentProperty] = inner };
+            var border3 = new Border { Name = "border3", [StyledElement.TemplatedParentProperty] = inner };
+            var border4 = new Border { Name = "border4", [StyledElement.TemplatedParentProperty] = target };
+            var border5 = new Border { Name = "border5", [StyledElement.TemplatedParentProperty] = null };
 
             target.AddVisualChild(border1);
             border1.Child = inner;

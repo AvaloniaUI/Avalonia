@@ -1,6 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml.Context;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.Styling;
 using Portable.Xaml;

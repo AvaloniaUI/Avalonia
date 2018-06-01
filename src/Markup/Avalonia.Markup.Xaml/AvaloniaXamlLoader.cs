@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
 using Portable.Xaml;

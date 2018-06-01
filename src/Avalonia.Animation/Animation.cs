@@ -18,6 +18,28 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animation : AvaloniaList<KeyFrame>, IDisposable, IAnimation
     {
+        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
+        {
+            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) )
+        };
+
+        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
+            where TAnimator: IAnimator
+        {
+            Animators.Insert(0, (condition, typeof(TAnimator)));
+        }
+
+        private static Type GetAnimatorType(AvaloniaProperty property)
+        {
+            foreach (var (condition, type) in Animators)
+            {
+                if (condition(property))
+                {
+                    return type;
+                }
+            }
+            return null;
+        }
 
         private bool _isChildrenChanged = false;
         private List<IDisposable> _subscription = new List<IDisposable>();
@@ -67,14 +89,13 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe)
                 {
-                    var custAttr = setter.GetType()
-                                         .GetCustomAttributes()
-                                         .Where(p => p.GetType() == typeof(AnimatorAttribute));
+                    var handler = GetAnimatorType(setter.Property);
 
-                    if (!custAttr.Any())
-                        throw new InvalidProgramException($"Type {setter.GetType()} doesn't have Animator attribute.");
+                    if (handler == null)
+                    {
+                        throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                    }
 
-                    var handler = ((AnimatorAttribute)custAttr.First()).HandlerType;
                     if (!handlerList.Contains((handler, setter.Property)))
                         handlerList.Add((handler, setter.Property));
 

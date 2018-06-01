@@ -8,7 +8,7 @@
     <PackageReference Include="xunit.extensibility.execution" Version="2.3.0" />
     <PackageReference Include="xunit.runner.console" Version="2.3.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.0" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.3.6" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
