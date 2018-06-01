@@ -12,8 +12,10 @@ namespace Avalonia.Data.Core
 {
     internal class PropertyAccessorNode : ExpressionNode, ISettableNode
     {
+        private static readonly object CacheInvalid = new object();
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
+        private object _lastValue = CacheInvalid;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
@@ -29,10 +31,30 @@ namespace Avalonia.Data.Core
         {
             if (_accessor != null)
             {
-                try { return _accessor.SetValue(value, priority); } catch { }
+                try
+                {
+                    if (ShouldNotSet(value))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return _accessor.SetValue(value, priority);
+                    }
+                }
+                catch { }
             }
 
             return false;
+        }
+
+        private bool ShouldNotSet(object value)
+        {
+            if (PropertyType.IsValueType)
+            {
+                return _lastValue.Equals(value);
+            }
+            return Object.ReferenceEquals(_lastValue, value);
         }
 
         protected override IObservable<object> StartListeningCore(WeakReference reference)
@@ -58,7 +80,18 @@ namespace Avalonia.Data.Core
                     _accessor = accessor;
                     return Disposable.Create(() => _accessor = null);
                 },
-                _ => accessor);
+                _ => accessor).Select(value =>
+                {
+                    if (value is BindingNotification notification)
+                    {
+                        _lastValue = notification.HasValue ? notification.Value : CacheInvalid; 
+                    }
+                    else
+                    {
+                        _lastValue = value;
+                    }
+                    return value;
+                });
         }
     }
 }
