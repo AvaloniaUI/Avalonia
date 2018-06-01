@@ -2,14 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
+using System.ComponentModel;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Describes how an area is painted.
     /// </summary>
+    [TypeConverter(typeof(BrushConverter))]
     public abstract class Brush : AvaloniaObject, IBrush
     {
         /// <summary>

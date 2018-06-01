@@ -168,6 +168,10 @@ namespace Avalonia.Input
             PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
             PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
             PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
+
+            PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass(IsFocusedProperty, ":focus");
+            PseudoClass(IsPointerOverProperty, ":pointerover");
         }
 
         /// <summary>

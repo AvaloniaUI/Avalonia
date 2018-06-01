@@ -4,7 +4,9 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
@@ -530,7 +532,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             style.TryGetResource("Brush", out var brush);
 
             Assert.NotNull(brush);
-
+            Assert.IsType<SolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
             style.TryGetResource("Double", out var d);

@@ -3,7 +3,7 @@
 
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Data.Core;
 using System;
 using System.Reactive.Linq;
 
@@ -23,6 +23,11 @@ namespace Avalonia.Markup.Xaml.Templates
                     _memberName = value;
                 }
             }
+        }
+
+        public static MemberSelector Parse(string s)
+        {
+            return new MemberSelector { MemberName = s };
         }
 
         public object Select(object o)

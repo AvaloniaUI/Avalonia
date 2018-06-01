@@ -2,12 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
 using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     using Avalonia.Controls;
+    using Avalonia.Data.Converters;
+    using Avalonia.Markup.Data;
     using Avalonia.Styling;
     using Portable.Xaml;
     using Portable.Xaml.ComponentModel;

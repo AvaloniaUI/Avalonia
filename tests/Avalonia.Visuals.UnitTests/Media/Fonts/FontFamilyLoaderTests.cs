@@ -11,7 +11,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 {
     using System.Diagnostics;
 
-    public class FontFamilyLoaderTests
+    public class FontFamilyLoaderTests : IDisposable
     {
         private const string FontName = "#MyFont";
         private const string Assembly = "?assembly=Avalonia.Visuals.UnitTests";
@@ -35,7 +35,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
             _testApplication = StartWithResources(fontAssets);
         }
 
-        ~FontFamilyLoaderTests()
+        public void Dispose()
         {
             _testApplication.Dispose();
         }
