@@ -293,8 +293,6 @@ namespace Avalonia
             while (Windows.Count > 0)
             {
                 Windows[0].Close();
-
-                Windows.RemoveAt(0);
             }
 
             OnExit?.Invoke(this, EventArgs.Empty);

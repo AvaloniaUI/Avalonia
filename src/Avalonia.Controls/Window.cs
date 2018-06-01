@@ -253,16 +253,22 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<CancelEventArgs> Closing;
 
-        internal static void AddWindow(Window window)
+        private static void AddWindow(Window window)
         {
-            if (Application.Current == null) return;
+            if (Application.Current == null)
+            {
+                return;
+            }
 
             Application.Current.Windows.Add(window);
         }
 
-        internal static void RemoveWindow(Window window)
+        private static void RemoveWindow(Window window)
         {
-            if (Application.Current == null) return;
+            if (Application.Current == null)
+            {
+                return;
+            }
 
             Application.Current.Windows.Remove(window);
         }

@@ -19,21 +19,24 @@ namespace Avalonia
             _application = application;
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Gets the number of elements in the collection.
         /// </summary>
         public int Count => _windows.Count;
 
+        /// <inheritdoc />
         /// <summary>
-        /// Gets the <see cref="Window"/> at the specified index.
+        /// Gets the <see cref="T:Avalonia.Controls.Window" /> at the specified index.
         /// </summary>
         /// <value>
-        /// The <see cref="Window"/>.
+        /// The <see cref="T:Avalonia.Controls.Window" />.
         /// </value>
         /// <param name="index">The index.</param>
         /// <returns></returns>
         public Window this[int index] => _windows[index];
 
+        /// <inheritdoc />
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
@@ -45,6 +48,7 @@ namespace Avalonia
             return _windows.GetEnumerator();
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
@@ -54,18 +58,6 @@ namespace Avalonia
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        /// <summary>
-        /// Determines whether [contains] [the specified window].
-        /// </summary>
-        /// <param name="window">The window.</param>
-        /// <returns>
-        ///   <c>true</c> if [contains] [the specified window]; otherwise, <c>false</c>.
-        /// </returns>
-        internal bool Contains(Window window)
-        {
-            return _windows.Contains(window);
         }
 
         /// <summary>
@@ -79,18 +71,13 @@ namespace Avalonia
             window.Closed += OnWindowClosed;
         }
 
+        /// <summary>
+        /// Removes the specified window.
+        /// </summary>
+        /// <param name="window">The window.</param>
         internal void Remove(Window window)
         {
             _windows.Remove(window);
-        }
-
-        /// <summary>
-        /// Removes the window at a specific location.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        internal void RemoveAt(int index)
-        {
-            _windows.RemoveAt(index);
         }
 
         private void OnWindowClosed(object sender, EventArgs eventArgs)
@@ -120,8 +107,7 @@ namespace Avalonia
                         _application.Exit();
                     }
 
-                    break;
-                    
+                    break;                   
             }
         }
     }
