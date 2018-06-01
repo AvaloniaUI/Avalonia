@@ -7,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -51,7 +52,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Single(target.GetLogicalChildren());
 
             var child = target.GetLogicalChildren().Single();
-            
+
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Foo", ((TextBlock)child).Text);
         }
@@ -107,7 +108,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items =  items,
+                Items = items,
                 IsVirtualized = false
             };
 
@@ -130,6 +131,50 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Bar", ((TextBlock)child).Text);
+        }
+
+        [Fact]
+        public void Selected_Index_Is_Maintained_Carousel_Created_With_Non_Zero_SelectedIndex()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items,
+                IsVirtualized = false,
+                SelectedIndex = 2
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal("FooBar", target.SelectedItem);
+
+            IVisual child = target;
+
+            while (true)
+            {
+                if (child.VisualChildren.FirstOrDefault() is TextBlock)
+                {
+                    break;
+                }
+
+                if (child.VisualChildren.Count == 0)
+                {
+                    break;
+
+                }
+                child = child.VisualChildren.FirstOrDefault().VisualChildren.FirstOrDefault();
+            }
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("FooBar", ((TextBlock)child).Text);
         }
 
         [Fact]
