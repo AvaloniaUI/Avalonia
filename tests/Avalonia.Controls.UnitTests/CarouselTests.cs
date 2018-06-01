@@ -134,6 +134,43 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes_And_Virtualized()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Single(target.GetLogicalChildren());
+
+            var child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Foo", ((TextBlock)child).Text);
+
+            var newItems = items.ToList();
+            newItems.RemoveAt(0);
+
+            target.Items = newItems;
+
+            child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Bar", ((TextBlock)child).Text);
+        }
+
+        [Fact]
         public void Selected_Index_Is_Maintained_Carousel_Created_With_Non_Zero_SelectedIndex()
         {
             var items = new ObservableCollection<string>

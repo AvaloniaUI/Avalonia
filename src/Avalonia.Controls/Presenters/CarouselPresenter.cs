@@ -120,7 +120,6 @@ namespace Avalonia.Controls.Presenters
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    if(!IsVirtualized)
                     {
                         var generator = ItemContainerGenerator;
                         var containers = generator.Containers.ToList();
