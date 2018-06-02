@@ -468,6 +468,17 @@ namespace Avalonia.Base.UnitTests
             Assert.False(source.SetterCalled);
         }
 
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation_Indexer()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.SetterCalled);
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>
@@ -562,6 +573,16 @@ namespace Avalonia.Base.UnitTests
             private double _value;
 
             public double Value
+            {
+                get => _value;
+                set
+                {
+                    _value = value;
+                    SetterCalled = true;
+                }
+            }
+
+            public double this[int index]
             {
                 get => _value;
                 set

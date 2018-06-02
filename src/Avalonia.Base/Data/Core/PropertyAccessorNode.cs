@@ -10,12 +10,10 @@ using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    internal class PropertyAccessorNode : ExpressionNode, ISettableNode
+    internal class PropertyAccessorNode : SettableNode
     {
-        private static readonly object CacheInvalid = new object();
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
-        private WeakReference _lastValue = null;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
@@ -25,36 +23,20 @@ namespace Avalonia.Data.Core
 
         public override string Description => PropertyName;
         public string PropertyName { get; }
-        public Type PropertyType => _accessor?.PropertyType;
+        public override Type PropertyType => _accessor?.PropertyType;
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             if (_accessor != null)
             {
                 try
                 {
-                    if (ShouldNotSet(value))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return _accessor.SetValue(value, priority);
-                    }
+                    return _accessor.SetValue(value, priority);
                 }
                 catch { }
             }
 
             return false;
-        }
-
-        private bool ShouldNotSet(object value)
-        {
-            if (PropertyType.IsValueType)
-            {
-                return _lastValue?.Target.Equals(value) ?? false;
-            }
-            return Object.ReferenceEquals(_lastValue?.Target ?? CacheInvalid, value);
         }
 
         protected override IObservable<object> StartListeningCore(WeakReference reference)
@@ -78,20 +60,12 @@ namespace Avalonia.Data.Core
                 () =>
                 {
                     _accessor = accessor;
-                    return Disposable.Create(() => _accessor = null);
+                    return Disposable.Create(() =>
+                    {
+                        _accessor = null;
+                    });
                 },
-                _ => accessor).Select(value =>
-                {
-                    if (value is BindingNotification notification)
-                    {
-                        _lastValue = notification.HasValue ? new WeakReference(notification.Value) : null; 
-                    }
-                    else
-                    {
-                        _lastValue = new WeakReference(value);
-                    }
-                    return value;
-                });
+                _ => accessor);
         }
     }
 }
