@@ -8,6 +8,6 @@ namespace Avalonia.Visuals.Effects
 {
     public interface IEffect: IAvaloniaObject
     {
-        IEffectImpl PlatformImpl();
+        IEffectImpl PlatformImpl { get; }
     }
 }

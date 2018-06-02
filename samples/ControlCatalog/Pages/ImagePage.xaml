@@ -13,7 +13,7 @@
                Width="100" Height="200"
                Stretch="None">
           <Image.Effect>
-            <DropShadowEffect/>
+            <DropShadowEffect OffsetX="0" OffsetY="5" Color="Blue" Blur="2"/>
           </Image.Effect>
         </Image>       
       </StackPanel>
@@ -24,7 +24,7 @@
             Width="100" Height="200"
             Stretch="Fill" Margin="0 0 5 15">
             <Image.Effect>
-                <DropShadowEffect/>
+              <DropShadowEffect OffsetX="5" OffsetY="5" Color="Red"/>
             </Image.Effect>
         </Image>
       </StackPanel>

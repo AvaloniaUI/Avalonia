@@ -55,7 +55,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IEffectImpl CreateDropShadowEffect()
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
             throw new NotImplementedException();
         }

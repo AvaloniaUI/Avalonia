@@ -10,11 +10,6 @@ namespace Avalonia.UnitTests
 {
     public class MockPlatformRenderInterface : IPlatformRenderInterface
     {
-        public IEffectImpl CreateDropShadowEffect()
-        {
-            throw new NotImplementedException();
-        }
-
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
@@ -61,6 +56,11 @@ namespace Avalonia.UnitTests
         }
 
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
             throw new NotImplementedException();
         }

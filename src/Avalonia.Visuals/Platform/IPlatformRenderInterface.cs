@@ -95,6 +95,14 @@ namespace Avalonia.Platform
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride);
 
-        IEffectImpl CreateDropShadowEffect();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="offsetX"></param>
+        /// <param name="offsetY"></param>
+        /// <param name="blur"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color);
     }
 }

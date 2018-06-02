@@ -40,7 +40,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             Visual = visual;
             Parent = parent;
-            Effect = visual.Effect?.PlatformImpl();
+            Effect = visual.Effect?.PlatformImpl;
             HasAncestorGeometryClip = parent != null && 
                 (parent.HasAncestorGeometryClip || parent.GeometryClip != null);
         }

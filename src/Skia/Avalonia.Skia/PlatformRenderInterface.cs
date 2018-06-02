@@ -106,9 +106,9 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(width, height, format);
         }
 
-        public IEffectImpl CreateDropShadowEffect()
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
-            return new DropShadowEffectImpl();
+            return new DropShadowEffectImpl(offsetX, offsetY, blur, color);
         }
     }
 }

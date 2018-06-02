@@ -194,7 +194,7 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(s_imagingFactory, format, data, width, height, stride);
         }
 
-        public IEffectImpl CreateDropShadowEffect()
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
             throw new NotImplementedException();
         }
