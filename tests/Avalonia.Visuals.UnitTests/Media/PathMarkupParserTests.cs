@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
 {
+    using Avalonia.Visuals.Media;
+
     public class PathMarkupParserTests
     {
         [Fact]
@@ -75,8 +77,8 @@ namespace Avalonia.Visuals.UnitTests.Media
             ".3809 36.1563C 18.3809 36.1563 18 38 16.3809 36.9063C 15 36 16.3809 34.9063 16.3809 34.9063C 16.3809 34" +
             ".9063 10.1309 30.9062 16.6309 19.9063 Z ")]
         [InlineData(
-            "F1M16,12C16,14.209 14.209,16 12,16 9.791,16 8,14.209 8,12 8,11.817 8.03,11.644 8.054,11.467L6.585,10 4,10 " + 
-            "4,6.414 2.5,7.914 0,5.414 0,3.586 3.586,0 4.414,0 7.414,3 7.586,3 9,1.586 11.914,4.5 10.414,6 " + 
+            "F1M16,12C16,14.209 14.209,16 12,16 9.791,16 8,14.209 8,12 8,11.817 8.03,11.644 8.054,11.467L6.585,10 4,10 " +
+            "4,6.414 2.5,7.914 0,5.414 0,3.586 3.586,0 4.414,0 7.414,3 7.586,3 9,1.586 11.914,4.5 10.414,6 " +
             "12.461,8.046C14.45,8.278,16,9.949,16,12")]
         public void Should_Parse(string pathData)
         {
@@ -90,13 +92,13 @@ namespace Avalonia.Visuals.UnitTests.Media
             }
         }
 
-        private static PathMarkupParser PrepareParser(Mock<IStreamGeometryContextImpl> implMock = null)
+        private static SvgParser PrepareParser(Mock<IStreamGeometryContextImpl> implMock = null)
         {
             AvaloniaLocator.CurrentMutable
                     .Bind<IPlatformRenderInterface>()
                     .ToConstant(Mock.Of<IPlatformRenderInterface>());
 
-            return new PathMarkupParser(
+            return new SvgParser(
                 new StreamGeometryContext(implMock != null ? implMock.Object : Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
