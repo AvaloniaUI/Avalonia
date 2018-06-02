@@ -457,6 +457,17 @@ namespace Avalonia.Base.UnitTests
             Assert.True(target.IsAnimating(Class1.FooProperty));
         }
 
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.SetterCalled);
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>
@@ -544,6 +555,23 @@ namespace Avalonia.Base.UnitTests
                     }
                 }
             }
+        }
+
+        private class TestTwoWayBindingViewModel
+        {
+            private double _value;
+
+            public double Value
+            {
+                get => _value;
+                set
+                {
+                    _value = value;
+                    SetterCalled = true;
+                }
+            }
+
+            public bool SetterCalled { get; private set; }
         }
     }
 }
