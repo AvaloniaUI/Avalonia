@@ -15,7 +15,7 @@ namespace Avalonia.Data.Core
         private static readonly object CacheInvalid = new object();
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
-        private object _lastValue = CacheInvalid;
+        private WeakReference _lastValue = null;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
@@ -52,9 +52,9 @@ namespace Avalonia.Data.Core
         {
             if (PropertyType.IsValueType)
             {
-                return _lastValue.Equals(value);
+                return _lastValue?.Target.Equals(value) ?? false;
             }
-            return Object.ReferenceEquals(_lastValue, value);
+            return Object.ReferenceEquals(_lastValue?.Target ?? CacheInvalid, value);
         }
 
         protected override IObservable<object> StartListeningCore(WeakReference reference)
@@ -84,11 +84,11 @@ namespace Avalonia.Data.Core
                 {
                     if (value is BindingNotification notification)
                     {
-                        _lastValue = notification.HasValue ? notification.Value : CacheInvalid; 
+                        _lastValue = notification.HasValue ? new WeakReference(notification.Value) : null; 
                     }
                     else
                     {
-                        _lastValue = value;
+                        _lastValue = new WeakReference(value);
                     }
                     return value;
                 });
