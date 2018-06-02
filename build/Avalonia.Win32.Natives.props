@@ -1,0 +1,5 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="AvaloniaUI.Win32.Natives" Version="0.0.1" />
+  </ItemGroup>
+</Project>
