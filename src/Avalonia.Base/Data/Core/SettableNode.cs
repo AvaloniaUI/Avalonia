@@ -26,7 +26,7 @@ namespace Avalonia.Data.Core
             }
             if (PropertyType.IsValueType)
             {
-                return LastValue?.Target.Equals(value) ?? false;
+                return LastValue?.Target != null && LastValue.Target.Equals(value);
             }
             return LastValue != null && Object.ReferenceEquals(LastValue?.Target, value);
         }
