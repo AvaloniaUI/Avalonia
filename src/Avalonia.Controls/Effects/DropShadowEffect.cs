@@ -1,10 +1,11 @@
 ﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Visuals.Effects;
+using System;
 
 namespace Avalonia.Controls.Effects
 {
-    class DropShadowEffect: AvaloniaObject, IEffect
+    public class DropShadowEffect: Effect
     {
         /// <summary>
         /// Defines the <see cref="OffsetXProperty"/> property.
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.Effects
         /// </summary>
         public double OffsetX
         {
-            get { return GetValue(OffsetXProperty); }
+            get => GetValue(OffsetXProperty);
             set { SetValue(OffsetXProperty, value); }
         }
 
@@ -45,7 +46,7 @@ namespace Avalonia.Controls.Effects
         /// </summary>
         public double OffsetY
         {
-            get { return GetValue(OffsetYProperty); }
+            get => GetValue(OffsetYProperty);
             set { SetValue(OffsetYProperty, value); }
         }
 
@@ -54,7 +55,7 @@ namespace Avalonia.Controls.Effects
         /// </summary>
         public double Blur
         {
-            get { return GetValue(BlurProperty); }
+            get => GetValue(BlurProperty);
             set { SetValue(BlurProperty, value); }
         }
 
@@ -63,13 +64,29 @@ namespace Avalonia.Controls.Effects
         /// </summary>
         public Color Color
         {
-            get { return GetValue(ColorProperty); }
+            get => GetValue(ColorProperty);
             set { SetValue(ColorProperty, value); }
         }
 
         private IDropShadowEffectImpl _platformImpl;
 
-        public IEffectImpl PlatformImpl
+        static DropShadowEffect()
+        {
+            OffsetXProperty.Changed.Subscribe(EffectChanged);
+            OffsetYProperty.Changed.Subscribe(EffectChanged);
+            ColorProperty.Changed.Subscribe(EffectChanged);
+            ColorProperty.Changed.Subscribe(EffectChanged);
+        }
+
+        private static void EffectChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is DropShadowEffect sender)
+            {
+                sender.RaiseChanged();
+            }
+        }
+
+        public override IEffectImpl PlatformImpl
         {
             get
             {
@@ -77,6 +94,16 @@ namespace Avalonia.Controls.Effects
                 {
                     var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                     _platformImpl = factory.CreateDropShadowEffect(OffsetX, OffsetY, Blur, Color);
+                    _isDirty = false;
+                }
+
+                if (_isDirty)
+                {
+                    _platformImpl.OffsetX = OffsetX;
+                    _platformImpl.OffsetY = OffsetY;
+                    _platformImpl.Color = Color;
+                    _platformImpl.Blur = Blur;
+                    _isDirty = false;
                 }
 
                 return (IEffectImpl)_platformImpl;

@@ -110,7 +110,7 @@ namespace Avalonia.VisualTree
         /// <summary>
         /// Gets or sets effect.
         /// </summary>
-        IEffect Effect { get; set;  }
+        Effect Effect { get; set;  }
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.

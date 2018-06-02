@@ -95,8 +95,8 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="Effect"/> property.
         /// </summary>
-        public static readonly StyledProperty<IEffect> EffectProperty =
-            AvaloniaProperty.Register<Visual, IEffect>(nameof(Effect));
+        public static readonly StyledProperty<Effect> EffectProperty =
+            AvaloniaProperty.Register<Visual, Effect>(nameof(Effect));
 
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
@@ -115,6 +115,7 @@ namespace Avalonia
                 IsVisibleProperty,
                 OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
+            EffectProperty.Changed.Subscribe(EffectChanged);
         }
 
         /// <summary>
@@ -241,7 +242,7 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets effect.
         /// </summary>
-        public IEffect Effect
+        public Effect Effect
         {
             get { return GetValue(EffectProperty); }
             set { SetValue(EffectProperty, value); }
@@ -488,6 +489,30 @@ namespace Avalonia
                 sender.InvalidateVisual();
             }
         }
+
+        private static void EffectChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var sender = e.Sender as Visual;
+
+            if (sender != null)
+            {
+                var oldValue = e.OldValue as Effect;
+                var newValue = e.NewValue as Effect;
+
+                if (oldValue != null)
+                {
+                    oldValue.Changed -= sender.RenderTransformChanged;
+                }
+
+                if (newValue != null)
+                {
+                    newValue.Changed += sender.RenderTransformChanged;
+                }
+
+                sender.InvalidateVisual();
+            }
+        }
+
 
         /// <summary>
         /// Ensures a visual child is not null and not already parented.
