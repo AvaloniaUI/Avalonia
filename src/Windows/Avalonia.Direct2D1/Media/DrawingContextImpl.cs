@@ -482,19 +482,12 @@ namespace Avalonia.Direct2D1.Media
             PopLayer();
         }
 
-        public void DrawEffect(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect)
+        public void DrawEffect(IRef<IBitmapImpl> source, IEffectImpl effect)
         {
             using (var deviceContext = _renderTarget.QueryInterface<DeviceContext>())
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             {
-                var e = ((IDirect2DPlatformEffectImpl)effect)?.Render(deviceContext, d2d.Value);
-                deviceContext.DrawImage(e);
-                deviceContext.DrawBitmap(
-                    d2d.Value,
-                    destRect.ToSharpDX(),
-                    (float)opacity,
-                    BitmapInterpolationMode.Linear,
-                    sourceRect.ToSharpDX());
+                ((IDirect2DPlatformEffectImpl)effect)?.Render(deviceContext, d2d.Value);
             }
         }
     }

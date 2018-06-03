@@ -142,6 +142,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Draws Effect.
         /// </summary>
-        void DrawEffect(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect);
+        void DrawEffect(IRef<IBitmapImpl> source, IEffectImpl effect);
     }
 }

@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1.Effects
             _color = color;
         }
 
-        public Effect Render(DeviceContext context, Bitmap bitmap)
+        public void Render(DeviceContext context, Bitmap bitmap)
         {
             var shadowEffect = new Shadow(context);
             var affineTransformEffect = new AffineTransform2D(context);
@@ -64,7 +64,8 @@ namespace Avalonia.Direct2D1.Effects
 
             affineTransformEffect.SetInputEffect(0, shadowEffect);
 
-            return affineTransformEffect;
+            context.DrawImage(affineTransformEffect);
+            context.DrawBitmap(bitmap, 1.0f, BitmapInterpolationMode.Linear);
         }
     }
 }

@@ -404,7 +404,7 @@ namespace Avalonia.Rendering.SceneGraph
             return null;
         }
 
-        public void DrawEffect(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect)
+        public void DrawEffect(IRef<IBitmapImpl> source, IEffectImpl effect)
         {
             throw new NotImplementedException();
         }

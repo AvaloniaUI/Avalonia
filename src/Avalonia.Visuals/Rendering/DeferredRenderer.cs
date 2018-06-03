@@ -288,16 +288,7 @@ namespace Avalonia.Rendering
 
                     if (node != null && !layer.Dirty.IsEmpty)
                     {
-                        IRef<IRenderTargetBitmapImpl> target;
-                        if (node.Effect != null)
-                        {
-                            target = GetEffectLayer(context, scene.Size, scene.Scaling); 
-                        }
-                        else
-                        {
-                            target = renderTarget;
-                        }
-
+                        var target = node.Effect == null ? renderTarget : GetEffectLayer(context, scene.Size, scene.Scaling);
 
                         using (var layerContext = target.Item.CreateDrawingContext(this))
                         {
@@ -323,11 +314,9 @@ namespace Avalonia.Rendering
                         {
                             using (var layerContext = renderTarget.Item.CreateDrawingContext(this))
                             {
-                                var sourceRect = new Rect(0, 0, renderTarget.Item.PixelWidth, renderTarget.Item.PixelHeight);
-                                var clientRect = new Rect(scene.Size);
                                 layerContext.Clear(Colors.Transparent);
                                 layerContext.PushClip(node.ClipBounds);
-                                layerContext.DrawEffect(target, layer.Opacity, sourceRect, clientRect, node.Effect);
+                                layerContext.DrawEffect(target, node.Effect);
                                 layerContext.PopClip();
                             }
                         }

@@ -43,13 +43,15 @@ namespace Avalonia.Skia.Effects
             _color = color;
         }
 
-        public void Render(SKPaint paint)
+        public void Render(SKCanvas canvas, SKBitmap bitmap)
         {
+            using (var paint = new SKPaint())
             using (var filter = SKImageFilter.CreateDropShadow(_offsetX, _offsetY, _blur, _blur, _color.ToSKColor(),
                 SKDropShadowImageFilterShadowMode.DrawShadowAndForeground, null))
             {
                 paint.IsAntialias = true;
                 paint.ImageFilter = filter;
+                canvas.DrawBitmap(bitmap, 0, 0, paint);
             }
         }
     }
