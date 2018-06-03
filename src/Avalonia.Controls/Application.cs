@@ -220,6 +220,7 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
+            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
             if (!IsExiting)
             {
                 OnExit?.Invoke(this, EventArgs.Empty);
@@ -263,6 +264,7 @@ namespace Avalonia
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
+            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
             if (!IsExiting)
             {
                 OnExit?.Invoke(this, EventArgs.Empty);
@@ -277,6 +279,7 @@ namespace Avalonia
         {
             Dispatcher.UIThread.MainLoop(token);
 
+            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
             if (!IsExiting)
             {
                 OnExit?.Invoke(this, EventArgs.Empty);
@@ -290,10 +293,7 @@ namespace Avalonia
         {
             IsExiting = true;
 
-            while (Windows.Count > 0)
-            {
-                Windows[0].Close();
-            }
+            Windows.Clear();
 
             OnExit?.Invoke(this, EventArgs.Empty);
 

@@ -339,10 +339,7 @@ namespace Avalonia.Controls.UnitTests
         {
             // HACK: We really need a decent way to have "statics" that can be scoped to
             // AvaloniaLocator scopes.
-            while (Application.Current.Windows.Count > 0)
-            {
-                Application.Current.Windows[0].Close();
-            }
+            Application.Current.Windows.Clear();
         }
     }
 }

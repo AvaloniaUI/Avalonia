@@ -1,12 +1,12 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
+using Avalonia.UnitTests;
+using Xunit;
+
 namespace Avalonia.Controls.UnitTests
 {
-    using Avalonia.UnitTests;
-
-    using Xunit;
-
     public class ApplicationTests
     {
         [Fact]
@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var mainWindow = new Window();
 
-                mainWindow.Show();           
+                mainWindow.Show();
 
                 Application.Current.MainWindow = mainWindow;
 
@@ -83,6 +83,24 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current.Exit();
 
                 Assert.True(Application.Current.IsExiting);
+            }
+        }
+
+        [Fact]
+        public void Should_Close_All_Remaining_Open_Windows_After_Explicit_Exit_Call()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windows = new List<Window> { new Window(), new Window(), new Window(), new Window() };
+
+                foreach (var window in windows)
+                {
+                    window.Show();
+                }
+
+                Application.Current.Exit();
+
+                Assert.Empty(Application.Current.Windows);
             }
         }
     }

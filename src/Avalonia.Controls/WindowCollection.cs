@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -66,9 +65,12 @@ namespace Avalonia
         /// <param name="window">The window.</param>
         internal void Add(Window window)
         {
-            _windows.Add(window);
+            if (window == null)
+            {
+                return;
+            }
 
-            window.Closed += OnWindowClosed;
+            _windows.Add(window);
         }
 
         /// <summary>
@@ -77,12 +79,30 @@ namespace Avalonia
         /// <param name="window">The window.</param>
         internal void Remove(Window window)
         {
+            if (window == null)
+            {
+                return;
+            }
+
             _windows.Remove(window);
+
+            OnRemoveWindow(window);
         }
 
-        private void OnWindowClosed(object sender, EventArgs eventArgs)
+        /// <summary>
+        /// Closes all windows and removes them from the underlying collection.
+        /// </summary>
+        internal void Clear()
         {
-            if (!(sender is Window window))
+            while (_windows.Count > 0)
+            {
+                _windows[0].Close();
+            }
+        }
+
+        private void OnRemoveWindow(Window window)
+        {
+            if (window == null)
             {
                 return;
             }
