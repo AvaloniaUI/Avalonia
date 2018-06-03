@@ -1,9 +1,9 @@
 ﻿using Avalonia.Visuals.Effects;
 using SkiaSharp;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Effects
 {
-    public interface ISkiaPlatformEffectImpl: IEffectImpl
+    public interface ISkiaPlatformEffectImpl
     {
         void Render(SKPaint paint);
     }

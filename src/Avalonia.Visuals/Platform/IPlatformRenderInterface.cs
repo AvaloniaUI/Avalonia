@@ -96,7 +96,7 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride);
 
         /// <summary>
-        /// 
+        /// Creates Effect implementaion
         /// </summary>
         /// <param name="offsetX"></param>
         /// <param name="offsetY"></param>

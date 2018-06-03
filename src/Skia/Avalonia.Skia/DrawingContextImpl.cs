@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Effects;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Effects;
 using SkiaSharp;

@@ -1,9 +1,8 @@
 ﻿using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Visuals.Effects;
 using SkiaSharp;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Effects
 {
     internal class DropShadowEffectImpl : IDropShadowEffectImpl, ISkiaPlatformEffectImpl
     {

@@ -7,6 +7,7 @@ using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Skia.Effects;
 using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Skia
