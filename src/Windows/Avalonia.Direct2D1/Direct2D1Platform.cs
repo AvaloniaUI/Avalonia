@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Direct2D1.Effects;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Rendering;
 using Avalonia.Visuals.Effects;
@@ -196,7 +197,7 @@ namespace Avalonia.Direct2D1
 
         public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
-            throw new NotImplementedException();
+            return new DropShadowEffectImpl(offsetX, offsetY, blur, color);
         }
     }
 }

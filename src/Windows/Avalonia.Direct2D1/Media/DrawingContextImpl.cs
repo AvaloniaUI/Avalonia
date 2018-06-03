@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Direct2D1.Effects;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -11,6 +12,7 @@ using Avalonia.Visuals.Effects;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
+using Color = Avalonia.Media.Color;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -482,7 +484,18 @@ namespace Avalonia.Direct2D1.Media
 
         public void DrawEffect(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, IEffectImpl effect)
         {
-            throw new NotImplementedException();
+            using (var deviceContext = _renderTarget.QueryInterface<DeviceContext>())
+            using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
+            {
+                var e = ((IDirect2DPlatformEffectImpl)effect)?.Render(deviceContext, d2d.Value);
+                deviceContext.DrawImage(e);
+                deviceContext.DrawBitmap(
+                    d2d.Value,
+                    destRect.ToSharpDX(),
+                    (float)opacity,
+                    BitmapInterpolationMode.Linear,
+                    sourceRect.ToSharpDX());
+            }
         }
     }
 }

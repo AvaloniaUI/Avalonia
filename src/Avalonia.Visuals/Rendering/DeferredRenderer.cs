@@ -13,6 +13,7 @@ using Avalonia.Media.Immutable;
 using System.Threading;
 using System.Linq;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Rendering
 {
@@ -31,6 +32,7 @@ namespace Avalonia.Rendering
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
+        private IRef<IRenderTargetBitmapImpl> _effectLayer;
         private bool _updateQueued;
         private object _rendering = new object();
         private int _lastSceneId = -1;
@@ -211,7 +213,7 @@ namespace Avalonia.Rendering
                         context = RenderTarget.CreateDrawingContext(this);
                         Layers.Update(scene, context);
 
-                        RenderToLayers(scene);
+                        RenderToLayers(scene, context);
 
                         if (DebugFramesPath != null)
                         {
@@ -275,7 +277,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderToLayers(Scene scene)
+        private void RenderToLayers(Scene scene, IDrawingContextImpl context)
         {
             if (scene.Layers.HasDirty)
             {
@@ -286,40 +288,47 @@ namespace Avalonia.Rendering
 
                     if (node != null && !layer.Dirty.IsEmpty)
                     {
-                        using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        IRef<IRenderTargetBitmapImpl> target;
+                        if (node.Effect != null)
+                        {
+                            target = GetEffectLayer(context, scene.Size, scene.Scaling); 
+                        }
+                        else
+                        {
+                            target = renderTarget;
+                        }
+
+
+                        using (var layerContext = target.Item.CreateDrawingContext(this))
                         {
                             foreach (var rect in layer.Dirty)
                             {
-                                context.Transform = Matrix.Identity;
+                                layerContext.Transform = Matrix.Identity;
 
-                                if (node.Effect != null)
-                                {
-                                    context.Clear(Colors.Transparent);
-                                    context.PushClip(node.ClipBounds);
-                                }                                    
-                                else
-                                {
-                                    context.PushClip(rect);
-                                    context.Clear(Colors.Transparent);
-                                }
+                                layerContext.PushClip(rect);
+                                layerContext.Clear(Colors.Transparent);
 
-                                Render(context, node, layer.LayerRoot, rect);
+                                Render(layerContext, node, layer.LayerRoot, rect);
 
-                                context.PopClip();
+                                layerContext.PopClip();
 
                                 if (DrawDirtyRects)
                                 {
                                     _dirtyRectsDisplay.Add(rect);
                                 }
                             }
+                        }
 
-                            if (node.Effect != null)
+                        if (node.Effect != null)
+                        {
+                            using (var layerContext = renderTarget.Item.CreateDrawingContext(this))
                             {
                                 var sourceRect = new Rect(0, 0, renderTarget.Item.PixelWidth, renderTarget.Item.PixelHeight);
                                 var clientRect = new Rect(scene.Size);
-                                context.PushClip(node.ClipBounds);
-                                context.DrawEffect(renderTarget, layer.Opacity, sourceRect, clientRect, node.Effect);
-                                context.PopClip();
+                                layerContext.Clear(Colors.Transparent);
+                                layerContext.PushClip(node.ClipBounds);
+                                layerContext.DrawEffect(target, layer.Opacity, sourceRect, clientRect, node.Effect);
+                                layerContext.PopClip();
                             }
                         }
                     }
@@ -461,6 +470,24 @@ namespace Avalonia.Rendering
                     Monitor.Exit(_rendering);
                 }
             }
+        }
+
+        private IRef<IRenderTargetBitmapImpl> GetEffectLayer(
+            IDrawingContextImpl parentContext,
+            Size size,
+            double scaling)
+        {
+            var pixelSize = size * scaling;
+
+            if (_effectLayer == null ||
+                _effectLayer.Item.PixelWidth != pixelSize.Width ||
+                _effectLayer.Item.PixelHeight != pixelSize.Height)
+            {
+                _effectLayer?.Dispose();
+                _effectLayer = RefCountable.Create(parentContext.CreateLayer(size));
+            }
+
+            return _effectLayer;
         }
 
         private IRef<IRenderTargetBitmapImpl> GetOverlay(
