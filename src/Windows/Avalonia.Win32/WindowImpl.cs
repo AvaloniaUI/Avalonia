@@ -839,7 +839,7 @@ namespace Avalonia.Win32
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
 
-                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
         }
