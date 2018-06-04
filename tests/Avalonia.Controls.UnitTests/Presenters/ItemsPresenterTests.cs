@@ -69,7 +69,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parent = new TestItemsControl();
             var target = new ItemsPresenter
             {
-                TemplatedParent = parent,
+                [StyledElement.TemplatedParentProperty] = parent,
             };
 
             Assert.IsType<ItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);

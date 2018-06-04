@@ -11,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    public struct Color
+    public readonly struct Color
     {
         /// <summary>
         /// Gets or sets the Alpha component of the color.

@@ -171,8 +171,7 @@ namespace Avalonia.Data
         /// </remarks>
         public static object ExtractError(object o)
         {
-            var notification = o as BindingNotification;
-            return notification != null ? notification.Error : o;
+            return o is BindingNotification notification ? notification.Error : o;
         }
 
         /// <summary>

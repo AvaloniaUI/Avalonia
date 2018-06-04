@@ -120,6 +120,7 @@ public class Packages
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
+        var SystemComponentModelAnnotationsVersion = packageVersions["System.ComponentModel.Annotations"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
@@ -155,38 +156,28 @@ public class Packages
 
         var coreLibraries = new string[][]
         {
-            new [] { "./src/", "Avalonia.Animation", ".dll" },
-            new [] { "./src/", "Avalonia.Animation", ".xml" },
-            new [] { "./src/", "Avalonia.Base", ".dll" },
-            new [] { "./src/", "Avalonia.Base", ".xml" },
-            new [] { "./src/", "Avalonia.Controls", ".dll" },
-            new [] { "./src/", "Avalonia.Controls", ".xml" },
-            new [] { "./src/", "Avalonia.DesignerSupport", ".dll" },
-            new [] { "./src/", "Avalonia.DesignerSupport", ".xml" },
-            new [] { "./src/", "Avalonia.Diagnostics", ".dll" },
-            new [] { "./src/", "Avalonia.Diagnostics", ".xml" },
-            new [] { "./src/", "Avalonia.Input", ".dll" },
-            new [] { "./src/", "Avalonia.Input", ".xml" },
-            new [] { "./src/", "Avalonia.Interactivity", ".dll" },
-            new [] { "./src/", "Avalonia.Interactivity", ".xml" },
-            new [] { "./src/", "Avalonia.Layout", ".dll" },
-            new [] { "./src/", "Avalonia.Layout", ".xml" },
-            new [] { "./src/", "Avalonia.Logging.Serilog", ".dll" },
-            new [] { "./src/", "Avalonia.Logging.Serilog", ".xml" },
-            new [] { "./src/", "Avalonia.Visuals", ".dll" },
-            new [] { "./src/", "Avalonia.Visuals", ".xml" },
-            new [] { "./src/", "Avalonia.Styling", ".dll" },
-            new [] { "./src/", "Avalonia.Styling", ".xml" },
-            new [] { "./src/", "Avalonia.Themes.Default", ".dll" },
-            new [] { "./src/", "Avalonia.Themes.Default", ".xml" },
-            new [] { "./src/Markup/", "Avalonia.Markup", ".dll" },
-            new [] { "./src/Markup/", "Avalonia.Markup", ".xml" },
-            new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".dll" },
-            new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".xml" }
+            new [] { "./src/", "Avalonia.Animation"},
+            new [] { "./src/", "Avalonia.Base"},
+            new [] { "./src/", "Avalonia.Controls"},
+            new [] { "./src/", "Avalonia.DesignerSupport"},
+            new [] { "./src/", "Avalonia.Diagnostics"},
+            new [] { "./src/", "Avalonia.Input"},
+            new [] { "./src/", "Avalonia.Interactivity"},
+            new [] { "./src/", "Avalonia.Layout"},
+            new [] { "./src/", "Avalonia.Logging.Serilog"},
+            new [] { "./src/", "Avalonia.Visuals"},
+            new [] { "./src/", "Avalonia.Styling"},
+            new [] { "./src/", "Avalonia.Themes.Default"},
+            new [] { "./src/Markup/", "Avalonia.Markup"},
+            new [] { "./src/Markup/", "Avalonia.Markup.Xaml"},
         };
 
-        var coreLibrariesFiles = coreLibraries.Select((lib) => {
-            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard2.0/" + lib[1] + lib[2]);
+        var extensionsToPack = new [] {".dll", ".xml", ".pdb"};
+
+        var coreLibrariesFiles = coreLibraries
+            .SelectMany(lib => extensionsToPack.Select(ext => new {lib, ext}))
+            .Select((lib) => {
+                return (FilePath)context.File(lib.lib[0] + lib.lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard2.0/" + lib.lib[1] + lib.ext);
         }).ToList();
 
         var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
@@ -207,16 +198,14 @@ public class Packages
             };
         });
 
-        var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
-        var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
+        var net45RuntimePlatform = extensionsToPack.Select(libSuffix => {
             return new NuSpecContent {
                 Source = ((FilePath)context.File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + parameters.DirSuffix + "/net461/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
                 Target = "lib/net45" 
             };
         });
 
-        var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
-        var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
+        var netCoreRuntimePlatform = extensionsToPack.Select(libSuffix => {
             return new NuSpecContent {
                 Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
                 Target = "lib/netcoreapp2.0" 
@@ -250,6 +239,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "System.ComponentModel.Annotations", Version = SystemComponentModelAnnotationsVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
@@ -271,23 +261,6 @@ public class Packages
                     .Concat(toolsContent)
                     .ToList(),
                 BasePath = context.Directory("./"),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.HtmlRenderer
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.HtmlRenderer",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard2.0" }
-                },
-                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////

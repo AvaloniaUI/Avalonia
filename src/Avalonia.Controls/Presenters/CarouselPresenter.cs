@@ -33,12 +33,13 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.SelectedIndex = v);
 
         /// <summary>
-        /// Defines the <see cref="Transition"/> property.
+        /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
-        public static readonly StyledProperty<IPageTransition> TransitionProperty =
-            Carousel.TransitionProperty.AddOwner<CarouselPresenter>();
+        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
+            Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
+       // private Task _current;
         private Task _currentTransition;
         private int _queuedTransitionIndex = -1;
 
@@ -88,10 +89,10 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a transition to use when switching pages.
         /// </summary>
-        public IPageTransition Transition
+        public IPageTransition PageTransition
         {
-            get { return GetValue(TransitionProperty); }
-            set { SetValue(TransitionProperty, value); }
+            get { return GetValue(PageTransitionProperty); }
+            set { SetValue(PageTransitionProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -105,7 +106,6 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            // TODO: Handle items changing.           
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Remove:
@@ -114,14 +114,26 @@ namespace Avalonia.Controls.Presenters
                         var generator = ItemContainerGenerator;
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+
+                        MoveToPage(-1, SelectedIndex);
                     }
                     break;
 
+                case NotifyCollectionChangedAction.Reset:
+                    {
+                        var generator = ItemContainerGenerator;
+                        var containers = generator.Containers.ToList();
+                        generator.Clear();
+                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+
+                        MoveToPage(-1, SelectedIndex >= 0 ? SelectedIndex : 0);
+                    }
+                    break;     
             }
         }
 
         /// <summary>
-        /// Moves to the selected page, animating if a <see cref="Transition"/> is set.
+        /// Moves to the selected page, animating if a <see cref="PageTransition"/> is set.
         /// </summary>
         /// <param name="fromIndex">The index of the old page.</param>
         /// <param name="toIndex">The index of the new page.</param>
@@ -144,9 +156,9 @@ namespace Avalonia.Controls.Presenters
                     to = GetOrCreateContainer(toIndex);
                 }
 
-                if (Transition != null && (from != null || to != null))
+                if (PageTransition != null && (from != null || to != null))
                 {
-                    await Transition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
+                    await PageTransition.Start((Visual)from, (Visual)to, fromIndex < toIndex);
                 }
                 else if (to != null)
                 {

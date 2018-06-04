@@ -51,6 +51,8 @@ namespace Avalonia.Animation
         {
             var tasks = new List<Task>();
 
+            // TODO: Implement relevant transition logic here (or discard this class)
+            // in favor of XAML based transition for pages
             if (to != null)
             {
                 to.Opacity = 0;
@@ -58,13 +60,6 @@ namespace Avalonia.Animation
 
             if (from != null)
             {
-                tasks.Add(Animate.Property(
-                    (IAvaloniaObject)from,
-                    Visual.OpacityProperty,
-                    from.Opacity,
-                    0,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
             }
 
             if (to != null)
@@ -72,16 +67,10 @@ namespace Avalonia.Animation
                 to.Opacity = 0;
                 to.IsVisible = true;
 
-                tasks.Add(Animate.Property(
-                    (IAvaloniaObject)to,
-                    Visual.OpacityProperty,
-                    0,
-                    1,
-                    LinearEasing.For<double>(),
-                    Duration).ToTask());
             }
 
-            await Task.WhenAll(tasks.ToArray());
+            // FIXME: This is temporary until animations are fixed.
+            await Task.Delay(1);
 
             if (from != null)
             {

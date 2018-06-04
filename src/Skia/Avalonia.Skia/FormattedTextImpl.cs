@@ -25,10 +25,34 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var skiaTypeface = TypefaceCache.GetTypeface(
-                typeface?.FontFamilyName ?? "monospace",
-                typeface?.Style ?? FontStyle.Normal,
-                typeface?.Weight ?? FontWeight.Normal);
+            SKTypeface skiaTypeface = TypefaceCache.Default;
+
+            if (typeface.FontFamily.Key != null)
+            {
+                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+                skiaTypeface = typefaces.GetTypeFace(typeface);
+            }
+            else
+            {
+                if (typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    foreach (var familyName in typeface.FontFamily.FamilyNames)
+                    {
+                        skiaTypeface = TypefaceCache.GetTypeface(
+                            familyName,
+                            typeface.Style,
+                            typeface.Weight);
+                        if (skiaTypeface != TypefaceCache.Default) break;
+                    }
+                }
+                else
+                {
+                    skiaTypeface = TypefaceCache.GetTypeface(
+                        typeface.FontFamily.Name,
+                        typeface.Style,
+                        typeface.Weight);
+                }
+            }
 
             _paint = new SKPaint();
 
@@ -40,7 +64,7 @@ namespace Avalonia.Skia
             _paint.LcdRenderText = true;
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
-            _paint.TextSize = (float)(typeface?.FontSize ?? 12);
+            _paint.TextSize = (float)typeface.FontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
 
             _wrapping = wrapping;

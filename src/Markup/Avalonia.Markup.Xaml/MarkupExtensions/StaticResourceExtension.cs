@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
@@ -69,7 +69,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
-        private object GetValue(IControl control)
+        private object GetValue(IStyledElement control)
         {
             return control.FindResource(ResourceKey);
         }

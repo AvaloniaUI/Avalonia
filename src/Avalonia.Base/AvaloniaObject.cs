@@ -139,8 +139,9 @@ namespace Avalonia
                     {
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
-
-                    var inherited = (from property in AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                        .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
+                    var inherited = (from property in properties
                                      where property.Inherits
                                      select new
                                      {
@@ -702,7 +703,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         private object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && _inheritanceParent is AvaloniaObject aobj)
+            if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
                 return aobj.GetValueInternal(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }

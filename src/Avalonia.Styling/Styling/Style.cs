@@ -7,18 +7,22 @@ using System.Collections.Specialized;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.Animation;
+using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : IStyle, ISetStyleParent
+    public class Style : AvaloniaObject, IStyle, ISetStyleParent
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
         private IResourceNode _parent;
         private IResourceDictionary _resources;
+
+        private IList<IAnimation> _animations;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -78,6 +82,14 @@ namespace Avalonia.Styling
         [Content]
         public IList<ISetter> Setters { get; set; } = new List<ISetter>();
 
+        public IList<IAnimation> Animations
+        {
+            get
+            {
+                return _animations ?? (_animations = new List<IAnimation>());
+            }
+        }
+
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;
 
@@ -100,6 +112,19 @@ namespace Avalonia.Styling
                 if (match.ImmediateResult != false)
                 {
                     var subs = GetSubscriptions(control);
+
+                    foreach (var animation in Animations)
+                    {
+                        IObservable<bool> obsMatch = match.ObservableResult;
+
+                        if (match.ImmediateResult == true)
+                        {
+                            obsMatch = Observable.Return(true);
+                        } 
+
+                        var sub = animation.Apply((Animatable)control, obsMatch);
+                        subs.Add(sub);
+                    }
 
                     foreach (var setter in Setters)
                     {
