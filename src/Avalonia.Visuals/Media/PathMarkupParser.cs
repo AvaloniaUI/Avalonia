@@ -115,15 +115,13 @@ namespace Avalonia.Media
             var dir = controlPoint - center;
 
             return center + -dir;
-        }      
+        }
 
         private PathGeometry CreateGeometry(IEnumerable<CommandToken> commandTokens)
         {
             _currentGeometry = new PathGeometry();
 
             _currentPoint = new Point();
-
-            _currentFigure = new PathFigure();
 
             _currentSegment = null;
 
@@ -196,22 +194,20 @@ namespace Avalonia.Media
             {
                 _currentFigure.IsClosed = true;
             }
+
+            _previousControlPoint = null;
         }
 
         private void CreateFigure()
         {
-            _currentFigure = new PathFigure { StartPoint = _currentPoint };
+            _currentFigure = new PathFigure { StartPoint = _currentPoint, IsClosed = false };
 
             _currentGeometry.Figures.Add(_currentFigure);
         }
 
         private void AddMove(CommandToken commandToken)
         {
-            CloseFigure();
-
-            var currentPoint = commandToken.IsRelative
-                                ? commandToken.ReadRelativePoint(_currentPoint)
-                                : commandToken.ReadPoint();
+            var currentPoint = commandToken.ReadPoint();
 
             _currentPoint = currentPoint;
 
@@ -392,8 +388,8 @@ namespace Avalonia.Media
             var sweepDirection = commandToken.ReadBool() ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
 
             var end = commandToken.IsRelative
-                                     ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
-                                     : _currentPoint.WithY(commandToken.ReadDouble());
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
 
             _currentSegment =
                 new ArcSegment { Size = size, RotationAngle = rotationAngle, IsLargeArc = isLargeArc, SweepDirection = sweepDirection, Point = end };
@@ -406,7 +402,9 @@ namespace Avalonia.Media
             _currentFigure.Segments.Add(_currentSegment);
 
             _currentPoint = end;
-        }        
+
+            _previousControlPoint = null;
+        }
 
         private class CommandToken
         {
