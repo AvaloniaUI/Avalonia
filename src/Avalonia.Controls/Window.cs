@@ -104,6 +104,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
 
+        public static readonly StyledProperty<bool> TopmostProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(Topmost));
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
@@ -124,6 +127,8 @@ namespace Avalonia.Controls
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
 
             CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
+
+            TopmostProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
 
             WindowStateProperty.Changed.AddClassHandler<Window>(
                 (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
@@ -228,6 +233,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(CanResizeProperty); }
             set { SetValue(CanResizeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether this window appears on top of all other windows
+        /// </summary>
+        public bool Topmost
+        {
+            get { return GetValue(TopmostProperty); }
+            set { SetValue(TopmostProperty, value); }
         }
 
         /// <summary>

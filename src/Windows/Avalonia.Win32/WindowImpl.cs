@@ -32,6 +32,7 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _decorated = true;
         private bool _resizable = true;
+        private bool _topmost = false;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
@@ -900,6 +901,22 @@ namespace Avalonia.Win32
             }
 
             _resizable = value;
+        }
+
+        public void SetTopmost(bool value)
+        {
+            if (value == _topmost)
+            {
+                return;
+            }
+
+            IntPtr hWndInsertAfter = value ? WindowPosZOrder.HWND_TOPMOST : WindowPosZOrder.HWND_NOTOPMOST;
+            UnmanagedMethods.SetWindowPos(_hwnd,
+                   hWndInsertAfter,
+                   0, 0, 0, 0,
+                   SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+
+            _topmost = value;
         }
     }
 }
