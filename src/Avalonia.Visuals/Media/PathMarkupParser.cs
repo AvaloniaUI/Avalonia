@@ -5,50 +5,47 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Parses a path markup string.
     /// </summary>
-    public class PathMarkupParser
+    public class PathMarkupParser : IDisposable
     {
-        private static readonly Dictionary<char, Command> Commands = new Dictionary<char, Command>
-        {
-            { 'F', Command.FillRule },
-            { 'M', Command.Move },
-            { 'L', Command.Line },
-            { 'H', Command.HorizontalLine },
-            { 'V', Command.VerticalLine },
-            { 'Q', Command.QuadraticBezierCurve },
-            { 'T', Command.SmoothQuadraticBezierCurve },
-            { 'C', Command.CubicBezierCurve },
-            { 'S', Command.SmoothCubicBezierCurve },
-            { 'A', Command.Arc },
-            { 'Z', Command.Close },
-        };
+        private static readonly string s_separatorPattern;
 
-        private static readonly Dictionary<char, FillRule> FillRules = new Dictionary<char, FillRule>
-        {
-            {'0', FillRule.EvenOdd },
-            {'1', FillRule.NonZero }
-        };
+        private Point _currentPoint;
+        private Point? _previousControlPoint;
+        private PathGeometry _currentGeometry;
+        private PathFigure _currentFigure;
+        private PathSegment _currentSegment;
+        private bool _disposedValue = false;
 
-        private readonly StreamGeometryContext _context;
+        private static readonly Dictionary<char, Command> s_commands =
+            new Dictionary<char, Command>
+                {
+                    { 'F', Command.FillRule },
+                    { 'M', Command.Move },
+                    { 'L', Command.Line },
+                    { 'H', Command.HorizontalLine },
+                    { 'V', Command.VerticalLine },
+                    { 'Q', Command.QuadraticBezierCurve },
+                    { 'T', Command.SmoothQuadraticBezierCurve },
+                    { 'C', Command.CubicBezierCurve },
+                    { 'S', Command.SmoothCubicBezierCurve },
+                    { 'A', Command.Arc },
+                    { 'Z', Command.Close },
+                };
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
-        /// </summary>
-        /// <param name="context">The context for the geometry.</param>
-        public PathMarkupParser(StreamGeometryContext context)
+        static PathMarkupParser()
         {
-            _context = context;
+            s_separatorPattern = CreatesSeparatorPattern();
         }
 
-        /// <summary>
-        /// Defines the command currently being processed.
-        /// </summary>
         private enum Command
         {
             None,
@@ -62,358 +59,560 @@ namespace Avalonia.Media
             SmoothCubicBezierCurve,
             SmoothQuadraticBezierCurve,
             Arc,
-            Close,
+            Close
         }
 
-        /// <summary>
-        /// Parses the specified markup string.
-        /// </summary>
-        /// <param name="s">The markup string.</param>
-        public void Parse(string s)
+        public PathGeometry Parse(string s)
         {
-            bool openFigure = false;
+            _currentGeometry = new PathGeometry();
 
-            using (StringReader reader = new StringReader(s))
+            var tokens = ParseTokens(s);
+
+            return CreateGeometry(tokens);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
             {
-                Command command = Command.None;
-                Point point = new Point();
-                bool relative = false;        
-                Point? previousControlPoint = null;
-
-                while (ReadCommand(reader, ref command, ref relative))
+                if (disposing)
                 {
-                    switch (command)
+                    _currentSegment = null;
+                    _currentFigure = null;
+                    _currentGeometry = null;
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        private static string CreatesSeparatorPattern()
+        {
+            var stringBuilder = new StringBuilder();
+
+            foreach (var command in s_commands.Keys)
+            {
+                stringBuilder.Append(command);
+
+                stringBuilder.Append(char.ToLower(command));
+            }
+
+            return @"(?=[" + stringBuilder + "])";
+        }
+
+        private static IEnumerable<CommandToken> ParseTokens(string s)
+        {
+            return Regex.Split(s, s_separatorPattern).Where(t => !string.IsNullOrEmpty(t)).Select(CommandToken.Parse);
+        }
+
+        private static Point MirrorControlPoint(Point controlPoint, Point center)
+        {
+            var dir = controlPoint - center;
+
+            return center + -dir;
+        }      
+
+        private PathGeometry CreateGeometry(IEnumerable<CommandToken> commandTokens)
+        {
+            _currentGeometry = new PathGeometry();
+
+            _currentPoint = new Point();
+
+            _currentFigure = new PathFigure();
+
+            _currentSegment = null;
+
+            foreach (var commandToken in commandTokens)
+            {
+                while (true)
+                {
+                    switch (commandToken.Command)
                     {
+                        case Command.None:
+                            break;
                         case Command.FillRule:
-                            _context.SetFillRule(ReadFillRule(reader));
-                            previousControlPoint = null;
+                            SetFillRule(commandToken);
                             break;
-
                         case Command.Move:
-                            if (openFigure)
-                            {
-                                _context.EndFigure(false);
-                            }
-
-                            point = ReadPoint(reader, point, relative);
-                            _context.BeginFigure(point, true);
-                            openFigure = true;
-                            previousControlPoint = null;
+                            AddMove(commandToken);
                             break;
-
                         case Command.Line:
-                            point = ReadPoint(reader, point, relative);
-                            _context.LineTo(point);
-                            previousControlPoint = null;
+                            AddLine(commandToken);
                             break;
-
                         case Command.HorizontalLine:
-                            if (!relative)
-                            {
-                                point = point.WithX(ReadDouble(reader));
-                            }
-                            else
-                            {
-                                point = new Point(point.X + ReadDouble(reader), point.Y);
-                            }
-
-                            _context.LineTo(point);
-                            previousControlPoint = null;
+                            AddHorizontalLine(commandToken);
                             break;
-
                         case Command.VerticalLine:
-                            if (!relative)
-                            {
-                                point = point.WithY(ReadDouble(reader));
-                            }
-                            else
-                            {
-                                point = new Point(point.X, point.Y + ReadDouble(reader));
-                            }
-
-                            _context.LineTo(point);
-                            previousControlPoint = null;
+                            AddVerticalLine(commandToken);
                             break;
-
-                        case Command.QuadraticBezierCurve:
-                            {
-                                Point handle = ReadPoint(reader, point, relative);
-                                previousControlPoint = handle;
-                                ReadSeparator(reader);
-                                point = ReadPoint(reader, point, relative);
-                                _context.QuadraticBezierTo(handle, point);
-                                break;
-                            }
-
-                        case Command.SmoothQuadraticBezierCurve:
-                            {
-                                Point end = ReadPoint(reader, point, relative);
-                                
-                                if(previousControlPoint != null)
-                                    previousControlPoint = MirrorControlPoint((Point)previousControlPoint, point);
-                                
-                                _context.QuadraticBezierTo(previousControlPoint ?? point, end);
-                                point = end;
-                                break;
-                            }
-
                         case Command.CubicBezierCurve:
-                            {
-                                Point point1 = ReadPoint(reader, point, relative);
-                                ReadSeparator(reader);
-                                Point point2 = ReadPoint(reader, point, relative);
-                                previousControlPoint = point2;
-                                ReadSeparator(reader);
-                                point = ReadPoint(reader, point, relative);
-                                _context.CubicBezierTo(point1, point2, point);
-                                break;
-                            }
-                            
-                        case Command.SmoothCubicBezierCurve:
-                            {
-                                Point point2 = ReadPoint(reader, point, relative);
-                                ReadSeparator(reader);
-                                Point end = ReadPoint(reader, point, relative);
-                                
-                                if(previousControlPoint != null)
-                                    previousControlPoint = MirrorControlPoint((Point)previousControlPoint, point);
-                                
-                                _context.CubicBezierTo(previousControlPoint ?? point, point2, end);
-                                previousControlPoint = point2;
-                                point = end;
-                                break;
-                            }
-
-                        case Command.Arc:
-                            {
-                                Size size = ReadSize(reader);
-                                ReadSeparator(reader);
-                                double rotationAngle = ReadDouble(reader);
-                                ReadSeparator(reader);
-                                bool isLargeArc = ReadBool(reader);
-                                ReadSeparator(reader);
-                                SweepDirection sweepDirection = ReadBool(reader) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
-                                ReadSeparator(reader);
-                                point = ReadPoint(reader, point, relative);
-
-                                _context.ArcTo(point, size, rotationAngle, isLargeArc, sweepDirection);
-                                previousControlPoint = null;
-                                break;
-                            }
-
-                        case Command.Close:
-                            _context.EndFigure(true);
-                            openFigure = false;
-                            previousControlPoint = null;
+                            AddCubicBezierCurve(commandToken);
                             break;
-
+                        case Command.QuadraticBezierCurve:
+                            AddQuadraticBezierCurve(commandToken);
+                            break;
+                        case Command.SmoothCubicBezierCurve:
+                            AddSmoothCubicBezierCurve(commandToken);
+                            break;
+                        case Command.SmoothQuadraticBezierCurve:
+                            AddSmoothQuadraticBezierCurve(commandToken);
+                            break;
+                        case Command.Arc:
+                            AddArc(commandToken);
+                            break;
+                        case Command.Close:
+                            CloseFigure();
+                            break;
                         default:
                             throw new NotSupportedException("Unsupported command");
                     }
-                }
 
-                if (openFigure)
-                {
-                    _context.EndFigure(false);
+                    // Check for implicit commands
+                    if (commandToken.HasImplicitCommands)
+                    {
+                        continue;
+                    }
+
+                    break;
                 }
+            }
+
+            return _currentGeometry;
+        }
+
+        private void SetFillRule(CommandToken commandToken)
+        {
+            _currentGeometry.FillRule = commandToken.ReadFillRule();
+        }
+
+        private void CloseFigure()
+        {
+            if (_currentFigure != null && !_currentFigure.IsClosed)
+            {
+                _currentFigure.IsClosed = true;
             }
         }
 
-        private Point MirrorControlPoint(Point controlPoint, Point center)
+        private void CreateFigure()
         {
-            Point dir = (controlPoint - center);
-            return center + -dir;
+            _currentFigure = new PathFigure { StartPoint = _currentPoint };
+
+            _currentGeometry.Figures.Add(_currentFigure);
         }
 
-        private static bool ReadCommand(
-            StringReader reader,
-            ref Command command,
-            ref bool relative)
+        private void AddMove(CommandToken commandToken)
         {
-            ReadWhitespace(reader);
+            CloseFigure();
 
-            int i = reader.Peek();
+            var currentPoint = commandToken.IsRelative
+                                ? commandToken.ReadRelativePoint(_currentPoint)
+                                : commandToken.ReadPoint();
 
-            if (i == -1)
+            _currentPoint = currentPoint;
+
+            CreateFigure();
+
+            // Check for implicit line commands
+            if (!commandToken.HasImplicitCommands) return;
+
+            while (commandToken.HasImplicitCommands)
             {
-                return false;
+                AddLine(commandToken);
+
+                if (commandToken.IsRelative) continue;
+
+                _currentPoint = currentPoint;
+
+                CreateFigure();
             }
-            else
-            {
-                char c = (char)i;
-                Command next = Command.None;
+        }
 
-                if (!Commands.TryGetValue(char.ToUpperInvariant(c), out next))
+        private void AddLine(CommandToken commandToken)
+        {
+            _currentPoint = commandToken.IsRelative
+                                ? commandToken.ReadRelativePoint(_currentPoint)
+                                : commandToken.ReadPoint();
+
+            _currentSegment = new LineSegment { Point = _currentPoint };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+        }
+
+        private void AddHorizontalLine(CommandToken commandToken)
+        {
+            _currentPoint = commandToken.IsRelative
+                                     ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
+                                     : _currentPoint.WithX(commandToken.ReadDouble());
+
+            _currentSegment = new LineSegment { Point = _currentPoint };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+        }
+
+        private void AddVerticalLine(CommandToken commandToken)
+        {
+            _currentPoint = commandToken.IsRelative
+                                     ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
+                                     : _currentPoint.WithY(commandToken.ReadDouble());
+
+            _currentSegment = new LineSegment { Point = _currentPoint };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+        }
+
+        private void AddCubicBezierCurve(CommandToken commandToken)
+        {
+            var point1 = commandToken.IsRelative
+                               ? commandToken.ReadRelativePoint(_currentPoint)
+                               : commandToken.ReadPoint();
+
+            var point2 = commandToken.IsRelative
+                               ? commandToken.ReadRelativePoint(_currentPoint)
+                               : commandToken.ReadPoint();
+
+            _previousControlPoint = point2;
+
+            var point3 = commandToken.IsRelative
+                        ? commandToken.ReadRelativePoint(_currentPoint)
+                        : commandToken.ReadPoint();
+
+            _currentSegment =
+                new BezierSegment { Point1 = point1, Point2 = point2, Point3 = point3 };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+
+            _currentPoint = point3;
+        }
+
+        private void AddQuadraticBezierCurve(CommandToken commandToken)
+        {
+            var start = commandToken.IsRelative
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
+
+            _previousControlPoint = start;
+
+            var end = commandToken.IsRelative
+                            ? commandToken.ReadRelativePoint(_currentPoint)
+                            : commandToken.ReadPoint();
+
+            _currentSegment =
+                new QuadraticBezierSegment { Point1 = start, Point2 = end };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+
+            _currentPoint = end;
+        }
+
+        private void AddSmoothCubicBezierCurve(CommandToken commandToken)
+        {
+            var point2 = commandToken.IsRelative
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
+
+            var end = commandToken.IsRelative
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
+
+            if (_previousControlPoint != null)
+            {
+                _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
+            }
+
+            _currentSegment =
+                new BezierSegment { Point1 = _previousControlPoint ?? _currentPoint, Point2 = point2, Point3 = end };
+
+            _previousControlPoint = point2;
+
+            _currentPoint = end;
+        }
+
+        private void AddSmoothQuadraticBezierCurve(CommandToken commandToken)
+        {
+            var end = commandToken.IsRelative
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
+
+            if (_previousControlPoint != null)
+            {
+                _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
+            }
+
+            _currentSegment =
+                new QuadraticBezierSegment { Point1 = _previousControlPoint ?? _currentPoint, Point2 = end };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+
+            _currentPoint = end;
+        }
+
+        private void AddArc(CommandToken commandToken)
+        {
+            var size = commandToken.ReadSize();
+
+            var rotationAngle = commandToken.ReadDouble();
+
+            var isLargeArc = commandToken.ReadBool();
+
+            var sweepDirection = commandToken.ReadBool() ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+
+            var end = commandToken.IsRelative
+                                     ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
+                                     : _currentPoint.WithY(commandToken.ReadDouble());
+
+            _currentSegment =
+                new ArcSegment { Size = size, RotationAngle = rotationAngle, IsLargeArc = isLargeArc, SweepDirection = sweepDirection, Point = end };
+
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(_currentSegment);
+
+            _currentPoint = end;
+        }        
+
+        private class CommandToken
+        {
+            private const string ArgumentExpression = @"-?[0-9]*\.?\d+";
+
+            private CommandToken(Command command, bool isRelative, IEnumerable<string> arguments)
+            {
+                Command = command;
+
+                IsRelative = isRelative;
+
+                Arguments = new List<string>(arguments);
+            }
+
+            public Command Command { get; }
+
+            public bool IsRelative { get; }
+
+            public bool HasImplicitCommands
+            {
+                get
                 {
-                    if ((char.IsDigit(c) || c == '.' || c == '+' || c == '-') &&
-                        (command != Command.None))
+                    if (CurrentPosition == 0 && Arguments.Count > 0)
                     {
                         return true;
                     }
-                    else
+
+                    return CurrentPosition < Arguments.Count - 1;
+                }
+            }
+
+            private int CurrentPosition { get; set; }
+
+            private List<string> Arguments { get; }
+
+            public static CommandToken Parse(string s)
+            {
+                using (var reader = new StringReader(s))
+                {
+                    var command = Command.None;
+
+                    var isRelative = false;
+
+                    if (!ReadCommand(reader, ref command, ref isRelative))
                     {
-                        throw new InvalidDataException("Unexpected path command '" + c + "'.");
+                        throw new InvalidDataException("No path command declared.");
                     }
+
+                    var commandArguments = reader.ReadToEnd();
+
+                    var argumentMatches = Regex.Matches(commandArguments, ArgumentExpression);
+
+                    var arguments = new List<string>();
+
+                    foreach (Match match in argumentMatches)
+                    {
+                        arguments.Add(match.Value);
+                    }
+
+                    return new CommandToken(command, isRelative, arguments);
+                }
+            }
+
+            public FillRule ReadFillRule()
+            {
+                if (CurrentPosition == Arguments.Count)
+                {
+                    throw new InvalidDataException("Invalid fill rule");
+                }
+
+                var value = Arguments[CurrentPosition];
+
+                CurrentPosition++;
+
+                switch (value)
+                {
+                    case "0":
+                        {
+                            return FillRule.EvenOdd;
+                        }
+
+                    case "1":
+                        {
+                            return FillRule.NonZero;
+                        }
+
+                    default:
+                        throw new InvalidDataException("Invalid fill rule");
+                }
+            }
+
+            public bool ReadBool()
+            {
+                if (CurrentPosition == Arguments.Count)
+                {
+                    throw new InvalidDataException("Invalid boolean value");
+                }
+
+                var value = Arguments[CurrentPosition];
+
+                CurrentPosition++;
+
+                switch (value)
+                {
+                    case "1":
+                        {
+                            return true;
+                        }
+
+                    case "0":
+                        {
+                            return false;
+                        }
+
+                    default:
+                        throw new InvalidDataException("Invalid boolean value");
+                }
+            }
+
+            public double ReadDouble()
+            {
+                if (CurrentPosition == Arguments.Count)
+                {
+                    throw new InvalidDataException("Invalid double value");
+                }
+
+                var value = Arguments[CurrentPosition];
+
+                CurrentPosition++;
+
+                return double.Parse(value, CultureInfo.InvariantCulture);
+            }
+
+            public Size ReadSize()
+            {
+                var width = ReadDouble();
+
+                var height = ReadDouble();
+
+                return new Size(width, height);
+            }
+
+            public Point ReadPoint()
+            {
+                var x = ReadDouble();
+
+                var y = ReadDouble();
+
+                return new Point(x, y);
+            }
+
+            public Point ReadRelativePoint(Point origin)
+            {
+                var x = ReadDouble();
+
+                var y = ReadDouble();
+
+                return new Point(origin.X + x, origin.Y + y);
+            }
+
+            private static bool ReadCommand(
+                TextReader reader,
+                ref Command command,
+                ref bool relative)
+            {
+                ReadWhitespace(reader);
+
+                var i = reader.Peek();
+
+                if (i == -1)
+                {
+                    return false;
+                }
+
+                var c = (char)i;
+
+                if (!s_commands.TryGetValue(char.ToUpperInvariant(c), out var next))
+                {
+                    throw new InvalidDataException("Unexpected path command '" + c + "'.");
                 }
 
                 command = next;
+
                 relative = char.IsLower(c);
+
                 reader.Read();
+
                 return true;
             }
-        }
 
-        private static FillRule ReadFillRule(StringReader reader)
-        {
-            int i = reader.Read();
-            if (i == -1)
+            private static void ReadWhitespace(TextReader reader)
             {
-                throw new InvalidDataException("Invalid fill rule");
-            }
-            char c = (char)i;
-            FillRule rule;
+                int i;
 
-            if (!FillRules.TryGetValue(c, out rule))
-            {
-                throw new InvalidDataException("Invalid fill rule");
-            }
-
-            return rule;
-        }
-
-        private static double ReadDouble(StringReader reader)
-        {
-            ReadWhitespace(reader);
-
-            // TODO: Handle Infinity, NaN and scientific notation.
-            StringBuilder b = new StringBuilder();
-            bool readSign = false;
-            bool readPoint = false;
-            bool readExponent = false;
-            int i;
-
-            while ((i = reader.Peek()) != -1)
-            {
-                char c = char.ToUpperInvariant((char)i);
-
-                if (((c == '+' || c == '-') && !readSign) ||
-                    (c == '.' && !readPoint) ||
-                    (c == 'E' && !readExponent) ||
-                    char.IsDigit(c))
+                while ((i = reader.Peek()) != -1)
                 {
-                    if (b.Length != 0 && !readExponent && c == '-')
+                    var c = (char)i;
+
+                    if (char.IsWhiteSpace(c))
+                    {
+                        reader.Read();
+                    }
+                    else
+                    {
                         break;
-                    
-                    b.Append(c);
-                    reader.Read();
-
-                    if (!readSign)
-                    {
-                        readSign = c == '+' || c == '-';
                     }
-
-                    if (!readPoint)
-                    {
-                        readPoint = c == '.';
-                    }
-
-                    if (c == 'E')
-                    {
-                        readSign = false;
-                        readExponent = true;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return double.Parse(b.ToString(), CultureInfo.InvariantCulture);
-        }
-
-        private static Point ReadPoint(StringReader reader, Point current, bool relative)
-        {
-            if (!relative)
-            {
-                current = new Point();
-            }
-
-            ReadWhitespace(reader);
-            double x = current.X + ReadDouble(reader);
-            ReadSeparator(reader);
-            double y = current.Y + ReadDouble(reader);
-            return new Point(x, y);
-        }
-
-        private static Size ReadSize(StringReader reader)
-        {
-            ReadWhitespace(reader);
-            double x = ReadDouble(reader);
-            ReadSeparator(reader);
-            double y = ReadDouble(reader);
-            return new Size(x, y);
-        }
-
-        private static bool ReadBool(StringReader reader)
-        {
-            return ReadDouble(reader) != 0;
-        }
-
-        private static Point ReadRelativePoint(StringReader reader, Point lastPoint)
-        {
-            ReadWhitespace(reader);
-            double x = ReadDouble(reader);
-            ReadSeparator(reader);
-            double y = ReadDouble(reader);
-            return new Point(lastPoint.X + x, lastPoint.Y + y);
-        }
-
-        private static void ReadSeparator(StringReader reader)
-        {
-            int i;
-            bool readComma = false;
-
-            while ((i = reader.Peek()) != -1)
-            {
-                char c = (char)i;
-
-                if (char.IsWhiteSpace(c))
-                {
-                    reader.Read();
-                }
-                else if (c == ',')
-                {
-                    if (readComma)
-                    {
-                        throw new InvalidDataException("Unexpected ','.");
-                    }
-
-                    readComma = true;
-                    reader.Read();
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-
-        private static void ReadWhitespace(StringReader reader)
-        {
-            int i;
-
-            while ((i = reader.Peek()) != -1)
-            {
-                char c = (char)i;
-
-                if (char.IsWhiteSpace(c))
-                {
-                    reader.Read();
-                }
-                else
-                {
-                    break;
                 }
             }
         }
