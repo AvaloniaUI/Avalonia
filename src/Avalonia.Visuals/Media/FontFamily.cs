@@ -80,7 +80,7 @@ namespace Avalonia.Media
         /// <param name="fontFamily"></param>
         public static implicit operator FontFamily(string fontFamily)
         {
-            return new FontFamily(fontFamily);
+            return Parse(fontFamily);
         }
 
         /// <summary>
