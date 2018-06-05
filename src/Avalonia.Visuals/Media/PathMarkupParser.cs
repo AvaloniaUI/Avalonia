@@ -22,8 +22,7 @@ namespace Avalonia.Media
         private Point? _previousControlPoint;
         private PathGeometry _currentGeometry;
         private PathFigure _currentFigure;
-        private PathSegment _currentSegment;
-        private bool _disposedValue = false;
+        private bool _isDisposed;
 
         private static readonly Dictionary<char, Command> s_commands =
             new Dictionary<char, Command>
@@ -78,17 +77,19 @@ namespace Avalonia.Media
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_isDisposed)
             {
-                if (disposing)
-                {
-                    _currentSegment = null;
-                    _currentFigure = null;
-                    _currentGeometry = null;
-                }
-
-                _disposedValue = true;
+                return;
             }
+
+            if (disposing)
+            {
+                _currentFigure = null;
+
+                _currentGeometry = null;
+            }
+
+            _isDisposed = true;
         }
 
         private static string CreatesSeparatorPattern()
@@ -123,59 +124,67 @@ namespace Avalonia.Media
 
             _currentPoint = new Point();
 
-            _currentSegment = null;
-
             foreach (var commandToken in commandTokens)
             {
-                while (true)
+                try
                 {
-                    switch (commandToken.Command)
+                    while (true)
                     {
-                        case Command.None:
-                            break;
-                        case Command.FillRule:
-                            SetFillRule(commandToken);
-                            break;
-                        case Command.Move:
-                            AddMove(commandToken);
-                            break;
-                        case Command.Line:
-                            AddLine(commandToken);
-                            break;
-                        case Command.HorizontalLine:
-                            AddHorizontalLine(commandToken);
-                            break;
-                        case Command.VerticalLine:
-                            AddVerticalLine(commandToken);
-                            break;
-                        case Command.CubicBezierCurve:
-                            AddCubicBezierCurve(commandToken);
-                            break;
-                        case Command.QuadraticBezierCurve:
-                            AddQuadraticBezierCurve(commandToken);
-                            break;
-                        case Command.SmoothCubicBezierCurve:
-                            AddSmoothCubicBezierCurve(commandToken);
-                            break;
-                        case Command.SmoothQuadraticBezierCurve:
-                            AddSmoothQuadraticBezierCurve(commandToken);
-                            break;
-                        case Command.Arc:
-                            AddArc(commandToken);
-                            break;
-                        case Command.Close:
-                            CloseFigure();
-                            break;
-                        default:
-                            throw new NotSupportedException("Unsupported command");
-                    }
+                        switch (commandToken.Command)
+                        {
+                            case Command.None:
+                                break;
+                            case Command.FillRule:
+                                SetFillRule(commandToken);
+                                break;
+                            case Command.Move:
+                                AddMove(commandToken);
+                                break;
+                            case Command.Line:
+                                AddLine(commandToken);
+                                break;
+                            case Command.HorizontalLine:
+                                AddHorizontalLine(commandToken);
+                                break;
+                            case Command.VerticalLine:
+                                AddVerticalLine(commandToken);
+                                break;
+                            case Command.CubicBezierCurve:
+                                AddCubicBezierCurve(commandToken);
+                                break;
+                            case Command.QuadraticBezierCurve:
+                                AddQuadraticBezierCurve(commandToken);
+                                break;
+                            case Command.SmoothCubicBezierCurve:
+                                AddSmoothCubicBezierCurve(commandToken);
+                                break;
+                            case Command.SmoothQuadraticBezierCurve:
+                                AddSmoothQuadraticBezierCurve(commandToken);
+                                break;
+                            case Command.Arc:
+                                AddArc(commandToken);
+                                break;
+                            case Command.Close:
+                                CloseFigure();
+                                break;
+                            default:
+                                throw new NotSupportedException("Unsupported command");
+                        }
 
-                    // Check for implicit commands
-                    if (commandToken.HasImplicitCommands)
-                    {
-                        continue;
-                    }
+                        if (commandToken.HasImplicitCommands)
+                        {
+                            continue;
+                        }
 
+                        break;
+                    }
+                }
+                catch (InvalidDataException)
+                {
+                    break;
+                }
+                catch (NotSupportedException)
+                {
                     break;
                 }
             }
@@ -196,13 +205,29 @@ namespace Avalonia.Media
             }
 
             _previousControlPoint = null;
+
+            _currentFigure = null;
         }
 
         private void CreateFigure()
         {
-            _currentFigure = new PathFigure { StartPoint = _currentPoint, IsClosed = false };
+            _currentFigure = new PathFigure
+            {
+                StartPoint = _currentPoint,
+                IsClosed = false
+            };
 
             _currentGeometry.Figures.Add(_currentFigure);
+        }
+
+        private void AddSegment(PathSegment segment)
+        {
+            if (_currentFigure == null)
+            {
+                CreateFigure();
+            }
+
+            _currentFigure.Segments.Add(segment);
         }
 
         private void AddMove(CommandToken commandToken)
@@ -213,14 +238,19 @@ namespace Avalonia.Media
 
             CreateFigure();
 
-            // Check for implicit line commands
-            if (!commandToken.HasImplicitCommands) return;
+            if (!commandToken.HasImplicitCommands)
+            {
+                return;
+            }
 
             while (commandToken.HasImplicitCommands)
             {
                 AddLine(commandToken);
 
-                if (commandToken.IsRelative) continue;
+                if (commandToken.IsRelative)
+                {
+                    continue;
+                }
 
                 _currentPoint = currentPoint;
 
@@ -234,14 +264,12 @@ namespace Avalonia.Media
                                 ? commandToken.ReadRelativePoint(_currentPoint)
                                 : commandToken.ReadPoint();
 
-            _currentSegment = new LineSegment { Point = _currentPoint };
-
-            if (_currentFigure == null)
+            var lineSegment = new LineSegment
             {
-                CreateFigure();
-            }
+                Point = _currentPoint
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(lineSegment);
         }
 
         private void AddHorizontalLine(CommandToken commandToken)
@@ -250,14 +278,12 @@ namespace Avalonia.Media
                                      ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
                                      : _currentPoint.WithX(commandToken.ReadDouble());
 
-            _currentSegment = new LineSegment { Point = _currentPoint };
-
-            if (_currentFigure == null)
+            var lineSegment = new LineSegment
             {
-                CreateFigure();
-            }
+                Point = _currentPoint
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(lineSegment);
         }
 
         private void AddVerticalLine(CommandToken commandToken)
@@ -266,14 +292,12 @@ namespace Avalonia.Media
                                      ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
                                      : _currentPoint.WithY(commandToken.ReadDouble());
 
-            _currentSegment = new LineSegment { Point = _currentPoint };
-
-            if (_currentFigure == null)
+            var lineSegment = new LineSegment
             {
-                CreateFigure();
-            }
+                Point = _currentPoint
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(lineSegment);
         }
 
         private void AddCubicBezierCurve(CommandToken commandToken)
@@ -292,15 +316,14 @@ namespace Avalonia.Media
                         ? commandToken.ReadRelativePoint(_currentPoint)
                         : commandToken.ReadPoint();
 
-            _currentSegment =
-                new BezierSegment { Point1 = point1, Point2 = point2, Point3 = point3 };
-
-            if (_currentFigure == null)
+            var bezierSegment = new BezierSegment
             {
-                CreateFigure();
-            }
+                Point1 = point1,
+                Point2 = point2,
+                Point3 = point3
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(bezierSegment);
 
             _currentPoint = point3;
         }
@@ -317,15 +340,13 @@ namespace Avalonia.Media
                             ? commandToken.ReadRelativePoint(_currentPoint)
                             : commandToken.ReadPoint();
 
-            _currentSegment =
-                new QuadraticBezierSegment { Point1 = start, Point2 = end };
-
-            if (_currentFigure == null)
+            var quadraticBezierSegment = new QuadraticBezierSegment
             {
-                CreateFigure();
-            }
+                Point1 = start,
+                Point2 = end
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(quadraticBezierSegment);
 
             _currentPoint = end;
         }
@@ -345,8 +366,10 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            _currentSegment =
+            var bezierSegment =
                 new BezierSegment { Point1 = _previousControlPoint ?? _currentPoint, Point2 = point2, Point3 = end };
+
+            AddSegment(bezierSegment);
 
             _previousControlPoint = point2;
 
@@ -364,15 +387,13 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            _currentSegment =
-                new QuadraticBezierSegment { Point1 = _previousControlPoint ?? _currentPoint, Point2 = end };
-
-            if (_currentFigure == null)
+            var quadraticBezierSegment = new QuadraticBezierSegment
             {
-                CreateFigure();
-            }
+                Point1 = _previousControlPoint ?? _currentPoint,
+                Point2 = end
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(quadraticBezierSegment);
 
             _currentPoint = end;
         }
@@ -391,15 +412,16 @@ namespace Avalonia.Media
                           ? commandToken.ReadRelativePoint(_currentPoint)
                           : commandToken.ReadPoint();
 
-            _currentSegment =
-                new ArcSegment { Size = size, RotationAngle = rotationAngle, IsLargeArc = isLargeArc, SweepDirection = sweepDirection, Point = end };
-
-            if (_currentFigure == null)
+            var arcSegment = new ArcSegment
             {
-                CreateFigure();
-            }
+                Size = size,
+                RotationAngle = rotationAngle,
+                IsLargeArc = isLargeArc,
+                SweepDirection = sweepDirection,
+                Point = end
+            };
 
-            _currentFigure.Segments.Add(_currentSegment);
+            AddSegment(arcSegment);
 
             _currentPoint = end;
 
