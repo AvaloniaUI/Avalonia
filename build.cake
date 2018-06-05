@@ -149,6 +149,7 @@ Task("Build")
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.WithProperty("Windows", "True");
             settings.SetNodeReuse(false);
+            settings.SetMaxCpuCount(0);
         });
     }
     else
