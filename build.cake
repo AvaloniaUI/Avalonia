@@ -10,7 +10,8 @@
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.3.0-beta5-build3769"
+#tool "nuget:?package=xunit.runner.console&version=2.3.1"
+#tool "nuget:?package=JetBrains.dotMemoryUnit&version=3.0.20171219.105559"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -195,8 +196,6 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 
 Task("Run-Unit-Tests")
     .IsDependentOn("Build")
-    .IsDependentOn("Run-Designer-Tests")
-    .IsDependentOn("Run-Render-Tests")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .Does<AvaloniaBuildData>(data => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", data.Parameters, false);
@@ -229,8 +228,36 @@ Task("Run-Render-Tests")
         RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
     });
 
-Task("Copy-Files")
+Task("Run-Leak-Tests")
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .IsDependentOn("Build")
+    .Does(() =>
+    {
+        var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
+        var leakTestsExitCode = StartProcess(dotMemoryUnit, new ProcessSettings
+        {
+            Arguments = new ProcessArgumentBuilder()
+                .Append(Context.Tools.Resolve("xunit.console.x86.exe").FullPath)
+                .Append("--propagate-exit-code")
+                .Append("--")
+                .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net47\\Avalonia.LeakTests.dll"),
+            Timeout = 120000
+        });
+
+        if (leakTestsExitCode != 0)
+        {
+            throw new Exception("Leak Tests failed");
+        }
+    });
+
+Task("Run-Tests")
     .IsDependentOn("Run-Unit-Tests")
+    .IsDependentOn("Run-Render-Tests")
+    .IsDependentOn("Run-Designer-Tests")
+    .IsDependentOn("Run-Leak-Tests");
+
+Task("Copy-Files")
+    .IsDependentOn("Run-Tests")
     .Does<AvaloniaBuildData>(data =>
 {
     CopyFiles(data.Packages.BinFiles, data.Parameters.BinRoot);
@@ -252,7 +279,7 @@ Task("Zip-Files")
 });
 
 Task("Create-NuGet-Packages")
-    .IsDependentOn("Run-Unit-Tests")
+    .IsDependentOn("Run-Tests")
     .IsDependentOn("Inspect")
     .Does<AvaloniaBuildData>(data =>
 {
@@ -329,46 +356,6 @@ Task("Publish-NuGet")
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
 
-Task("Run-Leak-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .IsDependentOn("Build")
-    .Does(() =>
-    {
-        DotNetCoreRestore("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj");
-        DotNetBuild("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj", settings => settings.SetConfiguration("Release"));
-        var report = "tests\\Avalonia.LeakTests\\bin\\Release\\report.xml";
-        if(System.IO.File.Exists(report))
-            System.IO.File.Delete(report);
-
-        var toolXunitConsoleX86 = Context.Tools.Resolve("xunit.console.x86.exe").FullPath;
-        var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-        {
-            FileName="tests\\Avalonia.LeakTests\\toolproject\\bin\\dotMemoryUnit.exe",
-            Arguments="-targetExecutable=\"" + toolXunitConsoleX86 + "\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
-            UseShellExecute = false,
-        });
-        var st = System.Diagnostics.Stopwatch.StartNew();
-        while(!proc.HasExited && !System.IO.File.Exists(report))
-        {
-            if(st.Elapsed.TotalSeconds>60)
-            {
-                Error("Timed out, probably a bug in dotMemoryUnit");
-                proc.Kill();
-                throw new Exception("dotMemory issue");
-            }
-            proc.WaitForExit(100);
-        }
-        try{
-            proc.Kill();
-        }catch{}
-        var doc =  System.Xml.Linq.XDocument.Load(report);
-        if(doc.Root.Descendants("assembly").Any(x=>x.Attribute("failed").Value.ToString() != "0"))
-        {
-            throw new Exception("Tests failed");
-        }
-
-    });
-
 Task("Inspect")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Restore-NuGet-Packages")
@@ -413,7 +400,7 @@ Task("Default").Does<AvaloniaBuildData>(data =>
     if(data.Parameters.IsRunningOnWindows)
         RunTarget("Package");
     else
-        RunTarget("Run-Unit-Tests");
+        RunTarget("Run-Tests");
 });
 Task("AppVeyor")
   .IsDependentOn("Zip-Files")
@@ -421,7 +408,7 @@ Task("AppVeyor")
   .IsDependentOn("Publish-NuGet");
 
 Task("Travis")
-  .IsDependentOn("Run-Unit-Tests");
+  .IsDependentOn("Run-Tests");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
