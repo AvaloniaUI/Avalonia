@@ -366,8 +366,13 @@ Task("Inspect")
             "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
         Information("Running code inspections");
         
-        StartProcess(Context.Tools.Resolve("inspectcode.exe"),
-            new ProcessSettings{ Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
+        var exitCode = StartProcess(Context.Tools.Resolve("inspectcode.exe"),
+            new ProcessSettings
+            {
+                Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln",
+                RedirectStandardOutput = true
+            });
+
         Information("Analyzing report");
         var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
         var failBuild = false;
