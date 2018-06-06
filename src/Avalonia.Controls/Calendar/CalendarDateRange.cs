@@ -66,7 +66,7 @@ namespace Avalonia.Controls
         /// <returns>Inherited code: Requires comment 2.</returns>
         internal bool ContainsAny(CalendarDateRange range)
         {
-            Debug.Assert(range != null, "range should not be null!");
+            Contract.Requires<ArgumentNullException>(range != null);
 
             int start = DateTime.Compare(Start, range.Start);
 

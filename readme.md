@@ -18,7 +18,7 @@ Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a fl
 
 ## Getting Started
 
-Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
+Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
@@ -52,7 +52,7 @@ Please read the [contribution guidelines](http://avaloniaui.net/contributing/con
 ### Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
-<a href="graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
+<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 
 ### Backers
