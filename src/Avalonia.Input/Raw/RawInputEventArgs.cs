@@ -29,6 +29,45 @@ namespace Avalonia.Input.Raw
             Timestamp = timestamp;
         }
 
+        public void Ad(string a, string b, int c, int d, long e, byte[] f, bool g, string i)
+        {
+
+
+
+
+
+
+
+
+
+
+
+            Console.WriteLine("Hej med dig");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+
         /// <summary>
         /// Gets the associated device.
         /// </summary>
