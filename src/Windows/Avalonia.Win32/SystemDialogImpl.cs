@@ -54,7 +54,7 @@ namespace Avalonia.Win32
                 var fileBuffer = new char[256];
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
-                string userSelectedExt = null;
+                string userSelectedExt = string.Empty;
 
 
                 var title = ToChars(dialog.Title);
