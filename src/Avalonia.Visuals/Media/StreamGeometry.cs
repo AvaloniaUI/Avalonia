@@ -35,14 +35,10 @@ namespace Avalonia.Media
         /// <returns>A <see cref="StreamGeometry"/>.</returns>
         public static new StreamGeometry Parse(string s)
         {
-            StreamGeometry result = new StreamGeometry();
-
-            using (StreamGeometryContext ctx = result.Open())
+            using (var parser = new PathMarkupParser())
             {
-                PathMarkupParser parser = new PathMarkupParser(ctx);
-                parser.Parse(s);
-                return result;
-            }
+                return parser.Parse(s);
+            }              
         }
 
         /// <inheritdoc/>
