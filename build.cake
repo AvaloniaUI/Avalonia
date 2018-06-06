@@ -229,7 +229,7 @@ Task("Run-Render-Tests")
     });
 
 Task("Run-Leak-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Build")
     .Does(() =>
     {
@@ -395,13 +395,6 @@ Task("Inspect")
 Task("Package")
   .IsDependentOn("Create-NuGet-Packages");
 
-Task("Default").Does<AvaloniaBuildData>(data =>
-{
-    if(data.Parameters.IsRunningOnWindows)
-        RunTarget("Package");
-    else
-        RunTarget("Run-Tests");
-});
 Task("AppVeyor")
   .IsDependentOn("Zip-Files")
   .IsDependentOn("Publish-MyGet")
@@ -414,4 +407,11 @@ Task("Travis")
 // EXECUTE
 ///////////////////////////////////////////////////////////////////////////////
 
-RunTarget(Context.Argument("target", "Default"));
+var target = Context.Argument("target", "Default");
+
+if (target == "Default")
+{
+    target = Context.IsRunningOnWindows() ? "Package" : "Run-Tests";
+}
+
+RunTarget(target);
