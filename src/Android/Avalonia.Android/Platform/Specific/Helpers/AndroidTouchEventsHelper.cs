@@ -126,8 +126,6 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             return e.Action != MotionEventActions.Up;
         }
 
-        private Paint _paint;
-
         public void Dispose()
         {
             HandleEvents = false;

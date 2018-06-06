@@ -998,7 +998,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        public static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
 
 
 
@@ -1408,7 +1408,7 @@ namespace Avalonia.Win32.Interop
     [ComImport]
     [Guid("0000010E-0000-0000-C000-000000000046")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IOleDataObject
+    internal interface IOleDataObject
     {
         void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
         void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);

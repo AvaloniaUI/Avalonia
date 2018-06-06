@@ -14,13 +14,13 @@ namespace Portable.Xaml.ComponentModel
         /// Gets the service from ITypeDescriptorContext
         /// usually in TypeConverter in xaml reader context
         /// examples:
-        /// context.GetService<IXamlTypeResolver>()
-        /// context.GetService<IXamlNamespaceResolver>()
-        /// context.GetService<IXamlNameProvider>()
-        /// context.GetService<INamespacePrefixLookup>()
-        /// context.GetService<IXamlSchemaContextProvider>()
-        /// context.GetService<IRootObjectProvider>()
-        /// context.GetService<IProvideValueTarget>()
+        /// context.GetService&lt;IXamlTypeResolver&gt;()
+        /// context.GetService&lt;IXamlNamespaceResolver&gt;()
+        /// context.GetService&lt;IXamlNameProvider&gt;()
+        /// context.GetService&lt;INamespacePrefixLookup&gt;()
+        /// context.GetService&lt;IXamlSchemaContextProvider&gt;()
+        /// context.GetService&lt;IRootObjectProvider&gt;()
+        /// context.GetService&lt;IProvideValueTarget&gt;()
         /// </summary>
         /// <typeparam name="T">Service Type</typeparam>
         /// <param name="ctx">The TypeDescriptor context.</param>

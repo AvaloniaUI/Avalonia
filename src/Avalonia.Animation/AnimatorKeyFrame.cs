@@ -9,7 +9,7 @@ namespace Avalonia.Animation
 {
     /// <summary>
     /// Defines a KeyFrame that is used for
-    /// <see cref="Animators"/> objects.
+    /// <see cref="Animator{T}"/> objects.
     /// </summary>
     public class AnimatorKeyFrame
     {

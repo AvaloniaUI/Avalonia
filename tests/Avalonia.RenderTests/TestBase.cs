@@ -161,7 +161,9 @@ namespace Avalonia.Direct2D1.RenderTests
 
             public Thread MainThread { get; set; }
 
+#pragma warning disable 67
             public event Action<DispatcherPriority?> Signaled;
+#pragma warning restore 67
 
             public void RunLoop(CancellationToken cancellationToken)
             {
