@@ -240,7 +240,7 @@ Task("Run-Leak-Tests")
                 .Append(Context.Tools.Resolve("xunit.console.x86.exe").FullPath)
                 .Append("--propagate-exit-code")
                 .Append("--")
-                .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net47\\Avalonia.LeakTests.dll"),
+                .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll"),
             Timeout = 120000
         });
 
