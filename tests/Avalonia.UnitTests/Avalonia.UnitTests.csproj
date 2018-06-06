@@ -35,7 +35,5 @@
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\XUnit.props" />
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-  </ItemGroup>
+  <Import Project="..\..\build\NetFX.props" />
 </Project>
