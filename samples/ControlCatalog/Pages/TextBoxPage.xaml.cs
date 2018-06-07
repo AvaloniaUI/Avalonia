@@ -8,11 +8,15 @@ namespace ControlCatalog.Pages
         public TextBoxPage()
         {
             this.InitializeComponent();
+
+            DataContext = this;
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        public bool ModelIsFocused {get; set;}
     }
 }

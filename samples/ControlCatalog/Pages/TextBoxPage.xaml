@@ -8,7 +8,7 @@
               HorizontalAlignment="Center"
               Gap="16">
       <StackPanel Orientation="Vertical" Gap="8">
-        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+        <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" IsFocused="{Binding ModelIsFocused, Mode=OneWayToSource}" />
         <TextBox Width="200" Watermark="Watermark" />
         <TextBox Width="200"
                  Watermark="Floating Watermark"
