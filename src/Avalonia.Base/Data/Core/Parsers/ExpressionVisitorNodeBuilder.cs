@@ -175,6 +175,20 @@ namespace Avalonia.Data.Core.Parsers
                 return visited;
             }
 
+            if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))
+            {
+                if (node.Method.IsStatic)
+                {
+                    Visit(node.Arguments[0]);
+                }
+                else
+                {
+                    Visit(node.Object);
+                }
+                Nodes.Add(new StreamNode());
+                return node;
+            }
+
             throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
         }
 

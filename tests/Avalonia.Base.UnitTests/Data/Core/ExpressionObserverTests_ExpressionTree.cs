@@ -16,7 +16,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var target = new object();
 
-            var observer = ExpressionObserver.CreateFromExpression(target, o => o);
+            var observer = ExpressionObserver.Create(target, o => o);
 
             Assert.Equal(target, await observer.Take(1));
             GC.KeepAlive(target);
@@ -27,7 +27,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var target = new Class1();
 
-            var observer = ExpressionObserver.CreateFromExpression(target, o => o.Foo);
+            var observer = ExpressionObserver.Create(target, o => o.Foo);
 
             Assert.Null(await observer.Take(1));
 
@@ -45,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Property_Acccess_Expression_Can_Set_Property()
         {
             var data = new Class1();
-            var target = ExpressionObserver.CreateFromExpression(data, o => o.Foo);
+            var target = ExpressionObserver.Create(data, o => o.Foo);
 
             using (target.Subscribe(_ => { }))
             {
@@ -60,7 +60,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new[] { 1, 2, 3, 4 };
 
-            var target = ExpressionObserver.CreateFromExpression(data, o => o[0]);
+            var target = ExpressionObserver.Create(data, o => o[0]);
 
             Assert.Equal(data[0], await target.Take(1));
             GC.KeepAlive(data);
@@ -71,7 +71,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new List<int> { 1, 2, 3, 4 };
 
-            var target = ExpressionObserver.CreateFromExpression(data, o => o[0]);
+            var target = ExpressionObserver.Create(data, o => o[0]);
 
             Assert.Equal(data[0], await target.Take(1));
             GC.KeepAlive(data);
@@ -86,7 +86,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
 
             data.Add(key, new object());
 
-            var target = ExpressionObserver.CreateFromExpression(data, o => o[key]);
+            var target = ExpressionObserver.Create(data, o => o[key]);
 
             Assert.Equal(data[key], await target.Take(1));
 
@@ -98,7 +98,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new[] { 1, 2, 3, 4 };
 
-            var target = ExpressionObserver.CreateFromExpression(data, o => o[0]);
+            var target = ExpressionObserver.Create(data, o => o[0]);
 
             using (target.Subscribe(_ => { }))
             {
@@ -113,7 +113,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             NotifyingBase test = new Class1 { Foo = "Test" };
 
-            var target = ExpressionObserver.CreateFromExpression(test, o => ((Class1)o).Foo);
+            var target = ExpressionObserver.Create(test, o => ((Class1)o).Foo);
 
             Assert.Equal("Test", await target.Take(1));
 
@@ -125,7 +125,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var test = 1;
 
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserver.CreateFromExpression(test, o => (double)o));
+            Assert.Throws<ExpressionParseException>(() => ExpressionObserver.Create(test, o => (double)o));
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             NotifyingBase test = new Class1 { Foo = "Test" };
 
-            var target = ExpressionObserver.CreateFromExpression(test, o => (o as Class1).Foo);
+            var target = ExpressionObserver.Create(test, o => (o as Class1).Foo);
 
             Assert.Equal("Test", await target.Take(1));
 
@@ -145,7 +145,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var test = new Class2();
 
-            var target = ExpressionObserver.CreateFromExpression(test, o => o[Class2.FooProperty]);
+            var target = ExpressionObserver.Create(test, o => o[Class2.FooProperty]);
 
             Assert.Equal("foo", await target.Take(1));
 
@@ -157,11 +157,28 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var test = new Class1 { Foo = "Test" };
 
-            var target = ExpressionObserver.CreateFromExpression(test, o => o.Foo.Length);
+            var target = ExpressionObserver.Create(test, o => o.Foo.Length);
 
             Assert.Equal(test.Foo.Length, await target.Take(1));
 
             GC.KeepAlive(test);
+        }
+
+        [Fact]
+        public void Should_Get_Completed_Task_Value()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var data = new { Foo = Task.FromResult("foo") };
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
+                var result = new List<object>();
+
+                var sub = target.Subscribe(x => result.Add(x));
+
+                Assert.Equal(new[] { "foo" }, result);
+
+                GC.KeepAlive(data);
+            }
         }
 
         private class Class1 : NotifyingBase

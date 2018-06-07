@@ -83,7 +83,7 @@ namespace Avalonia.Data.Core
             _root = new WeakReference(root);
         }
 
-        public static ExpressionObserver CreateFromExpression<T, U>(
+        public static ExpressionObserver Create<T, U>(
             T root,
             Expression<Func<T, U>> expression,
             bool enableDataValidation = false,
@@ -113,7 +113,7 @@ namespace Avalonia.Data.Core
             _finished = new Subject<Unit>();
         }
 
-        public static ExpressionObserver CreateFromExpression<T, U>(
+        public static ExpressionObserver Create<T, U>(
             IObservable<T> rootObservable,
             Expression<Func<T, U>> expression,
             bool enableDataValidation = false,
