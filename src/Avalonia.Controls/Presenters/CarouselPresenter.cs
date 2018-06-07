@@ -125,8 +125,22 @@ namespace Avalonia.Controls.Presenters
                         var containers = generator.Containers.ToList();
                         generator.Clear();
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
+
+                        var newIndex = SelectedIndex;
+
+                        if(SelectedIndex < 0)
+                        {
+                            if(Items != null && Items.Count() > 0)
+                            {
+                                newIndex = 0;
+                            }
+                            else
+                            {
+                                newIndex = -1;
+                            }
+                        }
                         
-                        MoveToPage(-1, SelectedIndex >= 0 ? SelectedIndex : e.NewStartingIndex);
+                        MoveToPage(-1, newIndex);
                     }
                     break;     
             }
