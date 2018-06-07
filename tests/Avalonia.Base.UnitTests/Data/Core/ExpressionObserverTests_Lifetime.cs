@@ -9,6 +9,7 @@ using System.Reactive.Subjects;
 using Microsoft.Reactive.Testing;
 using Avalonia.Data.Core;
 using Xunit;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
@@ -18,7 +19,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Complete_When_Source_Observable_Completes()
         {
             var source = new BehaviorSubject<object>(1);
-            var target = new ExpressionObserver(source, "Foo");
+            var target = ExpressionObserverBuilder.Build(source, "Foo");
             var completed = false;
 
             target.Subscribe(_ => { }, () => completed = true);
@@ -31,7 +32,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Complete_When_Source_Observable_Errors()
         {
             var source = new BehaviorSubject<object>(1);
-            var target = new ExpressionObserver(source, "Foo");
+            var target = ExpressionObserverBuilder.Build(source, "Foo");
             var completed = false;
 
             target.Subscribe(_ => { }, () => completed = true);
@@ -44,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Complete_When_Update_Observable_Completes()
         {
             var update = new Subject<Unit>();
-            var target = new ExpressionObserver(() => 1, "Foo", update);
+            var target = ExpressionObserverBuilder.Build(() => 1, "Foo", update);
             var completed = false;
 
             target.Subscribe(_ => { }, () => completed = true);
@@ -57,7 +58,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Complete_When_Update_Observable_Errors()
         {
             var update = new Subject<Unit>();
-            var target = new ExpressionObserver(() => 1, "Foo", update);
+            var target = ExpressionObserverBuilder.Build(() => 1, "Foo", update);
             var completed = false;
 
             target.Subscribe(_ => { }, () => completed = true);
@@ -72,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var scheduler = new TestScheduler();
             var source = scheduler.CreateColdObservable(
                 OnNext(1, new { Foo = "foo" }));
-            var target = new ExpressionObserver(source, "Foo");
+            var target = ExpressionObserverBuilder.Build(source, "Foo");
             var result = new List<object>();
 
             using (target.Subscribe(x => result.Add(x)))
@@ -91,7 +92,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var scheduler = new TestScheduler();
             var update = scheduler.CreateColdObservable<Unit>();
             var data = new { Foo = "foo" };
-            var target = new ExpressionObserver(() => data, "Foo", update);
+            var target = ExpressionObserverBuilder.Build(() => data, "Foo", update);
             var result = new List<object>();
 
             using (target.Subscribe(x => result.Add(x)))

@@ -9,7 +9,7 @@ using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {
-    internal abstract class ExpressionNode : ISubject<object>
+    public abstract class ExpressionNode : ISubject<object>
     {
         protected static readonly WeakReference UnsetReference = 
             new WeakReference(AvaloniaProperty.UnsetValue);

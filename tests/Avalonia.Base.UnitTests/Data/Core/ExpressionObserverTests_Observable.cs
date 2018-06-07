@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = ExpressionObserverBuilder.Build(data, "Foo");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -41,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo^");
+                var target = ExpressionObserverBuilder.Build(data, "Foo^");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -60,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new Class1();
-                var target = new ExpressionObserver(data, "Next^.Foo");
+                var target = ExpressionObserverBuilder.Build(data, "Next^.Foo");
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -83,7 +84,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo^", true);
+                var target = ExpressionObserverBuilder.Build(data, "Foo^", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -105,7 +106,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var data1 = new Class1();
                 var data2 = new Class2("foo");
-                var target = new ExpressionObserver(data1, "Next^.Foo", true);
+                var target = ExpressionObserverBuilder.Build(data1, "Next^.Foo", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -128,7 +129,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new Class2("foo");
-                var target = new ExpressionObserver(data, "Foo^", true);
+                var target = ExpressionObserverBuilder.Build(data, "Foo^", true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));

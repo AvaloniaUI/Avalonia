@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -19,7 +20,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Doesnt_Send_DataValidationError_When_DataValidatation_Not_Enabled()
         {
             var data = new ExceptionTest { MustBePositive = 5 };
-            var observer = new ExpressionObserver(data, nameof(data.MustBePositive), false);
+            var observer = ExpressionObserverBuilder.Build(data, nameof(data.MustBePositive), false);
             var validationMessageFound = false;
 
             observer.OfType<BindingNotification>()
@@ -36,7 +37,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Exception_Validation_Sends_DataValidationError()
         {
             var data = new ExceptionTest { MustBePositive = 5 };
-            var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
+            var observer = ExpressionObserverBuilder.Build(data, nameof(data.MustBePositive), true);
             var validationMessageFound = false;
 
             observer.OfType<BindingNotification>()
@@ -53,7 +54,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Indei_Validation_Does_Not_Subscribe_When_DataValidatation_Not_Enabled()
         {
             var data = new IndeiTest { MustBePositive = 5 };
-            var observer = new ExpressionObserver(data, nameof(data.MustBePositive), false);
+            var observer = ExpressionObserverBuilder.Build(data, nameof(data.MustBePositive), false);
 
             observer.Subscribe(_ => { });
 
@@ -64,7 +65,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Enabled_Indei_Validation_Subscribes()
         {
             var data = new IndeiTest { MustBePositive = 5 };
-            var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
+            var observer = ExpressionObserverBuilder.Build(data, nameof(data.MustBePositive), true);
             var sub = observer.Subscribe(_ => { });
 
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
@@ -76,7 +77,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Validation_Plugins_Send_Correct_Notifications()
         {
             var data = new IndeiTest();
-            var observer = new ExpressionObserver(data, nameof(data.MustBePositive), true);
+            var observer = ExpressionObserverBuilder.Build(data, nameof(data.MustBePositive), true);
             var result = new List<object>();
             
             var errmsg = string.Empty;
@@ -122,7 +123,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 Inner = new IndeiTest()
             };
 
-            var observer = new ExpressionObserver(
+            var observer = ExpressionObserverBuilder.Build(
                 data,
                 $"{nameof(Container.Inner)}.{nameof(IndeiTest.MustBePositive)}",
                 true);
@@ -142,7 +143,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var container = new Container();
             var inner = new IndeiTest();
 
-            var observer = new ExpressionObserver(
+            var observer = ExpressionObserverBuilder.Build(
                 container,
                 $"{nameof(Container.Inner)}.{nameof(IndeiTest.MustBePositive)}",
                 true);

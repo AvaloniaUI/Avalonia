@@ -8,7 +8,7 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Data.Core
 {
-    internal class StreamNode : ExpressionNode
+    public class StreamNode : ExpressionNode
     {
         public override string Description => "^";
 

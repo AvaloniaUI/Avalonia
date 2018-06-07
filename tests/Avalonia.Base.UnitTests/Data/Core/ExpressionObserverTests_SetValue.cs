@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserverBuilder.Build(data, "Foo");
 
             using (target.Subscribe(_ => { }))
             {
@@ -30,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Value_On_Simple_Property_Chain()
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Foo.Bar");
+            var target = ExpressionObserverBuilder.Build(data, "Foo.Bar");
 
             using (target.Subscribe(_ => { }))
             {
@@ -44,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Not_Try_To_Set_Value_On_Broken_Chain()
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Foo.Bar");
+            var target = ExpressionObserverBuilder.Build(data, "Foo.Bar");
 
             // Ensure the ExpressionObserver's subscriptions are kept active.
             target.OfType<string>().Subscribe(x => { });
@@ -67,7 +68,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
             var rootObservable = new BehaviorSubject<Class1>(data);
-            var target = new ExpressionObserver(rootObservable, "Foo.Bar");
+            var target = ExpressionObserverBuilder.Build(rootObservable, "Foo.Bar");
 
             target.Subscribe(_ => { });
             rootObservable.OnNext(null);

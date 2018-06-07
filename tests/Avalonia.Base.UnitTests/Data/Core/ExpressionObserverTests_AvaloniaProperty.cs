@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
 using Xunit;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
@@ -22,7 +23,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserverBuilder.Build(data, "Foo");
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -34,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_ClrProperty_Value()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "ClrProperty");
+            var target = ExpressionObserverBuilder.Build(data, "ClrProperty");
             var result = await target.Take(1);
 
             Assert.Equal("clr-property", result);
@@ -44,7 +45,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Simple_Property_Value()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserverBuilder.Build(data, "Foo");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -63,7 +64,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
                 var source = new Class1();
-                var target = new ExpressionObserver(source, "Foo");
+                var target = ExpressionObserverBuilder.Build(source, "Foo");
                 return Tuple.Create(target, new WeakReference(source));
             };
 

@@ -10,7 +10,7 @@ using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    internal class PropertyAccessorNode : ExpressionNode, ISettableNode
+    public class PropertyAccessorNode : ExpressionNode, ISettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;

@@ -13,7 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
-    abstract class IndexerNodeBase : ExpressionNode, ISettableNode
+    public abstract class IndexerNodeBase : ExpressionNode, ISettableNode
     {
         protected override IObservable<object> StartListeningCore(WeakReference reference)
         {

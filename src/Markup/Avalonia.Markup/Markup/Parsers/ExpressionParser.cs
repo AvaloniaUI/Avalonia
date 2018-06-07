@@ -1,18 +1,22 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers.Nodes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Avalonia.Data.Core.Parsers
+namespace Avalonia.Markup.Parsers
 {
     internal class ExpressionParser
     {
-        private bool _enableValidation;
+        private readonly bool _enableValidation;
+        private readonly Func<string, string, Type> _typeResolver;
 
-        public ExpressionParser(bool enableValidation)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver)
         {
+            _typeResolver = typeResolver;
             _enableValidation = enableValidation;
         }
 
@@ -130,7 +134,19 @@ namespace Avalonia.Data.Core.Parsers
 
         private State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
         {
-            var owner = IdentifierParser.Parse(r);
+            string ns = string.Empty;
+            string owner;
+            var ownerOrNamespace = IdentifierParser.Parse(r);
+
+            if (r.TakeIf(':'))
+            {
+                ns = ownerOrNamespace;
+                owner = IdentifierParser.Parse(r);
+            }
+            else
+            {
+                owner = ownerOrNamespace;
+            }
 
             if (r.End || !r.TakeIf('.'))
             {
@@ -144,7 +160,9 @@ namespace Avalonia.Data.Core.Parsers
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
             }
 
-            nodes.Add(new PropertyAccessorNode(owner + '.' + name, _enableValidation));
+            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(ns, owner), name);
+
+            nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableValidation));
             return State.AfterMember;
         }
 
@@ -157,7 +175,7 @@ namespace Avalonia.Data.Core.Parsers
                 throw new ExpressionParseException(r.Position, "Indexer may not be empty.");
             }
 
-            nodes.Add(new IndexerNode(args));
+            nodes.Add(new StringIndexerNode(args));
             return State.AfterMember;
         }
         

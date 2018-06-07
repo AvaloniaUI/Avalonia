@@ -11,12 +11,14 @@ namespace Avalonia.Data.Core.Parsers
     class ExpressionVisitorNodeBuilder : ExpressionVisitor
     {
         private static PropertyInfo AvaloniaObjectIndexer;
+        private static MethodInfo CreateDelegateMethod;
 
         private readonly bool enableDataValidation;
 
         static ExpressionVisitorNodeBuilder()
         {
             AvaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", new[] { typeof(AvaloniaProperty) });
+            CreateDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", new[] { typeof(Type), typeof(object) });
         }
 
         public List<ExpressionNode> Nodes { get; }
@@ -70,7 +72,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Indexer == AvaloniaObjectIndexer)
             {
                 var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
-                Nodes.Add(new PropertyAccessorNode($"{property.OwnerType.Name}.{property.Name}", enableDataValidation));
+                Nodes.Add(new AvaloniaPropertyAccessorNode(property, enableDataValidation));
             }
             else
             {
@@ -164,6 +166,13 @@ namespace Avalonia.Data.Core.Parsers
             if (property != null)
             {
                 return Visit(Expression.MakeIndex(node.Object, property, node.Arguments));
+            }
+
+            if (node.Method == CreateDelegateMethod)
+            {
+                var visited = Visit(node.Arguments[1]);
+                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, enableDataValidation));
+                return visited;
             }
 
             throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");

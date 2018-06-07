@@ -12,12 +12,13 @@ using System.Linq;
 using System.Reflection;
 using System.Reactive.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 
-namespace Avalonia.Data.Core
+namespace Avalonia.Markup.Parsers.Nodes
 {
-    internal class IndexerNode : IndexerNodeBase
+    internal class StringIndexerNode : IndexerNodeBase
     {
-        public IndexerNode(IList<string> arguments)
+        public StringIndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
         }
