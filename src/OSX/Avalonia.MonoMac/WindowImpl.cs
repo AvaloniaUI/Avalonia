@@ -116,11 +116,6 @@ namespace Avalonia.MonoMac
             UpdateStyle();
         }
 
-        public void SetTopmost(bool value)
-        {
-            Window.Level = value ? NSWindowLevel.Floating : NSWindowLevel.Normal;
-        }
-
         public void SetTitle(string title) => Window.Title = title;
 
         class ModalDisposable : IDisposable

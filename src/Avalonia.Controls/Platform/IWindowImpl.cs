@@ -56,11 +56,6 @@ namespace Avalonia.Platform
         void CanResize(bool value);
 
         /// <summary>
-        /// Gets or sets whether this window appears on top of all other windows
-        /// </summary>
-        void SetTopmost(bool value);
-
-        /// <summary>
         /// Gets or sets a method called before the underlying implementation is destroyed.
         /// Return true to prevent the underlying implementation from closing.
         /// </summary>
