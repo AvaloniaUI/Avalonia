@@ -81,7 +81,7 @@ namespace Avalonia.Markup.Parsers
             }
             else
             {
-                var identifier = IdentifierParser.Parse(r);
+                var identifier = r.ParseIdentifier();
 
                 if (identifier != null)
                 {
@@ -120,7 +120,7 @@ namespace Avalonia.Markup.Parsers
             }
             else
             {
-                var identifier = IdentifierParser.Parse(r);
+                var identifier = r.ParseIdentifier();
 
                 if (identifier != null)
                 {
@@ -136,12 +136,12 @@ namespace Avalonia.Markup.Parsers
         {
             string ns = string.Empty;
             string owner;
-            var ownerOrNamespace = IdentifierParser.Parse(r);
+            var ownerOrNamespace = r.ParseIdentifier();
 
             if (r.TakeIf(':'))
             {
                 ns = ownerOrNamespace;
-                owner = IdentifierParser.Parse(r);
+                owner = r.ParseIdentifier();
             }
             else
             {
@@ -153,7 +153,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Invalid attached property name.");
             }
 
-            var name = IdentifierParser.Parse(r);
+            var name = r.ParseIdentifier();
 
             if (r.End || !r.TakeIf(')'))
             {

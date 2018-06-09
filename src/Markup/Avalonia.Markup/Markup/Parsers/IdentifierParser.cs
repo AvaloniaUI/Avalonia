@@ -8,7 +8,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class IdentifierParser
     {
-        public static string Parse(Reader r)
+        public static string ParseIdentifier(this Reader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {

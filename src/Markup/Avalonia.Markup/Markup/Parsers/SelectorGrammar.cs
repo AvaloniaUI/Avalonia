@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Sprache;
+using Avalonia.Data.Core;
 
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
 // only reason they have overridden Equals methods is for unit testing.
@@ -13,117 +13,280 @@ namespace Avalonia.Markup.Parsers
 {
     internal class SelectorGrammar
     {
-        public static readonly Parser<char> CombiningCharacter = Parse.Char(
-            c =>
+        private enum State
+        {
+            Start,
+            Middle,
+            Colon,
+            Class,
+            Name,
+            CanHaveType,
+            Traversal,
+            TypeName,
+            Property,
+            Template,
+            End,
+        }
+
+        public static IEnumerable<ISyntax> Parse(string s)
+        {
+            var r = new Reader(s);
+            var state = State.Start;
+            var selector = new List<ISyntax>();
+            while (!r.End && state != State.End)
             {
-                var cat = CharUnicodeInfo.GetUnicodeCategory(c);
-                return cat == UnicodeCategory.NonSpacingMark ||
-                       cat == UnicodeCategory.SpacingCombiningMark;
-            },
-            "Connecting Character");
+                ISyntax syntax = null;
+                switch (state)
+                {
+                    case State.Start:
+                        (state, syntax) = ParseStart(r);
+                        break;
+                    case State.Middle:
+                        (state, syntax) = ParseMiddle(r);
+                        break;
+                    case State.Colon:
+                        (state, syntax) = ParseColon(r);
+                        break;
+                    case State.Class:
+                        (state, syntax) = ParseClass(r);
+                        break;
+                    case State.Traversal:
+                        (state, syntax) = ParseTraversal(r);
+                        break;
+                    case State.TypeName:
+                        (state, syntax) = ParseTypeName(r);
+                        break;
+                    case State.CanHaveType:
+                        (state, syntax) = ParseCanHaveType(r);
+                        break;
+                    case State.Property:
+                        (state, syntax) = ParseProperty(r);
+                        break;
+                    case State.Template:
+                        (state, syntax) = ParseTemplate(r);
+                        break;
+                    case State.Name:
+                        (state, syntax) = ParseName(r);
+                        break;
+                }
+                if (syntax != null)
+                {
+                    selector.Add(syntax);
+                }
+            }
 
-        public static readonly Parser<char> ConnectingCharacter = Parse.Char(
-            c => CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.ConnectorPunctuation,
-            "Connecting Character");
-
-        public static readonly Parser<char> FormattingCharacter = Parse.Char(
-            c => CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.Format,
-            "Connecting Character");
-
-        public static readonly Parser<char> IdentifierStart = Parse.Letter.Or(Parse.Char('_'));
-
-        public static readonly Parser<char> IdentifierChar = Parse
-            .LetterOrDigit
-            .Or(ConnectingCharacter)
-            .Or(CombiningCharacter)
-            .Or(FormattingCharacter);
-
-        public static readonly Parser<string> Identifier =
-            from start in IdentifierStart.Once().Text()
-            from @char in IdentifierChar.Many().Text()
-            select start + @char;
-
-        public static readonly Parser<string> Namespace =
-            from ns in Parse.Letter.Many().Text()
-            from bar in Parse.Char('|')
-            select ns;
-
-        public static readonly Parser<OfTypeSyntax> OfType =
-            from ns in Namespace.Optional()
-            from identifier in Identifier
-            select new OfTypeSyntax
+            if (state != State.Start && state != State.Middle && state != State.End && state != State.CanHaveType)
             {
-                TypeName = identifier,
-                Xmlns = ns.GetOrDefault(),
+                throw new ExpressionParseException(r.Position, "Unexpected end of selector");
+            }
+
+            return selector;
+        }
+
+        private static (State, ISyntax) ParseStart(Reader r)
+        {
+            r.SkipWhitespace();
+            if (r.TakeIf(':'))
+            {
+                return (State.Colon, null);
+            }
+            else if (r.TakeIf('.'))
+            {
+                return (State.Class, null);
+            }
+            else if (r.TakeIf('#'))
+            {
+                return (State.Name, null);
+            }
+            return (State.TypeName, null);
+        }
+
+        private static (State, ISyntax) ParseMiddle(Reader r)
+        {
+            if (r.TakeIf(':'))
+            {
+                return (State.Colon, null);
+            }
+            else if (r.TakeIf('.'))
+            {
+                return (State.Class, null);
+            }
+            else if (r.TakeIf(char.IsWhiteSpace) || r.Peek == '>')
+            {
+                return (State.Traversal, null);
+            }
+            else if (r.TakeIf('/'))
+            {
+                return (State.Template, null);
+            }
+            else if (r.TakeIf('#'))
+            {
+                return (State.Name, null);
+            }
+            return (State.TypeName, null);
+        }
+
+        private static (State, ISyntax) ParseCanHaveType(Reader r)
+        {
+            if (r.TakeIf('['))
+            {
+                return (State.Property, null);
+            }
+            return (State.Middle, null);
+        }
+
+        private static (State, ISyntax) ParseColon(Reader r)
+        {
+            var identifier = r.ParseIdentifier();
+
+            if (string.IsNullOrEmpty(identifier))
+            {
+                throw new ExpressionParseException(r.Position, "Expected class name or is selector after ':'.");
+            }
+
+            if (identifier == "is" && r.TakeIf('('))
+            {
+                var syntax = ParseType<IsSyntax>(r);
+                if (r.End || !r.TakeIf(')'))
+                {
+                    throw new ExpressionParseException(r.Position, $"Expected ')', got {r.Peek}");
+                }
+
+                return (State.CanHaveType, syntax);
+            }
+            else
+            {
+                return (
+                    State.CanHaveType,
+                    new ClassSyntax
+                    {
+                        Class = ":" + identifier
+                    });
+            }
+        }
+
+        private static (State, ISyntax) ParseTraversal(Reader r)
+        {
+            r.SkipWhitespace();
+            if (r.TakeIf('>'))
+            {
+                r.SkipWhitespace();
+                return (State.Middle, new ChildSyntax());
+            }
+            else if (r.TakeIf('/'))
+            {
+                return (State.Template, null);
+            }
+            else if (!r.End)
+            {
+                return (State.Middle, new DescendantSyntax());
+            }
+            else
+            {
+                return (State.End, null);
+            }
+        }
+
+        private static (State, ISyntax) ParseClass(Reader r)
+        {
+            var @class = r.ParseIdentifier();
+            if (string.IsNullOrEmpty(@class))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected a class name after '.'.");
+            }
+
+            return (State.CanHaveType, new ClassSyntax { Class = @class });
+        }
+
+        private static (State, ISyntax) ParseTemplate(Reader r)
+        {
+            var template = r.ParseIdentifier();
+            if (template != nameof(template))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected 'template', got {template}");
+            }
+            else if (!r.TakeIf('/'))
+            {
+                throw new ExpressionParseException(r.Position, "Expected '/'");
+            }
+            return (State.Start, new TemplateSyntax());
+        }
+
+        private static (State, ISyntax) ParseName(Reader r)
+        {
+            var name = r.ParseIdentifier();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected a name after '#'.");
+            }
+            return (State.CanHaveType, new NameSyntax { Name = name });
+        }
+
+        private static (State, ISyntax) ParseTypeName(Reader r)
+        {
+            return (State.CanHaveType, ParseType<OfTypeSyntax>(r));
+        }
+
+        private static (State, ISyntax) ParseProperty(Reader r)
+        {
+            var property = r.ParseIdentifier();
+
+            if (!r.TakeIf('='))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected '=', got '{r.Peek}'");
+            }
+
+            var value = r.TakeUntil(']');
+
+            r.Take();
+
+            return (State.CanHaveType, new PropertySyntax { Property = property, Value = value });
+        }
+
+        private static TSyntax ParseType<TSyntax>(Reader r)
+            where TSyntax : ITypeSyntax, new()
+        {
+            string ns = null;
+            string type;
+            var namespaceOrTypeName = r.ParseIdentifier();
+
+            if (string.IsNullOrEmpty(namespaceOrTypeName))
+            {
+                throw new ExpressionParseException(r.Position, $"Expected an identifier, got '{r.Peek}");
+            }
+
+            if (!r.End && r.TakeIf('|'))
+            {
+                ns = namespaceOrTypeName;
+                if (r.End)
+                {
+                    throw new ExpressionParseException(r.Position, $"Unexpected end of selector.");
+                }
+                type = r.ParseIdentifier();
+            }
+            else
+            {
+                type = namespaceOrTypeName;
+            }
+            return new TSyntax
+            {
+                Xmlns = ns,
+                TypeName = type
             };
+        }
 
-        public static readonly Parser<NameSyntax> Name =
-            from hash in Parse.Char('#')
-            from identifier in Identifier
-            select new NameSyntax { Name = identifier };
-
-        public static readonly Parser<char> ClassStart = Parse.Char('_').Or(Parse.Letter);
-
-        public static readonly Parser<char> ClassChar = ClassStart.Or(Parse.Numeric);
-
-        public static readonly Parser<string> ClassIdentifier =
-            from start in ClassStart.Once().Text()
-            from @char in ClassChar.Many().Text()
-            select start + @char;
-
-        public static readonly Parser<ClassSyntax> StandardClass =
-            from dot in Parse.Char('.').Once()
-            from identifier in ClassIdentifier
-            select new ClassSyntax { Class = identifier };
-
-        public static readonly Parser<ClassSyntax> Pseduoclass =
-            from colon in Parse.Char(':').Once()
-            from identifier in ClassIdentifier
-            select new ClassSyntax { Class = ':' + identifier };
-
-        public static readonly Parser<ClassSyntax> Class = StandardClass.Or(Pseduoclass);
-
-        public static readonly Parser<PropertySyntax> Property =
-            from open in Parse.Char('[').Once()
-            from identifier in Identifier
-            from eq in Parse.Char('=').Once()
-            from value in Parse.CharExcept(']').Many().Text()
-            from close in Parse.Char(']').Once()
-            select new PropertySyntax { Property = identifier, Value = value };
-
-        public static readonly Parser<ChildSyntax> Child = Parse.Char('>').Token().Return(new ChildSyntax());
-
-        public static readonly Parser<DescendantSyntax> Descendant =
-            from child in Parse.WhiteSpace.Many()
-            select new DescendantSyntax();
-
-        public static readonly Parser<TemplateSyntax> Template =
-            from template in Parse.String("/template/").Token()
-            select new TemplateSyntax();
-
-        public static readonly Parser<IsSyntax> Is =
-            from function in Parse.String(":is(")
-            from type in OfType
-            from close in Parse.Char(')')
-            select new IsSyntax { TypeName = type.TypeName, Xmlns = type.Xmlns };
-
-        public static readonly Parser<ISyntax> SingleSelector =
-            OfType
-            .Or<ISyntax>(Is)
-            .Or<ISyntax>(Name)
-            .Or<ISyntax>(Class)
-            .Or<ISyntax>(Property)
-            .Or<ISyntax>(Child)
-            .Or<ISyntax>(Template)
-            .Or<ISyntax>(Descendant);
-
-        public static readonly Parser<IEnumerable<ISyntax>> Selector = SingleSelector.Many().End();
-        
         public interface ISyntax
         {
         }
 
-        public class OfTypeSyntax : ISyntax
+        public interface ITypeSyntax
+        {
+            string TypeName { get; set; }
+
+            string Xmlns { get; set; }
+        }
+
+        public class OfTypeSyntax : ISyntax, ITypeSyntax
         {
             public string TypeName { get; set; }
 
@@ -136,7 +299,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        public class IsSyntax : ISyntax
+        public class IsSyntax : ISyntax, ITypeSyntax
         {
             public string TypeName { get; set; }
 

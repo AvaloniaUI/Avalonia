@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Text;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -39,6 +40,26 @@ namespace Avalonia.Markup.Parsers
             {
                 return false;
             }
+        }
+
+        public bool TakeIf(Func<char, bool> condition)
+        {
+            if (condition(Peek))
+            {
+                Take();
+                return true;
+            }
+            return false;
+        }
+
+        public string TakeUntil(char c)
+        {
+            var builder = new StringBuilder();
+            while (!End && Peek != c)
+            {
+                builder.Append(Take());
+            }
+            return builder.ToString();
         }
     }
 }
