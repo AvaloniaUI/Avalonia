@@ -7,27 +7,32 @@ using System.Text;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal class Reader
+    internal ref struct Reader
     {
-        private readonly string _s;
-        private int _i;
+        private ReadOnlySpan<char> _s;
 
-        public Reader(string s)
+        public Reader(ReadOnlySpan<char> s)
+            :this()
         {
             _s = s;
         }
 
-        public bool End => _i == _s.Length;
-        public char Peek => _s[_i];
-        public int Position => _i;
-        public char Take() => _s[_i++];
+        public bool End => _s.IsEmpty;
+        public char Peek => _s[0];
+        public int Position { get; private set; }
+        public char Take()
+        {
+            Position++;
+            char taken = _s[0];
+            _s = _s.Slice(1);
+            return taken;
+        }
 
         public void SkipWhitespace()
         {
-            while (!End && char.IsWhiteSpace(Peek))
-            {
-                Take();
-            }
+            var trimmed = _s.TrimStart();
+            Position += _s.Length - trimmed.Length;
+            _s = trimmed;
         }
 
         public bool TakeIf(char c)
@@ -55,53 +60,26 @@ namespace Avalonia.Markup.Parsers
 
         public ReadOnlySpan<char> TakeUntil(char c)
         {
-            int startIndex = Position;
-            while (!End && Peek != c)
+            int len;
+            for (len = 0; len < _s.Length && _s[len] != c; len++)
             {
-                Take();
             }
-            return _s.AsSpan(startIndex, Position - startIndex);
+            var span = _s.Slice(0, len);
+            _s = _s.Slice(len);
+            Position += len;
+            return span;
         }
 
-        public ReadOnlySpan<char> ParseIdentifier()
+        public ReadOnlySpan<char> TakeWhile(Func<char, bool> condition)
         {
-            if (IsValidIdentifierStart(Peek))
+            int len;
+            for (len = 0; len < _s.Length && condition(_s[len]); len++)
             {
-                int startIndex = Position;
-
-                while (!End && IsValidIdentifierChar(Peek))
-                {
-                    Take();
-                }
-
-                return _s.AsSpan(startIndex, Position - startIndex);
             }
-            else
-            {
-                return ReadOnlySpan<char>.Empty;
-            }
-        }
-
-        private static bool IsValidIdentifierStart(char c)
-        {
-            return char.IsLetter(c) || c == '_';
-        }
-
-        private static bool IsValidIdentifierChar(char c)
-        {
-            if (IsValidIdentifierStart(c))
-            {
-                return true;
-            }
-            else
-            {
-                var cat = CharUnicodeInfo.GetUnicodeCategory(c);
-                return cat == UnicodeCategory.NonSpacingMark ||
-                       cat == UnicodeCategory.SpacingCombiningMark ||
-                       cat == UnicodeCategory.ConnectorPunctuation ||
-                       cat == UnicodeCategory.Format ||
-                       cat == UnicodeCategory.DecimalDigitNumber;
-            }
+            var span = _s.Slice(0, len);
+            _s = _s.Slice(len);
+            Position += len;
+            return span;
         }
     }
 }

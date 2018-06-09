@@ -10,7 +10,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> Parse(Reader r, char open, char close)
+        public static IList<string> ParseArguments(this ref Reader r, char open, char close)
         {
             if (r.Peek == open)
             {
@@ -20,7 +20,7 @@ namespace Avalonia.Markup.Parsers
 
                 while (!r.End)
                 {
-                    var argument = r.TakeUntil(',');
+                    var argument = r.TakeWhile(c => c != ',' && c != close);
                     if (argument.IsEmpty)
                     {
                         throw new ExpressionParseException(r.Position, "Expected indexer argument.");

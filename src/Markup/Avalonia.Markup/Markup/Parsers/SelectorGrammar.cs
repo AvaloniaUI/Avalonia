@@ -31,7 +31,7 @@ namespace Avalonia.Markup.Parsers
 
         public static IEnumerable<ISyntax> Parse(string s)
         {
-            var r = new Reader(s);
+            var r = new Reader(s.AsSpan());
             var state = State.Start;
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
@@ -40,34 +40,34 @@ namespace Avalonia.Markup.Parsers
                 switch (state)
                 {
                     case State.Start:
-                        (state, syntax) = ParseStart(r);
+                        state = ParseStart(ref r);
                         break;
                     case State.Middle:
-                        (state, syntax) = ParseMiddle(r);
-                        break;
-                    case State.Colon:
-                        (state, syntax) = ParseColon(r);
-                        break;
-                    case State.Class:
-                        (state, syntax) = ParseClass(r);
-                        break;
-                    case State.Traversal:
-                        (state, syntax) = ParseTraversal(r);
-                        break;
-                    case State.TypeName:
-                        (state, syntax) = ParseTypeName(r);
+                        state = ParseMiddle(ref r);
                         break;
                     case State.CanHaveType:
-                        (state, syntax) = ParseCanHaveType(r);
+                        state = ParseCanHaveType(ref r);
+                        break;
+                    case State.Colon:
+                        (state, syntax) = ParseColon(ref r);
+                        break;
+                    case State.Class:
+                        (state, syntax) = ParseClass(ref r);
+                        break;
+                    case State.Traversal:
+                        (state, syntax) = ParseTraversal(ref r);
+                        break;
+                    case State.TypeName:
+                        (state, syntax) = ParseTypeName(ref r);
                         break;
                     case State.Property:
-                        (state, syntax) = ParseProperty(r);
+                        (state, syntax) = ParseProperty(ref r);
                         break;
                     case State.Template:
-                        (state, syntax) = ParseTemplate(r);
+                        (state, syntax) = ParseTemplate(ref r);
                         break;
                     case State.Name:
-                        (state, syntax) = ParseName(r);
+                        (state, syntax) = ParseName(ref r);
                         break;
                 }
                 if (syntax != null)
@@ -84,59 +84,64 @@ namespace Avalonia.Markup.Parsers
             return selector;
         }
 
-        private static (State, ISyntax) ParseStart(Reader r)
+        private static State ParseStart(ref Reader r)
         {
             r.SkipWhitespace();
+            if (r.End)
+            {
+                return State.End;
+            }
+
             if (r.TakeIf(':'))
             {
-                return (State.Colon, null);
+                return State.Colon;
             }
             else if (r.TakeIf('.'))
             {
-                return (State.Class, null);
+                return State.Class;
             }
             else if (r.TakeIf('#'))
             {
-                return (State.Name, null);
+                return State.Name;
             }
-            return (State.TypeName, null);
+            return State.TypeName;
         }
 
-        private static (State, ISyntax) ParseMiddle(Reader r)
+        private static State ParseMiddle(ref Reader r)
         {
             if (r.TakeIf(':'))
             {
-                return (State.Colon, null);
+                return State.Colon;
             }
             else if (r.TakeIf('.'))
             {
-                return (State.Class, null);
+                return State.Class;
             }
             else if (r.TakeIf(char.IsWhiteSpace) || r.Peek == '>')
             {
-                return (State.Traversal, null);
+                return State.Traversal;
             }
             else if (r.TakeIf('/'))
             {
-                return (State.Template, null);
+                return State.Template;
             }
             else if (r.TakeIf('#'))
             {
-                return (State.Name, null);
+                return State.Name;
             }
-            return (State.TypeName, null);
+            return State.TypeName;
         }
 
-        private static (State, ISyntax) ParseCanHaveType(Reader r)
+        private static State ParseCanHaveType(ref Reader r)
         {
             if (r.TakeIf('['))
             {
-                return (State.Property, null);
+                return State.Property;
             }
-            return (State.Middle, null);
+            return State.Middle;
         }
 
-        private static (State, ISyntax) ParseColon(Reader r)
+        private static (State, ISyntax) ParseColon(ref Reader r)
         {
             var identifier = r.ParseIdentifier();
 
@@ -145,9 +150,10 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Expected class name or is selector after ':'.");
             }
 
-            if (identifier.SequenceEqual("is".AsSpan()) && r.TakeIf('('))
+            const string IsKeyword = "is";
+            if (identifier.SequenceEqual(IsKeyword.AsSpan()) && r.TakeIf('('))
             {
-                var syntax = ParseType<IsSyntax>(r);
+                var syntax = ParseType(ref r, new IsSyntax());
                 if (r.End || !r.TakeIf(')'))
                 {
                     throw new ExpressionParseException(r.Position, $"Expected ')', got {r.Peek}");
@@ -166,7 +172,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseTraversal(Reader r)
+        private static (State, ISyntax) ParseTraversal(ref Reader r)
         {
             r.SkipWhitespace();
             if (r.TakeIf('>'))
@@ -188,7 +194,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseClass(Reader r)
+        private static (State, ISyntax) ParseClass(ref Reader r)
         {
             var @class = r.ParseIdentifier();
             if (@class.IsEmpty)
@@ -199,10 +205,11 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new ClassSyntax { Class = @class.ToString() });
         }
 
-        private static (State, ISyntax) ParseTemplate(Reader r)
+        private static (State, ISyntax) ParseTemplate(ref Reader r)
         {
             var template = r.ParseIdentifier();
-            if (!template.SequenceEqual(nameof(template).AsSpan()))
+            const string TemplateKeyword = "template";
+            if (!template.SequenceEqual(TemplateKeyword.AsSpan()))
             {
                 throw new ExpressionParseException(r.Position, $"Expected 'template', got '{template.ToString()}'");
             }
@@ -213,7 +220,7 @@ namespace Avalonia.Markup.Parsers
             return (State.Start, new TemplateSyntax());
         }
 
-        private static (State, ISyntax) ParseName(Reader r)
+        private static (State, ISyntax) ParseName(ref Reader r)
         {
             var name = r.ParseIdentifier();
             if (name.IsEmpty)
@@ -223,12 +230,12 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new NameSyntax { Name = name.ToString() });
         }
 
-        private static (State, ISyntax) ParseTypeName(Reader r)
+        private static (State, ISyntax) ParseTypeName(ref Reader r)
         {
-            return (State.CanHaveType, ParseType<OfTypeSyntax>(r));
+            return (State.CanHaveType, ParseType(ref r, new OfTypeSyntax()));
         }
 
-        private static (State, ISyntax) ParseProperty(Reader r)
+        private static (State, ISyntax) ParseProperty(ref Reader r)
         {
             var property = r.ParseIdentifier();
 
@@ -244,8 +251,8 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new PropertySyntax { Property = property.ToString(), Value = value.ToString() });
         }
 
-        private static TSyntax ParseType<TSyntax>(Reader r)
-            where TSyntax : ITypeSyntax, new()
+        private static TSyntax ParseType<TSyntax>(ref Reader r, TSyntax syntax)
+            where TSyntax : ITypeSyntax
         {
             ReadOnlySpan<char> ns = null;
             ReadOnlySpan<char> type;
@@ -269,11 +276,10 @@ namespace Avalonia.Markup.Parsers
             {
                 type = namespaceOrTypeName;
             }
-            return new TSyntax
-            {
-                Xmlns = ns.ToString(),
-                TypeName = type.ToString()
-            };
+
+            syntax.Xmlns = ns.ToString();
+            syntax.TypeName = type.ToString();
+            return syntax;
         }
 
         public interface ISyntax

@@ -15,9 +15,9 @@ namespace Avalonia.Markup.Parsers
                 return new EmptyExpressionNode();
             }
 
-            var reader = new Reader(expression);
+            var reader = new Reader(expression.AsSpan());
             var parser = new ExpressionParser(enableValidation, typeResolver);
-            var node = parser.Parse(reader);
+            var node = parser.Parse(ref reader);
 
             if (!reader.End)
             {
