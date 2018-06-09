@@ -7,7 +7,6 @@ using System.Globalization;
 using Avalonia.Data.Core;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Sprache;
 
 namespace Avalonia.Markup.Parsers
 {

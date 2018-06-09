@@ -105,9 +105,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Desktop", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.iOS", "samples\ControlCatalog.iOS\ControlCatalog.iOS.csproj", "{57E0455D-D565-44BB-B069-EE1AA20F8337}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.Tests", "tests\Avalonia.DesignerSupport.Tests\Avalonia.DesignerSupport.Tests.csproj", "{52F55355-D120-42AC-8116-8410A7D602FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.Tests", "tests\Avalonia.DesignerSupport.Tests\Avalonia.DesignerSupport.Tests.csproj", "{52F55355-D120-42AC-8116-8410A7D602FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.DesignerSupport.TestApp", "tests\Avalonia.DesignerSupport.TestApp\Avalonia.DesignerSupport.TestApp.csproj", "{F1381F98-4D24-409A-A6C5-1C5B1E08BB08}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualizationTest", "samples\VirtualizationTest\VirtualizationTest.csproj", "{FBCAF3D0-2808-4934-8E96-3F607594517B}"
 EndProject
@@ -149,7 +149,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\SharpDX.props = build\SharpDX.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\Splat.props = build\Splat.props
-		build\Sprache.props = build\Sprache.props
 		build\XUnit.props = build\XUnit.props
 	EndProjectSection
 EndProject
