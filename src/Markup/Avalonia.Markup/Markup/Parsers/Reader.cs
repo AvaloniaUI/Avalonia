@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Text;
 
 namespace Avalonia.Markup.Parsers
@@ -52,14 +53,55 @@ namespace Avalonia.Markup.Parsers
             return false;
         }
 
-        public string TakeUntil(char c)
+        public ReadOnlySpan<char> TakeUntil(char c)
         {
-            var builder = new StringBuilder();
+            int startIndex = Position;
             while (!End && Peek != c)
             {
-                builder.Append(Take());
+                Take();
             }
-            return builder.ToString();
+            return _s.AsSpan(startIndex, Position - startIndex);
+        }
+
+        public ReadOnlySpan<char> ParseIdentifier()
+        {
+            if (IsValidIdentifierStart(Peek))
+            {
+                int startIndex = Position;
+
+                while (!End && IsValidIdentifierChar(Peek))
+                {
+                    Take();
+                }
+
+                return _s.AsSpan(startIndex, Position - startIndex);
+            }
+            else
+            {
+                return ReadOnlySpan<char>.Empty;
+            }
+        }
+
+        private static bool IsValidIdentifierStart(char c)
+        {
+            return char.IsLetter(c) || c == '_';
+        }
+
+        private static bool IsValidIdentifierChar(char c)
+        {
+            if (IsValidIdentifierStart(c))
+            {
+                return true;
+            }
+            else
+            {
+                var cat = CharUnicodeInfo.GetUnicodeCategory(c);
+                return cat == UnicodeCategory.NonSpacingMark ||
+                       cat == UnicodeCategory.SpacingCombiningMark ||
+                       cat == UnicodeCategory.ConnectorPunctuation ||
+                       cat == UnicodeCategory.Format ||
+                       cat == UnicodeCategory.DecimalDigitNumber;
+            }
         }
     }
 }

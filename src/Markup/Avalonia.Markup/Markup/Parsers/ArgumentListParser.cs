@@ -20,16 +20,13 @@ namespace Avalonia.Markup.Parsers
 
                 while (!r.End)
                 {
-                    var builder = new StringBuilder();
-                    while (!r.End && r.Peek != ',' && r.Peek != close && !char.IsWhiteSpace(r.Peek))
-                    {
-                        builder.Append(r.Take());
-                    }
-                    if (builder.Length == 0)
+                    var argument = r.TakeUntil(',');
+                    if (argument.IsEmpty)
                     {
                         throw new ExpressionParseException(r.Position, "Expected indexer argument.");
                     }
-                    result.Add(builder.ToString());
+
+                    result.Add(argument.ToString());
 
                     r.SkipWhitespace();
 

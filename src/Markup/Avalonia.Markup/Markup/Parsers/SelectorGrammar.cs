@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Data.Core;
@@ -139,12 +140,12 @@ namespace Avalonia.Markup.Parsers
         {
             var identifier = r.ParseIdentifier();
 
-            if (string.IsNullOrEmpty(identifier))
+            if (identifier.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, "Expected class name or is selector after ':'.");
             }
 
-            if (identifier == "is" && r.TakeIf('('))
+            if (identifier.SequenceEqual("is".AsSpan()) && r.TakeIf('('))
             {
                 var syntax = ParseType<IsSyntax>(r);
                 if (r.End || !r.TakeIf(')'))
@@ -160,7 +161,7 @@ namespace Avalonia.Markup.Parsers
                     State.CanHaveType,
                     new ClassSyntax
                     {
-                        Class = ":" + identifier
+                        Class = ":" + identifier.ToString()
                     });
             }
         }
@@ -190,20 +191,20 @@ namespace Avalonia.Markup.Parsers
         private static (State, ISyntax) ParseClass(Reader r)
         {
             var @class = r.ParseIdentifier();
-            if (string.IsNullOrEmpty(@class))
+            if (@class.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected a class name after '.'.");
             }
 
-            return (State.CanHaveType, new ClassSyntax { Class = @class });
+            return (State.CanHaveType, new ClassSyntax { Class = @class.ToString() });
         }
 
         private static (State, ISyntax) ParseTemplate(Reader r)
         {
             var template = r.ParseIdentifier();
-            if (template != nameof(template))
+            if (!template.SequenceEqual(nameof(template).AsSpan()))
             {
-                throw new ExpressionParseException(r.Position, $"Expected 'template', got {template}");
+                throw new ExpressionParseException(r.Position, $"Expected 'template', got '{template.ToString()}'");
             }
             else if (!r.TakeIf('/'))
             {
@@ -215,11 +216,11 @@ namespace Avalonia.Markup.Parsers
         private static (State, ISyntax) ParseName(Reader r)
         {
             var name = r.ParseIdentifier();
-            if (string.IsNullOrEmpty(name))
+            if (name.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected a name after '#'.");
             }
-            return (State.CanHaveType, new NameSyntax { Name = name });
+            return (State.CanHaveType, new NameSyntax { Name = name.ToString() });
         }
 
         private static (State, ISyntax) ParseTypeName(Reader r)
@@ -240,17 +241,17 @@ namespace Avalonia.Markup.Parsers
 
             r.Take();
 
-            return (State.CanHaveType, new PropertySyntax { Property = property, Value = value });
+            return (State.CanHaveType, new PropertySyntax { Property = property.ToString(), Value = value.ToString() });
         }
 
         private static TSyntax ParseType<TSyntax>(Reader r)
             where TSyntax : ITypeSyntax, new()
         {
-            string ns = null;
-            string type;
+            ReadOnlySpan<char> ns = null;
+            ReadOnlySpan<char> type;
             var namespaceOrTypeName = r.ParseIdentifier();
 
-            if (string.IsNullOrEmpty(namespaceOrTypeName))
+            if (namespaceOrTypeName.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected an identifier, got '{r.Peek}");
             }
@@ -270,8 +271,8 @@ namespace Avalonia.Markup.Parsers
             }
             return new TSyntax
             {
-                Xmlns = ns,
-                TypeName = type
+                Xmlns = ns.ToString(),
+                TypeName = type.ToString()
             };
         }
 
@@ -290,7 +291,7 @@ namespace Avalonia.Markup.Parsers
         {
             public string TypeName { get; set; }
 
-            public string Xmlns { get; set; }
+            public string Xmlns { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
             {
@@ -303,7 +304,7 @@ namespace Avalonia.Markup.Parsers
         {
             public string TypeName { get; set; }
 
-            public string Xmlns { get; set; }
+            public string Xmlns { get; set; } = string.Empty;
 
             public override bool Equals(object obj)
             {

@@ -16,7 +16,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse("Button");
 
             Assert.Equal(
-                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = null } },
+                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = "" } },
                 result);
         }
 
@@ -60,7 +60,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
             var result = SelectorGrammar.Parse(":is(Button)");
 
             Assert.Equal(
-                new[] { new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = null } },
+                new[] { new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = "" } },
                 result);
         }
 

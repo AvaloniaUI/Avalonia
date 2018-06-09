@@ -83,9 +83,9 @@ namespace Avalonia.Markup.Parsers
             {
                 var identifier = r.ParseIdentifier();
 
-                if (identifier != null)
+                if (!identifier.IsEmpty)
                 {
-                    nodes.Add(new PropertyAccessorNode(identifier, _enableValidation));
+                    nodes.Add(new PropertyAccessorNode(identifier.ToString(), _enableValidation));
                     return State.AfterMember;
                 }
             }
@@ -122,9 +122,9 @@ namespace Avalonia.Markup.Parsers
             {
                 var identifier = r.ParseIdentifier();
 
-                if (identifier != null)
+                if (!identifier.IsEmpty)
                 {
-                    nodes.Add(new PropertyAccessorNode(identifier, _enableValidation));
+                    nodes.Add(new PropertyAccessorNode(identifier.ToString(), _enableValidation));
                     return State.AfterMember;
                 }
 
@@ -134,8 +134,8 @@ namespace Avalonia.Markup.Parsers
 
         private State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
         {
-            string ns = string.Empty;
-            string owner;
+            ReadOnlySpan<char> ns = ReadOnlySpan<char>.Empty;
+            ReadOnlySpan<char> owner;
             var ownerOrNamespace = r.ParseIdentifier();
 
             if (r.TakeIf(':'))
@@ -160,7 +160,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
             }
 
-            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(ns, owner), name);
+            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(ns.ToString(), owner.ToString()), name.ToString());
 
             nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableValidation));
             return State.AfterMember;
