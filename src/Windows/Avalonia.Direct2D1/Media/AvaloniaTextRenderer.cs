@@ -47,22 +47,97 @@ namespace Avalonia.Direct2D1.Media
             GlyphRunDescription glyphRunDescription,
             ComObject clientDrawingEffect)
         {
-            var wrapper = clientDrawingEffect as BrushWrapper;
-
-            // TODO: Work out how to get the size below rather than passing new Size().
-            var brush = (wrapper == null) ?
-                _foreground :
-                _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
-
-            _renderTarget.DrawGlyphRun(
-                new RawVector2 { X = baselineOriginX, Y = baselineOriginY },
-                glyphRun,
-                brush,
-                measuringMode);
-
-            if (wrapper != null)
+            if (glyphRun.Indices.Length == 0)
             {
-                brush.Dispose();
+                return Result.Ok;
+            }
+
+            var baselineOrigin = new RawVector2(baselineOriginX, baselineOriginY);
+
+            Brush brush = null;
+
+            if (clientDrawingEffect != null)
+            {
+                if (clientDrawingEffect is BrushWrapper wrapper)
+                {
+                    // TODO: Work out how to get the size below rather than passing new Size().
+                    brush = _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
+                }
+            }
+            else
+            {
+                brush = _foreground;
+            }
+
+            var factory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
+
+            var factory2 = factory.QueryInterface<SharpDX.DirectWrite.Factory2>();
+
+            if (factory2 != null)
+            {
+                var typeface = glyphRun.FontFace.QueryInterface<FontFace2>();
+
+                if (typeface != null && typeface.IsColorFont)
+                {
+                    ColorGlyphRunEnumerator glyphRunEnumerator = null;
+
+                    try
+                    {
+                        factory2.TranslateColorGlyphRun(
+                            baselineOriginX,
+                            baselineOriginY,
+                            glyphRun,
+                            glyphRunDescription,
+                            measuringMode,
+                            null,
+                            0,
+                            out glyphRunEnumerator);
+                    }
+                    catch (SharpDXException)
+                    {
+                        // No color glyphs
+                    }
+
+                    if (glyphRunEnumerator != null)
+                    {
+                        RawBool hasRun;
+
+                        while (true)
+                        {
+                            glyphRunEnumerator.MoveNext(out hasRun);
+
+                            if (!hasRun)
+                            {
+                                break;
+                            }
+
+                            var colorGlyphRun = glyphRunEnumerator.CurrentRun;
+
+                            brush = new SolidColorBrush(_renderTarget, colorGlyphRun.RunColor);
+
+                            _renderTarget.DrawGlyphRun(
+                                new RawVector2 { X = colorGlyphRun.BaselineOriginX, Y = colorGlyphRun.BaselineOriginY },
+                                glyphRun,
+                                brush,
+                                measuringMode);
+
+                            glyphRunEnumerator.MoveNext(out hasRun);
+                        }
+                    }
+                }
+                else
+                {
+                    _renderTarget.DrawGlyphRun(baselineOrigin, glyphRun, brush, measuringMode);
+                }
+            }
+            else
+            {
+                _renderTarget.DrawGlyphRun(baselineOrigin, glyphRun, brush, measuringMode);
+            }
+
+            if (clientDrawingEffect != null)
+            {
+                brush?.Dispose();
             }
 
             return Result.Ok;

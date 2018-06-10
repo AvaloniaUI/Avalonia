@@ -242,26 +242,18 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="text">The text.</param>
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            if (string.IsNullOrEmpty(text.Text)) return;
-
-            var impl = (FormattedTextImpl)text;
-
-            using (var brush = CreateBrush(foreground, impl.Size))
+            if (!string.IsNullOrEmpty(text.Text))
             {
-                if (brush.PlatformBrush == null) return;
+                var impl = (FormattedTextImpl)text;
 
-                var rect = new RawRectangleF(
-                    (float)origin.X,
-                    (float)origin.Y,
-                    (float)(origin.X + impl.Size.Width),
-                    (float)(origin.Y + impl.Size.Height));
-
-                _renderTarget.DrawText(
-                    impl.Text,
-                    impl.TextLayout,
-                    rect,
-                    brush.PlatformBrush,
-                    DrawTextOptions.EnableColorFont);
+                using (var brush = CreateBrush(foreground, impl.Size))
+                using (var renderer = new AvaloniaTextRenderer(this, _renderTarget, brush.PlatformBrush))
+                {
+                    if (brush.PlatformBrush != null)
+                    {
+                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                    }
+                }
             }
         }
 
