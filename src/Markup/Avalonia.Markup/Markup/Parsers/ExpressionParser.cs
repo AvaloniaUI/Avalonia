@@ -160,6 +160,11 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Expected ')'.");
             }
 
+            if (_typeResolver == null)
+            {
+                throw new InvalidOperationException("Cannot parse a binding path with an attached property without a type resolver. Maybe you can use a LINQ Expression binding path instead?");
+            }
+
             var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(ns.ToString(), owner.ToString()), name.ToString());
 
             nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableValidation));

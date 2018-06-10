@@ -6,8 +6,10 @@ using Avalonia.Data;
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     using System;
+    using System.ComponentModel;
     using Avalonia.Data.Converters;
     using Avalonia.Markup.Data;
+    using Portable.Xaml.ComponentModel;
     using Portable.Xaml.Markup;
 
     [MarkupExtensionReturnType(typeof(IBinding))]
@@ -24,6 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
+            var context = (ITypeDescriptorContext)serviceProvider;
             return new Binding
             {
                 Converter = Converter,
@@ -32,6 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                 Path = Path ?? string.Empty,
                 Priority = Priority,
+                TypeResolver = context.ResolveType
             };
         }
 
