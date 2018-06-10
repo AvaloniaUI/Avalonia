@@ -120,6 +120,7 @@ public class Packages
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
         var SystemMemoryVersion = packageVersions["System.Memory"].FirstOrDefault().Item1;
+        var SystemComponentModelAnnotationsVersion = packageVersions["System.ComponentModel.Annotations"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
@@ -238,6 +239,7 @@ public class Packages
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
                     new NuSpecDependency() { Id = "System.Memory", Version = SystemMemoryVersion },
+                    new NuSpecDependency() { Id = "System.ComponentModel.Annotations", Version = SystemComponentModelAnnotationsVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
                     new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },

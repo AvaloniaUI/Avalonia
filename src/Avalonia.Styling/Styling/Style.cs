@@ -15,7 +15,7 @@ namespace Avalonia.Styling
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : IStyle, ISetStyleParent
+    public class Style : AvaloniaObject, IStyle, ISetStyleParent
     {
         private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
