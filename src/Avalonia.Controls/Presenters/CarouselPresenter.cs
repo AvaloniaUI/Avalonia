@@ -129,7 +129,21 @@ namespace Avalonia.Controls.Presenters
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
 #pragma warning disable 4014
-                        MoveToPage(-1, SelectedIndex >= 0 ? SelectedIndex : 0);
+                        var newIndex = SelectedIndex;
+
+                        if(SelectedIndex < 0)
+                        {
+                            if(Items != null && Items.Count() > 0)
+                            {
+                                newIndex = 0;
+                            }
+                            else
+                            {
+                                newIndex = -1;
+                            }
+                        }
+                        
+                        MoveToPage(-1, newIndex);
 #pragma warning restore 4014
                     }
                     break;     
