@@ -232,7 +232,9 @@ namespace Avalonia.Media
 
         private void AddMove(CommandToken commandToken)
         {
-            var currentPoint = commandToken.ReadPoint();
+            var currentPoint = commandToken.IsRelative
+                                   ? commandToken.ReadRelativePoint(_currentPoint)
+                                   : commandToken.ReadPoint();
 
             _currentPoint = currentPoint;
 
