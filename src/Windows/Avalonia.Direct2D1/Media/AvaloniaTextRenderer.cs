@@ -8,6 +8,8 @@ using SharpDX.Mathematics.Interop;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System;
+
     internal class AvaloniaTextRenderer : TextRendererBase
     {
         private readonly DrawingContextImpl _context;
@@ -58,55 +60,40 @@ namespace Avalonia.Direct2D1.Media
 
             if (factory2 != null)
             {
-                var typeface = glyphRun.FontFace.QueryInterface<FontFace2>();
+                var result = factory2.TryTranslateColorGlyphRun(
+                    baselineOriginX,
+                    baselineOriginY,
+                    glyphRun,
+                    glyphRunDescription,
+                    measuringMode,
+                    null,
+                    0,
+                    out var colorGlyphRunEnumerator);
 
-                if (typeface != null && typeface.IsColorFont)
+                if (result == Result.Ok)
                 {
-                    ColorGlyphRunEnumerator glyphRunEnumerator = null;
+                    while (true)
+                    {
+                        colorGlyphRunEnumerator.MoveNext(out var hasRun);
 
-                    try
-                    {
-                        factory2.TranslateColorGlyphRun(
-                            baselineOriginX,
-                            baselineOriginY,
-                            glyphRun,
-                            glyphRunDescription,
-                            measuringMode,
-                            null,
-                            0,
-                            out glyphRunEnumerator);
-                    }
-                    catch (SharpDXException)
-                    {
-                        // No color glyphs
-                    }
-
-                    if (glyphRunEnumerator != null)
-                    {
-                        while (true)
+                        if (!hasRun)
                         {
-                            glyphRunEnumerator.MoveNext(out var hasRun);
-
-                            if (!hasRun)
-                            {
-                                break;
-                            }
-
-                            var colorGlyphRun = glyphRunEnumerator.CurrentRun;
-
-                            brush?.Dispose();
-
-                            brush = new SolidColorBrush(_renderTarget, colorGlyphRun.RunColor);
-
-                            _renderTarget.DrawGlyphRun(
-                                new RawVector2 { X = colorGlyphRun.BaselineOriginX, Y = colorGlyphRun.BaselineOriginY },
-                                glyphRun,
-                                brush,
-                                measuringMode);
+                            break;
                         }
 
-                        glyphRunEnumerator.Dispose();
+                        //ToDo: SharpDX fix
+                        var colorGlyphRun = colorGlyphRunEnumerator.CurrentRun;
+
+                        brush = new SolidColorBrush(_renderTarget, colorGlyphRun.RunColor);
+
+                        _renderTarget.DrawGlyphRun(
+                            new RawVector2 { X = colorGlyphRun.BaselineOriginX, Y = colorGlyphRun.BaselineOriginY },
+                            glyphRun,
+                            brush,
+                            measuringMode);
                     }
+
+                    colorGlyphRunEnumerator.Dispose();
                 }
                 else
                 {
@@ -118,7 +105,10 @@ namespace Avalonia.Direct2D1.Media
                 _renderTarget.DrawGlyphRun(baselineOrigin, glyphRun, brush, measuringMode);
             }
 
-            brush?.Dispose();
+            if (clientDrawingEffect != null)
+            {
+                brush?.Dispose();
+            }          
 
             return Result.Ok;
         }

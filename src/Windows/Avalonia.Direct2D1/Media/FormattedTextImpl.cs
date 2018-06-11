@@ -111,6 +111,7 @@ namespace Avalonia.Direct2D1.Media
         {
             var metrics = new DWrite.TextMetrics();
 
+            // SharpDX bug
             try
             {
                 metrics = TextLayout.Metrics;
