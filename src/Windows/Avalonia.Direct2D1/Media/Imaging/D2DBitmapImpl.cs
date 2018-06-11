@@ -57,7 +57,7 @@ namespace Avalonia.Direct2D1.Media
                     _direct2D.DotsPerInch.Height,
                     0, 0, PixelWidth, PixelHeight);
 
-                imageEncoder.WriteFrame(_direct2D, frameEncode, parameters);
+                imageEncoder.WriteFrame(_direct2D, frameEncode, ref parameters);
                 frameEncode.Commit();
                 encoder.Commit();
             }

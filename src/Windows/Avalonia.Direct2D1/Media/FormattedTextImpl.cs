@@ -9,6 +9,8 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System;
+
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -25,18 +27,16 @@ namespace Avalonia.Direct2D1.Media
 
             var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
 
-            textFormat.WordWrapping =
-                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
+            textFormat.SetWordWrapping(wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap);
 
             TextLayout = new DWrite.TextLayout(
-                             factory,
-                             Text ?? string.Empty,
-                             textFormat,
-                             (float)constraint.Width,
-                             (float)constraint.Height)
-            {
-                TextAlignment = textAlignment.ToDirect2D()
-            };
+                factory,
+                Text ?? string.Empty,
+                textFormat,
+                (float)constraint.Width,
+                (float)constraint.Height);
+
+            TextLayout.SetTextAlignment(textAlignment.ToDirect2D());
 
             textFormat.Dispose();
 
@@ -109,7 +109,17 @@ namespace Avalonia.Direct2D1.Media
 
         private Size Measure()
         {
-            var metrics = TextLayout.Metrics;
+            var metrics = new DWrite.TextMetrics();
+
+            try
+            {
+                metrics = TextLayout.Metrics;
+            }
+            catch (ObjectDisposedException)
+            {
+                metrics = TextLayout.Metrics;
+            }          
+
             var width = metrics.WidthIncludingTrailingWhitespace;
 
             if (float.IsNaN(width))
