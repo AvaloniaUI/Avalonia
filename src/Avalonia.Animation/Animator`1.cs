@@ -19,7 +19,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// List of type-converted keyframes.
         /// </summary>
-        private Dictionary<double, (T, bool isNeutral)> _convertedKeyframes = new Dictionary<double, (T, bool)>();
+        private Dictionary<double, InternalKeyFrame<T>> _convertedKeyframes = new Dictionary<double, InternalKeyFrame<T>>();
 
         private bool _isVerfifiedAndConverted;
 
@@ -60,7 +60,7 @@ namespace Avalonia.Animation
         /// <param name="t">The time parameter, relative to the total animation time</param>
         protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
         {
-            KeyValuePair<double, (T, bool)> firstCue, lastCue;
+            KeyValuePair<double, InternalKeyFrame<T>> firstCue, lastCue;
             int kvCount = _convertedKeyframes.Count();
             if (kvCount > 2)
             {
@@ -122,19 +122,21 @@ namespace Avalonia.Animation
         private void VerifyConvertKeyFrames(Animation animation, Type type)
         {
             var typeConv = TypeDescriptor.GetConverter(type);
-
+            bool isBoundValue = false;
             foreach (AnimatorKeyFrame k in this)
             {
                 if (k.Value == null)
                 {
                     throw new ArgumentNullException($"KeyFrame value can't be null.");
                 }
-                if (!typeConv.CanConvertTo(k.Value.GetType()))
+                else if (k.Value is IBinding)
+                {
+                    isBoundValue = true;
+                }
+                else if (!typeConv.CanConvertTo(k.Value.GetType()))
                 {
                     throw new InvalidCastException($"KeyFrame value doesnt match property type.");
                 }
-
-                T convertedValue = (T)typeConv.ConvertTo(k.Value, type);
 
                 Cue _normalizedCue = k.Cue;
 
@@ -143,7 +145,28 @@ namespace Avalonia.Animation
                     _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
                 }
 
-                _convertedKeyframes.Add(_normalizedCue.CueValue, (convertedValue, false));
+                InternalKeyFrame<T> newKfa;
+
+                if (isBoundValue)
+                {
+                    newKfa = new InternalKeyFrame<T>()
+                    {
+                        isBinding = true,
+                        bindingObj = (IBinding)k.Value
+                    };
+                }
+                else
+                {
+                    newKfa = new InternalKeyFrame<T>()
+                    {
+                        isNeutral = false,
+                        TargetValue = (T)typeConv.ConvertTo(k.Value, type)
+                    };
+
+                }
+
+                _convertedKeyframes.Add(_normalizedCue.CueValue, newKfa);
+
             }
 
             SortKeyFrameCues(_convertedKeyframes);
@@ -151,7 +174,7 @@ namespace Avalonia.Animation
 
         }
 
-        private void SortKeyFrameCues(Dictionary<double, (T, bool)> convertedValues)
+        private void SortKeyFrameCues(Dictionary<double, InternalKeyFrame<T>> convertedValues)
         {
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
@@ -176,16 +199,22 @@ namespace Avalonia.Animation
                                                      .ToDictionary((k) => k.Key, (v) => v.Value);
         }
 
-        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey, Dictionary<double, (T, bool)> convertedKeyframes)
+        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey, Dictionary<double, InternalKeyFrame<T>> convertedKeyframes)
         {
+            var neutralKfa = new InternalKeyFrame<T>()
+            {
+                isNeutral = true,
+                TargetValue = default(T)
+            };
+
             if (!hasStartKey)
             {
-                convertedKeyframes.Add(0.0d, (default(T), true));
+                convertedKeyframes.Add(0.0d, neutralKfa);
             }
 
             if (!hasEndKey)
             {
-                convertedKeyframes.Add(1.0d, (default(T), true));
+                convertedKeyframes.Add(1.0d, neutralKfa);
             }
         }
     }
