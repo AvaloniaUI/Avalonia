@@ -560,13 +560,11 @@ namespace Avalonia.Skia
                 }
 
                 measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
-
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
                 line.TextLength = measured;
-
+                line.Start = curOff;
                 subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
-                line.Start = curOff;
                 line.Length = measured - trailingnumber;
                 line.Width = lineWidth;
                 line.Height = _lineHeight;
@@ -575,10 +573,33 @@ namespace Avalonia.Skia
                 _skiaLines.Add(line);
 
                 curY += _lineHeight;
-
                 curY += mLeading;
-
                 curOff += measured;
+
+                //if this is the last line and there are trailing newline characters then
+                //insert a additional line
+                if (curOff >= length)
+                {
+                    var subStringMinusNewlines = subString.TrimEnd('\n', '\r');
+                    var lengthDiff = subString.Length - subStringMinusNewlines.Length;
+                    if (lengthDiff > 0)
+                    {
+                        AvaloniaFormattedTextLine lastLine = new AvaloniaFormattedTextLine();
+                        lastLine.TextLength = lengthDiff;
+                        lastLine.Start = curOff - lengthDiff;
+                        var lastLineSubString = Text.Substring(line.Start, line.TextLength);
+                        var lastLineWidth = _paint.MeasureText(lastLineSubString);
+                        lastLine.Length = 0;
+                        lastLine.Width = lastLineWidth;
+                        lastLine.Height = _lineHeight;
+                        lastLine.Top = curY;
+
+                        _skiaLines.Add(lastLine);
+
+                        curY += _lineHeight;
+                        curY += mLeading;
+                    }
+                }
             }
 
             // Now convert to Avalonia data formats
