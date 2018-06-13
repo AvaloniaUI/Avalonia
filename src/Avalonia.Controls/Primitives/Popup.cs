@@ -70,6 +70,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> StaysOpenProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(StaysOpen), true);
 
+        /// <summary>
+        /// Defines the <see cref="Topmost"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> TopmostProperty =
+            AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
+
         private bool _isOpen;
         private PopupRoot _popupRoot;
         private TopLevel _topLevel;
@@ -84,6 +90,7 @@ namespace Avalonia.Controls.Primitives
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
+            TopmostProperty.Changed.AddClassHandler<Popup>((p, e) => p.PopupRoot.Topmost = (bool)e.NewValue);
         }
 
         /// <summary>
@@ -192,6 +199,15 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(StaysOpenProperty); }
             set { SetValue(StaysOpenProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether this popup appears on top of all other windows
+        /// </summary>
+        public bool Topmost
+        {
+            get { return GetValue(TopmostProperty); }
+            set { SetValue(TopmostProperty, value); }
         }
 
         /// <summary>
