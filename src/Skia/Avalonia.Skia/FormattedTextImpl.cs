@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace Avalonia.Skia
 {
+    /// <summary>
+    /// Skia formatted text implementation.
+    /// </summary>
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -21,7 +24,7 @@ namespace Avalonia.Skia
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
-
+            
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
@@ -331,7 +334,7 @@ namespace Avalonia.Skia
             {
                 float measuredWidth;
                 string subText = textInput.Substring(textIndex, stop - textIndex);
-                lengthBreak = (int)paint.BreakText(subText, maxWidth, out measuredWidth) / 2;
+                lengthBreak = (int)paint.BreakText(subText, maxWidth, out measuredWidth);
             }
 
             //Check for white space or line breakers before the lengthBreak
@@ -430,7 +433,6 @@ namespace Avalonia.Skia
         private void BuildRects()
         {
             // Build character rects
-            var fm = _paint.FontMetrics;
             SKTextAlign align = _paint.TextAlign;
 
             for (int li = 0; li < _skiaLines.Count; li++)
@@ -538,18 +540,16 @@ namespace Avalonia.Skia
 
             string subString;
 
-            float widthConstraint = (_constraint.Width != double.PositiveInfinity)
-                                        ? (float)_constraint.Width
-                                        : -1;
-
-            for (int c = 0; curOff < length; c++)
+            float widthConstraint = double.IsPositiveInfinity(_constraint.Width)
+                                        ? -1
+                                        : (float)_constraint.Width;
+            
+            while(curOff < length)
             {
                 float lineWidth = -1;
                 int measured;
                 int trailingnumber = 0;
-
-                subString = Text.Substring(curOff);
-
+                
                 float constraint = -1;
 
                 if (_wrapping == TextWrapping.Wrap)

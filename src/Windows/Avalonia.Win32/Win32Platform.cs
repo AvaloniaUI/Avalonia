@@ -11,11 +11,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Gpu;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.Win32.Gpu;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 
@@ -80,7 +82,8 @@ namespace Avalonia.Win32
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
-                .Bind<IPlatformIconLoader>().ToConstant(s_instance);
+                .Bind<IPlatformIconLoader>().ToConstant(s_instance)
+                .Bind<IEGLPlatform>().ToSingleton<EGLPlatform>();
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();

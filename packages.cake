@@ -106,6 +106,7 @@ public class Packages
 
         context.Information("Setting NuGet package dependencies versions:");
 
+        var Win32NativesVersion = packageVersions["AvaloniaUI.Win32.Natives"].FirstOrDefault().Item1;
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
         var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
         var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
@@ -122,6 +123,7 @@ public class Packages
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
         var SystemComponentModelAnnotationsVersion = packageVersions["System.ComponentModel.Annotations"].FirstOrDefault().Item1;
 
+        context.Information("Package: AvaloniaUI.Win32.Natives, version: {0}", Win32NativesVersion);
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
@@ -345,7 +347,8 @@ public class Packages
                 Id = "Avalonia.Win32",
                 Dependencies = new DependencyBuilder(this)
                 {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "AvaloniaUI.Win32.Natives", Version = Win32NativesVersion },
                 }.Deps(new string[]{null}, "System.Drawing.Common"),
                 Files = new []
                 {
