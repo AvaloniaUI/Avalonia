@@ -145,11 +145,9 @@ namespace Avalonia.Controls
             : base(impl)
         {
             impl.Closing = HandleClosing;
+            impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
-
-            if (PlatformImpl != null)
-                PlatformImpl.WindowStateChanged = s => WindowState = s;
         }
         
         /// <inheritdoc/>
@@ -316,6 +314,20 @@ namespace Avalonia.Controls
             var args = new CancelEventArgs();
             Closing?.Invoke(this, args);
             return args.Cancel;
+        }
+
+        protected virtual void HandleWindowStateChanged(WindowState state)
+        {
+            WindowState = state;
+
+            if (state == WindowState.Minimized)
+            {
+                Renderer.Stop();
+            }
+            else
+            {
+                Renderer.Start();
+            }
         }
 
         /// <summary>

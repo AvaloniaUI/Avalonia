@@ -1,5 +1,6 @@
 
 using System.Runtime.CompilerServices;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -45,23 +46,18 @@ namespace Avalonia.Controls
         {
             return control.GetValue(DataContextProperty);
         }
-
-        static readonly ConditionalWeakTable<object, Control> Substitutes = new ConditionalWeakTable<object, Control>();
-
+        
         public static readonly AttachedProperty<Control> PreviewWithProperty = AvaloniaProperty
-            .RegisterAttached<AvaloniaObject, Control>("PreviewWith", typeof (Design));
+            .RegisterAttached<Style, Control>("PreviewWith", typeof (Design));
 
-        public static void SetPreviewWith(object target, Control control)
+        public static void SetPreviewWith(Style target, Control control)
         {
-            Substitutes.Remove(target);
-            Substitutes.Add(target, control);
+            target.SetValue(PreviewWithProperty, control);
         }
 
-        public static Control GetPreviewWith(object target)
+        public static Control GetPreviewWith(Style target)
         {
-            Control rv;
-            Substitutes.TryGetValue(target, out rv);
-            return rv;
+            return target.GetValue(PreviewWithProperty);
         }
 
         public static void ApplyDesignModeProperties(Control target, Control source)

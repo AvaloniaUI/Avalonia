@@ -102,5 +102,9 @@ namespace Avalonia.DesignerSupport.Remote
         public void CanResize(bool value)
         {
         }
+
+        public void SetTopmost(bool value)
+        {
+        }
     }
 }

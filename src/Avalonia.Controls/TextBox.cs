@@ -68,6 +68,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
+        public static readonly DirectProperty<TextBox, string> NewLineProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
+                textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -90,6 +94,7 @@ namespace Avalonia.Controls
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
         private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
+        private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
         static TextBox()
@@ -239,6 +244,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(TextWrappingProperty); }
             set { SetValue(TextWrappingProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets which characters are inserted when Enter is pressed. Default: <see cref="Environment.NewLine"/>
+        /// </summary>
+        public string NewLine
+        {
+            get { return _newLine; }
+            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -498,7 +512,7 @@ namespace Avalonia.Controls
                 case Key.Enter:
                     if (AcceptsReturn)
                     {
-                        HandleTextInput("\r\n");
+                        HandleTextInput(NewLine);
                         handled = true;
                     }
 
