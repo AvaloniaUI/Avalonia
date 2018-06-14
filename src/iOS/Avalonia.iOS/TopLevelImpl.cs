@@ -26,7 +26,6 @@ namespace Avalonia.iOS
     {
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
-        private Point _position;
 
         public TopLevelImpl()
         {
@@ -52,7 +51,7 @@ namespace Avalonia.iOS
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IPlatformHandle Handle => null;
+        public new IPlatformHandle Handle => null;
 
         public double Scaling => UIScreen.MainScreen.Scale;
 
