@@ -62,7 +62,7 @@ namespace Avalonia.Platform
 
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects);
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
-            tl.PlatformImpl.Input(rawEvent);
+            tl.PlatformImpl?.Input(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
             UpdateCursor(root, effect);

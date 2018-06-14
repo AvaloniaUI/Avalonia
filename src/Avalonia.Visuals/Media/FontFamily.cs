@@ -77,10 +77,10 @@ namespace Avalonia.Media
         /// <summary>
         /// Implicit conversion of string to FontFamily
         /// </summary>
-        /// <param name="fontFamily"></param>
-        public static implicit operator FontFamily(string fontFamily)
+        /// <param name="s"></param>
+        public static implicit operator FontFamily(string s)
         {
-            return new FontFamily(fontFamily);
+            return Parse(s);
         }
 
         /// <summary>
