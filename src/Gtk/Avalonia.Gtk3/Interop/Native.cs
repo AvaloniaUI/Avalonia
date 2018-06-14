@@ -262,9 +262,12 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_unmaximize(GtkWindow window);
-            
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_close(GtkWindow window);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_keep_above(GtkWindow gtkWindow, bool setting);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_geometry_hints(GtkWindow window, IntPtr geometry_widget, ref GdkGeometry geometry, GdkWindowHints geom_mask);
@@ -473,6 +476,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_maximize GtkWindowMaximize;
         public static D.gtk_window_unmaximize GtkWindowUnmaximize;
         public static D.gtk_window_close GtkWindowClose;
+        public static D.gtk_window_set_keep_above GtkWindowSetKeepAbove;
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
