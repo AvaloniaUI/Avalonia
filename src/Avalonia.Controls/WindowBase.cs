@@ -38,6 +38,9 @@ namespace Avalonia.Controls
                 o => o.Owner,
                 (o, v) => o.Owner = v);
 
+        public static readonly StyledProperty<bool> TopmostProperty =
+            AvaloniaProperty.Register<WindowBase, bool>(nameof(Topmost));
+
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
         private bool _ignoreVisibilityChange;
@@ -52,6 +55,8 @@ namespace Avalonia.Controls
             MinHeightProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, (double)e.NewValue), new Size(w.MaxWidth, w.MaxHeight)));
             MaxWidthProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size((double)e.NewValue, w.MaxHeight)));
             MaxHeightProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetMinMaxSize(new Size(w.MinWidth, w.MinHeight), new Size(w.MaxWidth, (double)e.NewValue)));
+            
+            TopmostProperty.Changed.AddClassHandler<WindowBase>((w, e) => w.PlatformImpl?.SetTopmost((bool)e.NewValue));
         }
 
         public WindowBase(IWindowBaseImpl impl) : this(impl, AvaloniaLocator.Current)
@@ -122,6 +127,15 @@ namespace Avalonia.Controls
         {
             get { return _owner; }
             set { SetAndRaise(OwnerProperty, ref _owner, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether this window appears on top of all other windows
+        /// </summary>
+        public bool Topmost
+        {
+            get { return GetValue(TopmostProperty); }
+            set { SetValue(TopmostProperty, value); }
         }
 
         /// <summary>

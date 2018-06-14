@@ -110,7 +110,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             //Not supported
         }
-        
 
+        public void SetTopmost(bool value)
+        {
+            //Not supported
+        }
     }
 }

@@ -73,6 +73,11 @@ namespace Avalonia.Platform
         void SetMinMaxSize(Size minSize, Size maxSize);
 
         /// <summary>
+        /// Sets whether this window appears on top of all other windows
+        /// </summary>
+        void SetTopmost(bool value);
+
+        /// <summary>
         /// Gets platform specific display information
         /// </summary>
         IScreenImpl Screen { get; }
