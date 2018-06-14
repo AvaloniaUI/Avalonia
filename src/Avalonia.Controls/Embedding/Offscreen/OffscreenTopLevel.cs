@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
         public void Dispose()
         {
-            PlatformImpl.Dispose();
+            PlatformImpl?.Dispose();
         }
     }
 }

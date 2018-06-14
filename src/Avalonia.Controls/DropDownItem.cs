@@ -22,14 +22,13 @@ namespace Avalonia.Controls
         static DropDownItem()
         {
             FocusableProperty.OverrideDefaultValue<DropDownItem>(true);
-            IsFocusedProperty.Changed.Subscribe(x =>
-            {
-                var sender = x.Sender as IControl;
+        }
 
-                if (sender != null)
-                {
-                    ((IPseudoClasses)sender.Classes).Set(":selected", (bool)x.NewValue);
-                }
+        public DropDownItem()
+        {
+            this.GetObservable(DropDownItem.IsFocusedProperty).Subscribe(focused =>
+            {
+                PseudoClasses.Set(":selected", focused);                
             });
         }
 
