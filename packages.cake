@@ -186,9 +186,9 @@ public class Packages
             };
         });
 
-        var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+        var netFrameworkCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
-                Source = file.FullPath, Target = "lib/net45" 
+                Source = file.FullPath, Target = "lib/net461" 
             };
         });
 
@@ -198,10 +198,10 @@ public class Packages
             };
         });
 
-        var net45RuntimePlatform = extensionsToPack.Select(libSuffix => {
+        var netFrameworkRuntimePlatform = extensionsToPack.Select(libSuffix => {
             return new NuSpecContent {
                 Source = ((FilePath)context.File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + parameters.DirSuffix + "/net461/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
-                Target = "lib/net45" 
+                Target = "lib/net461" 
             };
         });
 
@@ -233,30 +233,19 @@ public class Packages
                 Id = "Avalonia",
                 Dependencies = new DependencyBuilder(this)
                 {
-                    new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", Version = SerilogSinksDebugVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "System.ComponentModel.Annotations", Version = SystemComponentModelAnnotationsVersion },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
-                    new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp2.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", TargetFramework = "netcoreapp2.0", Version = SerilogSinksDebugVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", TargetFramework = "netcoreapp2.0", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", TargetFramework = "netcoreapp2.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netstandard2.0" },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netcoreapp2.0" },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="net461"},
+                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="netcoreapp2.0"}
                 }
-                .Deps(new string[]{null, "netcoreapp2.0"},
-                    "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
-                    "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument", "System.Xml.ReaderWriter")
+                .Deps(new string[]{"netstandard2.0", "netcoreapp2.0", "net461"},
+                    "Serilog", "Serilog.Sinks.Debug", "Serilog.Sinks.Trace", "Sprache",
+                    "System.Reactive", "System.ComponentModel.Annotations")
                 .ToArray(),
                 Files = coreLibrariesNuSpecContent
-                    .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
+                    .Concat(netFrameworkCoreLibrariesNuSpecContent).Concat(netFrameworkRuntimePlatform)
                     .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
                     .Concat(toolsContent)
                     .ToList(),
@@ -462,7 +451,7 @@ public class Packages
                 },
                 Files = new []
                 {
-                    new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net45" }
+                    new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net461" }
                 },
                 BasePath = context.Directory("./src/Windows"),
                 OutputDirectory = parameters.NugetRoot
