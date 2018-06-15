@@ -416,6 +416,8 @@ namespace Avalonia.Gtk3
 
         public void Hide() => Native.GtkWidgetHide(GtkWidget);
 
+        public void SetTopmost(bool value) => Native.GtkWindowSetKeepAbove(GtkWidget, value);
+
         void GetGlobalPointer(out int x, out int y)
         {
             int mask;

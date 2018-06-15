@@ -26,7 +26,11 @@ namespace Avalonia.Markup.Xaml.Styling
         }
 
         /// <inheritdoc/>
-        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged
+        {
+            add {}
+            remove {}
+        }
 
         /// <summary>
         /// Gets or sets the source URL.

@@ -19,6 +19,12 @@ namespace Avalonia.DesignerSupport.Tests
     public class DesignerSupportTests
     {
         private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/netcoreapp2.0/Avalonia.Designer.HostApp.dll";
+        private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
+
+        public DesignerSupportTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
+        {
+            this.outputHelper = outputHelper;
+        }
 
         [SkippableTheory,
          InlineData(
@@ -73,6 +79,8 @@ namespace Avalonia.DesignerSupport.Tests
                     }
                     else if (msg is UpdateXamlResultMessage result)
                     {
+                        if (result.Error != null)
+                            outputHelper.WriteLine(result.Error);
                         handle = result.Handle != null ? long.Parse(result.Handle) : 0;
                         resultMessageReceivedToken.Cancel();
                         conn.Dispose();
