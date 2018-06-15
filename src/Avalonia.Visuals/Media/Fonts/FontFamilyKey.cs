@@ -7,7 +7,7 @@ using System.Linq;
 namespace Avalonia.Media.Fonts
 {
     /// <summary>
-    /// Represents an identifier for a <see cref="IFontFamily"/>
+    /// Represents an identifier for a <see cref="FontFamily"/>
     /// </summary>
     public class FontFamilyKey
     {
@@ -33,12 +33,12 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Location of stored font asset that belongs to a <see cref="IFontFamily"/>
+        /// Location of stored font asset that belongs to a <see cref="FontFamily"/>
         /// </summary>
         public Uri Location { get; }
 
         /// <summary>
-        /// Optional filename for a font asset that belongs to a <see cref="IFontFamily"/>
+        /// Optional filename for a font asset that belongs to a <see cref="FontFamily"/>
         /// </summary>
         public string FileName { get; }
 

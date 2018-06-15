@@ -14,6 +14,8 @@ using Avalonia.Themes.Default;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using System.Collections.Generic;
+using Avalonia.Controls;
+using System.Reflection;
 
 namespace Avalonia.UnitTests
 {
@@ -177,5 +179,17 @@ namespace Avalonia.UnitTests
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
+    }
+
+    public class AppBuilder : AppBuilderBase<AppBuilder>
+    {
+        public AppBuilder()
+            : base(new StandardRuntimePlatform(),
+                  builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()
+                      ?.GetTypeInfo().Assembly))
+        {
+        }
+
+        protected override bool CheckSetup => false;
     }
 }

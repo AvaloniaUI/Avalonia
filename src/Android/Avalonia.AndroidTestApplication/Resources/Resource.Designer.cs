@@ -28,8 +28,6 @@ namespace Avalonia.AndroidTestApplication
 		{
 			global::Avalonia.Android.Resource.String.ApplicationName = global::Avalonia.AndroidTestApplication.Resource.String.ApplicationName;
 			global::Avalonia.Android.Resource.String.Hello = global::Avalonia.AndroidTestApplication.Resource.String.Hello;
-			global::Avalonia.Android.Resource.String.library_name = global::Avalonia.AndroidTestApplication.Resource.String.library_name;
-			global::Splat.Resource.String.library_name = global::Avalonia.AndroidTestApplication.Resource.String.library_name;
 		}
 		
 		public partial class Attribute
@@ -64,14 +62,11 @@ namespace Avalonia.AndroidTestApplication
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7f030002
-			public const int ApplicationName = 2130903042;
-			
 			// aapt resource value: 0x7f030001
-			public const int Hello = 2130903041;
+			public const int ApplicationName = 2130903041;
 			
 			// aapt resource value: 0x7f030000
-			public const int library_name = 2130903040;
+			public const int Hello = 2130903040;
 			
 			static String()
 			{

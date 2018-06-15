@@ -15,7 +15,7 @@ using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {
-    internal class IndexerNode : ExpressionNode, ISettableNode
+    internal class IndexerNode :  SettableNode
     {
         public IndexerNode(IList<string> arguments)
         {
@@ -52,7 +52,7 @@ namespace Avalonia.Data.Core
             return Observable.Merge(inputs).StartWith(GetValue(target));
         }
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             var typeInfo = Target.Target.GetType().GetTypeInfo();
             var list = Target.Target as IList;
@@ -154,7 +154,7 @@ namespace Avalonia.Data.Core
 
         public IList<string> Arguments { get; }
 
-        public Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
+        public override Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
 
         private object GetValue(object target)
         {
