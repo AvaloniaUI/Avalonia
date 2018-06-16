@@ -6,7 +6,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Styling;
 using Xunit;
 

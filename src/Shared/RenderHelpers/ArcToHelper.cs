@@ -982,7 +982,7 @@ namespace Avalonia.RenderHelpers
             /// At some point I did not trust the WPF Matrix struct, and wrote my own simple one -_-
             /// This is supposed to be replaced with proper WPF Matrices everywhere
             /// </summary>
-            private struct SimpleMatrix
+            private readonly struct SimpleMatrix
             {
                 private readonly double _a, _b, _c, _d;
 

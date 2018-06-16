@@ -1,6 +1,5 @@
 public class Parameters
 {
-    public string Target { get; private set; }
     public string Platform { get; private set; }
     public string Configuration { get; private set; }
     public bool SkipTests { get; private set; }
@@ -30,7 +29,6 @@ public class Parameters
     public DirectoryPath NugetRoot { get; private set; }
     public DirectoryPath ZipRoot { get; private set; }
     public DirectoryPath BinRoot { get; private set; }
-    public DirectoryPath DesignerTestsRoot { get; private set; }
     public string DirSuffix { get; private set; }
     public string DirSuffixIOS { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
@@ -44,7 +42,6 @@ public class Parameters
         var buildSystem = context.BuildSystem();
 
         // ARGUMENTS
-        Target = context.Argument("target", "Default");
         Platform = context.Argument("platform", "Any CPU");
         Configuration = context.Argument("configuration", "Release");
         SkipTests = context.HasArgument("skip-tests");
@@ -106,7 +103,6 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
-        DesignerTestsRoot = ArtifactsDir.Combine("designer-tests");
 
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 
@@ -115,7 +111,7 @@ public class Parameters
 
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
-        ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix);
+        ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
         ZipTargetControlCatalogDesktopDirs = ZipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + FileZipSuffix);
     }
 }

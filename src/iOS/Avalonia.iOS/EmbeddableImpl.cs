@@ -27,6 +27,10 @@ namespace Avalonia.iOS
         {
         }
 
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add {}
+            remove {}
+        }
     }
 }

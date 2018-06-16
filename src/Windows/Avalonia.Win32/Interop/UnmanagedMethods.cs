@@ -78,6 +78,14 @@ namespace Avalonia.Win32.Interop
             SWP_RESIZE = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER
         }
 
+        public static class WindowPosZOrder
+        {
+            public static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+            public static readonly IntPtr HWND_TOP = new IntPtr(0);
+            public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+            public static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        }
+
         public enum SizeCommand
         {
             Restored,
@@ -998,7 +1006,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        public static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
 
 
 
@@ -1187,27 +1195,21 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum OpenFileNameFlags
         {
-
             OFN_ALLOWMULTISELECT = 0x00000200,
-
             OFN_EXPLORER = 0x00080000,
-
             OFN_HIDEREADONLY = 0x00000004,
-
             OFN_NOREADONLYRETURN = 0x00008000,
-
             OFN_OVERWRITEPROMPT = 0x00000002
-
         }
 
-        public enum HRESULT : long
+        public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
             S_OK = 0x0000,
             E_INVALIDARG = 0x80070057,
             E_OUTOFMEMORY = 0x8007000E,
             E_NOTIMPL = 0x80004001,
-            E_UNEXPECTED = 0x8000FFFF,
+            E_UNEXPECTED = 0x8000FFFF
         }
 
         public enum Icons
@@ -1414,7 +1416,7 @@ namespace Avalonia.Win32.Interop
     [ComImport]
     [Guid("0000010E-0000-0000-C000-000000000046")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IOleDataObject
+    internal interface IOleDataObject
     {
         void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
         void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);

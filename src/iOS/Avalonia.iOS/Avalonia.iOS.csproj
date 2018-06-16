@@ -35,6 +35,9 @@
     <CodesignKey>iPhone Developer</CodesignKey>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <DisableSourceLink>true</DisableSourceLink>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="AppBuilder.cs" />
     <Compile Include="AvaloniaRootViewController.cs" />

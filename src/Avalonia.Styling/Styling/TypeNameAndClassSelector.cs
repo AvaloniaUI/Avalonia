@@ -128,7 +128,8 @@ namespace Avalonia.Styling
                         x => control.Classes.CollectionChanged += x,
                         x => control.Classes.CollectionChanged -= x)
                         .StartWith((EventPattern<NotifyCollectionChangedEventArgs>)null)
-                        .Select(_ => Matches(control.Classes));
+                        .Select(_ => Matches(control.Classes))
+                        .DistinctUntilChanged();
                     return new SelectorMatch(observable);
                 }
                 else

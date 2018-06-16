@@ -19,6 +19,11 @@ namespace Avalonia.Logging
         public const string Binding = "Binding";
 
         /// <summary>
+        /// The log event comes from the animations system.
+        /// </summary>
+        public const string Animations = "Animations";
+
+        /// <summary>
         /// The log event comes from the visual system.
         /// </summary>
         public const string Visual = "Visual";

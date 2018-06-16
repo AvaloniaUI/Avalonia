@@ -5,6 +5,7 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using System.Reflection;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -19,7 +20,7 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter
+    public class Setter : ISetter, IAnimationSetter
     {
         private object _value;
 
@@ -65,10 +66,10 @@ namespace Avalonia.Styling
 
             set
             {
-                if (value is IStyleable)
+                if (value is IRequiresTemplateInSetter)
                 {
                     throw new ArgumentException(
-                        "Cannot assign a control to Style.Value. Wrap the control in a <Template>.",
+                        "Cannot assign a control to Setter.Value. Wrap the control in a <Template>.",
                         "value");
                 }
 
@@ -105,7 +106,7 @@ namespace Avalonia.Styling
                 if (template != null && !isPropertyOfTypeITemplate)
                 {
                     var materialized = template.Build();
-                    NameScope.SetNameScope((Visual)materialized, new NameScope());
+                    NameScope.SetNameScope((StyledElement)materialized, new NameScope());
                     value = materialized;
                 }
 

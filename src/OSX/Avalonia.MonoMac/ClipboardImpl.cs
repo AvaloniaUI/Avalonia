@@ -22,9 +22,10 @@ namespace Avalonia.MonoMac
             return Task.CompletedTask;
         }
 
-        public async Task ClearAsync()
+        public Task ClearAsync()
         {
             NSPasteboard.GeneralPasteboard.ClearContents();
+            return Task.CompletedTask;
         }
     }
 }
