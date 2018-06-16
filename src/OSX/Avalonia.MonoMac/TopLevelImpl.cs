@@ -166,8 +166,7 @@ namespace Avalonia.MonoMac
                 DraggingInfo info = new DraggingInfo(sender);
                 
                 var pt = TranslateLocalPoint(info.Location);
-                // TODO: Find a way to obtain the InputModifiers...
-                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp, InputModifiers.None);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp, GetModifiers(NSEvent.CurrentModifierFlags));
                 input(args);
                 return DraggingInfo.ConvertDragOperation(args.Effects);
             }
