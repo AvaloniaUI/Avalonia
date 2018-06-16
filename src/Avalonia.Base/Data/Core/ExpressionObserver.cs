@@ -154,7 +154,7 @@ namespace Avalonia.Data.Core
         /// </returns>
         public bool SetValue(object value, BindingPriority priority = BindingPriority.LocalValue)
         {
-            if (Leaf is ISettableNode settable)
+            if (Leaf is SettableNode settable)
             {
                 var node = _node;
                 while (node != null)
@@ -188,7 +188,7 @@ namespace Avalonia.Data.Core
         /// Gets the type of the expression result or null if the expression could not be 
         /// evaluated.
         /// </summary>
-        public Type ResultType => (Leaf as ISettableNode)?.PropertyType;
+        public Type ResultType => (Leaf as SettableNode)?.PropertyType;
 
         /// <summary>
         /// Gets the leaf node.

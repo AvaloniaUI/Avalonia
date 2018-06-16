@@ -21,6 +21,7 @@ using Xunit;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using Avalonia.UnitTests;
 
 namespace Avalonia.Layout.UnitTests
 {
