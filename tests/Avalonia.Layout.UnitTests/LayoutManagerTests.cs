@@ -224,13 +224,13 @@ namespace Avalonia.Layout.UnitTests
             {
                 Child = panel = new StackPanel
                 {
-                    Children = new Controls.Controls
-                {
-                    (border = new Border())
-                }
+                    Children =
+                    {
+                        (border = new Border())
+                    }
                 }
             };
-                
+
             root.LayoutManager.ExecuteInitialLayoutPass(root);
             Assert.Equal(new Size(0, 0), root.DesiredSize);
 
@@ -238,7 +238,7 @@ namespace Avalonia.Layout.UnitTests
             border.Height = 100;
 
             root.LayoutManager.ExecuteLayoutPass();
-            Assert.Equal(new Size(100, 100), panel.DesiredSize);
+            Assert.Equal(new Size(100, 100), panel.DesiredSize);             
         }
     }
 }

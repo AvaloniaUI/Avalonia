@@ -6,26 +6,29 @@ using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Utilities;
 
 namespace Avalonia.Skia
 {
     internal class DrawingContextImpl : IDrawingContextImpl
     {
+        private readonly Vector _dpi;
         private readonly Matrix? _postTransform;
         private readonly IDisposable[] _disposables;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private Stack<PaintWrapper> maskStack = new Stack<PaintWrapper>();
-        
+        protected bool CanUseLcdRendering = true;
         public SKCanvas Canvas { get; private set; }
 
         public DrawingContextImpl(
             SKCanvas canvas,
+            Vector dpi,
             IVisualBrushRenderer visualBrushRenderer,
-            Matrix? postTransform = null,
             params IDisposable[] disposables)
         {
-            if (postTransform.HasValue && !postTransform.Value.IsIdentity)
-                _postTransform = postTransform;
+            _dpi = dpi;
+            if (dpi.X != 96 || dpi.Y != 96)
+                _postTransform = Matrix.CreateScale(dpi.X / 96, dpi.Y / 96);
             _visualBrushRenderer = visualBrushRenderer;
             _disposables = disposables;
             Canvas = canvas;
@@ -37,16 +40,23 @@ namespace Avalonia.Skia
             Canvas.Clear(color.ToSKColor());
         }
 
-        public void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
         {
-            var impl = (BitmapImpl)source;
+            var impl = (BitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
             using (var paint = new SKPaint()
-                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity)) })
+                    { Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity)) })
             {
                 Canvas.DrawBitmap(impl.Bitmap, s, d, paint);
             }
+        }
+
+        public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
+        {
+            PushOpacityMask(opacityMask, opacityMaskRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
+            PopOpacityMask();
         }
 
         public void DrawLine(Pen pen, Point p1, Point p2)
@@ -59,7 +69,7 @@ namespace Avalonia.Skia
 
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (StreamGeometryImpl)geometry;
+            var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -103,6 +113,7 @@ namespace Avalonia.Skia
             public readonly SKPaint Paint;
 
             private IDisposable _disposable1;
+            private IDisposable _disposable2;
 
             public IDisposable ApplyTo(SKPaint paint)
             {
@@ -118,6 +129,8 @@ namespace Avalonia.Skia
             {
                 if (_disposable1 == null)
                     _disposable1 = disposable;
+                else if (_disposable2 == null)
+                    _disposable2 = disposable;
                 else
                     throw new InvalidOperationException();
             }
@@ -126,12 +139,14 @@ namespace Avalonia.Skia
             {
                 Paint = paint;
                 _disposable1 = null;
+                _disposable2 = null;
             }
 
             public void Dispose()
             {
                 Paint?.Dispose();
                 _disposable1?.Dispose();
+                _disposable2?.Dispose();
             }
         }
 
@@ -141,23 +156,17 @@ namespace Avalonia.Skia
             var rv = new PaintWrapper(paint);
             paint.IsStroke = false;
 
-            // TODO: SkiaSharp does not contain alpha yet!
+            
             double opacity = brush.Opacity * _currentOpacity;
-            //paint.SetAlpha(paint.GetAlpha() * opacity);
             paint.IsAntialias = true;
-
-            SKColor color = new SKColor(255, 255, 255, 255);
 
             var solid = brush as ISolidColorBrush;
             if (solid != null)
-                color = solid.Color.ToSKColor();
-
-            paint.Color = (new SKColor(color.Red, color.Green, color.Blue, (byte)(color.Alpha * opacity)));
-
-            if (solid != null)
             {
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
                 return rv;
             }
+            paint.Color = (new SKColor(255, 255, 255, (byte)(255 * opacity)));
 
             var gradient = brush as IGradientBrush;
             if (gradient != null)
@@ -210,7 +219,7 @@ namespace Avalonia.Skia
 
                     if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
-                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height);
+                        var intermediate = new BitmapImpl((int)intermediateSize.Width, (int)intermediateSize.Height, _dpi);
 
                         using (var ctx = intermediate.CreateDrawingContext(_visualBrushRenderer))
                         {
@@ -218,8 +227,8 @@ namespace Avalonia.Skia
                             _visualBrushRenderer.RenderVisualBrush(ctx, visualBrush);
                         }
 
-                        rv.AddDisposable(tileBrushImage);
                         tileBrushImage = intermediate;
+                        rv.AddDisposable(tileBrushImage);
                     }
                 }
                 else
@@ -229,13 +238,13 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl);
+                tileBrushImage = (BitmapImpl)((tileBrush as IImageBrush)?.Source?.PlatformImpl.Item);
             }
 
             if (tileBrush != null && tileBrushImage != null)
             {
                 var calc = new TileBrushCalculator(tileBrush, new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
-                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height);
+                var bitmap = new BitmapImpl((int)calc.IntermediateSize.Width, (int)calc.IntermediateSize.Height, _dpi);
                 rv.AddDisposable(bitmap);
                 using (var context = bitmap.CreateDrawingContext(null))
                 {
@@ -244,7 +253,7 @@ namespace Avalonia.Skia
                     context.Clear(Colors.Transparent);
                     context.PushClip(calc.IntermediateClip);
                     context.Transform = calc.IntermediateTransform;
-                    context.DrawImage(tileBrushImage, 1, rect, rect);
+                    context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect);
                     context.PopClip();
                 }
 
@@ -342,8 +351,14 @@ namespace Avalonia.Skia
             using (var paint = CreatePaint(foreground, text.Size))
             {
                 var textImpl = (FormattedTextImpl)text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint);
+                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, CanUseLcdRendering);
             }
+        }
+
+        public IRenderTargetBitmapImpl CreateLayer(Size size)
+        {
+            var pixelSize = size * (_dpi / 96);
+            return new BitmapImpl((int)pixelSize.Width, (int)pixelSize.Height, _dpi);
         }
 
         public void PushClip(Rect clip)

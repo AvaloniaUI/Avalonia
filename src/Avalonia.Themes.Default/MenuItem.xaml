@@ -2,6 +2,7 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib">
   
   <Style Selector="MenuItem">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Padding" Value="6,0"/>
     <Setter Property="Template">
@@ -37,16 +38,17 @@
             </ContentPresenter>
             <Path Name="rightArrow"
                   Data="M0,0L4,3.5 0,7z"
-                  Fill="{StyleResource ThemeForegroundBrush}"
+                  Fill="{DynamicResource ThemeForegroundBrush}"
                   Margin="10,0,0,0"
                   VerticalAlignment="Center"
                   Grid.Column="3"/>
             <Popup Name="PART_Popup"
                    PlacementMode="Right"
                    StaysOpen="True"
-                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}">
+                   IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
+                   ObeyScreenEdges="True">
               <Border Background="{TemplateBinding Background}"
-                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
                 <ScrollViewer>
                   <Panel>
@@ -57,7 +59,7 @@
                                     Margin="2"
                                     MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
-                               Fill="{StyleResource ThemeControlMidBrush}"
+                               Fill="{DynamicResource ThemeControlMidBrush}"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
@@ -91,9 +93,10 @@
             </ContentPresenter>
             <Popup Name="PART_Popup"
                    IsOpen="{TemplateBinding Path=IsSubMenuOpen, Mode=TwoWay}"
-                   StaysOpen="True">
+                   StaysOpen="True" 
+                   ObeyScreenEdges="True">
               <Border Background="{TemplateBinding Background}"
-                      BorderBrush="{StyleResource ThemeBorderMidBrush}"
+                      BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
                 <ScrollViewer>
                   <Panel>
@@ -104,7 +107,7 @@
                                     Margin="2"
                                     MemberSelector="{TemplateBinding MemberSelector}"/>
                     <Rectangle Name="iconSeparator"
-                               Fill="{StyleResource ThemeControlMidBrush}"
+                               Fill="{DynamicResource ThemeControlMidBrush}"
                                HorizontalAlignment="Left"
                                IsHitTestVisible="False"
                                Margin="29,2,0,2"
@@ -120,16 +123,20 @@
   </Style>
 
   <Style Selector="MenuItem:selected /template/ Border#root">
-    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
   </Style>
 
   <Style Selector="MenuItem:pointerover /template/ Border#root">
-    <Setter Property="Background" Value="{StyleResource ThemeAccentBrush4}"/>
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeAccentBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
   </Style>
 
   <Style Selector="MenuItem:empty /template/ Path#rightArrow">
     <Setter Property="IsVisible" Value="False"/>
+  </Style>
+
+  <Style Selector="MenuItem:disabled">
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

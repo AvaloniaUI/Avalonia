@@ -10,7 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.SelectedItems = new AvaloniaList<object>();
 
             Assert.Equal(-1, target.SelectedIndex);
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
         }
 
         [Fact]

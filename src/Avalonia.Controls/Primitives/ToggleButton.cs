@@ -9,35 +9,56 @@ namespace Avalonia.Controls.Primitives
 {
     public class ToggleButton : Button
     {
-        public static readonly DirectProperty<ToggleButton, bool> IsCheckedProperty =
-            AvaloniaProperty.RegisterDirect<ToggleButton, bool>(
-                "IsChecked",
+        public static readonly DirectProperty<ToggleButton, bool?> IsCheckedProperty =
+            AvaloniaProperty.RegisterDirect<ToggleButton, bool?>(
+                nameof(IsChecked),
                 o => o.IsChecked,
-                (o,v) => o.IsChecked = v,
+                (o, v) => o.IsChecked = v,
+                unsetValue: false,
                 defaultBindingMode: BindingMode.TwoWay);
 
-        private bool _isChecked;
+        public static readonly StyledProperty<bool> IsThreeStateProperty =
+            AvaloniaProperty.Register<ToggleButton, bool>(nameof(IsThreeState));
+
+        private bool? _isChecked = false;
 
         static ToggleButton()
         {
-            PseudoClass(IsCheckedProperty, ":checked");
+            PseudoClass(IsCheckedProperty, c => c == true, ":checked");
+            PseudoClass(IsCheckedProperty, c => c == false, ":unchecked");
+            PseudoClass(IsCheckedProperty, c => c == null, ":indeterminate");
         }
 
-        public bool IsChecked
+        public bool? IsChecked
         {
             get { return _isChecked; }
             set { SetAndRaise(IsCheckedProperty, ref _isChecked, value); }
         }
 
-        protected override void OnClick(RoutedEventArgs e)
+        public bool IsThreeState
+        {
+            get => GetValue(IsThreeStateProperty);
+            set => SetValue(IsThreeStateProperty, value);
+        }
+
+        protected override void OnClick()
         {
             Toggle();
-            base.OnClick(e);
+            base.OnClick();
         }
 
         protected virtual void Toggle()
         {
-            IsChecked = !IsChecked;
+            if (IsChecked.HasValue)
+                if (IsChecked.Value)
+                    if (IsThreeState)
+                        IsChecked = null;
+                    else
+                        IsChecked = false;
+                else
+                    IsChecked = true;
+            else
+                IsChecked = false;
         }
     }
 }

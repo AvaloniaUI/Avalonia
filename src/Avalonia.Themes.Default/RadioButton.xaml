@@ -1,18 +1,27 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="RadioButton">
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*">
+        <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
           <Ellipse Name="border"
                    Stroke="{TemplateBinding BorderBrush}"
-                   StrokeThickness="{TemplateBinding BorderThickness}"
+                   StrokeThickness="1"
                    Width="18"
                    Height="18"
                    VerticalAlignment="Center"/>
           <Ellipse Name="checkMark"
-                   Fill="{StyleResource HighlightBrush}"
+                   Fill="{DynamicResource HighlightBrush}"
+                   Width="10"
+                   Height="10"
+                   Stretch="Uniform"
+                   UseLayoutRounding="False"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+          <Ellipse Name="indeterminateMark"
+                   Fill="{DynamicResource ThemeAccentBrush}"
                    Width="10"
                    Height="10"
                    Stretch="Uniform"
@@ -20,8 +29,8 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"/>
           <ContentPresenter Name="PART_ContentPresenter"
-                            Content="{TemplateBinding Content}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
                             Grid.Column="1"/>
@@ -30,15 +39,21 @@
     </Setter>
   </Style>
   <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
-    <Setter Property="Stroke" Value="{StyleResource ThemeBorderDarkBrush}"/>
+    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
+  <Style Selector="RadioButton /template/ Ellipse#indeterminateMark">
     <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="RadioButton:checked /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="True"/>
   </Style>
+  <Style Selector="RadioButton:indeterminate /template/ Ellipse#indeterminateMark">
+    <Setter Property="IsVisible" Value="True"/>
+  </Style>
   <Style Selector="RadioButton:disabled /template/ Ellipse#border">
-    <Setter Property="Opacity" Value="{StyleResource ThemeDisabledOpacity}"/>
+    <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
   </Style>
 </Styles>

@@ -12,16 +12,56 @@ namespace Avalonia.Media
     public class EllipseGeometry : Geometry
     {
         /// <summary>
+        /// Defines the <see cref="Rect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect> RectProperty =
+            AvaloniaProperty.Register<EllipseGeometry, Rect>(nameof(Rect));
+
+        static EllipseGeometry()
+        {
+            AffectsGeometry(RectProperty);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EllipseGeometry"/> class.
+        /// </summary>
+        public EllipseGeometry()
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EllipseGeometry"/> class.
         /// </summary>
         /// <param name="rect">The rectangle that the ellipse should fill.</param>
-        public EllipseGeometry(Rect rect)
+        public EllipseGeometry(Rect rect) : this()
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            IStreamGeometryImpl impl = factory.CreateStreamGeometry();
+            Rect = rect;
+        }
 
-            using (IStreamGeometryContextImpl ctx = impl.Open())
+        /// <summary>
+        /// Gets or sets a rect that defines the bounds of the ellipse.
+        /// </summary>
+        public Rect Rect
+        {
+            get => GetValue(RectProperty);
+            set => SetValue(RectProperty, value);
+        }
+
+        /// <inheritdoc/>
+        public override Geometry Clone()
+        {
+            return new EllipseGeometry(Rect);
+        }
+
+        /// <inheritdoc/>
+        protected override IGeometryImpl CreateDefiningGeometry()
+        {
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
+
+            using (var ctx = geometry.Open())
             {
+                var rect = Rect;
                 double controlPointRatio = (Math.Sqrt(2) - 1) * 4 / 3;
                 var center = rect.Center;
                 var radius = new Vector(rect.Width / 2, rect.Height / 2);
@@ -46,13 +86,7 @@ namespace Avalonia.Media
                 ctx.EndFigure(true);
             }
 
-            PlatformImpl = impl;
-        }
-
-        /// <inheritdoc/>
-        public override Geometry Clone()
-        {
-            return new EllipseGeometry(Bounds);
+            return geometry;
         }
     }
 }

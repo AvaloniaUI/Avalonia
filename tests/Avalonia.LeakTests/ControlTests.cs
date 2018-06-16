@@ -155,7 +155,7 @@ namespace Avalonia.LeakTests
                     // template applied.
                     window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
-                    Assert.NotEqual(0, window.Presenter.Child.GetVisualChildren().Count());
+                    Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
                     // Clear the content and ensure the TextBox is removed.
                     window.Content = null;
@@ -185,7 +185,7 @@ namespace Avalonia.LeakTests
                         Content = new TextBox()
                     };
 
-                    var binding = new Avalonia.Markup.Xaml.Data.Binding
+                    var binding = new Avalonia.Data.Binding
                     {
                         Path = "Name"
                     };
@@ -276,7 +276,7 @@ namespace Avalonia.LeakTests
                     {
                         Content = target = new TreeView
                         {
-                            DataTemplates = new DataTemplates
+                            DataTemplates =
                             {
                                 new FuncTreeDataTemplate<Node>(
                                     x => new TextBlock { Text = x.Name },
@@ -290,7 +290,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     window.LayoutManager.ExecuteInitialLayoutPass(window);
-                    Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+                    Assert.Single(target.ItemContainerGenerator.Containers);
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
@@ -318,12 +318,11 @@ namespace Avalonia.LeakTests
                 var impl = new Mock<IWindowImpl>();
                 impl.SetupGet(x => x.Scaling).Returns(1);
                 impl.SetupProperty(x => x.Closed);
+                impl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
                 impl.Setup(x => x.Dispose()).Callback(() => impl.Object.Closed());
 
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>()
                     .ToConstant(new MockWindowingPlatform(() => impl.Object));
-                AvaloniaLocator.CurrentMutable.Bind<IRendererFactory>()
-                    .ToConstant(new MockRendererFactory(renderer.Object));
                 var window = new Window()
                 {
                     Content = new Button()
@@ -336,8 +335,7 @@ namespace Avalonia.LeakTests
 
         private IDisposable Start()
         {
-            var services = TestServices.StyledWindow.With(renderer: (root, loop) => new NullRenderer());
-            return UnitTestApplication.Start(services);
+            return UnitTestApplication.Start(TestServices.StyledWindow);
         }
 
         private class Node
@@ -359,13 +357,21 @@ namespace Avalonia.LeakTests
             {
             }
 
-            public IEnumerable<IVisual> HitTest(Point p, Func<IVisual, bool> filter) => null;
+            public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
 
             public void Paint(Rect rect)
             {
             }
 
             public void Resized(Size size)
+            {
+            }
+
+            public void Start()
+            {
+            }
+
+            public void Stop()
             {
             }
         }

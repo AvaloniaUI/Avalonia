@@ -165,6 +165,11 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
+            public bool IsAnimating(AvaloniaProperty property)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool IsSet(AvaloniaProperty property)
             {
                 throw new NotImplementedException();
@@ -175,7 +180,17 @@ namespace Avalonia.Styling.UnitTests
                 throw new NotImplementedException();
             }
 
+            public void NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
             public void NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void NotifyResourcesChanged(ResourcesChangedEventArgs e)
             {
                 throw new NotImplementedException();
             }

@@ -69,7 +69,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(25, 0, 50, 12), thumb.Bounds);
+            Assert.Equal(new Rect(33, 0, 34, 12), thumb.Bounds);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Thumb = thumb,
                 Orientation = Orientation.Vertical,
                 Minimum = 100,
-                Maximum = 300,
+                Maximum = 200,
                 Value = 150,
                 ViewportSize = 50,
                 Width = 12,
@@ -94,11 +94,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 18, 12, 25), thumb.Bounds);
+            Assert.Equal(new Rect(0, 33, 12, 34), thumb.Bounds);
         }
 
         [Fact]
-        public void Thumb_Should_Fill_Track_When_Minimum_Equals_Maximum()
+        public void Thumb_Should_Have_Zero_Width_When_Minimum_Equals_Maximum()
         {
             var thumb = new Thumb
             {
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            Assert.Equal(new Rect(0, 0, 100, 12), thumb.Bounds);
+            Assert.Equal(new Rect(0, 0, 0, 12), thumb.Bounds);
         }
 
         [Fact]
@@ -139,6 +139,32 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Same(thumb.Parent, target);
             Assert.Equal(new[] { thumb }, ((ILogical)target).LogicalChildren);
+        }
+
+        [Fact]
+        public void Should_Not_Pass_Invalid_Arrange_Rect()
+        {
+            var thumb = new Thumb { Width = 100.873106060606 };
+            var increaseButton = new Button { Width = 10 };
+            var decreaseButton = new Button { Width = 10 };
+
+            var target = new Track
+            {
+                Height = 12,
+                Thumb = thumb,
+                IncreaseButton = increaseButton,
+                DecreaseButton = decreaseButton,
+                Orientation = Orientation.Horizontal,
+                Minimum = 0,
+                Maximum = 287,
+                Value = 287,
+                ViewportSize = 241,
+            };
+
+            target.Measure(Size.Infinity);
+
+            // #1297 was occuring here.
+            target.Arrange(new Rect(0, 0, 221, 12));
         }
     }
 }

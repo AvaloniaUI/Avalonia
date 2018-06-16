@@ -14,6 +14,10 @@ namespace Avalonia.iOS
             
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IDisposable ShowDialog()
         {
             return Disposable.Empty;
@@ -23,6 +27,10 @@ namespace Avalonia.iOS
         {
         }
 
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add {}
+            remove {}
+        }
     }
 }

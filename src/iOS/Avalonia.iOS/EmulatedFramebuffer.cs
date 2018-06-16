@@ -16,11 +16,15 @@ namespace Avalonia.iOS
     /// </summary>
     class EmulatedFramebuffer : ILockedFramebuffer
     {
+        private nfloat _viewWidth;
+        private nfloat _viewHeight;
 
         public EmulatedFramebuffer(UIView view)
         {
             var factor = (int) UIScreen.MainScreen.Scale;
             var frame = view.Frame;
+            _viewWidth = frame.Width;
+            _viewHeight = frame.Height;
             Width = (int) frame.Width * factor;
             Height = (int) frame.Height * factor;
             RowBytes = Width * 4;
@@ -41,9 +45,9 @@ namespace Avalonia.iOS
             using (var context = UIGraphics.GetCurrentContext())
             {
                 // flip the image for CGContext.DrawImage
-                context.TranslateCTM(0, Height);
+                context.TranslateCTM(0, _viewHeight);
                 context.ScaleCTM(1, -1);
-                context.DrawImage(new CGRect(0, 0, Width, Height), image);
+                context.DrawImage(new CGRect(0, 0, _viewWidth, _viewHeight), image);
             }
             Marshal.FreeHGlobal(Address);
             Address = IntPtr.Zero;
@@ -57,3 +61,4 @@ namespace Avalonia.iOS
         public PixelFormat Format { get; }
     }
 }
+

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Linq;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -97,6 +98,7 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override Size MeasureOverride(Size availableSize)
         {
+            var scrollable = (ILogicalScrollable)Owner;
             var visualRoot = Owner.GetVisualRoot();
             var maxAvailableSize = (visualRoot as WindowBase)?.PlatformImpl?.MaxClientSize
                  ?? (visualRoot as TopLevel)?.ClientSize;
@@ -115,7 +117,10 @@ namespace Avalonia.Controls.Presenters
                     }
                 }
 
-                availableSize = availableSize.WithWidth(double.PositiveInfinity);
+                if (scrollable.CanHorizontallyScroll)
+                {
+                    availableSize = availableSize.WithWidth(double.PositiveInfinity);
+                }
             }
             else
             {
@@ -127,7 +132,10 @@ namespace Avalonia.Controls.Presenters
                     }
                 }
 
-                availableSize = availableSize.WithHeight(double.PositiveInfinity);
+                if (scrollable.CanVerticallyScroll)
+                {
+                    availableSize = availableSize.WithHeight(double.PositiveInfinity);
+                }
             }
 
             Owner.Panel.Measure(availableSize);

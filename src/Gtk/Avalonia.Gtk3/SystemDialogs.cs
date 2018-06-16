@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,8 @@ namespace Avalonia.Gtk3
             bool multiselect, string initialFileName)
         {
             GtkFileChooser dlg;
-            using (var name = title != null ? new Utf8Buffer(title) : null)
+            parent = parent ?? GtkWindow.Null;
+            using (var name = new Utf8Buffer(title))
                 dlg = Native.GtkFileChooserDialogNew(name, parent, action, IntPtr.Zero);
             if (multiselect)
                 Native.GtkFileChooserSetSelectMultiple(dlg, true);
@@ -78,9 +80,11 @@ namespace Avalonia.Gtk3
 
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
-            return ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
+            return ShowDialog(dialog.Title, ((WindowBaseImpl)parent)?.GtkWidget,
                 dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
-                (dialog as OpenFileDialog)?.AllowMultiple ?? false, dialog.InitialFileName);
+                (dialog as OpenFileDialog)?.AllowMultiple ?? false,
+                Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
+                string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName));
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)

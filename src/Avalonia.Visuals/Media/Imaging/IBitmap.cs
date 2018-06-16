@@ -1,15 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.IO;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
     /// Represents a bitmap image.
     /// </summary>
-    public interface IBitmap
+    public interface IBitmap : IDisposable
     {
         /// <summary>
         /// Gets the width of the bitmap, in pixels.
@@ -24,7 +26,7 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Gets the platform-specific bitmap implementation.
         /// </summary>
-        IBitmapImpl PlatformImpl { get; }
+        IRef<IBitmapImpl> PlatformImpl { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.

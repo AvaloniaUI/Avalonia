@@ -54,7 +54,7 @@ namespace Avalonia.Win32
                 var fileBuffer = new char[256];
                 dialog.InitialFileName?.CopyTo(0, fileBuffer, 0, dialog.InitialFileName.Length);
 
-                string userSelectedExt = null;
+                string userSelectedExt = string.Empty;
 
 
                 var title = ToChars(dialog.Title);
@@ -100,17 +100,14 @@ namespace Avalonia.Win32
                     var pofn = &ofn;
 
                     // We should save the current directory to restore it later.
-#if !NETSTANDARD
                     var currentDirectory = Environment.CurrentDirectory;
-#endif
+
                     var res = dialog is OpenFileDialog
                         ? UnmanagedMethods.GetOpenFileName(new IntPtr(pofn))
                         : UnmanagedMethods.GetSaveFileName(new IntPtr(pofn));
 
                     // Restore the old current directory, since GetOpenFileName and GetSaveFileName change it after they're called
-#if !NETSTANDARD
                     Environment.CurrentDirectory = currentDirectory;
-#endif
 
                     if (!res)
                         return null;
@@ -155,15 +152,16 @@ namespace Avalonia.Win32
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-#if NETSTANDARD
-            throw new NotImplementedException();
-#else
             return Task.Factory.StartNew(() =>
             {
                 string result = string.Empty;
 
                 var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
-                var frm = (IFileDialog)(new UnmanagedMethods.FileOpenDialogRCW());
+                var clsid = Guid.Parse("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7");
+                var iid  = Guid.Parse("42F85136-DB7E-439C-85F1-E4075D135FC8");
+
+                UnmanagedMethods.CoCreateInstance(ref clsid, IntPtr.Zero, 1, ref iid, out var unk);
+                var frm = (IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
                 options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
@@ -214,7 +212,6 @@ namespace Avalonia.Win32
 
                 return result;
             });
-#endif
         }
     }
 }

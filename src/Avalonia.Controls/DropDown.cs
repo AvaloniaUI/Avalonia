@@ -6,7 +6,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -38,7 +37,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<DropDown, object>("SelectionBoxItem", o => o.SelectionBoxItem);
+            AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         private bool _isDropDownOpen;
         private Popup _popup;
@@ -51,6 +50,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
             SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
+            KeyDownEvent.AddClassHandler<DropDown>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -101,17 +101,40 @@ namespace Avalonia.Controls
         {
             base.OnKeyDown(e);
 
-            if (!e.Handled)
+            if (e.Handled)
+                return;
+
+            if (e.Key == Key.F4 ||
+                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
             {
-                if (e.Key == Key.F4 ||
-                    (e.Key == Key.Down && ((e.Modifiers & InputModifiers.Alt) != 0)))
+                IsDropDownOpen = !IsDropDownOpen;
+                e.Handled = true;
+            }
+            else if (IsDropDownOpen && e.Key == Key.Escape)
+            {
+                IsDropDownOpen = false;
+                e.Handled = true;
+            }
+            else if (IsDropDownOpen && e.Key == Key.Enter)
+            {
+                SelectFocusedItem();
+                IsDropDownOpen = false;
+                e.Handled = true;
+            }
+            else if (!IsDropDownOpen)
+            {
+                if (e.Key == Key.Down)
                 {
-                    IsDropDownOpen = !IsDropDownOpen;
+                    if (++SelectedIndex >= ItemCount)
+                        SelectedIndex = 0;
+
                     e.Handled = true;
                 }
-                else if (IsDropDownOpen && (e.Key == Key.Escape || e.Key == Key.Enter))
+                else if (e.Key == Key.Up)
                 {
-                    IsDropDownOpen = false;
+                    if (--SelectedIndex < 0)
+                        SelectedIndex = ItemCount - 1;
+
                     e.Handled = true;
                 }
             }
@@ -120,21 +143,22 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (!IsDropDownOpen && ((IVisual)e.Source).GetVisualRoot() != typeof(PopupRoot))
-            {
-                IsDropDownOpen = true;
-                e.Handled = true;
-            }
-
             if (!e.Handled)
             {
-                if (UpdateSelectionFromEventSource(e.Source))
+                if (((IVisual)e.Source).GetVisualRoot() is PopupRoot)
                 {
-                    _popup?.Close();
+                    if (UpdateSelectionFromEventSource(e.Source))
+                    {
+                        _popup?.Close();
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
+                    IsDropDownOpen = !IsDropDownOpen;
                     e.Handled = true;
                 }
             }
-
             base.OnPointerPressed(e);
         }
 
@@ -196,6 +220,18 @@ namespace Avalonia.Controls
             else
             {
                 SelectionBoxItem = item;
+            }
+        }
+
+        private void SelectFocusedItem()
+        {
+            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            {
+                if (dropdownItem.ContainerControl.IsFocused)
+                {
+                    SelectedIndex = dropdownItem.Index;
+                    break;
+                }
             }
         }
     }

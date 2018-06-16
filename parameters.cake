@@ -1,6 +1,5 @@
 public class Parameters
 {
-    public string Target { get; private set; }
     public string Platform { get; private set; }
     public string Configuration { get; private set; }
     public bool SkipTests { get; private set; }
@@ -30,9 +29,7 @@ public class Parameters
     public DirectoryPath NugetRoot { get; private set; }
     public DirectoryPath ZipRoot { get; private set; }
     public DirectoryPath BinRoot { get; private set; }
-    public DirectoryPath TestsRoot { get; private set; }
     public string DirSuffix { get; private set; }
-    public string DirSuffixSkia { get; private set; }
     public string DirSuffixIOS { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
@@ -45,7 +42,6 @@ public class Parameters
         var buildSystem = context.BuildSystem();
 
         // ARGUMENTS
-        Target = context.Argument("target", "Default");
         Platform = context.Argument("platform", "Any CPU");
         Configuration = context.Argument("configuration", "Release");
         SkipTests = context.HasArgument("skip-tests");
@@ -98,7 +94,7 @@ public class Parameters
             else
             {
                 // Use AssemblyVersion with Build as version
-                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-alpha";
+                Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-beta";
             }
         }
 
@@ -107,45 +103,15 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
-        TestsRoot = ArtifactsDir.Combine("tests");
+
+        BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
 
         DirSuffix = Configuration;
-        DirSuffixSkia = (IsPlatformAnyCPU ? "x86" : Platform) + "/" + Configuration;
         DirSuffixIOS = "iPhone" + "/" + Configuration;
-
-        BuildDirs = 
-            context.GetDirectories("./src/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Markup/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Markup/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Android/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Android/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/Gtk/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Gtk/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./src/iOS/**/bin/" + DirSuffixIOS) + 
-            context.GetDirectories("./src/iOS/**/obj/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android.TestApp/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Android.TestApp/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop/bin/" + DirSuffixSkia) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop/obj/" + DirSuffixSkia) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/bin/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.Desktop.NetStandard/obj/" + DirSuffix) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS/bin/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS/obj/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/bin/" + DirSuffixIOS) + 
-            (DirectoryPath)context.Directory("./src/Skia/Avalonia.Skia.iOS.TestApp/obj/" + DirSuffixIOS) + 
-            context.GetDirectories("./src/Windows/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./src/Windows/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./tests/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./tests/**/obj/" + DirSuffix) + 
-            context.GetDirectories("./Samples/**/bin/" + DirSuffix) + 
-            context.GetDirectories("./Samples/**/obj/" + DirSuffix);
 
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
-        ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix);
+        ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
         ZipTargetControlCatalogDesktopDirs = ZipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + FileZipSuffix);
     }
 }

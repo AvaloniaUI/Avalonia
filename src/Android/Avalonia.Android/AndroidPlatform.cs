@@ -52,13 +52,11 @@ namespace Avalonia.Android
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
                 .Bind<IPlatformSettings>().ToConstant(Instance)
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
-
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();

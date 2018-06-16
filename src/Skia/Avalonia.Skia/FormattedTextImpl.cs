@@ -25,10 +25,34 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            var skiaTypeface = TypefaceCache.GetTypeface(
-                typeface?.FontFamilyName ?? "monospace",
-                typeface?.Style ?? FontStyle.Normal,
-                typeface?.Weight ?? FontWeight.Normal);
+            SKTypeface skiaTypeface = TypefaceCache.Default;
+
+            if (typeface.FontFamily.Key != null)
+            {
+                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+                skiaTypeface = typefaces.GetTypeFace(typeface);
+            }
+            else
+            {
+                if (typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    foreach (var familyName in typeface.FontFamily.FamilyNames)
+                    {
+                        skiaTypeface = TypefaceCache.GetTypeface(
+                            familyName,
+                            typeface.Style,
+                            typeface.Weight);
+                        if (skiaTypeface != TypefaceCache.Default) break;
+                    }
+                }
+                else
+                {
+                    skiaTypeface = TypefaceCache.GetTypeface(
+                        typeface.FontFamily.Name,
+                        typeface.Style,
+                        typeface.Weight);
+                }
+            }
 
             _paint = new SKPaint();
 
@@ -36,13 +60,12 @@ namespace Avalonia.Skia
             //Paint.TextEncoding = SKTextEncoding.Utf8;
             _paint.TextEncoding = SKTextEncoding.Utf16;
             _paint.IsStroke = false;
-            _paint.IsAntialias = true;            
-            _paint.LcdRenderText = true;            
+            _paint.IsAntialias = true;
+            _paint.LcdRenderText = true;
             _paint.SubpixelText = true;
             _paint.Typeface = skiaTypeface;
-            _paint.TextSize = (float)(typeface?.FontSize ?? 12);
+            _paint.TextSize = (float)typeface.FontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
-            _paint.BlendMode = SKBlendMode.Src;
 
             _wrapping = wrapping;
             _constraint = constraint;
@@ -172,8 +195,10 @@ namespace Avalonia.Skia
         }
 
         internal void Draw(DrawingContextImpl context,
-                           SKCanvas canvas, SKPoint origin,
-                           DrawingContextImpl.PaintWrapper foreground)
+            SKCanvas canvas,
+            SKPoint origin,
+            DrawingContextImpl.PaintWrapper foreground,
+            bool canUseLcdRendering)
         {
             /* TODO: This originated from Native code, it might be useful for debugging character positions as
              * we improve the FormattedText support. Will need to port this to C# obviously. Rmove when
@@ -200,66 +225,65 @@ namespace Avalonia.Skia
                 }
                 ctx->Canvas->restore();
             */
-            SKPaint paint = _paint;
-            IDisposable currd = null;
-            var currentWrapper = foreground;
-
-            try
+            using (var paint = _paint.Clone())
             {
-                SKPaint currFGPaint = ApplyWrapperTo(ref foreground, ref currd, paint);
-                bool hasCusomFGBrushes = _foregroundBrushes.Any();
-
-                for (int c = 0; c < _skiaLines.Count; c++)
+                IDisposable currd = null;
+                var currentWrapper = foreground;
+                SKPaint currentPaint = null;
+                try
                 {
-                    AvaloniaFormattedTextLine line = _skiaLines[c];
+                    ApplyWrapperTo(ref currentPaint, foreground, ref currd, paint, canUseLcdRendering);
+                    bool hasCusomFGBrushes = _foregroundBrushes.Any();
 
-                    float x = TransformX(origin.X, 0, paint.TextAlign);
-
-                    if (!hasCusomFGBrushes)
+                    for (int c = 0; c < _skiaLines.Count; c++)
                     {
-                        var subString = Text.Substring(line.Start, line.Length);
-                        canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
-                    }
-                    else
-                    {
-                        float currX = x;
-                        string subStr;
-                        int len;
+                        AvaloniaFormattedTextLine line = _skiaLines[c];
 
-                        for (int i = line.Start; i < line.Start + line.Length;)
+                        float x = TransformX(origin.X, 0, paint.TextAlign);
+
+                        if (!hasCusomFGBrushes)
                         {
-                            var fb = GetNextForegroundBrush(ref line, i, out len);
+                            var subString = Text.Substring(line.Start, line.Length);
+                            canvas.DrawText(subString, x, origin.Y + line.Top + _lineOffset, paint);
+                        }
+                        else
+                        {
+                            float currX = x;
+                            string subStr;
+                            int len;
 
-                            if (fb != null)
+                            for (int i = line.Start; i < line.Start + line.Length;)
                             {
-                                //TODO: figure out how to get the brush size
-                                currentWrapper = context.CreatePaint(fb, new Size());
+                                var fb = GetNextForegroundBrush(ref line, i, out len);
+
+                                if (fb != null)
+                                {
+                                    //TODO: figure out how to get the brush size
+                                    currentWrapper = context.CreatePaint(fb, new Size());
+                                }
+                                else
+                                {
+                                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                                    currentWrapper = foreground;
+                                }
+
+                                subStr = Text.Substring(i, len);
+
+                                ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
+
+                                canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
+
+                                i += len;
+                                currX += paint.MeasureText(subStr);
                             }
-                            else
-                            {
-                                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
-                                currentWrapper = foreground;
-                            }
-
-                            subStr = Text.Substring(i, len);
-
-                            if (currFGPaint != currentWrapper.Paint)
-                            {
-                                currFGPaint = ApplyWrapperTo(ref currentWrapper, ref currd, paint);
-                            }
-
-                            canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
-
-                            i += len;
-                            currX += paint.MeasureText(subStr);
                         }
                     }
                 }
-            }
-            finally
-            {
-                if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
-                currd?.Dispose();
+                finally
+                {
+                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                    currd?.Dispose();
+                }
             }
         }
 
@@ -278,12 +302,14 @@ namespace Avalonia.Skia
         private Size _size;
         private List<AvaloniaFormattedTextLine> _skiaLines;
 
-        private static SKPaint ApplyWrapperTo(ref DrawingContextImpl.PaintWrapper wrapper,
-                                                ref IDisposable curr, SKPaint paint)
+        private static void ApplyWrapperTo(ref SKPaint current, DrawingContextImpl.PaintWrapper wrapper,
+                                                ref IDisposable curr, SKPaint paint, bool canUseLcdRendering)
         {
+            if (current == wrapper.Paint)
+                return;
             curr?.Dispose();
             curr = wrapper.ApplyTo(paint);
-            return wrapper.Paint;
+            paint.LcdRenderText = canUseLcdRendering;
         }
 
         private static bool IsBreakChar(char c)
@@ -448,7 +474,7 @@ namespace Avalonia.Skia
                 {
                     var match = _foregroundBrushes[bi];
 
-                    len = match.Key.EndIndex - index + 1;
+                    len = match.Key.EndIndex - index;
                     result = match.Value;
 
                     if (len > 0 && len < length)
@@ -534,13 +560,11 @@ namespace Avalonia.Skia
                 }
 
                 measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
-
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
                 line.TextLength = measured;
-
+                line.Start = curOff;
                 subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
-                line.Start = curOff;
                 line.Length = measured - trailingnumber;
                 line.Width = lineWidth;
                 line.Height = _lineHeight;
@@ -549,10 +573,33 @@ namespace Avalonia.Skia
                 _skiaLines.Add(line);
 
                 curY += _lineHeight;
-
                 curY += mLeading;
-
                 curOff += measured;
+
+                //if this is the last line and there are trailing newline characters then
+                //insert a additional line
+                if (curOff >= length)
+                {
+                    var subStringMinusNewlines = subString.TrimEnd('\n', '\r');
+                    var lengthDiff = subString.Length - subStringMinusNewlines.Length;
+                    if (lengthDiff > 0)
+                    {
+                        AvaloniaFormattedTextLine lastLine = new AvaloniaFormattedTextLine();
+                        lastLine.TextLength = lengthDiff;
+                        lastLine.Start = curOff - lengthDiff;
+                        var lastLineSubString = Text.Substring(line.Start, line.TextLength);
+                        var lastLineWidth = _paint.MeasureText(lastLineSubString);
+                        lastLine.Length = 0;
+                        lastLine.Width = lastLineWidth;
+                        lastLine.Height = _lineHeight;
+                        lastLine.Top = curY;
+
+                        _skiaLines.Add(lastLine);
+
+                        curY += _lineHeight;
+                        curY += mLeading;
+                    }
+                }
             }
 
             // Now convert to Avalonia data formats
@@ -616,6 +663,7 @@ namespace Avalonia.Skia
 
             if (brush != null)
             {
+                brush = brush.ToImmutable();
                 _foregroundBrushes.Insert(0, new KeyValuePair<FBrushRange, IBrush>(key, brush));
             }
         }
@@ -638,7 +686,7 @@ namespace Avalonia.Skia
                 Length = length;
             }
 
-            public int EndIndex => StartIndex + Length - 1;
+            public int EndIndex => StartIndex + Length;
 
             public int Length { get; private set; }
 

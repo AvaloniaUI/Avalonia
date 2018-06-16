@@ -3,20 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.Animation;
+using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Defines a style.
     /// </summary>
-    public class Style : IStyle
+    public class Style : AvaloniaObject, IStyle, ISetStyleParent
     {
-        private static Dictionary<IStyleable, List<IDisposable>> _applied = 
+        private static Dictionary<IStyleable, List<IDisposable>> _applied =
             new Dictionary<IStyleable, List<IDisposable>>();
+        private IResourceNode _parent;
+        private IResourceDictionary _resources;
 
-        private Dictionary<string, object> _resources;
+        private IList<IAnimation> _animations;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Style"/> class.
@@ -34,42 +40,61 @@ namespace Avalonia.Styling
             Selector = selector(null);
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
         /// <summary>
         /// Gets or sets a dictionary of style resources.
         /// </summary>
-        public IDictionary<string, object> Resources
+        public IResourceDictionary Resources
         {
-            get
-            {
-                if (_resources == null)
-                {
-                    _resources = new Dictionary<string, object>();
-                }
-
-                return _resources;
-            }
-
+            get => _resources ?? (Resources = new ResourceDictionary());
             set
             {
-                var resources = Resources;
+                Contract.Requires<ArgumentNullException>(value != null);
 
-                foreach (var i in value)
+                var hadResources = false;
+
+                if (_resources != null)
                 {
-                    resources.Add(i);
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourceDictionaryChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ResourceDictionaryChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ISetStyleParent)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets style's selector.
+        /// Gets or sets the style's selector.
         /// </summary>
         public Selector Selector { get; set; }
 
         /// <summary>
-        /// Gets or sets style's setters.
+        /// Gets or sets the style's setters.
         /// </summary>
         [Content]
-        public IEnumerable<ISetter> Setters { get; set; } = new List<ISetter>();
+        public IList<ISetter> Setters { get; set; } = new List<ISetter>();
+
+        public IList<IAnimation> Animations
+        {
+            get
+            {
+                return _animations ?? (_animations = new List<IAnimation>());
+            }
+        }
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => _parent;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -87,6 +112,19 @@ namespace Avalonia.Styling
                 if (match.ImmediateResult != false)
                 {
                     var subs = GetSubscriptions(control);
+
+                    foreach (var animation in Animations)
+                    {
+                        IObservable<bool> obsMatch = match.ObservableResult;
+
+                        if (match.ImmediateResult == true)
+                        {
+                            obsMatch = Observable.Return(true);
+                        } 
+
+                        var sub = animation.Apply((Animatable)control, obsMatch);
+                        subs.Add(sub);
+                    }
 
                     foreach (var setter in Setters)
                     {
@@ -107,25 +145,11 @@ namespace Avalonia.Styling
             }
         }
 
-        /// <summary>
-        /// Tries to find a named resource within the style.
-        /// </summary>
-        /// <param name="name">The resource name.</param>
-        /// <returns>
-        /// The resource if found, otherwise <see cref="AvaloniaProperty.UnsetValue"/>.
-        /// </returns>
-        public object FindResource(string name)
+        /// <inheritdoc/>
+        public bool TryGetResource(string key, out object result)
         {
-            object result = null;
-
-            if (_resources?.TryGetValue(name, out result) == true)
-            {
-                return result;
-            }
-            else
-            {
-                return AvaloniaProperty.UnsetValue;
-            }
+            result = null;
+            return _resources?.TryGetResource(key, out result) ?? false;
         }
 
         /// <summary>
@@ -142,6 +166,23 @@ namespace Avalonia.Styling
             {
                 return "Style";
             }
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
+        }
+
+        /// <inheritdoc/>
+        void ISetStyleParent.SetParent(IResourceNode parent)
+        {
+            if (_parent != null && parent != null)
+            {
+                throw new InvalidOperationException("The Style already has a parent.");
+            }
+
+            _parent = parent;
         }
 
         private static List<IDisposable> GetSubscriptions(IStyleable control)
@@ -173,6 +214,11 @@ namespace Avalonia.Styling
             }
 
             _applied.Remove(control);
+        }
+
+        private void ResourceDictionaryChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

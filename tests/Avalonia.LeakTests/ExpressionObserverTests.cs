@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using JetBrains.dotMemoryUnit;
@@ -69,6 +70,28 @@ namespace Avalonia.LeakTests
 
             dotMemory.Check(memory =>
                 Assert.Equal(0, memory.GetObjects(where => where.Type.Is<NonIntegerIndexer>()).ObjectsCount));
+        }
+
+        [Fact]
+        public void Should_Not_Keep_Source_Alive_MethodBinding()
+        {
+            Func<ExpressionObserver> run = () =>
+            {
+                var source = new { Foo = new MethodBound() };
+                var target = new ExpressionObserver(source, "Foo.A");
+                target.Subscribe(_ => { });
+                return target;
+            };
+
+            var result = run();
+
+            dotMemory.Check(memory =>
+                Assert.Equal(0, memory.GetObjects(where => where.Type.Is<MethodBound>()).ObjectsCount));
+        }
+
+        private class MethodBound
+        {
+            public void A() { }
         }
 
         private class NonIntegerIndexer : NotifyingBase

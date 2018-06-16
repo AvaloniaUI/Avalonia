@@ -12,12 +12,12 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Skia.iOS;
 using UIKit;
 using Avalonia.iOS.Specific;
 using ObjCRuntime;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Rendering;
 
 namespace Avalonia.iOS
 {
@@ -26,7 +26,6 @@ namespace Avalonia.iOS
     {
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
-        private Point _position;
 
         public TopLevelImpl()
         {
@@ -52,7 +51,7 @@ namespace Avalonia.iOS
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IPlatformHandle Handle => null;
+        public new IPlatformHandle Handle => null;
 
         public double Scaling => UIScreen.MainScreen.Scale;
 
@@ -62,7 +61,12 @@ namespace Avalonia.iOS
         public Size ClientSize => Bounds.Size.ToAvalonia();
 
         public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
-        
+
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
+
         public override void Draw(CGRect rect)
         {
             Paint?.Invoke(new Rect(rect.X, rect.Y, rect.Width, rect.Height));

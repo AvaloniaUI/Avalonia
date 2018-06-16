@@ -4,8 +4,8 @@
         <TargetFramework>net461</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="SharpDX.Mathematics" Version="3.1.1" />
-        <PackageReference Include="SharpDX.D3DCompiler" Version="3.1.1" />
+        <PackageReference Include="SharpDX.Mathematics" Version="4.0.1" />
+        <PackageReference Include="SharpDX.D3DCompiler" Version="4.0.1" />
         <Compile Update="**\*.paml.cs">
             <DependentUpon>%(Filename)</DependentUpon>
         </Compile>
@@ -17,7 +17,9 @@
       <None Remove="MiniCube.fx" />
     </ItemGroup>
     <ItemGroup>
-      <EmbeddedResource Include="MiniCube.fx" />
+      <EmbeddedResource Include="MiniCube.fx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
@@ -28,8 +30,5 @@
         <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
     </ItemGroup>
     <Import Project="..\..\..\build\Serilog.props" />
-    <Import Project="..\..\..\build\Serilog.Sinks.Trace.props" />
-    <Import Project="..\..\..\build\Splat.props" />
     <Import Project="..\..\..\build\Rx.props" />
-    <Import Project="$(MSBuildThisFileDirectory)..\..\..\src\Shared\nuget.workaround.targets" />
 </Project>

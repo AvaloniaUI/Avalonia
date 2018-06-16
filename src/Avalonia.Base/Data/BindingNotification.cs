@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Logging;
 
 namespace Avalonia.Data
 {
@@ -170,8 +171,7 @@ namespace Avalonia.Data
         /// </remarks>
         public static object ExtractError(object o)
         {
-            var notification = o as BindingNotification;
-            return notification != null ? notification.Error : o;
+            return o is BindingNotification notification ? notification.Error : o;
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace Avalonia.Data
         /// </summary>
         public void ClearValue()
         {
-            _value = null;
+            _value = AvaloniaProperty.UnsetValue;
         }
 
         /// <summary>

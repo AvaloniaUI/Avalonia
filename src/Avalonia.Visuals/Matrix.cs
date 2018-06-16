@@ -1,15 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Utilities;
 using System;
 using System.Globalization;
+using System.Linq;
 
 namespace Avalonia
 {
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public struct Matrix
+    public readonly struct Matrix
     {
         private readonly double _m11;
         private readonly double _m12;
@@ -150,6 +152,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates a skew matrix from the given axis skew angles in radians.
+        /// </summary>
+        /// <param name="xAngle">The amount of skew along the X-axis, in radians.</param>
+        /// <param name="yAngle">The amount of skew along the Y-axis, in radians.</param>
+        /// <returns>A rotation matrix.</returns>
+        public static Matrix CreateSkew(double xAngle, double yAngle)
+        {
+            double tanX = Math.Tan(xAngle);
+            double tanY = Math.Tan(yAngle);
+            return new Matrix(1.0, tanY, tanX, 1.0, 0.0, 0.0);
+        }
+
+        /// <summary>
         /// Creates a scale matrix from the given X and Y components.
         /// </summary>
         /// <param name="xScale">Value to scale by on the X-axis.</param>
@@ -213,7 +228,6 @@ namespace Avalonia
         {
             return (_m11 * _m22) - (_m12 * _m21);
         }
-
 
         /// <summary>
         /// Returns a boolean indicating whether the matrix is equal to the other given matrix.
@@ -294,6 +308,26 @@ namespace Avalonia
                 _m11 / d,
                 ((_m21 * _m32) - (_m22 * _m31)) / d,
                 ((_m12 * _m31) - (_m11 * _m32)) / d);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="Matrix"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="Matrix"/>.</returns>
+        public static Matrix Parse(string s)
+        {
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
+            {
+                return new Matrix(
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
+            }
         }
     }
 }

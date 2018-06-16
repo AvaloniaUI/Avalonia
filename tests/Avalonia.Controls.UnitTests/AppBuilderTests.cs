@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
@@ -107,7 +108,7 @@ namespace Avalonia.Controls.UnitTests
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
                     .UseWindowingSubsystem(() => { })
-                    .UseRenderingSubsystem(() => { }, "Cairo");
+                    .UseRenderingSubsystem(() => { }, "TBD");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
                 Assert.True(DefaultRenderingModule.IsLoaded);
                 Assert.False(Direct2DModule.IsLoaded);

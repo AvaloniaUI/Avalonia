@@ -1,0 +1,14 @@
+<Project DefaultTargets="Build" 
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Product>Avalonia</Product>
+    <Version>0.6.2</Version>
+    <Copyright>Copyright 2016 &#169; The AvaloniaUI Project</Copyright>
+    <PackageLicenseUrl>https://github.com/AvaloniaUI/Avalonia/blob/master/licence.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591</NoWarn>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>

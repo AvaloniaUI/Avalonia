@@ -1,17 +1,17 @@
 language: csharp
 os:
   - linux
-  - osx
 dist: trusty
+osx_image: xcode8.3
 env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
     - DOTNET_CLI_TELEMETRY_OPTOUT=1
 mono:
-  - latest
-dotnet: 1.0.1
+  - 5.2.0
+dotnet: 2.1.200
 script:
-  - ./build.sh --target "Travis" --platform "Mono" --configuration "Release"
+  - ./build.sh --target "Travis" --platform "NetCoreOnly" --configuration "Release"
 notifications:
   email: false
   webhooks:

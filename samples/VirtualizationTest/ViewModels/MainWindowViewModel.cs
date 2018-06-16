@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using ReactiveUI;
 
 namespace VirtualizationTest.ViewModels
@@ -17,26 +18,23 @@ namespace VirtualizationTest.ViewModels
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
         private string _prefix = "Item";
-        private Orientation _orientation;
+        private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+        private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
+        private Orientation _orientation = Orientation.Vertical;
         private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
 
         public MainWindowViewModel()
         {
             this.WhenAnyValue(x => x.ItemCount).Subscribe(ResizeItems);
-            RecreateCommand = ReactiveCommand.Create();
-            RecreateCommand.Subscribe(_ => Recreate());
+            RecreateCommand = ReactiveCommand.Create(() => Recreate());
 
-            AddItemCommand = ReactiveCommand.Create();
-            AddItemCommand.Subscribe(_ => AddItem());
+            AddItemCommand = ReactiveCommand.Create(() => AddItem());
 
-            RemoveItemCommand = ReactiveCommand.Create();
-            RemoveItemCommand.Subscribe(_ => Remove());
+            RemoveItemCommand = ReactiveCommand.Create(() => Remove());
 
-            SelectFirstCommand = ReactiveCommand.Create();
-            SelectFirstCommand.Subscribe(_ => SelectItem(0));
+            SelectFirstCommand = ReactiveCommand.Create(() => SelectItem(0));
 
-            SelectLastCommand = ReactiveCommand.Create();
-            SelectLastCommand.Subscribe(_ => SelectItem(Items.Count - 1));
+            SelectLastCommand = ReactiveCommand.Create(() => SelectItem(Items.Count - 1));
         }
 
         public string NewItemString
@@ -69,6 +67,21 @@ namespace VirtualizationTest.ViewModels
         public IEnumerable<Orientation> Orientations =>
             Enum.GetValues(typeof(Orientation)).Cast<Orientation>();
 
+        public ScrollBarVisibility HorizontalScrollBarVisibility
+        {
+            get { return _horizontalScrollBarVisibility; }
+            set { this.RaiseAndSetIfChanged(ref _horizontalScrollBarVisibility, value); }
+        }
+
+        public ScrollBarVisibility VerticalScrollBarVisibility
+        {
+            get { return _verticalScrollBarVisibility; }
+            set { this.RaiseAndSetIfChanged(ref _verticalScrollBarVisibility, value); }
+        }
+
+        public IEnumerable<ScrollBarVisibility> ScrollBarVisibilities =>
+            Enum.GetValues(typeof(ScrollBarVisibility)).Cast<ScrollBarVisibility>();
+
         public ItemVirtualizationMode VirtualizationMode
         {
             get { return _virtualizationMode; }
@@ -78,11 +91,11 @@ namespace VirtualizationTest.ViewModels
         public IEnumerable<ItemVirtualizationMode> VirtualizationModes => 
             Enum.GetValues(typeof(ItemVirtualizationMode)).Cast<ItemVirtualizationMode>();
 
-        public ReactiveCommand<object> AddItemCommand { get; private set; }
-        public ReactiveCommand<object> RecreateCommand { get; private set; }
-        public ReactiveCommand<object> RemoveItemCommand { get; private set; }
-        public ReactiveCommand<object> SelectFirstCommand { get; private set; }
-        public ReactiveCommand<object> SelectLastCommand { get; private set; }
+        public ReactiveCommand AddItemCommand { get; private set; }
+        public ReactiveCommand RecreateCommand { get; private set; }
+        public ReactiveCommand RemoveItemCommand { get; private set; }
+        public ReactiveCommand SelectFirstCommand { get; private set; }
+        public ReactiveCommand SelectLastCommand { get; private set; }
 
         private void ResizeItems(int count)
         {

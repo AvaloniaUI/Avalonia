@@ -5,15 +5,13 @@ namespace RenderTest.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private bool drawDirtyRects = true;
+        private bool drawDirtyRects = false;
         private bool drawFps = true;
 
         public MainWindowViewModel()
         {
-            ToggleDrawDirtyRects = ReactiveCommand.Create();
-            ToggleDrawDirtyRects.Subscribe(_ => DrawDirtyRects = !DrawDirtyRects);
-            ToggleDrawFps = ReactiveCommand.Create();
-            ToggleDrawFps.Subscribe(_ => DrawFps = !DrawFps);
+            ToggleDrawDirtyRects = ReactiveCommand.Create(() => DrawDirtyRects = !DrawDirtyRects);
+            ToggleDrawFps = ReactiveCommand.Create(() => DrawFps = !DrawFps);
         }
 
         public bool DrawDirtyRects
@@ -28,7 +26,7 @@ namespace RenderTest.ViewModels
             set { this.RaiseAndSetIfChanged(ref drawFps, value); }
         }
 
-        public ReactiveCommand<object> ToggleDrawDirtyRects { get; }
-        public ReactiveCommand<object> ToggleDrawFps { get; }
+        public ReactiveCommand ToggleDrawDirtyRects { get; }
+        public ReactiveCommand ToggleDrawFps { get; }
     }
 }

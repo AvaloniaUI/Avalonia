@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -12,17 +13,12 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
-        private readonly IRenderTarget _renderTarget = Mock.Of<IRenderTarget>(
-            x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
 
         public TestRoot()
         {
-            var rendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            Renderer = rendererFactory?.CreateRenderer(this, renderLoop);
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
@@ -41,7 +37,7 @@ namespace Avalonia.UnitTests
 
         public int NameScopeUnregisteredSubscribers { get; private set; }
 
-        public Size ClientSize => new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(100, 100);
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
@@ -49,11 +45,41 @@ namespace Avalonia.UnitTests
 
         public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
 
-        public IRenderTarget RenderTarget => null;
+        public double RenderScaling => 1;
+
+        public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
 
         public IRenderer Renderer { get; set; }
 
-        public IRenderTarget CreateRenderTarget() => _renderTarget;
+        public IAccessKeyHandler AccessKeyHandler => null;
+
+        public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
+
+        public IInputElement PointerOverElement { get; set; }
+
+        public IMouseDevice MouseDevice { get; set; }
+
+        public bool ShowAccessKeys { get; set; }
+
+        public IStyleHost StylingParent { get; set; }
+
+        IStyleHost IStyleHost.StylingParent => StylingParent;
+
+        public IRenderTarget CreateRenderTarget()
+        {
+            var dc = new Mock<IDrawingContextImpl>();
+            dc.Setup(x => x.CreateLayer(It.IsAny<Size>())).Returns(() =>
+            {
+                var layerDc = new Mock<IDrawingContextImpl>();
+                var layer = new Mock<IRenderTargetBitmapImpl>();
+                layer.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(layerDc.Object);
+                return layer.Object;
+            });
+
+            var result = new Mock<IRenderTarget>();
+            result.Setup(x => x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(dc.Object);
+            return result.Object;
+        }
 
         public void Invalidate(Rect rect)
         {

@@ -2,16 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Input.Raw;
 using Avalonia.Layout;
-using Avalonia.Rendering;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
-using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -29,7 +30,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IApplicationLifecycle
+    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -39,6 +40,8 @@ namespace Avalonia
         private readonly Lazy<IClipboard> _clipboard =
             new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private readonly Styler _styler = new Styler();
+        private Styles _styles;
+        private IResourceDictionary _resources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -47,6 +50,9 @@ namespace Avalonia
         {
             OnExit += OnExiting;
         }
+
+        /// <inheritdoc/>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -65,11 +71,7 @@ namespace Avalonia
         /// <value>
         /// The application's global data templates.
         /// </value>
-        public DataTemplates DataTemplates
-        {
-            get { return _dataTemplates ?? (_dataTemplates = new DataTemplates()); }
-            set { _dataTemplates = value; }
-        }
+        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
 
         /// <summary>
         /// Gets the application's focus manager.
@@ -101,6 +103,34 @@ namespace Avalonia
         public IClipboard Clipboard => _clipboard.Value;
 
         /// <summary>
+        /// Gets the application's global resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources
+        {
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
+                {
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ResourcesChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the application's global styles.
         /// </summary>
         /// <value>
@@ -109,12 +139,24 @@ namespace Avalonia
         /// <remarks>
         /// Global styles apply to all windows in the application.
         /// </remarks>
-        public Styles Styles { get; } = new Styles();
+        public Styles Styles => _styles ?? (_styles = new Styles());
+
+        /// <inheritdoc/>
+        bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
         /// <summary>
         /// Gets the styling parent of the application, which is null.
         /// </summary>
         IStyleHost IStyleHost.StylingParent => null;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0;
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => null;
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
@@ -134,6 +176,15 @@ namespace Avalonia
             closable.Closed += (s, e) => source.Cancel();
             Dispatcher.UIThread.MainLoop(source.Token);
         }
+        
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is cancelled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+        }
 
         /// <summary>
         /// Exits the application
@@ -142,12 +193,19 @@ namespace Avalonia
         {
             OnExit?.Invoke(this, EventArgs.Empty);
         }
-        
+
+        /// <inheritdoc/>
+        bool IResourceProvider.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return (_resources?.TryGetResource(key, out value) ?? false) ||
+                   Styles.TryGetResource(key, out value);
+        }
+
         /// <summary>
         /// Sent when the application is exiting.
         /// </summary>
         public event EventHandler OnExit;
-
 
         /// <summary>
         /// Called when the application is exiting.
@@ -176,7 +234,9 @@ namespace Avalonia
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
                 .Bind<IApplicationLifecycle>().ToConstant(this)
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance);
+                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
+                .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
+                .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
         }
     }
 }

@@ -11,16 +11,49 @@ namespace Avalonia.Media
     public class RectangleGeometry : Geometry
     {
         /// <summary>
+        /// Defines the <see cref="Rect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Rect> RectProperty =
+            AvaloniaProperty.Register<RectangleGeometry, Rect>(nameof(Rect));
+
+        public Rect Rect
+        {
+            get => GetValue(RectProperty);
+            set => SetValue(RectProperty, value);
+        }
+
+        static RectangleGeometry()
+        {
+            AffectsGeometry(RectProperty);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RectangleGeometry"/> class.
+        /// </summary>
+        public RectangleGeometry()
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RectangleGeometry"/> class.
         /// </summary>
         /// <param name="rect">The rectangle bounds.</param>
         public RectangleGeometry(Rect rect)
         {
-            IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            IStreamGeometryImpl impl = factory.CreateStreamGeometry();
+            Rect = rect;
+        }
 
-            using (IStreamGeometryContextImpl context = impl.Open())
+        /// <inheritdoc/>
+        public override Geometry Clone() => new RectangleGeometry(Rect);
+
+        protected override IGeometryImpl CreateDefiningGeometry()
+        {
+            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var geometry = factory.CreateStreamGeometry();
+
+            using (var context = geometry.Open())
             {
+                var rect = Rect;
                 context.BeginFigure(rect.TopLeft, true);
                 context.LineTo(rect.TopRight);
                 context.LineTo(rect.BottomRight);
@@ -28,13 +61,7 @@ namespace Avalonia.Media
                 context.EndFigure(true);
             }
 
-            PlatformImpl = impl;
-        }
-
-        /// <inheritdoc/>
-        public override Geometry Clone()
-        {
-            return new RectangleGeometry(Bounds);
+            return geometry;
         }
     }
 }

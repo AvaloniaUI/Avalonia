@@ -7,8 +7,26 @@ namespace Avalonia.Gtk3
 {
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
+        private WindowState _lastWindowState;
+
         public WindowImpl() : base(Native.GtkWindowNew(GtkWindowType.TopLevel))
         {
+        }
+
+        protected unsafe override bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var windowStateEvent = (GdkEventWindowState*)pev;
+            var newWindowState = windowStateEvent->new_window_state;
+            var windowState = newWindowState.HasFlag(GdkWindowState.Iconified) ? WindowState.Minimized
+                : (newWindowState.HasFlag(GdkWindowState.Maximized) ? WindowState.Maximized : WindowState.Normal);
+
+            if (windowState != _lastWindowState)
+            {
+                _lastWindowState = windowState;
+                WindowStateChanged?.Invoke(windowState);
+            }
+
+            return base.OnStateChanged(w, pev, userData);
         }
 
         public void SetTitle(string title)
@@ -30,19 +48,20 @@ namespace Avalonia.Gtk3
             }
             set
             {
-                var w = Native.GtkWidgetGetWindow(GtkWidget);
                 if (value == WindowState.Minimized)
-                    Native.GdkWindowIconify(w);
+                    Native.GtkWindowIconify(GtkWidget);
                 else if (value == WindowState.Maximized)
-                    Native.GdkWindowMaximize(w);
+                    Native.GtkWindowMaximize(GtkWidget);
                 else
                 {
-                    Native.GdkWindowUnmaximize(w);
-                    Native.GdkWindowDeiconify(w);
+                    Native.GtkWindowUnmaximize(GtkWidget);
+                    Native.GtkWindowDeiconify(GtkWidget);
                 }
             }
         }
-        
+
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         public IDisposable ShowDialog()
         {
             Native.GtkWindowSetModal(GtkWidget, true);
@@ -58,6 +77,11 @@ namespace Avalonia.Gtk3
         {
             //Why do we even have that?
         }
+
+        public void ShowTaskbarIcon(bool value) => Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
+
+        public void CanResize(bool value) => Native.GtkWindowSetResizable(GtkWidget, value);
+
 
         class EmptyDisposable : IDisposable
         {

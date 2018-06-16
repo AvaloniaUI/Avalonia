@@ -41,6 +41,8 @@ namespace Avalonia.UnitTests
 
         public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
 
+        public double RenderScaling => 1;
+
         public IRenderTarget RenderTarget => null;
 
         public IRenderer Renderer => null;

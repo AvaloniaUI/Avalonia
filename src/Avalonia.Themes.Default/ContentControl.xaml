@@ -5,9 +5,11 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        Content="{TemplateBinding Content}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Padding="{TemplateBinding Padding}"/>
+                        Content="{TemplateBinding Content}"
+                        Padding="{TemplateBinding Padding}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
     </ControlTemplate>
   </Setter>
 </Style>

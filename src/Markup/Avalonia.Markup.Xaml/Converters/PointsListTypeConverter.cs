@@ -4,37 +4,29 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using OmniXaml.TypeConversion;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    public class PointsListTypeConverter : ITypeConverter
+	using System.ComponentModel;
+
+    public class PointsListTypeConverter : TypeConverter
     {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IValueContext context, Type destinationType)
-        {
-            return false;
-        }
-
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             string strValue = (string)value;
             string[] pointStrs = strValue.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var result = new List<Point>(pointStrs.Length);
             foreach (var pointStr in pointStrs)
             {
-                result.Add(Point.Parse(pointStr, culture));
+                result.Add(Point.Parse(pointStr));
             }
-            return result;
-        }
 
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
+            return result;
         }
     }
 }

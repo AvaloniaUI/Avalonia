@@ -37,6 +37,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             UpdateParams();
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
+        public IScreenImpl Screen { get; }
+
         public Point Position
         {
             get { return _position; }
@@ -104,7 +110,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             //Not supported
         }
-        
 
+        public void SetTopmost(bool value)
+        {
+            //Not supported
+        }
     }
 }

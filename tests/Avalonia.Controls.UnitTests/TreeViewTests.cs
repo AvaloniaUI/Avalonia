@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Data;
@@ -25,9 +26,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
@@ -69,9 +70,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = CreateTestTreeData(),
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             var container = (TreeViewItem)target.ItemContainerGenerator.Containers.Single().ContainerControl;
@@ -87,7 +88,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = tree,
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
             // For TreeViewItem to find its parent TreeView, OnAttachedToLogicalTree needs
@@ -95,6 +95,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot();
             root.Child = target;
 
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             var container = target.ItemContainerGenerator.Index.ContainerFromItem(
@@ -116,11 +117,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = tree,
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
             var visualRoot = new TestRoot();
             visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             var item = tree[0].Children[1].Children[0];
@@ -146,11 +148,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = tree,
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
             var visualRoot = new TestRoot();
             visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             var item = tree[0].Children[1].Children[0];
@@ -191,12 +194,13 @@ namespace Avalonia.Controls.UnitTests
             var target = new TreeView
             {
                 Template = CreateTreeViewTemplate(),
-                DataTemplates = CreateNodeDataTemplate(),
                 Items = tree,
             };
 
             var root = new TestRoot();
             root.Child = target;
+
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             Assert.Equal(5, target.ItemContainerGenerator.Index.Items.Count());
@@ -221,7 +225,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 DataContext = "Base",
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<Node>(x => new Button { Content = x })
                 },
@@ -291,9 +295,9 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = CreateTreeViewTemplate(),
                 Items = data,
-                DataTemplates = CreateNodeDataTemplate(),
             };
 
+            CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
@@ -313,6 +317,50 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new[] { "Root" }, ExtractItemHeader(target, 0));
             Assert.Equal(new[] { "NewChild1" }, ExtractItemHeader(target, 1));
+        }
+
+        [Fact]
+        public void Keyboard_Navigation_Should_Move_To_Last_Selected_Node()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var focus = FocusManager.Instance;
+                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var data = CreateTestTreeData();
+
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = data,
+                };
+
+                var button = new Button();
+
+                var root = new TestRoot
+                {
+                    Child = new StackPanel
+                    {
+                        Children = { target, button },
+                    }
+                };
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var item = data[0].Children[0];
+                var node = target.ItemContainerGenerator.Index.ContainerFromItem(item);
+                Assert.NotNull(node);
+
+                target.SelectedItem = item;
+                node.Focus();
+                Assert.Same(node, focus.Current);
+
+                navigation.Move(focus.Current, NavigationDirection.Next);
+                Assert.Same(button, focus.Current);
+
+                navigation.Move(focus.Current, NavigationDirection.Next);
+                Assert.Same(node, focus.Current);
+            }
         }
 
         private void ApplyTemplates(TreeView tree)
@@ -367,12 +415,9 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private DataTemplates CreateNodeDataTemplate()
+        private void CreateNodeDataTemplate(IControl control)
         {
-            return new DataTemplates
-            {
-                new TestTreeDataTemplate()
-            };
+            control.DataTemplates.Add(new TestTreeDataTemplate());
         }
 
         private IControlTemplate CreateTreeViewTemplate()
@@ -388,7 +433,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new FuncControlTemplate<TreeViewItem>(parent => new Panel
             {
-                Children = new Controls
+                Children =
                 {
                     new ContentPresenter
                     {
@@ -471,7 +516,7 @@ namespace Avalonia.Controls.UnitTests
             public InstancedBinding ItemsSelector(object item)
             {
                 var obs = new ExpressionObserver(item, nameof(Node.Children));
-                return new InstancedBinding(obs);
+                return InstancedBinding.OneWay(obs);
             }
 
             public bool Match(object data)

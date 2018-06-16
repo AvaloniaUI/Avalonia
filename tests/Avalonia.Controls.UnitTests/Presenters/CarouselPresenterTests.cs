@@ -43,7 +43,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var parent = new TestItemsControl();
             var target = new CarouselPresenter
             {
-                TemplatedParent = parent,
+                [StyledElement.TemplatedParentProperty] = parent,
             };
 
             Assert.IsType<ItemContainerGenerator<TestItem>>(target.ItemContainerGenerator);
@@ -91,9 +91,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             target.ApplyTemplate();
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Single(target.ItemContainerGenerator.Containers);
             target.SelectedIndex = 1;
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
+            Assert.Single(target.ItemContainerGenerator.Containers);
         }
 
         [Fact]
@@ -107,8 +107,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
             };
 
             target.ApplyTemplate();
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
             target.SelectedIndex = 1;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
             Assert.Equal(2, target.Panel.Children.Count);
@@ -134,24 +134,24 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.Add("foo");
             target.SelectedIndex = 0;
 
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
 
             items.Add("bar");
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
 
             target.SelectedIndex = 1;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
             Assert.Equal(2, target.Panel.Children.Count);            
 
             items.Remove(items[0]);
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);            
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);            
 
             items.Remove(items[0]);
-            Assert.Equal(0, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(0, target.Panel.Children.Count);            
+            Assert.Empty(target.ItemContainerGenerator.Containers);
+            Assert.Empty(target.Panel.Children);            
         }
 
         [Fact]
@@ -171,12 +171,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
             items.Add("foo");
             target.SelectedIndex = 0;
 
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
 
             items.Add("bar");
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
 
             target.SelectedIndex = 1;
             Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
@@ -184,13 +184,13 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(0, target.ItemContainerGenerator.Containers.First().Index);
 
             items.Remove(items[0]);
-            Assert.Equal(1, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(1, target.Panel.Children.Count);
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            Assert.Single(target.Panel.Children);
             Assert.Equal(0, target.ItemContainerGenerator.Containers.First().Index);
 
             items.Remove(items[0]);
-            Assert.Equal(0, target.ItemContainerGenerator.Containers.Count());
-            Assert.Equal(0, target.Panel.Children.Count);            
+            Assert.Empty(target.ItemContainerGenerator.Containers);
+            Assert.Empty(target.Panel.Children);            
         }
 
         private class TestItem : ContentControl

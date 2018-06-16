@@ -1,13 +1,18 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="ListBox">
-  <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
-  <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+  <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+  <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+  <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
   <Setter Property="Padding" Value="4"/>
+  <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+  <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
   <Setter Property="Template">
     <ControlTemplate>
-      <Border Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
+      <Border BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}">
-        <ScrollViewer Name="PART_ScrollViewer">
+        <ScrollViewer Name="PART_ScrollViewer"
+                      Background="{TemplateBinding Background}"
+                      HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                      VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"

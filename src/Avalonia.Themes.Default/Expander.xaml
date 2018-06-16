@@ -16,10 +16,11 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="1"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -34,10 +35,11 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Row="0"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -52,10 +54,11 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="1"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -70,10 +73,11 @@
             <ContentPresenter Name="PART_ContentPresenter"
                               Grid.Column="0"
                               IsVisible="{TemplateBinding IsExpanded}"
-                              Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -94,7 +98,10 @@
                               Grid.Column="1" 
                               Background="Transparent" 
                               Content="{TemplateBinding Content}" 
-                              VerticalAlignment="Center" />
+                              VerticalAlignment="Center" 
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}"/>
           </Grid>
         </Border>
       </ControlTemplate>

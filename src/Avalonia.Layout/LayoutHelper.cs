@@ -29,5 +29,34 @@ namespace Avalonia.Layout
             height = Math.Max(height, control.MinHeight);
             return new Size(width, height);
         }
+
+        public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding,
+            Thickness borderThickness)
+        {
+            return MeasureChild(control, availableSize, padding + borderThickness);
+        }
+
+        public static Size MeasureChild(ILayoutable control, Size availableSize, Thickness padding)
+        {
+            if (control != null)
+            {
+                control.Measure(availableSize.Deflate(padding));
+                return control.DesiredSize.Inflate(padding);
+            }
+
+            return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
+        }
+
+        public static Size ArrangeChild(ILayoutable child, Size availableSize, Thickness padding, Thickness borderThickness)
+        {
+            return ArrangeChild(child, availableSize, padding + borderThickness);
+        }
+
+        public static Size ArrangeChild(ILayoutable child, Size availableSize, Thickness padding)
+        {
+            child?.Arrange(new Rect(availableSize).Deflate(padding));
+
+            return availableSize;
+        }
     }
 }

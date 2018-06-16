@@ -3,32 +3,25 @@
 
 using System;
 using System.Globalization;
-using OmniXaml.TypeConversion;
-using Avalonia.Markup.Xaml.Parsers;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    public class SelectorTypeConverter : ITypeConverter
+    using Portable.Xaml.ComponentModel;
+    using System.ComponentModel;
+
+    public class SelectorTypeConverter : TypeConverter
     {
-        public bool CanConvertFrom(IValueContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
         }
 
-        public bool CanConvertTo(IValueContext context, Type destinationType)
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return false;
-        }
+            var parser = new SelectorParser((t, ns) => context.ResolveType(ns, t));
 
-        public object ConvertFrom(IValueContext context, CultureInfo culture, object value)
-        {
-            var parser = new SelectorParser((t, ns) => context.TypeRepository.GetByPrefix(ns ?? "", t).UnderlyingType);
             return parser.Parse((string)value);
-        }
-
-        public object ConvertTo(IValueContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -11,6 +11,8 @@ namespace Avalonia.Gtk3.Interop
             
         public Utf8Buffer(string s) : base(IntPtr.Zero, true)
         {
+            if (s == null)
+                return;
             _data = Encoding.UTF8.GetBytes(s);
             _gchandle = GCHandle.Alloc(_data, GCHandleType.Pinned);
             handle = _gchandle.AddrOfPinnedObject();
@@ -34,6 +36,8 @@ namespace Avalonia.Gtk3.Interop
         public static unsafe string StringFromPtr(IntPtr s)
         {
             var pstr = (byte*)s;
+            if (pstr == null)
+                return null;
             int len;
             for (len = 0; pstr[len] != 0; len++) ;
             var bytes = new byte[len];

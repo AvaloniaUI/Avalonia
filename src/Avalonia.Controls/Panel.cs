@@ -25,8 +25,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<Panel>();
 
-        private readonly Controls _children = new Controls();
-
         /// <summary>
         /// Initializes static members of the <see cref="Panel"/> class.
         /// </summary>
@@ -40,35 +38,14 @@ namespace Avalonia.Controls
         /// </summary>
         public Panel()
         {
-            _children.CollectionChanged += ChildrenChanged;
+            Children.CollectionChanged += ChildrenChanged;
         }
 
         /// <summary>
-        /// Gets or sets the children of the <see cref="Panel"/>.
+        /// Gets the children of the <see cref="Panel"/>.
         /// </summary>
-        /// <remarks>
-        /// Even though this property can be set, the setter is only intended for use in object
-        /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and adds the contents of the assigned
-        /// collection.
-        /// </remarks>
         [Content]
-        public Controls Children
-        {
-            get
-            {
-                return _children;
-            }
-
-            set
-            {
-                Contract.Requires<ArgumentNullException>(value != null);
-
-                VisualChildren.Clear();
-                _children.Clear();
-                _children.AddRange(value);
-            }
-        }
+        public Controls Children { get; } = new Controls();
 
         /// <summary>
         /// Gets or Sets Panel background brush.
@@ -112,6 +89,11 @@ namespace Avalonia.Controls
                     VisualChildren.AddRange(e.NewItems.OfType<Visual>());
                     break;
 
+                case NotifyCollectionChangedAction.Move:
+                    LogicalChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    VisualChildren.MoveRange(e.OldStartingIndex, e.OldItems.Count, e.NewStartingIndex);
+                    break;
+
                 case NotifyCollectionChangedAction.Remove:
                     controls = e.OldItems.OfType<Control>().ToList();
                     LogicalChildren.RemoveAll(controls);
@@ -129,11 +111,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    controls = e.OldItems.OfType<Control>().ToList();
-                    LogicalChildren.Clear();
-                    VisualChildren.Clear();
-                    VisualChildren.AddRange(_children);
-                    break;
+                    throw new NotSupportedException();
             }
 
             InvalidateMeasure();

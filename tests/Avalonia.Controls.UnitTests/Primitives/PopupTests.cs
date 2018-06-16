@@ -15,6 +15,7 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.UnitTests.Primitives
 {
@@ -189,12 +190,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
+                var window = new Window();
                 var target = new Popup();
                 var child = new Control();
 
+                window.Content = target;
                 target.Open();
 
-                Assert.Equal(1, target.PopupRoot.GetVisualChildren().Count());
+                Assert.Single(target.PopupRoot.GetVisualChildren());
 
                 var templatedChild = target.PopupRoot.GetVisualChildren().Single();
                 Assert.IsType<ContentPresenter>(templatedChild);
@@ -214,7 +217,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         Content = new Border(),
                         Template = new FuncControlTemplate<PopupContentControl>(PopupContentControlTemplate),
-                    }
+                    },
+                    StylingParent = AvaloniaLocator.Current.GetService<IGlobalStyles>()
                 };
 
                 target.ApplyTemplate();
@@ -249,6 +253,37 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
+        [Fact]
+        public void DataContextBeginUpdate_Should_Not_Be_Called_For_Controls_That_Dont_Inherit()
+        {
+            using (CreateServices())
+            {
+                TestControl child;
+                var popup = new Popup
+                {
+                    Child = child = new TestControl(),
+                    DataContext = "foo",
+                };
+
+                var beginCalled = false;
+                child.DataContextBeginUpdate += (s, e) => beginCalled = true;
+
+                // Test for #1245. Here, the child's logical parent is the popup but it's not yet
+                // attached to a visual tree because the popup hasn't been opened.
+                Assert.Same(popup, ((ILogical)child).LogicalParent);
+                Assert.Same(popup, child.InheritanceParent);
+                Assert.Null(child.GetVisualRoot());
+
+                popup.Open();
+
+                // #1245 was caused by the fact that DataContextBeginUpdate was called on `target`
+                // when the PopupRoot was created, even though PopupRoot isn't the
+                // InheritanceParent of child.
+                Assert.False(beginCalled);
+            }
+        }
+
+
         private static IDisposable CreateServices()
         {
             var result = AvaloniaLocator.EnterScope();
@@ -265,6 +300,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             var globalStyles = new Mock<IGlobalStyles>();
+            globalStyles.Setup(x => x.IsStylesInitialized).Returns(true);
             globalStyles.Setup(x => x.Styles).Returns(styles);
 
             var renderInterface = new Mock<IPlatformRenderInterface>();
@@ -273,7 +309,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                 .Bind<IStyler>().ToTransient<Styler>()
-                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object);
+                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object)
+                .Bind<IInputManager>().ToConstant(new InputManager());
             
             return result;
         }
@@ -301,6 +338,19 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private class PopupContentControl : ContentControl
         {
+        }
+
+        private class TestControl : Decorator
+        {
+            public event EventHandler DataContextBeginUpdate;
+
+            public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
+
+            protected override void OnDataContextBeginUpdate()
+            {
+                DataContextBeginUpdate?.Invoke(this, EventArgs.Empty);
+                base.OnDataContextBeginUpdate();
+            }
         }
     }
 }

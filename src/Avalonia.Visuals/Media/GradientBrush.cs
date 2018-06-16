@@ -21,8 +21,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="GradientStops"/> property.
         /// </summary>
-        public static readonly StyledProperty<IReadOnlyList<GradientStop>> GradientStopsProperty =
-            AvaloniaProperty.Register<GradientBrush, IReadOnlyList<GradientStop>>(nameof(Opacity));
+        public static readonly StyledProperty<IList<GradientStop>> GradientStopsProperty =
+            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(GradientStops));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.
@@ -46,7 +46,7 @@ namespace Avalonia.Media
         /// Gets or sets the brush's gradient stops.
         /// </summary>
         [Content]
-        public IReadOnlyList<GradientStop> GradientStops
+        public IList<GradientStop> GradientStops
         {
             get { return GetValue(GradientStopsProperty); }
             set { SetValue(GradientStopsProperty, value); }

@@ -5,6 +5,7 @@ using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
@@ -24,6 +25,11 @@ namespace Avalonia.LinuxFramebuffer
             mice.Event += e => Input?.Invoke(e);
         }
 
+        public IRenderer CreateRenderer(IRenderRoot root)
+        {
+            return new ImmediateRenderer(root);
+        }
+
         public void Dispose()
         {
             throw new NotSupportedException();
@@ -35,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer
             if(_renderQueued)
                 return;
             _renderQueued = true;
-            Dispatcher.UIThread.InvokeAsync(() =>
+            Dispatcher.UIThread.Post(() =>
             {
                 Paint?.Invoke(new Rect(default(Point), ClientSize));
                 _renderQueued = false;
@@ -64,6 +70,10 @@ namespace Avalonia.LinuxFramebuffer
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add {}
+            remove {}
+        }
     }
 }

@@ -3,7 +3,7 @@
 
 using System;
 using Avalonia.Media;
-using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Platform
 {
@@ -30,7 +30,16 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IBitmapImpl source, double opacity, Rect sourceRect, Rect destRect);
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+
+        /// <summary>
+        /// Draws a bitmap image.
+        /// </summary>
+        /// <param name="source">The bitmap image.</param>
+        /// <param name="opacityMask">The opacity mask to draw with.</param>
+        /// <param name="opacityMaskRect">The destination rect for the opacity mask.</param>
+        /// <param name="destRect">The rect in the output to draw to.</param>
+        void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect);
 
         /// <summary>
         /// Draws a line.
@@ -73,11 +82,28 @@ namespace Avalonia.Platform
         void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
 
         /// <summary>
+        /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer
+        /// for the current render target.
+        /// </summary>
+        /// <param name="size">The size of the layer in DIPs.</param>
+        /// <returns>An <see cref="IRenderTargetBitmapImpl"/></returns>
+        /// <remarks>
+        /// Depending on the rendering backend used, a layer created via this method may be more
+        /// performant than a standard render target bitmap. In particular the Direct2D backend
+        /// has to do a format conversion each time a standard render target bitmap is rendered,
+        /// but a layer created via this method has no such overhead.
+        /// </remarks>
+        IRenderTargetBitmapImpl CreateLayer(Size size);
+
+        /// <summary>
         /// Pushes a clip rectange.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);
 
+        /// <summary>
+        /// Pops the latest pushed clip rectangle.
+        /// </summary>
         void PopClip();
 
         /// <summary>
@@ -86,10 +112,19 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity.</param>
         void PushOpacity(double opacity);
 
+        /// <summary>
+        /// Pops the latest pushed opacity value.
+        /// </summary>
         void PopOpacity();
 
+        /// <summary>
+        /// Pushes an opacity mask
+        /// </summary>
         void PushOpacityMask(IBrush mask, Rect bounds);
 
+        /// <summary>
+        /// Pops the latest pushed opacity mask.
+        /// </summary>
         void PopOpacityMask();
 
         /// <summary>
@@ -98,6 +133,9 @@ namespace Avalonia.Platform
         /// <param name="clip">The clip geometry.</param>
         void PushGeometryClip(IGeometryImpl clip);
 
+        /// <summary>
+        /// Pops the latest pushed geometry clip.
+        /// </summary>
         void PopGeometryClip();
     }
 }

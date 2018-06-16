@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Rendering;
 using JetBrains.Annotations;
 
 namespace Avalonia.Platform
@@ -59,6 +60,12 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the toplevel's scaling changes.
         /// </summary>
         Action<double> ScalingChanged { get; set; }
+
+        /// <summary>
+        /// Creates a new renderer for the toplevel.
+        /// </summary>
+        /// <param name="root">The toplevel.</param>
+        IRenderer CreateRenderer(IRenderRoot root);
 
         /// <summary>
         /// Invalidates a rect on the toplevel.

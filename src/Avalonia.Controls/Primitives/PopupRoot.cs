@@ -2,12 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
@@ -16,7 +19,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost
     {
         private IDisposable _presenterSubscription;
 
@@ -66,8 +69,37 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         IVisual IHostedVisualTreeRoot.Host => Parent;
 
+        /// <summary>
+        /// Gets the styling parent of the popup root.
+        /// </summary>
+        IStyleHost IStyleHost.StylingParent => Parent;
+
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
+
+        /// <summary>
+        /// Moves the Popups position so that it doesnt overlap screen edges.
+        /// This method can be called immediately after Show has been called.
+        /// </summary>
+        public void SnapInsideScreenEdges()
+        {
+            var window = this.GetSelfAndLogicalAncestors().OfType<Window>().First();
+            
+            var screen = window.Screens.ScreenFromPoint(Position);
+
+            var screenX = Position.X + Bounds.Width - screen.Bounds.X;
+            var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
+
+            if (screenX > screen.Bounds.Width)
+            {
+                Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
+            }
+
+            if (screenY > screen.Bounds.Height)
+            {
+                Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
+            }
+        }
 
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -90,20 +122,23 @@ namespace Avalonia.Controls.Primitives
 
         private void SetTemplatedParentAndApplyChildTemplates(IControl control)
         {
-            var templatedParent = Parent.TemplatedParent;
-
-            if (control.TemplatedParent == null)
+            if (control != null)
             {
-                control.SetValue(TemplatedParentProperty, templatedParent);
-            }
+                var templatedParent = Parent.TemplatedParent;
 
-            control.ApplyTemplate();
-
-            if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
-            {
-                foreach (IControl child in control.GetVisualChildren())
+                if (control.TemplatedParent == null)
                 {
-                    SetTemplatedParentAndApplyChildTemplates(child);
+                    control.SetValue(TemplatedParentProperty, templatedParent);
+                }
+
+                control.ApplyTemplate();
+
+                if (!(control is IPresenter) && control.TemplatedParent == templatedParent)
+                {
+                    foreach (IControl child in control.GetVisualChildren())
+                    {
+                        SetTemplatedParentAndApplyChildTemplates(child);
+                    }
                 }
             }
         }

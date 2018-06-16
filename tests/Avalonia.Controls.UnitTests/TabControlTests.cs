@@ -135,7 +135,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 var root = new TestRoot
                 {
-                    Styles = new Styles
+                    Styles =
                     {
                         new Style(x => x.OfType<TabItem>())
                         {
@@ -174,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = new FuncControlTemplate<TabControl>(CreateTabControlTemplate),
                 DataContext = "Base",
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<Item>(x => new Button { Content = x })
                 },
@@ -272,7 +272,7 @@ namespace Avalonia.Controls.UnitTests
         {
             return new StackPanel
             {
-                Children = new Controls
+                Children =
                 {
                     new TabStrip
                     {
@@ -313,7 +313,7 @@ namespace Avalonia.Controls.UnitTests
                 [!CarouselPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
                 [!CarouselPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
                 [!CarouselPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
-                [~CarouselPresenter.TransitionProperty] = control[~Carousel.TransitionProperty],
+                [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
             };
         }
 

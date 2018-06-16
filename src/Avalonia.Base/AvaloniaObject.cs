@@ -12,7 +12,6 @@ using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
-using System.Reactive.Concurrency;
 
 namespace Avalonia
 {
@@ -51,12 +50,29 @@ namespace Avalonia
         /// </summary>
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
+        private DeferredSetter<AvaloniaProperty, object> _directDeferredSetter;
+
+        /// <summary>
+        /// Delayed setter helper for direct properties. Used to fix #855.
+        /// </summary>
+        private DeferredSetter<AvaloniaProperty, object> DirectPropertyDeferredSetter
+        {
+            get
+            {
+                return _directDeferredSetter ??
+                    (_directDeferredSetter = new DeferredSetter<AvaloniaProperty, object>());
+            }
+        }
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
         /// </summary>
         public AvaloniaObject()
         {
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
+            VerifyAccess();
+
+            void Notify(AvaloniaProperty property)
             {
                 object value = property.IsDirect ?
                     ((IDirectPropertyAccessor)property).GetValue(this) :
@@ -70,6 +86,16 @@ namespace Avalonia
                     BindingPriority.Unset);
 
                 property.NotifyInitialized(e);
+            }
+
+            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
+            {
+                Notify(property);
+            }
+
+            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()))
+            {
+                Notify(property);
             }
         }
 
@@ -113,8 +139,9 @@ namespace Avalonia
                     {
                         _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
                     }
-
-                    var inherited = (from property in AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                    var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                        .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
+                    var inherited = (from property in properties
                                      where property.Inherits
                                      select new
                                      {
@@ -202,11 +229,6 @@ namespace Avalonia
             }
             else
             {
-                if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-                {
-                    ThrowNotRegistered(property);
-                }
-
                 return GetValueInternal(property);
             }
         }
@@ -222,6 +244,19 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
 
             return (T)GetValue((AvaloniaProperty)property);
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="AvaloniaProperty"/> is animating.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns>True if the property is animating, otherwise false.</returns>
+        public bool IsAnimating(AvaloniaProperty property)
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            VerifyAccess();
+
+            return _values.TryGetValue(property, out PriorityValue value) ? value.IsAnimating : false;
         }
 
         /// <summary>
@@ -310,9 +345,6 @@ namespace Avalonia
 
             var description = GetDescription(source);
 
-            var scheduler = AvaloniaLocator.Current.GetService<IScheduler>() ?? ImmediateScheduler.Instance;
-            source = source.ObserveOn(scheduler); 
-
             if (property.IsDirect)
             {
                 if (property.IsReadOnly)
@@ -350,11 +382,6 @@ namespace Avalonia
             else
             {
                 PriorityValue v;
-
-                if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-                {
-                    ThrowNotRegistered(property);
-                }
 
                 if (!_values.TryGetValue(property, out v))
                 {
@@ -539,6 +566,45 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// A callback type for encapsulating complex logic for setting direct properties.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="value">The value to which to set the property.</param>
+        /// <param name="field">The backing field for the property.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        protected delegate void SetAndRaiseCallback<T>(T value, ref T field, Action<Action> notifyWrapper);
+
+        /// <summary>
+        /// Sets the backing field for a direct avalonia property, raising the 
+        /// <see cref="PropertyChanged"/> event if the value has changed.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="setterCallback">A callback called to actually set the value to the backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        protected bool SetAndRaise<T>(
+            AvaloniaProperty<T> property,
+            ref T field,
+            SetAndRaiseCallback<T> setterCallback,
+            T value)
+        {
+            Contract.Requires<ArgumentNullException>(setterCallback != null);
+            return DirectPropertyDeferredSetter.SetAndNotify(
+                property,
+                ref field,
+                (object val, ref T backing, Action<Action> notify) =>
+                {
+                    setterCallback((T)val, ref backing, notify);
+                    return true;
+                },
+                value);
+        }
+
+        /// <summary>
         /// Sets the backing field for a direct avalonia property, raising the 
         /// <see cref="PropertyChanged"/> event if the value has changed.
         /// </summary>
@@ -552,17 +618,32 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
-            if (!object.Equals(field, value))
-            {
-                var old = field;
-                field = value;
-                RaisePropertyChanged(property, old, value, BindingPriority.LocalValue);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return SetAndRaise(
+                property,
+                ref field,
+                (T val, ref T backing, Action<Action> notifyWrapper)
+                    => SetAndRaiseCore(property, ref backing, val, notifyWrapper),
+                value);
+        }
+
+        /// <summary>
+        /// Default assignment logic for SetAndRaise.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="field">The backing field.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+        /// <returns>
+        /// True if the value changed, otherwise false.
+        /// </returns>
+        private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
+        {
+            var old = field;
+            field = value;
+
+            notifyWrapper(() => RaisePropertyChanged(property, old, value, BindingPriority.LocalValue));
+            return true;
         }
 
         /// <summary>
@@ -622,7 +703,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         private object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && _inheritanceParent is AvaloniaObject aobj)
+            if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
                 return aobj.GetValueInternal(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
@@ -660,42 +741,41 @@ namespace Avalonia
         /// <param name="value">The value.</param>
         private void SetDirectValue(AvaloniaProperty property, object value)
         {
-            var notification = value as BindingNotification;
-
-            if (notification != null)
+            void Set()
             {
-                if (notification.ErrorType == BindingErrorType.Error)
-                {
-                    Logger.Error(
-                        LogArea.Binding,
-                        this,
-                        "Error in binding to {Target}.{Property}: {Message}",
-                        this,
-                        property,
-                        ExceptionUtilities.GetMessage(notification.Error));
-                }
+                var notification = value as BindingNotification;
 
-                if (notification.HasValue)
+                if (notification != null)
                 {
+                    notification.LogIfError(this, property);
                     value = notification.Value;
                 }
+
+                if (notification == null || notification.ErrorType == BindingErrorType.Error || notification.HasValue)
+                {
+                    var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
+                    var accessor = (IDirectPropertyAccessor)GetRegistered(property);
+                    var finalValue = value == AvaloniaProperty.UnsetValue ?
+                        metadata.UnsetValue : value;
+
+                    LogPropertySet(property, value, BindingPriority.LocalValue);
+
+                    accessor.SetValue(this, finalValue);
+                }
+
+                if (notification != null)
+                {
+                    UpdateDataValidation(property, notification);
+                }
             }
 
-            if (notification == null || notification.HasValue)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                var metadata = (IDirectPropertyMetadata)property.GetMetadata(GetType());
-                var accessor = (IDirectPropertyAccessor)GetRegistered(property);
-                var finalValue = value == AvaloniaProperty.UnsetValue ? 
-                    metadata.UnsetValue : value;
-
-                LogPropertySet(property, value, BindingPriority.LocalValue);
-
-                accessor.SetValue(this, finalValue);
+                Set();
             }
-
-            if (notification != null)
+            else
             {
-                UpdateDataValidation(property, notification);
+                Dispatcher.UIThread.Post(Set);
             }
         }
 
@@ -725,11 +805,6 @@ namespace Avalonia
 
             var originalValue = value;
 
-            if (!AvaloniaPropertyRegistry.Instance.IsRegistered(this, property))
-            {
-                ThrowNotRegistered(property);
-            }
-
             if (!TypeUtilities.TryConvertImplicit(property.PropertyType, value, out value))
             {
                 throw new ArgumentException(string.Format(
@@ -757,18 +832,32 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Given a <see cref="AvaloniaProperty"/> returns a registered avalonia property that is
-        /// equal or throws if not found.
+        /// Given a direct property, returns a registered avalonia property that is equivalent or
+        /// throws if not found.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The registered property.</returns>
-        public AvaloniaProperty GetRegistered(AvaloniaProperty property)
+        private AvaloniaProperty GetRegistered(AvaloniaProperty property)
         {
-            var result = AvaloniaPropertyRegistry.Instance.FindRegistered(this, property);
+            var direct = property as IDirectPropertyAccessor;
+
+            if (direct == null)
+            {
+                throw new AvaloniaInternalException(
+                    "AvaloniaObject.GetRegistered should only be called for direct properties");
+            }
+
+            if (property.OwnerType.IsAssignableFrom(GetType()))
+            {
+                return property;
+            }
+
+            var result =  AvaloniaPropertyRegistry.Instance.GetRegistered(this)
+                .FirstOrDefault(x => x == property);
 
             if (result == null)
             {
-                ThrowNotRegistered(property);
+                throw new ArgumentException($"Property '{property.Name} not registered on '{this.GetType()}");
             }
 
             return result;
@@ -818,16 +907,6 @@ namespace Avalonia
                 property,
                 value,
                 priority);
-        }
-
-        /// <summary>
-        /// Throws an exception indicating that the specified property is not registered on this
-        /// object.
-        /// </summary>
-        /// <param name="p">The property</param>
-        private void ThrowNotRegistered(AvaloniaProperty p)
-        {
-            throw new ArgumentException($"Property '{p.Name} not registered on '{this.GetType()}");
         }
     }
 }

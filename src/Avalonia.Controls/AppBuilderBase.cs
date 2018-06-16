@@ -14,6 +14,8 @@ namespace Avalonia.Controls
     /// <typeparam name="TAppBuilder">The type of the AppBuilder class itself.</typeparam>
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
+        private static bool s_setupWasAlreadyCalled;
+        
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
@@ -207,6 +209,8 @@ namespace Avalonia.Controls
 
         public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
 
+        protected virtual bool CheckSetup => true;
+
         private void SetupAvaloniaModules()
         {
             var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
@@ -251,6 +255,13 @@ namespace Avalonia.Controls
             {
                 throw new InvalidOperationException("No rendering system configured.");
             }
+
+            if (s_setupWasAlreadyCalled && CheckSetup)
+            {
+                throw new InvalidOperationException("Setup was already called on one of AppBuilder instances");
+            }
+
+            s_setupWasAlreadyCalled = true;
 
             Instance.RegisterServices();
             RuntimePlatformServicesInitializer();

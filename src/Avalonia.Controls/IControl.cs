@@ -14,36 +14,13 @@ namespace Avalonia.Controls
     /// <summary>
     /// Interface for Avalonia controls.
     /// </summary>
-    public interface IControl : IVisual, ILogical, ILayoutable, IInputElement, INamed, IStyleable, IStyleHost
+    public interface IControl : IVisual,
+        IDataTemplateHost,
+        ILayoutable,
+        IInputElement,
+        INamed,
+        IStyledElement
     {
-        /// <summary>
-        /// Occurs when the control has finished initialization.
-        /// </summary>
-        event EventHandler Initialized;
-
-        /// <summary>
-        /// Gets or sets the control's styling classes.
-        /// </summary>
-        new Classes Classes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the control's data context.
-        /// </summary>
-        object DataContext { get; set; }
-
-        /// <summary>
-        /// Gets the data templates for the control.
-        /// </summary>
-        DataTemplates DataTemplates { get; }
-
-        /// <summary>
-        /// Gets a value that indicates whether the element has finished initialization.
-        /// </summary>
-        bool IsInitialized { get; }
-
-        /// <summary>
-        /// Gets the control's logical parent.
-        /// </summary>
-        IControl Parent { get; }
+        new IControl Parent { get; }
     }
 }

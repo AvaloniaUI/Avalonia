@@ -28,8 +28,10 @@ namespace Avalonia
     {
         private readonly Type _valueType;
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
-        private object _value;
+
         private readonly Func<object, object> _validate;
+        private static readonly DeferredSetter<PriorityValue, (object value, int priority)> delayedSetter = new DeferredSetter<PriorityValue, (object, int)>();
+        private (object value, int priority) _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityValue"/> class.
@@ -47,9 +49,20 @@ namespace Avalonia
             Owner = owner;
             Property = property;
             _valueType = valueType;
-            _value = AvaloniaProperty.UnsetValue;
-            ValuePriority = int.MaxValue;
+            _value = (AvaloniaProperty.UnsetValue, int.MaxValue);
             _validate = validate;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the property is animating.
+        /// </summary>
+        public bool IsAnimating
+        {
+            get
+            {
+                return ValuePriority <= (int)BindingPriority.Animation && 
+                    GetLevel(ValuePriority).ActiveBindingIndex != -1;
+            }
         }
 
         /// <summary>
@@ -65,16 +78,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the current value.
         /// </summary>
-        public object Value => _value;
+        public object Value => _value.value;
 
         /// <summary>
         /// Gets the priority of the binding that is currently active.
         /// </summary>
-        public int ValuePriority
-        {
-            get;
-            private set;
-        }
+        public int ValuePriority => _value.priority;
 
         /// <summary>
         /// Adds a new binding.
@@ -189,14 +198,7 @@ namespace Avalonia
         /// <param name="error">The binding error.</param>
         public void LevelError(PriorityLevel level, BindingNotification error)
         {
-            Logger.Log(
-                LogEventLevel.Error,
-                LogArea.Binding,
-                Owner,
-                "Error in binding to {Target}.{Property}: {Message}",
-                Owner,
-                Property,
-                error.Error.Message);
+            error.LogIfError(Owner, Property);
         }
 
         /// <summary>
@@ -241,25 +243,36 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            var notification = value as BindingNotification;
+            delayedSetter.SetAndNotify(this,
+                ref _value,
+                UpdateCore,
+                (value, priority));
+        }
+
+        private bool UpdateCore(
+            (object value, int priority) update,
+            ref (object value, int priority) backing,
+            Action<Action> notify)
+        {
+            var val = update.value;
+            var notification = val as BindingNotification;
             object castValue;
 
             if (notification != null)
             {
-                value = (notification.HasValue) ? notification.Value : null;
+                val = (notification.HasValue) ? notification.Value : null;
             }
 
-            if (TypeUtilities.TryConvertImplicit(_valueType, value, out castValue))
+            if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
             {
-                var old = _value;
+                var old = backing.value;
 
                 if (_validate != null && castValue != AvaloniaProperty.UnsetValue)
                 {
                     castValue = _validate(castValue);
                 }
 
-                ValuePriority = priority;
-                _value = castValue;
+                backing = (castValue, update.priority);
 
                 if (notification?.HasValue == true)
                 {
@@ -268,7 +281,7 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    Owner?.Changed(this, old, _value);
+                    notify(() => Owner?.Changed(this, old, Value));
                 }
 
                 if (notification != null)
@@ -279,14 +292,15 @@ namespace Avalonia
             else
             {
                 Logger.Error(
-                    LogArea.Binding, 
+                    LogArea.Binding,
                     Owner,
                     "Binding produced invalid value for {$Property} ({$PropertyType}): {$Value} ({$ValueType})",
-                    Property.Name, 
-                    _valueType, 
-                    value,
-                    value?.GetType());
+                    Property.Name,
+                    _valueType,
+                    val,
+                    val?.GetType());
             }
+            return true;
         }
     }
 }

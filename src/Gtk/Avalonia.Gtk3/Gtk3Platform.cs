@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,24 +13,42 @@ using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Gtk3;
+using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
-    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface, IRendererFactory
+    public class Gtk3Platform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         internal static readonly Gtk3Platform Instance = new Gtk3Platform();
         internal static readonly MouseDevice Mouse = new MouseDevice();
         internal static readonly KeyboardDevice Keyboard = new KeyboardDevice();
         internal static IntPtr App { get; set; }
+        internal static string DisplayClassName;
+        public static bool UseDeferredRendering = true;
+        private static bool s_gtkInitialized;
         public static void Initialize()
         {
-            Resolver.Resolve();
-            Native.GtkInit(0, IntPtr.Zero);
-            using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
-                App = Native.GtkApplicationNew(utf, 0);
-            //Mark current thread as UI thread
-            s_tlsMarker = true;
+            if (!s_gtkInitialized)
+            {
+                try
+                {
+                    X11.XInitThreads();
+                }catch{}
+                Resolver.Resolve();
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    using (var backends = new Utf8Buffer("x11"))
+                        Native.GdkSetAllowedBackends?.Invoke(backends);
+                Native.GtkInit(0, IntPtr.Zero);
+                var disp = Native.GdkGetDefaultDisplay();
+                DisplayClassName =
+                    Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
 
+                using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                    App = Native.GtkApplicationNew(utf, 0);
+                //Mark current thread as UI thread
+                s_tlsMarker = true;
+                s_gtkInitialized = true;
+            }
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
@@ -38,7 +57,6 @@ namespace Avalonia.Gtk3
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
-                .Bind<IRendererFactory>().ToConstant(ImmediateRenderer.Factory)
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
 
         }
@@ -52,11 +70,6 @@ namespace Avalonia.Gtk3
 
         public IPopupImpl CreatePopup() => new PopupImpl();
 
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
-        {
-            return new ImmediateRenderer(root);
-        }
-
         public Size DoubleClickSize => new Size(4, 4);
 
         public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(100); //STUB
@@ -69,39 +82,42 @@ namespace Avalonia.Gtk3
                 Native.GtkMainIteration();
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action tick)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return GlibTimeout.StarTimer((uint) interval.TotalMilliseconds, tick);
+            var msec = interval.TotalMilliseconds;
+            var imsec = (uint) msec;
+            if (imsec == 0)
+                imsec = 1;
+            return GlibTimeout.StartTimer(GlibPriority.FromDispatcherPriority(priority), imsec, tick);
         }
 
-        private bool _signaled = false;
+        private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];
         object _lock = new object();
-
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
+            var idx = (int) prio;
             lock(_lock)
-                if (!_signaled)
+                if (!_signaled[idx])
                 {
-                    _signaled = true;
-                    GlibTimeout.Add(0, () =>
+                    _signaled[idx] = true;
+                    GlibTimeout.Add(GlibPriority.FromDispatcherPriority(prio), 0, () =>
                     {
                         lock (_lock)
                         {
-                            _signaled = false;
+                            _signaled[idx] = false;
                         }
-                        Signaled?.Invoke();
+                        Signaled?.Invoke(prio);
                         return false;
                     });
                 }
         }
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
 
         [ThreadStatic]
         private static bool s_tlsMarker;
 
         public bool CurrentThreadIsLoopThread => s_tlsMarker;
-
     }
 }
 
@@ -109,10 +125,11 @@ namespace Avalonia
 {
     public static class Gtk3AppBuilderExtensions
     {
-        public static T UseGtk3<T>(this AppBuilderBase<T> builder, ICustomGtk3NativeLibraryResolver resolver = null) 
+        public static T UseGtk3<T>(this AppBuilderBase<T> builder, bool deferredRendering = true, ICustomGtk3NativeLibraryResolver resolver = null) 
             where T : AppBuilderBase<T>, new()
         {
             Resolver.Custom = resolver;
+            Gtk3Platform.UseDeferredRendering = deferredRendering;
             return builder.UseWindowingSubsystem(Gtk3Platform.Initialize, "GTK3");
         }
     }

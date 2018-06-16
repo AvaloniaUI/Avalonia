@@ -1,18 +1,20 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
-    /// Defines a factory for creating <see cref="IRenderer"/> instances.
+    /// Defines the interface for a renderer factory.
     /// </summary>
     public interface IRendererFactory
     {
         /// <summary>
-        /// Creates a new renderer for the specified render root.
+        /// Creates a renderer.
         /// </summary>
-        /// <param name="root">The render root.</param>
+        /// <param name="root">The root visual.</param>
         /// <param name="renderLoop">The render loop.</param>
-        /// <returns>An instance of an <see cref="IRenderer"/>.</returns>
-        IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop);
+        IRenderer Create(IRenderRoot root, IRenderLoop renderLoop);
     }
 }

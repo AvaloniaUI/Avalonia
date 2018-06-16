@@ -704,7 +704,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(target.DesiredSize));
 
-            Assert.Equal(0, target.Panel.Children.Count);
+            Assert.Empty(target.Panel.Children);
 
             items.AddRange(defaultItems.Select(s => s + " new"));
 
@@ -993,6 +993,8 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             var scroller = new TestScroller
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = result = new TestItemsPresenter(useContainers)
                 {
                     Items = items,
@@ -1028,6 +1030,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
+            public double RenderScaling => 1;
 
             public Size MaxClientSize => Size.Infinity;
 

@@ -10,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public struct Vector
+    public readonly struct Vector
     {
         /// <summary>
         /// The X vector.
@@ -72,6 +72,17 @@ namespace Avalonia
         public static Vector operator *(Vector vector, double scale)
         {
             return new Vector(vector._x * scale, vector._y * scale);
+        }
+
+        /// <summary>
+        /// Scales a vector.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scale">The divisor.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector operator /(Vector vector, double scale)
+        {
+            return new Vector(vector._x / scale, vector._y / scale);
         }
 
         /// <summary>

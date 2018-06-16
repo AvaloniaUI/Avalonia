@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
     public class ScrollContentPresenterTests_ILogicalScrollable
     {
         [Fact]
-        public void Measure_Should_Pass_Unchanged_Bounds_To_IScrollable()
+        public void Measure_Should_Pass_Unchanged_Bounds_To_ILogicalScrollable()
         {
             var scrollable = new TestScrollable();
             var target = new ScrollContentPresenter
@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Arrange_Should_Not_Offset_IScrollable_Bounds()
+        public void Arrange_Should_Not_Offset_ILogicalScrollable_Bounds()
         {
             var scrollable = new TestScrollable
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Arrange_Should_Offset_IScrollable_Bounds_When_Logical_Scroll_Disabled()
+        public void Arrange_Should_Offset_ILogicalScrollable_Bounds_When_Logical_Scroll_Disabled()
         {
             var scrollable = new TestScrollable
             {
@@ -59,6 +59,8 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = scrollable,
                 Offset = new Vector(25, 25),
             };
@@ -71,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Arrange_Should_Not_Set_Viewport_And_Extent_With_IScrollable()
+        public void Arrange_Should_Not_Set_Viewport_And_Extent_With_ILogicalScrollable()
         {
             var target = new ScrollContentPresenter
             {
@@ -122,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Extent_Offset_And_Viewport_Should_Be_Read_From_IScrollable()
+        public void Extent_Offset_And_Viewport_Should_Be_Read_From_ILogicalScrollable()
         {
             var scrollable = new TestScrollable
             {
@@ -152,7 +154,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Offset_Should_Be_Written_To_IScrollable()
+        public void Offset_Should_Be_Written_To_ILogicalScrollable()
         {
             var scrollable = new TestScrollable
             {
@@ -172,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Offset_Should_Not_Be_Written_To_IScrollable_After_Removal()
+        public void Offset_Should_Not_Be_Written_To_ILogicalScrollable_After_Removal()
         {
             var scrollable = new TestScrollable
             {
@@ -203,6 +205,8 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = scrollable,
             };
 
@@ -253,6 +257,8 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ScrollContentPresenter
             {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
                 Content = logicalScrollable,
             };
 
@@ -286,12 +292,38 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 100, 100), logicalScrollable.Bounds);
         }
 
+        [Fact]
+        public void Should_Set_ILogicalScrolable_CanHorizontallyScroll()
+        {
+            var logicalScrollable = new TestScrollable();
+            var target = new ScrollContentPresenter { Content = logicalScrollable };
+
+            target.UpdateChild();
+            Assert.False(logicalScrollable.CanHorizontallyScroll);
+            target.CanHorizontallyScroll = true;
+            Assert.True(logicalScrollable.CanHorizontallyScroll);
+        }
+
+        [Fact]
+        public void Should_Set_ILogicalScrolable_CanVerticallyScroll()
+        {
+            var logicalScrollable = new TestScrollable();
+            var target = new ScrollContentPresenter { Content = logicalScrollable };
+
+            target.UpdateChild();
+            Assert.False(logicalScrollable.CanVerticallyScroll);
+            target.CanVerticallyScroll = true;
+            Assert.True(logicalScrollable.CanVerticallyScroll);
+        }
+
         private class TestScrollable : Control, ILogicalScrollable
         {
             private Size _extent;
             private Vector _offset;
             private Size _viewport;
 
+            public bool CanHorizontallyScroll { get; set; }
+            public bool CanVerticallyScroll { get; set; }
             public bool IsLogicalScrollEnabled { get; set; } = true;
             public Size AvailableSize { get; private set; }
             public Action InvalidateScroll { get; set; }

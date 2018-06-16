@@ -24,7 +24,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly StyledProperty<ICommand> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>();
+            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -93,6 +93,7 @@ namespace Avalonia.Controls
         static MenuItem()
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
+            CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
             IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
@@ -100,6 +101,11 @@ namespace Avalonia.Controls
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
             AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
+        }
+
+        public MenuItem()
+        {
+
         }
 
         /// <summary>
@@ -192,7 +198,11 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            Command?.Execute(CommandParameter);
+            if (Command != null)
+            {
+                Command.Execute(CommandParameter);
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -298,6 +308,21 @@ namespace Avalonia.Controls
                     () => IsSubMenuOpen = true,
                     TimeSpan.FromMilliseconds(400));
             }
+            else
+            {
+                var parentItem = Parent as MenuItem;
+                if (parentItem != null)
+                {
+                    foreach (var sibling in parentItem.Items
+                        .OfType<MenuItem>()
+                        .Where(x => x != this && x.IsSubMenuOpen))
+                    {
+                        sibling.CloseSubmenus();
+                        sibling.IsSubMenuOpen = false;
+                        sibling.IsSelected = false;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -398,6 +423,40 @@ namespace Avalonia.Controls
             {
                 child.IsSubMenuOpen = false;
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Command"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is MenuItem menuItem)
+            {
+                if (e.OldValue is ICommand oldCommand)
+                {
+                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
+                }
+
+                if (e.NewValue is ICommand newCommand)
+                {
+                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                }
+
+                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void CanExecuteChanged(object sender, EventArgs e)
+        {
+            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
+            // use IsEnabledCore etc. but it will do for now.
+            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
         }
 
         /// <summary>

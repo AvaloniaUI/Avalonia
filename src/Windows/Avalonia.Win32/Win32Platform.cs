@@ -1,41 +1,43 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using Avalonia.Controls;
-using Avalonia.Rendering;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#else
-using System.ComponentModel;
-#endif
 
 namespace Avalonia
 {
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseWin32<T>(
+            this T builder,
+            bool deferredRendering = true) 
+                where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(Win32.Win32Platform.Initialize, "Win32");
-            return builder;
+            return builder.UseWindowingSubsystem(
+                () => Win32.Win32Platform.Initialize(deferredRendering),
+                "Win32");
         }
     }
 }
 
 namespace Avalonia.Win32
 {
-    partial class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IRendererFactory
+    class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static uint _uiThread;
@@ -54,6 +56,8 @@ namespace Avalonia.Win32
             CreateMessageWindow();
         }
 
+        public static bool UseDeferredRendering { get; set; }
+
         public Size DoubleClickSize => new Size(
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
             UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
@@ -62,6 +66,11 @@ namespace Avalonia.Win32
 
         public static void Initialize()
         {
+            Initialize(true);
+        }
+
+        public static void Initialize(bool deferredRendering = true)
+        {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
@@ -69,12 +78,15 @@ namespace Avalonia.Win32
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
-                .Bind<IRendererFactory>().ToConstant(s_instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-            
+
+            UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
+
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
         }
 
         public bool HasMessages()
@@ -102,7 +114,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IDisposable StartTimer(TimeSpan interval, Action callback)
+        public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
@@ -126,7 +138,7 @@ namespace Avalonia.Win32
         private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
         private static readonly int SignalL = unchecked((int)0x12345678);
 
-        public void Signal()
+        public void Signal(DispatcherPriority prio)
         {
             UnmanagedMethods.PostMessage(
                 _hwnd,
@@ -137,14 +149,14 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == UnmanagedMethods.GetCurrentThreadId();
 
-        public event Action Signaled;
+        public event Action<DispatcherPriority?> Signaled;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
-                Signaled?.Invoke();
+                Signaled?.Invoke(null);
             }
             return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
@@ -156,7 +168,7 @@ namespace Avalonia.Win32
 
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf(typeof(UnmanagedMethods.WNDCLASSEX)),
+                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
@@ -184,13 +196,9 @@ namespace Avalonia.Win32
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
-#if NETSTANDARD
-            throw new NotSupportedException();
-#else
             var embedded = new EmbeddedWindowImpl();
             embedded.Show();
             return embedded;
-#endif
         }
 
         public IPopupImpl CreatePopup()
@@ -198,9 +206,39 @@ namespace Avalonia.Win32
             return new PopupImpl();
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root, IRenderLoop renderLoop)
+        public IWindowIconImpl LoadIcon(string fileName)
         {
-            return new ImmediateRenderer(root);
+            using (var stream = File.OpenRead(fileName))
+            {
+                return CreateIconImpl(stream);
+            }
         }
+
+        public IWindowIconImpl LoadIcon(Stream stream)
+        {
+            return CreateIconImpl(stream);
+        }
+
+        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream);
+                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+            }
+        }
+
+        private static IconImpl CreateIconImpl(Stream stream)
+        {
+            try
+            {
+                return new IconImpl(new System.Drawing.Icon(stream));
+            }
+            catch (ArgumentException)
+            {
+                return new IconImpl(new System.Drawing.Bitmap(stream));
+            }
+        }
+
     }
 }

@@ -1,37 +1,43 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
-using OmniXaml;
-using OmniXaml.ObjectAssembler;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Context;
+using System.Collections.Generic;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    using Portable.Xaml;
+
     public class TemplateContent
     {
-        private readonly IEnumerable<Instruction> nodes;
-        private readonly IRuntimeTypeSource runtimeTypeSource;
-
-        public TemplateContent(IEnumerable<Instruction> nodes, IRuntimeTypeSource runtimeTypeSource)
+        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader,
+            IAmbientProvider ambientProvider)
         {
-            this.nodes = nodes;
-            this.runtimeTypeSource = runtimeTypeSource;
-        }
+            ParentAmbientProvider = ambientProvider;
+            List = new XamlNodeList(reader.SchemaContext);
 
-        public Control Load()
-        {
-            var assembler = new AvaloniaObjectAssembler(
-                runtimeTypeSource,
-                new TopDownValueContext());
-
-            foreach (var xamlNode in nodes)
+            //we need to rpeserve all namespace and prefixes to writer
+            //otherwise they are lost. a bug in Portable.xaml or by design ??
+            foreach (var ns in namespaces)
             {
-                assembler.Process(xamlNode);
+                List.Writer.WriteNamespace(ns);
             }
 
-            return (Control)assembler.Result;
+            XamlServices.Transform(reader, List.Writer);
+        }
+
+        public XamlNodeList List { get; }
+
+        private IAmbientProvider ParentAmbientProvider { get; }
+
+        public IControl Load()
+        {
+            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader(), parentAmbientProvider: ParentAmbientProvider);
+        }
+
+        public static IControl Load(object templateContent)
+        {
+            return ((TemplateContent)templateContent).Load();
         }
     }
 }

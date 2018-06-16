@@ -1,187 +1,34 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F1FDC5B0-4654-416F-AE69-E3E9BBD87801}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RenderTest</RootNamespace>
-    <AssemblyName>RenderTest</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="WindowsBase" />
+    <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj" />
+    
+    <ProjectReference Condition="'$(TargetFramework)'=='netcoreapp2.0'" Include="..\..\src\Avalonia.DotNetCoreRuntime\Avalonia.DotNetCoreRuntime.csproj" />
+                      
+    <ProjectReference Condition="'$(TargetFramework)'=='net461'" Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
+
+    <ProjectReference Include="..\..\src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ClippingPage.xaml.cs">
-      <DependentUpon>ClippingPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\AnimationsPage.xaml.cs">
-      <DependentUpon>AnimationsPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ViewModels\MainWindowViewModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="App.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj">
-      <Project>{d211e587-d8bc-45b9-95a4-f297c8fa5200}</Project>
-      <Name>Avalonia.Animation</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj">
-      <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
-      <Name>Avalonia.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
-      <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
-      <Name>Avalonia.Controls</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.DesignerSupport\Avalonia.DesignerSupport.csproj">
-      <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
-      <Name>Avalonia.DesignerSupport</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
-      <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
-      <Name>Avalonia.Diagnostics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
-      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
-      <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
-      <Name>Avalonia.Input</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj">
-      <Project>{6b0ed19d-a08b-461c-a9d9-a9ee40b0c06b}</Project>
-      <Name>Avalonia.Interactivity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj">
-      <Project>{42472427-4774-4c81-8aff-9f27b8e31721}</Project>
-      <Name>Avalonia.Layout</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Logging.Serilog\Avalonia.Logging.Serilog.csproj">
-      <Project>{b61b66a3-b82d-4875-8001-89d3394fe0c9}</Project>
-      <Name>Avalonia.Logging.Serilog</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj">
-      <Project>{6417b24e-49c2-4985-8db2-3ab9d898ec91}</Project>
-      <Name>Avalonia.ReactiveUI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj">
-      <Project>{eb582467-6abb-43a1-b052-e981ba910e3a}</Project>
-      <Name>Avalonia.Visuals</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj">
-      <Project>{f1baa01a-f176-4c6a-b39d-5b40bb1b148f}</Project>
-      <Name>Avalonia.Styling</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj">
-      <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
-      <Name>Avalonia.Themes.Default</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Cairo\Avalonia.Cairo.csproj">
-      <Project>{fb05ac90-89ba-4f2f-a924-f37875fb547c}</Project>
-      <Name>Avalonia.Cairo</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Gtk\Avalonia.Gtk\Avalonia.Gtk.csproj">
-      <Project>{54f237d5-a70a-4752-9656-0c70b1a7b047}</Project>
-      <Name>Avalonia.Gtk</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj">
-      <Project>{3e53a01a-b331-47f3-b828-4a5717e77a24}</Project>
-      <Name>Avalonia.Markup.Xaml</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Project>{6417e941-21bc-467b-a771-0de389353ce6}</Project>
-      <Name>Avalonia.Markup</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia.Desktop\Avalonia.Skia.Desktop.csproj">
-      <Project>{925dd807-b651-475f-9f7c-cbeb974ce43d}</Project>
-      <Name>Avalonia.Skia.Desktop</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj">
-      <Project>{3e908f67-5543-4879-a1dc-08eace79b3cd}</Project>
-      <Name>Avalonia.Direct2D1</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Windows\Avalonia.Win32\Avalonia.Win32.csproj">
-      <Project>{811a76cf-1cf6-440f-963b-bbe31bd72a82}</Project>
-      <Name>Avalonia.Win32</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="MainWindow.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="SideBar.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\AnimationsPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\ClippingPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\build\SampleApp.props" />
+  <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Serilog.props" />
-  <Import Project="..\..\build\Serilog.Sinks.Trace.props" />
-  <Import Project="..\..\build\Splat.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Shared\nuget.workaround.targets" />
+  <Import Project="..\..\build\ReactiveUI.props" />
 </Project>

@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Shapes
     public class Path : Shape
     {
         public static readonly StyledProperty<Geometry> DataProperty =
-            AvaloniaProperty.Register<Path, Geometry>("Data");
+            AvaloniaProperty.Register<Path, Geometry>(nameof(Data));
 
         static Path()
         {

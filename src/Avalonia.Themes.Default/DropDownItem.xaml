@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="DropDownItem">
+    <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Padding" Value="2"/>
     <Setter Property="HorizontalAlignment" Value="Stretch"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -9,8 +10,8 @@
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
-                          Content="{TemplateBinding Content}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding Content}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                           Padding="{TemplateBinding Padding}"/>

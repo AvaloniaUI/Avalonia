@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Specialized;
 using System.Linq;
 using Moq;
@@ -11,6 +12,9 @@ using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
+using Avalonia.Markup.Data;
+using Avalonia.Data;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -271,6 +275,60 @@ namespace Avalonia.Controls.UnitTests
             ((ContentPresenter)target.Presenter).UpdateChild();
 
             Assert.Null(target.Presenter.Child.DataContext);
+        }
+
+        [Fact]
+        public void Binding_ContentTemplate_After_Content_Does_Not_Leave_Orpaned_TextBlock()
+        {
+            // Test for #1271.
+            var children = new List<IControl>();
+            var presenter = new ContentPresenter();
+
+            // The content and then the content template property need to be bound with delayed bindings
+            // as they are in Avalonia.Markup.Xaml.
+            DelayedBinding.Add(presenter, ContentPresenter.ContentProperty, new Binding("Content")
+            {
+                Priority = BindingPriority.TemplatedParent,
+                RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+            });
+
+            DelayedBinding.Add(presenter, ContentPresenter.ContentTemplateProperty, new Binding("ContentTemplate")
+            {
+                Priority = BindingPriority.TemplatedParent,
+                RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+            });
+
+            presenter.GetObservable(ContentPresenter.ChildProperty).Subscribe(children.Add);
+
+            var target = new ContentControl
+            {
+                Template = new FuncControlTemplate<ContentControl>(_ => presenter),
+                ContentTemplate = new FuncDataTemplate<string>(x => new Canvas()),
+                Content = "foo",
+            };
+                        
+            // The control must be rooted.
+            var root = new TestRoot
+            {
+                Child = target,
+            };
+
+            target.ApplyTemplate();
+
+            // When the template is applied, the Content property is bound before the ContentTemplate
+            // property, causing a TextBlock to be created by the default template before ContentTemplate
+            // is bound.
+            Assert.Collection(
+                children,
+                x => Assert.Null(x),
+                x => Assert.IsType<TextBlock>(x),
+                x => Assert.IsType<Canvas>(x));
+
+            var textBlock = (TextBlock)children[1];
+
+            // The leak in #1271 was caused by the TextBlock's logical parent not being cleared when
+            // it is replaced by the Canvas.
+            Assert.Null(textBlock.GetLogicalParent());
         }
 
         private FuncControlTemplate GetTemplate()

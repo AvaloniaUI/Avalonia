@@ -74,7 +74,7 @@ namespace Avalonia.Controls.UnitTests
                 root.Content = target;
 
                 var templatedParent = new Button();
-                target.TemplatedParent = templatedParent;
+                target.SetValue(StyledElement.TemplatedParentProperty, templatedParent);
                 target.Template = GetTemplate();
 
                 target.Items = new[] { "Foo" };
@@ -323,7 +323,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = GetTemplate(),
             };
 
-            Assert.True(target.Classes.Contains(":empty"));
+            Assert.Contains(":empty", target.Classes);
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { 1, 2, 3 },
             };
 
-            Assert.False(target.Classes.Contains(":empty"));
+            Assert.DoesNotContain(":empty", target.Classes);
         }
 
         [Fact]
@@ -349,7 +349,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Items = new int[0];
 
-            Assert.True(target.Classes.Contains(":empty"));
+            Assert.Contains(":empty", target.Classes);
         }
 
         [Fact]
@@ -360,7 +360,7 @@ namespace Avalonia.Controls.UnitTests
 
             var presenter = new ItemsPresenter
             {
-                TemplatedParent = target,
+                [StyledElement.TemplatedParentProperty] = target,
                 [~ItemsPresenter.ItemsProperty] = target[~ItemsControl.ItemsProperty],
             };
 
@@ -388,7 +388,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = GetTemplate(),
                 DataContext = "Base",
-                DataTemplates = new DataTemplates
+                DataTemplates =
                 {
                     new FuncDataTemplate<Item>(x => new Button { Content = x })
                 },

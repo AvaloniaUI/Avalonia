@@ -8,9 +8,10 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -171,7 +172,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.SelectedItem = new Item();
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -278,7 +279,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Items = null;
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -305,7 +306,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items.RemoveAt(1);
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 
@@ -334,7 +335,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             items.Clear();
 
-            Assert.Equal(null, target.SelectedItem);
+            Assert.Null(target.SelectedItem);
             Assert.Equal(-1, target.SelectedIndex);
         }
 

@@ -4,10 +4,12 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Moq;
@@ -203,6 +205,22 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Setting_SelectionStart_To_SelectionEnd_Sets_CaretPosition_To_SelectionStart()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var textBox = new TextBox
+                {
+                    Text = "0123456789"
+                };
+
+                textBox.SelectionStart = 2;
+                textBox.SelectionEnd = 2;
+                Assert.Equal(2, textBox.CaretIndex);
+            }
+        }
+
+        [Fact]
         public void Setting_Text_Updates_CaretPosition()
         {
             using (UnitTestApplication.Start(Services))
@@ -226,6 +244,81 @@ namespace Avalonia.Controls.UnitTests
                 target.Text = "Changed";
 
                 Assert.True(invoked);
+            }
+        }
+
+        [Fact]
+        public void Press_Enter_Does_Not_Accept_Return()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = false,
+                    Text = "1234"
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal("1234", target.Text);
+            }
+        }
+
+        [Fact]
+        public void Press_Enter_Add_Default_Newline()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal(Environment.NewLine, target.Text);
+            }
+        }
+
+        [Fact]
+        public void Press_Enter_Add_Custom_Newline()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    AcceptsReturn = true,
+                    NewLine = "Test"
+                };
+
+                RaiseKeyEvent(target, Key.Enter, 0);
+
+                Assert.Equal("Test", target.Text);
+            }
+        }
+
+        [Theory]
+        [InlineData(new object[] { false, TextWrapping.NoWrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { false, TextWrapping.Wrap, ScrollBarVisibility.Hidden })]
+        [InlineData(new object[] { true, TextWrapping.NoWrap, ScrollBarVisibility.Auto })]
+        [InlineData(new object[] { true, TextWrapping.Wrap, ScrollBarVisibility.Disabled })]
+        public void Has_Correct_Horizontal_ScrollBar_Visibility(
+            bool acceptsReturn,
+            TextWrapping wrapping,
+            ScrollBarVisibility expected)
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    AcceptsReturn = acceptsReturn,
+                    TextWrapping = wrapping,
+                };
+
+                Assert.Equal(expected, ScrollViewer.GetHorizontalScrollBarVisibility(target));
             }
         }
 

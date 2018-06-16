@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="DropDown">
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderMidBrush}"/>
-    <Setter Property="BorderThickness" Value="{StyleResource ThemeBorderThickness}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -11,6 +11,7 @@
                 BorderThickness="{TemplateBinding BorderThickness}">
           <Grid ColumnDefinitions="*,Auto">
             <ContentControl Content="{TemplateBinding SelectionBoxItem}"
+                            ContentTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"/>
@@ -21,7 +22,7 @@
                           Focusable="False"
                           IsChecked="{TemplateBinding IsDropDownOpen, Mode=TwoWay}"
                           Grid.Column="1">
-              <Path Fill="{StyleResource ThemeForegroundBrush}"
+              <Path Fill="{DynamicResource ThemeForegroundBrush}"
                     Width="8"
                     Height="4"
                     Stretch="Uniform"
@@ -35,7 +36,7 @@
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
                    PlacementTarget="{TemplateBinding}"
                    StaysOpen="False">
-              <Border BorderBrush="{StyleResource ThemeBorderMidBrush}"
+              <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
                 <ScrollViewer>
                   <ItemsPresenter Name="PART_ItemsPresenter"
@@ -51,6 +52,6 @@
     </Setter>
   </Style>
   <Style Selector="DropDown:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{StyleResource ThemeBorderDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>
 </Styles>
