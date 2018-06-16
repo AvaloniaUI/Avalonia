@@ -237,8 +237,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netcoreapp2.0" },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="net461" },
                     new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion, TargetFramework="net461" },
-                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="net461"},
-                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="netcoreapp2.0"}
+                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="net461"}
                 }
                 .Deps(new string[]{"netstandard2.0", "netcoreapp2.0", "net461"},
                     "Serilog", "Serilog.Sinks.Debug", "Serilog.Sinks.Trace", "Sprache",
