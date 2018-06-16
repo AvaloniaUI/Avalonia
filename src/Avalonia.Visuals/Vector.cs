@@ -10,7 +10,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public struct Vector
+    public readonly struct Vector
     {
         /// <summary>
         /// The X vector.

@@ -32,6 +32,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Point Position { get; set; }
         public Action<Point> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -101,6 +102,10 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void CanResize(bool value)
+        {
+        }
+
+        public void SetTopmost(bool value)
         {
         }
     }

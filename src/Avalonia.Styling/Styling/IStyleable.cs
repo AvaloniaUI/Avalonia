@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Collections;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Styling
 {

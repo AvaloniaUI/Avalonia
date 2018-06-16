@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
-        Title="Avalonia Render Test"
-        xmlns:pages="clr-namespace:RenderTest.Pages">
+        Title="AvaloniaUI Rendering Test"
+        xmlns:pages="clr-namespace:RenderTest.Pages"
+        Width="800"
+        Height="600">
   <DockPanel>
     <Menu DockPanel.Dock="Top">
       <MenuItem Header="Rendering">
@@ -22,9 +24,9 @@
     </Menu>
     
     <TabControl Classes="sidebar">
-      <TabControl.Transition>
+      <TabControl.PageTransition>
         <CrossFade Duration="0.25"/>
-      </TabControl.Transition>
+      </TabControl.PageTransition>
       <TabItem Header="Animations"><pages:AnimationsPage/></TabItem>
       <TabItem Header="Clipping"><pages:ClippingPage/></TabItem>
       <TabItem Header="Drawing"><pages:DrawingPage/></TabItem>

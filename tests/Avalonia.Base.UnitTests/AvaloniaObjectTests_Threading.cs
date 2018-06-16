@@ -160,7 +160,9 @@ namespace Avalonia.Base.UnitTests
 
             public bool CurrentThreadIsLoopThread { get; set; }
 
+#pragma warning disable 67
             public event Action<DispatcherPriority?> Signaled;
+#pragma warning restore 67
 
             public void RunLoop(CancellationToken cancellationToken)
             {

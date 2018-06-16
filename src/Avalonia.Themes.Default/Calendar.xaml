@@ -15,9 +15,10 @@
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Name="Root"
-                    HorizontalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    ClipToBounds="True">
 
-          <CalendarItem Name="CalendarItem"
+                    <CalendarItem Name="CalendarItem"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"

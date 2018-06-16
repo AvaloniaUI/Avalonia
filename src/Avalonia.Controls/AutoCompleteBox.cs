@@ -1954,6 +1954,10 @@ namespace Avalonia.Controls
             // 1. Minimum prefix length
             // 2. If a delay timer is in use, use it
             bool populateReady = newText.Length >= MinimumPrefixLength && MinimumPrefixLength >= 0;
+            if(populateReady && MinimumPrefixLength == 0 && String.IsNullOrEmpty(newText) && String.IsNullOrEmpty(SearchText))
+            {
+                populateReady = false;
+            }
             _userCalledPopulate = populateReady ? userInitiated : false;
 
             // Update the interface and values only as necessary
@@ -2146,7 +2150,7 @@ namespace Avalonia.Controls
             }
 
             // Update the view
-            if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
+            if ((e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace) && e.OldItems != null)
             {
                 for (int index = 0; index < e.OldItems.Count; index++)
                 {

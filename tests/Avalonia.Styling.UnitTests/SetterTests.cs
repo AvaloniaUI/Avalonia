@@ -8,9 +8,10 @@ using Avalonia.Data;
 using Xunit;
 using System;
 using Avalonia.Controls.Templates;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup;
 using System.Globalization;
+using Avalonia.Data.Converters;
 
 namespace Avalonia.Styling.UnitTests
 {

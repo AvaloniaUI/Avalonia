@@ -10,7 +10,7 @@
                            Margin="{TemplateBinding Padding}"
                            MemberSelector="{TemplateBinding MemberSelector}"
                            SelectedIndex="{TemplateBinding SelectedIndex}"
-                           Transition="{TemplateBinding Transition}"/>
+                           PageTransition="{TemplateBinding PageTransition}"/>
       </Border>
     </ControlTemplate>
   </Setter>

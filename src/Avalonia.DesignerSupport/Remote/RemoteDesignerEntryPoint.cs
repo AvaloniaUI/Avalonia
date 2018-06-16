@@ -125,7 +125,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         class NeverClose : ICloseable
         {
-            public event EventHandler Closed;
+            public event EventHandler Closed
+            {
+                add {}
+                remove {}
+            }
         }
         
         public static void Main(string[] cmdline)

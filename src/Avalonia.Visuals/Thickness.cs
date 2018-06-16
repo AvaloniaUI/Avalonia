@@ -11,7 +11,7 @@ namespace Avalonia
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
-    public struct Thickness
+    public readonly struct Thickness
     {
         /// <summary>
         /// The thickness on the left.
