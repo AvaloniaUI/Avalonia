@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -17,13 +18,6 @@ namespace Avalonia.Media
     public class PathMarkupParser : IDisposable
     {
         private static readonly string s_separatorPattern;
-
-        private Point _currentPoint;
-        private Point? _previousControlPoint;
-        private PathGeometry _currentGeometry;
-        private PathFigure _currentFigure;
-        private bool _isDisposed;
-
         private static readonly Dictionary<char, Command> s_commands =
             new Dictionary<char, Command>
                 {
@@ -40,9 +34,30 @@ namespace Avalonia.Media
                     { 'Z', Command.Close },
                 };
 
+        private IGeometryContext _geometryContext;
+        private Point _currentPoint;
+        private Point? _previousControlPoint;
+        private bool? _isOpen;
+        private bool _isDisposed;
+
         static PathMarkupParser()
         {
             s_separatorPattern = CreatesSeparatorPattern();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
+        /// </summary>
+        /// <param name="geometryContext">The geometry context.</param>
+        /// <exception cref="ArgumentNullException">geometryContext</exception>
+        public PathMarkupParser(IGeometryContext geometryContext)
+        {
+            if (geometryContext == null)
+            {
+                throw new ArgumentNullException(nameof(geometryContext));
+            }
+
+            _geometryContext = geometryContext;
         }
 
         private enum Command
@@ -61,13 +76,15 @@ namespace Avalonia.Media
             Close
         }
 
-        public PathGeometry Parse(string s)
+        /// <summary>
+        /// Parses the specified path data and writes the result to the geometryContext of this instance.
+        /// </summary>
+        /// <param name="pathData">The path data.</param>
+        public void Parse(string pathData)
         {
-            _currentGeometry = new PathGeometry();
+            var tokens = ParseTokens(pathData);
 
-            var tokens = ParseTokens(s);
-
-            return CreateGeometry(tokens);
+            CreateGeometry(tokens);
         }
 
         void IDisposable.Dispose()
@@ -84,9 +101,7 @@ namespace Avalonia.Media
 
             if (disposing)
             {
-                _currentFigure = null;
-
-                _currentGeometry = null;
+                _geometryContext = null;
             }
 
             _isDisposed = true;
@@ -118,11 +133,9 @@ namespace Avalonia.Media
             return center + -dir;
         }
 
-        private PathGeometry CreateGeometry(IEnumerable<CommandToken> commandTokens)
+        private void CreateGeometry(IEnumerable<CommandToken> commandTokens)
         {
-            _currentGeometry = new PathGeometry();
-
-            _currentPoint = new Point();
+            _currentPoint = new Point();           
 
             foreach (var commandToken in commandTokens)
             {
@@ -189,45 +202,41 @@ namespace Avalonia.Media
                 }
             }
 
-            return _currentGeometry;
-        }
-
-        private void SetFillRule(CommandToken commandToken)
-        {
-            _currentGeometry.FillRule = commandToken.ReadFillRule();
-        }
-
-        private void CloseFigure()
-        {
-            if (_currentFigure != null && !_currentFigure.IsClosed)
+            if (_isOpen != null)
             {
-                _currentFigure.IsClosed = true;
+                _geometryContext.EndFigure(false);
             }
-
-            _previousControlPoint = null;
-
-            _currentFigure = null;
         }
 
         private void CreateFigure()
         {
-            _currentFigure = new PathFigure
+            if (_isOpen != null)
             {
-                StartPoint = _currentPoint,
-                IsClosed = false
-            };
-
-            _currentGeometry.Figures.Add(_currentFigure);
-        }
-
-        private void AddSegment(PathSegment segment)
-        {
-            if (_currentFigure == null)
-            {
-                CreateFigure();
+                _geometryContext.EndFigure(false);
             }
 
-            _currentFigure.Segments.Add(segment);
+            _geometryContext.BeginFigure(_currentPoint);
+
+            _isOpen = true;
+        }
+
+        private void SetFillRule(CommandToken commandToken)
+        {
+            var fillRule = commandToken.ReadFillRule();
+
+            _geometryContext.SetFillRule(fillRule);
+        }
+
+        private void CloseFigure()
+        {
+            if (_isOpen == true)
+            {
+                _geometryContext.EndFigure(true);
+            }
+
+            _previousControlPoint = null;
+
+            _isOpen = null;
         }
 
         private void AddMove(CommandToken commandToken)
@@ -266,66 +275,64 @@ namespace Avalonia.Media
                                 ? commandToken.ReadRelativePoint(_currentPoint)
                                 : commandToken.ReadPoint();
 
-            var lineSegment = new LineSegment
+            if (_isOpen == null)
             {
-                Point = _currentPoint
-            };
+                CreateFigure();
+            }
 
-            AddSegment(lineSegment);
+            _geometryContext.LineTo(_currentPoint);
         }
 
         private void AddHorizontalLine(CommandToken commandToken)
         {
             _currentPoint = commandToken.IsRelative
-                                     ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
-                                     : _currentPoint.WithX(commandToken.ReadDouble());
+                                ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
+                                : _currentPoint.WithX(commandToken.ReadDouble());
 
-            var lineSegment = new LineSegment
+            if (_isOpen == null)
             {
-                Point = _currentPoint
-            };
+                CreateFigure();
+            }
 
-            AddSegment(lineSegment);
+            _geometryContext.LineTo(_currentPoint);
         }
 
         private void AddVerticalLine(CommandToken commandToken)
         {
             _currentPoint = commandToken.IsRelative
-                                     ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
-                                     : _currentPoint.WithY(commandToken.ReadDouble());
+                                ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
+                                : _currentPoint.WithY(commandToken.ReadDouble());
 
-            var lineSegment = new LineSegment
+            if (_isOpen == null)
             {
-                Point = _currentPoint
-            };
+                CreateFigure();
+            }
 
-            AddSegment(lineSegment);
+            _geometryContext.LineTo(_currentPoint);
         }
 
         private void AddCubicBezierCurve(CommandToken commandToken)
         {
             var point1 = commandToken.IsRelative
-                               ? commandToken.ReadRelativePoint(_currentPoint)
-                               : commandToken.ReadPoint();
+                             ? commandToken.ReadRelativePoint(_currentPoint)
+                             : commandToken.ReadPoint();
 
             var point2 = commandToken.IsRelative
-                               ? commandToken.ReadRelativePoint(_currentPoint)
-                               : commandToken.ReadPoint();
+                             ? commandToken.ReadRelativePoint(_currentPoint)
+                             : commandToken.ReadPoint();
 
             _previousControlPoint = point2;
 
             var point3 = commandToken.IsRelative
-                        ? commandToken.ReadRelativePoint(_currentPoint)
-                        : commandToken.ReadPoint();
+                             ? commandToken.ReadRelativePoint(_currentPoint)
+                             : commandToken.ReadPoint();
 
-            var bezierSegment = new BezierSegment
+            if (_isOpen == null)
             {
-                Point1 = point1,
-                Point2 = point2,
-                Point3 = point3
-            };
+                CreateFigure();
+            }
 
-            AddSegment(bezierSegment);
+            _geometryContext.CubicBezierTo(point1, point2, point3);
 
             _currentPoint = point3;
         }
@@ -333,22 +340,21 @@ namespace Avalonia.Media
         private void AddQuadraticBezierCurve(CommandToken commandToken)
         {
             var start = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+                            ? commandToken.ReadRelativePoint(_currentPoint)
+                            : commandToken.ReadPoint();
 
             _previousControlPoint = start;
 
             var end = commandToken.IsRelative
-                            ? commandToken.ReadRelativePoint(_currentPoint)
-                            : commandToken.ReadPoint();
+                          ? commandToken.ReadRelativePoint(_currentPoint)
+                          : commandToken.ReadPoint();
 
-            var quadraticBezierSegment = new QuadraticBezierSegment
+            if (_isOpen == null)
             {
-                Point1 = start,
-                Point2 = end
-            };
+                CreateFigure();
+            }
 
-            AddSegment(quadraticBezierSegment);
+            _geometryContext.QuadraticBezierTo(start, end);
 
             _currentPoint = end;
         }
@@ -356,8 +362,8 @@ namespace Avalonia.Media
         private void AddSmoothCubicBezierCurve(CommandToken commandToken)
         {
             var point2 = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+                             ? commandToken.ReadRelativePoint(_currentPoint)
+                             : commandToken.ReadPoint();
 
             var end = commandToken.IsRelative
                           ? commandToken.ReadRelativePoint(_currentPoint)
@@ -368,10 +374,12 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            var bezierSegment =
-                new BezierSegment { Point1 = _previousControlPoint ?? _currentPoint, Point2 = point2, Point3 = end };
+            if (_isOpen == null)
+            {
+                CreateFigure();
+            }
 
-            AddSegment(bezierSegment);
+            _geometryContext.CubicBezierTo(_previousControlPoint ?? _currentPoint, point2, end);
 
             _previousControlPoint = point2;
 
@@ -389,13 +397,12 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            var quadraticBezierSegment = new QuadraticBezierSegment
+            if (_isOpen == null)
             {
-                Point1 = _previousControlPoint ?? _currentPoint,
-                Point2 = end
-            };
+                CreateFigure();
+            }
 
-            AddSegment(quadraticBezierSegment);
+            _geometryContext.QuadraticBezierTo(_previousControlPoint ?? _currentPoint, end);
 
             _currentPoint = end;
         }
@@ -414,16 +421,12 @@ namespace Avalonia.Media
                           ? commandToken.ReadRelativePoint(_currentPoint)
                           : commandToken.ReadPoint();
 
-            var arcSegment = new ArcSegment
+            if (_isOpen == null)
             {
-                Size = size,
-                RotationAngle = rotationAngle,
-                IsLargeArc = isLargeArc,
-                SweepDirection = sweepDirection,
-                Point = end
-            };
+                CreateFigure();
+            }
 
-            AddSegment(arcSegment);
+            _geometryContext.ArcTo(end, size, rotationAngle, isLargeArc, sweepDirection);
 
             _currentPoint = end;
 
@@ -589,10 +592,7 @@ namespace Avalonia.Media
                 return new Point(origin.X + x, origin.Y + y);
             }
 
-            private static bool ReadCommand(
-                TextReader reader,
-                ref Command command,
-                ref bool relative)
+            private static bool ReadCommand(TextReader reader, ref Command command, ref bool relative)
             {
                 ReadWhitespace(reader);
 

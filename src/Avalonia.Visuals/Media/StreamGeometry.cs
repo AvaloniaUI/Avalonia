@@ -5,6 +5,8 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
+    using Avalonia.Visuals.Platform;
+
     /// <summary>
     /// Represents the geometry of an arbitrarily complex shape.
     /// </summary>
@@ -35,10 +37,15 @@ namespace Avalonia.Media
         /// <returns>A <see cref="StreamGeometry"/>.</returns>
         public static new StreamGeometry Parse(string s)
         {
-            using (var parser = new PathMarkupParser())
-            {
-                return parser.Parse(s);
-            }              
+            var streamGeometry = new StreamGeometry();
+
+            using (var context = streamGeometry.Open())
+            using (var parser = new PathMarkupParser(context))
+            {               
+                parser.Parse(s);
+            }
+
+            return streamGeometry;
         }
 
         /// <inheritdoc/>
