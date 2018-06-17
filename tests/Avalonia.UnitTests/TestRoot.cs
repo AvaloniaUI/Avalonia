@@ -47,8 +47,6 @@ namespace Avalonia.UnitTests
 
         public double RenderScaling => 1;
 
-        public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
-
         public IRenderer Renderer { get; set; }
 
         public IAccessKeyHandler AccessKeyHandler => null;
