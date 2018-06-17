@@ -250,7 +250,26 @@ namespace Avalonia.Skia
                         {
                             float currX = x;
                             string subStr;
+                            float measure;
                             int len;
+                            float factor;
+                            switch (paint.TextAlign)
+                            {
+                                case SKTextAlign.Left:
+                                    factor = 0;
+                                    break;
+                                case SKTextAlign.Center:
+                                    factor = 0.5f;
+                                    break;
+                                case SKTextAlign.Right:
+                                    factor = 1;
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            var textLine = Text.Substring(line.Start, line.Length);
+                            currX -= paint.MeasureText(textLine) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {
@@ -268,13 +287,15 @@ namespace Avalonia.Skia
                                 }
 
                                 subStr = Text.Substring(i, len);
+                                measure = paint.MeasureText(subStr);
+                                currX += measure * factor;
 
                                 ApplyWrapperTo(ref currentPaint, currentWrapper, ref currd, paint, canUseLcdRendering);
 
                                 canvas.DrawText(subStr, currX, origin.Y + line.Top + _lineOffset, paint);
 
                                 i += len;
-                                currX += paint.MeasureText(subStr);
+                                currX += measure * (1 - factor);
                             }
                         }
                     }
@@ -561,8 +582,8 @@ namespace Avalonia.Skia
 
                 measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
-                line.TextLength = measured;
                 line.Start = curOff;
+                line.TextLength = measured;
                 subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
                 line.Length = measured - trailingnumber;
