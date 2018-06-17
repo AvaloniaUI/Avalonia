@@ -8,7 +8,7 @@ using Avalonia.Platform;
 using Avalonia.Visuals.Platform;
 
 namespace Avalonia.Media
-{   
+{
     public class PathGeometry : StreamGeometry
     {
         /// <summary>
