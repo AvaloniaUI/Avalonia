@@ -3,10 +3,24 @@
 
 namespace Avalonia
 {
+    /// <summary>
+    /// Enum for ExitMode
+    /// </summary>
     public enum ExitMode
     {
+        /// <summary>
+        /// Indicates an implicit call to Application.Exit when the last window closes.
+        /// </summary>
         OnLastWindowClose,
+
+        /// <summary>
+        /// Indicates an implicit call to Application.Exit when the main window closes.
+        /// </summary>
         OnMainWindowClose,
+
+        /// <summary>
+        /// Indicates that the application only exits on an explicit call to Application.Exit.
+        /// </summary>
         OnExplicitExit
     }
 }
