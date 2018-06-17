@@ -216,7 +216,7 @@ namespace Avalonia.Controls
         {
             Instance.ExitMode = exitMode;
             return Self;
-        }
+        }      
 
         private bool CheckSetup { get; set; } = true;
 
@@ -228,6 +228,8 @@ namespace Avalonia.Controls
             CheckSetup = false;
             return Self;
         }
+
+        protected virtual bool CheckSetup => true;
 
         private void SetupAvaloniaModules()
         {

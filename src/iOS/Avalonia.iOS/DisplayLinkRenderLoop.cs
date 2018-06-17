@@ -26,7 +26,7 @@ namespace Avalonia.iOS
             {
                 Tick?.Invoke(this, new EventArgs());
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //TODO: log
             }
