@@ -201,13 +201,23 @@ namespace Avalonia.Media
                     break;
                 }
             }
+
+            if (_isOpen != null)
+            {
+                _geometryContext.EndFigure(false);
+            }
         }
 
         private void CreateFigure()
         {
+            if (_isOpen != null)
+            {
+                _geometryContext.EndFigure(false);
+            }
+
             _geometryContext.BeginFigure(_currentPoint);
 
-            this._isOpen = true;
+            _isOpen = true;
         }
 
         private void SetFillRule(CommandToken commandToken)
