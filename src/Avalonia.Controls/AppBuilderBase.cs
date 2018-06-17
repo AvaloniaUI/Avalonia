@@ -218,17 +218,6 @@ namespace Avalonia.Controls
             return Self;
         }      
 
-        private bool CheckSetup { get; set; } = true;
-
-        /// <summary>
-        /// Set this AppBuilder to ignore the setup check. Used for testing purposes.
-        /// </summary>
-        internal TAppBuilder IgnoreSetupCheck()
-        {
-            CheckSetup = false;
-            return Self;
-        }
-
         protected virtual bool CheckSetup => true;
 
         private void SetupAvaloniaModules()
