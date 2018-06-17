@@ -5,8 +5,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    using Avalonia.Visuals.Platform;
-
     /// <summary>
     /// Represents the geometry of an arbitrarily complex shape.
     /// </summary>
