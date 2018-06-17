@@ -226,6 +226,8 @@ namespace Avalonia.Win32.Interop
 
             MK_SHIFT = 0x0004,
 
+            MK_ALT = 0x0020,
+
             MK_XBUTTON1 = 0x0020,
 
             MK_XBUTTON2 = 0x0040
@@ -1383,9 +1385,7 @@ namespace Avalonia.Win32.Interop
         Link = 4,
         Scroll = -2147483648,
     }
-    
-    
-    
+
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("00000122-0000-0000-C000-000000000046")]

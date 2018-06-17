@@ -11,9 +11,10 @@ namespace Avalonia.Input.Raw
         public IDataObject Data { get; }
         public DragDropEffects Effects { get; set; }
         public RawDragEventType Type { get; }
+        public InputModifiers Modifiers { get; }
 
         public RawDragEvent(IDragDropDevice inputDevice, RawDragEventType type, 
-            IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects)
+            IInputElement inputRoot, Point location, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
             :base(inputDevice, 0)
         {
             Type = type;
@@ -21,6 +22,7 @@ namespace Avalonia.Input.Raw
             Location = location;
             Data = data;
             Effects = effects;
+            Modifiers = modifiers;
         }
     }
 }
