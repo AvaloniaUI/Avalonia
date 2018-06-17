@@ -2,24 +2,23 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Media;
-using Avalonia.Platform;
-using Moq;
+using Avalonia.Visuals.Platform;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
 {
-    using System.Linq;
-
     public class PathMarkupParserTests
     {
         [Fact]
         public void Parses_Move()
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {               
-                var geometry = parser.Parse("M10 10");
+                parser.Parse("M10 10");
 
-                var figure = geometry.Figures.First();
+                var figure = pathGeometry.Figures[0];
 
                 Assert.Equal(new Point(10, 10), figure.StartPoint);
             }
@@ -28,13 +27,15 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parses_Line()
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var geometry = parser.Parse("M0 0L10 10");
+                parser.Parse("M0 0L10 10");
 
-                var figure = geometry.Figures.First();
+                var figure = pathGeometry.Figures[0];
 
-                var segment = figure.Segments.First();
+                var segment = figure.Segments[0];
 
                 Assert.IsType<LineSegment>(segment);
 
@@ -47,11 +48,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parses_Close()
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var geometry = parser.Parse("M0 0L10 10z");
+                parser.Parse("M0 0L10 10z");
 
-                var figure = geometry.Figures.First();
+                var figure = pathGeometry.Figures[0];
 
                 Assert.True(figure.IsClosed);
             }
@@ -60,11 +63,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parses_FillMode_Before_Move()
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var geometry = parser.Parse("F 1M0,0");             
+                parser.Parse("F 1M0,0");             
 
-                Assert.Equal(FillRule.NonZero, geometry.FillRule);
+                Assert.Equal(FillRule.NonZero, pathGeometry.FillRule);
             }
         }
 
@@ -74,11 +79,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         [InlineData("M0,0,10,10,20,20")]
         public void Parses_Implicit_Line_Command_After_Move(string pathData)
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var geometry = parser.Parse(pathData);
+                parser.Parse(pathData);
 
-                var figure = geometry.Figures[0];
+                var figure = pathGeometry.Figures[0];
 
                 var segment = figure.Segments[0];
 
@@ -88,7 +95,7 @@ namespace Avalonia.Visuals.UnitTests.Media
 
                 Assert.Equal(new Point(10, 10), lineSegment.Point);
 
-                figure = geometry.Figures[1];
+                figure = pathGeometry.Figures[1];
 
                 segment = figure.Segments[0];
 
@@ -106,11 +113,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         [InlineData("m0,0,10,10,20,20")]
         public void Parses_Implicit_Line_Command_After_Relative_Move(string pathData)
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var geometry = parser.Parse(pathData);
+                parser.Parse(pathData);
 
-                var figure = geometry.Figures[0];
+                var figure = pathGeometry.Figures[0];
 
                 var segment = figure.Segments[0];
 
@@ -155,7 +164,9 @@ namespace Avalonia.Visuals.UnitTests.Media
             "12.461,8.046C14.45,8.278,16,9.949,16,12")]
         public void Should_Parse(string pathData)
         {
-            using (var parser = new PathMarkupParser())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
                 parser.Parse(pathData);
 

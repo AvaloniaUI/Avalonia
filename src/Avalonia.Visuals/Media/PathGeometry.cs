@@ -8,6 +8,8 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
+    using Avalonia.Visuals.Platform;
+
     public class PathGeometry : StreamGeometry
     {
         /// <summary>
@@ -28,7 +30,7 @@ namespace Avalonia.Media
 
         static PathGeometry()
         {
-            FiguresProperty.Changed.AddClassHandler<PathGeometry>((s, e) => 
+            FiguresProperty.Changed.AddClassHandler<PathGeometry>((s, e) =>
                 s.OnFiguresChanged(e.NewValue as PathFigures));
         }
 
@@ -38,6 +40,24 @@ namespace Avalonia.Media
         public PathGeometry()
         {
             Figures = new PathFigures();
+        }
+
+        /// <summary>
+        /// Parses the specified path data to a <see cref="PathGeometry"/>.
+        /// </summary>
+        /// <param name="pathData">The s.</param>
+        /// <returns></returns>
+        public static new PathGeometry Parse(string pathData)
+        {
+            var pathGeometry = new PathGeometry();
+
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse(pathData);
+            }
+
+            return pathGeometry;
         }
 
         /// <summary>
