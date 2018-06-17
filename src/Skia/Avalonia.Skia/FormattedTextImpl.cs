@@ -584,7 +584,6 @@ namespace Avalonia.Skia
                 AvaloniaFormattedTextLine line = new AvaloniaFormattedTextLine();
                 line.Start = curOff;
                 line.TextLength = measured;
-                line.Start = curOff;
                 subString = Text.Substring(line.Start, line.TextLength);
                 lineWidth = _paint.MeasureText(subString);
                 line.Length = measured - trailingnumber;
