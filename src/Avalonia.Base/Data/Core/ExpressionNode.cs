@@ -11,12 +11,15 @@ namespace Avalonia.Data.Core
 {
     public abstract class ExpressionNode : ISubject<object>
     {
+        private static readonly object CacheInvalid = new object();
         protected static readonly WeakReference UnsetReference = 
             new WeakReference(AvaloniaProperty.UnsetValue);
 
         private WeakReference _target = UnsetReference;
         private IDisposable _valueSubscription;
         private IObserver<object> _observer;
+
+        protected WeakReference LastValue { get; private set; }
 
         public abstract string Description { get; }
         public ExpressionNode Next { get; set; }
@@ -61,6 +64,7 @@ namespace Avalonia.Data.Core
             {
                 _valueSubscription?.Dispose();
                 _valueSubscription = null;
+                LastValue = null;
                 nextSubscription?.Dispose();
                 _observer = null;
             });
@@ -120,6 +124,7 @@ namespace Avalonia.Data.Core
 
             if (notification == null)
             {
+                LastValue = new WeakReference(value);
                 if (Next != null)
                 {
                     Next.Target = new WeakReference(value);
@@ -131,6 +136,7 @@ namespace Avalonia.Data.Core
             }
             else
             {
+                LastValue = new WeakReference(notification.Value);
                 if (Next != null)
                 {
                     Next.Target = new WeakReference(notification.Value);

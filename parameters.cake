@@ -1,6 +1,5 @@
 public class Parameters
 {
-    public string Target { get; private set; }
     public string Platform { get; private set; }
     public string Configuration { get; private set; }
     public bool SkipTests { get; private set; }
@@ -43,7 +42,6 @@ public class Parameters
         var buildSystem = context.BuildSystem();
 
         // ARGUMENTS
-        Target = context.Argument("target", "Default");
         Platform = context.Argument("platform", "Any CPU");
         Configuration = context.Argument("configuration", "Release");
         SkipTests = context.HasArgument("skip-tests");

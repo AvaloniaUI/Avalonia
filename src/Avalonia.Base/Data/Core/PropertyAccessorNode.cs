@@ -10,7 +10,7 @@ using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    public class PropertyAccessorNode : ExpressionNode, ISettableNode
+    public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
@@ -23,13 +23,17 @@ namespace Avalonia.Data.Core
 
         public override string Description => PropertyName;
         public string PropertyName { get; }
-        public Type PropertyType => _accessor?.PropertyType;
+        public override Type PropertyType => _accessor?.PropertyType;
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             if (_accessor != null)
             {
-                try { return _accessor.SetValue(value, priority); } catch { }
+                try
+                {
+                    return _accessor.SetValue(value, priority);
+                }
+                catch { }
             }
 
             return false;
@@ -56,7 +60,10 @@ namespace Avalonia.Data.Core
                 () =>
                 {
                     _accessor = accessor;
-                    return Disposable.Create(() => _accessor = null);
+                    return Disposable.Create(() =>
+                    {
+                        _accessor = null;
+                    });
                 },
                 _ => accessor);
         }

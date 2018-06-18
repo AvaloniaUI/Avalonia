@@ -2150,7 +2150,7 @@ namespace Avalonia.Controls
             }
 
             // Update the view
-            if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
+            if ((e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace) && e.OldItems != null)
             {
                 for (int index = 0; index < e.OldItems.Count; index++)
                 {

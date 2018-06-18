@@ -10,6 +10,7 @@ using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
+using JetBrains.Annotations;
 
 namespace Avalonia.Data
 {
@@ -65,7 +66,7 @@ namespace Avalonia.Data
             var children = Bindings.Select(x => x.Initiate(target, null));
             var input = children.Select(x => x.Subject).CombineLatest().Select(x => ConvertValue(x, targetType));
             var mode = Mode == BindingMode.Default ?
-                targetProperty.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
+                targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
             switch (mode)
             {
