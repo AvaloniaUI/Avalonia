@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Avalonia.Data.Core
 {
-    public class AvaloniaPropertyAccessorNode : ExpressionNode, ISettableNode
+    public class AvaloniaPropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private readonly AvaloniaProperty _property;
@@ -18,9 +18,9 @@ namespace Avalonia.Data.Core
 
         public override string Description => PropertyName;
         public string PropertyName { get; }
-        public Type PropertyType => _property.PropertyType;
+        public override Type PropertyType => _property.PropertyType;
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             try
             {

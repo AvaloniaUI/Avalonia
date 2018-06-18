@@ -34,7 +34,7 @@ namespace Avalonia.Data.Core
 
         public override string Description => expression.ToString();
 
-        public override bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             try
             {

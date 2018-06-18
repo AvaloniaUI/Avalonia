@@ -13,7 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class IndexerNodeBase : ExpressionNode, ISettableNode
+    public abstract class IndexerNodeBase : SettableNode
     {
         protected override IObservable<object> StartListeningCore(WeakReference reference)
         {
@@ -40,10 +40,6 @@ namespace Avalonia.Data.Core
 
             return inputs.Merge().StartWith(GetValue(target));
         }
-
-        public abstract bool SetTargetValue(object value, BindingPriority priority);
-
-        public abstract Type PropertyType { get; }
 
         protected abstract object GetValue(object target);
 
