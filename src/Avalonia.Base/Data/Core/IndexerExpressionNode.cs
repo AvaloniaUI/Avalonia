@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using Avalonia.Data;
 
@@ -48,12 +49,21 @@ namespace Avalonia.Data.Core
 
         protected override object GetValue(object target)
         {
-            return getDelegate.DynamicInvoke(target);
+            try
+            {
+                return getDelegate.DynamicInvoke(target);
+            }
+            catch (TargetInvocationException e) when (e.InnerException is ArgumentOutOfRangeException
+                                                        || e.InnerException is IndexOutOfRangeException
+                                                        || e.InnerException is KeyNotFoundException)
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
         }
 
         protected override bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
         {
-            return expression.Indexer.Name == e.PropertyName;
+            return expression.Indexer == null || expression.Indexer.Name == e.PropertyName;
         }
 
         protected override int? TryGetFirstArgumentAsInt() => firstArgumentDelegate.DynamicInvoke(Target.Target) as int?;

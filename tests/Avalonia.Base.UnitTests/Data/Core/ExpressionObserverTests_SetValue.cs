@@ -17,7 +17,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
-            var target = ExpressionObserverBuilder.Build(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
 
             using (target.Subscribe(_ => { }))
             {
@@ -31,7 +31,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Value_On_Simple_Property_Chain()
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
-            var target = ExpressionObserverBuilder.Build(data, "Foo.Bar");
+            var target = ExpressionObserver.Create(data, o => o.Foo.Bar);
+
 
             using (target.Subscribe(_ => { }))
             {
@@ -45,14 +46,15 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Not_Try_To_Set_Value_On_Broken_Chain()
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
-            var target = ExpressionObserverBuilder.Build(data, "Foo.Bar");
+            var target = ExpressionObserver.Create(data, o => o.Foo.Bar);
 
             // Ensure the ExpressionObserver's subscriptions are kept active.
-            target.OfType<string>().Subscribe(x => { });
+            using (target.OfType<string>().Subscribe(x => { }))
+            {
+                data.Foo = null;
+                Assert.False(target.SetValue("foo"));
+            }
 
-            data.Foo = null;
-
-            Assert.False(target.SetValue("foo"));
         }
 
         /// <summary>
@@ -68,13 +70,15 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { Foo = new Class2 { Bar = "bar" } };
             var rootObservable = new BehaviorSubject<Class1>(data);
-            var target = ExpressionObserverBuilder.Build(rootObservable, "Foo.Bar");
+            var target = ExpressionObserver.Create(rootObservable, o => o.Foo.Bar);
 
-            target.Subscribe(_ => { });
-            rootObservable.OnNext(null);
-            target.SetValue("baz");
+            using (target.Subscribe(_ => { }))
+            {
+                rootObservable.OnNext(null);
+                target.SetValue("baz");
+                Assert.Equal("bar", data.Foo.Bar);
+            }
 
-            Assert.Equal("bar", data.Foo.Bar);
         }
 
         private class Class1 : NotifyingBase

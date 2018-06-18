@@ -137,6 +137,15 @@ namespace Avalonia.Markup.UnitTests.Parsers
             AssertIsProperty(result[3], "Baz");
         }
 
+        [Fact]
+        public void Should_Build_Stream_Node()
+        {
+            var result = ToList(ExpressionObserverBuilder.Parse("Foo^"));
+
+            Assert.Equal(2, result.Count);
+            Assert.IsType<StreamNode>(result[1]);
+        }
+
         private void AssertIsProperty(ExpressionNode node, string name)
         {
             Assert.IsType<PropertyAccessorNode>(node);

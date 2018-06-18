@@ -181,6 +181,17 @@ namespace Avalonia.Base.UnitTests.Data.Core
             }
         }
 
+        [Fact]
+        public async Task Should_Create_Method_Binding()
+        {
+            var data = new Class3();
+            var target = ExpressionObserver.Create(data, o => (Action)o.Method);
+            var value = await target.Take(1);
+
+            Assert.IsAssignableFrom<Delegate>(value);
+            GC.KeepAlive(data);
+        }
+
         private class Class1 : NotifyingBase
         {
             private string _foo;
@@ -203,6 +214,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 AvaloniaProperty.Register<Class2, string>("Foo", defaultValue: "foo");
 
             public string ClrProperty { get; } = "clr-property";
+        }
+
+        private class Class3
+        {
+            public void Method() { }
         }
     }
 }

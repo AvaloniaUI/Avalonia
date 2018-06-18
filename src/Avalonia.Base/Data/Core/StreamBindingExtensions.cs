@@ -14,6 +14,11 @@ namespace Avalonia
             throw new InvalidOperationException("This should be used only in a binding expression");
         }
 
+        public static object StreamBinding(this Task @this)
+        {
+            throw new InvalidOperationException("This should be used only in a binding expression");
+        }
+
         public static T StreamBinding<T>(this IObservable<T> @this)
         {
             throw new InvalidOperationException("This should be used only in a binding expression");

@@ -9,9 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Avalonia.Base.UnitTests.Data.Core
+namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverTests_Method
+    public class ExpressionObserverBuilderTests_Method
     {
         private class TestObject
         {
