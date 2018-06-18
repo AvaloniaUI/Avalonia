@@ -30,6 +30,10 @@ namespace Avalonia.DesignerSupport.Remote
 
         public event Action<IAvaloniaRemoteTransportConnection, object> OnMessage;
 
-        public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException;
+        public event Action<IAvaloniaRemoteTransportConnection, Exception> OnException
+        {
+            add {}
+            remove {}
+        }
     }
 }

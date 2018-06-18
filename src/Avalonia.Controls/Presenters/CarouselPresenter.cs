@@ -115,7 +115,9 @@ namespace Avalonia.Controls.Presenters
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
+#pragma warning disable 4014
                         MoveToPage(-1, SelectedIndex);
+#pragma warning restore 4014
                     }
                     break;
 
@@ -126,7 +128,23 @@ namespace Avalonia.Controls.Presenters
                         generator.Clear();
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
-                        MoveToPage(-1, SelectedIndex >= 0 ? SelectedIndex : 0);
+#pragma warning disable 4014
+                        var newIndex = SelectedIndex;
+
+                        if(SelectedIndex < 0)
+                        {
+                            if(Items != null && Items.Count() > 0)
+                            {
+                                newIndex = 0;
+                            }
+                            else
+                            {
+                                newIndex = -1;
+                            }
+                        }
+                        
+                        MoveToPage(-1, newIndex);
+#pragma warning restore 4014
                     }
                     break;     
             }

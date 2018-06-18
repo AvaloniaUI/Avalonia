@@ -45,6 +45,26 @@ namespace Avalonia.Win32
             return result;
         }
         
+        private static InputModifiers ConvertKeyState(int grfKeyState)
+        {
+            InputModifiers modifiers = InputModifiers.None;
+            var state = (UnmanagedMethods.ModifierKeys)grfKeyState;
+
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_LBUTTON))
+                modifiers |= InputModifiers.LeftMouseButton;
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_MBUTTON))
+                modifiers |= InputModifiers.MiddleMouseButton;
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_RBUTTON))
+                modifiers |= InputModifiers.RightMouseButton;
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_SHIFT))
+                modifiers |= InputModifiers.Shift;
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_CONTROL))
+                modifiers |= InputModifiers.Control;
+            if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_ALT))
+                modifiers |= InputModifiers.Alt;
+            return modifiers;
+        }
+
         UnmanagedMethods.HRESULT IDropTarget.DragEnter(IOleDataObject pDataObj, int grfKeyState, long pt, ref DropEffect pdwEffect)
         {
             var dispatch = _tl?.Input;
@@ -56,13 +76,15 @@ namespace Avalonia.Win32
             _currentDrag = pDataObj as IDataObject;
             if (_currentDrag == null)
                 _currentDrag = new OleDataObject(pDataObj);
+
             var args = new RawDragEvent(
                 _dragDevice,
                 RawDragEventType.DragEnter, 
                 _target, 
                 GetDragLocation(pt), 
                 _currentDrag, 
-                ConvertDropEffect(pdwEffect)
+                ConvertDropEffect(pdwEffect),
+                ConvertKeyState(grfKeyState)
             );
             dispatch(args);
             pdwEffect = ConvertDropEffect(args.Effects);
@@ -85,7 +107,8 @@ namespace Avalonia.Win32
                 _target, 
                 GetDragLocation(pt), 
                 _currentDrag, 
-                ConvertDropEffect(pdwEffect)
+                ConvertDropEffect(pdwEffect),
+                ConvertKeyState(grfKeyState)
             );
             dispatch(args);
             pdwEffect = ConvertDropEffect(args.Effects);
@@ -98,12 +121,13 @@ namespace Avalonia.Win32
             try
             {
                 _tl?.Input(new RawDragEvent(
-                    _dragDevice,  
-                    RawDragEventType.DragLeave, 
-                    _target, 
-                    default(Point), 
-                    null, 
-                    DragDropEffects.None
+                    _dragDevice,
+                    RawDragEventType.DragLeave,
+                    _target,
+                    default(Point),
+                    null,
+                    DragDropEffects.None,
+                    InputModifiers.None
                 ));
                 return UnmanagedMethods.HRESULT.S_OK;
             }
@@ -134,7 +158,8 @@ namespace Avalonia.Win32
                     _target, 
                     GetDragLocation(pt), 
                     _currentDrag, 
-                    ConvertDropEffect(pdwEffect)
+                    ConvertDropEffect(pdwEffect),
+                    ConvertKeyState(grfKeyState)
                 );
                 dispatch(args);
                 pdwEffect = ConvertDropEffect(args.Effects);

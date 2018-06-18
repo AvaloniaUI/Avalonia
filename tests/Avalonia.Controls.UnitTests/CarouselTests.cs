@@ -171,6 +171,41 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Selected_Index_Changes_To_When_Items_Assigned_Null()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items,
+                IsVirtualized = false
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Single(target.GetLogicalChildren());
+
+            var child = target.GetLogicalChildren().Single();
+
+            Assert.IsType<TextBlock>(child);
+            Assert.Equal("Foo", ((TextBlock)child).Text);
+
+            target.Items = null;
+
+            var numChildren = target.GetLogicalChildren().Count();
+
+            Assert.Equal(0, numChildren);
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Selected_Index_Is_Maintained_Carousel_Created_With_Non_Zero_SelectedIndex()
         {
             var items = new ObservableCollection<string>

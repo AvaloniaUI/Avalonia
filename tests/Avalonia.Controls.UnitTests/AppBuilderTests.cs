@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Avalonia.Controls.UnitTests;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 
 [assembly: ExportAvaloniaModule("DefaultModule", typeof(AppBuilderTests.DefaultModule))]
 [assembly: ExportAvaloniaModule("RenderingModule", typeof(AppBuilderTests.Direct2DModule), ForRenderingSubsystem = "Direct2D1")]
@@ -65,7 +66,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 ResetModuleLoadStates();
                 AppBuilder.Configure<App>()
-                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { })
                     .UseAvaloniaModules()
@@ -82,7 +82,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
-                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "Direct2D1");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
@@ -92,7 +91,6 @@ namespace Avalonia.Controls.UnitTests
 
                 ResetModuleLoadStates();
                 builder = AppBuilder.Configure<App>()
-                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "Skia");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
@@ -109,7 +107,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 ResetModuleLoadStates();
                 var builder = AppBuilder.Configure<App>()
-                    .IgnoreSetupCheck()
                     .UseWindowingSubsystem(() => { })
                     .UseRenderingSubsystem(() => { }, "TBD");
                 builder.UseAvaloniaModules().SetupWithoutStarting();
