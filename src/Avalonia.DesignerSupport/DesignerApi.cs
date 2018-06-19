@@ -20,6 +20,7 @@ namespace Avalonia.DesignerSupport
         {
             object rv;
             Dictionary.TryGetValue(name, out rv);
+            Console.WriteLine("Vi prøver igen");
             return rv;
         }
 
