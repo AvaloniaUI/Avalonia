@@ -106,6 +106,17 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Show_MainWindow_After_Run()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var mainWindow = new Window();
+                Application.Current.Run(mainWindow);
+                Assert.True(mainWindow.IsVisible);
+            }
+        }
+
+        [Fact]
         public void Throws_ArgumentNullException_On_Run_If_MainWindow_Is_Null()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
