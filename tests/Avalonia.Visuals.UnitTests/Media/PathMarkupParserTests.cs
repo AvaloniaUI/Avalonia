@@ -2,8 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Media;
-using Avalonia.Platform;
-using Moq;
+using Avalonia.Visuals.Platform;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
@@ -13,47 +12,132 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parses_Move()
         {
-            using (AvaloniaLocator.EnterScope())
-            {
-                var result = new Mock<IStreamGeometryContextImpl>();
-
-                var parser = PrepareParser(result);
-
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {               
                 parser.Parse("M10 10");
 
-                result.Verify(x => x.BeginFigure(new Point(10, 10), true));
+                var figure = pathGeometry.Figures[0];
+
+                Assert.Equal(new Point(10, 10), figure.StartPoint);
             }
         }
 
         [Fact]
         public void Parses_Line()
         {
-            using (AvaloniaLocator.EnterScope())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var result = new Mock<IStreamGeometryContextImpl>();
-
-                var parser = PrepareParser(result);
-
                 parser.Parse("M0 0L10 10");
 
-                result.Verify(x => x.LineTo(new Point(10, 10)));
+                var figure = pathGeometry.Figures[0];
+
+                var segment = figure.Segments[0];
+
+                Assert.IsType<LineSegment>(segment);
+
+                var lineSegment = (LineSegment)segment;
+
+                Assert.Equal(new Point(10, 10), lineSegment.Point);
             }
         }
 
         [Fact]
         public void Parses_Close()
         {
-            using (AvaloniaLocator.EnterScope())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var result = new Mock<IStreamGeometryContextImpl>();
-
-                var parser = PrepareParser(result);
-
                 parser.Parse("M0 0L10 10z");
 
-                result.Verify(x => x.EndFigure(true));
+                var figure = pathGeometry.Figures[0];
+
+                Assert.True(figure.IsClosed);
             }
         }
+
+        [Fact]
+        public void Parses_FillMode_Before_Move()
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse("F 1M0,0");             
+
+                Assert.Equal(FillRule.NonZero, pathGeometry.FillRule);
+            }
+        }
+
+        [Theory]
+        [InlineData("M0 0 10 10 20 20")]
+        [InlineData("M0,0 10,10 20,20")]
+        [InlineData("M0,0,10,10,20,20")]
+        public void Parses_Implicit_Line_Command_After_Move(string pathData)
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse(pathData);
+
+                var figure = pathGeometry.Figures[0];
+
+                var segment = figure.Segments[0];
+
+                Assert.IsType<LineSegment>(segment);
+
+                var lineSegment = (LineSegment)segment;
+
+                Assert.Equal(new Point(10, 10), lineSegment.Point);
+
+                figure = pathGeometry.Figures[1];
+
+                segment = figure.Segments[0];
+
+                Assert.IsType<LineSegment>(segment);
+
+                lineSegment = (LineSegment)segment;
+
+                Assert.Equal(new Point(20, 20), lineSegment.Point);
+            }
+        }
+
+        [Theory]
+        [InlineData("m0 0 10 10 20 20")]
+        [InlineData("m0,0 10,10 20,20")]
+        [InlineData("m0,0,10,10,20,20")]
+        public void Parses_Implicit_Line_Command_After_Relative_Move(string pathData)
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse(pathData);
+
+                var figure = pathGeometry.Figures[0];
+
+                var segment = figure.Segments[0];
+
+                Assert.IsType<LineSegment>(segment);
+
+                var lineSegment = (LineSegment)segment;
+
+                Assert.Equal(new Point(10, 10), lineSegment.Point);
+
+                segment = figure.Segments[1];
+
+                Assert.IsType<LineSegment>(segment);
+
+                lineSegment = (LineSegment)segment;
+
+                Assert.Equal(new Point(30, 30), lineSegment.Point);
+            }
+        }       
 
         [Theory]
         [InlineData("F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z")] // issue #1107
@@ -75,29 +159,19 @@ namespace Avalonia.Visuals.UnitTests.Media
             ".3809 36.1563C 18.3809 36.1563 18 38 16.3809 36.9063C 15 36 16.3809 34.9063 16.3809 34.9063C 16.3809 34" +
             ".9063 10.1309 30.9062 16.6309 19.9063 Z ")]
         [InlineData(
-            "F1M16,12C16,14.209 14.209,16 12,16 9.791,16 8,14.209 8,12 8,11.817 8.03,11.644 8.054,11.467L6.585,10 4,10 " + 
-            "4,6.414 2.5,7.914 0,5.414 0,3.586 3.586,0 4.414,0 7.414,3 7.586,3 9,1.586 11.914,4.5 10.414,6 " + 
+            "F1M16,12C16,14.209 14.209,16 12,16 9.791,16 8,14.209 8,12 8,11.817 8.03,11.644 8.054,11.467L6.585,10 4,10 " +
+            "4,6.414 2.5,7.914 0,5.414 0,3.586 3.586,0 4.414,0 7.414,3 7.586,3 9,1.586 11.914,4.5 10.414,6 " +
             "12.461,8.046C14.45,8.278,16,9.949,16,12")]
         public void Should_Parse(string pathData)
         {
-            using (AvaloniaLocator.EnterScope())
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
             {
-                var parser = PrepareParser();
-
                 parser.Parse(pathData);
 
                 Assert.True(true);
             }
-        }
-
-        private static PathMarkupParser PrepareParser(Mock<IStreamGeometryContextImpl> implMock = null)
-        {
-            AvaloniaLocator.CurrentMutable
-                    .Bind<IPlatformRenderInterface>()
-                    .ToConstant(Mock.Of<IPlatformRenderInterface>());
-
-            return new PathMarkupParser(
-                new StreamGeometryContext(implMock != null ? implMock.Object : Mock.Of<IStreamGeometryContextImpl>()));
         }
     }
 }
