@@ -240,27 +240,20 @@ namespace Avalonia
 
             _mainLoopCancellationTokenSource = new CancellationTokenSource();
 
-            Dispatcher.UIThread.InvokeAsync(
-                () =>
-                    {
-                        if (MainWindow != null)
-                        {
-                            return;
-                        }
+            if (MainWindow == null)
+            {
+                if (mainWindow == null)
+                {
+                    throw new ArgumentNullException(nameof(mainWindow));
+                }
 
-                        if (mainWindow == null)
-                        {
-                            throw new ArgumentNullException(nameof(mainWindow));
-                        }
+                if (!mainWindow.IsVisible)
+                {
+                    mainWindow.Show();
+                }
 
-                        if (!mainWindow.IsVisible)
-                        {
-                            mainWindow.Show();
-                        }
-
-                        MainWindow = mainWindow;
-                    },
-                DispatcherPriority.Send);
+                MainWindow = mainWindow;
+            }           
 
             Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
 
