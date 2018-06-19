@@ -37,6 +37,7 @@ namespace Avalonia.Designer
             comm.SendMessage(new StateMessage("Staying awhile and listening..."));
             var service = new AvaloniaAppHost(comm);
             service.Start();
+            Console.WriteLine("Huhej");
             Application.Run();
         }
 
