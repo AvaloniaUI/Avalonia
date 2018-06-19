@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using Avalonia.UnitTests;
 using Xunit;
@@ -101,6 +102,15 @@ namespace Avalonia.Controls.UnitTests
                 Application.Current.Exit();
 
                 Assert.Empty(Application.Current.Windows);
+            }
+        }
+
+        [Fact]
+        public void Throws_ArgumentNullException_On_Run_If_MainWindow_Is_Null()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                Assert.Throws<ArgumentNullException>(() => { Application.Current.Run(null); });
             }
         }
     }

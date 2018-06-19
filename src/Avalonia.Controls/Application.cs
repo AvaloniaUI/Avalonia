@@ -243,14 +243,14 @@ namespace Avalonia
             Dispatcher.UIThread.InvokeAsync(
                 () =>
                     {
-                        if (mainWindow == null)
+                        if (MainWindow != null)
                         {
                             return;
                         }
 
-                        if (MainWindow != null)
+                        if (mainWindow == null)
                         {
-                            return;
+                            throw new ArgumentNullException(nameof(mainWindow));
                         }
 
                         if (!mainWindow.IsVisible)
@@ -283,7 +283,7 @@ namespace Avalonia
             if (!IsExiting)
             {
                 OnExit?.Invoke(this, EventArgs.Empty);
-            }       
+            }
         }
 
         /// <summary>
