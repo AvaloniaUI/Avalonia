@@ -82,7 +82,7 @@ namespace Avalonia.Media
         /// <param name="pathData">The path data.</param>
         public void Parse(string pathData)
         {
-            var tokens = ParseTokens(pathData);
+            var tokens = ParseTokens2(pathData);
 
             CreateGeometry(tokens);
         }
@@ -119,6 +119,17 @@ namespace Avalonia.Media
             }
 
             return @"(?=[" + stringBuilder + "])";
+        }
+
+        private static IEnumerable<CommandToken> ParseTokens2(string s)
+        {
+            var commands = new List<CommandToken>();
+            var span = s.AsSpan();
+            while (!span.IsEmpty)
+            {
+                commands.Add(CommandToken.Parse(ref span));
+            }
+            return commands;
         }
 
         private static IEnumerable<CommandToken> ParseTokens(string s)
@@ -494,6 +505,27 @@ namespace Avalonia.Media
                     return new CommandToken(command, isRelative, arguments);
                 }
             }
+            
+            public static CommandToken Parse(ref ReadOnlySpan<char> span)
+            {
+                if (!ReadCommand(ref span, out var command, out var isRelative))
+                {
+                    throw new InvalidDataException("No path command declared.");
+                }
+
+                span = span.Slice(1);
+                span = SkipWhitespace(span);
+
+                var arguments = new List<string>();
+
+                while (ReadArgument(ref span, out var argument))
+                {
+                    arguments.Add(argument.ToString());
+                    span = ReadSeparator(span);
+                }
+
+                return new CommandToken(command, isRelative, arguments);
+            }
 
             public FillRule ReadFillRule()
             {
@@ -592,6 +624,28 @@ namespace Avalonia.Media
                 return new Point(origin.X + x, origin.Y + y);
             }
 
+            private static bool ReadCommand(ref ReadOnlySpan<char> span, out Command command, out bool relative)
+            {
+                span = SkipWhitespace(span);
+                if (span.IsEmpty)
+                {
+                    command = default;
+                    relative = false;
+                    return false;
+                }
+
+                var c = span[0];
+
+                if (!s_commands.TryGetValue(char.ToUpperInvariant(c), out command))
+                {
+                    throw new InvalidDataException("Unexpected path command '" + c + "'.");
+                }
+
+                relative = char.IsLower(c);
+
+                return true;
+            }
+
             private static bool ReadCommand(TextReader reader, ref Command command, ref bool relative)
             {
                 ReadWhitespace(reader);
@@ -617,6 +671,56 @@ namespace Avalonia.Media
                 reader.Read();
 
                 return true;
+            }
+
+            private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
+            {
+                if (remaining.IsEmpty)
+                {
+                    argument = ReadOnlySpan<char>.Empty;
+                    return false;
+                }
+
+                var valid = false;
+                int i = 0;
+                if (remaining[i] == '-')
+                {
+                    i++;
+                }
+                for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true ;
+
+                if (i < remaining.Length && remaining[i] == '.')
+                {
+                    valid = false;
+                    i++;
+                }
+                for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true ;
+
+                if (!valid)
+                {
+                    argument = ReadOnlySpan<char>.Empty;
+                    return false;
+                }
+                argument = remaining.Slice(0, i);
+                remaining = remaining.Slice(i);
+                return true;
+            }
+
+            private static ReadOnlySpan<char> ReadSeparator(ReadOnlySpan<char> span)
+            {
+                span = SkipWhitespace(span);
+                if (!span.IsEmpty && span[0] == ',')
+                {
+                    span = span.Slice(1);
+                }
+                return SkipWhitespace(span);
+            }
+            
+            private static ReadOnlySpan<char> SkipWhitespace(ReadOnlySpan<char> span)
+            {
+                int i = 0;
+                for (; i < span.Length && char.IsWhiteSpace(span[i]); i++) ;
+                return span.Slice(i);
             }
 
             private static void ReadWhitespace(TextReader reader)
