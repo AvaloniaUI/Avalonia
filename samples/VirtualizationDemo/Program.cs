@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Serilog;
 
-namespace VirtualizationTest
+namespace VirtualizationDemo
 {
     class Program
     {

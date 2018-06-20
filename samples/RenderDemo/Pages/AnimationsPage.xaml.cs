@@ -7,9 +7,9 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using RenderTest.ViewModels;
+using RenderDemo.ViewModels;
 
-namespace RenderTest.Pages
+namespace RenderDemo.Pages
 {
     public class AnimationsPage : UserControl
     {

@@ -6,7 +6,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {

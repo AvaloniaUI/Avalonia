@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:vm="clr-namespace:BindingTest.ViewModels"
-        xmlns:local="clr-namespace:BindingTest"
+        xmlns:vm="clr-namespace:BindingDemo.ViewModels"
+        xmlns:local="clr-namespace:BindingDemo"
         Title="AvaloniaUI Bindings Test"
         Width="800"
         Height="600">

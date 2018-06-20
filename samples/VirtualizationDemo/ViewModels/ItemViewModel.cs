@@ -4,7 +4,7 @@
 using System;
 using ReactiveUI;
 
-namespace VirtualizationTest.ViewModels
+namespace VirtualizationDemo.ViewModels
 {
     internal class ItemViewModel : ReactiveObject
     {

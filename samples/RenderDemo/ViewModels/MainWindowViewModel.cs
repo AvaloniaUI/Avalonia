@@ -1,7 +1,7 @@
 ﻿using System;
 using ReactiveUI;
 
-namespace RenderTest.ViewModels
+namespace RenderDemo.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {

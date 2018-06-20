@@ -5,10 +5,10 @@ using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using RenderTest.ViewModels;
+using RenderDemo.ViewModels;
 using ReactiveUI;
 
-namespace RenderTest
+namespace RenderDemo
 {
     public class MainWindow : Window
     {

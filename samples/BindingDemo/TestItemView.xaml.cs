@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace BindingTest
+namespace BindingDemo
 {
     public class TestItemView : UserControl
     {

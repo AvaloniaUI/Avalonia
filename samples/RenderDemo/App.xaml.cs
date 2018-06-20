@@ -5,7 +5,7 @@ using Avalonia;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 
-namespace RenderTest
+namespace RenderDemo
 {
     public class App : Application
     {

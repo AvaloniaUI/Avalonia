@@ -1,6 +1,6 @@
 using ReactiveUI;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class TestItem : ReactiveObject
     {

@@ -2,7 +2,7 @@
 using ReactiveUI;
 using Avalonia.Animation;
 
-namespace RenderTest.ViewModels
+namespace RenderDemo.ViewModels
 {
     public class AnimationsPageViewModel : ReactiveObject
     {

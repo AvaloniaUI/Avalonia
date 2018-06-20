@@ -4,9 +4,9 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using VirtualizationTest.ViewModels;
+using VirtualizationDemo.ViewModels;
 
-namespace VirtualizationTest
+namespace VirtualizationDemo
 {
     public class MainWindow : Window
     {

@@ -9,7 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using ReactiveUI;
 
-namespace VirtualizationTest.ViewModels
+namespace VirtualizationDemo.ViewModels
 {
     internal class MainWindowViewModel : ReactiveObject
     {

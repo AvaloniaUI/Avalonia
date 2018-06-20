@@ -5,7 +5,7 @@ using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 using Serilog;
 
-namespace BindingTest
+namespace BindingDemo
 {
     public class App : Application
     {

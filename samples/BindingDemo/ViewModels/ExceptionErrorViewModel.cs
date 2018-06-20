@@ -4,7 +4,7 @@
 using ReactiveUI;
 using System;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class ExceptionErrorViewModel : ReactiveObject
     {

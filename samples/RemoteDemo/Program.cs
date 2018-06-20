@@ -9,7 +9,7 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Threading;
 using ControlCatalog;
 
-namespace RemoteTest
+namespace RemoteDemo
 {
     class Program
     {

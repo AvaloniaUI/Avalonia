@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class DataAnnotationsErrorViewModel
     {

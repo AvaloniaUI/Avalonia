@@ -1,9 +1,9 @@
-using BindingTest.ViewModels;
+using BindingDemo.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace BindingTest
+namespace BindingDemo
 {
     public class MainWindow : Window
     {

@@ -7,7 +7,7 @@ using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 
-namespace RenderTest.Pages
+namespace RenderDemo.Pages
 {
     public class ClippingPage : UserControl
     {

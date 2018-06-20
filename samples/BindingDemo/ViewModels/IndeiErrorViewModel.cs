@@ -6,7 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Collections;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class IndeiErrorViewModel : ReactiveObject, INotifyDataErrorInfo
     {

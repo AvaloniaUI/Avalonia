@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace RenderTest.Pages
+namespace RenderDemo.Pages
 {
     public class DrawingPage : UserControl
     {

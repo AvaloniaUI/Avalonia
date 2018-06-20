@@ -4,7 +4,7 @@
 using Avalonia;
 using Avalonia.Markup.Xaml;
 
-namespace VirtualizationTest
+namespace VirtualizationDemo
 {
     public class App : Application
     {

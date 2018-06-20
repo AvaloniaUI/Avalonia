@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace BindingTest.ViewModels
+namespace BindingDemo.ViewModels
 {
     public class NestedCommandViewModel : ReactiveObject
     {
