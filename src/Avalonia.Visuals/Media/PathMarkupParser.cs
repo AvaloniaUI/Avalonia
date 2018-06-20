@@ -82,7 +82,9 @@ namespace Avalonia.Media
         /// <param name="pathData">The path data.</param>
         public void Parse(string pathData)
         {
-            var tokens = ParseTokens(pathData);
+            var normalizedPathData = NormalizeWhiteSpaces(pathData);
+
+            var tokens = ParseTokens(normalizedPathData);
 
             CreateGeometry(tokens);
         }
@@ -107,6 +109,42 @@ namespace Avalonia.Media
             _isDisposed = true;
         }
 
+        private static string NormalizeWhiteSpaces(string s)
+        {
+            int length = s.Length,
+                index = 0,
+                i = 0;
+            var source = s.ToCharArray();
+            var skip = false;
+
+            for (; i < length; i++)
+            {
+                var c = source[i];
+
+                if (char.IsWhiteSpace(c))
+                {
+                    if (skip)
+                    {
+                        continue;
+                    }
+
+                    source[index++] = c;
+                    skip = true;
+                    continue;
+                }
+
+                skip = false;
+                source[index++] = c;
+            }
+
+            if (char.IsWhiteSpace(source[index - 1]))
+            {
+                index--;
+            }
+
+            return char.IsWhiteSpace(source[0]) ? new string(source, 1, index) : new string(source, 0, index);
+        }
+
         private static string CreatesSeparatorPattern()
         {
             var stringBuilder = new StringBuilder();
@@ -123,7 +161,9 @@ namespace Avalonia.Media
 
         private static IEnumerable<CommandToken> ParseTokens(string s)
         {
-            return Regex.Split(s, s_separatorPattern).Where(t => !string.IsNullOrEmpty(t)).Select(CommandToken.Parse);
+            var expressions = Regex.Split(s, s_separatorPattern).Where(t => !string.IsNullOrEmpty(t));
+
+            return expressions.Select(CommandToken.Parse);
         }
 
         private static Point MirrorControlPoint(Point controlPoint, Point center)
@@ -135,7 +175,7 @@ namespace Avalonia.Media
 
         private void CreateGeometry(IEnumerable<CommandToken> commandTokens)
         {
-            _currentPoint = new Point();           
+            _currentPoint = new Point();
 
             foreach (var commandToken in commandTokens)
             {
@@ -468,7 +508,7 @@ namespace Avalonia.Media
             private List<string> Arguments { get; }
 
             public static CommandToken Parse(string s)
-            {
+            {              
                 using (var reader = new StringReader(s))
                 {
                     var command = Command.None;
@@ -590,7 +630,7 @@ namespace Avalonia.Media
                 var y = ReadDouble();
 
                 return new Point(origin.X + x, origin.Y + y);
-            }
+            }          
 
             private static bool ReadCommand(TextReader reader, ref Command command, ref bool relative)
             {
