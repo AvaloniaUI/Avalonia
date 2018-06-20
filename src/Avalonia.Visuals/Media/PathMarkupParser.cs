@@ -105,61 +105,64 @@ namespace Avalonia.Media
 
             while(!span.IsEmpty)
             {
-                var commandToken = CommandToken.Parse(ref span);
-                try
+                if(!ReadCommand(ref span, out var command, out var relative))
                 {
-                    do
+                    return;
+                }
+
+                bool initialCommand = true;
+                
+                do
+                {
+                    if (!initialCommand)
                     {
-                        switch (commandToken.Command)
-                        {
-                            case Command.None:
-                                break;
-                            case Command.FillRule:
-                                SetFillRule(commandToken);
-                                break;
-                            case Command.Move:
-                                AddMove(commandToken);
-                                break;
-                            case Command.Line:
-                                AddLine(commandToken);
-                                break;
-                            case Command.HorizontalLine:
-                                AddHorizontalLine(commandToken);
-                                break;
-                            case Command.VerticalLine:
-                                AddVerticalLine(commandToken);
-                                break;
-                            case Command.CubicBezierCurve:
-                                AddCubicBezierCurve(commandToken);
-                                break;
-                            case Command.QuadraticBezierCurve:
-                                AddQuadraticBezierCurve(commandToken);
-                                break;
-                            case Command.SmoothCubicBezierCurve:
-                                AddSmoothCubicBezierCurve(commandToken);
-                                break;
-                            case Command.SmoothQuadraticBezierCurve:
-                                AddSmoothQuadraticBezierCurve(commandToken);
-                                break;
-                            case Command.Arc:
-                                AddArc(commandToken);
-                                break;
-                            case Command.Close:
-                                CloseFigure();
-                                break;
-                            default:
-                                throw new NotSupportedException("Unsupported command");
-                        }
-                    } while (commandToken.HasImplicitCommands);
-                }
-                catch (InvalidDataException)
-                {
-                    break;
-                }
-                catch (NotSupportedException)
-                {
-                    break;
-                }
+                        span = ReadSeparator(span);
+                    }
+
+                    switch (command)
+                    {
+                        case Command.None:
+                            break;
+                        case Command.FillRule:
+                            SetFillRule(ref span);
+                            break;
+                        case Command.Move:
+                            AddMove(ref span, relative);
+                            break;
+                        case Command.Line:
+                            AddLine(ref span, relative);
+                            break;
+                        case Command.HorizontalLine:
+                            AddHorizontalLine(ref span, relative);
+                            break;
+                        case Command.VerticalLine:
+                            AddVerticalLine(ref span, relative);
+                            break;
+                        case Command.CubicBezierCurve:
+                            AddCubicBezierCurve(ref span, relative);
+                            break;
+                        case Command.QuadraticBezierCurve:
+                            AddQuadraticBezierCurve(ref span, relative);
+                            break;
+                        case Command.SmoothCubicBezierCurve:
+                            AddSmoothCubicBezierCurve(ref span, relative);
+                            break;
+                        case Command.SmoothQuadraticBezierCurve:
+                            AddSmoothQuadraticBezierCurve(ref span, relative);
+                            break;
+                        case Command.Arc:
+                            AddArc(ref span, relative);
+                            break;
+                        case Command.Close:
+                            CloseFigure();
+                            break;
+                        default:
+                            throw new NotSupportedException("Unsupported command");
+                    }
+
+                    initialCommand = false;
+                } while (PeekArgument(span));
+                
             }
 
             if (_isOpen)
@@ -180,11 +183,28 @@ namespace Avalonia.Media
             _isOpen = true;
         }
 
-        private void SetFillRule(CommandToken commandToken)
+        private void SetFillRule(ref ReadOnlySpan<char> span)
         {
-            var fillRule = commandToken.ReadFillRule();
+            if (!ReadArgument(ref span, out var fillRule) || fillRule.Length != 1)
+            {
+                throw new InvalidDataException("Invalid fill rule.");
+            }
 
-            _geometryContext.SetFillRule(fillRule);
+            FillRule rule;
+
+            switch (fillRule[0])
+            {
+                case '0':
+                    rule = FillRule.EvenOdd;
+                    break;
+                case '1':
+                    rule = FillRule.NonZero;
+                    break;
+                default:
+                    throw new InvalidDataException("Invalid fill rule");
+            }
+
+            _geometryContext.SetFillRule(rule);
         }
 
         private void CloseFigure()
@@ -199,21 +219,22 @@ namespace Avalonia.Media
             _isOpen = false;
         }
 
-        private void AddMove(CommandToken commandToken)
+        private void AddMove(ref ReadOnlySpan<char> span, bool relative)
         {
-            var currentPoint = commandToken.IsRelative
-                                   ? commandToken.ReadRelativePoint(_currentPoint)
-                                   : commandToken.ReadPoint();
+            var currentPoint = relative
+                                ? ReadRelativePoint(ref span, _currentPoint)
+                                : ReadPoint(ref span);
 
             _currentPoint = currentPoint;
 
             CreateFigure();
 
-            while (commandToken.HasImplicitCommands)
+            while (PeekArgument(span))
             {
-                AddLine(commandToken);
+                span = ReadSeparator(span);
+                AddLine(ref span, relative);
 
-                if (!commandToken.IsRelative)
+                if (!relative)
                 {
                     _currentPoint = currentPoint;
                     CreateFigure();
@@ -221,11 +242,11 @@ namespace Avalonia.Media
             }
         }
 
-        private void AddLine(CommandToken commandToken)
+        private void AddLine(ref ReadOnlySpan<char> span, bool relative)
         {
-            _currentPoint = commandToken.IsRelative
-                                ? commandToken.ReadRelativePoint(_currentPoint)
-                                : commandToken.ReadPoint();
+            _currentPoint = relative
+                                ? ReadRelativePoint(ref span, _currentPoint)
+                                : ReadPoint(ref span);
 
             if (!_isOpen)
             {
@@ -235,11 +256,11 @@ namespace Avalonia.Media
             _geometryContext.LineTo(_currentPoint);
         }
 
-        private void AddHorizontalLine(CommandToken commandToken)
+        private void AddHorizontalLine(ref ReadOnlySpan<char> span, bool relative)
         {
-            _currentPoint = commandToken.IsRelative
-                                ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
-                                : _currentPoint.WithX(commandToken.ReadDouble());
+            _currentPoint = relative
+                                ? new Point(_currentPoint.X + ReadDouble(ref span), _currentPoint.Y)
+                                : _currentPoint.WithX(ReadDouble(ref span));
 
             if (!_isOpen)
             {
@@ -249,11 +270,11 @@ namespace Avalonia.Media
             _geometryContext.LineTo(_currentPoint);
         }
 
-        private void AddVerticalLine(CommandToken commandToken)
+        private void AddVerticalLine(ref ReadOnlySpan<char> span, bool relative)
         {
-            _currentPoint = commandToken.IsRelative
-                                ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
-                                : _currentPoint.WithY(commandToken.ReadDouble());
+            _currentPoint = relative
+                                ? new Point(_currentPoint.X, _currentPoint.Y + ReadDouble(ref span))
+                                : _currentPoint.WithY(ReadDouble(ref span));
 
             if (!_isOpen)
             {
@@ -263,21 +284,25 @@ namespace Avalonia.Media
             _geometryContext.LineTo(_currentPoint);
         }
 
-        private void AddCubicBezierCurve(CommandToken commandToken)
+        private void AddCubicBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
-            var point1 = commandToken.IsRelative
-                             ? commandToken.ReadRelativePoint(_currentPoint)
-                             : commandToken.ReadPoint();
+            var point1 = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
-            var point2 = commandToken.IsRelative
-                             ? commandToken.ReadRelativePoint(_currentPoint)
-                             : commandToken.ReadPoint();
+            span = ReadSeparator(span);
+
+            var point2 = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             _previousControlPoint = point2;
 
-            var point3 = commandToken.IsRelative
-                             ? commandToken.ReadRelativePoint(_currentPoint)
-                             : commandToken.ReadPoint();
+            span = ReadSeparator(span);
+
+            var point3 = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             if (!_isOpen)
             {
@@ -289,17 +314,19 @@ namespace Avalonia.Media
             _currentPoint = point3;
         }
 
-        private void AddQuadraticBezierCurve(CommandToken commandToken)
+        private void AddQuadraticBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
-            var start = commandToken.IsRelative
-                            ? commandToken.ReadRelativePoint(_currentPoint)
-                            : commandToken.ReadPoint();
+            var start = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             _previousControlPoint = start;
 
-            var end = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+            span = ReadSeparator(span);
+
+            var end = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             if (!_isOpen)
             {
@@ -311,15 +338,17 @@ namespace Avalonia.Media
             _currentPoint = end;
         }
 
-        private void AddSmoothCubicBezierCurve(CommandToken commandToken)
+        private void AddSmoothCubicBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
-            var point2 = commandToken.IsRelative
-                             ? commandToken.ReadRelativePoint(_currentPoint)
-                             : commandToken.ReadPoint();
+            var point2 = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
-            var end = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+            span = ReadSeparator(span);
+
+            var end = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             if (_previousControlPoint != null)
             {
@@ -338,11 +367,11 @@ namespace Avalonia.Media
             _currentPoint = end;
         }
 
-        private void AddSmoothQuadraticBezierCurve(CommandToken commandToken)
+        private void AddSmoothQuadraticBezierCurve(ref ReadOnlySpan<char> span, bool relative)
         {
-            var end = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+            var end = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             if (_previousControlPoint != null)
             {
@@ -359,19 +388,25 @@ namespace Avalonia.Media
             _currentPoint = end;
         }
 
-        private void AddArc(CommandToken commandToken)
+        private void AddArc(ref ReadOnlySpan<char> span, bool relative)
         {
-            var size = commandToken.ReadSize();
+            var size = ReadSize(ref span);
 
-            var rotationAngle = commandToken.ReadDouble();
+            span = ReadSeparator(span);
 
-            var isLargeArc = commandToken.ReadBool();
+            var rotationAngle = ReadDouble(ref span);
+            span = ReadSeparator(span);
+            var isLargeArc = ReadBool(ref span);
 
-            var sweepDirection = commandToken.ReadBool() ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+            span = ReadSeparator(span);
 
-            var end = commandToken.IsRelative
-                          ? commandToken.ReadRelativePoint(_currentPoint)
-                          : commandToken.ReadPoint();
+            var sweepDirection = ReadBool(ref span) ? SweepDirection.Clockwise : SweepDirection.CounterClockwise;
+            
+            span = ReadSeparator(span);
+
+            var end = relative
+                    ? ReadRelativePoint(ref span, _currentPoint)
+                    : ReadPoint(ref span);
 
             if (!_isOpen)
             {
@@ -385,227 +420,134 @@ namespace Avalonia.Media
             _previousControlPoint = null;
         }
 
-        private class CommandToken
+        private static bool PeekArgument(ReadOnlySpan<char> span)
         {
-            private CommandToken(Command command, bool isRelative, List<string> arguments)
+            span = SkipWhitespace(span);
+
+            return !span.IsEmpty && (span[0] == ',' || span[0] == '-' || char.IsDigit(span[0]));
+        }
+
+        private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
+        {
+            remaining = SkipWhitespace(remaining);
+            if (remaining.IsEmpty)
             {
-                Command = command;
-
-                IsRelative = isRelative;
-
-                Arguments = arguments;
+                argument = ReadOnlySpan<char>.Empty;
+                return false;
             }
 
-            public Command Command { get; }
-
-            public bool IsRelative { get; }
-
-            public bool HasImplicitCommands
+            var valid = false;
+            int i = 0;
+            if (remaining[i] == '-')
             {
-                get
-                {
-                    if (CurrentPosition == 0 && Arguments.Count > 0)
-                    {
-                        return true;
-                    }
-
-                    return CurrentPosition < Arguments.Count - 1;
-                }
+                i++;
             }
+            for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
 
-            private int CurrentPosition { get; set; }
-
-            private List<string> Arguments { get; }
-            
-            public static CommandToken Parse(ref ReadOnlySpan<char> span)
+            if (i < remaining.Length && remaining[i] == '.')
             {
-                if (!ReadCommand(ref span, out var command, out var isRelative))
-                {
-                    throw new InvalidDataException("No path command declared.");
-                }
+                valid = false;
+                i++;
+            }
+            for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
 
+            if (!valid)
+            {
+                argument = ReadOnlySpan<char>.Empty;
+                return false;
+            }
+            argument = remaining.Slice(0, i);
+            remaining = remaining.Slice(i);
+            return true;
+        }
+
+
+        private static ReadOnlySpan<char> ReadSeparator(ReadOnlySpan<char> span)
+        {
+            span = SkipWhitespace(span);
+            if (!span.IsEmpty && span[0] == ',')
+            {
                 span = span.Slice(1);
-                span = SkipWhitespace(span);
-
-                var arguments = new List<string>();
-
-                while (ReadArgument(ref span, out var argument))
-                {
-                    arguments.Add(argument.ToString());
-                    span = ReadSeparator(span);
-                }
-
-                return new CommandToken(command, isRelative, arguments);
             }
+            return span;
+        }
 
-            public FillRule ReadFillRule()
+        private static ReadOnlySpan<char> SkipWhitespace(ReadOnlySpan<char> span)
+        {
+            int i = 0;
+            for (; i < span.Length && char.IsWhiteSpace(span[i]); i++) ;
+            return span.Slice(i);
+        }
+
+        private bool ReadBool(ref ReadOnlySpan<char> span)
+        {
+            if (!ReadArgument(ref span, out var boolValue) || boolValue.Length != 1)
             {
-                if (CurrentPosition == Arguments.Count)
-                {
-                    throw new InvalidDataException("Invalid fill rule");
-                }
-
-                var value = Arguments[CurrentPosition];
-
-                CurrentPosition++;
-
-                switch (value)
-                {
-                    case "0":
-                        {
-                            return FillRule.EvenOdd;
-                        }
-
-                    case "1":
-                        {
-                            return FillRule.NonZero;
-                        }
-
-                    default:
-                        throw new InvalidDataException("Invalid fill rule");
-                }
-            }
-
-            public bool ReadBool()
-            {
-                if (CurrentPosition == Arguments.Count)
-                {
-                    throw new InvalidDataException("Invalid boolean value");
-                }
-
-                var value = Arguments[CurrentPosition];
-
-                CurrentPosition++;
-
-                switch (value)
-                {
-                    case "1":
-                        {
-                            return true;
-                        }
-
-                    case "0":
-                        {
-                            return false;
-                        }
-
-                    default:
-                        throw new InvalidDataException("Invalid boolean value");
-                }
-            }
-
-            public double ReadDouble()
-            {
-                if (CurrentPosition == Arguments.Count)
-                {
-                    throw new InvalidDataException("Invalid double value");
-                }
-
-                var value = Arguments[CurrentPosition];
-
-                CurrentPosition++;
-
-                return double.Parse(value, CultureInfo.InvariantCulture);
-            }
-
-            public Size ReadSize()
-            {
-                var width = ReadDouble();
-
-                var height = ReadDouble();
-
-                return new Size(width, height);
-            }
-
-            public Point ReadPoint()
-            {
-                var x = ReadDouble();
-
-                var y = ReadDouble();
-
-                return new Point(x, y);
-            }
-
-            public Point ReadRelativePoint(Point origin)
-            {
-                var x = ReadDouble();
-
-                var y = ReadDouble();
-
-                return new Point(origin.X + x, origin.Y + y);
-            }
-
-            private static bool ReadCommand(ref ReadOnlySpan<char> span, out Command command, out bool relative)
-            {
-                span = SkipWhitespace(span);
-                if (span.IsEmpty)
-                {
-                    command = default;
-                    relative = false;
-                    return false;
-                }
-
-                var c = span[0];
-
-                if (!s_commands.TryGetValue(char.ToUpperInvariant(c), out command))
-                {
-                    throw new InvalidDataException("Unexpected path command '" + c + "'.");
-                }
-
-                relative = char.IsLower(c);
-
-                return true;
-            }
-
-            private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
-            {
-                if (remaining.IsEmpty)
-                {
-                    argument = ReadOnlySpan<char>.Empty;
-                    return false;
-                }
-
-                var valid = false;
-                int i = 0;
-                if (remaining[i] == '-')
-                {
-                    i++;
-                }
-                for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true ;
-
-                if (i < remaining.Length && remaining[i] == '.')
-                {
-                    valid = false;
-                    i++;
-                }
-                for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true ;
-
-                if (!valid)
-                {
-                    argument = ReadOnlySpan<char>.Empty;
-                    return false;
-                }
-                argument = remaining.Slice(0, i);
-                remaining = remaining.Slice(i);
-                return true;
-            }
-
-            private static ReadOnlySpan<char> ReadSeparator(ReadOnlySpan<char> span)
-            {
-                span = SkipWhitespace(span);
-                if (!span.IsEmpty && span[0] == ',')
-                {
-                    span = span.Slice(1);
-                }
-                return SkipWhitespace(span);
+                throw new InvalidDataException("Invalid bool rule.");
             }
             
-            private static ReadOnlySpan<char> SkipWhitespace(ReadOnlySpan<char> span)
+            switch (boolValue[0])
             {
-                int i = 0;
-                for (; i < span.Length && char.IsWhiteSpace(span[i]); i++) ;
-                return span.Slice(i);
+                case '0':
+                    return false;
+                case '1':
+                    return true;
+                default:
+                    throw new InvalidDataException("Invalid bool rule");
             }
+        }
+
+        private double ReadDouble(ref ReadOnlySpan<char> span)
+        {
+            if (!ReadArgument(ref span, out var doubleValue))
+            {
+                throw new InvalidDataException("Invalid double value");
+            }
+
+            return double.Parse(doubleValue.ToString(), CultureInfo.InvariantCulture);
+        }
+
+        private Size ReadSize(ref ReadOnlySpan<char> span)
+        {
+            var width = ReadDouble(ref span);
+            span = ReadSeparator(span);
+            var height = ReadDouble(ref span);
+            return new Size(width, height);
+        }
+
+        private Point ReadPoint(ref ReadOnlySpan<char> span)
+        {
+            var x = ReadDouble(ref span);
+            span = ReadSeparator(span);
+            var y = ReadDouble(ref span);
+            return new Point(x, y);
+        }
+
+        private Point ReadRelativePoint(ref ReadOnlySpan<char> span, Point origin)
+        {
+            var x = ReadDouble(ref span);
+            span = ReadSeparator(span);
+            var y = ReadDouble(ref span);
+            return new Point(origin.X + x, origin.Y + y);
+        }
+
+        private bool ReadCommand(ref ReadOnlySpan<char> span, out Command command, out bool relative)
+        {
+            span = SkipWhitespace(span);
+            if (span.IsEmpty)
+            {
+                command = default;
+                relative = false;
+                return false;
+            }
+            var c = span[0];
+            if (!s_commands.TryGetValue(char.ToUpperInvariant(c), out command))
+            {
+                throw new InvalidDataException("Unexpected path command '" + c + "'.");
+            }
+            relative = char.IsLower(c);
+            span = span.Slice(1);
+            return true;
         }
     }
 }
