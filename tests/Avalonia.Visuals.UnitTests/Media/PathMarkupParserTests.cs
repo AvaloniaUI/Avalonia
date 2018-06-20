@@ -7,6 +7,8 @@ using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
 {
+    using System.IO;
+
     public class PathMarkupParserTests
     {
         [Fact]
@@ -140,6 +142,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }       
 
         [Theory]
+        [InlineData("         M0 0")]
         [InlineData("F1 M24,14 A2,2,0,1,1,20,14 A2,2,0,1,1,24,14 z")] // issue #1107
         [InlineData("M0 0L10 10z")]
         [InlineData("M50 50 L100 100 L150 50")]
@@ -171,6 +174,19 @@ namespace Avalonia.Visuals.UnitTests.Media
                 parser.Parse(pathData);
 
                 Assert.True(true);
+            }
+        }
+
+        [Theory]
+        [InlineData("0 0")]
+        [InlineData("j")]
+        public void Throws_InvalidDataException_On_None_Defined_Command(string pathData)
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                Assert.Throws<InvalidDataException>(() => parser.Parse(pathData));
             }
         }
     }
