@@ -213,14 +213,11 @@ namespace Avalonia.Media
             {
                 AddLine(commandToken);
 
-                if (commandToken.IsRelative)
+                if (!commandToken.IsRelative)
                 {
-                    continue;
+                    _currentPoint = currentPoint;
+                    CreateFigure();
                 }
-
-                _currentPoint = currentPoint;
-
-                CreateFigure();
             }
         }
 
