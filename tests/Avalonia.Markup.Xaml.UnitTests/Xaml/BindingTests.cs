@@ -281,5 +281,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(5.6, AttachedPropertyOwner.GetDouble(textBlock));
             }
         }
+
+        [Fact]
+        public void Binding_To_TextBlock_Text_With_StringConverter_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <TextBlock Name='textBlock' Text='{Binding Foo, StringFormat=Hello {0}}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
+                textBlock.DataContext = new { Foo = "world" };
+                window.ApplyTemplate();
+
+                Assert.Equal("Hello world", textBlock.Text);
+            }
+        }
     }
 }
