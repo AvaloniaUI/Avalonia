@@ -17,7 +17,6 @@ namespace Avalonia.Media
     /// </summary>
     public class PathMarkupParser : IDisposable
     {
-        private static readonly string s_separatorPattern;
         private static readonly Dictionary<char, Command> s_commands =
             new Dictionary<char, Command>
                 {
@@ -42,7 +41,6 @@ namespace Avalonia.Media
 
         static PathMarkupParser()
         {
-            s_separatorPattern = CreatesSeparatorPattern();
         }
 
         /// <summary>
@@ -82,7 +80,7 @@ namespace Avalonia.Media
         /// <param name="pathData">The path data.</param>
         public void Parse(string pathData)
         {
-            var tokens = ParseTokens2(pathData);
+            var tokens = ParseTokens(pathData);
 
             CreateGeometry(tokens);
         }
@@ -107,21 +105,7 @@ namespace Avalonia.Media
             _isDisposed = true;
         }
 
-        private static string CreatesSeparatorPattern()
-        {
-            var stringBuilder = new StringBuilder();
-
-            foreach (var command in s_commands.Keys)
-            {
-                stringBuilder.Append(command);
-
-                stringBuilder.Append(char.ToLower(command));
-            }
-
-            return @"(?=[" + stringBuilder + "])";
-        }
-
-        private static IEnumerable<CommandToken> ParseTokens2(string s)
+        private static IEnumerable<CommandToken> ParseTokens(string s)
         {
             var commands = new List<CommandToken>();
             var span = s.AsSpan();
@@ -130,11 +114,6 @@ namespace Avalonia.Media
                 commands.Add(CommandToken.Parse(ref span));
             }
             return commands;
-        }
-
-        private static IEnumerable<CommandToken> ParseTokens(string s)
-        {
-            return Regex.Split(s, s_separatorPattern).Where(t => !string.IsNullOrEmpty(t)).Select(CommandToken.Parse);
         }
 
         private static Point MirrorControlPoint(Point controlPoint, Point center)
@@ -146,7 +125,7 @@ namespace Avalonia.Media
 
         private void CreateGeometry(IEnumerable<CommandToken> commandTokens)
         {
-            _currentPoint = new Point();           
+            _currentPoint = new Point();
 
             foreach (var commandToken in commandTokens)
             {
@@ -446,15 +425,13 @@ namespace Avalonia.Media
 
         private class CommandToken
         {
-            private const string ArgumentExpression = @"-?[0-9]*\.?\d+";
-
-            private CommandToken(Command command, bool isRelative, IEnumerable<string> arguments)
+            private CommandToken(Command command, bool isRelative, List<string> arguments)
             {
                 Command = command;
 
                 IsRelative = isRelative;
 
-                Arguments = new List<string>(arguments);
+                Arguments = arguments;
             }
 
             public Command Command { get; }
@@ -477,34 +454,6 @@ namespace Avalonia.Media
             private int CurrentPosition { get; set; }
 
             private List<string> Arguments { get; }
-
-            public static CommandToken Parse(string s)
-            {
-                using (var reader = new StringReader(s))
-                {
-                    var command = Command.None;
-
-                    var isRelative = false;
-
-                    if (!ReadCommand(reader, ref command, ref isRelative))
-                    {
-                        throw new InvalidDataException("No path command declared.");
-                    }
-
-                    var commandArguments = reader.ReadToEnd();
-
-                    var argumentMatches = Regex.Matches(commandArguments, ArgumentExpression);
-
-                    var arguments = new List<string>();
-
-                    foreach (Match match in argumentMatches)
-                    {
-                        arguments.Add(match.Value);
-                    }
-
-                    return new CommandToken(command, isRelative, arguments);
-                }
-            }
             
             public static CommandToken Parse(ref ReadOnlySpan<char> span)
             {
@@ -646,33 +595,6 @@ namespace Avalonia.Media
                 return true;
             }
 
-            private static bool ReadCommand(TextReader reader, ref Command command, ref bool relative)
-            {
-                ReadWhitespace(reader);
-
-                var i = reader.Peek();
-
-                if (i == -1)
-                {
-                    return false;
-                }
-
-                var c = (char)i;
-
-                if (!s_commands.TryGetValue(char.ToUpperInvariant(c), out var next))
-                {
-                    throw new InvalidDataException("Unexpected path command '" + c + "'.");
-                }
-
-                command = next;
-
-                relative = char.IsLower(c);
-
-                reader.Read();
-
-                return true;
-            }
-
             private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
             {
                 if (remaining.IsEmpty)
@@ -721,25 +643,6 @@ namespace Avalonia.Media
                 int i = 0;
                 for (; i < span.Length && char.IsWhiteSpace(span[i]); i++) ;
                 return span.Slice(i);
-            }
-
-            private static void ReadWhitespace(TextReader reader)
-            {
-                int i;
-
-                while ((i = reader.Peek()) != -1)
-                {
-                    var c = (char)i;
-
-                    if (char.IsWhiteSpace(c))
-                    {
-                        reader.Read();
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
             }
         }
     }
