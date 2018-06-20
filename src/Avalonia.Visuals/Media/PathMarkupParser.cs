@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -70,17 +67,6 @@ namespace Avalonia.Media
             Close
         }
 
-        /// <summary>
-        /// Parses the specified path data and writes the result to the geometryContext of this instance.
-        /// </summary>
-        /// <param name="pathData">The path data.</param>
-        public void Parse(string pathData)
-        {
-            var tokens = ParseTokens(pathData);
-
-            CreateGeometry(tokens);
-        }
-
         void IDisposable.Dispose()
         {
             Dispose(true);
@@ -101,17 +87,6 @@ namespace Avalonia.Media
             _isDisposed = true;
         }
 
-        private static IEnumerable<CommandToken> ParseTokens(string s)
-        {
-            var commands = new List<CommandToken>();
-            var span = s.AsSpan();
-            while (!span.IsEmpty)
-            {
-                commands.Add(CommandToken.Parse(ref span));
-            }
-            return commands;
-        }
-
         private static Point MirrorControlPoint(Point controlPoint, Point center)
         {
             var dir = controlPoint - center;
@@ -119,15 +94,21 @@ namespace Avalonia.Media
             return center + -dir;
         }
 
-        private void CreateGeometry(IEnumerable<CommandToken> commandTokens)
+        /// <summary>
+        /// Parses the specified path data and writes the result to the geometryContext of this instance.
+        /// </summary>
+        /// <param name="pathData">The path data.</param>
+        public void Parse(string pathData)
         {
+            var span = pathData.AsSpan();
             _currentPoint = new Point();
 
-            foreach (var commandToken in commandTokens)
+            while(!span.IsEmpty)
             {
+                var commandToken = CommandToken.Parse(ref span);
                 try
                 {
-                    while (true)
+                    do
                     {
                         switch (commandToken.Command)
                         {
@@ -169,14 +150,7 @@ namespace Avalonia.Media
                             default:
                                 throw new NotSupportedException("Unsupported command");
                         }
-
-                        if (commandToken.HasImplicitCommands)
-                        {
-                            continue;
-                        }
-
-                        break;
-                    }
+                    } while (commandToken.HasImplicitCommands);
                 }
                 catch (InvalidDataException)
                 {
@@ -234,11 +208,6 @@ namespace Avalonia.Media
             _currentPoint = currentPoint;
 
             CreateFigure();
-
-            if (!commandToken.HasImplicitCommands)
-            {
-                return;
-            }
 
             while (commandToken.HasImplicitCommands)
             {
