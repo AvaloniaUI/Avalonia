@@ -33,7 +33,7 @@ namespace Avalonia.Media
         private IGeometryContext _geometryContext;
         private Point _currentPoint;
         private Point? _previousControlPoint;
-        private bool? _isOpen;
+        private bool _isOpen;
         private bool _isDisposed;
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Avalonia.Media
                 }
             }
 
-            if (_isOpen != null)
+            if (_isOpen)
             {
                 _geometryContext.EndFigure(false);
             }
@@ -170,7 +170,7 @@ namespace Avalonia.Media
 
         private void CreateFigure()
         {
-            if (_isOpen != null)
+            if (_isOpen)
             {
                 _geometryContext.EndFigure(false);
             }
@@ -189,14 +189,14 @@ namespace Avalonia.Media
 
         private void CloseFigure()
         {
-            if (_isOpen == true)
+            if (_isOpen)
             {
                 _geometryContext.EndFigure(true);
             }
 
             _previousControlPoint = null;
 
-            _isOpen = null;
+            _isOpen = false;
         }
 
         private void AddMove(CommandToken commandToken)
@@ -227,7 +227,7 @@ namespace Avalonia.Media
                                 ? commandToken.ReadRelativePoint(_currentPoint)
                                 : commandToken.ReadPoint();
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -241,7 +241,7 @@ namespace Avalonia.Media
                                 ? new Point(_currentPoint.X + commandToken.ReadDouble(), _currentPoint.Y)
                                 : _currentPoint.WithX(commandToken.ReadDouble());
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -255,7 +255,7 @@ namespace Avalonia.Media
                                 ? new Point(_currentPoint.X, _currentPoint.Y + commandToken.ReadDouble())
                                 : _currentPoint.WithY(commandToken.ReadDouble());
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -279,7 +279,7 @@ namespace Avalonia.Media
                              ? commandToken.ReadRelativePoint(_currentPoint)
                              : commandToken.ReadPoint();
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -301,7 +301,7 @@ namespace Avalonia.Media
                           ? commandToken.ReadRelativePoint(_currentPoint)
                           : commandToken.ReadPoint();
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -326,7 +326,7 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -349,7 +349,7 @@ namespace Avalonia.Media
                 _previousControlPoint = MirrorControlPoint((Point)_previousControlPoint, _currentPoint);
             }
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
@@ -373,7 +373,7 @@ namespace Avalonia.Media
                           ? commandToken.ReadRelativePoint(_currentPoint)
                           : commandToken.ReadPoint();
 
-            if (_isOpen == null)
+            if (!_isOpen)
             {
                 CreateFigure();
             }
