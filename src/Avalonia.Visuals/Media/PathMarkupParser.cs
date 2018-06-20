@@ -39,10 +39,6 @@ namespace Avalonia.Media
         private bool? _isOpen;
         private bool _isDisposed;
 
-        static PathMarkupParser()
-        {
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PathMarkupParser"/> class.
         /// </summary>
