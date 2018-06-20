@@ -83,7 +83,6 @@ namespace Avalonia.Media
         public void Parse(string pathData)
         {
             var normalizedPathData = NormalizeWhiteSpaces(pathData);
-
             var tokens = ParseTokens(normalizedPathData);
 
             CreateGeometry(tokens);
@@ -129,11 +128,14 @@ namespace Avalonia.Media
                     }
 
                     source[index++] = c;
+
                     skip = true;
+
                     continue;
                 }
 
                 skip = false;
+
                 source[index++] = c;
             }
 
