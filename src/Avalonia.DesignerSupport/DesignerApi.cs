@@ -18,6 +18,7 @@ namespace Avalonia.DesignerSupport
             Console.WriteLine("manuel pull test");
             object rv;
             Dictionary.TryGetValue(name, out rv);
+            Console.WriteLine("Vi prøver igen");
             return rv;
         }
 
