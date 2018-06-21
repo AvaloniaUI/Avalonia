@@ -33,6 +33,23 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
 
         [Fact]
+        public async Task ImageBrush_NullSource()
+        {
+            Decorator target = new Decorator
+            {
+                Width = 200,
+                Height = 200,
+                Child = new Rectangle
+                {
+                    Margin = new Thickness(8),
+                    Fill = new ImageBrush()
+                }
+            };
+
+            await RenderToFile(target);
+        }
+
+        [Fact]
         public async Task ImageBrush_Tile_Fill()
         {
             Decorator target = new Decorator
