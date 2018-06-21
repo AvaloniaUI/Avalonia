@@ -35,7 +35,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public class When_Binding_To_String
         {
             [Fact]
-            public void StringFormatConverter_Should_Used_When_Binding_Has_StringFormat()
+            public void StringFormatConverter_Should_Be_Used_When_Binding_Has_StringFormat()
             {
                 var textBlock = new TextBlock
                 {
@@ -58,7 +58,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public class When_Binding_To_Object
         {
             [Fact]
-            public void StringFormatConverter_Should_Used_When_Binding_Has_StringFormat()
+            public void StringFormatConverter_Should_Be_Used_When_Binding_Has_StringFormat()
             {
                 var textBlock = new TextBlock
                 {
