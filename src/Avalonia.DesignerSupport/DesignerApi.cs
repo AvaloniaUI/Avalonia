@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Avalonia.DesignerSupport
 {
@@ -18,6 +15,7 @@ namespace Avalonia.DesignerSupport
 
         protected object Get([CallerMemberName] string name = null)
         {
+            Console.WriteLine("manuel pull test");
             object rv;
             Dictionary.TryGetValue(name, out rv);
             return rv;
