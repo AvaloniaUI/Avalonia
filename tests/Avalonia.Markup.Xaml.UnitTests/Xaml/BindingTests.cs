@@ -291,7 +291,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <TextBlock Name='textBlock' Text='{Binding Foo, StringFormat=Hello {0}}'/>
+    <TextBlock Name='textBlock' Text='{Binding Foo, StringFormat=Hello \{0\}}'/>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
                 var window = (Window)loader.Load(xaml);
