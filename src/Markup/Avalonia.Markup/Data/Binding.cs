@@ -172,7 +172,7 @@ namespace Avalonia.Data
             if (!string.IsNullOrWhiteSpace(StringFormat) && 
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
-                converter = new StringFormatConverter(StringFormat, converter);
+                converter = new StringFormatValueConverter(StringFormat, converter);
             }
 
             var subject = new BindingExpression(

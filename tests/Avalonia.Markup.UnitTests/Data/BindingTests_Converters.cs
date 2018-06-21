@@ -51,7 +51,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     textBlock,
                     TextBlock.TextProperty).Observable;
 
-                Assert.IsType<StringFormatConverter>(expressionObserver.Converter);
+                Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
             }
         }
 
@@ -74,7 +74,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     textBlock,
                     TextBlock.TagProperty).Observable;
 
-                Assert.IsType<StringFormatConverter>(expressionObserver.Converter);
+                Assert.IsType<StringFormatValueConverter>(expressionObserver.Converter);
             }
         }
 

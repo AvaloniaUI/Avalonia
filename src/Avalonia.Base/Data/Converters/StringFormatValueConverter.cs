@@ -3,9 +3,9 @@ using System.Globalization;
 
 namespace Avalonia.Data.Converters
 {
-    public class StringFormatConverter : IValueConverter
+    public class StringFormatValueConverter : IValueConverter
     {
-        public StringFormatConverter(string format, IValueConverter inner)
+        public StringFormatValueConverter(string format, IValueConverter inner)
         {
             Contract.Requires<ArgumentNullException>(format != null);
 
