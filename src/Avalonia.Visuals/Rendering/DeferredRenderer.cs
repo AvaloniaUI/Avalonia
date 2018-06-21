@@ -117,6 +117,9 @@ namespace Avalonia.Rendering
             var scene = Interlocked.Exchange(ref _scene, null);
             scene?.Dispose();
             Stop();
+
+            Layers.Clear();
+            RenderTarget?.Dispose();
         }
 
         /// <inheritdoc/>
