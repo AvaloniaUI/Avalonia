@@ -4,12 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 using Avalonia.Collections;
+using Avalonia.Reactive;
 
 namespace Avalonia.Styling
 {
@@ -200,10 +198,9 @@ namespace Avalonia.Styling
             return builder.ToString();
         }
 
-        private class ClassObserver : IObservable<bool>
+        private class ClassObserver : LightweightObservableBase<bool>
         {
             readonly IList<string> _match;
-            readonly List<IObserver<bool>> _observers = new List<IObserver<bool>>();
             IAvaloniaReadOnlyList<string> _classes;
 
             public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
@@ -212,34 +209,19 @@ namespace Avalonia.Styling
                 _match = match;
             }
 
-            public IDisposable Subscribe(IObserver<bool> observer)
+            protected override void Deinitialize() => _classes.CollectionChanged -= ClassesChanged;
+            protected override void Initialize() => _classes.CollectionChanged += ClassesChanged;
+
+            protected override void Subscribed(IObserver<bool> observer, bool first)
             {
-                if (_observers.Count == 0)
-                {
-                    _classes.CollectionChanged += ClassesChanged;
-                }
-
-                _observers.Add(observer);
                 observer.OnNext(GetResult());
-
-                return Disposable.Create(() =>
-                {
-                    _observers.Remove(observer);
-                    if (_observers.Count == 0)
-                    {
-                        _classes.CollectionChanged -= ClassesChanged;
-                    }
-                });
             }
 
             private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 if (e.Action != NotifyCollectionChangedAction.Move)
                 {
-                    foreach (var observer in _observers)
-                    {
-                        observer.OnNext(GetResult());
-                    }
+                    PublishNext(GetResult());
                 }
             }
 
