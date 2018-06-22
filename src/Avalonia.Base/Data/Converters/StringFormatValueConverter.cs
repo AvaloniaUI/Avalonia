@@ -37,7 +37,7 @@ namespace Avalonia.Data.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             value = Inner?.Convert(value, targetType, parameter, culture) ?? value;
-            return string.Format(Format, value, culture);
+            return string.Format(culture, Format, value);
         }
 
         /// <inheritdoc/>
