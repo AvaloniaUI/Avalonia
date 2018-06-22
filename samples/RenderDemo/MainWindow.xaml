@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        Title="AvaloniaUI Rendering Test"
+        xmlns:pages="clr-namespace:RenderDemo.Pages"
+        Width="800"
+        Height="600">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="Rendering">
+        <MenuItem Header="Draw Dirty Rects" Command="{Binding ToggleDrawDirtyRects}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0" 
+                      IsHitTestVisible="False"
+                      IsChecked="{Binding DrawDirtyRects}"/>
+          </MenuItem.Icon>
+        </MenuItem>
+        <MenuItem Header="Draw FPS" Command="{Binding ToggleDrawFps}">
+          <MenuItem.Icon>
+            <CheckBox BorderThickness="0"
+                      IsHitTestVisible="False"
+                      IsChecked="{Binding DrawFps}"/>
+          </MenuItem.Icon>
+        </MenuItem>
+      </MenuItem>
+    </Menu>
+    
+    <TabControl Classes="sidebar">
+      <TabControl.PageTransition>
+        <CrossFade Duration="0.25"/>
+      </TabControl.PageTransition>
+      <TabItem Header="Animations"><pages:AnimationsPage/></TabItem>
+      <TabItem Header="Clipping"><pages:ClippingPage/></TabItem>
+      <TabItem Header="Drawing"><pages:DrawingPage/></TabItem>
+    </TabControl>
+  </DockPanel>
+</Window>
