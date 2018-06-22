@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Controls.Templates;
+using Avalonia.Documents;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -45,25 +46,25 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly StyledProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
+            TextElement.FontSizeProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStyle> FontStyleProperty =
-            TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
+            TextElement.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
         public static readonly StyledProperty<FontWeight> FontWeightProperty =
-            TextBlock.FontWeightProperty.AddOwner<TemplatedControl>();
+            TextElement.FontWeightProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
+            TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.

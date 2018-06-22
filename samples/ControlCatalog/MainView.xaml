@@ -25,6 +25,7 @@
     <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
     <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
     <TabItem Header="Slider"><pages:SliderPage/></TabItem>
+    <TabItem Header="TextBlock"><pages:TextBlockPage/></TabItem>
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
     <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
     <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>

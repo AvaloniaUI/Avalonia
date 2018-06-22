@@ -79,9 +79,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override FormattedText CreateFormattedText(Size constraint, string text)
+        protected override FormattedText CreateFormattedText(Size constraint)
         {
-            return base.CreateFormattedText(constraint, StripAccessKey(text));
+            return base.CreateFormattedText(constraint, StripAccessKey(Text));
         }
 
         /// <summary>
@@ -126,6 +126,11 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The text with the first underscore stripped.</returns>
         private string StripAccessKey(string text)
         {
+            if (text == null)
+            {
+                return string.Empty;
+            }
+
             var position = text.IndexOf('_');
 
             if (position == -1)

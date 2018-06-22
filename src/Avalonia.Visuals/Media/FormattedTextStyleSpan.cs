@@ -12,14 +12,26 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="startIndex">The index of the first character in the span.</param>
         /// <param name="length">The length of the span.</param>
+        /// <param name="fontFamily">The span's font family.</param>
+        /// <param name="fontSize">The span's font size.</param>
+        /// <param name="fontStyle">The span's font style.</param>
+        /// <param name="fontWeight">The span's font weight</param>
         /// <param name="foregroundBrush">The span's foreground brush.</param>
         public FormattedTextStyleSpan(
             int startIndex,
             int length,
+            FontFamily fontFamily = null,
+            double? fontSize = null,
+            FontStyle? fontStyle = null,
+            FontWeight? fontWeight = null,
             IBrush foregroundBrush = null)
         {
             StartIndex = startIndex;
             Length = length;
+            FontFamily = fontFamily;
+            FontSize = fontSize;
+            FontStyle = fontStyle;
+            FontWeight = fontWeight;
             ForegroundBrush = foregroundBrush;
         }
 
@@ -32,6 +44,26 @@ namespace Avalonia.Media
         /// Gets the length of the span.
         /// </summary>
         public int Length { get; }
+
+        /// <summary>
+        /// Gets the font family.
+        /// </summary>
+        public FontFamily FontFamily { get; }
+
+        /// <summary>
+        /// Gets the font size, in device independent pixels.
+        /// </summary>
+        public double? FontSize { get; }
+
+        /// <summary>
+        /// Gets the font style.
+        /// </summary>
+        public FontStyle? FontStyle{ get; }
+
+        /// <summary>
+        /// Gets the font weight.
+        /// </summary>
+        public FontWeight? FontWeight { get; }
 
         /// <summary>
         /// Gets the span's foreground brush.

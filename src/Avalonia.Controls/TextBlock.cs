@@ -2,8 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Collections;
+using Avalonia.Documents;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -13,6 +16,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of text.
     /// </summary>
+    [ContentWrapper(typeof(Run))]
     public class TextBlock : Control
     {
         /// <summary>
@@ -20,9 +24,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
-
-        // TODO: Define these attached properties elswhere (e.g. on a Text class) and AddOwner
-        // them into TextBlock.
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
@@ -36,37 +37,26 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> FontSizeProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
-                nameof(FontSize),
-                defaultValue: 12,
-                inherits: true);
+        public static readonly StyledProperty<double> FontSizeProperty =
+            TextElement.FontSizeProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, FontStyle>(
-                nameof(FontStyle),
-                inherits: true);
+        public static readonly StyledProperty<FontStyle> FontStyleProperty =
+            TextElement.FontStyleProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, FontWeight>(
-                nameof(FontWeight),
-                inherits: true,
-                defaultValue: FontWeight.Normal);
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
+            TextElement.FontWeightProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly AttachedProperty<IBrush> ForegroundProperty =
-            AvaloniaProperty.RegisterAttached<TextBlock, Control, IBrush>(
-                nameof(Foreground),
-                new SolidColorBrush(0xff000000),
-                inherits: true);
+        public static readonly StyledProperty<IBrush> ForegroundProperty =
+            TextElement.ForegroundProperty.AddOwner<TextBlock>();
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
@@ -89,7 +79,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             AvaloniaProperty.Register<TextBlock, TextWrapping>(nameof(TextWrapping));
 
-        private string _text;
         private FormattedText _formattedText;
         private Size _constraint;
 
@@ -110,19 +99,17 @@ namespace Avalonia.Controls
         /// </summary>
         public TextBlock()
         {
-            _text = string.Empty;
-
-            Observable.Merge(
-                this.GetObservable(TextProperty).Select(_ => Unit.Default),
-                this.GetObservable(TextAlignmentProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontSizeProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontStyleProperty).Select(_ => Unit.Default),
-                this.GetObservable(FontWeightProperty).Select(_ => Unit.Default))
-                .Subscribe(_ =>
-                {
-                    InvalidateFormattedText();
-                    InvalidateMeasure();
-                });
+            Inlines.ForEachItem(
+                x => LogicalChildren.Add(x),
+                x => LogicalChildren.Remove(x),
+                () => throw new NotSupportedException());
+            Inlines.Invalidated += InlinesChanged;
+            AffectsFormattedText<TextBlock>(
+                TextProperty,
+                TextAlignmentProperty,
+                FontSizeProperty,
+                FontStyleProperty,
+                FontWeightProperty);
         }
 
         /// <summary>
@@ -137,12 +124,26 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the text.
         /// </summary>
-        [Content]
         public string Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => Inlines.Text;
+            set
+            {
+                var old = Text;
+                Inlines.Text = value;
+
+                if (Text != old)
+                {
+                    RaisePropertyChanged(TextProperty, old, value);
+                }
+            }
         }
+
+        /// <summary>
+        /// Gets a collection of inline text elements to display.
+        /// </summary>
+        [Content]
+        public InlineCollection Inlines { get; } = new InlineCollection();
 
         /// <summary>
         /// Gets or sets the font family.
@@ -198,7 +199,7 @@ namespace Avalonia.Controls
             {
                 if (_formattedText == null)
                 {
-                    _formattedText = CreateFormattedText(_constraint, Text);
+                    _formattedText = CreateFormattedText(_constraint);
                 }
 
                 return _formattedText;
@@ -345,13 +346,55 @@ namespace Avalonia.Controls
             context.DrawText(Foreground, new Point(), FormattedText);
         }
 
+        protected static void AffectsFormattedText<T>(params AvaloniaProperty[] properties)
+            where T : TextBlock
+        {
+            void Handler(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T i)
+                {
+                    i.InvalidateFormattedText();
+                    i.InvalidateMeasure();
+                }
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Handler);
+            }
+        }
+
         /// <summary>
         /// Creates the <see cref="FormattedText"/> used to render the text.
         /// </summary>
         /// <param name="constraint">The constraint of the text.</param>
+        /// <returns>A <see cref="FormattedText"/> object.</returns>
+        protected virtual FormattedText CreateFormattedText(Size constraint)
+        {
+            var builder = new FormattedTextBuilder();
+
+            foreach (var i in Inlines)
+            {
+                i.BuildFormattedText(builder);
+            }
+
+            var result = builder.ToFormattedText();
+            result.Constraint = constraint;
+            result.TextAlignment = TextAlignment;
+            result.Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight);
+            result.Wrapping = TextWrapping;
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FormattedText"/> instance using the specified text and constraint
+        /// and using the base styling properties of the <see cref="TextBlock"/>.
+        /// </summary>
+        /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to format.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected virtual FormattedText CreateFormattedText(Size constraint, string text)
+        [Obsolete("Remove this")]
+        protected FormattedText CreateFormattedText(Size constraint, string text)
         {
             return new FormattedText
             {
@@ -402,6 +445,12 @@ namespace Avalonia.Controls
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
+            InvalidateFormattedText();
+            InvalidateMeasure();
+        }
+
+        private void InlinesChanged(object sender, EventArgs e)
+        {
             InvalidateFormattedText();
             InvalidateMeasure();
         }

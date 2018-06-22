@@ -217,17 +217,17 @@ namespace Avalonia.Controls.Presenters
         /// <param name="constraint">The constraint of the text.</param>
         /// <param name="text">The text to generated the <see cref="FormattedText"/> for.</param>
         /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected override FormattedText CreateFormattedText(Size constraint, string text)
+        protected override FormattedText CreateFormattedText(Size constraint)
         {
             FormattedText result = null;
 
             if (PasswordChar != default(char))
             {
-                result = base.CreateFormattedText(constraint, new string(PasswordChar, text?.Length ?? 0));
+                result = base.CreateFormattedText(constraint, new string(PasswordChar, Text?.Length ?? 0));
             }
             else
             {
-                result = base.CreateFormattedText(constraint, text);
+                result = base.CreateFormattedText(constraint);
             }
 
             var selectionStart = SelectionStart;

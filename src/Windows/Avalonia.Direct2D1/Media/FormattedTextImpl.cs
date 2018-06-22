@@ -98,11 +98,33 @@ namespace Avalonia.Direct2D1.Media
         {
             if (span.Length > 0)
             {
+                var range = new DWrite.TextRange(span.StartIndex, span.Length);
+
                 if (span.ForegroundBrush != null)
                 {
                     TextLayout.SetDrawingEffect(
                         new BrushWrapper(span.ForegroundBrush.ToImmutable()),
-                        new DWrite.TextRange(span.StartIndex, span.Length));
+                        range);
+                }
+
+                if (span.FontFamily != null)
+                {
+                    TextLayout.SetFontFamilyName(span.FontFamily.Name, range);
+                }
+
+                if (span.FontSize != null)
+                {
+                    TextLayout.SetFontSize((float)span.FontSize, range);
+                }
+
+                if (span.FontStyle != null)
+                {
+                    TextLayout.SetFontStyle((DWrite.FontStyle)span.FontStyle, range);
+                }
+
+                if (span.FontWeight != null)
+                {
+                    TextLayout.SetFontWeight((DWrite.FontWeight)span.FontWeight, range);
                 }
             }
         }

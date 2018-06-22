@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+  <UserControl.Styles>
+    <Style Selector="Run.code">
+      <Setter Property="FontFamily" Value="Courier New"/>
+    </Style>
+  </UserControl.Styles>
+
+  <StackPanel Orientation="Vertical" Gap="4">
+    <TextBlock Classes="h1">TextBlock</TextBlock>
+    <TextBlock Classes="h2">A control that displays a block of text</TextBlock>
+
+    <StackPanel Orientation="Horizontal"
+              Margin="0,16,0,0"
+              HorizontalAlignment="Center"
+              Gap="16">
+      <StackPanel Orientation="Vertical" Gap="8">
+        <TextBlock>A simple TextBlock with unformatted text.</TextBlock>
+        <TextBlock>
+          A <Run Classes="code">TextBlock</Run> with <Run FontWeight="Bold">differing</Run>
+          <Run FontStyle="Italic">styles</Run> <Run FontSize="24">and fonts</Run>.
+        </TextBlock>
+        <TextBlock>
+          A <Run Classes="code" Foreground="Gray">TextBlock</Run> with <Run Foreground="Red">differing</Run>
+          <Run Foreground="Green">colors</Run>.
+        </TextBlock>
+        <TextBlock>
+          A <Run Classes="code">TextBlock</Run> with <Run Foreground="Orange" FontStyle="Italic" Text="{Binding}"/>.
+        </TextBlock>
+        <TextBlock>
+          A <Run Classes="code">TextBlock</Run> with a <LineBreak/> line break.
+        </TextBlock>
+      </StackPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>
