@@ -19,11 +19,11 @@ namespace Avalonia.Input
             return null;
         }
         
-        private DragDropEffects RaiseDragEvent(Interactive target, IInputElement inputRoot, Point point, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data)
+        private DragDropEffects RaiseDragEvent(Interactive target, IInputElement inputRoot, Point point, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data, InputModifiers modifiers)
         {
             if (target == null)
                 return DragDropEffects.None;
-            var args = new DragEventArgs(routedEvent, data, target, inputRoot.TranslatePoint(point, target))
+            var args = new DragEventArgs(routedEvent, data, target, inputRoot.TranslatePoint(point, target), modifiers)
             {
                 RoutedEvent = routedEvent,
                 DragEffects = operation
@@ -32,24 +32,24 @@ namespace Avalonia.Input
             return args.DragEffects;
         }
         
-        private DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects DragEnter(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
         {
             _lastTarget = GetTarget(inputRoot, point);
-            return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragEnterEvent, effects, data);
+            return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
         }
 
-        private DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects DragOver(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
         {
             var target = GetTarget(inputRoot, point);
 
             if (target == _lastTarget)
-                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragOverEvent, effects, data);
+                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragOverEvent, effects, data, modifiers);
             
             try
             {
                 if (_lastTarget != null)
                     _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
-                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragEnterEvent, effects, data);
+                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
             }
             finally
             {
@@ -71,11 +71,11 @@ namespace Avalonia.Input
             }
         }
 
-        private DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects)
+        private DragDropEffects Drop(IInputElement inputRoot, Point point, IDataObject data, DragDropEffects effects, InputModifiers modifiers)
         {
             try
             {
-                return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DropEvent, effects, data);
+                return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DropEvent, effects, data, modifiers);
             }
             finally 
             {
@@ -94,16 +94,16 @@ namespace Avalonia.Input
             switch (e.Type)
             {
                 case RawDragEventType.DragEnter:
-                    e.Effects = DragEnter(e.InputRoot, e.Location, e.Data, e.Effects);
+                    e.Effects = DragEnter(e.InputRoot, e.Location, e.Data, e.Effects, e.Modifiers);
                     break;
                 case RawDragEventType.DragOver:
-                    e.Effects = DragOver(e.InputRoot, e.Location, e.Data, e.Effects);
+                    e.Effects = DragOver(e.InputRoot, e.Location, e.Data, e.Effects, e.Modifiers);
                     break;
                 case RawDragEventType.DragLeave:
                     DragLeave(e.InputRoot);
                     break;
                 case RawDragEventType.Drop:
-                    e.Effects = Drop(e.InputRoot, e.Location, e.Data, e.Effects);
+                    e.Effects = Drop(e.InputRoot, e.Location, e.Data, e.Effects, e.Modifiers);
                     break;
             }
         }
