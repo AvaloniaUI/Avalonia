@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Media;
 using Avalonia.Metadata;
 
 namespace Avalonia.Documents
@@ -20,10 +19,17 @@ namespace Avalonia.Documents
 
         string _text;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Run"/> class.
+        /// </summary>
         public Run()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Run"/> class.
+        /// </summary>
+        /// <param name="text">The run text.</param>
         public Run(string text)
         {
             _text = text;
@@ -39,11 +45,12 @@ namespace Avalonia.Documents
             set { SetAndRaise(TextProperty, ref _text, value); }
         }
 
+        /// <inheritdoc/>
         public override void BuildFormattedText(FormattedTextBuilder builder)
         {
             if (Text?.Length > 0)
             {
-                builder.Add(Text, GetStyleSpan(builder.StartIndex, Text.Length));
+                builder.Add(Text, CreateStyleSpan(builder.Length, Text.Length));
             }
         }
     }

@@ -6,11 +6,17 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Documents
 {
+    /// <summary>
+    /// A collection of <see cref="Inline"/>s.
+    /// </summary>
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>, IList
     {
         bool _isNull;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InlineCollection"/> class.
+        /// </summary>
         public InlineCollection()
         {
             ResetBehavior = ResetBehavior.Remove;
@@ -28,6 +34,9 @@ namespace Avalonia.Documents
                 () => throw new NotSupportedException());
         }
 
+        /// <summary>
+        /// Gets a string representation of the inlines.
+        /// </summary>
         public string Text
         {
             get
@@ -77,8 +86,12 @@ namespace Avalonia.Documents
             }
         }
 
+        /// <summary>
+        /// Raised when an inline in the collection changes.
+        /// </summary>
         public event EventHandler Invalidated;
 
+        /// <inheirtdoc/>
         int IList.Add(object value)
         {
             if (value is string s)
@@ -93,10 +106,10 @@ namespace Avalonia.Documents
             return Count - 1;
         }
 
-        protected void Invalidate()
-        {
-            Invalidated?.Invoke(this, EventArgs.Empty);
-        }
+        /// <summary>
+        /// Raises the <see cref="Invalidated"/> event.
+        /// </summary>
+        protected void Invalidate() => Invalidated?.Invoke(this, EventArgs.Empty);
 
         private void Invalidate(object sender, EventArgs e) => Invalidate();
     }

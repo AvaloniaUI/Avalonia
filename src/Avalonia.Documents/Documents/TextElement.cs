@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Rendering;
-using Avalonia.Styling;
 
 namespace Avalonia.Documents
 {
@@ -132,8 +128,20 @@ namespace Avalonia.Documents
             set => SetValue(TextDecorationsProperty, value);
         }
 
+        /// <summary>
+        /// Raised when the visual representation of the text element changes.
+        /// </summary>
         public event EventHandler Invalidated;
 
+        /// <summary>
+        /// Marks properties as invalidating the text element's visual representation.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a text element's static constructor, any change to a
+        /// property in the <paramref name="properties"/> collection will cause
+        /// <see cref="Invalidate"/> to be called on the element.
+        /// </remarks>
         protected static void InvalidatesTextElement<T>(params AvaloniaProperty[] properties)
             where T : TextElement
         {
@@ -151,6 +159,9 @@ namespace Avalonia.Documents
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="Invalidate"/> event.
+        /// </summary>
         protected void Invalidate() => Invalidated?.Invoke(this, EventArgs.Empty);
     }
 }
