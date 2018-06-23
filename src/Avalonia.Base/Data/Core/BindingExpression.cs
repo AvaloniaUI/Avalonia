@@ -14,7 +14,7 @@ namespace Avalonia.Data.Core
 {
     /// <summary>
     /// Binds to an expression on an object using a type value converter to convert the values
-    /// that are send and received.
+    /// that are sent and received.
     /// </summary>
     public class BindingExpression : LightweightObservableBase<object>, ISubject<object>, IDescription
     {
