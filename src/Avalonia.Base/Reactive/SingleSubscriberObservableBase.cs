@@ -46,17 +46,14 @@ namespace Avalonia.Reactive
 
         protected void PublishNext(T value)
         {
-            if (_observer != null)
-            {
-                _observer?.OnNext(value);
-            }
+            _observer?.OnNext(value);
         }
 
         protected void PublishCompleted()
         {
             if (_observer != null)
             {
-                _observer?.OnCompleted();
+                _observer.OnCompleted();
                 _completed = true;
                 Unsubscribed();
                 _observer = null;
@@ -67,7 +64,7 @@ namespace Avalonia.Reactive
         {
             if (_observer != null)
             {
-                _observer?.OnError(error);
+                _observer.OnError(error);
                 _error = error;
                 Unsubscribed();
                 _observer = null;
