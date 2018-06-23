@@ -17,6 +17,8 @@ namespace Avalonia.Data.Core
 {
     internal class IndexerNode :  SettableNode
     {
+        private IDisposable _subscription;
+
         public IndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
@@ -24,7 +26,7 @@ namespace Avalonia.Data.Core
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
 
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference reference)
         {
             var target = reference.Target;
             var incc = target as INotifyCollectionChanged;
@@ -49,7 +51,12 @@ namespace Avalonia.Data.Core
                     .Select(_ => GetValue(target)));
             }
 
-            return Observable.Merge(inputs).StartWith(GetValue(target));
+            _subscription = Observable.Merge(inputs).StartWith(GetValue(target)).Subscribe(ValueChanged);
+        }
+
+        protected override void StopListeningCore()
+        {
+            _subscription.Dispose();
         }
 
         protected override bool SetTargetValueCore(object value, BindingPriority priority)

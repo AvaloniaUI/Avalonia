@@ -145,15 +145,15 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
-            protected override void Dispose(bool disposing)
+            protected override void SubscribeCore()
+            {
+                _subscription = Instance?.GetObservable(_property).Subscribe(PublishValue);
+            }
+
+            protected override void UnsubscribeCore()
             {
                 _subscription?.Dispose();
                 _subscription = null;
-            }
-
-            protected override void SubscribeCore(IObserver<object> observer)
-            {
-                _subscription = Instance?.GetObservable(_property).Subscribe(observer);
             }
         }
     }

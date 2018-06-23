@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -10,7 +9,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Defines an accessor to a property on an object returned by a 
     /// <see cref="IPropertyAccessorPlugin"/>
     /// </summary>
-    public interface IPropertyAccessor : IObservable<object>, IDisposable
+    public interface IPropertyAccessor : IDisposable
     {
         /// <summary>
         /// Gets the type of the property.
@@ -38,5 +37,16 @@ namespace Avalonia.Data.Core.Plugins
         /// True if the property was set; false if the property could not be set.
         /// </returns>
         bool SetValue(object value, BindingPriority priority);
+
+        /// <summary>
+        /// Subscribes to the value of the member.
+        /// </summary>
+        /// <param name="listener">A method that receives the values.</param>
+        void Subscribe(Action<object> listener);
+
+        /// <summary>
+        /// Unsubscribes to the value of the member.
+        /// </summary>
+        void Unsubscribe();
     }
 }
