@@ -17,6 +17,15 @@ namespace Avalonia.Data
         private IStyledElement _target;
         private Type _targetType;
 
+        public TemplateBinding()
+        {
+        }
+
+        public TemplateBinding(AvaloniaProperty property)
+        {
+            Property = property;
+        }
+
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
