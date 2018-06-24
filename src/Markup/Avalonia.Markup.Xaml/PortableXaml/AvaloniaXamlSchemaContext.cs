@@ -166,6 +166,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         {
             { typeof(Binding), typeof(BindingExtension) },
             { typeof(StyleInclude), typeof(StyleIncludeExtension) },
+            { typeof(TemplateBinding), typeof(TemplateBindingExtension) },
         };
 
         private XamlType GetAvaloniaXamlType(Type type)
