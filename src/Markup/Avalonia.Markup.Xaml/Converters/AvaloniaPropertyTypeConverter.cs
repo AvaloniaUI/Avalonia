@@ -29,10 +29,6 @@ namespace Avalonia.Markup.Xaml.Converters
                 context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
                 context.GetFirstAmbientValue<Style>()?.Selector?.TargetType;
 
-            var ipvt = context.GetService<IProvideValueTarget>();
-            var idtp = context.GetService<IDestinationTypeProvider>();
-            var ao = context.GetFirstAmbientValue<AvaloniaObject>();
-
             if (ownerType == null)
             {
                 throw new XamlLoadException(
