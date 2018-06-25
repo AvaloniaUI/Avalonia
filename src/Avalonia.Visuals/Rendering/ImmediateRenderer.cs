@@ -224,6 +224,9 @@ namespace Avalonia.Rendering
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
 
+            if (visual == _root)
+                context.PlatformImpl.Clear(Colors.Transparent);
+
             if (visual.IsVisible && opacity > 0)
             {
                 var m = Matrix.CreateTranslation(visual.Bounds.Position);

@@ -337,6 +337,8 @@ namespace Avalonia.Rendering
 
         private void RenderComposite(Scene scene, IDrawingContextImpl context)
         {
+            context.Clear(Colors.Transparent);
+            
             var clientRect = new Rect(scene.Size);
 
             foreach (var layer in scene.Layers)
