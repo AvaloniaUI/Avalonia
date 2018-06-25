@@ -202,6 +202,7 @@ namespace Avalonia.Styling
         {
             readonly IList<string> _match;
             IAvaloniaReadOnlyList<string> _classes;
+            bool _value;
 
             public ClassObserver(IAvaloniaReadOnlyList<string> classes, IList<string> match)
             {
@@ -210,18 +211,29 @@ namespace Avalonia.Styling
             }
 
             protected override void Deinitialize() => _classes.CollectionChanged -= ClassesChanged;
-            protected override void Initialize() => _classes.CollectionChanged += ClassesChanged;
+
+            protected override void Initialize()
+            {
+                _value = GetResult();
+                _classes.CollectionChanged += ClassesChanged;
+            }
 
             protected override void Subscribed(IObserver<bool> observer, bool first)
             {
-                observer.OnNext(GetResult());
+                observer.OnNext(_value);
             }
 
             private void ClassesChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 if (e.Action != NotifyCollectionChangedAction.Move)
                 {
-                    PublishNext(GetResult());
+                    var value = GetResult();
+
+                    if (value != _value)
+                    {
+                        PublishNext(GetResult());
+                        _value = value;
+                    }
                 }
             }
 
