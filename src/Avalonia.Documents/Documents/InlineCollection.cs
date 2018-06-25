@@ -47,7 +47,7 @@ namespace Avalonia.Documents
                 }
                 else if (Count == 1)
                 {
-                    return ((IHasText)this[0]).Text ?? string.Empty;
+                    return (this[0] as IHasText).Text ?? string.Empty;
                 }
                 else
                 {
