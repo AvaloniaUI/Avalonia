@@ -17,6 +17,7 @@ namespace Avalonia.Styling.UnitTests
             var source = new TestSubject();
             var target = new ActivatedSubject(activator, source, string.Empty);
 
+            target.Subscribe();
             target.OnNext("bar");
             Assert.Equal(AvaloniaProperty.UnsetValue, source.Value);
             activator.OnNext(true);
@@ -36,6 +37,7 @@ namespace Avalonia.Styling.UnitTests
             var source = new TestSubject();
             var target = new ActivatedSubject(activator, source, string.Empty);
 
+            target.Subscribe();
             activator.OnCompleted();
 
             Assert.True(source.Completed);
@@ -47,10 +49,14 @@ namespace Avalonia.Styling.UnitTests
             var activator = new BehaviorSubject<bool>(false);
             var source = new TestSubject();
             var target = new ActivatedSubject(activator, source, string.Empty);
+            var targetError = default(Exception);
+            var error = new Exception();
 
-            activator.OnError(new Exception());
+            target.Subscribe(_ => { }, e => targetError = e);
+            activator.OnError(error);
 
-            Assert.NotNull(source.Error);
+            Assert.Same(error, source.Error);
+            Assert.Same(error, targetError);
         }
 
         private class TestSubject : ISubject<object>
