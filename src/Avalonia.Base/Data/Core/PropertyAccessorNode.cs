@@ -53,6 +53,12 @@ namespace Avalonia.Data.Core
                 }
             }
 
+            if (accessor == null)
+            {
+                throw new NotSupportedException(
+                    $"Could not find a matching property accessor for {PropertyName}.");
+            }
+
             accessor.Subscribe(ValueChanged);
             _accessor = accessor;
         }
