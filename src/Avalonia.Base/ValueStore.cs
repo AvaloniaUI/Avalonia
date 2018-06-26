@@ -110,11 +110,6 @@ namespace Avalonia
                 result = (value is PriorityValue priorityValue) ? priorityValue.Value : value;
             }
 
-            if (result == AvaloniaProperty.UnsetValue)
-            {
-                result = _owner.GetDefaultValue(property);
-            }
-
             return result;
         }
 

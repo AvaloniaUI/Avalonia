@@ -225,7 +225,14 @@ namespace Avalonia
             }
             else if (_values != null)
             {
-                return _values.GetValue(property);
+                var result = _values.GetValue(property);
+
+                if (result == AvaloniaProperty.UnsetValue)
+                {
+                    result = GetDefaultValue(property);
+                }
+
+                return result;
             }
             else
             {
@@ -645,8 +652,8 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         internal object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && InheritanceParent is AvaloniaObject aobj && aobj._values != null)
-                return aobj._values.GetValue(property);
+            if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
+                return aobj.GetValue(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
 
