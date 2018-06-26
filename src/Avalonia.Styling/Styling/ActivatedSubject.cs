@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 namespace Avalonia.Styling
@@ -11,17 +10,14 @@ namespace Avalonia.Styling
     /// A subject which is switched on or off according to an activator observable.
     /// </summary>
     /// <remarks>
-    /// An <see cref="ActivatedSubject"/> has two inputs: an activator observable and either an
-    /// <see cref="ActivatedValue"/> or a <see cref="Source"/> observable which produces the
-    /// activated value. When the activator produces true, the <see cref="ActivatedObservable"/> will
-    /// produce the current activated value. When the activator produces false it will produce
-    /// <see cref="AvaloniaProperty.UnsetValue"/>.
+    /// An <see cref="ActivatedSubject"/> extends <see cref="ActivatedObservable"/> to
+    /// be an <see cref="ISubject{Object}"/>. When the object is active then values
+    /// received via <see cref="OnNext(object)"/> will be passed to the source subject.
     /// </remarks>
     internal class ActivatedSubject : ActivatedObservable, ISubject<object>, IDescription
     {
-        private bool? _active;
         private bool _completed;
-        private object _value;
+        private object _pushValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivatedSubject"/> class.
@@ -35,7 +31,6 @@ namespace Avalonia.Styling
             string description)
             : base(activator, source, description)
         {
-            Activator.Subscribe(ActivatorChanged, ActivatorError, ActivatorCompleted);
         }
 
         /// <summary>
@@ -46,53 +41,57 @@ namespace Avalonia.Styling
             get { return (ISubject<object>)base.Source; }
         }
 
-        /// <summary>
-        /// Notifies all subscribed observers about the end of the sequence.
-        /// </summary>
         public void OnCompleted()
         {
-            if (_active.Value && !_completed)
-            {
-                Source.OnCompleted();
-            }
+            Source.OnCompleted();
         }
 
-        /// <summary>
-        /// Notifies all subscribed observers with the exception.
-        /// </summary>
-        /// <param name="error">The exception to send to all subscribed observers.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="error"/> is null.</exception>
         public void OnError(Exception error)
         {
-            if (_active.Value && !_completed)
-            {
-                Source.OnError(error);
-            }
+            Source.OnError(error);
         }
 
-        /// <summary>
-        /// Notifies all subscribed observers with the value.
-        /// </summary>
-        /// <param name="value">The value to send to all subscribed observers.</param>        
         public void OnNext(object value)
         {
-            _value = value;
+            _pushValue = value;
 
-            if (_active.Value && !_completed)
+            if (IsActive == true && !_completed)
             {
-                Source.OnNext(value);
+                Source.OnNext(_pushValue);
             }
         }
 
-        private void ActivatorChanged(bool active)
+        protected override void ActiveChanged(bool active)
         {
-            bool first = !_active.HasValue;
+            bool first = !IsActive.HasValue;
 
-            _active = active;
+            base.ActiveChanged(active);
 
             if (!first)
             {
-                Source.OnNext(active ? _value : AvaloniaProperty.UnsetValue);
+                Source.OnNext(active ? _pushValue : AvaloniaProperty.UnsetValue);
+            }
+        }
+
+        protected override void CompletedReceived()
+        {
+            base.CompletedReceived();
+
+            if (!_completed)
+            {
+                Source.OnCompleted();
+                _completed = true;
+            }
+        }
+
+        protected override void ErrorReceived(Exception error)
+        {
+            base.ErrorReceived(error);
+
+            if (!_completed)
+            {
+                Source.OnError(error);
+                _completed = true;
             }
         }
 

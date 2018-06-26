@@ -1,3 +1,7 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
@@ -5,7 +9,10 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    static class TypefaceCache
+    /// <summary>
+    /// Cache for Skia typefaces.
+    /// </summary>
+    internal static class TypefaceCache
     {
         public static SKTypeface Default = SKTypeface.FromFamilyName(FontFamily.Default.Name);
         static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> Cache = new Dictionary<string, Dictionary<FontKey, SKTypeface>>();

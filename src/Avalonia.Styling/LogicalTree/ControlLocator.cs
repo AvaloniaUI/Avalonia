@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Reactive;
 
 namespace Avalonia.LogicalTree
 {
@@ -23,75 +24,122 @@ namespace Avalonia.LogicalTree
         /// <param name="name">The name of the control to find.</param>
         public static IObservable<ILogical> Track(ILogical relativeTo, string name)
         {
-            var attached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                x => relativeTo.AttachedToLogicalTree += x,
-                x => relativeTo.AttachedToLogicalTree -= x)
-                .Select(x => ((ILogical)x.Sender).FindNameScope())
-                .StartWith(relativeTo.FindNameScope());
-
-            var detached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                x => relativeTo.DetachedFromLogicalTree += x,
-                x => relativeTo.DetachedFromLogicalTree -= x)
-                .Select(x => (INameScope)null);
-
-            return attached.Merge(detached).Select(nameScope =>
-            {
-                if (nameScope != null)
-                {
-                    var registered = Observable.FromEventPattern<NameScopeEventArgs>(
-                        x => nameScope.Registered += x,
-                        x => nameScope.Registered -= x)
-                        .Where(x => x.EventArgs.Name == name)
-                        .Select(x => x.EventArgs.Element)
-                        .OfType<ILogical>();
-                    var unregistered = Observable.FromEventPattern<NameScopeEventArgs>(
-                        x => nameScope.Unregistered += x,
-                        x => nameScope.Unregistered -= x)
-                        .Where(x => x.EventArgs.Name == name)
-                        .Select(_ => (ILogical)null);
-                    return registered
-                        .StartWith(nameScope.Find<ILogical>(name))
-                        .Merge(unregistered);
-                }
-                else
-                {
-                    return Observable.Return<ILogical>(null);
-                }
-            }).Switch();
+            return new ControlTracker(relativeTo, name);
         }
 
         public static IObservable<ILogical> Track(ILogical relativeTo, int ancestorLevel, Type ancestorType = null)
         {
-            return TrackAttachmentToTree(relativeTo).Select(isAttachedToTree =>
+            return new ControlTracker(relativeTo, ancestorLevel, ancestorType);
+        }
+
+        private class ControlTracker : LightweightObservableBase<ILogical>
+        {
+            private readonly ILogical _relativeTo;
+            private readonly string _name;
+            private readonly int _ancestorLevel;
+            private readonly Type _ancestorType;
+            INameScope _nameScope;
+            ILogical _value;
+
+            public ControlTracker(ILogical relativeTo, string name)
             {
-                if (isAttachedToTree)
+                _relativeTo = relativeTo;
+                _name = name;
+            }
+
+            public ControlTracker(ILogical relativeTo, int ancestorLevel, Type ancestorType)
+            {
+                _relativeTo = relativeTo;
+                _ancestorLevel = ancestorLevel;
+                _ancestorType = ancestorType;
+            }
+
+            protected override void Initialize()
+            {
+                Update();
+                _relativeTo.AttachedToLogicalTree += Attached;
+                _relativeTo.DetachedFromLogicalTree += Detached;
+            }
+
+            protected override void Deinitialize()
+            {
+                _relativeTo.AttachedToLogicalTree -= Attached;
+                _relativeTo.DetachedFromLogicalTree -= Detached;
+
+                if (_nameScope != null)
                 {
-                    return relativeTo.GetLogicalAncestors()
-                        .Where(x => ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
-                        .ElementAtOrDefault(ancestorLevel);
+                    _nameScope.Registered -= Registered;
+                    _nameScope.Unregistered -= Unregistered;
+                }
+
+                _value = null;
+            }
+
+            protected override void Subscribed(IObserver<ILogical> observer, bool first)
+            {
+                observer.OnNext(_value);
+            }
+
+            private void Attached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                Update();
+                PublishNext(_value);
+            }
+
+            private void Detached(object sender, LogicalTreeAttachmentEventArgs e)
+            {
+                if (_nameScope != null)
+                {
+                    _nameScope.Registered -= Registered;
+                    _nameScope.Unregistered -= Unregistered;
+                }
+
+                _value = null;
+                PublishNext(null);
+            }
+
+            private void Registered(object sender, NameScopeEventArgs e)
+            {
+                if (e.Name == _name && e.Element is ILogical logical)
+                {
+                    _value = logical;
+                    PublishNext(logical);
+                }
+            }
+
+            private void Unregistered(object sender, NameScopeEventArgs e)
+            {
+                if (e.Name == _name)
+                {
+                    _value = null;
+                    PublishNext(null);
+                }
+            }
+
+            private void Update()
+            {
+                if (_name != null)
+                {
+                    _nameScope = _relativeTo.FindNameScope();
+
+                    if (_nameScope != null)
+                    {
+                        _nameScope.Registered += Registered;
+                        _nameScope.Unregistered += Unregistered;
+                        _value = _nameScope.Find<ILogical>(_name);
+                    }
+                    else
+                    {
+                        _value = null;
+                    }
                 }
                 else
                 {
-                    return null;
+                    _value = _relativeTo.GetLogicalAncestors()
+                        .Where(x => _ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                        .ElementAtOrDefault(_ancestorLevel);
                 }
-            });
-        }
-
-        private static IObservable<bool> TrackAttachmentToTree(ILogical relativeTo)
-        {
-            var attached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                x => relativeTo.AttachedToLogicalTree += x,
-                x => relativeTo.AttachedToLogicalTree -= x)
-                .Select(x => true)
-                .StartWith(relativeTo.IsAttachedToLogicalTree);
-
-            var detached = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                x => relativeTo.DetachedFromLogicalTree += x,
-                x => relativeTo.DetachedFromLogicalTree -= x)
-                .Select(x => false);
-
-            var attachmentStatus = attached.Merge(detached);
-            return attachmentStatus;
+            }
         }
     }
 }
