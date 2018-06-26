@@ -23,7 +23,7 @@
   </Window.Styles>
   
   <TabControl>
-    <TabItem Header="Page 1">
+    <TabItem Header="DataGrid">
       <dg:DataGrid
         Name="dataGrid1"
         Margin="12"
@@ -59,7 +59,7 @@
       </dg:DataGrid>
     </TabItem>
 
-    <TabItem Header="Page 2">
+    <TabItem Header="Grouping">
       <dg:DataGrid
         Name="dataGridGrouping"
         Margin="12">
@@ -92,7 +92,7 @@
       </dg:DataGrid>
     </TabItem>
 
-    <TabItem Header="Page 3">
+    <TabItem Header="Editable">
       <Grid
         RowDefinitions="*,Auto">
         <dg:DataGrid
@@ -119,68 +119,6 @@
           HorizontalAlignment="Right"/>
       </Grid>
     </TabItem>
-
-    <TabItem Header="Grid Test">
-
-      <Grid
-        ColumnDefinitions="*,Auto,*"
-        RowDefinitions="Auto,Auto"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Top">
-
-        <Border
-          BorderBrush="Black"
-          BorderThickness="1"
-          Grid.Column="0"
-          Grid.Row="0">
-
-          <TextBlock
-            TextWrapping="Wrap"
-            Text="Hello World!"/>
-          
-        </Border>
-
-        <Border
-          BorderBrush="Black"
-          BorderThickness="1"
-          Grid.Column="1"
-          Grid.Row="0">
-
-          <TextBlock
-            TextWrapping="NoWrap"
-            Text="TEST"/>
-
-        </Border>
-
-
-        <Border
-          BorderBrush="Black"
-          BorderThickness="1"
-          Grid.Column="2"
-          Grid.Row="0">
-
-          <TextBlock
-            TextWrapping="Wrap"
-            Text="Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello "/>
-
-        </Border>
-
-        <Border
-          BorderBrush="Black"
-          BorderThickness="1"
-          Grid.Column="0"
-          Grid.Row="2">
-
-          <TextBlock
-            TextWrapping="NoWrap"
-            Text="TEST2"/>
-
-        </Border>
-        
-      </Grid>
-      
-    </TabItem>
-      
     
   </TabControl>
 
