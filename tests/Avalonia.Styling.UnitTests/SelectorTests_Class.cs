@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Moq;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -115,6 +117,28 @@ namespace Avalonia.Styling.UnitTests
             Assert.True(await activator.Take(1));
             control.Classes.Remove("bar");
             Assert.False(await activator.Take(1));
+        }
+
+        [Fact]
+        public void Only_Notifies_When_Result_Changes()
+        {
+            // Test for #1698
+            var control = new Control1
+            {
+                Classes = new Classes { "foo" },
+            };
+
+            var target = default(Selector).Class("foo");
+            var activator = target.Match(control).ObservableResult;
+            var result = new List<bool>();
+
+            using (activator.Subscribe(x => result.Add(x)))
+            {
+                control.Classes.Add("bar");
+                control.Classes.Remove("foo");
+            }
+
+            Assert.Equal(new[] { true, false }, result);
         }
 
         public class Control1 : TestControlBase
