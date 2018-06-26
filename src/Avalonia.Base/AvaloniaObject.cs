@@ -30,11 +30,6 @@ namespace Avalonia
         private IAvaloniaObject _inheritanceParent;
 
         /// <summary>
-        /// The set values/bindings on this object.
-        /// </summary>
-        private readonly ValueStore _values;
-
-        /// <summary>
         /// Maintains a list of direct property binding subscriptions so that the binding source
         /// doesn't get collected.
         /// </summary>
@@ -51,6 +46,7 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
         private DeferredSetter<AvaloniaProperty, object> _directDeferredSetter;
+        private ValueStore _values;
 
         /// <summary>
         /// Delayed setter helper for direct properties. Used to fix #855.
@@ -71,8 +67,6 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-
-            _values =  new ValueStore(this);
 
             void Notify(AvaloniaProperty property)
             {
@@ -229,9 +223,13 @@ namespace Avalonia
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
-            else
+            else if (_values != null)
             {
                 return _values.GetValue(property);
+            }
+            else
+            {
+                return GetDefaultValue(property);
             }
         }
 
@@ -258,7 +256,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return _values.IsAnimating(property);
+            return _values?.IsAnimating(property) ?? false;
         }
 
         /// <summary>
@@ -275,7 +273,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return _values.IsSet(property);
+            return _values?.IsSet(property) ?? false;
         }
 
         /// <summary>
@@ -371,6 +369,11 @@ namespace Avalonia
                     description,
                     priority);
 
+                if (_values == null)
+                {
+                    _values = new ValueStore(this);
+                }
+
                 return _values.AddBinding(property, source, priority);
             }
         }
@@ -402,7 +405,7 @@ namespace Avalonia
         public void Revalidate(AvaloniaProperty property)
         {
             VerifyAccess();
-            _values.Revalidate(property);
+            _values?.Revalidate(property);
         }
 
         /// <inheritdoc/>
@@ -446,7 +449,7 @@ namespace Avalonia
         /// Gets all priority values set on the object.
         /// </summary>
         /// <returns>A collection of property/value tuples.</returns>
-        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => _values.GetSetValues();
+        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => _values?.GetSetValues();
 
         /// <summary>
         /// Forces revalidation of properties when a property value changes.
@@ -642,7 +645,7 @@ namespace Avalonia
         /// <returns>The default value.</returns>
         internal object GetDefaultValue(AvaloniaProperty property)
         {
-            if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
+            if (property.Inherits && InheritanceParent is AvaloniaObject aobj && aobj._values != null)
                 return aobj._values.GetValue(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
         }
@@ -726,7 +729,12 @@ namespace Avalonia
                     originalValue,
                     originalValue?.GetType().FullName ?? "(null)"));
             }
-            
+
+            if (_values == null)
+            {
+                _values = new ValueStore(this);
+            }
+
             LogPropertySet(property, value, priority);
             _values.AddValue(property, value, (int)priority);
         }
