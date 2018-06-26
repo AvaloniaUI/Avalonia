@@ -36,32 +36,15 @@ namespace Avalonia
         /// An observable which fires immediately with the current value of the property on the
         /// object and subsequently each time the property value changes.
         /// </returns>
+        /// <remarks>
+        /// The subscription to <paramref name="o"/> is created using a weak reference.
+        /// </remarks>
         public static IObservable<object> GetObservable(this IAvaloniaObject o, AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return new AvaloniaObservable<object>(
-                observer =>
-                {
-                    EventHandler<AvaloniaPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(e.NewValue);
-                        }
-                    };
-
-                    observer.OnNext(o.GetValue(property));
-
-                    o.PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        o.PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(o, property));
+            return new AvaloniaPropertyObservable<object>(o, property);
         }
 
         /// <summary>
@@ -74,51 +57,36 @@ namespace Avalonia
         /// An observable which fires immediately with the current value of the property on the
         /// object and subsequently each time the property value changes.
         /// </returns>
+        /// <remarks>
+        /// The subscription to <paramref name="o"/> is created using a weak reference.
+        /// </remarks>
         public static IObservable<T> GetObservable<T>(this IAvaloniaObject o, AvaloniaProperty<T> property)
         {
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return o.GetObservable((AvaloniaProperty)property).Cast<T>();
+            return new AvaloniaPropertyObservable<T>(o, property);
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
+        /// Gets an observable that listens for property changed events for an
+        /// <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
-        /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>
-        /// An observable which when subscribed pushes the old and new values of the property each
-        /// time it is changed. Note that the observable returned from this method does not fire
-        /// with the current value of the property immediately.
+        /// An observable which when subscribed pushes the property changed event args
+        /// each time a <see cref="IAvaloniaObject.PropertyChanged"/> event is raised
+        /// for the specified property.
         /// </returns>
-        public static IObservable<Tuple<T, T>> GetObservableWithHistory<T>(
+        public static IObservable<AvaloniaPropertyChangedEventArgs> GetPropertyChangedObservable(
             this IAvaloniaObject o, 
-            AvaloniaProperty<T> property)
+            AvaloniaProperty property)
         {
             Contract.Requires<ArgumentNullException>(o != null);
             Contract.Requires<ArgumentNullException>(property != null);
 
-            return new AvaloniaObservable<Tuple<T, T>>(
-                observer =>
-                {
-                    EventHandler<AvaloniaPropertyChangedEventArgs> handler = (s, e) =>
-                    {
-                        if (e.Property == property)
-                        {
-                            observer.OnNext(Tuple.Create((T)e.OldValue, (T)e.NewValue));
-                        }
-                    };
-
-                    o.PropertyChanged += handler;
-
-                    return Disposable.Create(() =>
-                    {
-                        o.PropertyChanged -= handler;
-                    });
-                },
-                GetDescription(o, property));
+            return new AvaloniaPropertyChangedObservable(o, property);
         }
 
         /// <summary>
@@ -164,23 +132,6 @@ namespace Avalonia
             return Subject.Create<T>(
                 Observer.Create<T>(x => o.SetValue(property, x, priority)),
                 o.GetObservable(property));
-        }
-
-        /// <summary>
-        /// Gets a weak observable for a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>An observable.</returns>
-        public static IObservable<object> GetWeakObservable(this IAvaloniaObject o, AvaloniaProperty property)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            return new WeakPropertyChangedObservable(
-                new WeakReference<IAvaloniaObject>(o), 
-                property, 
-                GetDescription(o, property));
         }
 
         /// <summary>
