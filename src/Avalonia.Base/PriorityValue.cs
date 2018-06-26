@@ -281,12 +281,12 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    notify(() => Owner?.Changed(this, old, Value));
+                    notify(() => Owner?.Changed(Property, ValuePriority, old, Value));
                 }
 
                 if (notification != null)
                 {
-                    Owner?.BindingNotificationReceived(this, notification);
+                    Owner?.BindingNotificationReceived(Property, notification);
                 }
             }
             else
