@@ -47,6 +47,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             };
 
             await RenderToFile(target);
+            CompareImages();
         }
 
         [Fact]
