@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Data;
-using Avalonia.Utilities;
 
 namespace Avalonia
 {
     internal class ValueStore : IPriorityValueOwner
     {
         private readonly AvaloniaObject _owner;
-        private readonly Dictionary<AvaloniaProperty, PriorityValue> _values =
-            new Dictionary<AvaloniaProperty, PriorityValue>();
+        private readonly Dictionary<AvaloniaProperty, object> _values =
+            new Dictionary<AvaloniaProperty, object>();
 
         public ValueStore(AvaloniaObject owner)
         {
@@ -22,51 +20,94 @@ namespace Avalonia
             IObservable<object> source,
             BindingPriority priority)
         {
-            if (!_values.TryGetValue(property, out PriorityValue v))
+            PriorityValue priorityValue;
+
+            if (_values.TryGetValue(property, out var v))
             {
-                v = CreatePriorityValue(property);
-                _values.Add(property, v);
+                priorityValue = v as PriorityValue;
+
+                if (priorityValue == null)
+                {
+                    priorityValue = CreatePriorityValue(property);
+                    priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
+                    _values[property] = priorityValue;
+                }
+            }
+            else
+            {
+                priorityValue = CreatePriorityValue(property);
+                _values.Add(property, priorityValue);
             }
 
-            return v.Add(source, (int)priority);
+            return priorityValue.Add(source, (int)priority);
         }
 
         public void AddValue(AvaloniaProperty property, object value, int priority)
         {
-            var originalValue = value;
+            PriorityValue priorityValue;
 
-            if (!TypeUtilities.TryConvertImplicit(property.PropertyType, value, out value))
+            if (_values.TryGetValue(property, out var v))
             {
-                throw new ArgumentException(string.Format(
-                    "Invalid value for Property '{0}': '{1}' ({2})",
-                    property.Name,
-                    originalValue,
-                    originalValue?.GetType().FullName ?? "(null)"));
-            }
+                priorityValue = v as PriorityValue;
 
-            if (!_values.TryGetValue(property, out PriorityValue v))
+                if (priorityValue == null)
+                {
+                    if (priority == (int)BindingPriority.LocalValue)
+                    {
+                        _values[property] = Validate(property, value);
+                        Changed(property, priority, v, value);
+                        return;
+                    }
+                    else
+                    {
+                        priorityValue = CreatePriorityValue(property);
+                        priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
+                        _values[property] = priorityValue;
+                    }
+                }
+            }
+            else
             {
                 if (value == AvaloniaProperty.UnsetValue)
                 {
                     return;
                 }
 
-                v = CreatePriorityValue(property);
-                _values.Add(property, v);
+                if (priority == (int)BindingPriority.LocalValue)
+                {
+                    _values.Add(property, Validate(property, value));
+                    Changed(property, priority, AvaloniaProperty.UnsetValue, value);
+                    return;
+                }
+                else
+                {
+                    priorityValue = CreatePriorityValue(property);
+                    _values.Add(property, priorityValue);
+                }
             }
 
-            v.SetValue(value, priority);
+            priorityValue.SetValue(value, priority);
         }
 
-        public IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => _values;
+        public void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
+        {
+            ((IPriorityValueOwner)_owner).BindingNotificationReceived(property, notification);
+        }
+
+        public void Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
+        {
+            ((IPriorityValueOwner)_owner).Changed(property, priority, oldValue, newValue);
+        }
+
+        public IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => throw new NotImplementedException();
 
         public object GetValue(AvaloniaProperty property)
         {
             var result = AvaloniaProperty.UnsetValue;
 
-            if (_values.TryGetValue(property, out PriorityValue value))
+            if (_values.TryGetValue(property, out var value))
             {
-                result = value.Value;
+                result = (value is PriorityValue priorityValue) ? priorityValue.Value : value;
             }
 
             if (result == AvaloniaProperty.UnsetValue)
@@ -79,14 +120,14 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            return _values.TryGetValue(property, out PriorityValue value) ? value.IsAnimating : false;
+            return _values.TryGetValue(property, out var value) ? (value as PriorityValue)?.IsAnimating ?? false : false;
         }
 
         public bool IsSet(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out PriorityValue value))
+            if (_values.TryGetValue(property, out var value))
             {
-                return value.Value != AvaloniaProperty.UnsetValue;
+                return ((value as PriorityValue)?.Value ?? value) != AvaloniaProperty.UnsetValue;
             }
 
             return false;
@@ -94,23 +135,13 @@ namespace Avalonia
 
         public void Revalidate(AvaloniaProperty property)
         {
-            if (_values.TryGetValue(property, out PriorityValue value))
+            if (_values.TryGetValue(property, out var value))
             {
-                value.Revalidate();
+                (value as PriorityValue)?.Revalidate();
             }
         }
 
-        void IPriorityValueOwner.BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
-        {
-            ((IPriorityValueOwner)_owner).BindingNotificationReceived(property, notification);
-        }
-
-        void IPriorityValueOwner.Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
-        {
-            ((IPriorityValueOwner)_owner).Changed(property, priority, oldValue, newValue);
-        }
-
-        void IPriorityValueOwner.VerifyAccess() => _owner.VerifyAccess();
+        public void VerifyAccess() => _owner.VerifyAccess();
 
         private PriorityValue CreatePriorityValue(AvaloniaProperty property)
         {
@@ -129,6 +160,18 @@ namespace Avalonia
                 validate2);
 
             return result;
+        }
+
+        private object Validate(AvaloniaProperty property, object value)
+        {
+            var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(_owner.GetType());
+
+            if (validate != null && value != AvaloniaProperty.UnsetValue)
+            {
+                return validate(_owner, value);
+            }
+
+            return value;
         }
     }
 }
