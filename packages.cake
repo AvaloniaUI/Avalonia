@@ -253,7 +253,7 @@ public class Packages
                 }
                 .Deps(new string[]{null, "netcoreapp2.0"},
                     "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
-                    "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument", "System.Xml.ReaderWriter")
+                    "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument", "System.Xml.ReaderWriter", "System.Memory")
                 .ToArray(),
                 Files = coreLibrariesNuSpecContent
                     .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)

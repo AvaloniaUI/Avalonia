@@ -69,7 +69,7 @@ namespace Avalonia.Visuals.UnitTests.Media
             using (var context = new PathGeometryContext(pathGeometry))
             using (var parser = new PathMarkupParser(context))
             {
-                parser.Parse("F 1M0,0");             
+                parser.Parse("F 1M0,0");
 
                 Assert.Equal(FillRule.NonZero, pathGeometry.FillRule);
             }
