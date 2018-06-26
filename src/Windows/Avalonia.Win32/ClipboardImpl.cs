@@ -57,6 +57,9 @@ namespace Avalonia.Win32
             }
 
             await OpenClipboard();
+
+            UnmanagedMethods.EmptyClipboard();
+
             try
             {
                 var hGlobal = Marshal.StringToHGlobalUni(text);
