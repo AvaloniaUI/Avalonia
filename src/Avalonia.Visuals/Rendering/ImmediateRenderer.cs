@@ -54,6 +54,9 @@ namespace Avalonia.Rendering
             {
                 using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
                 {
+
+                    context.PlatformImpl.Clear(Colors.Transparent);
+
                     using (context.PushTransformContainer())
                     {
                         Render(context, _root, _root.Bounds);
@@ -223,9 +226,6 @@ namespace Avalonia.Rendering
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
-
-            if (visual == _root)
-                context.PlatformImpl.Clear(Colors.Transparent);
 
             if (visual.IsVisible && opacity > 0)
             {
