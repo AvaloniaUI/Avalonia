@@ -9,7 +9,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
-    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderLoop
+    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderTimer
     {
         public InternalPlatformThreadingInterface()
         {

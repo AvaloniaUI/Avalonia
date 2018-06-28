@@ -53,7 +53,8 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threading)
-                .Bind<IRenderLoop>().ToConstant(threading)
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(threading)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsStub>()
                 .Bind<IWindowingPlatform>().ToConstant(instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>();

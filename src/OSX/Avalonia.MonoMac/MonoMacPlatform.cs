@@ -21,6 +21,7 @@ namespace Avalonia.MonoMac
         private static bool s_monoMacInitialized;
         private static bool s_showInDock = true;
         private static IRenderLoop s_renderLoop;
+        private static IRenderTimer s_renderTimer;
 
         void DoInitialize()
         {
@@ -35,6 +36,7 @@ namespace Avalonia.MonoMac
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsImpl>()
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IRenderLoop>().ToConstant(s_renderLoop)
+                .Bind<IRenderTimer>().ToConstant(s_renderTimer)
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
                 /*.Bind<IPlatformDragSource>().ToTransient<DragSource>()*/;
         }
@@ -83,7 +85,8 @@ namespace Avalonia.MonoMac
             ThreadHelper.InitializeCocoaThreadingLocks();
             App = NSApplication.SharedApplication;
             UpdateActivationPolicy();
-            s_renderLoop = new RenderLoop(); //TODO: use CVDisplayLink
+            s_renderLoop = new RenderLoop();
+            s_renderTimer = new RenderTimer(); //TODO: use CVDisplayLink
             s_monoMacInitialized = true;
         }
 
