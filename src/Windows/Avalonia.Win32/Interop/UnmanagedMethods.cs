@@ -972,6 +972,9 @@ namespace Avalonia.Win32.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFO lpmi);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);

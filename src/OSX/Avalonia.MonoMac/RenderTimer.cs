@@ -20,12 +20,12 @@ namespace Avalonia.MonoMac
                     {
                         using (new NSAutoreleasePool())
                         {
-                            Tick?.Invoke(this, EventArgs.Empty);
+                            Tick?.Invoke(Environment.TickCount);
                         }
                     }
                 });
         }
 
-        public event EventHandler<EventArgs> Tick;
+        public event Action<long> Tick;
     }
 }

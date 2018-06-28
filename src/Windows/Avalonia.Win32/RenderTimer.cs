@@ -14,9 +14,13 @@ namespace Avalonia.Win32
         {
         }
 
-        protected override IDisposable StartCore(Action tick)
+        protected override IDisposable StartCore(Action<long> tick)
         {
-            timerDelegate = (id, uMsg, user, dw1, dw2) => tick();
+            timerDelegate = (id, uMsg, user, dw1, dw2) =>
+            {
+                UnmanagedMethods.QueryPerformanceCounter(out long tickCount);
+                tick(tickCount);
+            };
 
             var handle = UnmanagedMethods.timeSetEvent(
                 (uint)(1000 / FramesPerSecond),
