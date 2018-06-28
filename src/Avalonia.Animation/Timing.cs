@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Animation
@@ -13,42 +14,38 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
-        /// <summary>
-        /// The number of frames per second.
-        /// </summary>
-        public const int FramesPerSecond = 60;
-
-        /// <summary>
-        /// The time span of each frame.
-        /// </summary>
-        internal static readonly TimeSpan FrameTick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
+        static TimerObservable _timer = new TimerObservable();
 
         /// <summary>
         /// Initializes static members of the <see cref="Timing"/> class.
         /// </summary>
         static Timing()
         { 
-            var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
-
-            AnimationsTimer = globalTimer
-                .Select(_ => GetTickCount())
+            AnimationsTimer = _timer
                 .Publish()
                 .RefCount();
         }
+
+        public static bool HasSubscriptions => _timer.HasSubscriptions;
 
         internal static TimeSpan GetTickCount() => TimeSpan.FromMilliseconds(Environment.TickCount);
 
         /// <summary>
         /// Gets the animation timer.
         /// </summary>
-        /// <remarks>
-        /// The animation timer triggers usually at 60 times per second or as
-        /// defined in <see cref="FramesPerSecond"/>.
-        /// The parameter passed to a subsciber is the current playstate of the animation.
-        /// </remarks>
         internal static IObservable<TimeSpan> AnimationsTimer
         {
             get;
+        }
+
+        public static void Pulse(long tickCount) => _timer.Pulse(tickCount);
+
+        private class TimerObservable : LightweightObservableBase<TimeSpan>
+        {
+            public bool HasSubscriptions { get; private set; }
+            public void Pulse(long tickCount) => PublishNext(TimeSpan.FromMilliseconds(tickCount));
+            protected override void Initialize() => HasSubscriptions = true;
+            protected override void Deinitialize() => HasSubscriptions = false;
         }
     }
 }
