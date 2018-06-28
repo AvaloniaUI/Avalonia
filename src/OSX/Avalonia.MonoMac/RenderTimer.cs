@@ -6,12 +6,12 @@ using MonoMac.Foundation;
 namespace Avalonia.MonoMac
 {
     //TODO: Switch to using CVDisplayLink
-    public class RenderLoop : IRenderLoop
+    public class RenderTimer : IRenderTimer
     {
         private readonly object _lock = new object();
         private readonly IDisposable _timer;
 
-        public RenderLoop()
+        public RenderTimer()
         {
             _timer = AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(new TimeSpan(0, 0, 0, 0, 1000 / 60),
                 () =>

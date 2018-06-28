@@ -5,11 +5,11 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    internal class RenderLoop : DefaultRenderLoop
+    internal class RenderTimer : DefaultRenderTimer
     {
         private UnmanagedMethods.TimeCallback timerDelegate;
 
-        public RenderLoop(int framesPerSecond)
+        public RenderTimer(int framesPerSecond)
             : base(framesPerSecond)
         {
         }

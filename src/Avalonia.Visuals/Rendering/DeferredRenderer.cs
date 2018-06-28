@@ -13,6 +13,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using System.Threading.Tasks;
 
 namespace Avalonia.Rendering
 {
@@ -20,7 +21,7 @@ namespace Avalonia.Rendering
     /// A renderer which renders the state of the visual tree to an intermediate scene graph
     /// representation which is then rendered on a rendering thread.
     /// </summary>
-    public class DeferredRenderer : RendererBase, IRenderer, IVisualBrushRenderer
+    public class DeferredRenderer : RendererBase, IRenderer, IRenderLoopTask, IVisualBrushRenderer
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
@@ -149,7 +150,7 @@ namespace Avalonia.Rendering
         {
             if (!_running && _renderLoop != null)
             {
-                _renderLoop.Tick += OnRenderLoopTick;
+                _renderLoop.Add(this);
                 _running = true;
             }
         }
@@ -159,8 +160,20 @@ namespace Avalonia.Rendering
         {
             if (_running && _renderLoop != null)
             {
-                _renderLoop.Tick -= OnRenderLoopTick;
+                _renderLoop.Remove(this);
                 _running = false;
+            }
+        }
+
+        bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
+
+        void IRenderLoopTask.Update() => UpdateScene();
+
+        void IRenderLoopTask.Render()
+        {
+            using (var scene = _scene?.Clone())
+            {
+                Render(scene?.Item);
             }
         }
 
@@ -417,31 +430,6 @@ namespace Avalonia.Rendering
             finally
             {
                 _updateQueued = false;
-            }
-        }
-
-        private void OnRenderLoopTick(object sender, EventArgs e)
-        {
-            if (Monitor.TryEnter(_rendering))
-            {
-                try
-                {
-                    if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
-                    {
-                        _updateQueued = true;
-                        _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
-                    }
-                    
-                    using (var scene = _scene?.Clone())
-                    {
-                        Render(scene?.Item);
-                    }
-                }
-                catch { }
-                finally
-                {
-                    Monitor.Exit(_rendering);
-                }
             }
         }
 

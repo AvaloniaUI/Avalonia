@@ -2,18 +2,19 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
-    /// Defines a default render loop that uses a standard timer.
+    /// Defines a default render timer that uses a standard timer.
     /// </summary>
     /// <remarks>
     /// This class may be overridden by platform implementations to use a specialized timer
     /// implementation.
     /// </remarks>
-    public class DefaultRenderLoop : IRenderLoop
+    public class DefaultRenderTimer : IRenderTimer
     {
         private IRuntimePlatform _runtime;
         private int _subscriberCount;
@@ -21,12 +22,12 @@ namespace Avalonia.Rendering
         private IDisposable _subscription;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultRenderLoop"/> class.
+        /// Initializes a new instance of the <see cref="DefaultRenderTimer"/> class.
         /// </summary>
         /// <param name="framesPerSecond">
         /// The number of frames per second at which the loop should run.
         /// </param>
-        public DefaultRenderLoop(int framesPerSecond)
+        public DefaultRenderTimer(int framesPerSecond)
         {
             FramesPerSecond = framesPerSecond;
         }
