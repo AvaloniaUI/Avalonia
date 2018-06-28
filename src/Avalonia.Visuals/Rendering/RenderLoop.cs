@@ -62,7 +62,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private async void TimerTick(object sender, EventArgs e)
+        private async void TimerTick(long tickCount)
         {
             if (!inTick)
             {

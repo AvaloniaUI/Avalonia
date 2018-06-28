@@ -15,6 +15,6 @@ namespace Avalonia.Rendering
         /// This event can be raised on any thread; it is the responsibility of the subscriber to
         /// switch execution to the right thread.
         /// </remarks>
-        event EventHandler<EventArgs> Tick;
+        event Action<long> Tick;
     }
 }
