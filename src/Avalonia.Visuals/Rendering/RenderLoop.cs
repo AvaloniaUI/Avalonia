@@ -70,7 +70,7 @@ namespace Avalonia.Rendering
 
                 try
                 {
-                    var needsUpdate = false;
+                    var needsUpdate = Animation.Timing.HasSubscriptions;
 
                     foreach (var i in _items)
                     {
@@ -85,6 +85,8 @@ namespace Avalonia.Rendering
                     {
                         await _dispatcher.InvokeAsync(() =>
                         {
+                            Animation.Timing.Pulse(tickCount);
+
                             foreach (var i in _items)
                             {
                                 i.Update();

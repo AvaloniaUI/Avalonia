@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Animation
@@ -15,7 +14,8 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
-        static ulong _transitionsFrameCount;
+        static TimerObservable _timer = new TimerObservable();
+        static long _transitionsFrameCount;
         static PlayState _globalState = PlayState.Run;
 
         /// <summary>
@@ -33,22 +33,16 @@ namespace Avalonia.Animation
         /// </summary>
         static Timing()
         {
-            var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
-
-            AnimationStateTimer = globalTimer
+            AnimationStateTimer = _timer
                 .Select(_ =>
                 {
                     return _globalState;
                 })
                 .Publish()
                 .RefCount();
-
-            TransitionsTimer = globalTimer
-                               .Select(p => _transitionsFrameCount++)
-                               .Publish()
-                               .RefCount();
         }
 
+        public static bool HasSubscriptions => _timer.HasSubscriptions;
 
         /// <summary>
         /// Sets the animation play state for all animations
@@ -90,10 +84,7 @@ namespace Avalonia.Animation
         /// The parameter passed to a subsciber is the number of frames since the animation system was
         /// initialized.
         /// </remarks>
-        public static IObservable<ulong> TransitionsTimer
-        {
-            get;
-        }
+        public static IObservable<long> TransitionsTimer => _timer;
 
         /// <summary>
         /// Gets a timer that fires every frame for the specified duration with delay.
@@ -109,7 +100,7 @@ namespace Avalonia.Animation
         public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
             var startTime = _transitionsFrameCount;
-            var _duration = (ulong)(duration.Ticks / FrameTick.Ticks);
+            var _duration = (long)(duration.Ticks / FrameTick.Ticks);
             var endTime = startTime + _duration;
 
             return TransitionsTimer
@@ -119,5 +110,14 @@ namespace Avalonia.Animation
                 .Concat(Observable.Return(1.0));
         }
 
+        public static void Pulse(long tickCount) => _timer.Pulse(tickCount);
+
+        private class TimerObservable : LightweightObservableBase<long>
+        {
+            public bool HasSubscriptions { get; private set; }
+            public void Pulse(long tickCount) => PublishNext(tickCount);
+            protected override void Initialize() => HasSubscriptions = true;
+            protected override void Deinitialize() => HasSubscriptions = false;
+        }
     }
 }
