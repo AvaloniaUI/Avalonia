@@ -423,6 +423,7 @@ Task("Copy-Files")
 
 Task("Zip-Files")
     .IsDependentOn("Copy-Files")
+    .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Zip-Files-Impl");
 
 Task("Create-NuGet-Packages")
@@ -450,9 +451,9 @@ Task("Package")
   .IsDependentOn("Create-NuGet-Packages");
 
 Task("AppVeyor")
-  .IsDependentOn("Zip-Files")
   .IsDependentOn("Publish-MyGet")
-  .IsDependentOn("Publish-NuGet");
+  .IsDependentOn("Publish-NuGet")
+  .IsDependentOn("Zip-Files");
 
 Task("Travis")
   .IsDependentOn("Run-Tests");
