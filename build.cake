@@ -205,7 +205,7 @@ Task("Run-Unit-Tests-Impl")
         RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
         RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
         RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
-        if (data.Parameters.IsRunningOnWindows)
+        if (data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
         {
             RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
         }
@@ -219,6 +219,7 @@ Task("Run-Designer-Tests-Impl")
 
 Task("Run-Render-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does<AvaloniaBuildData>(data => {
         RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
         RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
@@ -226,6 +227,7 @@ Task("Run-Render-Tests-Impl")
 
 Task("Run-Leak-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does(() =>
     {
         var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
@@ -341,6 +343,7 @@ Task("Publish-NuGet-Impl")
 
 Task("Inspect-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does(() =>
     {
         var badIssues = new []{"PossibleNullReferenceException"};
