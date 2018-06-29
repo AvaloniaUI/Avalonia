@@ -451,6 +451,21 @@ namespace Avalonia.Media
             }
             for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
 
+            if (i < remaining.Length)
+            {
+                // scientific notation
+                if (remaining[i] == 'E' || remaining[i] == 'e')
+                {
+                    valid = false;
+                    i++;
+                    if (remaining[i] == '-' || remaining[i] == '+')
+                    {
+                        i++;
+                        for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
+                    }                  
+                }               
+            }          
+
             if (!valid)
             {
                 argument = ReadOnlySpan<char>.Empty;
