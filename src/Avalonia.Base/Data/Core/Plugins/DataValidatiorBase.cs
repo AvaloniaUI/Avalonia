@@ -55,13 +55,13 @@ namespace Avalonia.Data.Core.Plugins
         /// <param name="value">The value.</param>
         void IObserver<object>.OnNext(object value) => InnerValueChanged(value);
 
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing) => _inner.Dispose();
-
         /// <summary>
         /// Begins listening to the inner <see cref="IPropertyAccessor"/>.
         /// </summary>
-        protected override void SubscribeCore(IObserver<object> observer) => _inner.Subscribe(this);
+        protected override void SubscribeCore() => _inner.Subscribe(InnerValueChanged);
+
+        /// <inheritdoc/>
+        protected override void UnsubscribeCore() => _inner.Dispose();
 
         /// <summary>
         /// Called when the inner <see cref="IPropertyAccessor"/> notifies with a new value.
@@ -74,7 +74,7 @@ namespace Avalonia.Data.Core.Plugins
         protected virtual void InnerValueChanged(object value)
         {
             var notification = value as BindingNotification ?? new BindingNotification(value);
-            Observer.OnNext(notification);
+            PublishValue(notification);
         }
     }
 }
