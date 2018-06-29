@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
         private static bool s_setupWasAlreadyCalled;
-        
+
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Avalonia.Controls
             };
         }
 
-        protected TAppBuilder Self => (TAppBuilder) this;
+        protected TAppBuilder Self => (TAppBuilder)this;
 
         /// <summary>
         /// Registers a callback to call before Start is called on the <see cref="Application"/>.
@@ -125,7 +125,6 @@ namespace Avalonia.Controls
             var window = new TMainWindow();
             if (dataContextProvider != null)
                 window.DataContext = dataContextProvider();
-            window.Show();
             Instance.Run(window);
         }
 
@@ -143,7 +142,6 @@ namespace Avalonia.Controls
 
             if (dataContextProvider != null)
                 mainWindow.DataContext = dataContextProvider();
-            mainWindow.Show();
             Instance.Run(mainWindow);
         }
 
@@ -209,25 +207,36 @@ namespace Avalonia.Controls
 
         public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
 
+        /// <summary>
+        /// Sets the shutdown mode of the application.
+        /// </summary>
+        /// <param name="exitMode">The shutdown mode.</param>
+        /// <returns></returns>
+        public TAppBuilder SetExitMode(ExitMode exitMode)
+        {
+            Instance.ExitMode = exitMode;
+            return Self;
+        }      
+
         protected virtual bool CheckSetup => true;
 
         private void SetupAvaloniaModules()
         {
             var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
-                                          from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                          where attribute.ForWindowingSubsystem == ""
-                                           || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                          where attribute.ForRenderingSubsystem == ""
-                                           || attribute.ForRenderingSubsystem == RenderingSubsystemName
-                                          group attribute by attribute.Name into exports
-                                          select (from export in exports
-                                                  orderby export.ForWindowingSubsystem.Length descending
-                                                  orderby export.ForRenderingSubsystem.Length descending
-                                                  select export).First().ModuleType into moduleType
-                                          select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
-                                                  where constructor.GetParameters().Length == 0 && !constructor.IsStatic
-                                                  select constructor).Single() into constructor
-                                          select (Action)(() => constructor.Invoke(new object[0]));
+                                     from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
+                                     where attribute.ForWindowingSubsystem == ""
+                                      || attribute.ForWindowingSubsystem == WindowingSubsystemName
+                                     where attribute.ForRenderingSubsystem == ""
+                                      || attribute.ForRenderingSubsystem == RenderingSubsystemName
+                                     group attribute by attribute.Name into exports
+                                     select (from export in exports
+                                             orderby export.ForWindowingSubsystem.Length descending
+                                             orderby export.ForRenderingSubsystem.Length descending
+                                             select export).First().ModuleType into moduleType
+                                     select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
+                                             where constructor.GetParameters().Length == 0 && !constructor.IsStatic
+                                             select constructor).Single() into constructor
+                                     select (Action)(() => constructor.Invoke(new object[0]));
             Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
         }
 

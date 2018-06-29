@@ -3,9 +3,7 @@
 
 using System;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
@@ -39,7 +37,7 @@ namespace Avalonia.Data.Core
             return false;
         }
 
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference reference)
         {
             var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference.Target, PropertyName));
             var accessor = plugin?.Start(reference, PropertyName);
@@ -55,17 +53,20 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            // Ensure that _accessor is set for the duration of the subscription.
-            return Observable.Using(
-                () =>
-                {
-                    _accessor = accessor;
-                    return Disposable.Create(() =>
-                    {
-                        _accessor = null;
-                    });
-                },
-                _ => accessor);
+            if (accessor == null)
+            {
+                throw new NotSupportedException(
+                    $"Could not find a matching property accessor for {PropertyName}.");
+            }
+
+            accessor.Subscribe(ValueChanged);
+            _accessor = accessor;
+        }
+
+        protected override void StopListeningCore()
+        {
+            _accessor.Dispose();
+            _accessor = null;
         }
     }
 }

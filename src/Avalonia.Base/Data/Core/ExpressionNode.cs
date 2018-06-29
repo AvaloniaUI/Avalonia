@@ -2,22 +2,18 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {
-    internal abstract class ExpressionNode : ISubject<object>
+    internal abstract class ExpressionNode
     {
         private static readonly object CacheInvalid = new object();
         protected static readonly WeakReference UnsetReference = 
             new WeakReference(AvaloniaProperty.UnsetValue);
 
         private WeakReference _target = UnsetReference;
-        private IDisposable _valueSubscription;
-        private IObserver<object> _observer;
+        private Action<object> _subscriber;
+        private bool _listening;
 
         protected WeakReference LastValue { get; private set; }
 
@@ -33,92 +29,66 @@ namespace Avalonia.Data.Core
 
                 var oldTarget = _target?.Target;
                 var newTarget = value.Target;
-                var running = _valueSubscription != null;
 
                 if (!ReferenceEquals(oldTarget, newTarget))
                 {
-                    _valueSubscription?.Dispose();
-                    _valueSubscription = null;
+                    if (_listening)
+                    {
+                        StopListening();
+                    }
+
                     _target = value;
 
-                    if (running)
+                    if (_subscriber != null)
                     {
-                        _valueSubscription = StartListening();
+                        StartListening();
                     }
                 }
             }
         }
 
-        public IDisposable Subscribe(IObserver<object> observer)
+        public void Subscribe(Action<object> subscriber)
         {
-            if (_observer != null)
+            if (_subscriber != null)
             {
                 throw new AvaloniaInternalException("ExpressionNode can only be subscribed once.");
             }
 
-            _observer = observer;
-            var nextSubscription = Next?.Subscribe(this);
-            _valueSubscription = StartListening();
+            _subscriber = subscriber;
+            Next?.Subscribe(NextValueChanged);
+            StartListening();
+        }
 
-            return Disposable.Create(() =>
+        public void Unsubscribe()
+        {
+            Next?.Unsubscribe();
+
+            if (_listening)
             {
-                _valueSubscription?.Dispose();
-                _valueSubscription = null;
-                LastValue = null;
-                nextSubscription?.Dispose();
-                _observer = null;
-            });
+                StopListening();
+            }
+
+            LastValue = null;
+            _subscriber = null;
         }
 
-        void IObserver<object>.OnCompleted()
+        protected virtual void StartListeningCore(WeakReference reference)
         {
-            throw new AvaloniaInternalException("ExpressionNode.OnCompleted should not be called.");
+            ValueChanged(reference.Target);
         }
 
-        void IObserver<object>.OnError(Exception error)
+        protected virtual void StopListeningCore()
         {
-            throw new AvaloniaInternalException("ExpressionNode.OnError should not be called.");
-        }
-
-        void IObserver<object>.OnNext(object value)
-        {
-            NextValueChanged(value);
-        }
-
-        protected virtual IObservable<object> StartListeningCore(WeakReference reference)
-        {
-            return Observable.Return(reference.Target);
         }
 
         protected virtual void NextValueChanged(object value)
         {
             var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
             bindingBroken?.AddNode(Description);
-            _observer.OnNext(value);
+            _subscriber(value);
         }
 
-        private IDisposable StartListening()
-        {
-            var target = _target.Target;
-            IObservable<object> source;
-
-            if (target == null)
-            {
-                source = Observable.Return(TargetNullNotification());
-            }
-            else if (target == AvaloniaProperty.UnsetValue)
-            {
-                source = Observable.Empty<object>();
-            }
-            else
-            {
-                source = StartListeningCore(_target);
-            }
-
-            return source.Subscribe(ValueChanged);
-        }
-
-        private void ValueChanged(object value)
+        protected void ValueChanged(object value)
         {
             var notification = value as BindingNotification;
 
@@ -131,22 +101,48 @@ namespace Avalonia.Data.Core
                 }
                 else
                 {
-                    _observer.OnNext(value);
+                    _subscriber(value);
                 }
             }
             else
             {
                 LastValue = new WeakReference(notification.Value);
+
                 if (Next != null)
                 {
                     Next.Target = new WeakReference(notification.Value);
                 }
-                
+
                 if (Next == null || notification.Error != null)
                 {
-                    _observer.OnNext(value);
+                    _subscriber(value);
                 }
             }
+        }
+
+        private void StartListening()
+        {
+            var target = _target.Target;
+
+            if (target == null)
+            {
+                ValueChanged(TargetNullNotification());
+                _listening = false;
+            }
+            else if (target != AvaloniaProperty.UnsetValue)
+            {
+                StartListeningCore(_target);
+                _listening = true;
+            }
+            else
+            {
+                _listening = false;
+            }
+        }
+
+        private void StopListening()
+        {
+            StopListeningCore();
         }
 
         private BindingNotification TargetNullNotification()

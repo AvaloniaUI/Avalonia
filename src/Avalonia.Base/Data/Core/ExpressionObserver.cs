@@ -14,9 +14,7 @@ namespace Avalonia.Data.Core
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : LightweightObservableBase<object>,
-        IDescription,
-        IObserver<object>
+    public class ExpressionObserver : LightweightObservableBase<object>, IDescription
     {
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize
@@ -55,7 +53,6 @@ namespace Avalonia.Data.Core
 
         private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private IDisposable _nodeSubscription;
         private object _root;
         private IDisposable _rootSubscription;
         private WeakReference<object> _value;
@@ -202,34 +199,18 @@ namespace Avalonia.Data.Core
             }
         }
 
-        void IObserver<object>.OnNext(object value)
-        {
-            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
-            broken?.Commit(Description);
-            _value = new WeakReference<object>(value);
-            PublishNext(value);
-        }
-
-        void IObserver<object>.OnCompleted()
-        {
-        }
-
-        void IObserver<object>.OnError(Exception error)
-        {
-        }
-
         protected override void Initialize()
         {
             _value = null;
-            _nodeSubscription = _node.Subscribe(this);
+            _node.Subscribe(ValueChanged);
             StartRoot();
         }
 
         protected override void Deinitialize()
         {
             _rootSubscription?.Dispose();
-            _nodeSubscription?.Dispose();
-            _rootSubscription = _nodeSubscription = null;
+            _rootSubscription = null;
+            _node.Unsubscribe();
         }
 
         protected override void Subscribed(IObserver<object> observer, bool first)
@@ -265,6 +246,14 @@ namespace Avalonia.Data.Core
             {
                 _node.Target = (WeakReference)_root;
             }
+        }
+
+        private void ValueChanged(object value)
+        {
+            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
+            broken?.Commit(Description);
+            _value = new WeakReference<object>(value);
+            PublishNext(value);
         }
     }
 }
