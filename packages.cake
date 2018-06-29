@@ -213,26 +213,27 @@ public class Packages
             };
         });
 
-        var toolsContent = new[] {
-            new NuSpecContent{
-                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.Designer.HostApp.dll")).FullPath, 
-                Target = "tools/netcoreapp2.0/previewer"
-            },
-            new NuSpecContent{
-                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/Avalonia.Designer.HostApp.exe")).FullPath, 
-                Target = "tools/net461/previewer"
-            }
+        var toolHostApp = new NuSpecContent{
+            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.Designer.HostApp.dll")).FullPath, 
+            Target = "tools/netcoreapp2.0/previewer"
+        };
+
+        var toolHostAppNetFx = new NuSpecContent{
+            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/Avalonia.Designer.HostApp.exe")).FullPath, 
+            Target = "tools/net461/previewer"
         };
 
         IList<NuSpecContent> coreFiles;
 
         if (parameters.Platform != "NetCoreOnly") {
+            var toolsContent = new[] { toolHostApp, toolHostAppNetFx };
             coreFiles = coreLibrariesNuSpecContent
                 .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
                 .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
                 .Concat(toolsContent)
                 .ToList();
         } else {
+            var toolsContent = new[] { toolHostApp };
             coreFiles = coreLibrariesNuSpecContent
                 .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
                 .Concat(toolsContent)
