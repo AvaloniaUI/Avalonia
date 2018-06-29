@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Media
 {
+    using System.Globalization;
     using System.IO;
 
     public class PathMarkupParserTests
@@ -139,7 +140,26 @@ namespace Avalonia.Visuals.UnitTests.Media
 
                 Assert.Equal(new Point(30, 30), lineSegment.Point);
             }
-        }       
+        }
+
+        [Fact]
+        public void Parses_Scientific_Notation_Double()
+        {
+            var pathGeometry = new PathGeometry();
+            using (var context = new PathGeometryContext(pathGeometry))
+            using (var parser = new PathMarkupParser(context))
+            {
+                parser.Parse("M -1.01725E-005 -1.01725e-005");
+
+                var figure = pathGeometry.Figures[0];
+
+                Assert.Equal(
+                    new Point(
+                        double.Parse("-1.01725E-005", NumberStyles.Float, CultureInfo.InvariantCulture),
+                        double.Parse("-1.01725E-005", NumberStyles.Float, CultureInfo.InvariantCulture)),
+                    figure.StartPoint);
+            }
+        }
 
         [Theory]
         [InlineData("F1M9.0771,11C9.1161,10.701,9.1801,10.352,9.3031,10L9.0001,10 9.0001,6.166 3.0001,9.767 3.0001,10 "
