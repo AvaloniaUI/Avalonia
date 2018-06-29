@@ -367,33 +367,33 @@ Task("Clean")
     .IsDependentOn("Clean-Impl");
 
 Task("Restore-NuGet-Packages")
-    .IsDependentOn("Restore-NuGet-Packages-Impl")
     .IsDependentOn("Clean")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows);
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .IsDependentOn("Restore-NuGet-Packages-Impl");
 
 Task("Build")
-    .IsDependentOn("Build-Impl")
-    .IsDependentOn("Restore-NuGet-Packages");
+    .IsDependentOn("Restore-NuGet-Packages")
+    .IsDependentOn("Build-Impl");
 
 Task("Run-Unit-Tests")
-    .IsDependentOn("Run-Unit-Tests-Impl")
     .IsDependentOn("Build")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests);
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .IsDependentOn("Run-Unit-Tests-Impl");
 
 Task("Run-Designer-Tests")
-    .IsDependentOn("Run-Designer-Tests-Impl")
     .IsDependentOn("Build")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests);
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .IsDependentOn("Run-Designer-Tests-Impl");
 
 Task("Run-Render-Tests")
-    .IsDependentOn("Run-Render-Tests-Impl")
     .IsDependentOn("Build")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows);
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .IsDependentOn("Run-Render-Tests-Impl");
 
 Task("Run-Leak-Tests")
-    .IsDependentOn("Run-Leak-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
-    .IsDependentOn("Build");
+    .IsDependentOn("Build")
+    .IsDependentOn("Run-Leak-Tests-Impl");
 
 Task("Run-Tests")
     .IsDependentOn("Run-Unit-Tests")
@@ -402,39 +402,39 @@ Task("Run-Tests")
     .IsDependentOn("Run-Leak-Tests");
 
 Task("Copy-Files")
-    .IsDependentOn("Copy-Files-Impl")
-    .IsDependentOn("Run-Tests");
+    .IsDependentOn("Run-Tests")
+    .IsDependentOn("Copy-Files-Impl");
 
 Task("Zip-Files")
-    .IsDependentOn("Zip-Files-Impl")
-    .IsDependentOn("Copy-Files");
+    .IsDependentOn("Copy-Files")
+    .IsDependentOn("Zip-Files-Impl");
 
 Task("Create-NuGet-Packages")
-    .IsDependentOn("Create-NuGet-Packages-Impl")
     .IsDependentOn("Run-Tests")
-    .IsDependentOn("Inspect");
+    .IsDependentOn("Inspect")
+    .IsDependentOn("Create-NuGet-Packages-Impl");
 
 Task("Publish-MyGet")
-    .IsDependentOn("Publish-MyGet-Impl")
     .IsDependentOn("Create-NuGet-Packages")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease);
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
+    .IsDependentOn("Publish-MyGet-Impl");
 
 Task("Publish-NuGet")
-    .IsDependentOn("Publish-NuGet-Impl")
     .IsDependentOn("Create-NuGet-Packages")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease);
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
+    .IsDependentOn("Publish-NuGet-Impl");
 
 Task("Inspect")
-    .IsDependentOn("Inspect-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .IsDependentOn("Restore-NuGet-Packages");
+    .IsDependentOn("Restore-NuGet-Packages")
+    .IsDependentOn("Inspect-Impl");
 
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
