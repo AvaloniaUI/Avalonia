@@ -454,7 +454,7 @@ namespace Avalonia.Media
             if (i < remaining.Length)
             {
                 // scientific notation
-                if (remaining[i] == 'E')
+                if (remaining[i] == 'E' || remaining[i] == 'e')
                 {
                     valid = false;
                     i++;
