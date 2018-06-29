@@ -260,13 +260,15 @@ Task("Zip-Files-Impl")
 
     Zip(data.Parameters.NugetRoot, data.Parameters.ZipNuGetArtifacts);
 
-    Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
-        data.Parameters.ZipTargetControlCatalogDesktopDirs, 
-        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
-        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
-        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
-        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
-        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
+    if (data.Parameters.Platform != "NetCoreOnly") {
+        Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
+            data.Parameters.ZipTargetControlCatalogDesktopDirs, 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
+    }
 });
 
 Task("Create-NuGet-Packages-Impl")
