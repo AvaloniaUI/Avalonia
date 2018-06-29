@@ -75,17 +75,6 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Gets the transitions timer.
-        /// </summary>
-        /// <remarks>
-        /// The transitions timer increments usually 60 times per second as
-        /// defined in <see cref="FramesPerSecond"/>.
-        /// The parameter passed to a subsciber is the number of frames since the animation system was
-        /// initialized.
-        /// </remarks>
-        public static IObservable<long> TransitionsTimer => _timer;
-
-        /// <summary>
         /// Gets a timer that fires every frame for the specified duration with delay.
         /// </summary>
         /// <returns>
@@ -102,7 +91,7 @@ namespace Avalonia.Animation
             var _duration = (long)(duration.Ticks / FrameTick.Ticks);
             var endTime = startTime + _duration;
 
-            return TransitionsTimer
+            return _timer
                 .TakeWhile(x => x < endTime)
                 .Select(x => (double)(x - startTime) / _duration)
                 .StartWith(0.0)
