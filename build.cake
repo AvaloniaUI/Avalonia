@@ -367,8 +367,8 @@ Task("Clean")
     .IsDependentOn("Clean-Impl");
 
 Task("Restore-NuGet-Packages")
-    .IsDependentOn("Clean")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .IsDependentOn("Clean")
     .IsDependentOn("Restore-NuGet-Packages-Impl");
 
 Task("Build")
@@ -376,18 +376,18 @@ Task("Build")
     .IsDependentOn("Build-Impl");
 
 Task("Run-Unit-Tests")
-    .IsDependentOn("Build")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .IsDependentOn("Build")
     .IsDependentOn("Run-Unit-Tests-Impl");
 
 Task("Run-Designer-Tests")
-    .IsDependentOn("Build")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .IsDependentOn("Build")
     .IsDependentOn("Run-Designer-Tests-Impl");
 
 Task("Run-Render-Tests")
-    .IsDependentOn("Build")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .IsDependentOn("Build")
     .IsDependentOn("Run-Render-Tests-Impl");
 
 Task("Run-Leak-Tests")
@@ -415,20 +415,20 @@ Task("Create-NuGet-Packages")
     .IsDependentOn("Create-NuGet-Packages-Impl");
 
 Task("Publish-MyGet")
-    .IsDependentOn("Create-NuGet-Packages")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
+    .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Publish-MyGet-Impl");
 
 Task("Publish-NuGet")
-    .IsDependentOn("Create-NuGet-Packages")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
+    .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Publish-NuGet-Impl");
 
 Task("Inspect")
