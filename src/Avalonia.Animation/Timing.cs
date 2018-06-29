@@ -15,7 +15,6 @@ namespace Avalonia.Animation
     public static class Timing
     {
         static TimerObservable _timer = new TimerObservable();
-        static long _transitionsFrameCount;
         static PlayState _globalState = PlayState.Run;
 
         /// <summary>
@@ -99,7 +98,7 @@ namespace Avalonia.Animation
         /// </remarks>
         public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
-            var startTime = _transitionsFrameCount;
+            var startTime = _timer.FrameCount;
             var _duration = (long)(duration.Ticks / FrameTick.Ticks);
             var endTime = startTime + _duration;
 
@@ -115,7 +114,8 @@ namespace Avalonia.Animation
         private class TimerObservable : LightweightObservableBase<long>
         {
             public bool HasSubscriptions { get; private set; }
-            public void Pulse(long tickCount) => PublishNext(tickCount);
+            public long FrameCount { get; private set; }
+            public void Pulse(long tickCount) => PublishNext(++FrameCount);
             protected override void Initialize() => HasSubscriptions = true;
             protected override void Deinitialize() => HasSubscriptions = false;
         }
