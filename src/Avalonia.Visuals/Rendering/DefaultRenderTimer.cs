@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 
@@ -84,7 +85,7 @@ namespace Avalonia.Rendering
                 _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Environment.TickCount));
+            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Stopwatch.GetTimestamp()));
         }
 
         /// <summary>
