@@ -109,6 +109,7 @@ Task("Clean-Impl")
 });
 
 Task("Restore-NuGet-Packages-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .Does<AvaloniaBuildData>(data =>
 {
     var maxRetryCount = 5;
@@ -191,6 +192,7 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 }
 
 Task("Run-Unit-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .Does<AvaloniaBuildData>(data => {
         RunCoreTest("./tests/Avalonia.Base.UnitTests", data.Parameters, false);
         RunCoreTest("./tests/Avalonia.Controls.UnitTests", data.Parameters, false);
@@ -209,17 +211,20 @@ Task("Run-Unit-Tests-Impl")
     });
 
 Task("Run-Designer-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .Does<AvaloniaBuildData>(data => {
         RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", data.Parameters, false);
     });
 
 Task("Run-Render-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .Does<AvaloniaBuildData>(data => {
         RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
         RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
     });
 
 Task("Run-Leak-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .Does(() =>
     {
         var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
@@ -269,6 +274,11 @@ Task("Create-NuGet-Packages-Impl")
 });
 
 Task("Publish-MyGet-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
     .Does<AvaloniaBuildData>(data =>
 {
     var apiKey = EnvironmentVariable("MYGET_API_KEY");
@@ -297,6 +307,10 @@ Task("Publish-MyGet-Impl")
 });
 
 Task("Publish-NuGet-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
     .Does<AvaloniaBuildData>(data =>
 {
     var apiKey = EnvironmentVariable("NUGET_API_KEY");
@@ -325,6 +339,7 @@ Task("Publish-NuGet-Impl")
 });
 
 Task("Inspect-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .Does(() =>
     {
         var badIssues = new []{"PossibleNullReferenceException"};
@@ -367,7 +382,6 @@ Task("Clean")
     .IsDependentOn("Clean-Impl");
 
 Task("Restore-NuGet-Packages")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Clean")
     .IsDependentOn("Restore-NuGet-Packages-Impl");
 
@@ -376,22 +390,18 @@ Task("Build")
     .IsDependentOn("Build-Impl");
 
 Task("Run-Unit-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .IsDependentOn("Build")
     .IsDependentOn("Run-Unit-Tests-Impl");
 
 Task("Run-Designer-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .IsDependentOn("Build")
     .IsDependentOn("Run-Designer-Tests-Impl");
 
 Task("Run-Render-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Build")
     .IsDependentOn("Run-Render-Tests-Impl");
 
 Task("Run-Leak-Tests")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Build")
     .IsDependentOn("Run-Leak-Tests-Impl");
 
@@ -415,24 +425,14 @@ Task("Create-NuGet-Packages")
     .IsDependentOn("Create-NuGet-Packages-Impl");
 
 Task("Publish-MyGet")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
     .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Publish-MyGet-Impl");
 
 Task("Publish-NuGet")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
     .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Publish-NuGet-Impl");
 
 Task("Inspect")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .IsDependentOn("Restore-NuGet-Packages")
     .IsDependentOn("Inspect-Impl");
 
