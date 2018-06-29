@@ -491,7 +491,10 @@ public class Packages
 
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsCore);
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsDesktop);
-        NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
+
+        if (parameters.Platform != "NetCoreOnly") {
+            NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
+        }
 
         NuspecNuGetSettings.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
 

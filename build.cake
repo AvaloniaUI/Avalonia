@@ -110,6 +110,7 @@ Task("Clean-Impl")
 
 Task("Restore-NuGet-Packages-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does<AvaloniaBuildData>(data =>
 {
     var maxRetryCount = 5;
@@ -150,7 +151,7 @@ void DotNetCoreBuild(Parameters parameters)
 Task("Build-Impl")
     .Does<AvaloniaBuildData>(data =>
 {
-    if(data.Parameters.IsRunningOnWindows)
+    if(data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
     {
         MSBuild(data.Parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(data.Parameters.Configuration);
