@@ -258,6 +258,8 @@ Task("Zip-Files-Impl")
 {
     Zip(data.Parameters.BinRoot, data.Parameters.ZipCoreArtifacts);
 
+    Zip(data.Parameters.NugetRoot, data.Parameters.ZipNuGetArtifacts);
+
     Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
         data.Parameters.ZipTargetControlCatalogDesktopDirs, 
         GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 

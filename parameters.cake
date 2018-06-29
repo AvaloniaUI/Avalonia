@@ -34,6 +34,7 @@ public class Parameters
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
     public FilePath ZipCoreArtifacts { get; private set; }
+    public FilePath ZipNuGetArtifacts { get; private set; }
     public DirectoryPath ZipSourceControlCatalogDesktopDirs { get; private set; }
     public FilePath ZipTargetControlCatalogDesktopDirs { get; private set; }
 
@@ -111,6 +112,7 @@ public class Parameters
 
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
+        ZipNuGetArtifacts = ZipRoot.CombineWithFilePath("Avalonia-NuGet-" + FileZipSuffix);
         ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
         ZipTargetControlCatalogDesktopDirs = ZipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + FileZipSuffix);
     }
