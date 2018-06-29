@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 public class Packages
@@ -9,9 +12,7 @@ public class Packages
     public string SkiaSharpVersion {get; private set; }
     public string SkiaSharpLinuxVersion {get; private set; }
     public Dictionary<string, IList<Tuple<string,string>>> PackageVersions{get; private set;}
-    
-       
-    
+
     class DependencyBuilder : List<NuSpecDependency>
     {
         Packages _parent;
@@ -223,6 +224,21 @@ public class Packages
             }
         };
 
+        IList<NuSpecContent> coreFiles;
+
+        if (parameters.Platform != "NetCoreOnly") {
+            coreFiles = coreLibrariesNuSpecContent
+                .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
+                .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+                .Concat(toolsContent)
+                .ToList();
+        } else {
+            coreFiles = coreLibrariesNuSpecContent
+                .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+                .Concat(toolsContent)
+                .ToList();
+        }
+
         var nuspecNuGetSettingsCore = new []
         {
             ///////////////////////////////////////////////////////////////////////////////
@@ -255,11 +271,7 @@ public class Packages
                     "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
                     "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument", "System.Xml.ReaderWriter", "System.Memory")
                 .ToArray(),
-                Files = coreLibrariesNuSpecContent
-                    .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
-                    .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
-                    .Concat(toolsContent)
-                    .ToList(),
+                Files = coreFiles,
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
             },
