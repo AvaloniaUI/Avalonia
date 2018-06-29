@@ -316,6 +316,26 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Clear_Containers_When_ItemsPresenter_Changes()
+        {
+            var target = new ItemsControl
+            {
+                Items = new[] { "foo", "bar" },
+                Template = GetTemplate(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+
+            target.Template = GetTemplate();
+            target.ApplyTemplate();
+
+            Assert.Empty(target.ItemContainerGenerator.Containers);
+        }
+
+        [Fact]
         public void Empty_Class_Should_Initially_Be_Applied()
         {
             var target = new ItemsControl()
