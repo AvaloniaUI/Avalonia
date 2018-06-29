@@ -373,7 +373,6 @@ namespace Avalonia.Controls
             AddWindow(this);
 
             EnsureInitialized();
-            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.Instance.ExecuteInitialLayoutPass(this);
 
@@ -382,6 +381,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
+            SetWindowStartupLocation();
         }
 
         /// <summary>
