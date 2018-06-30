@@ -12,7 +12,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Provides global timing functions for animations.
     /// </summary>
-    public static class Timing
+    public class Timing
     {
         static TimerObservable _timer = new TimerObservable();
 
