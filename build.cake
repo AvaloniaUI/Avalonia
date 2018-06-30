@@ -386,52 +386,27 @@ Task("Inspect-Impl")
 // TASKS DEPENDENCY TREE
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Clean")
-    .IsDependentOn("Clean-Impl");
-
-Task("Restore-NuGet-Packages")
-    .IsDependentOn("Clean")
-    .IsDependentOn("Restore-NuGet-Packages-Impl");
-
 Task("Build")
-    .IsDependentOn("Restore-NuGet-Packages")
+    .IsDependentOn("Clean-Impl")
+    .IsDependentOn("Restore-NuGet-Packages-Impl")
     .IsDependentOn("Build-Impl");
 
-Task("Run-Unit-Tests")
-    .IsDependentOn("Build")
-    .IsDependentOn("Run-Unit-Tests-Impl");
-
-Task("Run-Designer-Tests")
-    .IsDependentOn("Build")
-    .IsDependentOn("Run-Designer-Tests-Impl");
-
-Task("Run-Render-Tests")
-    .IsDependentOn("Build")
-    .IsDependentOn("Run-Render-Tests-Impl");
-
-Task("Run-Leak-Tests")
-    .IsDependentOn("Build")
-    .IsDependentOn("Run-Leak-Tests-Impl");
-
 Task("Run-Tests")
-    .IsDependentOn("Run-Unit-Tests")
-    .IsDependentOn("Run-Render-Tests")
-    .IsDependentOn("Run-Designer-Tests")
-    .IsDependentOn("Run-Leak-Tests");
-
-Task("Copy-Files")
-    .IsDependentOn("Run-Tests")
-    .IsDependentOn("Copy-Files-Impl");
-
-Task("Zip-Files")
-    .IsDependentOn("Copy-Files")
-    .IsDependentOn("Create-NuGet-Packages")
-    .IsDependentOn("Zip-Files-Impl");
+    .IsDependentOn("Build")
+    .IsDependentOn("Run-Unit-Tests-Impl")
+    .IsDependentOn("Run-Render-Tests-Impl")
+    .IsDependentOn("Run-Designer-Tests-Impl")
+    .IsDependentOn("Run-Leak-Tests-Impl");
 
 Task("Create-NuGet-Packages")
     .IsDependentOn("Run-Tests")
-    .IsDependentOn("Inspect")
+    .IsDependentOn("Inspect-Impl")
     .IsDependentOn("Create-NuGet-Packages-Impl");
+
+Task("Zip-Files")
+    .IsDependentOn("Create-NuGet-Packages")
+    .IsDependentOn("Copy-Files-Impl")
+    .IsDependentOn("Zip-Files-Impl");
 
 Task("Publish-MyGet")
     .IsDependentOn("Create-NuGet-Packages")
@@ -440,10 +415,6 @@ Task("Publish-MyGet")
 Task("Publish-NuGet")
     .IsDependentOn("Create-NuGet-Packages")
     .IsDependentOn("Publish-NuGet-Impl");
-
-Task("Inspect")
-    .IsDependentOn("Restore-NuGet-Packages")
-    .IsDependentOn("Inspect-Impl");
 
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
