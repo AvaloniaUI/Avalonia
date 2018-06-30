@@ -386,13 +386,10 @@ Task("Inspect-Impl")
 // TASKS DEPENDENCY TREE
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Build")
+Task("Run-Tests")
     .IsDependentOn("Clean-Impl")
     .IsDependentOn("Restore-NuGet-Packages-Impl")
-    .IsDependentOn("Build-Impl");
-
-Task("Run-Tests")
-    .IsDependentOn("Build")
+    .IsDependentOn("Build-Impl")
     .IsDependentOn("Run-Unit-Tests-Impl")
     .IsDependentOn("Run-Render-Tests-Impl")
     .IsDependentOn("Run-Designer-Tests-Impl")
