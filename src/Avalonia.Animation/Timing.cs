@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using Avalonia.Reactive;
 using Avalonia.Threading;
@@ -101,12 +102,17 @@ namespace Avalonia.Animation
         public static void Pulse(long tickCount) => _timer.Pulse(tickCount);
 
         private class TimerObservable : LightweightObservableBase<long>
-        {
+        { 
             public bool HasSubscriptions { get; private set; }
             public long FrameCount { get; private set; }
-            public void Pulse(long tickCount) => PublishNext(++FrameCount);
             protected override void Initialize() => HasSubscriptions = true;
             protected override void Deinitialize() => HasSubscriptions = false;
+
+            public void Pulse(long tickCount)
+            {
+                FrameCount = tickCount;
+                PublishNext(FrameCount);
+            }
         }
     }
 }

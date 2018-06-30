@@ -19,6 +19,7 @@ namespace Avalonia.Rendering
     {
         private IRuntimePlatform _runtime;
         private int _subscriberCount;
+        private long _tickStartTimeStamp;
         private Action<long> _tick;
         private IDisposable _subscription;
 
@@ -67,6 +68,7 @@ namespace Avalonia.Rendering
         /// </summary>
         protected void Start()
         {
+            _tickStartTimeStamp = Stopwatch.GetTimestamp();
             _subscription = StartCore(InternalTick);
         }
 
@@ -85,7 +87,8 @@ namespace Avalonia.Rendering
                 _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Stopwatch.GetTimestamp()));
+            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond),
+                                             () => tick(TimeStampToFrames()));
         }
 
         /// <summary>
@@ -96,6 +99,10 @@ namespace Avalonia.Rendering
             _subscription.Dispose();
             _subscription = null;
         }
+
+        private long TimeStampToFrames()
+                     => (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
+                      / (Stopwatch.Frequency / FramesPerSecond);
 
         private void InternalTick(long tickCount)
         {
