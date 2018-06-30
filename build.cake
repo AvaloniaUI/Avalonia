@@ -408,10 +408,10 @@ Task("Package")
 
 Task("AppVeyor")
   .IsDependentOn("Package")
-  .IsDependentOn("Publish-MyGet-Impl")
-  .IsDependentOn("Publish-NuGet-Impl")
   .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl");
+  .IsDependentOn("Zip-Files-Impl")
+  .IsDependentOn("Publish-MyGet-Impl")
+  .IsDependentOn("Publish-NuGet-Impl");
 
 Task("Travis")
   .IsDependentOn("Run-Tests");
