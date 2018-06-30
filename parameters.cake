@@ -12,6 +12,7 @@ public class Parameters
     public bool IsPlatformAnyCPU { get; private set; }
     public bool IsPlatformX86 { get; private set; }
     public bool IsPlatformX64 { get; private set; }
+    public bool IsPlatformNetCoreOnly { get; private set; }
     public bool IsLocalBuild { get; private set; }
     public bool IsRunningOnUnix { get; private set; }
     public bool IsRunningOnWindows { get; private set; }
@@ -58,6 +59,7 @@ public class Parameters
         IsPlatformAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(Platform, "Any CPU");
         IsPlatformX86 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x86");
         IsPlatformX64 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x64");
+        IsPlatformNetCoreOnly = StringComparer.OrdinalIgnoreCase.Equals(Platform, "NetCoreOnly");
         IsLocalBuild = buildSystem.IsLocalBuild;
         IsRunningOnUnix = context.IsRunningOnUnix();
         IsRunningOnWindows = context.IsRunningOnWindows();

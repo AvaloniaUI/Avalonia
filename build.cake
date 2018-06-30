@@ -111,7 +111,7 @@ Task("Clean-Impl")
 
 Task("Restore-NuGet-Packages-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does<AvaloniaBuildData>(data =>
 {
     var maxRetryCount = 5;
@@ -152,7 +152,7 @@ void DotNetCoreBuild(Parameters parameters)
 Task("Build-Impl")
     .Does<AvaloniaBuildData>(data =>
 {
-    if(data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
+    if(data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
     {
         MSBuild(data.Parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(data.Parameters.Configuration);
@@ -207,7 +207,7 @@ Task("Run-Unit-Tests-Impl")
     RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
-    if (data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
+    if (data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
     {
         RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
     }
@@ -222,7 +222,7 @@ Task("Run-Designer-Tests-Impl")
 
 Task("Run-Render-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does<AvaloniaBuildData>(data =>
 {
     RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
@@ -231,7 +231,7 @@ Task("Run-Render-Tests-Impl")
 
 Task("Run-Leak-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
     var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
@@ -264,7 +264,7 @@ Task("Zip-Files-Impl")
 
     Zip(data.Parameters.NugetRoot, data.Parameters.ZipNuGetArtifacts);
 
-    if (data.Parameters.Platform != "NetCoreOnly") {
+    if (!data.Parameters.IsPlatformNetCoreOnly) {
         Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
             data.Parameters.ZipTargetControlCatalogDesktopDirs, 
             GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
@@ -351,7 +351,7 @@ Task("Publish-NuGet-Impl")
 
 Task("Inspect-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
     var badIssues = new []{"PossibleNullReferenceException"};
