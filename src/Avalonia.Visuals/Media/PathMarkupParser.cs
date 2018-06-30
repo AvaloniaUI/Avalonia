@@ -424,7 +424,7 @@ namespace Avalonia.Media
         {
             span = SkipWhitespace(span);
 
-            return !span.IsEmpty && (span[0] == ',' || span[0] == '-' || char.IsDigit(span[0]));
+            return !span.IsEmpty && (span[0] == ',' || span[0] == '-' || span[0] == '.' || char.IsDigit(span[0]));
         }
 
         private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
@@ -450,6 +450,21 @@ namespace Avalonia.Media
                 i++;
             }
             for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
+
+            if (i < remaining.Length)
+            {
+                // scientific notation
+                if (remaining[i] == 'E' || remaining[i] == 'e')
+                {
+                    valid = false;
+                    i++;
+                    if (remaining[i] == '-' || remaining[i] == '+')
+                    {
+                        i++;
+                        for (; i < remaining.Length && char.IsNumber(remaining[i]); i++) valid = true;
+                    }                  
+                }               
+            }          
 
             if (!valid)
             {

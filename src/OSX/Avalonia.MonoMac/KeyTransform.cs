@@ -200,7 +200,7 @@ namespace Avalonia.MonoMac
             [kVK_Return] = Key.Return,
             [kVK_Tab] = Key.Tab,
             [kVK_Space] = Key.Space,
-            [kVK_Delete] = Key.Delete,
+            [kVK_Delete] = Key.Back,
             [kVK_Escape] = Key.Escape,
             [kVK_Command] = Key.LWin,
             [kVK_Shift] = Key.LeftShift,
