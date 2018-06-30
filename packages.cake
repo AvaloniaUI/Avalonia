@@ -225,7 +225,7 @@ public class Packages
 
         IList<NuSpecContent> coreFiles;
 
-        if (parameters.Platform != "NetCoreOnly") {
+        if (!parameters.IsPlatformNetCoreOnly) {
             var toolsContent = new[] { toolHostApp, toolHostAppNetFx };
             coreFiles = coreLibrariesNuSpecContent
                 .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
@@ -506,7 +506,7 @@ public class Packages
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsCore);
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsDesktop);
 
-        if (parameters.Platform != "NetCoreOnly") {
+        if (!parameters.IsPlatformNetCoreOnly) {
             NuspecNuGetSettings.Add(nuspecNuGetSettingInterop);
             NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
         }
