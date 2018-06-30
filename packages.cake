@@ -16,6 +16,7 @@ public class Packages
     class DependencyBuilder : List<NuSpecDependency>
     {
         Packages _parent;
+
         public DependencyBuilder(Packages parent)
         {
             _parent = parent;
@@ -25,8 +26,7 @@ public class Packages
         {
             return _parent.PackageVersions[name].First().Item1;
         }
-        
-        
+
         public DependencyBuilder Dep(string name, params string[] fws)
         {
             if(fws.Length == 0)

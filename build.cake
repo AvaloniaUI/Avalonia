@@ -6,6 +6,7 @@
 #addin "nuget:?package=NuGet.Core&version=2.14.0"
 #tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
 #tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
+
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,58 +195,61 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 
 Task("Run-Unit-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
-    .Does<AvaloniaBuildData>(data => {
-        RunCoreTest("./tests/Avalonia.Base.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Controls.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Input.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Layout.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Markup.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
-        RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
-        if (data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
-        {
-            RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
-        }
-    });
+    .Does<AvaloniaBuildData>(data =>
+{
+    RunCoreTest("./tests/Avalonia.Base.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Controls.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Input.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Layout.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Markup.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
+    if (data.Parameters.IsRunningOnWindows && data.Parameters.Platform != "NetCoreOnly")
+    {
+        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
+    }
+});
 
 Task("Run-Designer-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
-    .Does<AvaloniaBuildData>(data => {
-        RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", data.Parameters, false);
-    });
+    .Does<AvaloniaBuildData>(data =>
+{
+    RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", data.Parameters, false);
+});
 
 Task("Run-Render-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
-    .Does<AvaloniaBuildData>(data => {
-        RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
-        RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
-    });
+    .Does<AvaloniaBuildData>(data =>
+{
+    RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
+    RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
+});
 
 Task("Run-Leak-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does(() =>
+{
+    var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
+    var leakTestsExitCode = StartProcess(dotMemoryUnit, new ProcessSettings
     {
-        var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
-        var leakTestsExitCode = StartProcess(dotMemoryUnit, new ProcessSettings
-        {
-            Arguments = new ProcessArgumentBuilder()
-                .Append(Context.Tools.Resolve("xunit.console.x86.exe").FullPath)
-                .Append("--propagate-exit-code")
-                .Append("--")
-                .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll"),
-            Timeout = 120000
-        });
-
-        if (leakTestsExitCode != 0)
-        {
-            throw new Exception("Leak Tests failed");
-        }
+        Arguments = new ProcessArgumentBuilder()
+            .Append(Context.Tools.Resolve("xunit.console.x86.exe").FullPath)
+            .Append("--propagate-exit-code")
+            .Append("--")
+            .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll"),
+        Timeout = 120000
     });
+
+    if (leakTestsExitCode != 0)
+    {
+        throw new Exception("Leak Tests failed");
+    }
+});
 
 Task("Copy-Files-Impl")
     .Does<AvaloniaBuildData>(data =>
@@ -349,38 +353,38 @@ Task("Inspect-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.Platform != "NetCoreOnly")
     .Does(() =>
-    {
-        var badIssues = new []{"PossibleNullReferenceException"};
-        var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
-        Information("Running code inspections");
-        
-        var exitCode = StartProcess(Context.Tools.Resolve("inspectcode.exe"),
-            new ProcessSettings
-            {
-                Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln",
-                RedirectStandardOutput = true
-            });
-
-        Information("Analyzing report");
-        var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
-        var failBuild = false;
-        foreach(var xml in doc.Descendants("Issue"))
+{
+    var badIssues = new []{"PossibleNullReferenceException"};
+    var whitelist = new []{"tests", "src\\android", "src\\ios",
+        "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
+    Information("Running code inspections");
+    
+    var exitCode = StartProcess(Context.Tools.Resolve("inspectcode.exe"),
+        new ProcessSettings
         {
-            var typeId = xml.Attribute("TypeId").Value.ToString();
-            if(badIssues.Contains(typeId))
-            {
-                var file = xml.Attribute("File").Value.ToString().ToLower();
-                if(whitelist.Any(wh => file.StartsWith(wh)))
-                    continue;
-                var line = xml.Attribute("Line").Value.ToString();
-                Error(typeId + " - " + file + " on line " + line);
-                failBuild = true;
-            }
+            Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln",
+            RedirectStandardOutput = true
+        });
+
+    Information("Analyzing report");
+    var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
+    var failBuild = false;
+    foreach(var xml in doc.Descendants("Issue"))
+    {
+        var typeId = xml.Attribute("TypeId").Value.ToString();
+        if(badIssues.Contains(typeId))
+        {
+            var file = xml.Attribute("File").Value.ToString().ToLower();
+            if(whitelist.Any(wh => file.StartsWith(wh)))
+                continue;
+            var line = xml.Attribute("Line").Value.ToString();
+            Error(typeId + " - " + file + " on line " + line);
+            failBuild = true;
         }
-        if(failBuild)
-            throw new Exception("Issues found");
-    });
+    }
+    if(failBuild)
+        throw new Exception("Issues found");
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // TASKS DEPENDENCY TREE

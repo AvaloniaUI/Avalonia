@@ -8,8 +8,7 @@ public class Parameters
     public string AssemblyInfoPath { get; private set; }
     public string ReleasePlatform { get; private set; }
     public string ReleaseConfiguration { get; private set; }
-    public string MSBuildSolution { get; private set; } 
-    public string XBuildSolution { get; private set; } 
+    public string MSBuildSolution { get; private set; }
     public bool IsPlatformAnyCPU { get; private set; }
     public bool IsPlatformX86 { get; private set; }
     public bool IsPlatformX64 { get; private set; }
@@ -54,7 +53,6 @@ public class Parameters
         ReleasePlatform = "Any CPU";
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./Avalonia.sln";
-        XBuildSolution = "./Avalonia.XBuild.sln";
 
         // PARAMETERS
         IsPlatformAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(Platform, "Any CPU");
@@ -72,7 +70,6 @@ public class Parameters
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, Platform) 
                     && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
         IsMyGetRelease = !IsTagged && IsReleasable;
-        
 
         // VERSION
         Version = context.Argument("force-nuget-version", context.ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
@@ -104,12 +101,9 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
-
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
-
         DirSuffix = Configuration;
         DirSuffixIOS = "iPhone" + "/" + Configuration;
-
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
         ZipNuGetArtifacts = ZipRoot.CombineWithFilePath("Avalonia-NuGet-" + FileZipSuffix);
