@@ -404,7 +404,7 @@ Task("Run-Tests")
 Task("Package")
     .IsDependentOn("Run-Tests")
     .IsDependentOn("Inspect-Impl")
-    .IsDependentOn("Create-NuGet-Packages-Impl")
+    .IsDependentOn("Create-NuGet-Packages-Impl");
 
 Task("AppVeyor")
   .IsDependentOn("Package")
