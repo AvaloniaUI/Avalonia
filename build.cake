@@ -401,31 +401,17 @@ Task("Run-Tests")
     .IsDependentOn("Run-Designer-Tests-Impl")
     .IsDependentOn("Run-Leak-Tests-Impl");
 
-Task("Create-NuGet-Packages")
+Task("Package")
     .IsDependentOn("Run-Tests")
     .IsDependentOn("Inspect-Impl")
-    .IsDependentOn("Create-NuGet-Packages-Impl");
-
-Task("Zip-Files")
-    .IsDependentOn("Create-NuGet-Packages")
-    .IsDependentOn("Copy-Files-Impl")
-    .IsDependentOn("Zip-Files-Impl");
-
-Task("Publish-MyGet")
-    .IsDependentOn("Create-NuGet-Packages")
-    .IsDependentOn("Publish-MyGet-Impl");
-
-Task("Publish-NuGet")
-    .IsDependentOn("Create-NuGet-Packages")
-    .IsDependentOn("Publish-NuGet-Impl");
-
-Task("Package")
-  .IsDependentOn("Create-NuGet-Packages");
+    .IsDependentOn("Create-NuGet-Packages-Impl")
 
 Task("AppVeyor")
-  .IsDependentOn("Publish-MyGet")
-  .IsDependentOn("Publish-NuGet")
-  .IsDependentOn("Zip-Files");
+  .IsDependentOn("Package")
+  .IsDependentOn("Publish-MyGet-Impl")
+  .IsDependentOn("Publish-NuGet-Impl")
+  .IsDependentOn("Copy-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl");
 
 Task("Travis")
   .IsDependentOn("Run-Tests");
