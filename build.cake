@@ -221,7 +221,8 @@ Task("Run-Designer-Tests-Impl")
 });
 
 Task("Run-Render-Tests-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does<AvaloniaBuildData>(data =>
 {
@@ -230,7 +231,8 @@ Task("Run-Render-Tests-Impl")
 });
 
 Task("Run-Leak-Tests-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests && data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
