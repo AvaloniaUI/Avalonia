@@ -23,26 +23,9 @@ namespace Avalonia.Animation
         /// </summary>
         public Animatable()
         {
-            Transitions = new Transitions();
-            AnimatableTimer = Timing.AnimationStateTimer
-                                .Select(p =>
-                                {
-                                    if (this._playState == PlayState.Pause)
-                                    {
-                                        return PlayState.Pause;
-                                    }
-                                    else return p;
-                                })
-                                .Publish()
-                                .RefCount();
+            Transitions = new Transitions(); 
         }
-
-        /// <summary>
-        /// The specific animations timer for this control.
-        /// </summary>
-        /// <returns></returns>
-        public IObservable<PlayState> AnimatableTimer;
-
+ 
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.
         /// </summary>
@@ -62,7 +45,6 @@ namespace Avalonia.Animation
         {
             get { return _playState; }
             set { SetAndRaise(PlayStateProperty, ref _playState, value); }
-
         }
 
 

@@ -13,10 +13,10 @@ namespace Avalonia.Animation
     /// <summary>
     /// Provides global timing functions for animations.
     /// </summary>
-    public static class Timing
+    public class Timing
     {
         static TimerObservable _timer = new TimerObservable();
-        static PlayState _globalState = PlayState.Run;
+        internal static PlayState _globalPlayState = PlayState.Run;
 
         /// <summary>
         /// The number of frames per second.
@@ -33,11 +33,7 @@ namespace Avalonia.Animation
         /// </summary>
         static Timing()
         {
-            AnimationStateTimer = _timer
-                .Select(_ =>
-                {
-                    return _globalState;
-                })
+            AnimationStateTimer = _timer 
                 .Publish()
                 .RefCount();
         }
@@ -50,7 +46,7 @@ namespace Avalonia.Animation
         public static void SetGlobalPlayState(PlayState playState)
         {
             Dispatcher.UIThread.VerifyAccess();
-            _globalState = playState;
+            _globalPlayState = playState;
         }
 
         /// <summary>
@@ -59,7 +55,7 @@ namespace Avalonia.Animation
         public static PlayState GetGlobalPlayState()
         {
             Dispatcher.UIThread.VerifyAccess();
-            return _globalState;
+            return _globalPlayState;
         }
 
         /// <summary>
@@ -70,7 +66,7 @@ namespace Avalonia.Animation
         /// defined in <see cref="FramesPerSecond"/>.
         /// The parameter passed to a subsciber is the current playstate of the animation.
         /// </remarks>
-        internal static IObservable<PlayState> AnimationStateTimer
+        internal static IObservable<long> AnimationStateTimer
         {
             get;
         }
