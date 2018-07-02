@@ -37,13 +37,16 @@ namespace Avalonia.Win32
                 var defaultExtension = (dialog as SaveFileDialog)?.DefaultExtension ?? "";
                 frm.SetDefaultExtension(defaultExtension);
                 frm.SetFileName(dialog.InitialFileName ?? "");
-                frm.SetTitle(dialog.Title);
+                frm.SetTitle(dialog.Title ?? "");
 
                 var filters = new List<UnmanagedMethods.COMDLG_FILTERSPEC>();
-                foreach (var filter in dialog.Filters)
+                if (dialog.Filters != null)
                 {
-                    var extMask = string.Join(";", filter.Extensions.Select(e => "*." + e));
-                    filters.Add(new UnmanagedMethods.COMDLG_FILTERSPEC { pszName = filter.Name, pszSpec = extMask });
+                    foreach (var filter in dialog.Filters)
+                    {
+                        var extMask = string.Join(";", filter.Extensions.Select(e => "*." + e));
+                        filters.Add(new UnmanagedMethods.COMDLG_FILTERSPEC { pszName = filter.Name, pszSpec = extMask });
+                    }
                 }
                 if (filters.Count == 0)
                     filters.Add(new UnmanagedMethods.COMDLG_FILTERSPEC { pszName = "All files", pszSpec = "*.*" });
