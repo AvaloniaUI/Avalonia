@@ -13,7 +13,7 @@ namespace Avalonia.Win32
 
     class SystemDialogImpl : ISystemDialogImpl
     {
-        private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
+        private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
             UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT;
 
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
