@@ -13,6 +13,9 @@ namespace Avalonia.Win32
 
     class SystemDialogImpl : ISystemDialogImpl
     {
+        private const UnmanagedMethods.FOS DefaultDialogOptions = UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE |
+            UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT;
+
         public unsafe Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
             var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
@@ -29,7 +32,7 @@ namespace Avalonia.Win32
 
                 uint options;
                 frm.GetOptions(out options);
-                options |= (uint)(UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
+                options |= (uint)(DefaultDialogOptions);
                 if (openDialog?.AllowMultiple == true)
                     options |= (uint)UnmanagedMethods.FOS.FOS_ALLOWMULTISELECT;
                 frm.SetOptions(options);
@@ -109,7 +112,7 @@ namespace Avalonia.Win32
                 var frm = (UnmanagedMethods.IFileDialog)unk;
                 uint options;
                 frm.GetOptions(out options);
-                options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | UnmanagedMethods.FOS.FOS_FORCEFILESYSTEM | UnmanagedMethods.FOS.FOS_NOVALIDATE | UnmanagedMethods.FOS.FOS_NOTESTFILECREATE | UnmanagedMethods.FOS.FOS_DONTADDTORECENT);
+                options |= (uint)(UnmanagedMethods.FOS.FOS_PICKFOLDERS | DefaultDialogOptions);
                 frm.SetOptions(options);
 
                 if (dialog.InitialDirectory != null)
