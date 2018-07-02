@@ -62,8 +62,10 @@ namespace Avalonia.Controls.Generators
             var i = selector != null ? selector.Select(item) : item;
             var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
-            if (_containers.Any(a => a.Key != container.Index))
+            if (!_containers.Any(a => a.Key == container.Index))
                 _containers.Add(container.Index, container);
+            else
+                _containers[container.Index] = container;
             Materialized?.Invoke(this, new ItemContainerEventArgs(container));
 
             return container;
