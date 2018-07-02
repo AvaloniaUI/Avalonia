@@ -62,7 +62,8 @@ namespace Avalonia.Controls.Generators
             var i = selector != null ? selector.Select(item) : item;
             var container = new ItemContainerInfo(CreateContainer(i), item, index);
 
-            _containers.Add(container.Index, container);
+            if (_containers.Any(a => a.Key != container.Index))
+                _containers.Add(container.Index, container);
             Materialized?.Invoke(this, new ItemContainerEventArgs(container));
 
             return container;
@@ -75,7 +76,8 @@ namespace Avalonia.Controls.Generators
 
             for (int i = startingIndex; i < startingIndex + count; ++i)
             {
-                result.Add(_containers[i]);
+                if (_containers.Count > i)
+                    result.Add(_containers[i]);
                 _containers.Remove(i);
             }
 
