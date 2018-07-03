@@ -168,14 +168,14 @@ namespace Avalonia
             return value;
         }
 
-        private DeferredSetter<AvaloniaProperty, object> _defferedSetter;
+        private DeferredSetter<object> _defferedSetter;
 
-        public DeferredSetter<AvaloniaProperty, object> Setter
+        public DeferredSetter<object> Setter
         {
             get
             {
                 return _defferedSetter ??
-                    (_defferedSetter = new DeferredSetter<AvaloniaProperty, object>());
+                    (_defferedSetter = new DeferredSetter<object>());
             }
         }
     }

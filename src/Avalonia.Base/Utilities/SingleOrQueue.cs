@@ -11,7 +11,7 @@ namespace Avalonia.Utilities
 
         private Queue<T> Tail => _tail ?? (_tail = new Queue<T>());
 
-        private bool HasTail => _tail != null;
+        public bool HasTail => _tail != null;
 
         public bool Empty { get; private set; } = true;
 

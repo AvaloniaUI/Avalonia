@@ -10,10 +10,8 @@ namespace Avalonia.Utilities
     /// A utility class to enable deferring assignment until after property-changed notifications are sent.
     /// Used to fix #855.
     /// </summary>
-    /// <typeparam name="TProperty">The type of the object that represents the property.</typeparam>
     /// <typeparam name="TSetRecord">The type of value with which to track the delayed assignment.</typeparam>
-    class DeferredSetter<TProperty, TSetRecord>
-        where TProperty: class
+    class DeferredSetter<TSetRecord>
     {
         private struct NotifyDisposable : IDisposable
         {
@@ -47,20 +45,37 @@ namespace Avalonia.Utilities
                     return pendingValues ?? (pendingValues = new SingleOrQueue<TSetRecord>());
                 }
             }
+
+            public bool IsSimpleSet => pendingValues?.HasTail != true;
         }
 
-        private readonly ConditionalWeakTable<TProperty, SettingStatus> setRecords = new ConditionalWeakTable<TProperty, SettingStatus>();
+        private Dictionary<AvaloniaProperty, SettingStatus> _setRecords;
+        private Dictionary<AvaloniaProperty, SettingStatus> SetRecords
+            => _setRecords ?? (_setRecords = new Dictionary<AvaloniaProperty, SettingStatus>());
+
+        private SettingStatus GetOrCreateStatus(AvaloniaProperty property)
+        {
+            if (!SetRecords.TryGetValue(property, out var status))
+            {
+                status = new SettingStatus();
+                SetRecords.Add(property, status);
+            }
+
+            return status;
+        }
 
         /// <summary>
         /// Mark the property as currently notifying.
         /// </summary>
         /// <param name="property">The property to mark as notifying.</param>
         /// <returns>Returns a disposable that when disposed, marks the property as done notifying.</returns>
-        private NotifyDisposable MarkNotifying(TProperty property)
+        private NotifyDisposable MarkNotifying(AvaloniaProperty property)
         {
             Contract.Requires<InvalidOperationException>(!IsNotifying(property));
-            
-            return new NotifyDisposable(setRecords.GetOrCreateValue(property));
+
+            SettingStatus status = GetOrCreateStatus(property);
+
+            return new NotifyDisposable(status);
         }
 
         /// <summary>
@@ -68,19 +83,19 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>If the property is currently notifying listeners.</returns>
-        private bool IsNotifying(TProperty property)
-            => setRecords.TryGetValue(property, out var value) && value.Notifying;
+        private bool IsNotifying(AvaloniaProperty property)
+            => SetRecords.TryGetValue(property, out var value) && value.Notifying;
 
         /// <summary>
         /// Add a pending assignment for the property.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <param name="value">The value to assign.</param>
-        private void AddPendingSet(TProperty property, TSetRecord value)
+        private void AddPendingSet(AvaloniaProperty property, TSetRecord value)
         {
             Contract.Requires<InvalidOperationException>(IsNotifying(property));
 
-            setRecords.GetOrCreateValue(property).PendingValues.Enqueue(value);
+            GetOrCreateStatus(property).PendingValues.Enqueue(value);
         }
 
         /// <summary>
@@ -88,9 +103,9 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns>If the property has any pending assignments.</returns>
-        private bool HasPendingSet(TProperty property)
+        private bool HasPendingSet(AvaloniaProperty property)
         {
-            return setRecords.TryGetValue(property, out var status) && !status.PendingValues.Empty;
+            return SetRecords.TryGetValue(property, out var status) && !status.PendingValues.Empty;
         }
 
         /// <summary>
@@ -98,9 +113,17 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="property">The property to check.</param>
         /// <returns>The first pending assignment for the property.</returns>
-        private TSetRecord GetFirstPendingSet(TProperty property)
+        private TSetRecord GetFirstPendingSet(AvaloniaProperty property)
         {
-            return setRecords.GetOrCreateValue(property).PendingValues.Dequeue();
+            return GetOrCreateStatus(property).PendingValues.Dequeue();
+        }
+
+        private void CleanupSetStatus(AvaloniaProperty property)
+        {
+            if (SetRecords.TryGetValue(property, out var status) && status.IsSimpleSet)
+            {
+                SetRecords.Remove(property);
+            }
         }
 
         public delegate bool SetterDelegate<TValue>(TSetRecord record, ref TValue backing, Action<Action> notifyCallback);
@@ -116,7 +139,7 @@ namespace Avalonia.Utilities
         /// </param>
         /// <param name="value">The value to try to set.</param>
         public bool SetAndNotify<TValue>(
-            TProperty property,
+            AvaloniaProperty property,
             ref TValue backing,
             SetterDelegate<TValue> setterCallback,
             TSetRecord value)
@@ -145,6 +168,9 @@ namespace Avalonia.Utilities
                         }
                     });
                 }
+
+                CleanupSetStatus(property);
+
                 return updated;
             }
             else if(!object.Equals(value, backing))
