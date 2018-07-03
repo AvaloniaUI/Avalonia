@@ -199,7 +199,8 @@ namespace Avalonia.Data
                     () => target.GetValue(StyledElement.DataContextProperty),
                     path,
                     new UpdateSignal(target, StyledElement.DataContextProperty),
-                    enableDataValidation);
+                    enableDataValidation,
+                    typeResolver: TypeResolver);
 
                 return result;
             }
@@ -287,7 +288,8 @@ namespace Avalonia.Data
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
                 path,
                 new UpdateSignal(target, StyledElement.TemplatedParentProperty),
-                enableDataValidation);
+                enableDataValidation,
+                typeResolver: TypeResolver);
 
             return result;
         }
