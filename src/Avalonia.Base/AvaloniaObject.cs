@@ -45,21 +45,8 @@ namespace Avalonia
         /// </summary>
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
-        private DeferredSetter<AvaloniaProperty, object> _directDeferredSetter;
         private ValueStore _values;
-
-        /// <summary>
-        /// Delayed setter helper for direct properties. Used to fix #855.
-        /// </summary>
-        private DeferredSetter<AvaloniaProperty, object> DirectPropertyDeferredSetter
-        {
-            get
-            {
-                return _directDeferredSetter ??
-                    (_directDeferredSetter = new DeferredSetter<AvaloniaProperty, object>());
-            }
-        }
-
+        private ValueStore Values => _values ?? (_values = new ValueStore(this));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
@@ -223,9 +210,9 @@ namespace Avalonia
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
-            else if (_values != null)
+            else if (Values != null)
             {
-                var result = _values.GetValue(property);
+                var result = Values.GetValue(property);
 
                 if (result == AvaloniaProperty.UnsetValue)
                 {
@@ -263,7 +250,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return _values?.IsAnimating(property) ?? false;
+            return Values?.IsAnimating(property) ?? false;
         }
 
         /// <summary>
@@ -280,7 +267,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return _values?.IsSet(property) ?? false;
+            return Values?.IsSet(property) ?? false;
         }
 
         /// <summary>
@@ -376,12 +363,7 @@ namespace Avalonia
                     description,
                     priority);
 
-                if (_values == null)
-                {
-                    _values = new ValueStore(this);
-                }
-
-                return _values.AddBinding(property, source, priority);
+                return Values.AddBinding(property, source, priority);
             }
         }
 
@@ -412,7 +394,7 @@ namespace Avalonia
         public void Revalidate(AvaloniaProperty property)
         {
             VerifyAccess();
-            _values?.Revalidate(property);
+            Values?.Revalidate(property);
         }
         
         internal void PriorityValueChanged(AvaloniaProperty property, int priority, object oldValue, object newValue)
@@ -454,7 +436,7 @@ namespace Avalonia
         /// Gets all priority values set on the object.
         /// </summary>
         /// <returns>A collection of property/value tuples.</returns>
-        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => _values?.GetSetValues();
+        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => Values?.GetSetValues();
 
         /// <summary>
         /// Forces revalidation of properties when a property value changes.
@@ -564,15 +546,15 @@ namespace Avalonia
             T value)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
-            return _values.Setter.SetAndNotify(
+            return Values.Setter.SetAndNotify(
                 property,
                 ref field,
-                ((object value, int) update, ref T backing, Action<Action> notify) =>
+                (object update, ref T backing, Action<Action> notify) =>
                 {
-                    setterCallback((T)update.value, ref backing, notify);
+                    setterCallback((T)update, ref backing, notify);
                     return true;
                 },
-                (value, 0));
+                value);
         }
 
         /// <summary>
@@ -735,13 +717,8 @@ namespace Avalonia
                     originalValue?.GetType().FullName ?? "(null)"));
             }
 
-            if (_values == null)
-            {
-                _values = new ValueStore(this);
-            }
-
             LogPropertySet(property, value, priority);
-            _values.AddValue(property, value, (int)priority);
+            Values.AddValue(property, value, (int)priority);
         }
 
         /// <summary>

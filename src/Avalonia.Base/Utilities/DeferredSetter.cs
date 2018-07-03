@@ -8,6 +8,7 @@ namespace Avalonia.Utilities
 {
     /// <summary>
     /// A utility class to enable deferring assignment until after property-changed notifications are sent.
+    /// Used to fix #855.
     /// </summary>
     /// <typeparam name="TProperty">The type of the object that represents the property.</typeparam>
     /// <typeparam name="TSetRecord">The type of value with which to track the delayed assignment.</typeparam>
@@ -37,13 +38,13 @@ namespace Avalonia.Utilities
         {
             public bool Notifying { get; set; }
 
-            private Queue<TSetRecord> pendingValues;
+            private SingleOrQueue<TSetRecord> pendingValues;
             
-            public Queue<TSetRecord> PendingValues
+            public SingleOrQueue<TSetRecord> PendingValues
             {
                 get
                 {
-                    return pendingValues ?? (pendingValues = new Queue<TSetRecord>());
+                    return pendingValues ?? (pendingValues = new SingleOrQueue<TSetRecord>());
                 }
             }
         }
@@ -89,7 +90,7 @@ namespace Avalonia.Utilities
         /// <returns>If the property has any pending assignments.</returns>
         private bool HasPendingSet(TProperty property)
         {
-            return setRecords.TryGetValue(property, out var status) && status.PendingValues.Count != 0;
+            return setRecords.TryGetValue(property, out var status) && !status.PendingValues.Empty;
         }
 
         /// <summary>

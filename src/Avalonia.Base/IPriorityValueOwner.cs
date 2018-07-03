@@ -33,6 +33,6 @@ namespace Avalonia
         /// </summary>
         void VerifyAccess();
 
-        DeferredSetter<AvaloniaProperty, (object value, int priority)> Setter { get; }
+        DeferredSetter<AvaloniaProperty, object> Setter { get; }
     }
 }

@@ -116,7 +116,7 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            return _values.TryGetValue(property, out var value) ? (value as PriorityValue)?.IsAnimating ?? false : false;
+            return _values.TryGetValue(property, out var value) && value is PriorityValue priority && priority.IsAnimating;
         }
 
         public bool IsSet(AvaloniaProperty property)
@@ -168,14 +168,14 @@ namespace Avalonia
             return value;
         }
 
-        private DeferredSetter<AvaloniaProperty, (object value, int priority)> _defferedSetter;
+        private DeferredSetter<AvaloniaProperty, object> _defferedSetter;
 
-        public DeferredSetter<AvaloniaProperty, (object value, int priority)> Setter
+        public DeferredSetter<AvaloniaProperty, object> Setter
         {
             get
             {
                 return _defferedSetter ??
-                    (_defferedSetter = new DeferredSetter<AvaloniaProperty, (object value, int priority)>());
+                    (_defferedSetter = new DeferredSetter<AvaloniaProperty, object>());
             }
         }
     }

@@ -249,19 +249,26 @@ namespace Avalonia
         }
 
         private bool UpdateCore(
+            object update,
+            ref (object value, int priority) backing,
+            Action<Action> notify)
+            => UpdateCore(((object, int))update, ref backing, notify);
+
+        private bool UpdateCore(
             (object value, int priority) update,
             ref (object value, int priority) backing,
             Action<Action> notify)
         {
             var val = update.value;
             var notification = val as BindingNotification;
+            object castValue;
 
             if (notification != null)
             {
                 val = (notification.HasValue) ? notification.Value : null;
             }
 
-            if (TypeUtilities.TryConvertImplicit(_valueType, val, out object castValue))
+            if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
             {
                 var old = backing.value;
 
