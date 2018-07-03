@@ -148,8 +148,6 @@ namespace Avalonia.Controls
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
-        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
-
         public ILayoutManager LayoutManager
         {
             get
@@ -248,6 +246,11 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default(Point);
         }
+        
+        /// <summary>
+        /// Creates the layout manager for this <see cref="TopLevel" />.
+        /// </summary>
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
