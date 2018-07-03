@@ -21,7 +21,7 @@ namespace Avalonia
     /// priority binding that doesn't return <see cref="AvaloniaProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
     /// has a higher priority. Each time the value changes, the 
-    /// <see cref="IPriorityValueOwner.Changed(PriorityValue, object, object)"/> method on the 
+    /// <see cref="IPriorityValueOwner.Changed"/> method on the 
     /// owner object is fired with the old and new values.
     /// </remarks>
     internal class PriorityValue
@@ -30,7 +30,6 @@ namespace Avalonia
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
 
         private readonly Func<object, object> _validate;
-        private static readonly DeferredSetter<PriorityValue, (object value, int priority)> delayedSetter = new DeferredSetter<PriorityValue, (object, int)>();
         private (object value, int priority) _value;
 
         /// <summary>
@@ -243,7 +242,7 @@ namespace Avalonia
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            delayedSetter.SetAndNotify(this,
+            Owner.Setter.SetAndNotify(Property,
                 ref _value,
                 UpdateCore,
                 (value, priority));
@@ -256,14 +255,13 @@ namespace Avalonia
         {
             var val = update.value;
             var notification = val as BindingNotification;
-            object castValue;
 
             if (notification != null)
             {
                 val = (notification.HasValue) ? notification.Value : null;
             }
 
-            if (TypeUtilities.TryConvertImplicit(_valueType, val, out castValue))
+            if (TypeUtilities.TryConvertImplicit(_valueType, val, out object castValue))
             {
                 var old = backing.value;
 

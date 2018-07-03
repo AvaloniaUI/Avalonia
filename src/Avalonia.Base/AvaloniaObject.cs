@@ -22,7 +22,7 @@ namespace Avalonia
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged, IPriorityValueOwner
+    public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
     {
         /// <summary>
         /// The parent object that inherited values are inherited from.
@@ -414,9 +414,8 @@ namespace Avalonia
             VerifyAccess();
             _values?.Revalidate(property);
         }
-
-        /// <inheritdoc/>
-        void IPriorityValueOwner.Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
+        
+        internal void PriorityValueChanged(AvaloniaProperty property, int priority, object oldValue, object newValue)
         {
             oldValue = (oldValue == AvaloniaProperty.UnsetValue) ?
                 GetDefaultValue(property) :
@@ -439,9 +438,8 @@ namespace Avalonia
                     (BindingPriority)priority);
             }
         }
-
-        /// <inheritdoc/>
-        void IPriorityValueOwner.BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
+        
+        internal void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
         {
             UpdateDataValidation(property, notification);
         }
@@ -566,15 +564,15 @@ namespace Avalonia
             T value)
         {
             Contract.Requires<ArgumentNullException>(setterCallback != null);
-            return DirectPropertyDeferredSetter.SetAndNotify(
+            return _values.Setter.SetAndNotify(
                 property,
                 ref field,
-                (object val, ref T backing, Action<Action> notify) =>
+                ((object value, int) update, ref T backing, Action<Action> notify) =>
                 {
-                    setterCallback((T)val, ref backing, notify);
+                    setterCallback((T)update.value, ref backing, notify);
                     return true;
                 },
-                value);
+                (value, 0));
         }
 
         /// <summary>

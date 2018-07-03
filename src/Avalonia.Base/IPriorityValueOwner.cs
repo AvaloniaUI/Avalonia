@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -31,5 +32,7 @@ namespace Avalonia
         /// Ensures that the current thread is the UI thread.
         /// </summary>
         void VerifyAccess();
+
+        DeferredSetter<AvaloniaProperty, (object value, int priority)> Setter { get; }
     }
 }
