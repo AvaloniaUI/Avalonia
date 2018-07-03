@@ -161,6 +161,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Changing_Template_Should_Clear_Old_Templated_Childs_Parent()
+        {
+            var target = new TemplatedControl
+            {
+                Template = new FuncControlTemplate(_ => new Decorator())
+            };
+
+            target.ApplyTemplate();
+
+            var child = (Decorator)target.GetVisualChildren().Single();
+
+            target.Template = new FuncControlTemplate(_ => new Canvas());
+            target.ApplyTemplate();
+
+            Assert.Null(child.Parent);
+        }
+
+        [Fact]
         public void Nested_Templated_Control_Should_Not_Have_Template_Applied()
         {
             var target = new TemplatedControl
