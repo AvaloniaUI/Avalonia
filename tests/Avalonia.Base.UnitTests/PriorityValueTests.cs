@@ -307,7 +307,7 @@ namespace Avalonia.Base.UnitTests
         private static Mock<IPriorityValueOwner> GetMockOwner()
         {
             var owner = new Mock<IPriorityValueOwner>();
-            owner.SetupGet(o => o.Setter).Returns(new DeferredSetter<AvaloniaProperty, object>());
+            owner.SetupGet(o => o.Setter).Returns(new DeferredSetter<object>());
             return owner;
         }
     }
