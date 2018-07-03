@@ -189,6 +189,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Closing_Should_Only_Be_Invoked_Once()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var count = 0;
+
+                window.Closing +=
+                    (sender, e) =>
+                    {
+                        count++;
+                    };
+
+                window.Show();
+                window.Close();
+
+                Assert.Equal(1, count);
+            }
+        }
+
+        [Fact]
         public void Showing_Should_Start_Renderer()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
