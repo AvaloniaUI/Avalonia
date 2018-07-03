@@ -167,7 +167,7 @@ namespace Avalonia.Base.UnitTests
 
             target.Add(Single("foo"), 0);
 
-            owner.Verify(x => x.Changed(target, AvaloniaProperty.UnsetValue, "foo"));
+            owner.Verify(x => x.Changed(target.Property, target.ValuePriority, AvaloniaProperty.UnsetValue, "foo"));
         }
 
         [Fact]
@@ -180,7 +180,7 @@ namespace Avalonia.Base.UnitTests
             target.Add(subject, 0);
             subject.OnNext("bar");
 
-            owner.Verify(x => x.Changed(target, "foo", "bar"));
+            owner.Verify(x => x.Changed(target.Property, target.ValuePriority, "foo", "bar"));
         }
 
         [Fact]
