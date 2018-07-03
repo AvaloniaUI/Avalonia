@@ -302,18 +302,17 @@ namespace Avalonia.Controls
 
         internal void Close(bool ignoreCancel)
         {
-            var cancelClosing = false;
             try
             {
-                cancelClosing = HandleClosing();
+                if (!ignoreCancel && HandleClosing())
+                {
+                    return;
+                }
             }
             finally
             {
-                if (ignoreCancel || !cancelClosing)
-                {                  
-                    PlatformImpl?.Dispose();
-                    HandleClosed();
-                }
+                PlatformImpl?.Dispose();
+                HandleClosed();
             }
         }
 
@@ -324,6 +323,7 @@ namespace Avalonia.Controls
         {
             var args = new CancelEventArgs();
             Closing?.Invoke(this, args);
+
             return args.Cancel;
         }
 
