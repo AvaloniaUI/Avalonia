@@ -15,12 +15,16 @@ namespace Avalonia.Data.Core
 {
     public abstract class IndexerNodeBase : SettableNode
     {
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        private IDisposable _subscription;
+        
+        protected override void StartListeningCore(WeakReference reference)
         {
             var target = reference.Target;
+            var incc = target as INotifyCollectionChanged;
+            var inpc = target as INotifyPropertyChanged;
             var inputs = new List<IObservable<object>>();
 
-            if (target is INotifyCollectionChanged incc)
+            if (incc != null)
             {
                 inputs.Add(WeakObservable.FromEventPattern<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
                     incc,
@@ -29,7 +33,7 @@ namespace Avalonia.Data.Core
                     .Select(_ => GetValue(target)));
             }
 
-            if (target is INotifyPropertyChanged inpc)
+            if (inpc != null)
             {
                 inputs.Add(WeakObservable.FromEventPattern<INotifyPropertyChanged, PropertyChangedEventArgs>(
                     inpc,
@@ -38,7 +42,12 @@ namespace Avalonia.Data.Core
                     .Select(_ => GetValue(target)));
             }
 
-            return inputs.Merge().StartWith(GetValue(target));
+            _subscription = Observable.Merge(inputs).StartWith(GetValue(target)).Subscribe(ValueChanged);
+        }
+
+        protected override void StopListeningCore()
+        {
+            _subscription.Dispose();
         }
 
         protected abstract object GetValue(object target);

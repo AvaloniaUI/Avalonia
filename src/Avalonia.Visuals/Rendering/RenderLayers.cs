@@ -11,11 +11,7 @@ namespace Avalonia.Rendering
     {
         private List<RenderLayer> _inner = new List<RenderLayer>();
         private Dictionary<IVisual, RenderLayer> _index = new Dictionary<IVisual, RenderLayer>();
-
-        public RenderLayers()
-        {
-        }
-
+        
         public int Count => _inner.Count;
         public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
 
@@ -49,6 +45,16 @@ namespace Avalonia.Rendering
                     _index.Remove(layer.LayerRoot);
                 }
             }
+        }
+
+        public void Clear()
+        {
+            foreach (var layer in _index.Values)
+            {
+                layer.Bitmap.Dispose();
+            }
+
+            _index.Clear();
         }
 
         public bool TryGetValue(IVisual layerRoot, out RenderLayer value)

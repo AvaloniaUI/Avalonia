@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Data;
 using System;
 using System.Reflection;
 
@@ -36,11 +35,11 @@ namespace Avalonia.Data.Core.Plugins
                 }
                 catch (TargetInvocationException ex)
                 {
-                    Observer.OnNext(new BindingNotification(ex.InnerException, BindingErrorType.DataValidationError));
+                    PublishValue(new BindingNotification(ex.InnerException, BindingErrorType.DataValidationError));
                 }
                 catch (Exception ex)
                 {
-                    Observer.OnNext(new BindingNotification(ex, BindingErrorType.DataValidationError));
+                    PublishValue(new BindingNotification(ex, BindingErrorType.DataValidationError));
                 }
 
                 return false;

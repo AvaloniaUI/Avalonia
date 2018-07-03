@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core
 {
     public class AvaloniaPropertyAccessorNode : SettableNode
     {
+        private IDisposable _subscription;
         private readonly bool _enableValidation;
         private readonly AvaloniaProperty _property;
 
@@ -37,9 +39,22 @@ namespace Avalonia.Data.Core
             }
         }
 
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference reference)
         {
-            return (reference.Target as IAvaloniaObject)?.GetWeakObservable(_property) ?? Observable.Empty<object>();
+            if (reference.Target is IAvaloniaObject obj)
+            {
+                _subscription = new AvaloniaPropertyObservable<object>(obj, _property).Subscribe(ValueChanged);
+            }
+            else
+            {
+                _subscription = null;
+            }
+        }
+
+        protected override void StopListeningCore()
+        {
+            _subscription?.Dispose();
+            _subscription = null;
         }
     }
 }

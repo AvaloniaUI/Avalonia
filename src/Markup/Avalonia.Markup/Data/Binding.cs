@@ -5,12 +5,11 @@ using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Reflection;
-using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Parsers;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Data
@@ -196,15 +195,11 @@ namespace Avalonia.Data
 
             if (!targetIsDataContext)
             {
-                var update = target.GetObservable(StyledElement.DataContextProperty)
-                    .Skip(1)
-                    .Select(_ => Unit.Default);
                 var result = ExpressionObserverBuilder.Build(
                     () => target.GetValue(StyledElement.DataContextProperty),
                     path,
-                    update,
-                    enableDataValidation,
-                    typeResolver: TypeResolver);
+                    new UpdateSignal(target, StyledElement.DataContextProperty),
+                    enableDataValidation);
 
                 return result;
             }
@@ -287,17 +282,12 @@ namespace Avalonia.Data
             bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-
-            var update = target.GetObservable(StyledElement.TemplatedParentProperty)
-                .Skip(1)
-                .Select(_ => Unit.Default);
-
+            
             var result = ExpressionObserverBuilder.Build(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
                 path,
-                update,
-                enableDataValidation,
-                typeResolver: TypeResolver);
+                new UpdateSignal(target, StyledElement.TemplatedParentProperty),
+                enableDataValidation);
 
             return result;
         }
@@ -316,6 +306,36 @@ namespace Avalonia.Data
                     return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ?? 
                            Observable.Return((object)null);
                 }).Switch();
+        }
+
+        private class UpdateSignal : SingleSubscriberObservableBase<Unit>
+        {
+            private readonly IAvaloniaObject _target;
+            private readonly AvaloniaProperty _property;
+
+            public UpdateSignal(IAvaloniaObject target, AvaloniaProperty property)
+            {
+                _target = target;
+                _property = property;
+            }
+
+            protected override void Subscribed()
+            {
+                _target.PropertyChanged += PropertyChanged;
+            }
+
+            protected override void Unsubscribed()
+            {
+                _target.PropertyChanged -= PropertyChanged;
+            }
+
+            private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Property == _property)
+                {
+                    PublishNext(Unit.Default);
+                }
+            }
         }
     }
 }
