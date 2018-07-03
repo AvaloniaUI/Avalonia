@@ -286,7 +286,6 @@ namespace Avalonia.Controls
 
         internal void OnMouseLeftButtonUp_Click(InputModifiers inputModifiers, ref bool handled)
         {
-            Debug.WriteLine(nameof(OnMouseLeftButtonUp_Click));
             // completed a click without dragging, so we're sorting
             InvokeProcessSort(inputModifiers);
             handled = true;
@@ -458,7 +457,6 @@ namespace Avalonia.Controls
 
         internal void OnMouseLeftButtonDown(ref bool handled, PointerEventArgs args, Point mousePosition)
         {
-            Debug.WriteLine(nameof(OnMouseLeftButtonDown));
             IsPressed = true;
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
@@ -503,7 +501,6 @@ namespace Avalonia.Controls
         internal void OnMouseLeftButtonUp(ref bool handled, PointerEventArgs args, Point mousePosition, Point mousePositionHeaders)
         {
             IsPressed = false;
-            Debug.WriteLine(nameof(OnMouseLeftButtonUp));
 
             if (OwningGrid != null && OwningGrid.ColumnHeaders != null)
             {

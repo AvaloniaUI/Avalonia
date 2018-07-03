@@ -20,7 +20,9 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
+using System.Linq;
 using Avalonia.Input.Platform;
+using System.ComponentModel.DataAnnotations;
 
 namespace Avalonia.Controls
 {
@@ -73,7 +75,6 @@ namespace Avalonia.Controls
         // DataGrid Template Parts
         private ValidationSummary _validationSummary;
         
-        private List<ValidationResult> _bindingValidationResults;
         private List<ValidationResult> _indeiValidationResults;
         private DataGridCellCoordinates _previousAutomationFocusCoordinates;
         private List<ValidationResult> _propertyValidationResults;
@@ -83,10 +84,13 @@ namespace Avalonia.Controls
         private List<Style> _rowGroupHeaderStylesOld;
         private ValidationSummaryItem _selectedValidationSummaryItem;
         private string _updateSourcePath;
-        private Dictionary<INotifyDataErrorInfo, string> _validationItems;
-        private List<ValidationResult> _validationResults;
 
         */
+
+        //private Dictionary<INotifyDataErrorInfo, string> _validationItems;
+        private List<Exception> _validationErrors;
+        private List<Exception> _bindingValidationErrors;
+        private IDisposable _validationSubscription;
 
         private INotifyCollectionChanged _topLevelGroup;
         private ContentControl _clipboardContentControl;
@@ -144,6 +148,7 @@ namespace Avalonia.Controls
         private DataGridSelectedItemsCollection _selectedItems;
         private bool _temporarilyResetCurrentCell;
         private object _uneditedValue; // Represents the original current cell value at the time it enters editing mode.
+        private ICellEditBinding _currentCellEditBinding;
 
         // An approximation of the sum of the heights in pixels of the scrolling rows preceding 
         // the first displayed scrolling row.  Since the scrolled off rows are discarded, the grid
@@ -780,7 +785,7 @@ namespace Avalonia.Controls
             RowGroupHeadersTable = new IndexToValueTable<DataGridRowGroupInfo>();
             //_validationItems = new Dictionary<INotifyDataErrorInfo, string>();
             //_validationResults = new List<ValidationResult>();
-            //_bindingValidationResults = new List<ValidationResult>();
+            _bindingValidationErrors = new List<Exception>();
             //_propertyValidationResults = new List<ValidationResult>();
             //_indeiValidationResults = new List<ValidationResult>();
 
@@ -1978,7 +1983,6 @@ namespace Avalonia.Controls
         /// <returns>True if operation was successful. False otherwise.</returns>
         public bool CommitEdit(DataGridEditingUnit editingUnit, bool exitEditingMode)
         {
-            Debug.WriteLine("DataGrid : CommitEdit");
             if (!EndCellEdit(
                     editAction: DataGridEditAction.Commit, 
                     exitEditingMode: editingUnit == DataGridEditingUnit.Cell ? exitEditingMode : true, 
@@ -2351,7 +2355,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Builds the visual tree for the column header when a new template is applied.
         /// </summary>
-        //TODO Validation
+        //TODO Validation UI
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             // The template has changed, so we need to refresh the visuals
@@ -3365,7 +3369,6 @@ namespace Avalonia.Controls
 
         private bool CommitEditForOperation(int columnIndex, int slot, bool forCurrentCellChange)
         {
-            Debug.WriteLine("DataGrid : CommitEditForOperation");
             if (forCurrentCellChange)
             {
                 if (!EndCellEdit(DataGridEditAction.Commit, exitEditingMode: true, keepFocus: true, raiseEvents: true))
@@ -3413,9 +3416,10 @@ namespace Avalonia.Controls
             Debug.Assert(EditingRow.Slot < SlotCount);
             
             //if (!ValidateEditingRow(scrollIntoView: true, wireEvents: false))
-            //{
-            //    return false;
-            //}
+            if(!EditingRow.IsValid)
+            {
+                return false;
+            }
 
             DataConnection.EndEdit(EditingRow.DataContext);
 
@@ -3955,7 +3959,6 @@ namespace Avalonia.Controls
             {
                 return true;
             }
-            Debug.WriteLine("DataGrid : EndCellEdit");
 
             Debug.Assert(EditingRow != null);
             Debug.Assert(_editingColumnIndex >= 0);
@@ -3997,7 +4000,7 @@ namespace Avalonia.Controls
                 Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
             }
 
-            //_bindingValidationResults.Clear();
+            //_bindingValidationErrors.Clear();
 
             // If we're canceling, let the editing column repopulate its old value if it wants
             if (editAction == DataGridEditAction.Cancel)
@@ -4032,15 +4035,68 @@ namespace Avalonia.Controls
                 //    bindingData.Element.BindingValidationError -= new EventHandler<ValidationErrorEventArgs>(EditingElement_BindingValidationError);
                 //}
 
-                // Re-validate
-                //ValidateEditingRow(scrollIntoView: true, wireEvents: false);
+                void SetValidationStatus(ICellEditBinding binding)
+                {
+                    if (binding.IsValid)
+                    {
+                        ResetValidationStatus();
+                        if (editingElement != null)
+                        {
+                            DataValidationErrors.ClearErrors(editingElement);
+                        }
+                    }
+                    else
+                    {
+                        if (EditingRow != null)
+                        {
+                            if (editingCell.IsValid)
+                            {
+                                editingCell.IsValid = false;
+                                editingCell.UpdatePseudoClasses();
+                            }
 
-                //if (_bindingValidationResults.Count > 0)
-                //{
-                //    ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false, forceHorizontalScroll: true);
-                //    return false;
-                //}
+                            if (EditingRow.IsValid)
+                            {
+                                EditingRow.IsValid = false;
+                                EditingRow.UpdatePseudoClasses();
+                            }
+                        }
+
+                        if(editingElement != null)
+                        {
+                            var errorList = 
+                                binding.ValidationErrors
+                                       .SelectMany(ex => ValidationUtil.UnpackException(ex))
+                                       .ToList();
+
+                            DataValidationErrors.SetErrors(editingElement, errorList);
+                        }
+                    }
+                }
+
+                var editBinding = CurrentColumn?.CellEditBinding;
+                if(editBinding != null && !editBinding.CommitEdit())
+                {
+                    SetValidationStatus(editBinding);
+                    _validationSubscription?.Dispose();
+                    _validationSubscription = editBinding.ValidationChanged.Subscribe(v => SetValidationStatus(editBinding));
+
+                    ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false, forceHorizontalScroll: true);
+                    return false;
+                }
+                else
+                {
+                    // Re-validate
+                    //ValidateEditingRow(scrollIntoView: true, wireEvents: false);
+
+                    //if (_bindingValidationResults.Count > 0)
+                    //{
+                    //    return false;
+                    //}
+                }
             }
+
+            ResetValidationStatus();
 
             if (exitEditingMode)
             {
@@ -4127,7 +4183,7 @@ namespace Avalonia.Controls
                     return false;
                 }
             }
-            //ResetValidationStatus();
+            ResetValidationStatus();
 
             // Update the previously edited row's state
             if (exitEditingMode && editingRow == EditingRow)
@@ -5911,7 +5967,6 @@ namespace Avalonia.Controls
         /// Occurs when the DataGridRowGroupHeader is available for reuse.
         /// </summary>
         public event EventHandler<DataGridRowGroupHeaderEventArgs> UnloadingRowGroup;
-        
 
         // Recursively expands parent RowGroupHeaders from the top down
         private void ExpandRowGroupParentChain(int level, int slot)
@@ -6066,7 +6121,571 @@ namespace Avalonia.Controls
 
         #endregion
 
+        #region Validation
         
+        /// <summary>
+        /// Validates the current editing row and updates the visual states.
+        /// </summary>
+        /// <param name="scrollIntoView">If true, will scroll the editing row into view when a new error is introduced.</param>
+        /// <param name="wireEvents">If true, subscribes to the asynchronous INDEI ErrorsChanged events.</param>
+        /// <returns>True if the editing row is valid, false otherwise.</returns>
+        //TODO Validation
+        /*private bool ValidateEditingRow(bool scrollIntoView, bool wireEvents)
+        {
+            //_propertyValidationResults.Clear();
+            //_indeiValidationResults.Clear();
+
+            if (EditingRow != null)
+            {
+                object dataItem = EditingRow.DataContext;
+                Debug.Assert(dataItem != null);
+
+                // Validate using the Validator.
+                var validationResults = new List<ValidationResult>();
+                var context = new ValidationContext(dataItem);
+                Validator.TryValidateObject(dataItem, context, validationResults, true);
+
+                var validationErrors =
+                    validationResults.Where(r => !r.IsValid())
+                                     .Select(r => (Exception)new ValidationException(r.ErrorMessage))
+                                     .ToList();
+
+                // Add any existing exception errors (in case we're editing a cell).
+                // Note: these errors will only be displayed in the ValidationSummary if the
+                // editing data item implements IDEI or INDEI.
+                foreach (var error in _bindingValidationErrors)
+                {
+                    validationErrors.AddExceptionIfNew(error);
+                    //_propertyValidationResults.Add(validationResult);
+                }
+
+                // IDEI entity validation.
+                //ValidateIdei(dataItem as IDataErrorInfo, null, null, validationResults);
+
+                ValidateIndeiObject(dataItem as INotifyDataErrorInfo, validationErrors);
+
+                // INDEI entity validation.
+                //ValidateIndei(dataItem as INotifyDataErrorInfo, null, null, null, validationResults, wireEvents);
+
+                // IDEI and INDEI property validation.
+                //foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
+                //{
+                //    foreach (string bindingPath in column.BindingPaths)
+                //    {
+                //        string declaringPath = null;
+                //        object declaringItem = dataItem;
+                //        string bindingProperty = bindingPath;
+
+                //        // Check for nested paths.
+                //        int lastIndexOfSeparator = bindingPath.LastIndexOfAny(new char[] { TypeHelper.PropertyNameSeparator, TypeHelper.LeftIndexerToken });
+                //        if (lastIndexOfSeparator >= 0)
+                //        {
+                //            declaringPath = bindingPath.Substring(0, lastIndexOfSeparator);
+                //            declaringItem = TypeHelper.GetNestedPropertyValue(dataItem, declaringPath);
+                //            if (bindingProperty[lastIndexOfSeparator] == TypeHelper.LeftIndexerToken)
+                //            {
+                //                bindingProperty = TypeHelper.PrependDefaultMemberName(declaringItem, bindingPath.Substring(lastIndexOfSeparator));
+                //            }
+                //            else
+                //            {
+                //                bindingProperty = bindingPath.Substring(lastIndexOfSeparator + 1);
+                //            }
+                //        }
+
+                //        // IDEI property validation.
+                //        ValidateIdei(declaringItem as IDataErrorInfo, bindingProperty, bindingPath, validationResults);
+
+                //        // INDEI property validation.
+                //        ValidateIndei(declaringItem as INotifyDataErrorInfo, bindingProperty, bindingPath, declaringPath, validationResults, wireEvents);
+                //    }
+                //}
+
+                // Merge the new validation results with the existing ones.
+                UpdateValidationResults(validationErrors, scrollIntoView);
+
+                // Return false if there are validation errors.
+                if (!IsValid)
+                {
+                    return false;
+                }
+            }
+
+            // Return true if there are no errors or there is no editing row.
+            ResetValidationStatus();
+            return true;
+        }*/
+
+        /// <summary>
+        /// Updates the DataGrid's validation results, modifies the ValidationSummary's items,
+        /// and sets the IsValid states of the UIElements.
+        /// </summary>
+        /// <param name="newValidationResults">New validation results.</param>
+        /// <param name="scrollIntoView">If the validation results have changed, scrolls the editing row into view.</param>
+        //TODO Validation
+        /*private void UpdateValidationResults(List<Exception> newValidationErrors, bool scrollIntoView)
+        {
+            bool validationResultsChanged = false;
+            Debug.Assert(EditingRow != null);
+
+            // Remove the validation results that have been fixed
+            List<ValidationResult> removedValidationResults = new List<ValidationResult>();
+            foreach (ValidationResult oldValidationResult in _validationResults)
+            {
+                if (oldValidationResult != null && !newValidationResults.ContainsEqualValidationResult(oldValidationResult))
+                {
+                    removedValidationResults.Add(oldValidationResult);
+                    validationResultsChanged = true;
+                }
+            }
+            foreach (ValidationResult removedValidationResult in removedValidationResults)
+            {
+                _validationResults.Remove(removedValidationResult);
+                if (_validationSummary != null)
+                {
+                    ValidationSummaryItem removedValidationSummaryItem = FindValidationSummaryItem(removedValidationResult);
+                    if (removedValidationSummaryItem != null)
+                    {
+                        _validationSummary.Errors.Remove(removedValidationSummaryItem);
+                    }
+                }
+            }
+
+            // Add any validation results that were just introduced
+            foreach (ValidationResult newValidationResult in newValidationResults)
+            {
+                if (newValidationResult != null && !_validationResults.ContainsEqualValidationResult(newValidationResult))
+                {
+                    _validationResults.Add(newValidationResult);
+                    if (_validationSummary != null && ShouldDisplayValidationResult(newValidationResult))
+                    {
+                        ValidationSummaryItem newValidationSummaryItem = CreateValidationSummaryItem(newValidationResult);
+                        if (newValidationSummaryItem != null)
+                        {
+                            _validationSummary.Errors.Add(newValidationSummaryItem);
+                        }
+                    }
+                    validationResultsChanged = true;
+                }
+            }
+
+            if (validationResultsChanged)
+            {
+                UpdateValidationStatus();
+            }
+            if (!IsValid && scrollIntoView)
+            {
+                // Scroll the row with the error into view.
+                int editingRowSlot = EditingRow.Slot;
+                if (_validationSummary != null)
+                {
+                    // If the number of errors has changed, then the ValidationSummary will be a different size,
+                    // and we need to delay our call to ScrollSlotIntoView
+                    InvalidateMeasure();
+                    Dispatcher.BeginInvoke(delegate
+                    {
+                        // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
+                        // so we need to ensure that the editing row still exists before scrolling it into view
+                        if (!IsSlotOutOfBounds(editingRowSlot))
+                        {
+                            ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
+                        }
+                    });
+                }
+                else
+                {
+                    ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
+                }
+            }
+        }*/
+
+        //TODO Validation UI
+        private void ResetValidationStatus()
+        {
+            // Clear the invalid status of the Cell, Row and DataGrid
+            if (EditingRow != null)
+            {
+                EditingRow.IsValid = true;
+                if (EditingRow.Index != -1)
+                {
+                    foreach (DataGridCell cell in EditingRow.Cells)
+                    {
+                        if (!cell.IsValid)
+                        {
+                            cell.IsValid = true;
+                            cell.UpdatePseudoClasses();
+                        }
+                    }
+                    EditingRow.UpdatePseudoClasses();
+                }
+            }
+            IsValid = true;
+
+            // Clear the previous validation results
+            //_validationErrors.Clear();
+            _validationSubscription?.Dispose();
+            _validationSubscription = null;
+
+            //_validationResults.Clear();
+
+            // Hide the error list if validation succeeded
+            //if (_validationSummary != null && _validationSummary.Errors.Count > 0)
+            //{
+            //    _validationSummary.Errors.Clear();
+            //    if (EditingRow != null)
+            //    {
+            //        int editingRowSlot = EditingRow.Slot;
+
+            //        InvalidateMeasure();
+            //        Dispatcher.BeginInvoke(delegate
+            //        {
+            //            // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
+            //            // so we need to ensure that the editing row still exists before scrolling it into view
+            //            if (!IsSlotOutOfBounds(editingRowSlot))
+            //            {
+            //                ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
+            //            }
+            //        });
+            //    }
+            //}
+        }
+
+        /// <summary>
+        /// Updates the IsValid states of the DataGrid, the EditingRow and its cells. All cells related to
+        /// property-level errors are set to Invalid.  If there is an object-level error selected in the
+        /// ValidationSummary, then its associated cells will also be flagged (if there are any).
+        /// </summary>
+        /*private void UpdateValidationStatus()
+        {
+            if (EditingRow != null)
+            {
+                foreach (DataGridCell cell in EditingRow.Cells)
+                {
+                    bool isCellValid = true;
+
+                    Debug.Assert(cell.OwningColumn != null);
+                    if (!cell.OwningColumn.IsReadOnly)
+                    {
+                        foreach (ValidationResult validationResult in _validationResults)
+                        {
+                            if (_propertyValidationResults.ContainsEqualValidationResult(validationResult) ||
+                                _selectedValidationSummaryItem != null && _selectedValidationSummaryItem.Context == validationResult)
+                            {
+                                foreach (string bindingPath in validationResult.MemberNames)
+                                {
+                                    if (cell.OwningColumn.BindingPaths.Contains(bindingPath))
+                                    {
+                                        isCellValid = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (cell.IsValid != isCellValid)
+                    {
+                        cell.IsValid = isCellValid;
+                        cell.UpdatePseudoClasses();
+                    }
+                }
+                bool isRowValid = _validationResults.Count == 0;
+                if (EditingRow.IsValid != isRowValid)
+                {
+                    EditingRow.IsValid = isRowValid;
+                    EditingRow.UpdatePseudoClasses();
+                }
+                IsValid = isRowValid;
+            }
+            else
+            {
+                IsValid = true;
+            }
+
+        } */
+
+        /* private void EditingElement_BindingValidationError(object sender, ValidationErrorEventArgs e)
+        {
+            if (e.Action == ValidationErrorEventAction.Added && e.Error.Exception != null && e.Error.ErrorContent != null)
+            {
+                ValidationResult validationResult = new ValidationResult(e.Error.ErrorContent.ToString(), new List<string>() { _updateSourcePath });
+                _bindingValidationResults.AddIfNew(validationResult);
+            }
+        } */
+
+        /// <summary>
+        /// Determines whether or not a specific validation result should be displayed in the ValidationSummary.
+        /// </summary>
+        /// <param name="validationResult">Validation result to display.</param>
+        /// <returns>True if it should be added to the ValidationSummary, false otherwise.</returns>
+        /*private bool ShouldDisplayValidationResult(ValidationResult validationResult)
+        {
+            if (EditingRow != null)
+            {
+                return !_bindingValidationResults.ContainsEqualValidationResult(validationResult) ||
+                    EditingRow.DataContext is IDataErrorInfo || EditingRow.DataContext is INotifyDataErrorInfo;
+            }
+            return false;
+        } */
+
+        /// <summary>
+        /// Handles the asynchronous INDEI errors that occur while the DataGrid is in editing mode.
+        /// </summary>
+        /// <param name="sender">INDEI item whose errors changed.</param>
+        /// <param name="e">Error event arguments.</param>
+        /*private void ValidationItem_ErrorsChanged(object sender, DataErrorsChangedEventArgs e)
+        {
+            INotifyDataErrorInfo indei = sender as INotifyDataErrorInfo;
+            if (_validationItems.ContainsKey(indei))
+            {
+                Debug.Assert(EditingRow != null);
+
+                // Determine the binding path.
+                string bindingPath = _validationItems[indei];
+                if (string.IsNullOrEmpty(bindingPath))
+                {
+                    bindingPath = e.PropertyName;
+                }
+                else if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.IndexOf(TypeHelper.LeftIndexerToken) >= 0)
+                {
+                    bindingPath += TypeHelper.RemoveDefaultMemberName(e.PropertyName);
+                }
+                else
+                {
+                    bindingPath += TypeHelper.PropertyNameSeparator + e.PropertyName;
+                }
+
+                // Remove the old errors.
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                foreach (ValidationResult validationResult in _validationResults)
+                {
+                    ValidationResult oldValidationResult = _indeiValidationResults.FindEqualValidationResult(validationResult);
+                    if (oldValidationResult != null && oldValidationResult.ContainsMemberName(bindingPath))
+                    {
+                        _indeiValidationResults.Remove(oldValidationResult);
+                    }
+                    else
+                    {
+                        validationResults.Add(validationResult);
+                    }
+                }
+
+                // Find any new errors and update the visuals.
+                //TODO: Validation ParameterNames
+                ValidateIndei(indei, e.PropertyName, bindingPath, null, validationResults, false);
+                //TODO: Validation ParameterNames
+                UpdateValidationResults(validationResults, false);
+
+                // If we're valid now then reset our status.
+                if (IsValid)
+                {
+                    ResetValidationStatus();
+                }
+            }
+            else if (indei != null)
+            {
+                indei.ErrorsChanged -= new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
+            }
+        }*/
+
+        /*private void ValidateIndeiObject(INotifyDataErrorInfo indei, List<Exception> validationErrors)
+        {
+            if(indei != null && indei.HasErrors)
+            {
+                IEnumerable errors = null;
+                ValidationUtil.CatchNonCriticalExceptions(() => { errors = indei.GetErrors(null); });
+                foreach (var error in errors)
+                {
+                    string errorString = null;
+                    ValidationUtil.CatchNonCriticalExceptions(() => { errorString = error.ToString(); });
+                    if(!String.IsNullOrWhiteSpace(errorString))
+                    {
+                        var ex = new ValidationException(errorString);
+                        validationErrors.AddExceptionIfNew(ex);
+                    }
+                }
+            }
+        }*/
+
+        /// <summary>
+        /// Checks an INDEI data object for errors on the specified path. New errors are added to the
+        /// list of validation results.
+        /// </summary>
+        /// <param name="indei">INDEI object to validate.</param>
+        /// <param name="bindingProperty">Name of the property to validate.</param>
+        /// <param name="bindingPath">Path of the binding.</param>
+        /// <param name="declaringPath">Path of the INDEI object.</param>
+        /// <param name="validationResults">List of results to add to.</param>
+        /// <param name="wireEvents">True if the ErrorsChanged event should be subscribed to.</param>
+        /*private void ValidateIndei(INotifyDataErrorInfo indei, string bindingProperty, string bindingPath, string declaringPath, List<ValidationResult> validationResults, bool wireEvents)
+        {
+            if (indei != null)
+            {
+                if (indei.HasErrors)
+                {
+                    IEnumerable errors = null;
+                    ValidationUtil.CatchNonCriticalExceptions(() => { errors = indei.GetErrors(bindingProperty); });
+                    if (errors != null)
+                    {
+                        foreach (object errorItem in errors)
+                        {
+                            if (errorItem != null)
+                            {
+                                string errorString = null;
+                                ValidationUtil.CatchNonCriticalExceptions(() => { errorString = errorItem.ToString(); });
+                                if (!string.IsNullOrEmpty(errorString))
+                                {
+                                    ValidationResult validationResult;
+                                    if (!string.IsNullOrEmpty(bindingProperty))
+                                    {
+                                        validationResult = new ValidationResult(errorString, new List<string>() { bindingPath });
+                                        _propertyValidationResults.Add(validationResult);
+                                    }
+                                    else
+                                    {
+                                        Debug.Assert(string.IsNullOrEmpty(bindingPath));
+                                        validationResult = new ValidationResult(errorString);
+                                    }
+                                    validationResults.AddIfNew(validationResult);
+                                    _indeiValidationResults.AddIfNew(validationResult);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (wireEvents)
+                {
+                    indei.ErrorsChanged += new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
+                    if (!_validationItems.ContainsKey(indei))
+                    {
+                        _validationItems.Add(indei, declaringPath);
+                    }
+                }
+            }
+        }*/
+
+        #region Old Validation UI
+
+
+        /// <summary>
+        /// Create an ValidationSummaryItem for a given ValidationResult, by finding all cells related to the
+        /// validation error and adding them as separate ValidationSummaryItemSources.
+        /// </summary>
+        /// <param name="validationResult">ValidationResult</param>
+        /// <returns>ValidationSummaryItem</returns>
+        /*private ValidationSummaryItem CreateValidationSummaryItem(ValidationResult validationResult)
+        {
+            Debug.Assert(validationResult != null);
+            Debug.Assert(_validationSummary != null);
+            Debug.Assert(EditingRow != null);
+
+            ValidationSummaryItem validationSummaryItem = new ValidationSummaryItem(validationResult.ErrorMessage);
+            validationSummaryItem.Context = validationResult;
+
+            string messageHeader = null;
+            foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
+            {
+                foreach (string property in validationResult.MemberNames)
+                {
+                    if (!string.IsNullOrEmpty(property) && column.BindingPaths.Contains(property))
+                    {
+                        validationSummaryItem.Sources.Add(new ValidationSummaryItemSource(property, EditingRow.Cells[column.Index]));
+                        if (string.IsNullOrEmpty(messageHeader) && column.Header != null)
+                        {
+                            messageHeader = column.Header.ToString();
+                        }
+                    }
+                }
+            }
+
+            Debug.Assert(validationSummaryItem.ItemType == ValidationSummaryItemType.ObjectError);
+            if (_propertyValidationResults.ContainsEqualValidationResult(validationResult))
+            {
+                validationSummaryItem.MessageHeader = messageHeader;
+                validationSummaryItem.ItemType = ValidationSummaryItemType.PropertyError;
+            }
+
+            return validationSummaryItem;
+        } */
+
+        /// <summary>
+        /// Handles the ValidationSummary's FocusingInvalidControl event and begins edit on the cells
+        /// that are associated with the selected error.
+        /// </summary>
+        /// <param name="sender">ValidationSummary</param>
+        /// <param name="e">FocusingInvalidControlEventArgs</param>
+        /*private void ValidationSummary_FocusingInvalidControl(object sender, FocusingInvalidControlEventArgs e)
+        {
+            Debug.Assert(_validationSummary != null);
+            if (EditingRow == null || !ScrollSlotIntoView(EditingRow.Slot, scrolledHorizontally: false))
+            {
+                return;
+            }
+
+            // We need to focus the DataGrid in case the focused element gets removed when we end edit.
+            if ((_editingColumnIndex == -1 || (Focus() && EndCellEdit(DataGridEditAction.Commit, true, true, true)))
+                && e.Item != null && e.Target != null && _validationSummary.Errors.Contains(e.Item))
+            {
+                DataGridCell cell = e.Target.Control as DataGridCell;
+                if (cell != null && cell.OwningGrid == this && cell.OwningColumn != null && cell.OwningColumn.IsVisible)
+                {
+                    Debug.Assert(cell.ColumnIndex >= 0 && cell.ColumnIndex < ColumnsInternal.Count);
+
+                    // Begin editing the next relevant cell
+                    UpdateSelectionAndCurrency(cell.ColumnIndex, EditingRow.Slot, DataGridSelectionAction.None, scrollIntoView: true);
+                    if (_successfullyUpdatedSelection)
+                    {
+                        BeginCellEdit(new RoutedEventArgs());
+                        if (!IsColumnDisplayed(CurrentColumnIndex))
+                        {
+                            ScrollColumnIntoView(CurrentColumnIndex);
+                        }
+                    }
+                }
+                e.Handled = true;
+            }
+        } */
+
+        /// <summary>
+        /// Handles the ValidationSummary's SelectionChanged event and changes which cells are displayed as invalid.
+        /// </summary>
+        /// <param name="sender">ValidationSummary</param>
+        /// <param name="e">SelectionChangedEventArgs</param>
+        /*private void ValidationSummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // ValidationSummary only supports single-selection mode.
+            if (e.AddedItems.Count == 1)
+            {
+                _selectedValidationSummaryItem = e.AddedItems[0] as ValidationSummaryItem;
+            }
+
+            UpdateValidationStatus();
+        } */
+
+        /// <summary>
+        /// Searches through the DataGrid's ValidationSummary for any errors that use the given
+        /// ValidationResult as the ValidationSummaryItem's Context value.
+        /// </summary>
+        /// <param name="context">ValidationResult</param>
+        /// <returns>ValidationSummaryItem or null if not found</returns>
+        /*private ValidationSummaryItem FindValidationSummaryItem(ValidationResult context)
+        {
+            Debug.Assert(context != null);
+            Debug.Assert(_validationSummary != null);
+            foreach (ValidationSummaryItem ValidationSummaryItem in _validationSummary.Errors)
+            {
+                if (context.Equals(ValidationSummaryItem.Context))
+                {
+                    return ValidationSummaryItem;
+                }
+            }
+            return null;
+        } */
+
+        #endregion
+
+
+        #endregion
+
+
         /// <summary>
         /// Raises the AutoGeneratingColumn event.
         /// </summary>
@@ -6115,563 +6734,6 @@ namespace Avalonia.Controls
     #endregion
 
     #region Validation
-
-    //TODO Validation
-    /// <summary>
-    /// Create an ValidationSummaryItem for a given ValidationResult, by finding all cells related to the
-    /// validation error and adding them as separate ValidationSummaryItemSources.
-    /// </summary>
-    /// <param name="validationResult">ValidationResult</param>
-    /// <returns>ValidationSummaryItem</returns>
-    /*private ValidationSummaryItem CreateValidationSummaryItem(ValidationResult validationResult)
-    {
-        Debug.Assert(validationResult != null);
-        Debug.Assert(_validationSummary != null);
-        Debug.Assert(EditingRow != null);
-
-        ValidationSummaryItem validationSummaryItem = new ValidationSummaryItem(validationResult.ErrorMessage);
-        validationSummaryItem.Context = validationResult;
-
-        string messageHeader = null;
-        foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
-        {
-            foreach (string property in validationResult.MemberNames)
-            {
-                if (!string.IsNullOrEmpty(property) && column.BindingPaths.Contains(property))
-                {
-                    validationSummaryItem.Sources.Add(new ValidationSummaryItemSource(property, EditingRow.Cells[column.Index]));
-                    if (string.IsNullOrEmpty(messageHeader) && column.Header != null)
-                    {
-                        messageHeader = column.Header.ToString();
-                    }
-                }
-            }
-        }
-
-        Debug.Assert(validationSummaryItem.ItemType == ValidationSummaryItemType.ObjectError);
-        if (_propertyValidationResults.ContainsEqualValidationResult(validationResult))
-        {
-            validationSummaryItem.MessageHeader = messageHeader;
-            validationSummaryItem.ItemType = ValidationSummaryItemType.PropertyError;
-        }
-
-        return validationSummaryItem;
-    } */
-
-    /// <summary>
-    /// Handles the ValidationSummary's FocusingInvalidControl event and begins edit on the cells
-    /// that are associated with the selected error.
-    /// </summary>
-    /// <param name="sender">ValidationSummary</param>
-    /// <param name="e">FocusingInvalidControlEventArgs</param>
-    /*private void ValidationSummary_FocusingInvalidControl(object sender, FocusingInvalidControlEventArgs e)
-    {
-        Debug.Assert(_validationSummary != null);
-        if (EditingRow == null || !ScrollSlotIntoView(EditingRow.Slot, scrolledHorizontally: false))
-        {
-            return;
-        }
-
-        // We need to focus the DataGrid in case the focused element gets removed when we end edit.
-        if ((_editingColumnIndex == -1 || (Focus() && EndCellEdit(DataGridEditAction.Commit, true, true, true)))
-            && e.Item != null && e.Target != null && _validationSummary.Errors.Contains(e.Item))
-        {
-            DataGridCell cell = e.Target.Control as DataGridCell;
-            if (cell != null && cell.OwningGrid == this && cell.OwningColumn != null && cell.OwningColumn.IsVisible)
-            {
-                Debug.Assert(cell.ColumnIndex >= 0 && cell.ColumnIndex < ColumnsInternal.Count);
-
-                // Begin editing the next relevant cell
-                UpdateSelectionAndCurrency(cell.ColumnIndex, EditingRow.Slot, DataGridSelectionAction.None, scrollIntoView: true);
-                if (_successfullyUpdatedSelection)
-                {
-                    BeginCellEdit(new RoutedEventArgs());
-                    if (!IsColumnDisplayed(CurrentColumnIndex))
-                    {
-                        ScrollColumnIntoView(CurrentColumnIndex);
-                    }
-                }
-            }
-            e.Handled = true;
-        }
-    } */
-
-    /// <summary>
-    /// Handles the ValidationSummary's SelectionChanged event and changes which cells are displayed as invalid.
-    /// </summary>
-    /// <param name="sender">ValidationSummary</param>
-    /// <param name="e">SelectionChangedEventArgs</param>
-    /*private void ValidationSummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        // ValidationSummary only supports single-selection mode.
-        if (e.AddedItems.Count == 1)
-        {
-            _selectedValidationSummaryItem = e.AddedItems[0] as ValidationSummaryItem;
-        }
-
-        UpdateValidationStatus();
-    } */
-
-    /// <summary>
-    /// Searches through the DataGrid's ValidationSummary for any errors that use the given
-    /// ValidationResult as the ValidationSummaryItem's Context value.
-    /// </summary>
-    /// <param name="context">ValidationResult</param>
-    /// <returns>ValidationSummaryItem or null if not found</returns>
-    /*private ValidationSummaryItem FindValidationSummaryItem(ValidationResult context)
-    {
-        Debug.Assert(context != null);
-        Debug.Assert(_validationSummary != null);
-        foreach (ValidationSummaryItem ValidationSummaryItem in _validationSummary.Errors)
-        {
-            if (context.Equals(ValidationSummaryItem.Context))
-            {
-                return ValidationSummaryItem;
-            }
-        }
-        return null;
-    } */
-
-    /* private void EditingElement_BindingValidationError(object sender, ValidationErrorEventArgs e)
-    {
-        if (e.Action == ValidationErrorEventAction.Added && e.Error.Exception != null && e.Error.ErrorContent != null)
-        {
-            ValidationResult validationResult = new ValidationResult(e.Error.ErrorContent.ToString(), new List<string>() { _updateSourcePath });
-            _bindingValidationResults.AddIfNew(validationResult);
-        }
-    } */
-
-    /*private void ResetValidationStatus()
-    {
-        // Clear the invalid status of the Cell, Row and DataGrid
-        if (EditingRow != null)
-        {
-            EditingRow.IsValid = true;
-            if (EditingRow.Index != -1)
-            {
-                foreach (DataGridCell cell in EditingRow.Cells)
-                {
-                    if (!cell.IsValid)
-                    {
-                        cell.IsValid = true;
-                        cell.ApplyCellState(true);
-                    }
-                }
-                EditingRow.ApplyState(true);
-            }
-        }
-        IsValid = true;
-
-        // Clear the previous validation results
-        _validationResults.Clear();
-
-        // Hide the error list if validation succeeded
-        if (_validationSummary != null && _validationSummary.Errors.Count > 0)
-        {
-            _validationSummary.Errors.Clear();
-            if (EditingRow != null)
-            {
-                int editingRowSlot = EditingRow.Slot;
-
-                InvalidateMeasure();
-                Dispatcher.BeginInvoke(delegate
-                {
-                    // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
-                    // so we need to ensure that the editing row still exists before scrolling it into view
-                    if (!IsSlotOutOfBounds(editingRowSlot))
-                    {
-                        ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-                    }
-                });
-            }
-        }
-    } */
-
-    /// <summary>
-    /// Determines whether or not a specific validation result should be displayed in the ValidationSummary.
-    /// </summary>
-    /// <param name="validationResult">Validation result to display.</param>
-    /// <returns>True if it should be added to the ValidationSummary, false otherwise.</returns>
-    /*private bool ShouldDisplayValidationResult(ValidationResult validationResult)
-    {
-        if (EditingRow != null)
-        {
-            return !_bindingValidationResults.ContainsEqualValidationResult(validationResult) ||
-                EditingRow.DataContext is IDataErrorInfo || EditingRow.DataContext is INotifyDataErrorInfo;
-        }
-        return false;
-    } */
-
-    /// <summary>
-    /// Updates the DataGrid's validation results, modifies the ValidationSummary's items,
-    /// and sets the IsValid states of the UIElements.
-    /// </summary>
-    /// <param name="newValidationResults">New validation results.</param>
-    /// <param name="scrollIntoView">If the validation results have changed, scrolls the editing row into view.</param>
-    /*private void UpdateValidationResults(List<ValidationResult> newValidationResults, bool scrollIntoView)
-    {
-        bool validationResultsChanged = false;
-        Debug.Assert(EditingRow != null);
-
-        // Remove the validation results that have been fixed
-        List<ValidationResult> removedValidationResults = new List<ValidationResult>();
-        foreach (ValidationResult oldValidationResult in _validationResults)
-        {
-            if (oldValidationResult != null && !newValidationResults.ContainsEqualValidationResult(oldValidationResult))
-            {
-                removedValidationResults.Add(oldValidationResult);
-                validationResultsChanged = true;
-            }
-        }
-        foreach (ValidationResult removedValidationResult in removedValidationResults)
-        {
-            _validationResults.Remove(removedValidationResult);
-            if (_validationSummary != null)
-            {
-                ValidationSummaryItem removedValidationSummaryItem = FindValidationSummaryItem(removedValidationResult);
-                if (removedValidationSummaryItem != null)
-                {
-                    _validationSummary.Errors.Remove(removedValidationSummaryItem);
-                }
-            }
-        }
-
-        // Add any validation results that were just introduced
-        foreach (ValidationResult newValidationResult in newValidationResults)
-        {
-            if (newValidationResult != null && !_validationResults.ContainsEqualValidationResult(newValidationResult))
-            {
-                _validationResults.Add(newValidationResult);
-                if (_validationSummary != null && ShouldDisplayValidationResult(newValidationResult))
-                {
-                    ValidationSummaryItem newValidationSummaryItem = CreateValidationSummaryItem(newValidationResult);
-                    if (newValidationSummaryItem != null)
-                    {
-                        _validationSummary.Errors.Add(newValidationSummaryItem);
-                    }
-                }
-                validationResultsChanged = true;
-            }
-        }
-
-        if (validationResultsChanged)
-        {
-            UpdateValidationStatus();
-        }
-        if (!IsValid && scrollIntoView)
-        {
-            // Scroll the row with the error into view.
-            int editingRowSlot = EditingRow.Slot;
-            if (_validationSummary != null)
-            {
-                // If the number of errors has changed, then the ValidationSummary will be a different size,
-                // and we need to delay our call to ScrollSlotIntoView
-                InvalidateMeasure();
-                Dispatcher.BeginInvoke(delegate
-                {
-                    // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
-                    // so we need to ensure that the editing row still exists before scrolling it into view
-                    if (!IsSlotOutOfBounds(editingRowSlot))
-                    {
-                        ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-                    }
-                });
-            }
-            else
-            {
-                ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-            }
-        }
-    } */
-
-    /// <summary>
-    /// Updates the IsValid states of the DataGrid, the EditingRow and its cells. All cells related to
-    /// property-level errors are set to Invalid.  If there is an object-level error selected in the
-    /// ValidationSummary, then its associated cells will also be flagged (if there are any).
-    /// </summary>
-    /*private void UpdateValidationStatus()
-    {
-        if (EditingRow != null)
-        {
-            foreach (DataGridCell cell in EditingRow.Cells)
-            {
-                bool isCellValid = true;
-
-                Debug.Assert(cell.OwningColumn != null);
-                if (!cell.OwningColumn.IsReadOnly)
-                {
-                    foreach (ValidationResult validationResult in _validationResults)
-                    {
-                        if (_propertyValidationResults.ContainsEqualValidationResult(validationResult) ||
-                            _selectedValidationSummaryItem != null && _selectedValidationSummaryItem.Context == validationResult)
-                        {
-                            foreach (string bindingPath in validationResult.MemberNames)
-                            {
-                                if (cell.OwningColumn.BindingPaths.Contains(bindingPath))
-                                {
-                                    isCellValid = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (cell.IsValid != isCellValid)
-                {
-                    cell.IsValid = isCellValid;
-                    cell.UpdatePseudoClasses();
-                }
-            }
-            bool isRowValid = _validationResults.Count == 0;
-            if (EditingRow.IsValid != isRowValid)
-            {
-                EditingRow.IsValid = isRowValid;
-                EditingRow.UpdatePseudoClasses();
-            }
-            IsValid = isRowValid;
-        }
-        else
-        {
-            IsValid = true;
-        }
-
-    } */
-
-    /// <summary>
-    /// Handles the asynchronous INDEI errors that occur while the DataGrid is in editing mode.
-    /// </summary>
-    /// <param name="sender">INDEI item whose errors changed.</param>
-    /// <param name="e">Error event arguments.</param>
-    /*private void ValidationItem_ErrorsChanged(object sender, DataErrorsChangedEventArgs e)
-    {
-        INotifyDataErrorInfo indei = sender as INotifyDataErrorInfo;
-        if (_validationItems.ContainsKey(indei))
-        {
-            Debug.Assert(EditingRow != null);
-
-            // Determine the binding path.
-            string bindingPath = _validationItems[indei];
-            if (string.IsNullOrEmpty(bindingPath))
-            {
-                bindingPath = e.PropertyName;
-            }
-            else if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.IndexOf(TypeHelper.LeftIndexerToken) >= 0)
-            {
-                bindingPath += TypeHelper.RemoveDefaultMemberName(e.PropertyName);
-            }
-            else
-            {
-                bindingPath += TypeHelper.PropertyNameSeparator + e.PropertyName;
-            }
-
-            // Remove the old errors.
-            List<ValidationResult> validationResults = new List<ValidationResult>();
-            foreach (ValidationResult validationResult in _validationResults)
-            {
-                ValidationResult oldValidationResult = _indeiValidationResults.FindEqualValidationResult(validationResult);
-                if (oldValidationResult != null && oldValidationResult.ContainsMemberName(bindingPath))
-                {
-                    _indeiValidationResults.Remove(oldValidationResult);
-                }
-                else
-                {
-                    validationResults.Add(validationResult);
-                }
-            }
-
-            // Find any new errors and update the visuals.
-            //TODO: Validation ParameterNames
-            ValidateIndei(indei, e.PropertyName, bindingPath, null, validationResults, false);
-            //TODO: Validation ParameterNames
-            UpdateValidationResults(validationResults, false);
-
-            // If we're valid now then reset our status.
-            if (IsValid)
-            {
-                ResetValidationStatus();
-            }
-        }
-        else if (indei != null)
-        {
-            indei.ErrorsChanged -= new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
-        }
-    } */
-
-    /// <summary>
-    /// Validates the current editing row and updates the visual states.
-    /// </summary>
-    /// <param name="scrollIntoView">If true, will scroll the editing row into view when a new error is introduced.</param>
-    /// <param name="wireEvents">If true, subscribes to the asynchronous INDEI ErrorsChanged events.</param>
-    /// <returns>True if the editing row is valid, false otherwise.</returns>
-    /*private bool ValidateEditingRow(bool scrollIntoView, bool wireEvents)
-    {
-        _propertyValidationResults.Clear();
-        _indeiValidationResults.Clear();
-
-        if (EditingRow != null)
-        {
-            Object dataItem = EditingRow.DataContext;
-            Debug.Assert(dataItem != null);
-
-            // Validate using the Validator.
-            List<ValidationResult> validationResults = new List<ValidationResult>();
-            ValidationContext context = new ValidationContext(dataItem, null, null);
-            Validator.TryValidateObject(dataItem, context, validationResults, true);
-
-            // Add any existing exception errors (in case we're editing a cell).
-            // Note: these errors will only be displayed in the ValidationSummary if the
-            // editing data item implements IDEI or INDEI.
-            foreach (ValidationResult validationResult in _bindingValidationResults)
-            {
-                validationResults.AddIfNew(validationResult);
-                _propertyValidationResults.Add(validationResult);
-            }
-
-            // IDEI entity validation.
-            ValidateIdei(dataItem as IDataErrorInfo, null, null, validationResults);
-
-            // INDEI entity validation.
-            ValidateIndei(dataItem as INotifyDataErrorInfo, null, null, null, validationResults, wireEvents);
-
-            // IDEI and INDEI property validation.
-            foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
-            {
-                foreach (string bindingPath in column.BindingPaths)
-                {
-                    string declaringPath = null;
-                    object declaringItem = dataItem;
-                    string bindingProperty = bindingPath;
-
-                    // Check for nested paths.
-                    int lastIndexOfSeparator = bindingPath.LastIndexOfAny(new char[] { TypeHelper.PropertyNameSeparator, TypeHelper.LeftIndexerToken });
-                    if (lastIndexOfSeparator >= 0)
-                    {
-                        declaringPath = bindingPath.Substring(0, lastIndexOfSeparator);
-                        declaringItem = TypeHelper.GetNestedPropertyValue(dataItem, declaringPath);
-                        if (bindingProperty[lastIndexOfSeparator] == TypeHelper.LeftIndexerToken)
-                        {
-                            bindingProperty = TypeHelper.PrependDefaultMemberName(declaringItem, bindingPath.Substring(lastIndexOfSeparator));
-                        }
-                        else
-                        {
-                            bindingProperty = bindingPath.Substring(lastIndexOfSeparator + 1);
-                        }
-                    }
-
-                    // IDEI property validation.
-                    ValidateIdei(declaringItem as IDataErrorInfo, bindingProperty, bindingPath, validationResults);
-
-                    // INDEI property validation.
-                    ValidateIndei(declaringItem as INotifyDataErrorInfo, bindingProperty, bindingPath, declaringPath, validationResults, wireEvents);
-                }
-            }
-
-            // Merge the new validation results with the existing ones.
-            UpdateValidationResults(validationResults, scrollIntoView);
-
-            // Return false if there are validation errors.
-            if (!IsValid)
-            {
-                return false;
-            }
-        }
-
-        // Return true if there are no errors or there is no editing row.
-        ResetValidationStatus();
-        return true;
-    } */
-
-    /// <summary>
-    /// Checks an IDEI data object for errors for the specified property. New errors are added to the
-    /// list of validation results.
-    /// </summary>
-    /// <param name="idei">IDEI object to validate.</param>
-    /// <param name="bindingProperty">Name of the property to validate.</param>
-    /// <param name="bindingPath">Path of the binding.</param>
-    /// <param name="validationResults">List of results to add to.</param>
-    /*private void ValidateIdei(IDataErrorInfo idei, string bindingProperty, string bindingPath, List<ValidationResult> validationResults)
-    {
-        if (idei != null)
-        {
-            string errorString = null;
-            if (string.IsNullOrEmpty(bindingProperty))
-            {
-                Debug.Assert(string.IsNullOrEmpty(bindingPath));
-                ValidationUtil.CatchNonCriticalExceptions(() => { errorString = idei.Error; });
-                if (!string.IsNullOrEmpty(errorString))
-                {
-                    validationResults.AddIfNew(new ValidationResult(errorString));
-                }
-            }
-            else
-            {
-                ValidationUtil.CatchNonCriticalExceptions(() => { errorString = idei[bindingProperty]; });
-                if (!string.IsNullOrEmpty(errorString))
-                {
-                    ValidationResult validationResult = new ValidationResult(errorString, new List<string>() { bindingPath });
-                    validationResults.AddIfNew(validationResult);
-                    _propertyValidationResults.Add(validationResult);
-                }
-            }
-        }
-    } */
-
-    /// <summary>
-    /// Checks an INDEI data object for errors on the specified path. New errors are added to the
-    /// list of validation results.
-    /// </summary>
-    /// <param name="indei">INDEI object to validate.</param>
-    /// <param name="bindingProperty">Name of the property to validate.</param>
-    /// <param name="bindingPath">Path of the binding.</param>
-    /// <param name="declaringPath">Path of the INDEI object.</param>
-    /// <param name="validationResults">List of results to add to.</param>
-    /// <param name="wireEvents">True if the ErrorsChanged event should be subscribed to.</param>
-    /*private void ValidateIndei(INotifyDataErrorInfo indei, string bindingProperty, string bindingPath, string declaringPath, List<ValidationResult> validationResults, bool wireEvents)
-    {
-        if (indei != null)
-        {
-            if (indei.HasErrors)
-            {
-                IEnumerable errors = null;
-                ValidationUtil.CatchNonCriticalExceptions(() => { errors = indei.GetErrors(bindingProperty); });
-                if (errors != null)
-                {
-                    foreach (object errorItem in errors)
-                    {
-                        if (errorItem != null)
-                        {
-                            string errorString = null;
-                            ValidationUtil.CatchNonCriticalExceptions(() => { errorString = errorItem.ToString(); });
-                            if (!string.IsNullOrEmpty(errorString))
-                            {
-                                ValidationResult validationResult;
-                                if (!string.IsNullOrEmpty(bindingProperty))
-                                {
-                                    validationResult = new ValidationResult(errorString, new List<string>() { bindingPath });
-                                    _propertyValidationResults.Add(validationResult);
-                                }
-                                else
-                                {
-                                    Debug.Assert(string.IsNullOrEmpty(bindingPath));
-                                    validationResult = new ValidationResult(errorString);
-                                }
-                                validationResults.AddIfNew(validationResult);
-                                _indeiValidationResults.AddIfNew(validationResult);
-                            }
-                        }
-                    }
-                }
-            }
-            if (wireEvents)
-            {
-                indei.ErrorsChanged += new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
-                if (!_validationItems.ContainsKey(indei))
-                {
-                    _validationItems.Add(indei, declaringPath);
-                }
-            }
-        }
-    } */
 
     #endregion
 

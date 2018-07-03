@@ -95,9 +95,11 @@ namespace Avalonia.Controls
         }
 
         //TODO Rename
-        protected sealed override  Control GenerateEditingElement(DataGridCell cell, object dataItem)
+        //TODO Validation
+        protected sealed override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding editBinding)
         {
             Control element = GenerateEditingElementDirect(cell, dataItem);
+            editBinding = null;
 
             if (Binding != null)
             //if (Binding != null || !DesignerProperties.IsInDesignTool)
@@ -105,7 +107,7 @@ namespace Avalonia.Controls
                 //var t1 = Binding.Initiate(textBox, BindingTarget, anchor: null, enableDataValidation: true);
                 //BindingOperations.Apply(textBox, BindingTarget, t1, null);
 
-                BindEditingElement(element, BindingTarget, Binding);
+                editBinding = BindEditingElement(element, BindingTarget, Binding);
                 //element.Bind(BindingTarget, Binding);
                 //textBox.SetBinding(BindingTarget, Binding);
             }
@@ -113,93 +115,27 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private static IDisposable BindEditingElement(IAvaloniaObject target, AvaloniaProperty property, IBinding binding)
+        private static ICellEditBinding BindEditingElement(IAvaloniaObject target, AvaloniaProperty property, IBinding binding)
         {
             var result = binding.Initiate(target, property, enableDataValidation: true);
 
             if (result != null)
             {
-                //if(result.Subject != null)
-                //{
-                //    var watcher = new BindingWatcher(result.Subject, result);
-                //    result = watcher.InstancedBinding;
-                //}
-
-                return BindingOperations.Apply(target, property, result, null);
-            }
-            else
-            {
-                return Disposable.Empty;
-            }
-        }
-
-        public class LightweightSubject<T> : LightweightObservableBase<T>, ISubject<T>
-        {
-            public void OnCompleted()
-            {
-                PublishCompleted();
-            }
-            public void OnError(Exception error)
-            {
-                PublishError(error);
-            }
-            public void OnNext(T value)
-            {
-                PublishNext(value);
-            }
-
-            protected override void Deinitialize()
-            { }
-            protected override void Initialize()
-            { }
-
-            protected override void Subscribed(IObserver<T> observer, bool first)
-            {
-                base.Subscribed(observer, first);
-            }
-        }
-
-        class BindingWatcher
-        {
-            ISubject<object> _innerSubject;
-            ISubject<object> _wrappedSubject;
-            InstancedBinding _instancedBinding;
-            bool _isWriting = false;
-
-            public BindingWatcher(ISubject<object> innerSubject, InstancedBinding innerBinding)
-            {
-                _innerSubject = innerSubject;
-                _wrappedSubject = new LightweightSubject<object>();
-                _instancedBinding = new InstancedBinding(_wrappedSubject, innerBinding.Mode, innerBinding.Priority);
-
-                _innerSubject.Subscribe(InnerSubjectOnNext);
-                _wrappedSubject.Subscribe(WrappedSubjectOnNext);
-            }
-
-            private void InnerSubjectOnNext(object value)
-            {
-                Debug.WriteLine($"InnerSubject: {value} ({value?.GetType().Name})");
-                if (!_isWriting)
+                if(result.Subject != null)
                 {
-                    _isWriting = true;
-                    _wrappedSubject.OnNext(value);
-                    _isWriting = false;
+                    var bindingHelper = new CellEditBinding(result.Subject);
+                    var instanceBinding = new InstancedBinding(bindingHelper.InternalSubject, result.Mode, result.Priority);
+
+                    BindingOperations.Apply(target, property, instanceBinding, null);
+                    return bindingHelper;
                 }
-            }
-            private void WrappedSubjectOnNext(object value)
-            {
-                Debug.WriteLine($"WrappedSubject: {value} ({value?.GetType().Name})");
-                if (!_isWriting)
-                {
-                    _isWriting = true;
-                    _innerSubject.OnNext(value);
-                    _isWriting = false;
-                }
+
+                BindingOperations.Apply(target, property, result, null);
             }
 
-            public InstancedBinding InstancedBinding => _instancedBinding;
+            return null;
         }
-
+        
         /*
          public static IDisposable Apply(
             IAvaloniaObject target,
@@ -252,7 +188,6 @@ namespace Avalonia.Controls
 
         protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem);
 
-
         internal AvaloniaProperty BindingTarget { get; set; }
 
         internal void SetHeaderFromBinding()
@@ -268,86 +203,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        private class AdvancedBinding
-        {
-
-            class SubjectWrapper : LightweightObservableBase<object>, ISubject<object>, IDisposable
-            {
-                private readonly ISubject<object> _sourceSubject;
-                private IDisposable _subscription;
-                private object _controlValue;
-                private bool _isControlValueSet = false;
-
-                public SubjectWrapper(ISubject<object> bindingSourceSubject)
-                {
-                    _sourceSubject = bindingSourceSubject;
-                }
-
-                private void SetSourceValue(object value)
-                {
-                    _sourceSubject.OnNext(value);
-                }
-                private void SetControlValue(object value)
-                {
-                    PublishNext(value);
-                }
-
-                private void OnValidationError(BindingNotification notification)
-                {
-
-                }
-                private void OnControlValueUpdated(object value)
-                {
-                    _controlValue = value;
-                    _isControlValueSet = true;
-                }
-                private void OnSourceValueUpdated(object value)
-                {
-                    if(value is BindingNotification notification)
-                    {
-                        if (notification.ErrorType != BindingErrorType.None)
-                            OnValidationError(notification);
-                        else
-                            SetControlValue(value);
-                    }
-                    else
-                    {
-                        SetControlValue(value);
-                    }
-                }
-
-                protected override void Deinitialize()
-                {
-                    _subscription?.Dispose();
-                    _subscription = null;
-                }
-                protected override void Initialize()
-                {
-                    _subscription = _sourceSubject.Subscribe(OnSourceValueUpdated);
-                }
-
-                void IObserver<object>.OnCompleted()
-                {
-                    throw new NotImplementedException();
-                }
-                void IObserver<object>.OnError(Exception error)
-                {
-                    throw new NotImplementedException();
-                }
-                void IObserver<object>.OnNext(object value)
-                {
-                    OnControlValueUpdated(value);
-                }
-
-                public void Dispose()
-                {
-                    _subscription?.Dispose();
-                    _subscription = null;
-                }
-            }
-        }
-
     }
 
     /*
@@ -398,14 +253,7 @@ namespace Avalonia.Controls
 
 
     #endregion
-
-    #region ClipBoard
-
-
-
-    #endregion
-
-
+    
     #region Styles
 
     //TODO Styles
