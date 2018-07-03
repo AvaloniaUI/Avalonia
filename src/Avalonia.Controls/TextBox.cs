@@ -282,7 +282,10 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter?.ShowCaret();
+                if (!IsReadOnly)
+                    _presenter?.ShowCaret();
+                else
+                    _presenter?.HideCaret();
             }
 
             e.Handled = true;
