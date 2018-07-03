@@ -65,7 +65,7 @@ namespace Avalonia.Data.Core
         /// <param name="root">The root object.</param>
         /// <param name="node">The expression.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="node"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             object root,
@@ -82,6 +82,15 @@ namespace Avalonia.Data.Core
             _root = new WeakReference(root);
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="root">The root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
         public static ExpressionObserver Create<T, U>(
             T root,
             Expression<Func<T, U>> expression,
@@ -97,7 +106,7 @@ namespace Avalonia.Data.Core
         /// <param name="rootObservable">An observable which provides the root object.</param>
         /// <param name="node">The expression.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="node"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             IObservable<object> rootObservable,
@@ -110,7 +119,16 @@ namespace Avalonia.Data.Core
             Description = description;
             _root = rootObservable;
         }
-
+        
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootObservable">An observable which provides the root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
         public static ExpressionObserver Create<T, U>(
             IObservable<T> rootObservable,
             Expression<Func<T, U>> expression,
@@ -132,7 +150,7 @@ namespace Avalonia.Data.Core
         /// <param name="node">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="node"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             Func<object> rootGetter,
@@ -148,6 +166,16 @@ namespace Avalonia.Data.Core
             _root = update.Select(x => rootGetter());
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootGetter">A function which gets the root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
         public static ExpressionObserver Create<T, U>(
             Func<T> rootGetter,
             Expression<Func<T, U>> expression,
