@@ -37,6 +37,7 @@ namespace Avalonia.Controls
         private object _header;
         private DataGridColumnHeader _headerCell;
         private Control _editingElement;
+        private ICellEditBinding _editBinding;
         private IBinding _clipboardContentBinding;
         private readonly Classes _cellStyleClasses = new Classes();
 
@@ -172,6 +173,11 @@ namespace Avalonia.Controls
         {
             get;
             private set;
+        }
+
+        internal ICellEditBinding CellEditBinding
+        {
+            get => _editBinding;
         }
 
         /// <summary>
@@ -588,8 +594,6 @@ namespace Avalonia.Controls
             return content;
         }
 
-
-
         public Control GetCellContent(DataGridRow dataGridRow)
         {
             Contract.Requires<ArgumentNullException>(dataGridRow != null);
@@ -672,7 +676,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// A new editing element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </returns>
-        protected abstract Control GenerateEditingElement(DataGridCell cell, object dataItem);
+        protected abstract Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding);
 
         /// <summary>
         /// When overridden in a derived class, gets a read-only element that is bound to the column's 
@@ -988,7 +992,7 @@ namespace Avalonia.Controls
         {
             if (_editingElement == null)
             {
-                _editingElement = GenerateEditingElement(cell, dataItem);
+                _editingElement = GenerateEditingElement(cell, dataItem, out _editBinding);
             }
             //if (_inputBindings == null && _editingElement != null)
             //{

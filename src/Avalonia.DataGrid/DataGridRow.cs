@@ -100,7 +100,7 @@ namespace Avalonia.Controls
         public bool IsValid
         {
             get { return _isValid; }
-            private set { SetAndRaise(IsValidProperty, ref _isValid, value); }
+            internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
         }
 
 

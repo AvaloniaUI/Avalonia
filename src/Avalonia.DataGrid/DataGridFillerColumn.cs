@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using Avalonia.Interactivity;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -55,8 +56,9 @@ namespace Avalonia.Controls
             return null;
         }
 
-        protected override Control GenerateEditingElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding editBinding)
         {
+            editBinding = null;
             return null;
         } 
 
