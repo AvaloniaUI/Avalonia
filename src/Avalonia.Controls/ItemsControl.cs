@@ -155,6 +155,7 @@ namespace Avalonia.Controls
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
             Presenter = presenter;
+            ItemContainerGenerator.Clear();
         }
 
         /// <summary>
