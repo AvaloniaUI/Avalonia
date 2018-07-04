@@ -30,12 +30,6 @@ namespace Avalonia
         private IAvaloniaObject _inheritanceParent;
 
         /// <summary>
-        /// The set values/bindings on this object.
-        /// </summary>
-        private readonly Dictionary<AvaloniaProperty, PriorityValue> _values =
-            new Dictionary<AvaloniaProperty, PriorityValue>();
-
-        /// <summary>
         /// Maintains a list of direct property binding subscriptions so that the binding source
         /// doesn't get collected.
         /// </summary>
@@ -52,6 +46,7 @@ namespace Avalonia
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
 
         private DeferredSetter<AvaloniaProperty, object> _directDeferredSetter;
+        private ValueStore _values;
 
         /// <summary>
         /// Delayed setter helper for direct properties. Used to fix #855.
@@ -228,9 +223,20 @@ namespace Avalonia
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
+            else if (_values != null)
+            {
+                var result = _values.GetValue(property);
+
+                if (result == AvaloniaProperty.UnsetValue)
+                {
+                    result = GetDefaultValue(property);
+                }
+
+                return result;
+            }
             else
             {
-                return GetValueInternal(property);
+                return GetDefaultValue(property);
             }
         }
 
@@ -257,7 +263,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return _values.TryGetValue(property, out PriorityValue value) ? value.IsAnimating : false;
+            return _values?.IsAnimating(property) ?? false;
         }
 
         /// <summary>
@@ -274,14 +280,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            PriorityValue value;
-
-            if (_values.TryGetValue(property, out value))
-            {
-                return value.Value != AvaloniaProperty.UnsetValue;
-            }
-
-            return false;
+            return _values?.IsSet(property) ?? false;
         }
 
         /// <summary>
@@ -369,14 +368,6 @@ namespace Avalonia
             }
             else
             {
-                PriorityValue v;
-
-                if (!_values.TryGetValue(property, out v))
-                {
-                    v = CreatePriorityValue(property);
-                    _values.Add(property, v);
-                }
-
                 Logger.Verbose(
                     LogArea.Property,
                     this,
@@ -385,7 +376,12 @@ namespace Avalonia
                     description,
                     priority);
 
-                return v.Add(source, (int)priority);
+                if (_values == null)
+                {
+                    _values = new ValueStore(this);
+                }
+
+                return _values.AddBinding(property, source, priority);
             }
         }
 
@@ -416,20 +412,12 @@ namespace Avalonia
         public void Revalidate(AvaloniaProperty property)
         {
             VerifyAccess();
-            PriorityValue value;
-
-            if (_values.TryGetValue(property, out value))
-            {
-                value.Revalidate();
-            }
+            _values?.Revalidate(property);
         }
 
         /// <inheritdoc/>
-        void IPriorityValueOwner.Changed(PriorityValue sender, object oldValue, object newValue)
+        void IPriorityValueOwner.Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
         {
-            var property = sender.Property;
-            var priority = (BindingPriority)sender.ValuePriority;
-
             oldValue = (oldValue == AvaloniaProperty.UnsetValue) ?
                 GetDefaultValue(property) :
                 oldValue;
@@ -439,7 +427,7 @@ namespace Avalonia
 
             if (!Equals(oldValue, newValue))
             {
-                RaisePropertyChanged(property, oldValue, newValue, priority);
+                RaisePropertyChanged(property, oldValue, newValue, (BindingPriority)priority);
 
                 Logger.Verbose(
                     LogArea.Property,
@@ -448,14 +436,14 @@ namespace Avalonia
                     property,
                     oldValue,
                     newValue,
-                    priority);
+                    (BindingPriority)priority);
             }
         }
 
         /// <inheritdoc/>
-        void IPriorityValueOwner.BindingNotificationReceived(PriorityValue sender, BindingNotification notification)
+        void IPriorityValueOwner.BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
         {
-            UpdateDataValidation(sender.Property, notification);
+            UpdateDataValidation(property, notification);
         }
 
         /// <inheritdoc/>
@@ -468,10 +456,7 @@ namespace Avalonia
         /// Gets all priority values set on the object.
         /// </summary>
         /// <returns>A collection of property/value tuples.</returns>
-        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues()
-        {
-            return _values;
-        }
+        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => _values?.GetSetValues();
 
         /// <summary>
         /// Forces revalidation of properties when a property value changes.
@@ -661,65 +646,15 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Creates a <see cref="PriorityValue"/> for a <see cref="AvaloniaProperty"/>.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>The <see cref="PriorityValue"/>.</returns>
-        private PriorityValue CreatePriorityValue(AvaloniaProperty property)
-        {
-            var validate = ((IStyledPropertyAccessor)property).GetValidationFunc(GetType());
-            Func<object, object> validate2 = null;
-
-            if (validate != null)
-            {
-                validate2 = v => validate(this, v);
-            }
-
-            PriorityValue result = new PriorityValue(
-                this,
-                property,
-                property.PropertyType, 
-                validate2);
-
-            return result;
-        }
-
-        /// <summary>
         /// Gets the default value for a property.
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The default value.</returns>
-        private object GetDefaultValue(AvaloniaProperty property)
+        internal object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
-                return aobj.GetValueInternal(property);
+                return aobj.GetValue(property);
             return ((IStyledPropertyAccessor) property).GetDefaultValue(GetType());
-        }
-
-        /// <summary>
-        /// Gets a <see cref="AvaloniaProperty"/> value
-        /// without check for registered as this can slow getting the value
-        /// this method is intended for internal usage in AvaloniaObject only
-        /// it's called only after check the property is registered
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        private object GetValueInternal(AvaloniaProperty property)
-        {
-            object result = AvaloniaProperty.UnsetValue;
-            PriorityValue value;
-
-            if (_values.TryGetValue(property, out value))
-            {
-                result = value.Value;
-            }
-
-            if (result == AvaloniaProperty.UnsetValue)
-            {
-                result = GetDefaultValue(property);
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -802,21 +737,13 @@ namespace Avalonia
                     originalValue?.GetType().FullName ?? "(null)"));
             }
 
-            PriorityValue v;
-
-            if (!_values.TryGetValue(property, out v))
+            if (_values == null)
             {
-                if (value == AvaloniaProperty.UnsetValue)
-                {
-                    return;
-                }
-
-                v = CreatePriorityValue(property);
-                _values.Add(property, v);
+                _values = new ValueStore(this);
             }
 
             LogPropertySet(property, value, priority);
-            v.SetValue(value, (int)priority);
+            _values.AddValue(property, value, (int)priority);
         }
 
         /// <summary>

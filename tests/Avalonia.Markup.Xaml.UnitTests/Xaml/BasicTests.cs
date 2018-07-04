@@ -686,7 +686,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 <Window xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Template>
-        <ControlTemplate>
+        <ControlTemplate TargetType='Window'>
             <ContentPresenter Name='PART_ContentPresenter'
                         Content='{TemplateBinding Content}'/>
         </ControlTemplate>
