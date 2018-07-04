@@ -124,7 +124,7 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
-            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);            
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
         }
 
         public bool AcceptsReturn
@@ -290,7 +290,7 @@ namespace Avalonia.Controls
 
         private void DecideCaretVisibility()
         {
-            if (!IsReadOnly || IsReadOnlyCaretVisible)
+            if (!IsReadOnly)
                 _presenter?.ShowCaret();
             else
                 _presenter?.HideCaret();
