@@ -36,7 +36,7 @@
                   <TextBlock Name="watermark"
                              Opacity="0.5"
                              Text="{TemplateBinding Watermark}"
-                             IsVisible="{TemplateBinding Path=Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
+                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"

@@ -16,7 +16,7 @@
                                Grid.Column="1"
                                Minimum="{TemplateBinding Minimum}"
                                Maximum="{TemplateBinding Maximum}"
-                               Value="{TemplateBinding Path=Value, Mode=TwoWay}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
                                ViewportSize="{TemplateBinding ViewportSize}"
                                Orientation="{TemplateBinding Orientation}">
                             <Track.DecreaseButton>
@@ -67,7 +67,7 @@
                                Grid.Column="1"
                                Minimum="{TemplateBinding Minimum}"
                                Maximum="{TemplateBinding Maximum}"
-                               Value="{TemplateBinding Path=Value, Mode=TwoWay}"
+                               Value="{TemplateBinding Value, Mode=TwoWay}"
                                ViewportSize="{TemplateBinding ViewportSize}"
                                Orientation="{TemplateBinding Orientation}">
                             <Track.DecreaseButton>
