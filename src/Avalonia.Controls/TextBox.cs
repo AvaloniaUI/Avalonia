@@ -262,7 +262,7 @@ namespace Avalonia.Controls
 
             if (IsFocused)
             {
-                _presenter.ShowCaret();
+                DecideCaretVisibility();
             }
         }
 
@@ -282,13 +282,18 @@ namespace Avalonia.Controls
             }
             else
             {
-                if (!IsReadOnly)
-                    _presenter?.ShowCaret();
-                else
-                    _presenter?.HideCaret();
+                DecideCaretVisibility();
             }
 
             e.Handled = true;
+        }
+
+        private void DecideCaretVisibility()
+        {
+            if (!IsReadOnly || IsReadOnlyCaretVisible)
+                _presenter?.ShowCaret();
+            else
+                _presenter?.HideCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
