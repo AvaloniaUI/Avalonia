@@ -9,10 +9,5 @@ namespace Avalonia.Data.Core
     internal class EmptyExpressionNode : ExpressionNode
     {
         public override string Description => ".";
-
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
-        {
-            return Observable.Return(reference.Target);
-        }
     }
 }

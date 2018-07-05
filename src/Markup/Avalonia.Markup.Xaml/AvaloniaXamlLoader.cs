@@ -139,7 +139,7 @@ namespace Avalonia.Markup.Xaml
                     {
                         uriString = new Uri(baseUri, uri).AbsoluteUri;
                     }
-                    throw new XamlLoadException("Error loading xaml at " + uriString, e);
+                    throw new XamlLoadException("Error loading xaml at " + uriString + ": " + e.Message, e);
                 }
             }
         }

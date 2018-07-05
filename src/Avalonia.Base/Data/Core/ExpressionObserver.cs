@@ -4,18 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core
 {
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : ObservableBase<object>, IDescription
+    public class ExpressionObserver : LightweightObservableBase<object>, IDescription
     {
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize
@@ -54,9 +53,9 @@ namespace Avalonia.Data.Core
 
         private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private readonly Subject<Unit> _finished;
-        private readonly object _root;
-        private IObservable<object> _result;
+        private object _root;
+        private IDisposable _rootSubscription;
+        private WeakReference<object> _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -107,7 +106,6 @@ namespace Avalonia.Data.Core
             Expression = expression;
             Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
             _root = rootObservable;
         }
 
@@ -135,8 +133,6 @@ namespace Avalonia.Data.Core
             Expression = expression;
             Description = description ?? expression;
             _node = Parse(expression, enableDataValidation);
-            _finished = new Subject<Unit>();
-
             _node.Target = new WeakReference(rootGetter());
             _root = update.Select(x => rootGetter());
         }
@@ -203,27 +199,26 @@ namespace Avalonia.Data.Core
             }
         }
 
-        /// <inheritdoc/>
-        protected override IDisposable SubscribeCore(IObserver<object> observer)
+        protected override void Initialize()
         {
-            if (_result == null)
+            _value = null;
+            _node.Subscribe(ValueChanged);
+            StartRoot();
+        }
+
+        protected override void Deinitialize()
+        {
+            _rootSubscription?.Dispose();
+            _rootSubscription = null;
+            _node.Unsubscribe();
+        }
+
+        protected override void Subscribed(IObserver<object> observer, bool first)
+        {
+            if (!first && _value != null && _value.TryGetTarget(out var value))
             {
-                var source = (IObservable<object>)_node;
-
-                if (_finished != null)
-                {
-                    source = source.TakeUntil(_finished);
-                }
-
-                _result = Observable.Using(StartRoot, _ => source)
-                    .Select(ToWeakReference)
-                    .Publish(UninitializedValue)
-                    .RefCount()
-                    .Where(x => x != UninitializedValue)
-                    .Select(Translate);
+                observer.OnNext(value);
             }
-
-            return _result.Subscribe(observer);
         }
 
         private static ExpressionNode Parse(string expression, bool enableDataValidation)
@@ -238,42 +233,27 @@ namespace Avalonia.Data.Core
             }
         }
 
-        private static object ToWeakReference(object o)
+        private void StartRoot()
         {
-            return o is BindingNotification ? o : new WeakReference(o);
+            if (_root is IObservable<object> observable)
+            {
+                _rootSubscription = observable.Subscribe(
+                    x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
+                    x => PublishCompleted(),
+                    () => PublishCompleted());
+            }
+            else
+            {
+                _node.Target = (WeakReference)_root;
+            }
         }
 
-        private object Translate(object o)
+        private void ValueChanged(object value)
         {
-            if (o is WeakReference weak)
-            {
-                return weak.Target;
-            }
-            else if (BindingNotification.ExtractError(o) is MarkupBindingChainException broken)
-            {
-                broken.Commit(Description);
-            }
-
-            return o;
-        }
-
-        private IDisposable StartRoot()
-        {
-            switch (_root)
-            {
-                case IObservable<object> observable:
-                    return observable.Subscribe(
-                        x => _node.Target = new WeakReference(x != AvaloniaProperty.UnsetValue ? x : null),
-                        _ => _finished.OnNext(Unit.Default),
-                        () => _finished.OnNext(Unit.Default));
-                case WeakReference weak:
-                    _node.Target = weak;
-                    break;
-                default:
-                    throw new AvaloniaInternalException("The ExpressionObserver._root member should only be either an observable or WeakReference.");
-            }
-
-            return Disposable.Empty;
+            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
+            broken?.Commit(Description);
+            _value = new WeakReference<object>(value);
+            PublishNext(value);
         }
     }
 }

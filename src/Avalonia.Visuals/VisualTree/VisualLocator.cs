@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text;
+using Avalonia.Reactive;
 
 namespace Avalonia.VisualTree
 {
@@ -11,36 +10,54 @@ namespace Avalonia.VisualTree
     {
         public static IObservable<IVisual> Track(IVisual relativeTo, int ancestorLevel, Type ancestorType = null)
         {
-            return TrackAttachmentToTree(relativeTo).Select(isAttachedToTree =>
+            return new VisualTracker(relativeTo, ancestorLevel, ancestorType);
+        }
+
+        private class VisualTracker : LightweightObservableBase<IVisual>
+        {
+            private readonly IVisual _relativeTo;
+            private readonly int _ancestorLevel;
+            private readonly Type _ancestorType;
+
+            public VisualTracker(IVisual relativeTo, int ancestorLevel, Type ancestorType)
             {
-                if (isAttachedToTree)
+                _relativeTo = relativeTo;
+                _ancestorLevel = ancestorLevel;
+                _ancestorType = ancestorType;
+            }
+
+            protected override void Initialize()
+            {
+                _relativeTo.AttachedToVisualTree += AttachedDetached;
+                _relativeTo.DetachedFromVisualTree += AttachedDetached;
+            }
+
+            protected override void Deinitialize()
+            {
+                _relativeTo.AttachedToVisualTree -= AttachedDetached;
+                _relativeTo.DetachedFromVisualTree -= AttachedDetached;
+            }
+
+            protected override void Subscribed(IObserver<IVisual> observer, bool first)
+            {
+                observer.OnNext(GetResult());
+            }
+
+            private void AttachedDetached(object sender, VisualTreeAttachmentEventArgs e) => PublishNext(GetResult());
+
+            private IVisual GetResult()
+            {
+                if (_relativeTo.IsAttachedToVisualTree)
                 {
-                    return relativeTo.GetVisualAncestors()
-                        .Where(x => ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
-                        .ElementAtOrDefault(ancestorLevel);
+                    return _relativeTo.GetVisualAncestors()
+                        .Where(x => _ancestorType?.GetTypeInfo().IsAssignableFrom(x.GetType().GetTypeInfo()) ?? true)
+                        .ElementAtOrDefault(_ancestorLevel);
                 }
                 else
                 {
                     return null;
                 }
-            });
-        }
-
-        private static IObservable<bool> TrackAttachmentToTree(IVisual relativeTo)
-        {
-            var attached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.AttachedToVisualTree += x,
-                x => relativeTo.AttachedToVisualTree -= x)
-                .Select(x => true)
-                .StartWith(relativeTo.IsAttachedToVisualTree);
-
-            var detached = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                x => relativeTo.DetachedFromVisualTree += x,
-                x => relativeTo.DetachedFromVisualTree -= x)
-                .Select(x => false);
-
-            var attachmentStatus = attached.Merge(detached);
-            return attachmentStatus;
+            }
         }
     }
 }
