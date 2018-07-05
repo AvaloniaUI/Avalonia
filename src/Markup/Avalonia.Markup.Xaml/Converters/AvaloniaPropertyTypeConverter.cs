@@ -2,19 +2,21 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
+using System.Text.RegularExpressions;
+using Avalonia.Markup.Xaml.Templates;
+using Avalonia.Styling;
+using Portable.Xaml;
+using Portable.Xaml.ComponentModel;
+using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Avalonia.Styling;
-    using Portable.Xaml;
-    using Portable.Xaml.ComponentModel;
-    using System.ComponentModel;
-    using Portable.Xaml.Markup;
-
     public class AvaloniaPropertyTypeConverter : TypeConverter
     {
+        private static readonly Regex regex = new Regex(@"^\(?(\w*)\.(\w*)\)?|(.*)$");
+
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
@@ -22,65 +24,58 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var s = (string)value;
+            var (owner, propertyName) = ParseProperty((string)value);
+            var ownerType = TryResolveOwnerByName(context, owner) ??
+                context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
+                context.GetFirstAmbientValue<Style>()?.Selector?.TargetType;
 
-            string typeName;
-            string propertyName;
-            Type type = null;
-
-            ParseProperty(s, out typeName, out propertyName);
-
-            if (typeName == null)
+            if (ownerType == null)
             {
-                var style = context.GetFirstAmbientValue<Style>();
-
-                type = style?.Selector?.TargetType;
-
-                if (type == null)
-                {
-                    throw new Exception(
-                        "Could not determine the target type. Please fully qualify the property name.");
-                }
-            }
-            else
-            {
-                var typeResolver = context.GetService<IXamlTypeResolver>();
-                type = typeResolver.Resolve(typeName);
-
-                if (type == null)
-                {
-                    throw new Exception($"Could not find type '{typeName}'.");
-                }
+                throw new XamlLoadException(
+                    $"Could not determine the owner type for property '{propertyName}'. " +
+                    "Please fully qualify the property name or specify a target type on " +
+                    "the containing template.");
             }
 
-            AvaloniaProperty property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, propertyName);
+            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(ownerType, propertyName);
 
             if (property == null)
             {
-                throw new Exception(
-                    $"Could not find AvaloniaProperty '{type.Name}.{propertyName}'.");
+                throw new XamlLoadException($"Could not find AvaloniaProperty '{ownerType.Name}.{propertyName}'.");
             }
 
             return property;
         }
 
-        private void ParseProperty(string s, out string typeName, out string propertyName)
+        private Type TryResolveOwnerByName(ITypeDescriptorContext context, string owner)
         {
-            var split = s.Split('.');
+            if (owner != null)
+            {
+                var resolver = context.GetService<IXamlTypeResolver>();
+                var result = resolver.Resolve(owner);
 
-            if (split.Length == 1)
-            {
-                typeName = null;
-                propertyName = split[0];
+                if (result == null)
+                {
+                    throw new XamlLoadException($"Could not find type '{owner}'.");
+                }
+
+                return result;
             }
-            else if (split.Length == 2)
+
+            return null;
+        }
+
+        private (string owner, string property) ParseProperty(string s)
+        {
+            var result = regex.Match(s);
+
+            if (result.Groups[1].Success)
             {
-                typeName = split[0];
-                propertyName = split[1];
+                return (result.Groups[1].Value, result.Groups[2].Value);
             }
             else
             {
-                throw new Exception($"Invalid property name: '{s}'.");
+                return (null, result.Groups[3].Value);
             }
         }
     }

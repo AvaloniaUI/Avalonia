@@ -9,21 +9,21 @@
                                 CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
                                 CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
                                 Content="{TemplateBinding Content}"
-                                Extent="{TemplateBinding Path=Extent, Mode=TwoWay}"
+                                Extent="{TemplateBinding Extent, Mode=TwoWay}"
                                 Margin="{TemplateBinding Padding}"
-                                Offset="{TemplateBinding Path=Offset, Mode=TwoWay}"
-                                Viewport="{TemplateBinding Path=Viewport, Mode=TwoWay}"/>
+                                Offset="{TemplateBinding Offset, Mode=TwoWay}"
+                                Viewport="{TemplateBinding Viewport, Mode=TwoWay}"/>
         <ScrollBar Name="horizontalScrollBar"
                    Orientation="Horizontal"
                    Maximum="{TemplateBinding HorizontalScrollBarMaximum}"
-                   Value="{TemplateBinding Path=HorizontalScrollBarValue, Mode=TwoWay}"
+                   Value="{TemplateBinding HorizontalScrollBarValue, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding HorizontalScrollBarViewportSize}"
                    Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
                    Grid.Row="1"/>
         <ScrollBar Name="verticalScrollBar"
                    Orientation="Vertical"
                    Maximum="{TemplateBinding VerticalScrollBarMaximum}"
-                   Value="{TemplateBinding Path=VerticalScrollBarValue, Mode=TwoWay}"
+                   Value="{TemplateBinding VerticalScrollBarValue, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding VerticalScrollBarViewportSize}"
                    Visibility="{TemplateBinding VerticalScrollBarVisibility}"
                    Grid.Column="1"/>

@@ -44,15 +44,17 @@ namespace Portable.Xaml.ComponentModel
             var amb = ctx.GetService<IAmbientProvider>();
             var sc = ctx.GetService<IXamlSchemaContextProvider>().SchemaContext;
 
-            return amb.GetFirstAmbientValue(sc.GetXamlType(typeof(T))) as T;
+            // Because GetFirstAmbientValue uses XamlType.CanAssignTo it returns values that
+            // aren't actually of the correct type. Use GetAllAmbientValues instead.
+            return amb.GetAllAmbientValues(sc.GetXamlType(typeof(T))).OfType<T>().FirstOrDefault();
         }
 
         public static T GetLastOrDefaultAmbientValue<T>(this ITypeDescriptorContext ctx) where T : class
         {
-            return ctx.GetAllambientValues<T>().LastOrDefault() as T;
+            return ctx.GetAllAmbientValues<T>().LastOrDefault() as T;
         }
 
-        public static IEnumerable<T> GetAllambientValues<T>(this ITypeDescriptorContext ctx) where T : class
+        public static IEnumerable<T> GetAllAmbientValues<T>(this ITypeDescriptorContext ctx) where T : class
         {
             var amb = ctx.GetService<IAmbientProvider>();
             var sc = ctx.GetService<IXamlSchemaContextProvider>().SchemaContext;
