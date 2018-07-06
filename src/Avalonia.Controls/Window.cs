@@ -374,7 +374,7 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
@@ -416,7 +416,7 @@ namespace Avalonia.Controls
             EnsureInitialized();
             SetWindowStartupLocation();
             IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {

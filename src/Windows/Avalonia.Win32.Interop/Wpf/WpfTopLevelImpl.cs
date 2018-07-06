@@ -49,7 +49,7 @@ namespace Avalonia.Win32.Interop.Wpf
             protected override void HandleResized(Size clientSize)
             {
                 ClientSize = clientSize;
-                LayoutManager.Instance.ExecuteLayoutPass();
+                LayoutManager.ExecuteLayoutPass();
                 Renderer?.Resized(clientSize);
             }
 
