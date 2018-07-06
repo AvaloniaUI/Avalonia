@@ -4,6 +4,10 @@ using System.Text;
 
 namespace Avalonia.Utilities
 {
+    /// <summary>
+    /// FIFO Queue optimized for holding zero or one items.
+    /// </summary>
+    /// <typeparam name="T">The type of items held in the queue.</typeparam>
     public class SingleOrQueue<T>
     {
         private T _head;
@@ -11,6 +15,9 @@ namespace Avalonia.Utilities
 
         private Queue<T> Tail => _tail ?? (_tail = new Queue<T>());
 
+        /// <summary>
+        /// True if this queue has at some point had more than one element.
+        /// </summary>
         public bool HasTail => _tail != null;
 
         public bool Empty { get; private set; } = true;
