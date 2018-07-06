@@ -45,8 +45,6 @@ namespace Avalonia.Utilities
                     return pendingValues ?? (pendingValues = new SingleOrQueue<TSetRecord>());
                 }
             }
-
-            public bool IsSimpleSet => pendingValues?.HasTail != true;
         }
 
         private Dictionary<AvaloniaProperty, SettingStatus> _setRecords;
@@ -118,14 +116,6 @@ namespace Avalonia.Utilities
             return GetOrCreateStatus(property).PendingValues.Dequeue();
         }
 
-        private void CleanupSetStatus(AvaloniaProperty property)
-        {
-            if (SetRecords.TryGetValue(property, out var status) && status.IsSimpleSet)
-            {
-                SetRecords.Remove(property);
-            }
-        }
-
         public delegate bool SetterDelegate<TValue>(TSetRecord record, ref TValue backing, Action<Action> notifyCallback);
 
         /// <summary>
@@ -168,8 +158,6 @@ namespace Avalonia.Utilities
                         }
                     });
                 }
-
-                CleanupSetStatus(property);
 
                 return updated;
             }

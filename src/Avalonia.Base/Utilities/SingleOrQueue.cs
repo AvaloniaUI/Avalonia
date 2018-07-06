@@ -15,10 +15,7 @@ namespace Avalonia.Utilities
 
         private Queue<T> Tail => _tail ?? (_tail = new Queue<T>());
 
-        /// <summary>
-        /// True if this queue has at some point had more than one element.
-        /// </summary>
-        public bool HasTail => _tail != null;
+        private bool HasTail => _tail != null;
 
         public bool Empty { get; private set; } = true;
 
