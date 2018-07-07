@@ -1,38 +1,45 @@
 <UserControl xmlns="https://github.com/avaloniaui">
+  <UserControl.Styles>
+    <Style Selector="Border.brush">
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="BorderBrush" Value="Black"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+  </UserControl.Styles>
   <ScrollViewer>
     <StackPanel Gap="2">
       <TextBlock Text="ThemeBackgroundBrush"/>
-      <Border Background="{DynamicResource ThemeBackgroundBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeBackgroundBrush}" Classes="brush"/>
       <TextBlock Text="ThemeBorderLightBrush"/>
-      <Border Background="{DynamicResource ThemeBorderLightBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeBorderLightBrush}" Classes="brush"/>
       <TextBlock Text="ThemeBorderMidBrush"/>
-      <Border Background="{DynamicResource ThemeBorderMidBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeBorderMidBrush}" Classes="brush"/>
       <TextBlock Text="ThemeBorderDarkBrush"/>
-      <Border Background="{DynamicResource ThemeBorderDarkBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeBorderDarkBrush}" Classes="brush"/>
       <TextBlock Text="ThemeControlLightBrush"/>
-      <Border Background="{DynamicResource ThemeControlLightBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeControlLightBrush}" Classes="brush"/>
       <TextBlock Text="ThemeControlMidBrush"/>
-      <Border Background="{DynamicResource ThemeControlMidBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeControlMidBrush}" Classes="brush"/>
       <TextBlock Text="ThemeControlDarkBrush"/>
-      <Border Background="{DynamicResource ThemeControlDarkBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeControlDarkBrush}" Classes="brush"/>
       <TextBlock Text="ThemeForegroundBrush"/>
-      <Border Background="{DynamicResource ThemeForegroundBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeForegroundBrush}" Classes="brush"/>
       <TextBlock Text="ThemeForegroundLightBrush"/>
-      <Border Background="{DynamicResource ThemeForegroundLightBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeForegroundLightBrush}" Classes="brush"/>
       <TextBlock Text="HighlightBrush"/>
-      <Border Background="{DynamicResource HighlightBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource HighlightBrush}" Classes="brush"/>
       <TextBlock Text="ThemeAccentBrush"/>
-      <Border Background="{DynamicResource ThemeAccentBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeAccentBrush}" Classes="brush"/>
       <TextBlock Text="ThemeAccentBrush2"/>
-      <Border Background="{DynamicResource ThemeAccentBrush2}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeAccentBrush2}" Classes="brush"/>
       <TextBlock Text="ThemeAccentBrush3"/>
-      <Border Background="{DynamicResource ThemeAccentBrush3}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeAccentBrush3}" Classes="brush"/>
       <TextBlock Text="ThemeAccentBrush4"/>
-      <Border Background="{DynamicResource ThemeAccentBrush4}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ThemeAccentBrush4}" Classes="brush"/>
       <TextBlock Text="ErrorBrush"/>
-      <Border Background="{DynamicResource ErrorBrush}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ErrorBrush}" Classes="brush"/>
       <TextBlock Text="ErrorBrushLight"/>
-      <Border Background="{DynamicResource ErrorBrushLight}" BorderBrush="Black" BorderThickness="1" Height="20"/>
+      <Border Background="{DynamicResource ErrorBrushLight}" Classes="brush"/>
       <TextBlock Text="ThemeBorderThickness"/>
       <TextBox Text="{DynamicResource ThemeBorderThickness}" IsReadOnly="True"/>
       <TextBlock Text="ThemeDisabledOpacity"/>
@@ -45,4 +52,5 @@
       <TextBox Text="{DynamicResource FontSizeLarge}" IsReadOnly="True"/>
     </StackPanel>
   </ScrollViewer>
+
 </UserControl>
