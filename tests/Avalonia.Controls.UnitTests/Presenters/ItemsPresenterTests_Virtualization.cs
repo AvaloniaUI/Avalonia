@@ -12,6 +12,7 @@ using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -219,13 +220,13 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Changing_VirtualizationMode_None_To_Simple_Should_Add_Correct_Number_Of_Controls()
         {
-            using (UnitTestApplication.Start(TestServices.RealLayoutManager))
+            using (UnitTestApplication.Start(new TestServices()))
             {
                 var target = CreateTarget(mode: ItemVirtualizationMode.None);
-                var scroll = (ScrollContentPresenter)target.Parent;
+                var scroll = (TestScroller)target.Parent;
 
-                scroll.Measure(new Size(100, 100));
-                scroll.Arrange(new Rect(0, 0, 100, 100));
+                scroll.Width = scroll.Height = 100;
+                scroll.LayoutManager.ExecuteInitialLayoutPass(scroll);
 
                 // Ensure than an intermediate measure pass doesn't add more controls than it
                 // should. This can happen if target gets measured with Size.Infinity which
@@ -237,7 +238,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 };
 
                 target.VirtualizationMode = ItemVirtualizationMode.Simple;
-                LayoutManager.Instance.ExecuteLayoutPass();
+                ((ILayoutRoot)scroll.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(10, target.Panel.Children.Count);
             }
@@ -315,12 +316,17 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private class TestScroller : ScrollContentPresenter, IRenderRoot
+        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
             public double RenderScaling => 1;
 
+            public Size MaxClientSize => Size.Infinity;
+
+            public double LayoutScaling => 1;
+
+            public ILayoutManager LayoutManager { get; } = new LayoutManager();
             public IRenderTarget CreateRenderTarget()
             {
                 throw new NotImplementedException();
