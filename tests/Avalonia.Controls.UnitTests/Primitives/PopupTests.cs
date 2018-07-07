@@ -306,7 +306,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var renderInterface = new Mock<IPlatformRenderInterface>();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<ILayoutManager>().ToTransient<LayoutManager>()
                 .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
                 .Bind<IStyler>().ToTransient<Styler>()
