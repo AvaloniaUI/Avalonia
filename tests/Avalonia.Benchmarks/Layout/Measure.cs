@@ -8,26 +8,18 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Layout
 {
     [MemoryDiagnoser]
-    public class Measure : IDisposable
+    public class Measure
     {
-        private IDisposable _app;
         private TestRoot root;
         private List<Control> controls = new List<Control>();
 
         public Measure()
         {
-            _app = UnitTestApplication.Start(TestServices.RealLayoutManager);
-
             var panel = new StackPanel();
             root = new TestRoot { Child = panel };
             controls.Add(panel);
             CreateChildren(panel, 3, 5);
-            LayoutManager.Instance.ExecuteInitialLayoutPass(root);
-        }
-
-        public void Dispose()
-        {
-            _app.Dispose();
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
         }
 
         [Benchmark]
@@ -43,7 +35,7 @@ namespace Avalonia.Benchmarks.Layout
                 }
             }
 
-            LayoutManager.Instance.ExecuteLayoutPass();
+            root.LayoutManager.ExecuteLayoutPass();
         }
 
         private void CreateChildren(IPanel parent, int childCount, int iterations)

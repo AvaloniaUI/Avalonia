@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
         }
 
         private void EnsureInitialized()

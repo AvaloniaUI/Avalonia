@@ -518,7 +518,7 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 var container = generator.ContainerFromIndex(index);
-                var layoutManager = LayoutManager.Instance;
+                var layoutManager = (Owner.GetVisualRoot() as ILayoutRoot)?.LayoutManager;
 
                 // We need to do a layout here because it's possible that the container we moved to
                 // is only partially visible due to differing item sizes. If the container is only 
