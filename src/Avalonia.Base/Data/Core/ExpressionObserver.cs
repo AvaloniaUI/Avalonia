@@ -83,24 +83,6 @@ namespace Avalonia.Data.Core
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
-        /// </summary>
-        /// <param name="root">The root object.</param>
-        /// <param name="expression">The expression.</param>
-        /// <param name="enableDataValidation">Whether or not to track data validation</param>
-        /// <param name="description">
-        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
-        /// </param>
-        public static ExpressionObserver Create<T, U>(
-            T root,
-            Expression<Func<T, U>> expression,
-            bool enableDataValidation = false,
-            string description = null)
-        {
-            return new ExpressionObserver(root, Parse(expression, enableDataValidation), description ?? expression.ToString());
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
@@ -118,29 +100,6 @@ namespace Avalonia.Data.Core
             _node = node;
             Description = description;
             _root = rootObservable;
-        }
-        
-        /// <summary>
-        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
-        /// </summary>
-        /// <param name="rootObservable">An observable which provides the root object.</param>
-        /// <param name="expression">The expression.</param>
-        /// <param name="enableDataValidation">Whether or not to track data validation</param>
-        /// <param name="description">
-        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
-        /// </param>
-        public static ExpressionObserver Create<T, U>(
-            IObservable<T> rootObservable,
-            Expression<Func<T, U>> expression,
-            bool enableDataValidation = false,
-            string description = null)
-        {
-            Contract.Requires<ArgumentNullException>(rootObservable != null);
-            return new ExpressionObserver(
-                rootObservable.Select(o => (object)o),
-                Parse(expression, enableDataValidation),
-                description ?? expression.ToString());
-
         }
 
         /// <summary>
@@ -164,6 +123,47 @@ namespace Avalonia.Data.Core
             _node = node;
             _node.Target = new WeakReference(rootGetter());
             _root = update.Select(x => rootGetter());
+        }
+
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="root">The root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
+        public static ExpressionObserver Create<T, U>(
+            T root,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            return new ExpressionObserver(root, Parse(expression, enableDataValidation), description ?? expression.ToString());
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootObservable">An observable which provides the root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
+        public static ExpressionObserver Create<T, U>(
+            IObservable<T> rootObservable,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            return new ExpressionObserver(
+                rootObservable.Select(o => (object)o),
+                Parse(expression, enableDataValidation),
+                description ?? expression.ToString());
         }
 
         /// <summary>
@@ -278,8 +278,7 @@ namespace Avalonia.Data.Core
 
         private static ExpressionNode Parse(LambdaExpression expression, bool enableDataValidation)
         {
-            var parser = new ExpressionTreeParser(enableDataValidation);
-            return parser.Parse(expression);
+            return ExpressionTreeParser.Parse(expression, enableDataValidation);
         }
 
         private void StartRoot()

@@ -14,7 +14,7 @@ namespace Avalonia.Data.Core.Parsers
         private static PropertyInfo AvaloniaObjectIndexer;
         private static MethodInfo CreateDelegateMethod;
 
-        private readonly bool enableDataValidation;
+        private readonly bool _enableDataValidation;
 
         static ExpressionVisitorNodeBuilder()
         {
@@ -26,7 +26,7 @@ namespace Avalonia.Data.Core.Parsers
 
         public ExpressionVisitorNodeBuilder(bool enableDataValidation)
         {
-            this.enableDataValidation = enableDataValidation;
+            _enableDataValidation = enableDataValidation;
             Nodes = new List<ExpressionNode>();
         }
 
@@ -62,7 +62,7 @@ namespace Avalonia.Data.Core.Parsers
         protected override Expression VisitMember(MemberExpression node)
         {
             var visited = base.VisitMember(node);
-            Nodes.Add(new PropertyAccessorNode(node.Member.Name, enableDataValidation));
+            Nodes.Add(new PropertyAccessorNode(node.Member.Name, _enableDataValidation));
             return visited;
         }
 
@@ -73,7 +73,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Indexer == AvaloniaObjectIndexer)
             {
                 var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
-                Nodes.Add(new AvaloniaPropertyAccessorNode(property, enableDataValidation));
+                Nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableDataValidation));
             }
             else
             {
@@ -164,7 +164,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Method == CreateDelegateMethod)
             {
                 var visited = Visit(node.Arguments[1]);
-                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, enableDataValidation));
+                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, _enableDataValidation));
                 return node;
             }
             else if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))

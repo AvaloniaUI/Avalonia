@@ -6,16 +6,9 @@ using System.Text;
 
 namespace Avalonia.Data.Core.Parsers
 {
-    class ExpressionTreeParser
+    static class ExpressionTreeParser
     {
-        private readonly bool enableDataValidation;
-
-        public ExpressionTreeParser(bool enableDataValidation)
-        {
-            this.enableDataValidation = enableDataValidation;
-        }
-
-        public ExpressionNode Parse(Expression expr)
+        public static ExpressionNode Parse(Expression expr, bool enableDataValidation)
         {
             var visitor = new ExpressionVisitorNodeBuilder(enableDataValidation);
 

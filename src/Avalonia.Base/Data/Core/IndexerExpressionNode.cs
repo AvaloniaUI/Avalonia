@@ -10,35 +10,35 @@ namespace Avalonia.Data.Core
 {
     class IndexerExpressionNode : IndexerNodeBase
     {
-        private readonly ParameterExpression parameter;
-        private readonly IndexExpression expression;
-        private readonly Delegate setDelegate;
-        private readonly Delegate getDelegate;
-        private readonly Delegate firstArgumentDelegate;
+        private readonly ParameterExpression _parameter;
+        private readonly IndexExpression _expression;
+        private readonly Delegate _setDelegate;
+        private readonly Delegate _getDelegate;
+        private readonly Delegate _firstArgumentDelegate;
 
         public IndexerExpressionNode(IndexExpression expression)
         {
-            parameter = Expression.Parameter(expression.Object.Type);
-            this.expression = expression.Update(parameter, expression.Arguments);
+            _parameter = Expression.Parameter(expression.Object.Type);
+            _expression = expression.Update(_parameter, expression.Arguments);
 
-            getDelegate = Expression.Lambda(this.expression, parameter).Compile();
+            _getDelegate = Expression.Lambda(_expression, _parameter).Compile();
 
             var valueParameter = Expression.Parameter(expression.Type);
 
-            setDelegate = Expression.Lambda(Expression.Assign(this.expression, valueParameter), parameter, valueParameter).Compile();
+            _setDelegate = Expression.Lambda(Expression.Assign(_expression, valueParameter), _parameter, valueParameter).Compile();
 
-            firstArgumentDelegate = Expression.Lambda(this.expression.Arguments[0], parameter).Compile();
+            _firstArgumentDelegate = Expression.Lambda(_expression.Arguments[0], _parameter).Compile();
         }
 
-        public override Type PropertyType => expression.Type;
+        public override Type PropertyType => _expression.Type;
 
-        public override string Description => expression.ToString();
+        public override string Description => _expression.ToString();
 
         protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             try
             {
-                setDelegate.DynamicInvoke(Target.Target, value);
+                _setDelegate.DynamicInvoke(Target.Target, value);
                 return true;
             }
             catch (Exception)
@@ -51,7 +51,7 @@ namespace Avalonia.Data.Core
         {
             try
             {
-                return getDelegate.DynamicInvoke(target);
+                return _getDelegate.DynamicInvoke(target);
             }
             catch (TargetInvocationException e) when (e.InnerException is ArgumentOutOfRangeException
                                                         || e.InnerException is IndexOutOfRangeException
@@ -63,9 +63,9 @@ namespace Avalonia.Data.Core
 
         protected override bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
         {
-            return expression.Indexer == null || expression.Indexer.Name == e.PropertyName;
+            return _expression.Indexer == null || _expression.Indexer.Name == e.PropertyName;
         }
 
-        protected override int? TryGetFirstArgumentAsInt() => firstArgumentDelegate.DynamicInvoke(Target.Target) as int?;
+        protected override int? TryGetFirstArgumentAsInt() => _firstArgumentDelegate.DynamicInvoke(Target.Target) as int?;
     }
 }
