@@ -332,7 +332,6 @@ namespace Avalonia
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
-                .Bind<ILayoutManager>().ToSingleton<LayoutManager>()
                 .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
