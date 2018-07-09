@@ -88,7 +88,6 @@ namespace Direct3DInteropSample
             context.ClearDepthStencilView(depthView, DepthStencilClearFlags.Depth, 1.0f, 0);
             context.ClearRenderTargetView(renderView, Color.White);
 
-            var time = 50;
             // Update WorldViewProj Matrix
             var worldViewProj = Matrix.RotationX((float) _model.RotationX) * Matrix.RotationY((float) _model.RotationY) *
                                 Matrix.RotationZ((float) _model.RotationZ)

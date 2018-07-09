@@ -15,8 +15,10 @@ using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {
-    internal class IndexerNode : ExpressionNode, ISettableNode
+    internal class IndexerNode :  SettableNode
     {
+        private IDisposable _subscription;
+
         public IndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
@@ -24,7 +26,7 @@ namespace Avalonia.Data.Core
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
 
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference reference)
         {
             var target = reference.Target;
             var incc = target as INotifyCollectionChanged;
@@ -49,10 +51,15 @@ namespace Avalonia.Data.Core
                     .Select(_ => GetValue(target)));
             }
 
-            return Observable.Merge(inputs).StartWith(GetValue(target));
+            _subscription = Observable.Merge(inputs).StartWith(GetValue(target)).Subscribe(ValueChanged);
         }
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override void StopListeningCore()
+        {
+            _subscription.Dispose();
+        }
+
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             var typeInfo = Target.Target.GetType().GetTypeInfo();
             var list = Target.Target as IList;
@@ -154,7 +161,7 @@ namespace Avalonia.Data.Core
 
         public IList<string> Arguments { get; }
 
-        public Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
+        public override Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
 
         private object GetValue(object target)
         {

@@ -21,20 +21,17 @@ namespace Avalonia.Gtk3.Interop
             }
             return true;
         }
-
-        private static readonly GCHandle PinnedHandle;
+        
         private static readonly Native.D.timeout_callback PinnedHandler;
         static GlibTimeout()
         {
             PinnedHandler = Handler;
-            
         }
 
 
         public static void Add(int priority, uint interval, Func<bool> callback)
         {
             var handle = GCHandle.Alloc(callback);
-            //Native.GTimeoutAdd(interval, PinnedHandler, GCHandle.ToIntPtr(handle));
             Native.GTimeoutAddFull(priority, interval, PinnedHandler, GCHandle.ToIntPtr(handle), IntPtr.Zero);
         }
 

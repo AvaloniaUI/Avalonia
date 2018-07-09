@@ -337,6 +337,21 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
+        [Fact]
+        public void Second_Subscription_Should_Fire_Immediately()
+        {
+            var data = new Class1 { StringValue = "foo" };
+            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
+            object result = null;
+
+            target.Subscribe();
+            target.Subscribe(x => result = x);
+
+            Assert.Equal("foo", result);
+
+            GC.KeepAlive(data);
+        }
+
         private class Class1 : NotifyingBase
         {
             private string _stringValue;

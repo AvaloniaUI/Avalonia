@@ -78,6 +78,14 @@ namespace Avalonia.Win32.Interop
             SWP_RESIZE = SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER
         }
 
+        public static class WindowPosZOrder
+        {
+            public static readonly IntPtr HWND_BOTTOM = new IntPtr(1);
+            public static readonly IntPtr HWND_TOP = new IntPtr(0);
+            public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+            public static readonly IntPtr HWND_NOTOPMOST = new IntPtr(-2);
+        }
+
         public enum SizeCommand
         {
             Restored,
@@ -218,6 +226,8 @@ namespace Avalonia.Win32.Interop
 
             MK_SHIFT = 0x0004,
 
+            MK_ALT = 0x0020,
+
             MK_XBUTTON1 = 0x0020,
 
             MK_XBUTTON2 = 0x0040
@@ -309,6 +319,24 @@ namespace Avalonia.Win32.Interop
             WS_EX_LAYOUTRTL = 0x00400000,
             WS_EX_COMPOSITED = 0x02000000,
             WS_EX_NOACTIVATE = 0x08000000
+        }
+
+        [Flags]
+        public enum ClassStyles : uint
+        {
+            CS_VREDRAW = 0x0001,
+            CS_HREDRAW = 0x0002,
+            CS_DBLCLKS = 0x0008,
+            CS_OWNDC = 0x0020,
+            CS_CLASSDC = 0x0040,
+            CS_PARENTDC = 0x0080,
+            CS_NOCLOSE = 0x0200,
+            CS_SAVEBITS = 0x0800,
+            CS_BYTEALIGNCLIENT = 0x1000,
+            CS_BYTEALIGNWINDOW = 0x2000,
+            CS_GLOBALCLASS = 0x4000,
+            CS_IME = 0x00010000,
+            CS_DROPSHADOW = 0x00020000
         }
 
         public enum WindowsMessage : uint
@@ -998,7 +1026,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        public static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
+        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, int[] finalEffect);
 
 
 
@@ -1193,7 +1221,7 @@ namespace Avalonia.Win32.Interop
             OFN_NOREADONLYRETURN = 0x00008000,
             OFN_OVERWRITEPROMPT = 0x00000002
         }
-
+        
         public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
@@ -1213,7 +1241,7 @@ namespace Avalonia.Win32.Interop
         public const uint SIGDN_FILESYSPATH = 0x80058000;
 
         [Flags]
-        internal enum FOS : uint
+        public enum FOS : uint
         {
             FOS_OVERWRITEPROMPT = 0x00000002,
             FOS_STRICTFILETYPES = 0x00000004,
@@ -1237,135 +1265,246 @@ namespace Avalonia.Win32.Interop
             FOS_DEFAULTNOMINIMODE = 0x20000000
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct OpenFileName
+        public static class ShellIds
         {
-            public int lStructSize;
-            public IntPtr hwndOwner;
-            public IntPtr hInstance;
-            public IntPtr lpstrFilter;
-            public IntPtr lpstrCustomFilter;
-            public int nMaxCustFilter;
-            public int nFilterIndex;
-            public IntPtr lpstrFile;
-            public int nMaxFile;
-            public IntPtr lpstrFileTitle;
-            public int nMaxFileTitle;
-            public IntPtr lpstrInitialDir;
-            public IntPtr lpstrTitle;
-            public OpenFileNameFlags Flags;
-            private readonly ushort Unused;
-            private readonly ushort Unused2;
-            public IntPtr lpstrDefExt;
-            public IntPtr lCustData;
-            public IntPtr lpfnHook;
-            public IntPtr lpTemplateName;
-            public IntPtr reservedPtr;
-            public int reservedInt;
-            public int flagsEx;
-        }        
+            public static readonly Guid OpenFileDialog = Guid.Parse("DC1C5A9C-E88A-4DDE-A5A1-60F82A20AEF7");
+            public static readonly Guid SaveFileDialog = Guid.Parse("C0B4E2F3-BA21-4773-8DBA-335EC946EB8B");
+            public static readonly Guid IFileDialog = Guid.Parse("42F85136-DB7E-439C-85F1-E4075D135FC8");
+            public static readonly Guid IShellItem = Guid.Parse("43826D1E-E718-42EE-BC55-A1E261C37BFE");
+        }
+
+        [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IFileDialog
+        {
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            [PreserveSig()]
+            uint Show([In, Optional] IntPtr hwndOwner); //IModalWindow
+
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFileTypes(uint cFileTypes, [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] COMDLG_FILTERSPEC[] rgFilterSpec);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFileTypeIndex([In] uint iFileType);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetFileTypeIndex(out uint piFileType);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint Advise([In, MarshalAs(UnmanagedType.Interface)] IntPtr pfde, out uint pdwCookie);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint Unadvise([In] uint dwCookie);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetOptions([In] uint fos);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetOptions(out uint fos);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetDefaultFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetFolder([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetCurrentSelection([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFileName([In, MarshalAs(UnmanagedType.LPWStr)] string pszName);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string pszName);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pszTitle);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetOkButtonLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszText);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFileNameLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszLabel);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetResult([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint AddPlace([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, uint fdap);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetDefaultExtension([In, MarshalAs(UnmanagedType.LPWStr)] string pszDefaultExtension);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint Close([MarshalAs(UnmanagedType.Error)] uint hr);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetClientGuid([In] ref Guid guid);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint ClearClientData();
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFilter([MarshalAs(UnmanagedType.Interface)] IntPtr pFilter);
+
+        }
+
+        [ComImport, Guid("d57c7288-d4ad-4768-be02-9d969532d960"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IFileOpenDialog
+        {
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            [PreserveSig()]
+            uint Show([In, Optional] IntPtr hwndOwner); //IModalWindow 
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetFileTypes([In] uint cFileTypes, [In, MarshalAs(UnmanagedType.LPArray)] IntPtr rgFilterSpec);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetFileTypeIndex([In] uint iFileType);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetFileTypeIndex(out uint piFileType);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint Advise([In, MarshalAs(UnmanagedType.Interface)] IntPtr pfde, out uint pdwCookie);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void Unadvise([In] uint dwCookie);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint SetOptions([In] uint fos);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetOptions(out uint fos);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetDefaultFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetFolder([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetCurrentSelection([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetFileName([In, MarshalAs(UnmanagedType.LPWStr)] string pszName);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string pszName);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pszTitle);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetOkButtonLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszText);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetFileNameLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszLabel);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetResult([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint AddPlace([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, uint fdap);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetDefaultExtension([In, MarshalAs(UnmanagedType.LPWStr)] string pszDefaultExtension);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void Close([MarshalAs(UnmanagedType.Error)] int hr);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetClientGuid([In] ref Guid guid);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void ClearClientData();
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void SetFilter([MarshalAs(UnmanagedType.Interface)] IntPtr pFilter);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetResults([MarshalAs(UnmanagedType.Interface)] out IShellItemArray ppenum);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetSelectedItems([MarshalAs(UnmanagedType.Interface)] out IShellItemArray ppsai);
+        }
+
+        [ComImport, Guid("B63EA76D-1F85-456F-A19C-48159EFA858B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IShellItemArray
+        {
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void BindToHandler([In, MarshalAs(UnmanagedType.Interface)] IntPtr pbc, [In] ref Guid rbhid,
+                         [In] ref Guid riid, out IntPtr ppvOut);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetPropertyStore([In] int Flags, [In] ref Guid riid, out IntPtr ppv);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetPropertyDescriptionList([In] ref PROPERTYKEY keyType, [In] ref Guid riid, out IntPtr ppv);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetAttributes([In] SIATTRIBFLAGS dwAttribFlags, [In] uint sfgaoMask, out uint psfgaoAttribs);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetCount(out uint pdwNumItems);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void GetItemAt([In] uint dwIndex, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            void EnumItems([MarshalAs(UnmanagedType.Interface)] out IntPtr ppenumShellItems);
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct PROPERTYKEY
+        {
+            public Guid fmtid;
+            public uint pid;
+        }
+
+        public enum SIATTRIBFLAGS
+        {
+            SIATTRIBFLAGS_AND = 1,
+            SIATTRIBFLAGS_APPCOMPAT = 3,
+            SIATTRIBFLAGS_OR = 2
+        }
+
+        [ComImport, Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        public interface IShellItem
+        {
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint BindToHandler([In] IntPtr pbc, [In] ref Guid rbhid, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.Interface)] out IntPtr ppvOut);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetParent([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetDisplayName([In] uint sigdnName, out IntPtr ppszName);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint GetAttributes([In] uint sfgaoMask, out uint psfgaoAttribs);
+
+            [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+            uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
+
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct COMDLG_FILTERSPEC
+        {
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string pszName;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string pszSpec;
+        }
     }
 
-    [ComImport(), Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IFileDialog
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [PreserveSig()]
-        uint Show([In, Optional] IntPtr hwndOwner); //IModalWindow 
-
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFileTypes([In] uint cFileTypes, [In, MarshalAs(UnmanagedType.LPArray)] IntPtr rgFilterSpec);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFileTypeIndex([In] uint iFileType);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetFileTypeIndex(out uint piFileType);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint Advise([In, MarshalAs(UnmanagedType.Interface)] IntPtr pfde, out uint pdwCookie);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint Unadvise([In] uint dwCookie);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetOptions([In] uint fos);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetOptions(out uint fos);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        void SetDefaultFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFolder([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetFolder([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetCurrentSelection([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFileName([In, MarshalAs(UnmanagedType.LPWStr)] string pszName);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string pszName);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetTitle([In, MarshalAs(UnmanagedType.LPWStr)] string pszTitle);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetOkButtonLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszText);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFileNameLabel([In, MarshalAs(UnmanagedType.LPWStr)] string pszLabel);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetResult([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint AddPlace([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, uint fdap);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetDefaultExtension([In, MarshalAs(UnmanagedType.LPWStr)] string pszDefaultExtension);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint Close([MarshalAs(UnmanagedType.Error)] uint hr);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetClientGuid([In] ref Guid guid);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint ClearClientData();
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint SetFilter([MarshalAs(UnmanagedType.Interface)] IntPtr pFilter);
-
-    }
-
-
-    [ComImport, Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IShellItem
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint BindToHandler([In] IntPtr pbc, [In] ref Guid rbhid, [In] ref Guid riid, [Out, MarshalAs(UnmanagedType.Interface)] out IntPtr ppvOut);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetParent([MarshalAs(UnmanagedType.Interface)] out IShellItem ppsi);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetDisplayName([In] uint sigdnName, out IntPtr ppszName);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint GetAttributes([In] uint sfgaoMask, out uint psfgaoAttribs);
-
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        uint Compare([In, MarshalAs(UnmanagedType.Interface)] IShellItem psi, [In] uint hint, out int piOrder);
-        
-    }
-    
     [Flags]
     internal enum DropEffect : int
     {
@@ -1375,9 +1514,7 @@ namespace Avalonia.Win32.Interop
         Link = 4,
         Scroll = -2147483648,
     }
-    
-    
-    
+
     [ComImport]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("00000122-0000-0000-C000-000000000046")]
@@ -1408,7 +1545,7 @@ namespace Avalonia.Win32.Interop
     [ComImport]
     [Guid("0000010E-0000-0000-C000-000000000046")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    public interface IOleDataObject
+    internal interface IOleDataObject
     {
         void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
         void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);

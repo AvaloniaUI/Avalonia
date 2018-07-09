@@ -6,11 +6,13 @@
 #addin "nuget:?package=NuGet.Core&version=2.14.0"
 #tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
 #tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
+
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
-#tool "nuget:?package=xunit.runner.console&version=2.3.0-beta5-build3769"
+#tool "nuget:?package=xunit.runner.console&version=2.3.1"
+#tool "nuget:?package=JetBrains.dotMemoryUnit&version=3.0.20171219.105559"
 
 ///////////////////////////////////////////////////////////////////////////////
 // USINGS
@@ -34,20 +36,31 @@ using NuGet;
 // PARAMETERS
 //////////////////////////////////////////////////////////////////////
 
-Parameters parameters = new Parameters(Context);
-Packages packages = new Packages(Context, parameters);
+class AvaloniaBuildData
+{
+    public AvaloniaBuildData(Parameters parameters, Packages packages)
+    {
+        Parameters = parameters;
+        Packages = packages;
+    }
+
+    public Parameters Parameters { get; }
+    public Packages Packages { get; }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP
 ///////////////////////////////////////////////////////////////////////////////
 
-Setup(context =>
+Setup<AvaloniaBuildData>(context =>
 {
-    Information("Building version {0} of Avalonia ({1}, {2}, {3}) using version {4} of Cake.", 
+    var parameters = new Parameters(context);
+    var buildContext = new AvaloniaBuildData(parameters, new Packages(context, parameters));
+
+    Information("Building version {0} of Avalonia ({1}, {2}) using version {3} of Cake.", 
         parameters.Version,
         parameters.Platform,
         parameters.Configuration,
-        parameters.Target,
         typeof(ICakeContext).Assembly.GetName().Version.ToString());
 
     if (parameters.IsRunningOnAppVeyor)
@@ -55,8 +68,7 @@ Setup(context =>
         Information("Repository Name: " + BuildSystem.AppVeyor.Environment.Repository.Name);
         Information("Repository Branch: " + BuildSystem.AppVeyor.Environment.Repository.Branch);
     }
-
-    Information("Target: " + parameters.Target);
+    Information("Target:" + context.TargetTask.Name);
     Information("Platform: " + parameters.Platform);
     Information("Configuration: " + parameters.Configuration);
     Information("IsLocalBuild: " + parameters.IsLocalBuild);
@@ -70,13 +82,15 @@ Setup(context =>
     Information("IsReleasable: " + parameters.IsReleasable);
     Information("IsMyGetRelease: " + parameters.IsMyGetRelease);
     Information("IsNuGetRelease: " + parameters.IsNuGetRelease);
+
+    return buildContext;
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 // TEARDOWN
 ///////////////////////////////////////////////////////////////////////////////
 
-Teardown(context =>
+Teardown<AvaloniaBuildData>((context, buildContext) =>
 {
     Information("Finished running tasks.");
 });
@@ -85,20 +99,20 @@ Teardown(context =>
 // TASKS
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Clean")
-    .Does(() =>
+Task("Clean-Impl")
+    .Does<AvaloniaBuildData>(data =>
 {
-    CleanDirectories(parameters.BuildDirs);
-    CleanDirectory(parameters.ArtifactsDir);
-    CleanDirectory(parameters.NugetRoot);
-    CleanDirectory(parameters.ZipRoot);
-    CleanDirectory(parameters.BinRoot);
+    CleanDirectories(data.Parameters.BuildDirs);
+    CleanDirectory(data.Parameters.ArtifactsDir);
+    CleanDirectory(data.Parameters.NugetRoot);
+    CleanDirectory(data.Parameters.ZipRoot);
+    CleanDirectory(data.Parameters.BinRoot);
 });
 
-Task("Restore-NuGet-Packages")
-    .IsDependentOn("Clean")
-    .WithCriteria(parameters.IsRunningOnWindows)
-    .Does(() =>
+Task("Restore-NuGet-Packages-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
+    .Does<AvaloniaBuildData>(data =>
 {
     var maxRetryCount = 5;
     var toolTimeout = 2d;
@@ -115,13 +129,13 @@ Task("Restore-NuGet-Packages")
                 toolTimeout+=0.5;
             }})
         .Execute(()=> {
-                NuGetRestore(parameters.MSBuildSolution, new NuGetRestoreSettings {
+                NuGetRestore(data.Parameters.MSBuildSolution, new NuGetRestoreSettings {
                     ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
                 });
         });
 });
 
-void DotNetCoreBuild()
+void DotNetCoreBuild(Parameters parameters)
 {
     var settings = new DotNetCoreBuildSettings 
     {
@@ -135,28 +149,27 @@ void DotNetCoreBuild()
     DotNetCoreBuild(parameters.MSBuildSolution, settings);
 }
 
-Task("Build")
-    .IsDependentOn("Restore-NuGet-Packages")
-    .Does(() =>
+Task("Build-Impl")
+    .Does<AvaloniaBuildData>(data =>
 {
-    if(parameters.IsRunningOnWindows)
+    if(data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
     {
-        MSBuild(parameters.MSBuildSolution, settings => {
-            settings.SetConfiguration(parameters.Configuration);
+        MSBuild(data.Parameters.MSBuildSolution, settings => {
+            settings.SetConfiguration(data.Parameters.Configuration);
             settings.SetVerbosity(Verbosity.Minimal);
-            settings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
+            settings.WithProperty("Platform", "\"" + data.Parameters.Platform + "\"");
             settings.WithProperty("UseRoslynPathHack", "true");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.WithProperty("Windows", "True");
             settings.SetNodeReuse(false);
+            settings.SetMaxCpuCount(0);
         });
     }
     else
     {
-        DotNetCoreBuild();
+        DotNetCoreBuild(data.Parameters);
     }
 });
-
 
 void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
 {
@@ -180,83 +193,106 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
     }
 }
 
-Task("Run-Unit-Tests")
-    .IsDependentOn("Build")
-    .IsDependentOn("Run-Designer-Tests")
-    .IsDependentOn("Run-Render-Tests")
-    .WithCriteria(() => !parameters.SkipTests)
-    .Does(() => {
-        RunCoreTest("./tests/Avalonia.Base.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Controls.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Input.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Layout.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Markup.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Styling.UnitTests", parameters, false);
-        RunCoreTest("./tests/Avalonia.Visuals.UnitTests", parameters, false);
-        if (parameters.IsRunningOnWindows)
-        {
-            RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", parameters, true);
-        }
-    });
-
-Task("Run-Designer-Tests")
-    .IsDependentOn("Build")
-    .WithCriteria(() => !parameters.SkipTests)
-    .Does(() => {
-        RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", parameters, false);
-    });
-
-Task("Run-Render-Tests")
-    .IsDependentOn("Build")
-    .WithCriteria(() => !parameters.SkipTests && parameters.IsRunningOnWindows)
-    .Does(() => {
-        RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", parameters, true);
-        RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", parameters, true);
-    });
-
-Task("Copy-Files")
-    .IsDependentOn("Run-Unit-Tests")
-    .Does(() =>
+Task("Run-Unit-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .Does<AvaloniaBuildData>(data =>
 {
-    CopyFiles(packages.BinFiles, parameters.BinRoot);
+    RunCoreTest("./tests/Avalonia.Base.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Controls.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Input.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Layout.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Markup.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
+    if (data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
+    {
+        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
+    }
 });
 
-Task("Zip-Files")
-    .IsDependentOn("Copy-Files")
-    .Does(() =>
+Task("Run-Designer-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .Does<AvaloniaBuildData>(data =>
 {
-    Zip(parameters.BinRoot, parameters.ZipCoreArtifacts);
-
-    Zip(parameters.ZipSourceControlCatalogDesktopDirs, 
-        parameters.ZipTargetControlCatalogDesktopDirs, 
-        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
-        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
-        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
-        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
-        GetFiles(parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
+    RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", data.Parameters, false);
 });
 
-Task("Create-NuGet-Packages")
-    .IsDependentOn("Run-Unit-Tests")
-    .IsDependentOn("Inspect")
+Task("Run-Render-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
+    .Does<AvaloniaBuildData>(data =>
+{
+    RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
+    RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", data.Parameters, true);
+});
+
+Task("Run-Leak-Tests-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
-    foreach(var nuspec in packages.NuspecNuGetSettings)
+    var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
+    var leakTestsExitCode = StartProcess(dotMemoryUnit, new ProcessSettings
+    {
+        Arguments = new ProcessArgumentBuilder()
+            .Append(Context.Tools.Resolve("xunit.console.x86.exe").FullPath)
+            .Append("--propagate-exit-code")
+            .Append("--")
+            .Append("tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll"),
+        Timeout = 120000
+    });
+
+    if (leakTestsExitCode != 0)
+    {
+        throw new Exception("Leak Tests failed");
+    }
+});
+
+Task("Copy-Files-Impl")
+    .Does<AvaloniaBuildData>(data =>
+{
+    CopyFiles(data.Packages.BinFiles, data.Parameters.BinRoot);
+});
+
+Task("Zip-Files-Impl")
+    .Does<AvaloniaBuildData>(data =>
+{
+    Zip(data.Parameters.BinRoot, data.Parameters.ZipCoreArtifacts);
+
+    Zip(data.Parameters.NugetRoot, data.Parameters.ZipNuGetArtifacts);
+
+    if (!data.Parameters.IsPlatformNetCoreOnly) {
+        Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
+            data.Parameters.ZipTargetControlCatalogDesktopDirs, 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
+            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
+    }
+});
+
+Task("Create-NuGet-Packages-Impl")
+    .Does<AvaloniaBuildData>(data =>
+{
+    foreach(var nuspec in data.Packages.NuspecNuGetSettings)
     {
         NuGetPack(nuspec);
     }
 });
 
-Task("Publish-MyGet")
-    .IsDependentOn("Create-NuGet-Packages")
-    .WithCriteria(() => !parameters.IsLocalBuild)
-    .WithCriteria(() => !parameters.IsPullRequest)
-    .WithCriteria(() => parameters.IsMainRepo)
-    .WithCriteria(() => parameters.IsMasterBranch)
-    .WithCriteria(() => parameters.IsMyGetRelease)
-    .Does(() =>
+Task("Publish-MyGet-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
+    .Does<AvaloniaBuildData>(data =>
 {
     var apiKey = EnvironmentVariable("MYGET_API_KEY");
     if(string.IsNullOrEmpty(apiKey)) 
@@ -270,7 +306,7 @@ Task("Publish-MyGet")
         throw new InvalidOperationException("Could not resolve MyGet API url.");
     }
 
-    foreach(var nupkg in packages.NugetPackages)
+    foreach(var nupkg in data.Packages.NugetPackages)
     {
         NuGetPush(nupkg, new NuGetPushSettings {
             Source = apiUrl,
@@ -283,13 +319,12 @@ Task("Publish-MyGet")
     Information("Publish-MyGet Task failed, but continuing with next Task...");
 });
 
-Task("Publish-NuGet")
-    .IsDependentOn("Create-NuGet-Packages")
-    .WithCriteria(() => !parameters.IsLocalBuild)
-    .WithCriteria(() => !parameters.IsPullRequest)
-    .WithCriteria(() => parameters.IsMainRepo)
-    .WithCriteria(() => parameters.IsNuGetRelease)
-    .Does(() =>
+Task("Publish-NuGet-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
+    .Does<AvaloniaBuildData>(data =>
 {
     var apiKey = EnvironmentVariable("NUGET_API_KEY");
     if(string.IsNullOrEmpty(apiKey)) 
@@ -303,7 +338,7 @@ Task("Publish-NuGet")
         throw new InvalidOperationException("Could not resolve NuGet API url.");
     }
 
-    foreach(var nupkg in packages.NugetPackages)
+    foreach(var nupkg in data.Packages.NugetPackages)
     {
         NuGetPush(nupkg, new NuGetPushSettings {
             ApiKey = apiKey,
@@ -316,102 +351,80 @@ Task("Publish-NuGet")
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
 
-Task("Run-Leak-Tests")
-    .WithCriteria(parameters.IsRunningOnWindows)
-    .IsDependentOn("Build")
+Task("Inspect-Impl")
+    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
+    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
-    {
-        DotNetCoreRestore("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj");
-        DotNetBuild("tests\\Avalonia.LeakTests\\toolproject\\tool.csproj", settings => settings.SetConfiguration("Release"));
-        var report = "tests\\Avalonia.LeakTests\\bin\\Release\\report.xml";
-        if(System.IO.File.Exists(report))
-            System.IO.File.Delete(report);
-
-        var toolXunitConsoleX86 = Context.Tools.Resolve("xunit.console.x86.exe").FullPath;
-        var proc = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+{
+    var badIssues = new []{"PossibleNullReferenceException"};
+    var whitelist = new []{"tests", "src\\android", "src\\ios",
+        "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
+    Information("Running code inspections");
+    
+    var exitCode = StartProcess(Context.Tools.Resolve("inspectcode.exe"),
+        new ProcessSettings
         {
-            FileName="tests\\Avalonia.LeakTests\\toolproject\\bin\\dotMemoryUnit.exe",
-            Arguments="-targetExecutable=\"" + toolXunitConsoleX86 + "\" -returnTargetExitCode  -- tests\\Avalonia.LeakTests\\bin\\Release\\Avalonia.LeakTests.dll -xml tests\\Avalonia.LeakTests\\bin\\Release\\report.xml ",
-            UseShellExecute = false,
+            Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln",
+            RedirectStandardOutput = true
         });
-        var st = System.Diagnostics.Stopwatch.StartNew();
-        while(!proc.HasExited && !System.IO.File.Exists(report))
-        {
-            if(st.Elapsed.TotalSeconds>60)
-            {
-                Error("Timed out, probably a bug in dotMemoryUnit");
-                proc.Kill();
-                throw new Exception("dotMemory issue");
-            }
-            proc.WaitForExit(100);
-        }
-        try{
-            proc.Kill();
-        }catch{}
-        var doc =  System.Xml.Linq.XDocument.Load(report);
-        if(doc.Root.Descendants("assembly").Any(x=>x.Attribute("failed").Value.ToString() != "0"))
-        {
-            throw new Exception("Tests failed");
-        }
 
-    });
-
-Task("Inspect")
-    .WithCriteria(parameters.IsRunningOnWindows)
-    .IsDependentOn("Restore-NuGet-Packages")
-    .Does(() =>
+    Information("Analyzing report");
+    var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
+    var failBuild = false;
+    foreach(var xml in doc.Descendants("Issue"))
     {
-        var badIssues = new []{"PossibleNullReferenceException"};
-        var whitelist = new []{"tests", "src\\android", "src\\ios",
-            "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
-        Information("Running code inspections");
-        
-        StartProcess(Context.Tools.Resolve("inspectcode.exe"),
-            new ProcessSettings{ Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln" });
-        Information("Analyzing report");
-        var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
-        var failBuild = false;
-        foreach(var xml in doc.Descendants("Issue"))
+        var typeId = xml.Attribute("TypeId").Value.ToString();
+        if(badIssues.Contains(typeId))
         {
-            var typeId = xml.Attribute("TypeId").Value.ToString();
-            if(badIssues.Contains(typeId))
-            {
-                var file = xml.Attribute("File").Value.ToString().ToLower();
-                if(whitelist.Any(wh => file.StartsWith(wh)))
-                    continue;
-                var line = xml.Attribute("Line").Value.ToString();
-                Error(typeId + " - " + file + " on line " + line);
-                failBuild = true;
-            }
+            var file = xml.Attribute("File").Value.ToString().ToLower();
+            if(whitelist.Any(wh => file.StartsWith(wh)))
+                continue;
+            var line = xml.Attribute("Line").Value.ToString();
+            Error(typeId + " - " + file + " on line " + line);
+            failBuild = true;
         }
-        if(failBuild)
-            throw new Exception("Issues found");
-    });
+    }
+    if(failBuild)
+        throw new Exception("Issues found");
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Package")
-  .IsDependentOn("Create-NuGet-Packages");
+Task("Run-Tests")
+    .IsDependentOn("Clean-Impl")
+    .IsDependentOn("Restore-NuGet-Packages-Impl")
+    .IsDependentOn("Build-Impl")
+    .IsDependentOn("Run-Unit-Tests-Impl")
+    .IsDependentOn("Run-Render-Tests-Impl")
+    .IsDependentOn("Run-Designer-Tests-Impl")
+    .IsDependentOn("Run-Leak-Tests-Impl");
 
-Task("Default").Does(() =>
-{
-    if(parameters.IsRunningOnWindows)
-        RunTarget("Package");
-    else
-        RunTarget("Run-Unit-Tests");
-});
+Task("Package")
+    .IsDependentOn("Run-Tests")
+    .IsDependentOn("Inspect-Impl")
+    .IsDependentOn("Create-NuGet-Packages-Impl");
+
 Task("AppVeyor")
-  .IsDependentOn("Zip-Files")
-  .IsDependentOn("Publish-MyGet")
-  .IsDependentOn("Publish-NuGet");
+  .IsDependentOn("Package")
+  .IsDependentOn("Copy-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl")
+  .IsDependentOn("Publish-MyGet-Impl")
+  .IsDependentOn("Publish-NuGet-Impl");
 
 Task("Travis")
-  .IsDependentOn("Run-Unit-Tests");
+  .IsDependentOn("Run-Tests");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
 ///////////////////////////////////////////////////////////////////////////////
 
-RunTarget(parameters.Target);
+var target = Context.Argument("target", "Default");
+
+if (target == "Default")
+{
+    target = Context.IsRunningOnWindows() ? "Package" : "Run-Tests";
+}
+
+RunTarget(target);

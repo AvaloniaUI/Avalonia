@@ -59,7 +59,7 @@ namespace Avalonia.Media
         //HACK: This is a temporary hack that is used in the render loop 
         //to update TransformedBounds property
         [Obsolete("HACK for render loop, don't use")]
-        internal Matrix CurrentContainerTransform => _currentContainerTransform;
+        public Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
         /// Draws a bitmap image.

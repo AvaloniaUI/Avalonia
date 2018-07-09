@@ -123,6 +123,7 @@ namespace Avalonia.MonoMac
 
         public void Hide() => Window?.OrderOut(Window);
 
+        public void SetTopmost(bool value) => Window.Level = value ? NSWindowLevel.Floating : NSWindowLevel.Normal;
 
         public void BeginMoveDrag()
         {
