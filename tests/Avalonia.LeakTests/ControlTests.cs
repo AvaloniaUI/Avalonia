@@ -42,12 +42,12 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<Canvas>(window.Presenter.Child);
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;
@@ -78,13 +78,13 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that Canvas gets added to visual tree.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<Canvas>(window.Find<Canvas>("foo"));
                     Assert.IsType<Canvas>(window.Presenter.Child);
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;
@@ -116,13 +116,13 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that ScrollViewer gets added to visual tree and its 
                     // template applied.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<ScrollViewer>(window.Presenter.Child);
                     Assert.IsType<Canvas>(((ScrollViewer)window.Presenter.Child).Presenter.Child);
 
                     // Clear the content and ensure the ScrollViewer is removed.
                     window.Content = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;
@@ -153,13 +153,13 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // template applied.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
                     Assert.NotEmpty(window.Presenter.Child.GetVisualChildren());
 
                     // Clear the content and ensure the TextBox is removed.
                     window.Content = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;
@@ -197,14 +197,14 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TextBox gets added to visual tree and its 
                     // Text property set.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.IsType<TextBox>(window.Presenter.Child);
                     Assert.Equal("foo", ((TextBox)window.Presenter.Child).Text);
 
                     // Clear the content and DataContext and ensure the TextBox is removed.
                     window.Content = null;
                     window.DataContext = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;
@@ -235,7 +235,7 @@ namespace Avalonia.LeakTests
 
                 // Do a layout and make sure that TextBox gets added to visual tree and its 
                 // template applied.
-                LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                window.LayoutManager.ExecuteInitialLayoutPass(window);
                 Assert.Same(textBox, window.Presenter.Child);
 
                 // Get the border from the TextBox template.
@@ -247,7 +247,7 @@ namespace Avalonia.LeakTests
 
                 // Clear the content and ensure the TextBox is removed.
                 window.Content = null;
-                LayoutManager.Instance.ExecuteLayoutPass();
+                window.LayoutManager.ExecuteLayoutPass();
                 Assert.Null(window.Presenter.Child);
 
                 // Check that the TextBox has no subscriptions to its Classes collection.
@@ -289,12 +289,12 @@ namespace Avalonia.LeakTests
                     window.Show();
 
                     // Do a layout and make sure that TreeViewItems get realized.
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(window);
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
                     Assert.Single(target.ItemContainerGenerator.Containers);
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
-                    LayoutManager.Instance.ExecuteLayoutPass();
+                    window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
                     return window;

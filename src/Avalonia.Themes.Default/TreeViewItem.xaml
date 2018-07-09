@@ -7,14 +7,12 @@
           <Grid ColumnDefinitions="16, Auto">
             <ToggleButton Name="expander"
                           Focusable="False"
-                          IsChecked="{TemplateBinding Path=IsExpanded, Mode=TwoWay}"/>
+                          IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}"/>
             <ContentPresenter Name="PART_HeaderPresenter"
                               Background="{TemplateBinding Background}"
                               BorderBrush="{TemplateBinding BorderBrush}"
                               BorderThickness="{TemplateBinding BorderThickness}"
                               Content="{TemplateBinding Header}"
-                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               Padding="{TemplateBinding Padding}"
                               TemplatedControl.IsTemplateFocusTarget="True"
                               Grid.Column="1"/>
