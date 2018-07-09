@@ -73,7 +73,7 @@ namespace Avalonia
         /// Gets or sets the application's global data templates.
         /// </summary>
         /// <remarks>
-        /// It can only be called once, any attempts to change the value after it set will fail and an
+        /// It can only be called once, any attempts to change the value after it is set, will fail and an
         /// InvalidOperationException will be thrown.
         /// The property is not using any type of thread-safety mechanism.
         /// </remarks>
