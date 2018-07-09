@@ -72,10 +72,35 @@ namespace Avalonia
         /// <summary>
         /// Gets or sets the application's global data templates.
         /// </summary>
+        /// <remarks>
+        /// It can only be called once, any attempts to change the value after it set will fail and an
+        /// InvalidOperationException will be thrown.
+        /// The property is not using any type of thread-safety mechanism.
+        /// </remarks>
         /// <value>
         /// The application's global data templates.
         /// </value>
-        public DataTemplates DataTemplates => _dataTemplates ?? (_dataTemplates = new DataTemplates());
+        public DataTemplates DataTemplates
+        {
+            get
+            {
+                if (_dataTemplates == null)
+                {
+                    _dataTemplates = new DataTemplates();
+                }
+                
+                return _dataTemplates;
+            }
+            set
+            {
+                if (_dataTemplates != null)
+                {
+                    throw new InvalidOperationException("Once DataTemplates is set it cannot be changed.");
+                }
+                
+                _dataTemplates = value;
+            }
+        }
 
         /// <summary>
         /// Gets the application's focus manager.
