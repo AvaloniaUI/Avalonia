@@ -8,42 +8,21 @@ using System.Threading.Tasks;
 using Avalonia.Diagnostics;
 using Avalonia.Data.Core;
 using Xunit;
-using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
     public class ExpressionObserverTests_AttachedProperty
     {
-        private readonly Func<string, string, Type> _typeResolver;
-
-        public ExpressionObserverTests_AttachedProperty()
-        {
-            var foo = Owner.FooProperty;
-            _typeResolver = (_, name) => name == "Owner" ? typeof(Owner) : null;
-        }
 
         [Fact]
         public async Task Should_Get_Attached_Property_Value()
         {
             var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
+            var target = ExpressionObserver.Create(data, o => o[Owner.FooProperty]);
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
 
-            Assert.Null(((IAvaloniaObjectDebug)data).GetPropertyChangedSubscribers());
-        }
-
-        [Fact]
-        public async Task Should_Get_Attached_Property_Value_With_Namespace()
-        {
-            var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(
-                data,
-                "(NS:Owner.Foo)",
-                typeResolver: (ns, name) => ns == "NS" && name == "Owner" ? typeof(Owner) : null);
-            var result = await target.Take(1);
-            Assert.Equal("foo", result);
             Assert.Null(((IAvaloniaObjectDebug)data).GetPropertyChangedSubscribers());
         }
 
@@ -58,7 +37,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = ExpressionObserverBuilder.Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
+            var target = ExpressionObserver.Create(data, o => o.Next[Owner.FooProperty]);
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -70,7 +49,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Simple_Attached_Value()
         {
             var data = new Class1();
-            var target = ExpressionObserverBuilder.Build(data, "(Owner.Foo)", typeResolver: _typeResolver);
+            var target = ExpressionObserver.Create(data, o => o[Owner.FooProperty]);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -94,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = ExpressionObserverBuilder.Build(data, "Next.(Owner.Foo)", typeResolver: _typeResolver);
+            var target = ExpressionObserver.Create(data, o => o.Next[Owner.FooProperty]);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -113,7 +92,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
                 var source = new Class1();
-                var target = ExpressionObserverBuilder.Build(source, "(Owner.Foo)", typeResolver: _typeResolver);
+                var target = ExpressionObserver.Create(source, o => o.Next[Owner.FooProperty]);
                 return Tuple.Create(target, new WeakReference(source));
             };
 
@@ -123,22 +102,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.Collect();
 
             Assert.Null(result.Item2.Target);
-        }
-
-        [Fact]
-        public void Should_Fail_With_Attached_Property_With_Only_1_Part()
-        {
-            var data = new Class1();
-
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner)", typeResolver: _typeResolver));
-        }
-
-        [Fact]
-        public void Should_Fail_With_Attached_Property_With_More_Than_2_Parts()
-        {
-            var data = new Class1();
-
-            Assert.Throws<ExpressionParseException>(() => ExpressionObserverBuilder.Build(data, "(Owner.Foo.Bar)", typeResolver: _typeResolver));
         }
 
         private static class Owner

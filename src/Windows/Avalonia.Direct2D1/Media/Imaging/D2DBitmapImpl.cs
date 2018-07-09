@@ -19,6 +19,7 @@ namespace Avalonia.Direct2D1.Media
         /// Initialize a new instance of the <see cref="BitmapImpl"/> class
         /// with a bitmap backed by GPU memory.
         /// </summary>
+        /// <param name="imagingFactory">The image factory to use when saving out this bitmap.</param>
         /// <param name="d2DBitmap">The GPU bitmap.</param>
         /// <remarks>
         /// This bitmap must be either from the same render target,

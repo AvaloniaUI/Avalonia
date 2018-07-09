@@ -10,10 +10,11 @@ namespace Avalonia.Data.Core.Parsers
 {
     class ExpressionVisitorNodeBuilder : ExpressionVisitor
     {
+        private const string MultiDimensionalArrayGetterMethodName = "Get";
         private static PropertyInfo AvaloniaObjectIndexer;
         private static MethodInfo CreateDelegateMethod;
 
-        private readonly bool enableDataValidation;
+        private readonly bool _enableDataValidation;
 
         static ExpressionVisitorNodeBuilder()
         {
@@ -25,7 +26,7 @@ namespace Avalonia.Data.Core.Parsers
 
         public ExpressionVisitorNodeBuilder(bool enableDataValidation)
         {
-            this.enableDataValidation = enableDataValidation;
+            _enableDataValidation = enableDataValidation;
             Nodes = new List<ExpressionNode>();
         }
 
@@ -61,7 +62,7 @@ namespace Avalonia.Data.Core.Parsers
         protected override Expression VisitMember(MemberExpression node)
         {
             var visited = base.VisitMember(node);
-            Nodes.Add(new PropertyAccessorNode(node.Member.Name, enableDataValidation));
+            Nodes.Add(new PropertyAccessorNode(node.Member.Name, _enableDataValidation));
             return visited;
         }
 
@@ -72,7 +73,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Indexer == AvaloniaObjectIndexer)
             {
                 var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
-                Nodes.Add(new AvaloniaPropertyAccessorNode(property, enableDataValidation));
+                Nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableDataValidation));
             }
             else
             {
@@ -98,7 +99,6 @@ namespace Avalonia.Data.Core.Parsers
         {
             if (node.NodeType == ExpressionType.ArrayIndex)
             {
-                base.VisitBinary(node);
                 return Visit(Expression.MakeIndex(node.Left, null, new[] { node.Right }));
             }
             throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
@@ -161,21 +161,13 @@ namespace Avalonia.Data.Core.Parsers
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            var property = TryGetPropertyFromMethod(node.Method);
-
-            if (property != null)
-            {
-                return Visit(Expression.MakeIndex(node.Object, property, node.Arguments));
-            }
-
             if (node.Method == CreateDelegateMethod)
             {
                 var visited = Visit(node.Arguments[1]);
-                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, enableDataValidation));
-                return visited;
+                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, _enableDataValidation));
+                return node;
             }
-
-            if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))
+            else if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))
             {
                 if (node.Method.IsStatic)
                 {
@@ -189,7 +181,18 @@ namespace Avalonia.Data.Core.Parsers
                 return node;
             }
 
-            throw new ExpressionParseException(0, $"Invalid expression type in binding expression: {node.NodeType}.");
+            var property = TryGetPropertyFromMethod(node.Method);
+
+            if (property != null)
+            {
+                return Visit(Expression.MakeIndex(node.Object, property, node.Arguments));
+            }
+            else if (node.Object.Type.IsArray && node.Method.Name == MultiDimensionalArrayGetterMethodName)
+            {
+                return Visit(Expression.MakeIndex(node.Object, null, node.Arguments));
+            }
+
+            throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType.AssemblyQualifiedName}.{node.Method.Name}'.");
         }
 
         private PropertyInfo TryGetPropertyFromMethod(MethodInfo method)

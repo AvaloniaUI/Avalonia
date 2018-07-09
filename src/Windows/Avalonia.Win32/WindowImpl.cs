@@ -32,6 +32,7 @@ namespace Avalonia.Win32
         private bool _trackingMouse;
         private bool _decorated = true;
         private bool _resizable = true;
+        private bool _topmost = false;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
@@ -124,9 +125,12 @@ namespace Avalonia.Win32
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            return Win32Platform.UseDeferredRendering ?
-                (IRenderer)new DeferredRenderer(root, loop) :
-                new ImmediateRenderer(root);
+            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+
+            if (customRendererFactory != null)
+                return customRendererFactory.Create(root, loop);
+
+            return Win32Platform.UseDeferredRendering ? (IRenderer)new DeferredRenderer(root, loop) : new ImmediateRenderer(root);
         }
 
         public void Resize(Size value)
@@ -720,7 +724,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
-                style = 0,
+                style = (int)(ClassStyles.CS_OWNDC | ClassStyles.CS_HREDRAW | ClassStyles.CS_VREDRAW), // Unique DC helps with performance when using Gpu based rendering
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 hCursor = DefaultCursor,
@@ -838,7 +842,7 @@ namespace Avalonia.Win32
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
 
-                    SetWindowPos(_hwnd, new IntPtr(-2), x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
                 }
             }
         }
@@ -900,6 +904,22 @@ namespace Avalonia.Win32
             }
 
             _resizable = value;
+        }
+
+        public void SetTopmost(bool value)
+        {
+            if (value == _topmost)
+            {
+                return;
+            }
+
+            IntPtr hWndInsertAfter = value ? WindowPosZOrder.HWND_TOPMOST : WindowPosZOrder.HWND_NOTOPMOST;
+            UnmanagedMethods.SetWindowPos(_hwnd,
+                   hWndInsertAfter,
+                   0, 0, 0, 0,
+                   SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOACTIVATE);
+
+            _topmost = value;
         }
     }
 }

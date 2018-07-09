@@ -25,7 +25,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
 
-        public override bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             var typeInfo = Target.Target.GetType().GetTypeInfo();
             var list = Target.Target as IList;

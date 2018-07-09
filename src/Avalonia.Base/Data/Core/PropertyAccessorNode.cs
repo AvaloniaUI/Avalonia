@@ -3,14 +3,12 @@
 
 using System;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    public class PropertyAccessorNode : ExpressionNode, ISettableNode
+    public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;
@@ -23,19 +21,23 @@ namespace Avalonia.Data.Core
 
         public override string Description => PropertyName;
         public string PropertyName { get; }
-        public Type PropertyType => _accessor?.PropertyType;
+        public override Type PropertyType => _accessor?.PropertyType;
 
-        public bool SetTargetValue(object value, BindingPriority priority)
+        protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
             if (_accessor != null)
             {
-                try { return _accessor.SetValue(value, priority); } catch { }
+                try
+                {
+                    return _accessor.SetValue(value, priority);
+                }
+                catch { }
             }
 
             return false;
         }
 
-        protected override IObservable<object> StartListeningCore(WeakReference reference)
+        protected override void StartListeningCore(WeakReference reference)
         {
             var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference.Target, PropertyName));
             var accessor = plugin?.Start(reference, PropertyName);
@@ -51,14 +53,20 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            // Ensure that _accessor is set for the duration of the subscription.
-            return Observable.Using(
-                () =>
-                {
-                    _accessor = accessor;
-                    return Disposable.Create(() => _accessor = null);
-                },
-                _ => accessor);
+            if (accessor == null)
+            {
+                throw new NotSupportedException(
+                    $"Could not find a matching property accessor for {PropertyName}.");
+            }
+
+            accessor.Subscribe(ValueChanged);
+            _accessor = accessor;
+        }
+
+        protected override void StopListeningCore()
+        {
+            _accessor.Dispose();
+            _accessor = null;
         }
     }
 }

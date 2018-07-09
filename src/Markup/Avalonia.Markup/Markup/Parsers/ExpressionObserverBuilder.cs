@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Avalonia.Markup.Parsers
 {
-    public class ExpressionObserverBuilder
+    public static class ExpressionObserverBuilder
     {
         internal static ExpressionNode Parse(string expression, bool enableValidation = false, Func<string, string, Type> typeResolver = null)
         {

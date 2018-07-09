@@ -19,11 +19,6 @@ namespace Avalonia.Layout
         private bool _queued;
         private bool _running;
 
-        /// <summary>
-        /// Gets the layout manager.
-        /// </summary>
-        public static ILayoutManager Instance => AvaloniaLocator.Current.GetService<ILayoutManager>();
-
         /// <inheritdoc/>
         public void InvalidateMeasure(ILayoutable control)
         {
@@ -170,7 +165,7 @@ namespace Avalonia.Layout
                 {
                     root.Measure(Size.Infinity);
                 }
-                else
+                else if (control.PreviousMeasure.HasValue)
                 {
                     control.Measure(control.PreviousMeasure.Value);
                 }

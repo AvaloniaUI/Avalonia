@@ -408,12 +408,15 @@ namespace Avalonia.Controls.Primitives
 
             var panel = (InputElement)Presenter.Panel;
 
-            foreach (var container in e.Containers)
+            if (panel != null)
             {
-                if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                foreach (var container in e.Containers)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                    break;
+                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                    {
+                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
+                        break;
+                    }
                 }
             }
         }

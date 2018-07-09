@@ -70,6 +70,10 @@ namespace Avalonia.LinuxFramebuffer
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add {}
+            remove {}
+        }
     }
 }
