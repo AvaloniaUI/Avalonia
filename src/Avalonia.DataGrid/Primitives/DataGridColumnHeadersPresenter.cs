@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Primitives
     public sealed class DataGridColumnHeadersPresenter : Panel
     {
         private Control _dragIndicator;
-        private Control _dropLocationIndicator;
+        private IControl _dropLocationIndicator;
 
         /// <summary>
         /// Tracks which column is currently being dragged.
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// The drop location indicator control.  This value is null if no column is being dragged.
         /// </summary>
-        internal Control DropLocationIndicator
+        internal IControl DropLocationIndicator
         {
             get
             {
@@ -164,11 +164,20 @@ namespace Avalonia.Controls.Primitives
                 if (DragIndicator != null)
                 {
                     EnsureColumnReorderingClip(DragIndicator, finalSize.Height, frozenLeftEdge, dragIndicatorLeftEdge);
-                    DragIndicator.Arrange(new Rect(dragIndicatorLeftEdge, 0, DragIndicator.Bounds.Width, DragIndicator.Bounds.Height));
+
+                    var height = DragIndicator.Bounds.Height;
+                    if (height <= 0)
+                        height = DragIndicator.DesiredSize.Height;
+
+                    DragIndicator.Arrange(new Rect(dragIndicatorLeftEdge, 0, DragIndicator.Bounds.Width, height));
                 }
                 if (DropLocationIndicator != null)
                 {
-                    EnsureColumnReorderingClip(DropLocationIndicator, finalSize.Height, frozenLeftEdge, DropLocationIndicatorOffset);
+                    if (DropLocationIndicator is Control element)
+                    {
+                        EnsureColumnReorderingClip(element, finalSize.Height, frozenLeftEdge, DropLocationIndicatorOffset);
+                    }
+
                     DropLocationIndicator.Arrange(new Rect(DropLocationIndicatorOffset, 0, DropLocationIndicator.Bounds.Width, DropLocationIndicator.Bounds.Height));
                 }
             }
