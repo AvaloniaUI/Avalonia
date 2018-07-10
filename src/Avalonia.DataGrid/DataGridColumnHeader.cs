@@ -94,14 +94,13 @@ namespace Avalonia.Controls
 
             DefaultStyleKey = typeof(DataGridColumnHeader);
         }  */
-
-
-
+        
         #region Protected Methods
 
         /// <summary>
         /// Builds the visual tree for the column header when a new template is applied. 
         /// </summary>
+        //TODO Implement
         /*public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -116,6 +115,7 @@ namespace Avalonia.Controls
         /// <exception cref="T:System.NotSupportedException">
         /// <paramref name="newContent" /> is not a UIElement.
         /// </exception>
+        //TODO Implement
         /*protected override void OnContentChanged(object oldContent, object newContent)
         {
             if (newContent is UIElement)
@@ -254,7 +254,6 @@ namespace Avalonia.Controls
         //protected override void OnPointerReleased(PointerReleasedEventArgs e)
         //{
         //    base.OnPointerReleased(e);
-        //    Debug.WriteLine(nameof(OnPointerReleased));
         //    bool handled = e.Handled;
         //    if (e.MouseButton == MouseButton.Left)
         //    {
@@ -805,7 +804,9 @@ namespace Avalonia.Controls
                 ContentTemplate = ContentTemplate
             };
 
-            Control dropLocationIndicator = new ContentControl();
+            dragIndicator.PseudoClasses.Add(":dragIndicator");
+
+            IControl dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
             //dropLocationIndicator.SetStyleWithType(OwningGrid.DropLocationIndicatorStyle);
 
             //if (OwningColumn.DragIndicatorStyle != null)
@@ -816,17 +817,11 @@ namespace Avalonia.Controls
             //{
             //    dragIndicator.SetStyleWithType(OwningGrid.DragIndicatorStyle);
             //}
-
-            // If the user didn't style the dragIndicator's Width, default it to the column header's width
-            if (double.IsNaN(dragIndicator.Width))
-            {
-                dragIndicator.Width = Bounds.Width;
-            }
-
+            
             // If the user didn't style the dropLocationIndicator's Height, default to the column header's height
-            if (double.IsNaN(dropLocationIndicator.Height))
+            if (dropLocationIndicator != null && double.IsNaN(dropLocationIndicator.Height) && dropLocationIndicator is Control element)
             {
-                dropLocationIndicator.Height = Bounds.Height;
+                element.Height = Bounds.Height;
             }
 
             // pass the caret's data template to the user for modification
@@ -850,6 +845,12 @@ namespace Avalonia.Controls
             OwningGrid.ColumnHeaders.DragColumn = OwningColumn;
             OwningGrid.ColumnHeaders.DragIndicator = columnReorderingEventArgs.DragIndicator;
             OwningGrid.ColumnHeaders.DropLocationIndicator = columnReorderingEventArgs.DropLocationIndicator;
+
+            // If the user didn't style the dragIndicator's Width, default it to the column header's width
+            if (double.IsNaN(dragIndicator.Width))
+            {
+                dragIndicator.Width = Bounds.Width;
+            }
         }
 
         //TODO DragEvents

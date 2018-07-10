@@ -309,7 +309,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// UIElement to display at the insertion position.  If null and Handled = true, then do not display an insertion indicator.
         /// </summary>
-        public Control DropLocationIndicator
+        public IControl DropLocationIndicator
         {
             get;
             set;

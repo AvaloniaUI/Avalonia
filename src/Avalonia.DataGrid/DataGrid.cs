@@ -595,6 +595,18 @@ namespace Avalonia.Controls
         }
 
 
+        public static readonly StyledProperty<ITemplate<IControl>> DropLocationIndicatorTemplateProperty =
+            AvaloniaProperty.Register<DataGrid, ITemplate<IControl>>(nameof(DropLocationIndicatorTemplate));
+
+        /// <summary>
+        /// Gets or sets the template that is used when rendering the column headers.
+        /// </summary>
+        public ITemplate<IControl> DropLocationIndicatorTemplate
+        {
+            get { return GetValue(DropLocationIndicatorTemplateProperty); }
+            set { SetValue(DropLocationIndicatorTemplateProperty, value); }
+        }
+        
         private int _selectedIndex = -1;
         private object _selectedItem;
 
@@ -7007,25 +7019,6 @@ namespace Avalonia.Controls
 
     #region DropLocationIndicatorStyle
 
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the column headers.
-    /// </summary>
-    /*public Style DropLocationIndicatorStyle
-    {
-        get { return GetValue(DropLocationIndicatorStyleProperty) as Style; }
-        set { SetValue(DropLocationIndicatorStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGrid.DropLocationIndicatorStyle" /> 
-    /// dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty DropLocationIndicatorStyleProperty =
-        DependencyProperty.Register(
-            "DropLocationIndicatorStyle",
-            typeof(Style),
-            typeof(DataGrid),
-            null);*/
     #endregion DropLocationIndicatorStyle
 
 

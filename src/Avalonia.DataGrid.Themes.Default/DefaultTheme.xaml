@@ -202,6 +202,11 @@
                         </vsm:VisualStateManager.VisualStateGroups>
   -->
 
+
+  <Style Selector="dg|DataGridColumnHeader:dragIndicator">
+    <Setter Property="Opacity" Value="0.5"/>
+  </Style>
+  
   <!--FIX-->
   <Style Selector="dg|DataGridRow">
     <Setter Property="Template">
@@ -587,6 +592,11 @@
     <Setter Property="HeadersVisibility" Value="Column" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="DropLocationIndicatorTemplate">
+      <Template>
+        <Rectangle Fill="#FF3F4346" Width="2"/>
+      </Template>
+    </Setter>
     <Setter Property="Template">
       <ControlTemplate>
         <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
