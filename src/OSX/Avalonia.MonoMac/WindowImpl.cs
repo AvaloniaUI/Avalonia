@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Platform;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
+using Avalonia.Threading;
 
 namespace Avalonia.MonoMac
 {
@@ -16,7 +17,14 @@ namespace Avalonia.MonoMac
 
         public WindowImpl()
         {
-            UpdateStyle();
+            // Post UpdateStyle to UIThread otherwise for as yet unknown reason.
+            // The window becomes transparent to mouse clicks except a 100x100 square
+            // at the top left. (danwalmsley)
+            Dispatcher.UIThread.Post(() =>
+            {
+                UpdateStyle();
+            });
+
             Window.SetCanBecomeKeyAndMain();
             
             Window.DidResize += delegate
