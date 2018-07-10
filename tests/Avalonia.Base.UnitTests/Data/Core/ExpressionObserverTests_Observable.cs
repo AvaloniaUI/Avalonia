@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -15,13 +16,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
     public class ExpressionObserverTests_Observable
     {
         [Fact]
-        public void Should_Not_Get_Observable_Value_Without_Modifier_Char()
+        public void Should_Not_Get_Observable_Value_Without_Streaming()
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = ExpressionObserver.Create(data, o => o.Foo);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -41,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo^");
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -60,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new Class1();
-                var target = new ExpressionObserver(data, "Next^.Foo");
+                var target = ExpressionObserver.Create(data, o => o.Next.StreamBinding().Foo);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -83,7 +84,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var source = new BehaviorSubject<string>("foo");
                 var data = new { Foo = source };
-                var target = new ExpressionObserver(data, "Foo^", true);
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding(), true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -105,7 +106,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var data1 = new Class1();
                 var data2 = new Class2("foo");
-                var target = new ExpressionObserver(data1, "Next^.Foo", true);
+                var target = ExpressionObserver.Create(data1, o => o.Next.StreamBinding().Foo, true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -127,8 +128,8 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
-                var data = new Class2("foo");
-                var target = new ExpressionObserver(data, "Foo^", true);
+                var data = new NotStreamable();
+                var target = ExpressionObserver.Create(data, o => o.StreamBinding());
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -138,7 +139,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     new[]
                     {
                         new BindingNotification(
-                            new MarkupBindingChainException("Stream operator applied to unsupported type", "Foo^", "Foo^"),
+                            new MarkupBindingChainException("Stream operator applied to unsupported type", "o => o.StreamBinding()", "^"),
                             BindingErrorType.Error)
                     },
                     result);
@@ -162,6 +163,11 @@ namespace Avalonia.Base.UnitTests.Data.Core
             }
 
             public string Foo { get; }
+        }
+
+        private class NotStreamable
+        {
+            public object StreamBinding() { throw new InvalidOperationException(); }
         }
     }
 }

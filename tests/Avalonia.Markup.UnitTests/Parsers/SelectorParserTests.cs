@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Parsers;
 using Xunit;
 
-namespace Avalonia.Markup.Xaml.UnitTests.Parsers
+namespace Avalonia.Markup.UnitTests.Parsers
 {
     public class SelectorParserTests
     {

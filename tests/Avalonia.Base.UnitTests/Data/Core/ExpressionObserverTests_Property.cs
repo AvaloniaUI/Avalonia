@@ -12,6 +12,7 @@ using Avalonia.Data.Core;
 using Avalonia.UnitTests;
 using Xunit;
 using System.Threading.Tasks;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
@@ -21,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value()
         {
             var data = new { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -33,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Get_Simple_Property_Value_Type()
         {
             var data = new { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
 
             target.Subscribe(_ => { });
 
@@ -46,7 +47,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value_Null()
         {
             var data = new { Foo = (string)null };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result = await target.Take(1);
 
             Assert.Null(result);
@@ -58,7 +59,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_From_Base_Class()
         {
             var data = new Class3 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -69,76 +70,65 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Root_Null()
         {
-            var data = new Class3 { Foo = "foo" };
-            var target = new ExpressionObserver(default(object), "Foo");
+            var target = ExpressionObserver.Create(default(Class3), o => o.Foo);
             var result = await target.Take(1);
 
             Assert.Equal(
                 new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        new MarkupBindingChainException("Null value", "o => o.Foo", string.Empty),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
-
-            GC.KeepAlive(data);
         }
 
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Root_UnsetValue()
         {
-            var data = new Class3 { Foo = "foo" };
-            var target = new ExpressionObserver(AvaloniaProperty.UnsetValue, "Foo");
+            var target = ExpressionObserver.Create(AvaloniaProperty.UnsetValue, o => (o as Class3).Foo);
             var result = await target.Take(1);
 
             Assert.Equal(
                 new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        new MarkupBindingChainException("Null value", "o => (o As Class3).Foo", string.Empty),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
-
-            GC.KeepAlive(data);
         }
 
         [Fact]
         public async Task Should_Return_BindingNotification_Error_For_Observable_Root_Null()
         {
-            var data = new Class3 { Foo = "foo" };
-            var target = new ExpressionObserver(Observable.Return(default(object)), "Foo");
+            var target = ExpressionObserver.Create(Observable.Return(default(Class3)), o => o.Foo);
             var result = await target.Take(1);
 
             Assert.Equal(
                 new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        new MarkupBindingChainException("Null value", "o => o.Foo", string.Empty),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
-
-            GC.KeepAlive(data);
         }
 
         [Fact]
         public async void Should_Return_BindingNotification_Error_For_Observable_Root_UnsetValue()
         {
-            var data = new Class3 { Foo = "foo" };
-            var target = new ExpressionObserver(Observable.Return(AvaloniaProperty.UnsetValue), "Foo");
+            var target = ExpressionObserver.Create<object, string>(Observable.Return(AvaloniaProperty.UnsetValue), o => (o as Class3).Foo);
             var result = await target.Take(1);
 
             Assert.Equal(
                 new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        new MarkupBindingChainException("Null value", "o => (o As Class3).Foo", string.Empty),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 result);
-
-            GC.KeepAlive(data);
+            
         }
 
         [Fact]
         public async Task Should_Get_Simple_Property_Chain()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } } };
-            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+            var target = ExpressionObserver.Create(data, o => o.Foo.Bar.Baz);
             var result = await target.Take(1);
 
             Assert.Equal("baz", result);
@@ -150,7 +140,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Get_Simple_Property_Chain_Type()
         {
             var data = new { Foo = new { Bar = new { Baz = "baz" } } };
-            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+            var target = ExpressionObserver.Create(data, o => o.Foo.Bar.Baz);
 
             target.Subscribe(_ => { });
 
@@ -160,27 +150,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Should_Return_BindingNotification_Error_For_Broken_Chain()
-        {
-            var data = new { Foo = new { Bar = 1 } };
-            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
-            var result = await target.Take(1);
-
-            Assert.IsType<BindingNotification>(result);
-
-            Assert.Equal(
-                new BindingNotification(
-                    new MissingMemberException("Could not find CLR property 'Baz' on '1'"), BindingErrorType.Error),
-                result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
         public void Should_Return_BindingNotification_Error_For_Chain_With_Null_Value()
         {
-            var data = new { Foo = default(object) };
-            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
+            var data = new { Foo = default(Class1) };
+            var target = ExpressionObserver.Create(data, o => o.Foo.Foo.Length);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
@@ -189,7 +162,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 new[]
                 {
                     new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo.Bar.Baz", "Foo"),
+                        new MarkupBindingChainException("Null value", "o => o.Foo.Foo.Length", "Foo"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                 },
@@ -199,21 +172,10 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public void Should_Have_Null_ResultType_For_Broken_Chain()
-        {
-            var data = new { Foo = new { Bar = 1 } };
-            var target = new ExpressionObserver(data, "Foo.Bar.Baz");
-
-            Assert.Null(target.ResultType);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
         public void Should_Track_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -232,7 +194,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Trigger_PropertyChanged_On_Null_Or_Empty_String()
         {
             var data = new Class1 { Bar = "foo" };
-            var target = new ExpressionObserver(data, "Bar");
+            var target = ExpressionObserver.Create(data, o => o.Bar);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -262,7 +224,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_End_Of_Property_Chain_Changing()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -283,7 +245,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_Chain_Changing()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -316,7 +278,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = new ExpressionObserver(data, "Next.Next.Bar");
+            var target = ExpressionObserver.Create(data, o => ((o.Next as Class2).Next as Class2).Bar);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -329,7 +291,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 {
                     "bar",
                     new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Next.Next.Bar", "Next.Next"),
+                        new MarkupBindingChainException("Null value", "o => ((o.Next As Class2).Next As Class2).Bar", "Next.Next"),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue),
                     "bar"
@@ -349,7 +311,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Property_Chain_Breaking_With_Missing_Member_Then_Mending()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -384,7 +346,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { Foo = "foo" };
             var update = new Subject<Unit>();
-            var target = new ExpressionObserver(() => data.Foo, "", update);
+            var target = ExpressionObserver.Create(() => data.Foo, o => o, update);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
@@ -404,7 +366,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var source = scheduler.CreateColdObservable(
                 OnNext(1, new Class1 { Foo = "foo" }),
                 OnNext(2, new Class1 { Foo = "bar" }));
-            var target = new ExpressionObserver(source, "Foo");
+            var target = ExpressionObserver.Create(source, o => o.Foo);
             var result = new List<object>();
 
             using (target.Subscribe(x => result.Add(x)))
@@ -420,7 +382,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Subscribing_Multiple_Times_Should_Return_Values_To_All()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result1 = new List<object>();
             var result2 = new List<object>();
             var result3 = new List<object>();
@@ -443,7 +405,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Subscribing_Multiple_Times_Should_Only_Add_PropertyChanged_Handlers_Once()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
 
             var sub1 = target.Subscribe(x => { });
             var sub2 = target.Subscribe(x => { });
@@ -462,7 +424,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { Foo = "foo" };
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
 
             using (target.Subscribe(_ => { }))
             {
@@ -478,7 +440,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Set_Property_At_The_End_Of_Chain()
         {
             var data = new Class1 { Next = new Class2 { Bar = "bar" } };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
 
             using (target.Subscribe(_ => { }))
             {
@@ -494,7 +456,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Return_False_For_Missing_Property()
         {
             var data = new Class1 { Next = new WithoutBar() };
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
 
             using (target.Subscribe(_ => { }))
             {
@@ -508,7 +470,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Notify_New_Value_With_Inpc()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "Foo");
+            var target = ExpressionObserver.Create(data, o => o.Foo);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
@@ -523,7 +485,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Notify_New_Value_Without_Inpc()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "Bar");
+            var target = ExpressionObserver.Create(data, o => o.Bar);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
@@ -538,7 +500,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void SetValue_Should_Return_False_For_Missing_Object()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "Next.Bar");
+            var target = ExpressionObserver.Create(data, o => (o.Next as Class2).Bar);
 
             using (target.Subscribe(_ => { }))
             {
@@ -555,7 +517,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var second = new Class1 { Foo = "bar" };
             var root = first;
             var update = new Subject<Unit>();
-            var target = new ExpressionObserver(() => root, "Foo", update);
+            var target = ExpressionObserver.Create(() => root, o => o.Foo, update);
             var result = new List<object>();
             var sub = target.Subscribe(x => result.Add(x));
 
@@ -570,7 +532,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                     "foo",
                     "bar",
                     new BindingNotification(
-                        new MarkupBindingChainException("Null value", "Foo", string.Empty),
+                        new MarkupBindingChainException("Null value", "o => o.Foo", string.Empty),
                         BindingErrorType.Error,
                         AvaloniaProperty.UnsetValue)
                 },
@@ -589,7 +551,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
                 var source = new Class1 { Foo = "foo" };
-                var target = new ExpressionObserver(source, "Foo");
+                var target = ExpressionObserver.Create(source, o => o.Foo);
                 return Tuple.Create(target, new WeakReference(source));
             };
 
@@ -673,9 +635,9 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
         }
 
-        private Recorded<Notification<object>> OnNext(long time, object value)
+        private Recorded<Notification<T>> OnNext<T>(long time, T value)
         {
-            return new Recorded<Notification<object>>(time, Notification.CreateOnNext<object>(value));
+            return new Recorded<Notification<T>>(time, Notification.CreateOnNext<T>(value));
         }
     }
 }

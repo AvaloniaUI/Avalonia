@@ -8,7 +8,7 @@ using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
-    internal class PropertyAccessorNode : SettableNode
+    public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessor _accessor;

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Avalonia.Data.Core.Parsers
+namespace Avalonia.Markup.Parsers
 {
     internal class Reader
     {
