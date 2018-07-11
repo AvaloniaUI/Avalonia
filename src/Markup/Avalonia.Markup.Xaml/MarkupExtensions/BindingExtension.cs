@@ -88,18 +88,26 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             {
                 result.Path = string.Empty;
             }
-            else if (path.StartsWith("#"))
+            else if (path.StartsWith("!"))
+            {
+                int pathStart = 0;
+                for (; pathStart < path.Length && path[pathStart] == '!'; ++pathStart);
+                result.Path = path.Substring(0, pathStart);
+                path = path.Substring(pathStart);
+            }
+
+            if (path.StartsWith("#"))
             {
                 var dot = path.IndexOf('.');
 
                 if (dot != -1)
                 {
-                    result.Path = path.Substring(dot + 1);
+                    result.Path += path.Substring(dot + 1);
                     result.ElementName = path.Substring(1, dot - 1);
                 }
                 else
                 {
-                    result.Path = string.Empty;
+                    result.Path += string.Empty;
                     result.ElementName = path.Substring(1);
                 }
             }
@@ -114,12 +122,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 string relativeSourceMode;
                 if (dot != -1)
                 {
-                    result.Path = path.Substring(dot + 1);
+                    result.Path += path.Substring(dot + 1);
                     relativeSourceMode = path.Substring(1, dot - 1);
                 }
                 else
                 {
-                    result.Path = string.Empty;
+                    result.Path += string.Empty;
                     relativeSourceMode = path.Substring(1);
                 }
 
@@ -170,7 +178,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
             else
             {
-                result.Path = path;
+                result.Path += path;
             }
 
             return result;
