@@ -10,6 +10,8 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
+    using Avalonia.Visuals.Media.Imaging;
+
     /// <summary>
     /// A drawing context which builds a scene graph.
     /// </summary>
@@ -114,13 +116,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode = BitmapScalingMode.LowQuality)
         {
             var next = NextDrawAs<ImageNode>();
 
-            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect))
+            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, scalingMode))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, scalingMode));
             }
             else
             {
