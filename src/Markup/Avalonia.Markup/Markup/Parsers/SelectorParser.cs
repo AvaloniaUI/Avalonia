@@ -52,11 +52,11 @@ namespace Avalonia.Markup.Parsers
 
                 if (ofType != null)
                 {
-                    result = result.OfType(_typeResolver(ofType.TypeName, ofType.Xmlns));
+                    result = result.OfType(_typeResolver(ofType.Xmlns, ofType.TypeName));
                 }
                 if (@is != null)
                 {
-                    result = result.Is(_typeResolver(@is.TypeName, @is.Xmlns));
+                    result = result.Is(_typeResolver(@is.Xmlns, @is.TypeName));
                 }
                 else if (@class != null)
                 {
