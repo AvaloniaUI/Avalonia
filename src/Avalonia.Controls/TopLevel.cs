@@ -54,6 +54,7 @@ namespace Avalonia.Controls
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
+        private ILayoutManager _layoutManager;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -147,6 +148,16 @@ namespace Avalonia.Controls
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
         }
 
+        public ILayoutManager LayoutManager
+        {
+            get
+            {
+                if (_layoutManager == null)
+                    _layoutManager = CreateLayoutManager();
+                return _layoutManager;
+            }
+        }
+
         /// <summary>
         /// Gets the platform-specific window implementation.
         /// </summary>
@@ -235,6 +246,11 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default(Point);
         }
+        
+        /// <summary>
+        /// Creates the layout manager for this <see cref="TopLevel" />.
+        /// </summary>
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -267,7 +283,7 @@ namespace Avalonia.Controls
             ClientSize = clientSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
-            LayoutManager.Instance.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 

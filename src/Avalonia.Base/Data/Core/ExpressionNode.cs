@@ -5,7 +5,7 @@ using System;
 
 namespace Avalonia.Data.Core
 {
-    internal abstract class ExpressionNode
+    public abstract class ExpressionNode
     {
         private static readonly object CacheInvalid = new object();
         protected static readonly WeakReference UnsetReference = 

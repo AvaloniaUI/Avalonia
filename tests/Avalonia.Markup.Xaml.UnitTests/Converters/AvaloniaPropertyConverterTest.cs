@@ -8,7 +8,6 @@ using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Xunit;
 using System.ComponentModel;
-using Portable.Xaml.ComponentModel;
 using Portable.Xaml;
 using Portable.Xaml.Markup;
 
@@ -53,7 +52,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
 
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
-        
+
+        [Fact]
+        public void ConvertFrom_Finds_Attached_Property_With_Parentheses()
+        {
+            var target = new AvaloniaPropertyTypeConverter();
+            var context = CreateContext();
+            var result = target.ConvertFrom(context, null, "(AttachedOwner.Attached)");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();

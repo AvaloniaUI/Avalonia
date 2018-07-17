@@ -40,7 +40,7 @@ namespace Avalonia.Controls.UnitTests
                     IsVisible = true,
                 };
 
-                LayoutManager.Instance.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
 
                 Mock.Get(impl).Verify(x => x.Resize(new Size(321, 432)));
             }

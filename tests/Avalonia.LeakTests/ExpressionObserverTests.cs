@@ -24,7 +24,7 @@ namespace Avalonia.LeakTests
             Func<ExpressionObserver> run = () =>
             {
                 var source = new { Foo = new AvaloniaList<string> {"foo", "bar"} };
-                var target = new ExpressionObserver(source, "Foo");
+                var target = ExpressionObserver.Create(source, o => o.Foo);
 
                 target.Subscribe(_ => { });
                 return target;
@@ -42,7 +42,7 @@ namespace Avalonia.LeakTests
             Func<ExpressionObserver> run = () =>
             {
                 var source = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-                var target = new ExpressionObserver(source, "Foo", true);
+                var target = ExpressionObserver.Create(source, o => o.Foo, true);
 
                 target.Subscribe(_ => { });
                 return target;
@@ -60,7 +60,7 @@ namespace Avalonia.LeakTests
             Func<ExpressionObserver> run = () =>
             {
                 var source = new { Foo = new NonIntegerIndexer() };
-                var target = new ExpressionObserver(source, "Foo");
+                var target = ExpressionObserver.Create(source, o => o.Foo);
 
                 target.Subscribe(_ => { });
                 return target;
@@ -78,7 +78,7 @@ namespace Avalonia.LeakTests
             Func<ExpressionObserver> run = () =>
             {
                 var source = new { Foo = new MethodBound() };
-                var target = new ExpressionObserver(source, "Foo.A");
+                var target = ExpressionObserver.Create(source, o => (Action)o.Foo.A);
                 target.Subscribe(_ => { });
                 return target;
             };
