@@ -491,6 +491,10 @@ namespace Avalonia.Skia
             {
                 ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
             }
+            else
+            {
+                paint.Color = new SKColor(255, 255, 255, 0);
+            }
 
             return paintWrapper;
         }

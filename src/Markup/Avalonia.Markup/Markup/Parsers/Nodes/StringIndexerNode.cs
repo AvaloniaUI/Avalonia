@@ -12,52 +12,18 @@ using System.Linq;
 using System.Reflection;
 using System.Reactive.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 
-namespace Avalonia.Data.Core
+namespace Avalonia.Markup.Parsers.Nodes
 {
-    internal class IndexerNode :  SettableNode
+    internal class StringIndexerNode : IndexerNodeBase
     {
-        private IDisposable _subscription;
-
-        public IndexerNode(IList<string> arguments)
+        public StringIndexerNode(IList<string> arguments)
         {
             Arguments = arguments;
         }
 
         public override string Description => "[" + string.Join(",", Arguments) + "]";
-
-        protected override void StartListeningCore(WeakReference reference)
-        {
-            var target = reference.Target;
-            var incc = target as INotifyCollectionChanged;
-            var inpc = target as INotifyPropertyChanged;
-            var inputs = new List<IObservable<object>>();
-
-            if (incc != null)
-            {
-                inputs.Add(WeakObservable.FromEventPattern<INotifyCollectionChanged, NotifyCollectionChangedEventArgs>(
-                    incc,
-                    nameof(incc.CollectionChanged))
-                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
-                    .Select(_ => GetValue(target)));
-            }
-
-            if (inpc != null)
-            {
-                inputs.Add(WeakObservable.FromEventPattern<INotifyPropertyChanged, PropertyChangedEventArgs>(
-                    inpc,
-                    nameof(inpc.PropertyChanged))
-                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
-                    .Select(_ => GetValue(target)));
-            }
-
-            _subscription = Observable.Merge(inputs).StartWith(GetValue(target)).Subscribe(ValueChanged);
-        }
-
-        protected override void StopListeningCore()
-        {
-            _subscription.Dispose();
-        }
 
         protected override bool SetTargetValueCore(object value, BindingPriority priority)
         {
@@ -163,7 +129,7 @@ namespace Avalonia.Data.Core
 
         public override Type PropertyType => GetIndexer(Target.Target.GetType().GetTypeInfo())?.PropertyType;
 
-        private object GetValue(object target)
+        protected override object GetValue(object target)
         {
             var typeInfo = target.GetType().GetTypeInfo();
             var list = target as IList;
@@ -316,45 +282,19 @@ namespace Avalonia.Data.Core
             }
         }
 
-        private bool ShouldUpdate(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (sender is IList)
-            {
-                object indexObject;
-
-                if (!TypeUtilities.TryConvert(typeof(int), Arguments[0], CultureInfo.InvariantCulture, out indexObject))
-                {
-                    return false;
-                }
-
-                var index = (int)indexObject;
-
-                switch (e.Action)
-                {
-                    case NotifyCollectionChangedAction.Add:
-                        return index >= e.NewStartingIndex;
-                    case NotifyCollectionChangedAction.Remove:
-                        return index >= e.OldStartingIndex;
-                    case NotifyCollectionChangedAction.Replace:
-                        return index >= e.NewStartingIndex &&
-                               index < e.NewStartingIndex + e.NewItems.Count;
-                    case NotifyCollectionChangedAction.Move:
-                        return (index >= e.NewStartingIndex &&
-                                index < e.NewStartingIndex + e.NewItems.Count) ||
-                               (index >= e.OldStartingIndex &&
-                                index < e.OldStartingIndex + e.OldItems.Count);
-                    case NotifyCollectionChangedAction.Reset:
-                        return true;
-                }
-            }
-
-            return true; // Implementation defined meaning for the index, so just try to update anyway
-        }
-
-        private bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
+        protected override bool ShouldUpdate(object sender, PropertyChangedEventArgs e)
         {
             var typeInfo = sender.GetType().GetTypeInfo();
             return typeInfo.GetDeclaredProperty(e.PropertyName)?.GetIndexParameters().Any() ?? false;
+        }
+
+        protected override int? TryGetFirstArgumentAsInt()
+        {
+            if (TypeUtilities.TryConvert(typeof(int), Arguments[0], CultureInfo.InvariantCulture, out var value))
+            {
+                return (int?)value;
+            }
+            return null;
         }
     }
 }
