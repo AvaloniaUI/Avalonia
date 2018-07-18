@@ -1,27 +1,26 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
-
+﻿using Avalonia.Collections;
+using Avalonia.Data.Core;
+using Avalonia.Diagnostics;
+using Avalonia.Markup.Parsers;
+using Avalonia.Markup.Parsers.Nodes;
+using Avalonia.UnitTests;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Collections;
-using Avalonia.Diagnostics;
-using Avalonia.Data.Core;
-using Avalonia.UnitTests;
 using Xunit;
-using Avalonia.Markup.Parsers;
 
-namespace Avalonia.Base.UnitTests.Data.Core
+namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverTests_Indexer
+    public class ExpressionObserverBuilderTests_Indexer
     {
         [Fact]
         public async Task Should_Get_Array_Value()
         {
-            var data = new { Foo = new [] { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, x => x.Foo[1]);
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -30,10 +29,46 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
+        public async Task Should_Get_UnsetValue_For_Invalid_Array_Index()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = ExpressionObserverBuilder.Build(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Should_Get_UnsetValue_For_Invalid_Dictionary_Index()
+        {
+            var data = new { Foo = new Dictionary<int, string> { { 1, "foo" } } };
+            var target = ExpressionObserverBuilder.Build(data, "Foo[invalid]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Should_Get_UnsetValue_For_Object_Without_Indexer()
+        {
+            var data = new { Foo = 5 };
+            var target = ExpressionObserverBuilder.Build(data, "Foo[noindexer]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
         public async Task Should_Get_MultiDimensional_Array_Value()
         {
             var data = new { Foo = new[,] { { "foo", "bar" }, { "baz", "qux" } } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1, 1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1, 1]");
             var result = await target.Take(1);
 
             Assert.Equal("qux", result);
@@ -45,7 +80,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Value_For_String_Indexer()
         {
             var data = new { Foo = new Dictionary<string, string> { { "foo", "bar" }, { "baz", "qux" } } };
-            var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[foo]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -57,7 +92,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Value_For_Non_String_Indexer()
         {
             var data = new { Foo = new Dictionary<double, string> { { 1.0, "bar" }, { 2.0, "qux" } } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1.0]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1.0]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -69,7 +104,19 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Array_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[2]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[2]");
+            var result = await target.Take(1);
+
+            Assert.Equal(AvaloniaProperty.UnsetValue, result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public async Task Array_With_Wrong_Dimensions_Should_Return_UnsetValue()
+        {
+            var data = new { Foo = new[] { "foo", "bar" } };
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1,2]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
@@ -81,7 +128,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task List_Out_Of_Bounds_Should_Return_UnsetValue()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[2]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[2]");
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
@@ -93,7 +140,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_List_Value()
         {
             var data = new { Foo = new List<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -105,7 +152,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Add()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[2]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[2]");
             var result = new List<object>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
@@ -123,7 +170,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Remove()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[0]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[0]");
             var result = new List<object>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
@@ -141,7 +188,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Replace()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
             var result = new List<object>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
@@ -162,7 +209,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             // method, but even if it did we need to test with ObservableCollection as well
             // as AvaloniaList as it implements PropertyChanged as an explicit interface event.
             var data = new { Foo = new ObservableCollection<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -178,7 +225,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_INCC_Reset()
         {
             var data = new { Foo = new AvaloniaList<string> { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -197,7 +244,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             data.Foo["foo"] = "bar";
             data.Foo["baz"] = "qux";
 
-            var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[foo]");
             var result = new List<object>();
 
             using (var sub = target.Subscribe(x => result.Add(x)))
@@ -216,7 +263,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_SetArrayIndex()
         {
             var data = new { Foo = new[] { "foo", "bar" } };
-            var target = ExpressionObserver.Create(data, o => o.Foo[1]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[1]");
 
             using (target.Subscribe(_ => { }))
             {
@@ -239,7 +286,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[foo]");
             using (target.Subscribe(_ => { }))
             {
                 Assert.True(target.SetValue(4));
@@ -261,7 +308,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = ExpressionObserver.Create(data, o => o.Foo["bar"]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[bar]");
             using (target.Subscribe(_ => { }))
             {
                 Assert.True(target.SetValue(4));
@@ -279,13 +326,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
             data.Foo["foo"] = "bar";
             data.Foo["baz"] = "qux";
 
-            var target = ExpressionObserver.Create(data, o => o.Foo["foo"]);
+            var target = ExpressionObserverBuilder.Build(data, "Foo[foo]");
 
             using (target.Subscribe(_ => { }))
             {
                 Assert.True(target.SetValue("bar2"));
             }
-            
+
             Assert.Equal("bar2", data.Foo["foo"]);
 
             GC.KeepAlive(data);
@@ -296,7 +343,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new[] { 1, 2, 3 };
 
-            var target = ExpressionObserver.Create(data, o => o[1]);
+            var target = ExpressionObserverBuilder.Build(data, "[1]");
 
             var value = await target.Take(1);
 

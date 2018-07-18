@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
+using Avalonia.Markup.Parsers;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -84,6 +85,11 @@ namespace Avalonia.Data
         public object Source { get; set; }
 
         public WeakReference DefaultAnchor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function used to resolve types from names in the binding path.
+        /// </summary>
+        public Func<string, string, Type> TypeResolver { get; set; }
 
         /// <inheritdoc/>
         public InstancedBinding Initiate(
@@ -189,20 +195,22 @@ namespace Avalonia.Data
 
             if (!targetIsDataContext)
             {
-                var result = new ExpressionObserver(
+                var result = ExpressionObserverBuilder.Build(
                     () => target.GetValue(StyledElement.DataContextProperty),
                     path,
                     new UpdateSignal(target, StyledElement.DataContextProperty),
-                    enableDataValidation);
+                    enableDataValidation,
+                    typeResolver: TypeResolver);
 
                 return result;
             }
             else
             {
-                return new ExpressionObserver(
+                return ExpressionObserverBuilder.Build(
                     GetParentDataContext(target),
                     path,
-                    enableDataValidation);
+                    enableDataValidation,
+                    typeResolver: TypeResolver);
             }
         }
 
@@ -215,11 +223,12 @@ namespace Avalonia.Data
             Contract.Requires<ArgumentNullException>(target != null);
 
             var description = $"#{elementName}.{path}";
-            var result = new ExpressionObserver(
+            var result = ExpressionObserverBuilder.Build(
                 ControlLocator.Track(target, elementName),
                 path,
                 enableDataValidation,
-                description);
+                description,
+                typeResolver: TypeResolver);
             return result;
         }
 
@@ -251,10 +260,11 @@ namespace Avalonia.Data
                     throw new InvalidOperationException("Invalid tree to traverse.");
             }
 
-            return new ExpressionObserver(
+            return ExpressionObserverBuilder.Build(
                 controlLocator,
                 path,
-                enableDataValidation);
+                enableDataValidation,
+                typeResolver: TypeResolver);
         }
 
         private ExpressionObserver CreateSourceObserver(
@@ -264,7 +274,7 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return new ExpressionObserver(source, path, enableDataValidation);
+            return ExpressionObserverBuilder.Build(source, path, enableDataValidation, typeResolver: TypeResolver);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(
@@ -273,12 +283,13 @@ namespace Avalonia.Data
             bool enableDataValidation)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-
-            var result = new ExpressionObserver(
+            
+            var result = ExpressionObserverBuilder.Build(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
                 path,
                 new UpdateSignal(target, StyledElement.TemplatedParentProperty),
-                enableDataValidation);
+                enableDataValidation,
+                typeResolver: TypeResolver);
 
             return result;
         }
