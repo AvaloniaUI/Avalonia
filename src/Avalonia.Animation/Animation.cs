@@ -82,7 +82,7 @@ namespace Avalonia.Animation
  
         private void InterpretKeyframes()
         {
-            var handlerList = new List<(Type, AvaloniaProperty)>();
+            var handlerList = new List<(Type type, AvaloniaProperty property)>();
             var kfList = new List<AnimatorKeyFrame>();
 
             foreach (var keyframe in this)
@@ -116,18 +116,17 @@ namespace Avalonia.Animation
 
             var newAnimatorInstances = new List<(Type handler, AvaloniaProperty prop, IAnimator inst)>();
 
-            foreach (var handler in handlerList)
+            foreach (var (handlerType, property) in handlerList)
             {
-                var newInstance = (IAnimator)Activator.CreateInstance(handler.Item1);
-                newInstance.Property = handler.Item2;
-                newAnimatorInstances.Add((handler.Item1, handler.Item2, newInstance));
+                var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
+                newInstance.Property = property;
+                newAnimatorInstances.Add((handlerType, property, newInstance));
             }
 
             foreach (var kf in kfList)
             {
-                var parent = newAnimatorInstances.Where(p => p.handler == kf.Handler &&
-                                                             p.prop == kf.Property)
-                                                 .First();
+                var parent = newAnimatorInstances.First(p => p.handler == kf.Handler &&
+                                                             p.prop == kf.Property);
                 parent.inst.Add(kf);
             }
 
