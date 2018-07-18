@@ -87,6 +87,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (string.IsNullOrWhiteSpace(path) || path == ".")
             {
                 result.Path = string.Empty;
+                return result;
             }
             else if (path.StartsWith("!"))
             {
