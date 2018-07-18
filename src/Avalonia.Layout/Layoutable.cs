@@ -389,7 +389,7 @@ namespace Avalonia.Layout
 
                 if (((ILayoutable)this).IsAttachedToVisualTree)
                 {
-                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
                     InvalidateVisual();
                 }
                 OnMeasureInvalidated();
@@ -406,12 +406,8 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-
-                if (((ILayoutable)this).IsAttachedToVisualTree)
-                {
-                    LayoutManager.Instance?.InvalidateArrange(this);
-                    InvalidateVisual();
-                }
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
+                InvalidateVisual();
             }
         }
 

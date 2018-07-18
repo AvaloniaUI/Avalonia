@@ -58,6 +58,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{9B9E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DEF5-D50F-4975-8B72-124C9EB54066}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		src\Shared\SharedAssemblyInfo.cs = src\Shared\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
@@ -399,6 +400,7 @@ Global
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|NetCoreOnly.ActiveCfg = Debug|Any CPU
+		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|NetCoreOnly.Build.0 = Debug|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Debug|x86.Build.0 = Debug|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -408,6 +410,7 @@ Global
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|NetCoreOnly.ActiveCfg = Release|Any CPU
+		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|NetCoreOnly.Build.0 = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|x86.ActiveCfg = Release|Any CPU
 		{3E908F67-5543-4879-A1DC-08EACE79B3CD}.Release|x86.Build.0 = Release|Any CPU
 		{62024B2D-53EB-4638-B26B-85EEAA54866E}.Ad-Hoc|Any CPU.ActiveCfg = Release|Any CPU

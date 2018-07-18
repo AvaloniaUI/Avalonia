@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Avalonia.Data.Core.Parsers
+namespace Avalonia.Markup.Parsers
 {
     internal static class IdentifierParser
     {

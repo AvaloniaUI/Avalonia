@@ -48,7 +48,6 @@
         <Compile Include="Converters\SelectorTypeConverter.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-        <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
         <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
         <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />

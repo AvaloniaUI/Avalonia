@@ -8,11 +8,11 @@ public class Parameters
     public string AssemblyInfoPath { get; private set; }
     public string ReleasePlatform { get; private set; }
     public string ReleaseConfiguration { get; private set; }
-    public string MSBuildSolution { get; private set; } 
-    public string XBuildSolution { get; private set; } 
+    public string MSBuildSolution { get; private set; }
     public bool IsPlatformAnyCPU { get; private set; }
     public bool IsPlatformX86 { get; private set; }
     public bool IsPlatformX64 { get; private set; }
+    public bool IsPlatformNetCoreOnly { get; private set; }
     public bool IsLocalBuild { get; private set; }
     public bool IsRunningOnUnix { get; private set; }
     public bool IsRunningOnWindows { get; private set; }
@@ -34,6 +34,7 @@ public class Parameters
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
     public FilePath ZipCoreArtifacts { get; private set; }
+    public FilePath ZipNuGetArtifacts { get; private set; }
     public DirectoryPath ZipSourceControlCatalogDesktopDirs { get; private set; }
     public FilePath ZipTargetControlCatalogDesktopDirs { get; private set; }
 
@@ -53,12 +54,12 @@ public class Parameters
         ReleasePlatform = "Any CPU";
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./Avalonia.sln";
-        XBuildSolution = "./Avalonia.XBuild.sln";
 
         // PARAMETERS
         IsPlatformAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(Platform, "Any CPU");
         IsPlatformX86 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x86");
         IsPlatformX64 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x64");
+        IsPlatformNetCoreOnly = StringComparer.OrdinalIgnoreCase.Equals(Platform, "NetCoreOnly");
         IsLocalBuild = buildSystem.IsLocalBuild;
         IsRunningOnUnix = context.IsRunningOnUnix();
         IsRunningOnWindows = context.IsRunningOnWindows();
@@ -71,7 +72,6 @@ public class Parameters
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, Platform) 
                     && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
         IsMyGetRelease = !IsTagged && IsReleasable;
-        
 
         // VERSION
         Version = context.Argument("force-nuget-version", context.ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
@@ -103,14 +103,12 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
-
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
-
         DirSuffix = Configuration;
         DirSuffixIOS = "iPhone" + "/" + Configuration;
-
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
+        ZipNuGetArtifacts = ZipRoot.CombineWithFilePath("Avalonia-NuGet-" + FileZipSuffix);
         ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
         ZipTargetControlCatalogDesktopDirs = ZipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + FileZipSuffix);
     }

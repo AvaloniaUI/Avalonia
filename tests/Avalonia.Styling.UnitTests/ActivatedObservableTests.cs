@@ -54,15 +54,16 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Should_Complete_When_Activator_Completes()
+        public void Should_Error_When_Source_Errors()
         {
             var activator = new BehaviorSubject<bool>(false);
             var source = new BehaviorSubject<object>(1);
             var target = new ActivatedObservable(activator, source, string.Empty);
+            var error = new Exception();
             var completed = false;
 
-            target.Subscribe(_ => { }, () => completed = true);
-            activator.OnCompleted();
+            target.Subscribe(_ => { }, x => completed = true);
+            source.OnError(error);
 
             Assert.True(completed);
         }

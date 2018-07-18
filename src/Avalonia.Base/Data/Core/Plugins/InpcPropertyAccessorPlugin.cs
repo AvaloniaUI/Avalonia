@@ -103,7 +103,13 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            protected override void Dispose(bool disposing)
+            protected override void SubscribeCore()
+            {
+                SendCurrentValue();
+                SubscribeToChanges();
+            }
+
+            protected override void UnsubscribeCore()
             {
                 var inpc = _reference.Target as INotifyPropertyChanged;
 
@@ -116,18 +122,12 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            protected override void SubscribeCore(IObserver<object> observer)
-            {
-                SendCurrentValue();
-                SubscribeToChanges();
-            }
-
             private void SendCurrentValue()
             {
                 try
                 {
                     var value = Value;
-                    Observer.OnNext(value);
+                    PublishValue(value);
                 }
                 catch { }
             }
