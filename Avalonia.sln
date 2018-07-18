@@ -187,6 +187,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Designer.HostApp.N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Skia.UnitTests", "tests\Avalonia.Skia.UnitTests\Avalonia.Skia.UnitTests.csproj", "{E1240B49-7B4B-4371-A00E-068778C5CF0B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageInterpRepro", "src\ImageInterpRepro\ImageInterpRepro.csproj", "{54A1062E-126E-4813-98A7-8DB9D949CD93}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Shared\RenderHelpers\RenderHelpers.projitems*{3c4c0cb4-0c0f-4450-a37b-148c84ff905f}*SharedItemsImports = 13
@@ -2514,6 +2516,46 @@ Global
 		{E1240B49-7B4B-4371-A00E-068778C5CF0B}.Release|NetCoreOnly.Build.0 = Release|Any CPU
 		{E1240B49-7B4B-4371-A00E-068778C5CF0B}.Release|x86.ActiveCfg = Release|Any CPU
 		{E1240B49-7B4B-4371-A00E-068778C5CF0B}.Release|x86.Build.0 = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|Any CPU.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|Any CPU.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|NetCoreOnly.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|NetCoreOnly.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|x86.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Ad-Hoc|x86.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|Any CPU.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|Any CPU.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|iPhone.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|NetCoreOnly.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|NetCoreOnly.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|x86.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.AppStore|x86.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|NetCoreOnly.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|NetCoreOnly.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Debug|x86.Build.0 = Debug|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|iPhone.Build.0 = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|NetCoreOnly.ActiveCfg = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|NetCoreOnly.Build.0 = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|x86.ActiveCfg = Release|Any CPU
+		{54A1062E-126E-4813-98A7-8DB9D949CD93}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

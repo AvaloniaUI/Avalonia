@@ -182,3 +182,4 @@ project.lock.json
 ## BenchmarkDotNet
 ##################
 BenchmarkDotNet.Artifacts/
+/src/ImageInterpRepro

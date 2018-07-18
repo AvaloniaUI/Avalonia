@@ -5,6 +5,8 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
+    using Avalonia.Visuals.Media.Imaging;
+
     public sealed class DrawingContext : IDisposable
     {
         private int _currentLevel;
@@ -68,11 +70,12 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        /// <param name="scalingMode"></param>
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode = default)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect);
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, scalingMode);
         }
 
         /// <summary>

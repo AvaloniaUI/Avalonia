@@ -7,6 +7,8 @@ using Avalonia.Media.Imaging;
 
 namespace Avalonia.Controls
 {
+    using Avalonia.Visuals.Media.Imaging;
+
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -24,10 +26,17 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
+        /// <summary>
+        /// Defines the <see cref="ScalingMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<BitmapScalingMode> ScalingModeProperty =
+            AvaloniaProperty.Register<Image, BitmapScalingMode>(nameof(BitmapScalingMode));
+
         static Image()
         {
             AffectsRender(SourceProperty);
             AffectsRender(StretchProperty);
+            AffectsRender(ScalingModeProperty);
         }
 
         /// <summary>
@@ -46,6 +55,12 @@ namespace Avalonia.Controls
         {
             get { return (Stretch)GetValue(StretchProperty); }
             set { SetValue(StretchProperty, value); }
+        }
+
+        public BitmapScalingMode ScalingMode
+        {
+            get { return (BitmapScalingMode)GetValue(ScalingModeProperty); }
+            set { SetValue(ScalingModeProperty, value); }
         }
 
         /// <summary>
@@ -68,7 +83,7 @@ namespace Avalonia.Controls
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterRect(new Rect(destRect.Size / scale));
 
-                context.DrawImage(source, 1, sourceRect, destRect);
+                context.DrawImage(source, 1, sourceRect, destRect, ScalingMode);
             }
         }
 

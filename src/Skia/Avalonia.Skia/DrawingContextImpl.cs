@@ -14,6 +14,8 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    using Avalonia.Visuals.Media.Imaging;
+
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
@@ -95,16 +97,36 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode)
         {
-            var drawableImage = (IDrawableBitmapImpl) source.Item;
+            var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
             using (var paint =
-                new SKPaint {Color = new SKColor(255, 255, 255, (byte) (255 * opacity * _currentOpacity))})
+                new SKPaint
+                {
+                    Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity))
+                })
             {
+                paint.FilterQuality = GetInterpolationMode(scalingMode);
+
                 drawableImage.Draw(this, s, d, paint);
+            }
+        }
+
+        private static SKFilterQuality GetInterpolationMode(BitmapScalingMode scalingMode)
+        {
+            switch (scalingMode)
+            {
+                case BitmapScalingMode.LowQuality:
+                    return SKFilterQuality.Low;
+                case BitmapScalingMode.MediumQuality:
+                    return SKFilterQuality.Medium;
+                case BitmapScalingMode.HighQuality:
+                    return SKFilterQuality.High;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(scalingMode), scalingMode, null);
             }
         }
 
@@ -112,7 +134,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, default(BitmapScalingMode));
             PopOpacityMask();
         }
 

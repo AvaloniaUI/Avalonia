@@ -33,7 +33,7 @@ namespace Avalonia.Platform
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="scalingMode">Controls</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode = BitmapScalingMode.LowQuality);
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode = default);
 
         /// <summary>
         /// Draws a bitmap image.
