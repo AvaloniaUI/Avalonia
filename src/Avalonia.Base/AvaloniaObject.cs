@@ -210,7 +210,7 @@ namespace Avalonia
             {
                 return ((IDirectPropertyAccessor)GetRegistered(property)).GetValue(this);
             }
-            else if (Values != null)
+            else if (_values != null)
             {
                 var result = Values.GetValue(property);
 
@@ -250,7 +250,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return Values?.IsAnimating(property) ?? false;
+            return _values?.IsAnimating(property) ?? false;
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(property != null);
             VerifyAccess();
 
-            return Values?.IsSet(property) ?? false;
+            return _values?.IsSet(property) ?? false;
         }
 
         /// <summary>
@@ -394,7 +394,7 @@ namespace Avalonia
         public void Revalidate(AvaloniaProperty property)
         {
             VerifyAccess();
-            Values?.Revalidate(property);
+            _values?.Revalidate(property);
         }
         
         internal void PriorityValueChanged(AvaloniaProperty property, int priority, object oldValue, object newValue)
