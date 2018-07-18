@@ -119,7 +119,7 @@ namespace Avalonia.Direct2D1
                     new BitmapProperties1(
                         new PixelFormat
                         {
-                            AlphaMode = AlphaMode.Ignore,
+                            AlphaMode = AlphaMode.Premultiplied,
                             Format = Format.B8G8R8A8_UNorm
                         },
                         _savedDpi.Width,
