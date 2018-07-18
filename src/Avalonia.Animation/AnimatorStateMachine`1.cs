@@ -51,9 +51,9 @@ namespace Avalonia.Animation
             Disposed
         }
 
-        public void Initialize(Animation animation, Animatable control, Animator<T> keyframes)
+        public void Initialize(Animation animation, Animatable control, Animator<T> animator)
         {
-            _parent = keyframes;
+            _parent = animator;
             _targetAnimation = animation;
             _targetControl = control;
             _neutralValue = (T)_targetControl.GetValue(_parent.Property);
