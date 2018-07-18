@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -15,13 +16,13 @@ namespace Avalonia.Base.UnitTests.Data.Core
     public class ExpressionObserverTests_Task
     {
         [Fact]
-        public void Should_Not_Get_Task_Result_Without_Modifier_Char()
+        public void Should_Not_Get_Task_Result_Without_StreamBinding()
         {
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var tcs = new TaskCompletionSource<string>();
                 var data = new { Foo = tcs.Task };
-                var target = new ExpressionObserver(data, "Foo");
+                var target = ExpressionObserver.Create(data, o => o.Foo);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -41,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new { Foo = Task.FromResult("foo") };
-                var target = new ExpressionObserver(data, "Foo^");
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -59,7 +60,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var tcs = new TaskCompletionSource<Class2>();
                 var data = new Class1(tcs.Task);
-                var target = new ExpressionObserver(data, "Next^.Foo");
+                var target = ExpressionObserver.Create(data, o => o.Next.StreamBinding().Foo);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -79,7 +80,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var tcs = new TaskCompletionSource<string>();
                 var data = new { Foo = tcs.Task };
-                var target = new ExpressionObserver(data, "Foo^");
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -105,7 +106,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             using (var sync = UnitTestSynchronizationContext.Begin())
             {
                 var data = new { Foo = TaskFromException(new NotSupportedException()) };
-                var target = new ExpressionObserver(data, "Foo^");
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));
@@ -130,7 +131,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             {
                 var tcs = new TaskCompletionSource<string>();
                 var data = new { Foo = tcs.Task };
-                var target = new ExpressionObserver(data, "Foo^", true);
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding(), true);
                 var result = new List<object>();
 
                 var sub = target.Subscribe(x => result.Add(x));

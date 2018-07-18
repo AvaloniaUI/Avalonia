@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var parser = new SelectorParser((t, ns) => context.ResolveType(ns, t));
+            var parser = new SelectorParser(context.ResolveType);
 
             return parser.Parse((string)value);
         }

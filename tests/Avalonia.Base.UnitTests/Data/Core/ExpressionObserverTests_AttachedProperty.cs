@@ -13,16 +13,12 @@ namespace Avalonia.Base.UnitTests.Data.Core
 {
     public class ExpressionObserverTests_AttachedProperty
     {
-        public ExpressionObserverTests_AttachedProperty()
-        {
-            var foo = Owner.FooProperty;
-        }
 
         [Fact]
         public async Task Should_Get_Attached_Property_Value()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "(Owner.Foo)");
+            var target = ExpressionObserver.Create(data, o => o[Owner.FooProperty]);
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -41,7 +37,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = new ExpressionObserver(data, "Next.(Owner.Foo)");
+            var target = ExpressionObserver.Create(data, o => o.Next[Owner.FooProperty]);
             var result = await target.Take(1);
 
             Assert.Equal("bar", result);
@@ -53,7 +49,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Track_Simple_Attached_Value()
         {
             var data = new Class1();
-            var target = new ExpressionObserver(data, "(Owner.Foo)");
+            var target = ExpressionObserver.Create(data, o => o[Owner.FooProperty]);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -77,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
                 }
             };
 
-            var target = new ExpressionObserver(data, "Next.(Owner.Foo)");
+            var target = ExpressionObserver.Create(data, o => o.Next[Owner.FooProperty]);
             var result = new List<object>();
 
             var sub = target.Subscribe(x => result.Add(x));
@@ -96,7 +92,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Func<Tuple<ExpressionObserver, WeakReference>> run = () =>
             {
                 var source = new Class1();
-                var target = new ExpressionObserver(source, "(Owner.Foo)");
+                var target = ExpressionObserver.Create(source, o => o.Next[Owner.FooProperty]);
                 return Tuple.Create(target, new WeakReference(source));
             };
 
@@ -106,22 +102,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.Collect();
 
             Assert.Null(result.Item2.Target);
-        }
-
-        [Fact]
-        public void Should_Fail_With_Attached_Property_With_Only_1_Part()
-        {
-            var data = new Class1();
-
-            Assert.Throws<ExpressionParseException>(() => new ExpressionObserver(data, "(Owner)"));
-        }
-
-        [Fact]
-        public void Should_Fail_With_Attached_Property_With_More_Than_2_Parts()
-        {
-            var data = new Class1();
-
-            Assert.Throws<ExpressionParseException>(() => new ExpressionObserver(data, "(Owner.Foo.Bar)"));
         }
 
         private static class Owner
