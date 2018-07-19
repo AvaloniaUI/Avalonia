@@ -42,18 +42,20 @@
         <ListBox Name="listBox" 
                  Items="{Binding Items}" 
                  SelectedItems="{Binding SelectedItems}"
-                 SelectionMode="Multiple"
-                 VirtualizationMode="{Binding VirtualizationMode}"
                  ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
                  ScrollViewer.VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility, Mode=TwoWay}">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="{Binding Orientation}"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Header}" TextWrapping="Wrap"/>
+                    <Grid>
+                        <Expander ExpandDirection="Down">
+                            <StackPanel Background="#FFFEFEFE">
+                                <Panel Background="Red" Height="200" Width="200" />
+                            </StackPanel>
+                        </Expander>
+                        <Grid ColumnDefinitions="400, *, 100" Margin="30 0 0 0">
+                            <TextBlock Text="{Binding Header}" />
+                        </Grid>
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
