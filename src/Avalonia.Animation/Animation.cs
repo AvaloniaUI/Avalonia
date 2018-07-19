@@ -83,7 +83,7 @@ namespace Avalonia.Animation
         private void InterpretKeyframes()
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();
-            var kfList = new List<AnimatorKeyFrame>();
+            var animatorKeyFrames = new List<AnimatorKeyFrame>();
 
             foreach (var keyframe in this)
             {
@@ -99,38 +99,43 @@ namespace Avalonia.Animation
                     if (!handlerList.Contains((handler, setter.Property)))
                         handlerList.Add((handler, setter.Property));
 
+                    var cue = keyframe.Cue;
+
+                    if (keyframe.TimingMode == KeyFrameTimingMode.TimeSpan)
+                    {
+                        cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
+                    }
+
                     var newKF = new AnimatorKeyFrame()
                     {
-                        Handler = handler,
+                        AnimatorType = handler,
                         Property = setter.Property,
-                        Cue = keyframe.Cue,
-                        KeyTime = keyframe.KeyTime,
-                        TimingMode = keyframe.TimingMode,
+                        Cue = cue,
                         Value = setter.Value
                     };
 
-                    kfList.Add(newKF);
+                    animatorKeyFrames.Add(newKF);
                 }
             }
 
-            var newAnimatorInstances = new List<(Type handler, AvaloniaProperty prop, IAnimator inst)>();
+            var newAnimatorInstances = new List<IAnimator>();
 
             foreach (var (handlerType, property) in handlerList)
             {
                 var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
                 newInstance.Property = property;
-                newAnimatorInstances.Add((handlerType, property, newInstance));
+                newAnimatorInstances.Add(newInstance);
             }
 
-            foreach (var kf in kfList)
+            foreach (var keyframe in animatorKeyFrames)
             {
-                var parent = newAnimatorInstances.First(p => p.handler == kf.Handler &&
-                                                             p.prop == kf.Property);
-                parent.inst.Add(kf);
+                var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
+                                                             a.Property == keyframe.Property);
+                animator.Add(keyframe);
             }
 
             foreach(var instance in newAnimatorInstances)
-                _animators.Add(instance.inst);
+                _animators.Add(instance);
 
         }
 

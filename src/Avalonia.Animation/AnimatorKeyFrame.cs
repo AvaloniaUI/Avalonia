@@ -13,10 +13,8 @@ namespace Avalonia.Animation
     /// </summary>
     public class AnimatorKeyFrame
     {
-        public Type Handler;
+        public Type AnimatorType;
         public Cue Cue;
-        public TimeSpan KeyTime;
-        internal KeyFrameTimingMode TimingMode;
         public AvaloniaProperty Property;
         public object Value;
     }

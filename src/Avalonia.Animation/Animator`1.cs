@@ -42,7 +42,7 @@ namespace Avalonia.Animation
 
             return obsMatch
                 // Ignore triggers when global timers are paused.
-                .Where(p => Timing.GetGlobalPlayState() != PlayState.Pause)
+                .Where(p => p && Timing.GetGlobalPlayState() != PlayState.Pause)
                 .Subscribe(_ =>
                 {
                     var timerObs = RunKeyFrames(animation, control);
@@ -97,14 +97,14 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control)
         {
-            var _kfStateMach = new AnimatorStateMachine<T>();
-            _kfStateMach.Initialize(animation, control, this);
+            var stateMachine = new AnimatorStateMachine<T>();
+            stateMachine.Initialize(animation, control, this);
 
             Timing.AnimationStateTimer
-                        .TakeWhile(_ => !_kfStateMach._unsubscribe)
-                        .Subscribe(p => _kfStateMach.Step(p, DoInterpolation));
+                        .TakeWhile(_ => !stateMachine._unsubscribe)
+                        .Subscribe(p => stateMachine.Step(p, DoInterpolation));
 
-            return control.Bind(Property, _kfStateMach, BindingPriority.Animation);
+            return control.Bind(Property, stateMachine, BindingPriority.Animation);
         }
 
         /// <summary>
@@ -131,15 +131,8 @@ namespace Avalonia.Animation
                 }
 
                 T convertedValue = (T)typeConv.ConvertTo(k.Value, typeof(T));
-
-                Cue _normalizedCue = k.Cue;
-
-                if (k.TimingMode == KeyFrameTimingMode.TimeSpan)
-                {
-                    _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
-                }
-
-                _convertedKeyframes.Add(_normalizedCue.CueValue, (convertedValue, false));
+                
+                _convertedKeyframes.Add(k.Cue.CueValue, (convertedValue, false));
             }
 
             AddNeutralKeyFramesIfNeeded();
