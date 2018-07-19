@@ -102,18 +102,18 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="scalingMode"></param>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode)
+        /// <param name="bitmapScalingMode"></param>
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             {
                 if (_renderTarget is DeviceContext deviceContext)
                 {
-                    deviceContext.DrawBitmap(d2d.Value, destRect.ToDirect2D(), (float)opacity, GetInterpolationMode(scalingMode), sourceRect.ToDirect2D(), null);
+                    deviceContext.DrawBitmap(d2d.Value, destRect.ToDirect2D(), (float)opacity, GetInterpolationMode(bitmapScalingMode), sourceRect.ToDirect2D(), null);
                 }
                 else
                 {
-                    var interpolationMode = scalingMode == BitmapScalingMode.LowQuality
+                    var interpolationMode = bitmapScalingMode == BitmapScalingMode.LowQuality
                                                 ? BitmapInterpolationMode.NearestNeighbor
                                                 : BitmapInterpolationMode.Linear;
 

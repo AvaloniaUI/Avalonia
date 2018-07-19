@@ -22,8 +22,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        /// <param name="scalingMode"></param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode)
+        /// <param name="bitmapScalingMode">The bitmap scaling mode.</param>
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
             : base(destRect, transform, null)
         {
             Transform = transform;
@@ -31,10 +31,8 @@ namespace Avalonia.Rendering.SceneGraph
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
-            ScalingMode = scalingMode;
-        }
-
-        
+            BitmapScalingMode = bitmapScalingMode;
+        }        
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
@@ -62,12 +60,12 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect DestRect { get; }
 
         /// <summary>
-        /// Gets or sets the scaling mode.
+        /// Gets the bitmap scaling mode.
         /// </summary>
         /// <value>
         /// The scaling mode.
         /// </value>
-        public BitmapScalingMode ScalingMode { get; }
+        public BitmapScalingMode BitmapScalingMode { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -77,20 +75,20 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The opacity of the other draw operation.</param>
         /// <param name="sourceRect">The source rect of the other draw operation.</param>
         /// <param name="destRect">The dest rect of the other draw operation.</param>
-        /// <param name="scalingMode"></param>
+        /// <param name="bitmapScalingMode"></param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
         {
             return transform == Transform &&
                 Equals(source.Item, Source.Item) &&
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect &&
-                scalingMode == ScalingMode;
+                bitmapScalingMode == BitmapScalingMode;
         }
 
         /// <inheritdoc/>
@@ -99,7 +97,7 @@ namespace Avalonia.Rendering.SceneGraph
             // TODO: Probably need to introduce some kind of locking mechanism in the case of
             // WriteableBitmap.
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, ScalingMode);
+            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapScalingMode);
         }
 
         /// <inheritdoc/>

@@ -3,10 +3,24 @@
 
 namespace Avalonia.Visuals.Media.Imaging
 {
+    /// <summary>
+    /// Controls the performance and quality of bitmap scaling.
+    /// </summary>
     public enum BitmapScalingMode
     {
-        LowQuality,
+        /// <summary>
+        /// Highest quality but worst performance.
+        /// </summary>
+        HighQuality,
+        
+        /// <summary>
+        /// Good performance an decent image quality.
+        /// </summary>
         MediumQuality,
-        HighQuality
+
+        /// <summary>
+        /// The best performance but worst image quality.
+        /// </summary>
+        LowQuality
     }
 }

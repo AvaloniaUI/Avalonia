@@ -97,7 +97,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -109,7 +109,7 @@ namespace Avalonia.Skia
                     Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity))
                 })
             {
-                paint.FilterQuality = GetInterpolationMode(scalingMode);
+                paint.FilterQuality = GetInterpolationMode(bitmapScalingMode);
 
                 drawableImage.Draw(this, s, d, paint);
             }

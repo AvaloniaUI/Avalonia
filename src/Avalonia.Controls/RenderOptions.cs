@@ -1,7 +1,10 @@
-﻿namespace Avalonia.Controls
-{
-    using Avalonia.Visuals.Media.Imaging;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Visuals.Media.Imaging;
+
+namespace Avalonia.Controls
+{   
     public class RenderOptions
     {
         /// <summary>
@@ -10,7 +13,6 @@
         public static readonly StyledProperty<BitmapScalingMode> BitmapScalingModeProperty =
             AvaloniaProperty.RegisterAttached<RenderOptions, Control, BitmapScalingMode>(
                 "BitmapScalingMode",
-                BitmapScalingMode.LowQuality,
                 inherits: true);
 
         /// <summary>

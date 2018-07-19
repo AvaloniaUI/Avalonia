@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
-{
-    using Avalonia.Visuals.Media.Imaging;
-
+{   
     public sealed class DrawingContext : IDisposable
     {
         private int _currentLevel;
