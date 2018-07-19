@@ -13,6 +13,7 @@ namespace ControlCatalog
             this.AttachDevTools();
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+            DataContext = this;
         }
 
         private void InitializeComponent()
@@ -24,5 +25,14 @@ namespace ControlCatalog
             theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
         }
+
+        private double _proportion;
+
+        public double Proportion
+        {
+            get { return _proportion; }
+            set { _proportion = value; }
+        }
+
     }
 }
