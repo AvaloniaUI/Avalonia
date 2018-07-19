@@ -115,6 +115,11 @@ namespace Avalonia.Controls.Presenters
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
+                        if(SelectedIndex > containers.Count())
+                        {
+                            SelectedIndex = containers.Count();
+                        }
+
 #pragma warning disable 4014
                         MoveToPage(-1, SelectedIndex);
 #pragma warning restore 4014
@@ -130,7 +135,7 @@ namespace Avalonia.Controls.Presenters
 
 #pragma warning disable 4014
                         var newIndex = SelectedIndex;
-
+                        
                         if(SelectedIndex < 0)
                         {
                             if(Items != null && Items.Count() > 0)
