@@ -2,43 +2,7 @@
         Title="AvaloniaUI Virtualization Test"
         Width="800"
         Height="600">
-    <DockPanel LastChildFill="True" Margin="16">
-        <StackPanel DockPanel.Dock="Right" 
-                    Margin="16 0 0 0" 
-                    MinWidth="150"
-                    Gap="4">
-            <DropDown Items="{Binding VirtualizationModes}"
-                      SelectedItem="{Binding VirtualizationMode}"/>
-            <DropDown Items="{Binding Orientations}"
-                      SelectedItem="{Binding Orientation}"/>
-            <TextBox Watermark="Item Count"
-                     UseFloatingWatermark="True"
-                     Text="{Binding ItemCount}"/>
-            <TextBox Watermark="Extent"
-                     UseFloatingWatermark="True"
-                     Text="{Binding #listBox.Scroll.Extent, Mode=OneWay}"/>
-            <TextBox Watermark="Offset"
-                     UseFloatingWatermark="True"
-                     Text="{Binding #listBox.Scroll.Offset, Mode=OneWay}"/>
-            <TextBox Watermark="Viewport"
-                     UseFloatingWatermark="True"
-                     Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
-            <TextBlock>Horiz. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
-                      SelectedItem="{Binding HorizontalScrollBarVisibility}"/>
-            <TextBlock>Vert. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
-                      SelectedItem="{Binding VerticalScrollBarVisibility}"/>
-            <TextBox Watermark="Item to Create"
-                     UseFloatingWatermark="True"
-                     Text="{Binding NewItemString}"/>
-            <Button Command="{Binding AddItemCommand}">Add Item</Button>
-            <Button Command="{Binding RemoveItemCommand}">Remove Item</Button>
-            <Button Command="{Binding RecreateCommand}">Recreate</Button>
-            <Button Command="{Binding SelectFirstCommand}">Select First</Button>
-            <Button Command="{Binding SelectLastCommand}">Select Last</Button>
-        </StackPanel>
-
+    <Grid RowDefinitions="4*,3*,4*">
         <ListBox Name="listBox" 
                  Items="{Binding Items}" 
                  SelectedItems="{Binding SelectedItems}"
@@ -59,5 +23,28 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-    </DockPanel>
+
+        <Grid Grid.Row="1" Background="LightBlue" />
+
+        <ListBox Name="listBox1" Grid.Row="2"
+                 Items="{Binding Items2}" 
+                 ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
+                 ScrollViewer.VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Expander ExpandDirection="Down">
+                            <StackPanel Background="#FFFEFEFE">
+                                <Panel Background="Red" Height="200" Width="200" />
+                            </StackPanel>
+                        </Expander>
+                        <Grid ColumnDefinitions="400, *, 100" Margin="30 0 0 0">
+                            <TextBlock Text="{Binding Header}" />
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+    </Grid>
 </Window>

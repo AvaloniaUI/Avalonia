@@ -17,6 +17,7 @@ namespace VirtualizationDemo.ViewModels
         private string _newItemString = "New Item";
         private int _newItemIndex;
         private IReactiveList<ItemViewModel> _items;
+        private IReactiveDerivedList<ItemViewModel> _items2;
         private string _prefix = "Item";
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
@@ -56,6 +57,12 @@ namespace VirtualizationDemo.ViewModels
         {
             get { return _items; }
             private set { this.RaiseAndSetIfChanged(ref _items, value); }
+        }
+
+        public IReactiveDerivedList<ItemViewModel> Items2
+        {
+            get { return _items2; }
+            private set { this.RaiseAndSetIfChanged(ref _items2, value); }
         }
 
         public Orientation Orientation
@@ -104,6 +111,7 @@ namespace VirtualizationDemo.ViewModels
                 var items = Enumerable.Range(0, count)
                     .Select(x => new ItemViewModel(x));
                 Items = new ReactiveList<ItemViewModel>(items);
+                Items2 = Items.CreateDerivedCollection(c => c);
             }
             else if (count > Items.Count)
             {
@@ -143,6 +151,7 @@ namespace VirtualizationDemo.ViewModels
             var items = Enumerable.Range(0, _itemCount)
                 .Select(x => new ItemViewModel(x, _prefix));
             Items = new ReactiveList<ItemViewModel>(items);
+            Items2 = Items.CreateDerivedCollection(c => c);
         }
 
         private void SelectItem(int index)
