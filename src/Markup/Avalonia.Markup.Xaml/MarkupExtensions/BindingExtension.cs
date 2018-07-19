@@ -37,6 +37,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             return new Binding
             {
+                TypeResolver = descriptorContext.ResolveType,
                 Converter = Converter,
                 ConverterParameter = ConverterParameter,
                 ElementName = pathInfo.ElementName ?? ElementName,

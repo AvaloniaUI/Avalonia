@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Input;
 
 namespace Avalonia.Controls
@@ -152,6 +153,7 @@ namespace Avalonia.Controls
             double measuredWidth = 0;
             double measuredHeight = 0;
             double gap = Gap;
+            bool hasVisibleChild = Children.Any(c => c.IsVisible);
 
             foreach (Control child in Children)
             {
@@ -160,23 +162,23 @@ namespace Avalonia.Controls
 
                 if (Orientation == Orientation.Vertical)
                 {
-                    measuredHeight += size.Height + gap;
+                    measuredHeight += size.Height + (child.IsVisible ? gap : 0);
                     measuredWidth = Math.Max(measuredWidth, size.Width);
                 }
                 else
                 {
-                    measuredWidth += size.Width + gap;
+                    measuredWidth += size.Width + (child.IsVisible ? gap : 0);   
                     measuredHeight = Math.Max(measuredHeight, size.Height);
                 }
             }
 
             if (Orientation == Orientation.Vertical)
             {
-                measuredHeight -= gap;
+                measuredHeight -= (hasVisibleChild ? gap : 0);
             }
             else
             {
-                measuredWidth -= gap;
+                measuredWidth -= (hasVisibleChild ? gap : 0);
             }
 
             return new Size(measuredWidth, measuredHeight);
@@ -193,6 +195,7 @@ namespace Avalonia.Controls
             double arrangedWidth = finalSize.Width;
             double arrangedHeight = finalSize.Height;
             double gap = Gap;
+            bool hasVisibleChild = Children.Any(c => c.IsVisible);
 
             if (Orientation == Orientation.Vertical)
             {
@@ -214,25 +217,25 @@ namespace Avalonia.Controls
                     Rect childFinal = new Rect(0, arrangedHeight, width, childHeight);
                     ArrangeChild(child, childFinal, finalSize, orientation);
                     arrangedWidth = Math.Max(arrangedWidth, childWidth);
-                    arrangedHeight += childHeight + gap;
+                    arrangedHeight += childHeight + (child.IsVisible ? gap : 0);
                 }
                 else
                 {
                     double height = Math.Max(childHeight, arrangedHeight);
                     Rect childFinal = new Rect(arrangedWidth, 0, childWidth, height);
                     ArrangeChild(child, childFinal, finalSize, orientation);
-                    arrangedWidth += childWidth + gap;
+                    arrangedWidth += childWidth + (child.IsVisible ? gap : 0);
                     arrangedHeight = Math.Max(arrangedHeight, childHeight);
                 }
             }
 
             if (orientation == Orientation.Vertical)
             {
-                arrangedHeight = Math.Max(arrangedHeight - gap, finalSize.Height);
+                arrangedHeight = Math.Max(arrangedHeight - (hasVisibleChild ? gap : 0), finalSize.Height);
             }
             else
             {
-                arrangedWidth = Math.Max(arrangedWidth - gap, finalSize.Width);
+                arrangedWidth = Math.Max(arrangedWidth - (hasVisibleChild ? gap : 0), finalSize.Width);
             }
 
             return new Size(arrangedWidth, arrangedHeight);

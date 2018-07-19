@@ -557,7 +557,7 @@ namespace Avalonia.Controls
             var index = CaretIndex = _presenter.GetCaretIndex(point);
             var text = Text;
 
-            if (text != null)
+            if (text != null && e.MouseButton == MouseButton.Left)
             {
                 switch (e.ClickCount)
                 {
