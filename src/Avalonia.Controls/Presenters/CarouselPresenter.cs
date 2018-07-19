@@ -115,9 +115,9 @@ namespace Avalonia.Controls.Presenters
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
-                        if(SelectedIndex > containers.Count())
+                        if(SelectedIndex >= Items.Count())
                         {
-                            SelectedIndex = containers.Count();
+                            SelectedIndex = Items.Count() - 1;
                         }
 
 #pragma warning disable 4014
