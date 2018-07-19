@@ -16,7 +16,7 @@ namespace Avalonia.Animation
         public Type Handler;
         public Cue Cue;
         public TimeSpan KeyTime;
-        internal bool timeSpanSet, cueSet;
+        internal KeyFrameTimingMode TimingMode;
         public AvaloniaProperty Property;
         public object Value;
     }

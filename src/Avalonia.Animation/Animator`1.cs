@@ -19,7 +19,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// List of type-converted keyframes.
         /// </summary>
-        private readonly IDictionary<double, (T, bool isNeutral)> _convertedKeyframes = new SortedDictionary<double, (T, bool)>();
+        private readonly SortedList<double, (T, bool isNeutral)> _convertedKeyframes = new SortedList<double, (T, bool)>();
 
         private bool _isVerfifiedAndConverted;
 
@@ -134,7 +134,7 @@ namespace Avalonia.Animation
 
                 Cue _normalizedCue = k.Cue;
 
-                if (k.timeSpanSet)
+                if (k.TimingMode == KeyFrameTimingMode.TimeSpan)
                 {
                     _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
                 }

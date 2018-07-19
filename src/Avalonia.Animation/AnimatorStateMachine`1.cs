@@ -246,6 +246,9 @@ namespace Avalonia.Animation
                         _targetObserver.OnCompleted();
                         handled = true;
                         break;
+                    default:
+                        handled = true;
+                        break;
                 }
             }
         }

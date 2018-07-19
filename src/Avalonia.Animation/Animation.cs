@@ -105,8 +105,7 @@ namespace Avalonia.Animation
                         Property = setter.Property,
                         Cue = keyframe.Cue,
                         KeyTime = keyframe.KeyTime,
-                        timeSpanSet = keyframe.timeSpanSet,
-                        cueSet = keyframe.cueSet,
+                        TimingMode = keyframe.TimingMode,
                         Value = setter.Value
                     };
 
