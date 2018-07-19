@@ -39,7 +39,7 @@ namespace Avalonia.Controls.Presenters
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
-       // private Task _current;
+        // private Task _current;
         private Task _currentTransition;
         private int _queuedTransitionIndex = -1;
 
@@ -130,10 +130,10 @@ namespace Avalonia.Controls.Presenters
 
 #pragma warning disable 4014
                         var newIndex = SelectedIndex;
-                        
-                        if(SelectedIndex < 0)
+
+                        if (SelectedIndex < 0)
                         {
-                            if(Items != null && Items.Count() > 0)
+                            if (Items != null && Items.Count() > 0)
                             {
                                 newIndex = 0;
                             }
@@ -142,11 +142,11 @@ namespace Avalonia.Controls.Presenters
                                 newIndex = -1;
                             }
                         }
-                        
+
                         MoveToPage(-1, newIndex);
 #pragma warning restore 4014
                     }
-                    break;     
+                    break;
             }
         }
 
@@ -226,7 +226,7 @@ namespace Avalonia.Controls.Presenters
                     int fromIndex = (int)e.OldValue;
                     int toIndex = (int)e.NewValue;
 
-                    for (;;)
+                    for (; ; )
                     {
                         _currentTransition = MoveToPage(fromIndex, toIndex);
                         await _currentTransition;
