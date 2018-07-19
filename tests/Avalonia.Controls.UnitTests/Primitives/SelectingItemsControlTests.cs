@@ -150,6 +150,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void SelectedIndex_Item_Is_Updated_As_Items_Removed_When_Last_Item_Is_Selected()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[2];
+
+            Assert.Equal(items[2], target.SelectedItem);
+            Assert.Equal(2, target.SelectedIndex);
+
+            items.RemoveAt(0);
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Setting_SelectedItem_To_Not_Present_Item_Should_Clear_Selection()
         {
             var items = new[]
