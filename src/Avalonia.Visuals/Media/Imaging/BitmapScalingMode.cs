@@ -14,7 +14,7 @@ namespace Avalonia.Visuals.Media.Imaging
         HighQuality,
         
         /// <summary>
-        /// Good performance an decent image quality.
+        /// Good performance and decent image quality.
         /// </summary>
         MediumQuality,
 

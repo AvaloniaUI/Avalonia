@@ -3,13 +3,12 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
-{
-    using Avalonia.Visuals.Media.Imaging;
-
+{  
     public class DrawOperationTests
     {
         [Fact]

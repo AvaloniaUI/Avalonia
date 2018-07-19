@@ -4,11 +4,10 @@
 using System;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    using Avalonia.Visuals.Media.Imaging;
-
     /// <summary>
     /// A node in the scene graph which represents an image draw.
     /// </summary>
@@ -75,7 +74,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The opacity of the other draw operation.</param>
         /// <param name="sourceRect">The source rect of the other draw operation.</param>
         /// <param name="destRect">The dest rect of the other draw operation.</param>
-        /// <param name="bitmapScalingMode"></param>
+        /// <param name="bitmapScalingMode">The bitmap scaling mode.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent

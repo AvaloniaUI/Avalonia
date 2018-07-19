@@ -69,12 +69,12 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="scalingMode"></param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode scalingMode = default)
+        /// <param name="bitmapScalingMode"></param>
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode = default)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, scalingMode);
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapScalingMode);
         }
 
         /// <summary>

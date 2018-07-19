@@ -7,14 +7,13 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 
 namespace Avalonia.Direct2D1.Media
 {
-    using Avalonia.Visuals.Media.Imaging;
-
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>

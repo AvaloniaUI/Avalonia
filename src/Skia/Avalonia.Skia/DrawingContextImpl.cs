@@ -10,12 +10,11 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
-{
-    using Avalonia.Visuals.Media.Imaging;
-
+{  
     /// <summary>
     /// Skia based drawing context.
     /// </summary>

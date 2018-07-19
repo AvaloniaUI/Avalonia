@@ -7,11 +7,10 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {
-    using Avalonia.Visuals.Media.Imaging;
-
     /// <summary>
     /// A drawing context which builds a scene graph.
     /// </summary>
