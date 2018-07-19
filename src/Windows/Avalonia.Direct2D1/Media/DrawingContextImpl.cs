@@ -423,7 +423,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 return new RadialGradientBrushImpl(radialGradientBrush, _renderTarget, destinationSize);
             }
-            else if (imageBrush != null)
+            else if (imageBrush?.Source != null)
             {
                 return new ImageBrushImpl(
                     imageBrush,
