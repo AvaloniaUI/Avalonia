@@ -16,15 +16,15 @@ namespace Avalonia.Controls.Presenters
 {
     /// <summary>
     /// Handles virtualization in an <see cref="ItemsPresenter"/> for
-    /// <see cref="ItemVirtualizationMode.Simple"/>.
+    /// <see cref="ItemVirtualizationMode.Recycle"/>.
     /// </summary>
-    internal class ItemVirtualizerSimple : ItemVirtualizer
+    internal class ItemVirtualizerRecycling : ItemVirtualizer
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizerRecycling"/> class.
         /// </summary>
         /// <param name="owner"></param>
-        public ItemVirtualizerSimple(ItemsPresenter owner)
+        public ItemVirtualizerRecycling(ItemsPresenter owner)
             : base(owner)
         {
             // Don't need to add children here as UpdateControls should be called by the panel

@@ -172,6 +172,10 @@ namespace Avalonia.Controls.Presenters
                     case ItemVirtualizationMode.Simple:
                         result = new ItemVirtualizerSimple(owner);
                         break;
+
+                    case ItemVirtualizationMode.Recycle:
+                        result = new ItemVirtualizerRecycling(owner);
+                        break;
                 }
             }
 

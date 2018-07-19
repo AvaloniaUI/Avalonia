@@ -17,5 +17,12 @@ namespace Avalonia.Controls
         /// Virtualize items without smooth scrolling.
         /// </summary>
         Simple,
+
+        /// <summary>
+        /// Virtualize items without smooth scrolling and recycle the containing controls.
+        /// This mode wont work when you have items that can be in different states
+        /// i.e. expander. see: https://github.com/AvaloniaUI/Avalonia/issues/1758
+        /// </summary>
+        Recycle
     }
 }

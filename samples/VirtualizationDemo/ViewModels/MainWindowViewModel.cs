@@ -21,7 +21,7 @@ namespace VirtualizationDemo.ViewModels
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Auto;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Auto;
         private Orientation _orientation = Orientation.Vertical;
-        private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Simple;
+        private ItemVirtualizationMode _virtualizationMode = ItemVirtualizationMode.Recycle;
 
         public MainWindowViewModel()
         {

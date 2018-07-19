@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Items = items,
                 ItemsPanel = VirtualizingPanelTemplate(Orientation.Vertical),
                 ItemTemplate = ItemTemplate(),
-                VirtualizationMode = ItemVirtualizationMode.Simple,
+                VirtualizationMode = ItemVirtualizationMode.Recycle,
             };
 
             var scroller = new ScrollContentPresenter
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 ItemsPanel = VirtualizingPanelTemplate(),
                 ItemTemplate = ItemTemplate(),
-                VirtualizationMode = ItemVirtualizationMode.Simple,
+                VirtualizationMode = ItemVirtualizationMode.Recycle,
             };
 
             target.ApplyTemplate();
@@ -208,7 +208,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(new Size(100, 200), scroll.Extent);
             Assert.Equal(new Size(100, 100), scroll.Viewport);
 
-            target.VirtualizationMode = ItemVirtualizationMode.Simple;
+            target.VirtualizationMode = ItemVirtualizationMode.Recycle;
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
@@ -237,7 +237,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Assert.InRange(target.Panel.Children.Count, 0, 10);
                 };
 
-                target.VirtualizationMode = ItemVirtualizationMode.Simple;
+                target.VirtualizationMode = ItemVirtualizationMode.Recycle;
                 ((ILayoutRoot)scroll.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(10, target.Panel.Children.Count);
@@ -272,7 +272,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         private static ItemsPresenter CreateTarget(
-            ItemVirtualizationMode mode = ItemVirtualizationMode.Simple,
+            ItemVirtualizationMode mode = ItemVirtualizationMode.Recycle,
             Orientation orientation = Orientation.Vertical,
             bool useContainers = true,
             int itemCount = 20)

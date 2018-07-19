@@ -1000,7 +1000,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Items = items,
                     ItemsPanel = VirtualizingPanelTemplate(orientation),
                     ItemTemplate = ItemTemplate(),
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                    VirtualizationMode = ItemVirtualizationMode.Recycle,
                 }
             };
 
