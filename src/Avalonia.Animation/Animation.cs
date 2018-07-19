@@ -68,7 +68,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// The value fill mode for this animation.
         /// </summary>
-        public FillMode FillMode { get; set; } 
+        public FillMode FillMode { get; set; }
 
         /// <summary>
         /// Easing function to be used.
@@ -106,13 +106,9 @@ namespace Avalonia.Animation
                         cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
                     }
 
-                    var newKF = new AnimatorKeyFrame()
-                    {
-                        AnimatorType = handler,
-                        Property = setter.Property,
-                        Cue = cue,
-                        Value = setter.Value
-                    };
+                    var newKF = new AnimatorKeyFrame(handler, cue);
+
+                    _subscription.Add(newKF.BindSetter(setter));
 
                     animatorKeyFrames.Add(newKF);
                 }
