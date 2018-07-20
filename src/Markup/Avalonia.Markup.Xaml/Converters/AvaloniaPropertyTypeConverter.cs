@@ -4,19 +4,16 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text.RegularExpressions;
+using Avalonia.Markup.Parsers;
+using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
-using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
     public class AvaloniaPropertyTypeConverter : TypeConverter
     {
-        private static readonly Regex regex = new Regex(@"^\(?(\w*)\.(\w*)\)?|(.*)$");
-
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
             return sourceType == typeof(string);
@@ -24,8 +21,10 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var (owner, propertyName) = ParseProperty((string)value);
-            var ownerType = TryResolveOwnerByName(context, owner) ??
+            var parser = new PropertyParser();
+            var reader = new Reader((string)value);
+            var (ns, owner, propertyName) = parser.Parse(reader);
+            var ownerType = TryResolveOwnerByName(context, ns, owner) ??
                 context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
                 context.GetFirstAmbientValue<Style>()?.Selector?.TargetType;
 
@@ -47,36 +46,22 @@ namespace Avalonia.Markup.Xaml.Converters
             return property;
         }
 
-        private Type TryResolveOwnerByName(ITypeDescriptorContext context, string owner)
+        private Type TryResolveOwnerByName(ITypeDescriptorContext context, string ns, string owner)
         {
             if (owner != null)
             {
-                var resolver = context.GetService<IXamlTypeResolver>();
-                var result = resolver.Resolve(owner);
+                var result = context.ResolveType(ns, owner);
 
                 if (result == null)
                 {
-                    throw new XamlLoadException($"Could not find type '{owner}'.");
+                    var name = string.IsNullOrEmpty(ns) ? owner : $"{ns}:{owner}";
+                    throw new XamlLoadException($"Could not find type '{name}'.");
                 }
 
                 return result;
             }
 
             return null;
-        }
-
-        private (string owner, string property) ParseProperty(string s)
-        {
-            var result = regex.Match(s);
-
-            if (result.Groups[1].Success)
-            {
-                return (result.Groups[1].Value, result.Groups[2].Value);
-            }
-            else
-            {
-                return (null, result.Groups[3].Value);
-            }
         }
     }
 }
