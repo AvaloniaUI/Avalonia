@@ -9,7 +9,7 @@
             </Style>
         </Grid.Styles>
         <local:MyControl Height="200" Width="200" Background="Red">
-            <Button local:MyControl.Proportion="0.2" />
+            <Button />
         </local:MyControl>
     </Grid>
 </Window>
