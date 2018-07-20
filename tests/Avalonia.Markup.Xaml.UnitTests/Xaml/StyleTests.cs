@@ -146,5 +146,31 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.NotNull(target.FocusAdorner);
             }
         }
+
+        [Fact]
+        public void Setter_Can_Set_Attached_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='DockPanel.Dock' Value='Right'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(Dock.Right, DockPanel.GetDock(textBlock));
+            }
+        }
     }
 }
