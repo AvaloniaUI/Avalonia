@@ -4,11 +4,11 @@
 using System.Globalization;
 using System.Text;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Utilities
 {
     public static class IdentifierParser
     {
-        public static string Parse(Reader r)
+        public static string Parse(CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {

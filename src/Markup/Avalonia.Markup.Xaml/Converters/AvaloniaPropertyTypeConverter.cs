@@ -10,6 +10,7 @@ using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
+using Avalonia.Utilities;
 using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
@@ -25,7 +26,7 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             var registry = AvaloniaPropertyRegistry.Instance;
             var parser = new PropertyParser();
-            var reader = new Reader((string)value);
+            var reader = new CharacterReader((string)value);
             var (ns, owner, propertyName) = parser.Parse(reader);
             var ownerType = TryResolveOwnerByName(context, ns, owner);
             var targetType = context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
