@@ -68,7 +68,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// The value fill mode for this animation.
         /// </summary>
-        public FillMode FillMode { get; set; } 
+        public FillMode FillMode { get; set; }
 
         /// <summary>
         /// Easing function to be used.
@@ -80,10 +80,10 @@ namespace Avalonia.Animation
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
  
-        private void InterpretKeyframes()
+        private IList<IAnimator> InterpretKeyframes(Animatable control)
         {
-            var handlerList = new List<(Type, AvaloniaProperty)>();
-            var kfList = new List<AnimatorKeyFrame>();
+            var handlerList = new List<(Type type, AvaloniaProperty property)>();
+            var animatorKeyFrames = new List<AnimatorKeyFrame>();
 
             foreach (var keyframe in this)
             {
@@ -99,41 +99,38 @@ namespace Avalonia.Animation
                     if (!handlerList.Contains((handler, setter.Property)))
                         handlerList.Add((handler, setter.Property));
 
-                    var newKF = new AnimatorKeyFrame()
-                    {
-                        Handler = handler,
-                        Property = setter.Property,
-                        Cue = keyframe.Cue,
-                        KeyTime = keyframe.KeyTime,
-                        timeSpanSet = keyframe.timeSpanSet,
-                        cueSet = keyframe.cueSet,
-                        Value = setter.Value
-                    };
+                    var cue = keyframe.Cue;
 
-                    kfList.Add(newKF);
+                    if (keyframe.TimingMode == KeyFrameTimingMode.TimeSpan)
+                    {
+                        cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
+                    }
+
+                    var newKF = new AnimatorKeyFrame(handler, cue);
+
+                    _subscription.Add(newKF.BindSetter(setter, control));
+
+                    animatorKeyFrames.Add(newKF);
                 }
             }
 
-            var newAnimatorInstances = new List<(Type handler, AvaloniaProperty prop, IAnimator inst)>();
+            var newAnimatorInstances = new List<IAnimator>();
 
-            foreach (var handler in handlerList)
+            foreach (var (handlerType, property) in handlerList)
             {
-                var newInstance = (IAnimator)Activator.CreateInstance(handler.Item1);
-                newInstance.Property = handler.Item2;
-                newAnimatorInstances.Add((handler.Item1, handler.Item2, newInstance));
+                var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
+                newInstance.Property = property;
+                newAnimatorInstances.Add(newInstance);
             }
 
-            foreach (var kf in kfList)
+            foreach (var keyframe in animatorKeyFrames)
             {
-                var parent = newAnimatorInstances.Where(p => p.handler == kf.Handler &&
-                                                             p.prop == kf.Property)
-                                                 .First();
-                parent.inst.Add(kf);
+                var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
+                                                             a.Property == keyframe.Property);
+                animator.Add(keyframe);
             }
 
-            foreach(var instance in newAnimatorInstances)
-                _animators.Add(instance.inst);
-
+            return newAnimatorInstances;
         }
 
         /// <summary>
@@ -150,15 +147,9 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            if (_isChildrenChanged)
+            foreach (IAnimator animator in InterpretKeyframes(control))
             {
-                InterpretKeyframes();
-                _isChildrenChanged = false;
-            }
-
-            foreach (IAnimator keyframes in _animators)
-            {
-                _subscription.Add(keyframes.Apply(this, control, matchObs));
+                _subscription.Add(animator.Apply(this, control, matchObs));
             }
             return this;
         }
