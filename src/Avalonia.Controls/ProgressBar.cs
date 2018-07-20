@@ -21,18 +21,18 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
+        private static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
+
         private Border _indicator;
-        private IndeterminateAnimation _indeterminateAnimation;
 
         static ProgressBar()
         {
             PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
             PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass(IsIndeterminateProperty, ":indeterminate");
 
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
-
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
-                (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
         }
 
         public bool IsIndeterminate
@@ -45,6 +45,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
+        }
+
+        private double IndeterminateStartingOffset
+        {
+            get => GetValue(IndeterminateStartingOffsetProperty);
+            set => SetValue(IndeterminateStartingOffsetProperty, value);
         }
 
         /// <inheritdoc/>
@@ -60,7 +66,6 @@ namespace Avalonia.Controls
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             UpdateIndicator(Bounds.Size);
-            UpdateIsIndeterminate(IsIndeterminate);
         }
 
         private void UpdateIndicator(Size bounds)
@@ -70,9 +75,17 @@ namespace Avalonia.Controls
                 if (IsIndeterminate)
                 {
                     if (Orientation == Orientation.Horizontal)
-                        _indicator.Width = bounds.Width / 5.0;
+                    {
+                        var width = bounds.Width / 5.0;
+                        IndeterminateStartingOffset = -width;
+                        _indicator.Width = width;
+                    }
                     else
-                        _indicator.Height = bounds.Height / 5.0;
+                    {
+                        var height = bounds.Height / 5.0;
+                        IndeterminateStartingOffset = -height;
+                        _indicator.Height = height;
+                    }
                 }
                 else
                 {
@@ -86,53 +99,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateIsIndeterminate(bool isIndeterminate)
-        {
-            if (isIndeterminate)
-            {
-                if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
-                    _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
-            }
-            else
-                _indeterminateAnimation?.Dispose();
-        }
-
         private void ValueChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
-        }
-
-        // TODO: Implement Indeterminate Progress animation
-        //       in xaml (most ideal) or if it's not possible
-        //       then on this class.
-        private class IndeterminateAnimation : IDisposable
-        {
-            private WeakReference<ProgressBar> _progressBar;
-
-            private bool _disposed;
-
-            public bool Disposed => _disposed;
-
-            private IndeterminateAnimation(ProgressBar progressBar)
-            {
-                _progressBar = new WeakReference<ProgressBar>(progressBar);
-
-            }
-
-            public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)
-            {
-                return new IndeterminateAnimation(progressBar);
-            }
-
-            private Rect GetAnimationRect(TimeSpan time)
-            {
-                return Rect.Empty;
-            }
-
-            public void Dispose()
-            {
-                _disposed = true;
-            }
         }
     }
 }
