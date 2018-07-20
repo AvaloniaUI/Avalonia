@@ -5,7 +5,7 @@ using System;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal class Reader
+    public class Reader
     {
         private readonly string _s;
         private int _i;
