@@ -31,6 +31,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             };
 
+            SelectedTab = 0;
             root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
         }

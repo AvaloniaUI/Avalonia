@@ -100,7 +100,7 @@ namespace Avalonia
             _owner.PriorityValueChanged(property, priority, oldValue, newValue);
         }
 
-        public IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => throw new NotImplementedException();
+        public IDictionary<AvaloniaProperty, object> GetSetValues() => _values;
 
         public object GetValue(AvaloniaProperty property)
         {
