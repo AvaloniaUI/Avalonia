@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Avalonia.Controls;
 using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
@@ -21,26 +22,27 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
+            var registry = AvaloniaPropertyRegistry.Instance;
             var parser = new PropertyParser();
             var reader = new Reader((string)value);
             var (ns, owner, propertyName) = parser.Parse(reader);
-            var ownerType = TryResolveOwnerByName(context, ns, owner) ??
-                context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
-                context.GetFirstAmbientValue<Style>()?.Selector?.TargetType;
-
-            if (ownerType == null)
-            {
-                throw new XamlLoadException(
-                    $"Could not determine the owner type for property '{propertyName}'. " +
-                    "Please fully qualify the property name or specify a target type on " +
-                    "the containing template.");
-            }
-
-            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(ownerType, propertyName);
+            var ownerType = TryResolveOwnerByName(context, ns, owner);
+            var targetType = context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
+                context.GetFirstAmbientValue<Style>()?.Selector?.TargetType ??
+                typeof(Control);
+            var effectiveOwner = ownerType ?? targetType;
+            var property = registry.FindRegistered(effectiveOwner, propertyName);
 
             if (property == null)
             {
-                throw new XamlLoadException($"Could not find AvaloniaProperty '{ownerType.Name}.{propertyName}'.");
+                throw new XamlLoadException($"Could not find property '{effectiveOwner.Name}.{propertyName}'.");
+            }
+
+            if (effectiveOwner != targetType &&
+                !property.IsAttached &&
+                !registry.IsRegistered(targetType, property))
+            {
+                throw new XamlLoadException($"Property '{effectiveOwner.Name}.{propertyName}' is not registered on '{targetType}'.");
             }
 
             return property;
