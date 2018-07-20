@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal static class IdentifierParser
+    public static class IdentifierParser
     {
         public static string Parse(Reader r)
         {
