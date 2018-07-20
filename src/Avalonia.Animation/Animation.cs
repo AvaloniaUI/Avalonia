@@ -80,7 +80,7 @@ namespace Avalonia.Animation
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
  
-        private void InterpretKeyframes()
+        private IList<IAnimator> InterpretKeyframes(Animatable control)
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
@@ -108,7 +108,7 @@ namespace Avalonia.Animation
 
                     var newKF = new AnimatorKeyFrame(handler, cue);
 
-                    _subscription.Add(newKF.BindSetter(setter));
+                    _subscription.Add(newKF.BindSetter(setter, control));
 
                     animatorKeyFrames.Add(newKF);
                 }
@@ -130,9 +130,7 @@ namespace Avalonia.Animation
                 animator.Add(keyframe);
             }
 
-            foreach(var instance in newAnimatorInstances)
-                _animators.Add(instance);
-
+            return newAnimatorInstances;
         }
 
         /// <summary>
@@ -149,15 +147,9 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
         {
-            if (_isChildrenChanged)
+            foreach (IAnimator animator in InterpretKeyframes(control))
             {
-                InterpretKeyframes();
-                _isChildrenChanged = false;
-            }
-
-            foreach (IAnimator keyframes in _animators)
-            {
-                _subscription.Add(keyframes.Apply(this, control, matchObs));
+                _subscription.Add(animator.Apply(this, control, matchObs));
             }
             return this;
         }

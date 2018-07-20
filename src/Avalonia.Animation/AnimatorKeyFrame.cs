@@ -41,18 +41,18 @@ namespace Avalonia.Animation
             set => SetAndRaise(ValueProperty, ref _value, value);
         }
 
-        public IDisposable BindSetter(IAnimationSetter setter)
+        public IDisposable BindSetter(IAnimationSetter setter, Animatable targetControl)
         {
             Property = setter.Property;
             var value = setter.Value;
 
             if (value is IBinding binding)
             {
-                return this.Bind(ValueProperty, binding);
+                return this.Bind(ValueProperty, binding, targetControl);
             }
             else
             {
-                return this.Bind(ValueProperty, ObservableEx.SingleValue(value));
+                return this.Bind(ValueProperty, ObservableEx.SingleValue(value).ToBinding(), targetControl);
             }
         }
 
