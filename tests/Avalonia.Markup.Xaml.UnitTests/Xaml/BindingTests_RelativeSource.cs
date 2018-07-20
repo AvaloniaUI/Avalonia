@@ -297,6 +297,59 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("title", button.Content);
             }
         }
+
+        [Fact]
+        public void Shorthand_Binding_With_Negation_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Border Name='border1'>
+      <Border Name='border2'>
+        <Button Name='button' Content='{Binding !$self.IsDefault}'/>
+      </Border>
+    </Border>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                window.ApplyTemplate();
+
+#pragma warning disable xUnit2004 // Diagnostic mis-firing since button.Content isn't guaranteed to be a bool.
+                Assert.Equal(true, button.Content);
+#pragma warning restore xUnit2004
+            }
+        }
+        [Fact]
+        public void Shorthand_Binding_With_Multiple_Negation_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Border Name='border1'>
+      <Border Name='border2'>
+        <Button Name='button' Content='{Binding !!$self.IsDefault}'/>
+      </Border>
+    </Border>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+
+                window.ApplyTemplate();
+
+#pragma warning disable xUnit2004 // Diagnostic mis-firing since button.Content isn't guaranteed to be a bool.
+                Assert.Equal(false, button.Content);
+#pragma warning restore xUnit2004
+            }
+        }
     }
 
     public class TestWindow : Window { }
