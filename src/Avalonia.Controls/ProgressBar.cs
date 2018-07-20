@@ -21,11 +21,17 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
-        private static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
-            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateStartingOffset),
+                p => p.IndeterminateStartingOffset,
+                (p, o) => p.IndeterminateStartingOffset = o);
 
-        private static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
-            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateEndingOffset));
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateEndingOffset),
+                p => p.IndeterminateEndingOffset,
+                (p, o) => p.IndeterminateEndingOffset = o);
 
         private Border _indicator;
 
@@ -49,17 +55,18 @@ namespace Avalonia.Controls
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
         }
-
+        private double _indeterminateStartingOffset;
         private double IndeterminateStartingOffset
         {
-            get => GetValue(IndeterminateStartingOffsetProperty);
-            set => SetValue(IndeterminateStartingOffsetProperty, value);
+            get => _indeterminateStartingOffset;
+            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
         }
 
+        private double _indeterminateEndingOffset;
         private double IndeterminateEndingOffset
         {
-            get => GetValue(IndeterminateEndingOffsetProperty);
-            set => SetValue(IndeterminateEndingOffsetProperty, value);
+            get => _indeterminateEndingOffset;
+            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
         }
 
         /// <inheritdoc/>
