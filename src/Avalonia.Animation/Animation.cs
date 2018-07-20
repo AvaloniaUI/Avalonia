@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Reactive.Linq;
 
 namespace Avalonia.Animation
 {
@@ -24,7 +26,7 @@ namespace Avalonia.Animation
         };
 
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
-            where TAnimator: IAnimator
+            where TAnimator : IAnimator
         {
             Animators.Insert(0, (condition, typeof(TAnimator)));
         }
@@ -72,14 +74,19 @@ namespace Avalonia.Animation
 
         /// <summary>
         /// Easing function to be used.
-        /// </summary> 
+        /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
+
+        /// <summary>
+        /// Triggers when the animation is completed.
+        /// </summary>
+        public event EventHandler Done;
 
         public Animation()
         {
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
- 
+
         private IList<IAnimator> InterpretKeyframes(Animatable control)
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();
@@ -152,6 +159,29 @@ namespace Avalonia.Animation
                 _subscription.Add(animator.Apply(this, control, matchObs));
             }
             return this;
+        }
+
+        /// <inheritdocs/>
+        public Task Run(Animatable control)
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            if (this.RepeatCount == RepeatCount.Loop)
+                tcs.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
+
+            this.Done += delegate
+            {
+                tcs.SetResult(null);
+            }
+
+            this.Apply(control, Observable.Return(true));
+
+            return tcs.Task;
+        }
+
+        internal void SetDone(Animatable control)
+        {
+            Done.Invoke(control, null);
         }
     }
 }

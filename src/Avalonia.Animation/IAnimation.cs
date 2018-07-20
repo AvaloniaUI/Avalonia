@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Avalonia.Animation
 {
@@ -13,5 +14,10 @@ namespace Avalonia.Animation
         /// Apply the animation to the specified control
         /// </summary>
         IDisposable Apply(Animatable control, IObservable<bool> match);
+
+        /// <summary>
+        /// Run the animation to the specified control
+        /// </summary>
+        Task Run(Animatable control);
     }
 }

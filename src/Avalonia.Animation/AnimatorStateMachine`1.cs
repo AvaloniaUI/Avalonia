@@ -243,7 +243,10 @@ namespace Avalonia.Animation
                         {
                             _targetControl.SetValue(_parent.Property, _lastInterpValue, BindingPriority.LocalValue);
                         }
+
                         _targetObserver.OnCompleted();
+                        _targetAnimation.SetDone(_targetControl);
+
                         handled = true;
                         break;
                     default:
