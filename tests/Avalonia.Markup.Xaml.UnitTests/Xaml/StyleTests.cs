@@ -174,7 +174,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        [Fact]
+        [Fact(Skip = "The animation system currently needs to be able to set any property on any object")]
         public void Disallows_Setting_Non_Registered_Property()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

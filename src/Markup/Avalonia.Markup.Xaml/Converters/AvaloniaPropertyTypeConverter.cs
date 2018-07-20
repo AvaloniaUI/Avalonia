@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Logging;
 using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
@@ -42,7 +43,13 @@ namespace Avalonia.Markup.Xaml.Converters
                 !property.IsAttached &&
                 !registry.IsRegistered(targetType, property))
             {
-                throw new XamlLoadException($"Property '{effectiveOwner.Name}.{propertyName}' is not registered on '{targetType}'.");
+                Logger.Warning(
+                    LogArea.Property,
+                    this,
+                    "Property '{Owner}.{Name}' is not registered on '{Type}'.",
+                    effectiveOwner,
+                    propertyName,
+                    targetType);
             }
 
             return property;
