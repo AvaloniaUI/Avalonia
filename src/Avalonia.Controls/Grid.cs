@@ -195,6 +195,16 @@ namespace Avalonia.Controls
         private GridLayout.MeasureResult _rowMeasureCache;
 
         /// <summary>
+        /// Gets the row layout as of the last measure.
+        /// </summary>
+        private GridLayout _rowLayoutCache;
+
+        /// <summary>
+        /// Gets the column layout as of the last measure.
+        /// </summary>
+        private GridLayout _columnLayoutCache;
+
+        /// <summary>
         /// Measures the grid.
         /// </summary>
         /// <param name="constraint">The available size.</param>
@@ -253,6 +263,9 @@ namespace Avalonia.Controls
             // Cache the measure result and return the desired size.
             _columnMeasureCache = columnResult;
             _rowMeasureCache = rowResult;
+            _rowLayoutCache = rowLayout;
+            _columnLayoutCache = columnLayout;
+
             return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
 
             // Measure each child only once.
@@ -299,13 +312,11 @@ namespace Avalonia.Controls
             //       arrow back to any statements and re-run them without any side-effect.
 
             var (safeColumns, safeRows) = GetSafeColumnRows();
-            var columnLayout = new GridLayout(ColumnDefinitions);
-            var rowLayout = new GridLayout(RowDefinitions);
-
+            var columnLayout = _columnLayoutCache;
+            var rowLayout = _rowLayoutCache;
             // Calculate for arrange result.
             var columnResult = columnLayout.Arrange(finalSize.Width, _columnMeasureCache);
             var rowResult = rowLayout.Arrange(finalSize.Height, _rowMeasureCache);
-
             // Arrange the children.
             foreach (var child in Children.OfType<Control>())
             {
@@ -315,7 +326,6 @@ namespace Avalonia.Controls
                 var y = Enumerable.Range(0, row).Sum(r => rowResult.LengthList[r]);
                 var width = Enumerable.Range(column, columnSpan).Sum(c => columnResult.LengthList[c]);
                 var height = Enumerable.Range(row, rowSpan).Sum(r => rowResult.LengthList[r]);
-
                 child.Arrange(new Rect(x, y, width, height));
             }
 

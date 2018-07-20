@@ -158,18 +158,11 @@ namespace Avalonia.Styling
                             var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
                             return InstancedBinding.OneWay(activated, BindingPriority.StyleTrigger);
                         }
-                    case BindingMode.OneWayToSource:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.OneWayToSource(activated, BindingPriority.StyleTrigger);
-                        }
-                    case BindingMode.TwoWay:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.TwoWay(activated, BindingPriority.StyleTrigger);
-                        }
                     default:
-                        throw new NotSupportedException("Unsupported BindingMode.");
+                        {
+                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                            return new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                        }
                 }
 
             }

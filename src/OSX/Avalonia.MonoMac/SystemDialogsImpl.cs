@@ -25,9 +25,9 @@ namespace Avalonia.MonoMac
                 else
                 {
                     if (panel is NSOpenPanel openPanel)
-                        tcs.SetResult(openPanel.Urls.Select(url => url.AbsoluteString).ToArray());
+                        tcs.SetResult(openPanel.Urls.Select(url => url.AbsoluteString.Replace("file://", "")).ToArray());
                     else
-                        tcs.SetResult(new[] { panel.Url.AbsoluteString });
+                        tcs.SetResult(new[] { panel.Url.AbsoluteString.Replace("file://", "") });
                 }
                 panel.OrderOut(panel);
                 keyWindow?.MakeKeyAndOrderFront(keyWindow);
