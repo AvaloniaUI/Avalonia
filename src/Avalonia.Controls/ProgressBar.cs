@@ -24,6 +24,9 @@ namespace Avalonia.Controls
         private static readonly StyledProperty<double> IndeterminateStartingOffsetProperty =
             AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateStartingOffset));
 
+        private static readonly StyledProperty<double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.Register<ProgressBar, double>(nameof(IndeterminateEndingOffset));
+
         private Border _indicator;
 
         static ProgressBar()
@@ -53,6 +56,12 @@ namespace Avalonia.Controls
             set => SetValue(IndeterminateStartingOffsetProperty, value);
         }
 
+        private double IndeterminateEndingOffset
+        {
+            get => GetValue(IndeterminateEndingOffsetProperty);
+            set => SetValue(IndeterminateEndingOffsetProperty, value);
+        }
+
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
@@ -79,12 +88,15 @@ namespace Avalonia.Controls
                         var width = bounds.Width / 5.0;
                         IndeterminateStartingOffset = -width;
                         _indicator.Width = width;
+                        IndeterminateEndingOffset = bounds.Width;
+
                     }
                     else
                     {
                         var height = bounds.Height / 5.0;
-                        IndeterminateStartingOffset = -height;
+                        IndeterminateStartingOffset = -bounds.Height;
                         _indicator.Height = height;
+                        IndeterminateEndingOffset = height;
                     }
                 }
                 else

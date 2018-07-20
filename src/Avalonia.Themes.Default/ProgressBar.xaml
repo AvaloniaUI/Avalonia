@@ -7,11 +7,9 @@
         <Border Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}">
-          <Canvas>
-            <Border Name="PART_Indicator"
-                    BorderThickness="1"
-                    Background="{TemplateBinding Foreground}"/>
-          </Canvas>
+          <Border Name="PART_Indicator"
+                  BorderThickness="1"
+                  Background="{TemplateBinding Foreground}"/>
         </Border>
       </ControlTemplate>
     </Setter>
@@ -19,12 +17,10 @@
   <Style Selector="ProgressBar:horizontal /template/ Border#PART_Indicator">
     <Setter Property="HorizontalAlignment" Value="Left"/>
     <Setter Property="VerticalAlignment" Value="Stretch"/>
-    <Setter Property="Height" Value="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}" />
   </Style>
   <Style Selector="ProgressBar:vertical /template/ Border#PART_Indicator">
     <Setter Property="HorizontalAlignment" Value="Stretch"/>
     <Setter Property="VerticalAlignment" Value="Bottom"/>
-    <Setter Property="Width" Value="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}" />
   </Style>
   <Style Selector="ProgressBar:horizontal">
     <Setter Property="MinWidth" Value="200"/>
@@ -40,10 +36,12 @@
                      RepeatCount="Loop"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
-                  <Setter Property="Canvas.Left" Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+                  <Setter Property="TranslateTransform.X"
+                          Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
               <KeyFrame Cue="100%">
-                  <Setter Property="Canvas.Left" Value="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}" />
+                  <Setter Property="TranslateTransform.X"
+                          Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
       </Animation>
       </Style.Animations>
@@ -54,10 +52,12 @@
                      RepeatCount="Loop"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
-                  <Setter Property="Canvas.Top" Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
+                  <Setter Property="TranslateTransform.Y"
+                          Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
               <KeyFrame Cue="100%">
-                  <Setter Property="Canvas.Top" Value="{Binding Bounds.Height, RelativeSource={RelativeSource TemplatedParent}}" />
+                  <Setter Property="TranslateTransform.Y"
+                          Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
       </Animation>
       </Style.Animations>
