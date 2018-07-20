@@ -3,14 +3,14 @@
 
 using System;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Utilities
 {
-    internal class Reader
+    public class CharacterReader
     {
         private readonly string _s;
         private int _i;
 
-        public Reader(string s)
+        public CharacterReader(string s)
         {
             _s = s;
         }

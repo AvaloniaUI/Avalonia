@@ -3,6 +3,7 @@
 
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace Avalonia.Markup.Parsers
             _enableValidation = enableValidation;
         }
 
-        public (ExpressionNode Node, SourceMode Mode) Parse(Reader r)
+        public (ExpressionNode Node, SourceMode Mode) Parse(CharacterReader r)
         {
             var nodes = new List<ExpressionNode>();
             var state = State.Start;
@@ -81,7 +82,7 @@ namespace Avalonia.Markup.Parsers
             return (nodes.FirstOrDefault(), mode);
         }
 
-        private State ParseStart(Reader r, IList<ExpressionNode> nodes)
+        private State ParseStart(CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseNot(r))
             {
@@ -118,7 +119,7 @@ namespace Avalonia.Markup.Parsers
             return State.End;
         }
 
-        private static State ParseAfterMember(Reader r, IList<ExpressionNode> nodes)
+        private static State ParseAfterMember(CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseMemberAccessor(r))
             {
@@ -137,7 +138,7 @@ namespace Avalonia.Markup.Parsers
             return State.End;
         }
 
-        private State ParseBeforeMember(Reader r, IList<ExpressionNode> nodes)
+        private State ParseBeforeMember(CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseOpenBrace(r))
             {
@@ -157,7 +158,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
+        private State ParseAttachedProperty(CharacterReader r, List<ExpressionNode> nodes)
         {
             var (ns, owner) = ParseTypeName(r);
 
@@ -184,7 +185,7 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
 
-        private State ParseIndexer(Reader r, List<ExpressionNode> nodes)
+        private State ParseIndexer(CharacterReader r, List<ExpressionNode> nodes)
         {
             var args = ArgumentListParser.Parse(r, '[', ']');
 
@@ -197,7 +198,7 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
         
-        private State ParseElementName(Reader r, List<ExpressionNode> nodes)
+        private State ParseElementName(CharacterReader r, List<ExpressionNode> nodes)
         {
             var name = IdentifierParser.Parse(r);
 
@@ -211,7 +212,7 @@ namespace Avalonia.Markup.Parsers
         }
 
 
-        private State ParseRelativeSource(Reader r, List<ExpressionNode> nodes)
+        private State ParseRelativeSource(CharacterReader r, List<ExpressionNode> nodes)
         {
             var mode = IdentifierParser.Parse(r);
 
@@ -239,13 +240,13 @@ namespace Avalonia.Markup.Parsers
                         }
                         else
                         {
-                            var typeName = ParseTypeName(new Reader(args[0]));
+                            var typeName = ParseTypeName(new CharacterReader(args[0]));
                             ancestorType = _typeResolver(typeName.ns, typeName.typeName);
                         }
                     }
                     else
                     {
-                        var typeName = ParseTypeName(new Reader(args[0]));
+                        var typeName = ParseTypeName(new CharacterReader(args[0]));
                         ancestorType = _typeResolver(typeName.ns, typeName.typeName);
                         ancestorLevel = int.Parse(args[1]);
                     }
@@ -260,7 +261,7 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
         
-        private static (string ns, string typeName) ParseTypeName(Reader r)
+        private static (string ns, string typeName) ParseTypeName(CharacterReader r)
         {
             string ns, typeName;
             ns = string.Empty;
@@ -278,38 +279,38 @@ namespace Avalonia.Markup.Parsers
 
             return (ns, typeName);
         }
-
-        private static bool ParseNot(Reader r)
+      
+        private static bool ParseNot(CharacterReader r)
         {
             return !r.End && r.TakeIf('!');
         }
 
-        private static bool ParseMemberAccessor(Reader r)
+        private static bool ParseMemberAccessor(CharacterReader r)
         {
             return !r.End && r.TakeIf('.');
         }
 
-        private static bool ParseOpenBrace(Reader r)
+        private static bool ParseOpenBrace(CharacterReader r)
         {
             return !r.End && r.TakeIf('(');
         }
 
-        private static bool PeekOpenBracket(Reader r)
+        private static bool PeekOpenBracket(CharacterReader r)
         {
             return !r.End && r.Peek == '[';
         }
 
-        private static bool ParseStreamOperator(Reader r)
+        private static bool ParseStreamOperator(CharacterReader r)
         {
             return !r.End && r.TakeIf('^');
         }
 
-        private static bool ParseDollarSign(Reader r)
+        private static bool ParseDollarSign(CharacterReader r)
         {
             return !r.End && r.TakeIf('$');
         }
 
-        private static bool ParseSharp(Reader r)
+        private static bool ParseSharp(CharacterReader r)
         {
             return !r.End && r.TakeIf('#');
         }

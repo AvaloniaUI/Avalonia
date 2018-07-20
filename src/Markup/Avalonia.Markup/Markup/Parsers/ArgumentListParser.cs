@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data.Core;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> Parse(Reader r, char open, char close, char delimiter = ',')
+        public static IList<string> Parse(CharacterReader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {

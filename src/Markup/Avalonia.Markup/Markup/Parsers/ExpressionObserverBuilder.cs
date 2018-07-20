@@ -1,4 +1,5 @@
 ﻿using Avalonia.Data.Core;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
@@ -15,7 +16,7 @@ namespace Avalonia.Markup.Parsers
                 return (new EmptyExpressionNode(), default);
             }
 
-            var reader = new Reader(expression);
+            var reader = new CharacterReader(expression);
             var parser = new ExpressionParser(enableValidation, typeResolver);
             var node = parser.Parse(reader);
 
