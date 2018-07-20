@@ -9,6 +9,12 @@ using System.Linq;
 
 namespace Avalonia.Markup.Parsers
 {
+    internal enum SourceMode
+    {
+        Data,
+        Control
+    }
+
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
@@ -20,10 +26,11 @@ namespace Avalonia.Markup.Parsers
             _enableValidation = enableValidation;
         }
 
-        public ExpressionNode Parse(Reader r)
+        public (ExpressionNode Node, SourceMode Mode) Parse(Reader r)
         {
             var nodes = new List<ExpressionNode>();
             var state = State.Start;
+            var mode = SourceMode.Data;
 
             while (!r.End && state != State.End)
             {
@@ -48,6 +55,16 @@ namespace Avalonia.Markup.Parsers
                     case State.Indexer:
                         state = ParseIndexer(r, nodes);
                         break;
+
+                    case State.ElementName:
+                        state = ParseElementName(r, nodes);
+                        mode = SourceMode.Control;
+                        break;
+
+                    case State.RelativeSource:
+                        state = ParseRelativeSource(r, nodes);
+                        mode = SourceMode.Control;
+                        break;
                 }
             }
 
@@ -61,7 +78,7 @@ namespace Avalonia.Markup.Parsers
                 nodes[n].Next = nodes[n + 1];
             }
 
-            return nodes.FirstOrDefault();
+            return (nodes.FirstOrDefault(), mode);
         }
 
         private State ParseStart(Reader r, IList<ExpressionNode> nodes)
@@ -70,6 +87,14 @@ namespace Avalonia.Markup.Parsers
             {
                 nodes.Add(new LogicalNotNode());
                 return State.Start;
+            }
+            else if (ParseSharp(r))
+            {
+                return State.ElementName;
+            }
+            else if (ParseDollarSign(r))
+            {
+                return State.RelativeSource;
             }
             else if (ParseOpenBrace(r))
             {
@@ -134,19 +159,7 @@ namespace Avalonia.Markup.Parsers
 
         private State ParseAttachedProperty(Reader r, List<ExpressionNode> nodes)
         {
-            string ns = string.Empty;
-            string owner;
-            var ownerOrNamespace = IdentifierParser.Parse(r);
-
-            if (r.TakeIf(':'))
-            {
-                ns = ownerOrNamespace;
-                owner = IdentifierParser.Parse(r);
-            }
-            else
-            {
-                owner = ownerOrNamespace;
-            }
+            var (ns, owner) = ParseTypeName(r);
 
             if (r.End || !r.TakeIf('.'))
             {
@@ -184,6 +197,88 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
         
+        private State ParseElementName(Reader r, List<ExpressionNode> nodes)
+        {
+            var name = IdentifierParser.Parse(r);
+
+            if (name == null)
+            {
+                throw new ExpressionParseException(r.Position, "Element name expected after '#'.");
+            }
+
+            nodes.Add(new ElementNameNode(name));
+            return State.AfterMember;
+        }
+
+
+        private State ParseRelativeSource(Reader r, List<ExpressionNode> nodes)
+        {
+            var mode = IdentifierParser.Parse(r);
+
+            if (mode == "self")
+            {
+                nodes.Add(new SelfNode());
+            }
+            else if (mode == "parent")
+            {
+                Type ancestorType = null;
+                var ancestorLevel = 0;
+                if (PeekOpenBracket(r))
+                {
+                    var args = ArgumentListParser.Parse(r, '[', ']', ';');
+                    if (args.Count > 2 || args.Count == 0)
+                    {
+                        throw new ExpressionParseException(r.Position, "Too many arguments in RelativeSource syntax sugar");
+                    }
+                    else if (args.Count == 1)
+                    {
+                        if (int.TryParse(args[0], out int level))
+                        {
+                            ancestorType = null;
+                            ancestorLevel = level;
+                        }
+                        else
+                        {
+                            var typeName = ParseTypeName(new Reader(args[0]));
+                            ancestorType = _typeResolver(typeName.ns, typeName.typeName);
+                        }
+                    }
+                    else
+                    {
+                        var typeName = ParseTypeName(new Reader(args[0]));
+                        ancestorType = _typeResolver(typeName.ns, typeName.typeName);
+                        ancestorLevel = int.Parse(args[1]);
+                    }
+                }
+                nodes.Add(new FindAncestorNode(ancestorType, ancestorLevel));
+            }
+            else
+            {
+                throw new ExpressionParseException(r.Position, "Unknown RelativeSource mode.");
+            }
+
+            return State.AfterMember;
+        }
+        
+        private static (string ns, string typeName) ParseTypeName(Reader r)
+        {
+            string ns, typeName;
+            ns = string.Empty;
+            var typeNameOrNamespace = IdentifierParser.Parse(r);
+
+            if (!r.End && r.TakeIf(':'))
+            {
+                ns = typeNameOrNamespace;
+                typeName = IdentifierParser.Parse(r);
+            }
+            else
+            {
+                typeName = typeNameOrNamespace;
+            }
+
+            return (ns, typeName);
+        }
+
         private static bool ParseNot(Reader r)
         {
             return !r.End && r.TakeIf('!');
@@ -209,9 +304,21 @@ namespace Avalonia.Markup.Parsers
             return !r.End && r.TakeIf('^');
         }
 
+        private static bool ParseDollarSign(Reader r)
+        {
+            return !r.End && r.TakeIf('$');
+        }
+
+        private static bool ParseSharp(Reader r)
+        {
+            return !r.End && r.TakeIf('#');
+        }
+
         private enum State
         {
             Start,
+            RelativeSource,
+            ElementName,
             AfterMember,
             BeforeMember,
             AttachedProperty,

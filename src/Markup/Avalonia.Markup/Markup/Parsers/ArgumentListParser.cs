@@ -10,7 +10,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> Parse(Reader r, char open, char close)
+        public static IList<string> Parse(Reader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {
@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Parsers
                 while (!r.End)
                 {
                     var builder = new StringBuilder();
-                    while (!r.End && r.Peek != ',' && r.Peek != close && !char.IsWhiteSpace(r.Peek))
+                    while (!r.End && r.Peek != delimiter && r.Peek != close && !char.IsWhiteSpace(r.Peek))
                     {
                         builder.Append(r.Take());
                     }
@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Parsers
 
                     if (r.End)
                     {
-                        throw new ExpressionParseException(r.Position, "Expected ','.");
+                        throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                     }
                     else if (r.TakeIf(close))
                     {
@@ -43,9 +43,9 @@ namespace Avalonia.Markup.Parsers
                     }
                     else
                     {
-                        if (r.Take() != ',')
+                        if (r.Take() != delimiter)
                         {
-                            throw new ExpressionParseException(r.Position, "Expected ','.");
+                            throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                         }
 
                         r.SkipWhitespace();

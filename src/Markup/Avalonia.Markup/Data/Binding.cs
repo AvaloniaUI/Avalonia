@@ -105,34 +105,51 @@ namespace Avalonia.Data
             
             ExpressionObserver observer;
 
+            var (node, mode)  = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver);
+
             if (ElementName != null)
             {
                 observer = CreateElementObserver(
                     (target as IStyledElement) ?? (anchor as IStyledElement),
                     ElementName,
-                    Path,
-                    enableDataValidation);
+                    node);
             }
             else if (Source != null)
             {
-                observer = CreateSourceObserver(Source, Path, enableDataValidation);
+                observer = CreateSourceObserver(Source, node);
             }
-            else if (RelativeSource == null || RelativeSource.Mode == RelativeSourceMode.DataContext)
+            else if (RelativeSource == null)
+            {
+                if (mode == SourceMode.Data)
+                {
+                    observer = CreateDataContextObserver(
+                        target,
+                        node,
+                        targetProperty == StyledElement.DataContextProperty,
+                        anchor); 
+                }
+                else
+                {
+                    observer = new ExpressionObserver(
+                        (target as IStyledElement) ?? (anchor as IStyledElement),
+                        node);
+                }
+            }
+            else if (RelativeSource.Mode == RelativeSourceMode.DataContext)
             {
                 observer = CreateDataContextObserver(
                     target,
-                    Path,
+                    node,
                     targetProperty == StyledElement.DataContextProperty,
-                    anchor,
-                    enableDataValidation);
+                    anchor);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                observer = CreateSourceObserver(target, Path, enableDataValidation);
+                observer = CreateSourceObserver(target, node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
-                observer = CreateTemplatedParentObserver(target, Path, enableDataValidation);
+                observer = CreateTemplatedParentObserver(target, node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.FindAncestor)
             {
@@ -144,8 +161,7 @@ namespace Avalonia.Data
                 observer = CreateFindAncestorObserver(
                     (target as IStyledElement) ?? (anchor as IStyledElement),
                     RelativeSource,
-                    Path,
-                    enableDataValidation);
+                    node);
             }
             else
             {
@@ -176,10 +192,9 @@ namespace Avalonia.Data
 
         private ExpressionObserver CreateDataContextObserver(
             IAvaloniaObject target,
-            string path,
+            ExpressionNode node,
             bool targetIsDataContext,
-            object anchor,
-            bool enableDataValidation)
+            object anchor)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -195,48 +210,41 @@ namespace Avalonia.Data
 
             if (!targetIsDataContext)
             {
-                var result = ExpressionObserverBuilder.Build(
+                var result = new ExpressionObserver(
                     () => target.GetValue(StyledElement.DataContextProperty),
-                    path,
+                    node,
                     new UpdateSignal(target, StyledElement.DataContextProperty),
-                    enableDataValidation,
-                    typeResolver: TypeResolver);
+                    null);
 
                 return result;
             }
             else
             {
-                return ExpressionObserverBuilder.Build(
+                return new ExpressionObserver(
                     GetParentDataContext(target),
-                    path,
-                    enableDataValidation,
-                    typeResolver: TypeResolver);
+                    node,
+                    null);
             }
         }
 
         private ExpressionObserver CreateElementObserver(
             IStyledElement target,
             string elementName,
-            string path,
-            bool enableDataValidation)
+            ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(target != null);
-
-            var description = $"#{elementName}.{path}";
-            var result = ExpressionObserverBuilder.Build(
+            
+            var result = new ExpressionObserver(
                 ControlLocator.Track(target, elementName),
-                path,
-                enableDataValidation,
-                description,
-                typeResolver: TypeResolver);
+                node,
+                null);
             return result;
         }
 
         private ExpressionObserver CreateFindAncestorObserver(
             IStyledElement target,
             RelativeSource relativeSource,
-            string path,
-            bool enableDataValidation)
+            ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
@@ -260,36 +268,32 @@ namespace Avalonia.Data
                     throw new InvalidOperationException("Invalid tree to traverse.");
             }
 
-            return ExpressionObserverBuilder.Build(
+            return new ExpressionObserver(
                 controlLocator,
-                path,
-                enableDataValidation,
-                typeResolver: TypeResolver);
+                node,
+                null);
         }
 
         private ExpressionObserver CreateSourceObserver(
             object source,
-            string path,
-            bool enableDataValidation)
+            ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            return ExpressionObserverBuilder.Build(source, path, enableDataValidation, typeResolver: TypeResolver);
+            return new ExpressionObserver(source, node);
         }
 
         private ExpressionObserver CreateTemplatedParentObserver(
             IAvaloniaObject target,
-            string path,
-            bool enableDataValidation)
+            ExpressionNode node)
         {
             Contract.Requires<ArgumentNullException>(target != null);
             
-            var result = ExpressionObserverBuilder.Build(
+            var result = new ExpressionObserver(
                 () => target.GetValue(StyledElement.TemplatedParentProperty),
-                path,
+                node,
                 new UpdateSignal(target, StyledElement.TemplatedParentProperty),
-                enableDataValidation,
-                typeResolver: TypeResolver);
+                null);
 
             return result;
         }
