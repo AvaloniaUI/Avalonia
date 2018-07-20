@@ -14,6 +14,8 @@ using SharpDX.Mathematics.Interop;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode;
+
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
@@ -101,43 +103,34 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        /// <param name="bitmapScalingMode"></param>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
+        /// <param name="bitmapInterpolationMode"></param>
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_renderTarget))
             {
-                if (_renderTarget is DeviceContext deviceContext)
-                {
-                    deviceContext.DrawBitmap(d2d.Value, destRect.ToDirect2D(), (float)opacity, GetInterpolationMode(bitmapScalingMode), sourceRect.ToDirect2D(), null);
-                }
-                else
-                {
-                    var interpolationMode = bitmapScalingMode == BitmapScalingMode.LowQuality
-                                                ? BitmapInterpolationMode.NearestNeighbor
-                                                : BitmapInterpolationMode.Linear;
+                var interpolationMode = GetInterpolationMode(bitmapInterpolationMode);
 
-                    _renderTarget.DrawBitmap(
-                        d2d.Value,
-                        destRect.ToSharpDX(),
-                        (float)opacity,
-                        interpolationMode,
-                        sourceRect.ToSharpDX());
-                }             
+                _renderTarget.DrawBitmap(
+                    d2d.Value,
+                    destRect.ToSharpDX(),
+                    (float)opacity,
+                    interpolationMode,
+                    sourceRect.ToSharpDX());
             }
         }
 
-        private static InterpolationMode GetInterpolationMode(BitmapScalingMode scalingMode)
+        private static SharpDX.Direct2D1.BitmapInterpolationMode GetInterpolationMode(BitmapInterpolationMode interpolationMode)
         {
-            switch (scalingMode)
+            switch (interpolationMode)
             {
-                case BitmapScalingMode.LowQuality:
-                    return InterpolationMode.NearestNeighbor;
-                case BitmapScalingMode.MediumQuality:
-                    return InterpolationMode.Linear;
-                case BitmapScalingMode.HighQuality:
-                    return InterpolationMode.HighQualityCubic;
+                case BitmapInterpolationMode.LowQuality:
+                    return SharpDX.Direct2D1.BitmapInterpolationMode.NearestNeighbor;
+                case BitmapInterpolationMode.MediumQuality:
+                case BitmapInterpolationMode.HighQuality:
+                case BitmapInterpolationMode.Default:
+                    return SharpDX.Direct2D1.BitmapInterpolationMode.Linear;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(scalingMode), scalingMode, null);
+                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
         }
 

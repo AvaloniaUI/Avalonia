@@ -14,7 +14,9 @@ using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
-{  
+{
+    using Avalonia.Controls;
+
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
@@ -96,7 +98,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -108,24 +110,26 @@ namespace Avalonia.Skia
                     Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity))
                 })
             {
-                paint.FilterQuality = GetInterpolationMode(bitmapScalingMode);
+                paint.FilterQuality = GetInterpolationMode(bitmapInterpolationMode);
 
                 drawableImage.Draw(this, s, d, paint);
             }
         }
 
-        private static SKFilterQuality GetInterpolationMode(BitmapScalingMode scalingMode)
+        private static SKFilterQuality GetInterpolationMode(BitmapInterpolationMode interpolationMode)
         {
-            switch (scalingMode)
+            switch (interpolationMode)
             {
-                case BitmapScalingMode.LowQuality:
+                case BitmapInterpolationMode.LowQuality:
                     return SKFilterQuality.Low;
-                case BitmapScalingMode.MediumQuality:
+                case BitmapInterpolationMode.MediumQuality:
                     return SKFilterQuality.Medium;
-                case BitmapScalingMode.HighQuality:
+                case BitmapInterpolationMode.HighQuality:
                     return SKFilterQuality.High;
+                case BitmapInterpolationMode.Default:
+                    return SKFilterQuality.None;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(scalingMode), scalingMode, null);
+                    throw new ArgumentOutOfRangeException(nameof(interpolationMode), interpolationMode, null);
             }
         }
 
@@ -133,7 +137,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, default(BitmapScalingMode));
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
         }
 
@@ -378,7 +382,8 @@ namespace Avalonia.Skia
         /// <param name="targetSize">Target size.</param>
         /// <param name="tileBrush">Tile brush to use.</param>
         /// <param name="tileBrushImage">Tile brush image.</param>
-        private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
+        /// <param name="interpolationMode">The bitmap interpolation mode.</param>
+        private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage, BitmapInterpolationMode interpolationMode)
         {
             var calc = new TileBrushCalculator(tileBrush,
                     new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
@@ -396,7 +401,7 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect);
+                context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect, interpolationMode);
                 context.PopClip();
             }
 
@@ -505,12 +510,12 @@ namespace Avalonia.Skia
             }
             else
             {
-                tileBrushImage = (IDrawableBitmapImpl) (tileBrush as IImageBrush)?.Source?.PlatformImpl.Item;
+                tileBrushImage = (IDrawableBitmapImpl)(tileBrush as IImageBrush)?.Source?.PlatformImpl.Item;
             }
 
             if (tileBrush != null && tileBrushImage != null)
             {
-                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
+                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage, tileBrush.BitmapInterpolationMode);
             }
             else
             {

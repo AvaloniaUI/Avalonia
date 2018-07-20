@@ -1,14 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Visuals.Media;
 
 namespace Avalonia.Controls
-{
-    using Avalonia.Visuals.Media.Imaging;
-
+{   
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>

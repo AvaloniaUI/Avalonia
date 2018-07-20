@@ -1,5 +1,7 @@
 ﻿namespace Avalonia.Media
 {
+    using Avalonia.Visuals.Media.Imaging;
+
     /// <summary>
     /// A brush which displays a repeating image.
     /// </summary>
@@ -35,5 +37,13 @@
         /// Gets the brush's tile mode.
         /// </summary>
         TileMode TileMode { get; }
+
+        /// <summary>
+        /// Gets the bitmap interpolation mode.
+        /// </summary>
+        /// <value>
+        /// The bitmap interpolation mode.
+        /// </value>
+        BitmapInterpolationMode BitmapInterpolationMode { get; }
     }
 }

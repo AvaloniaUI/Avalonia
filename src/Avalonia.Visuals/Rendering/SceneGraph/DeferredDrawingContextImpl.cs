@@ -115,13 +115,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapScalingMode bitmapScalingMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var next = NextDrawAs<ImageNode>();
 
-            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapScalingMode))
+            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapScalingMode));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode));
             }
             else
             {

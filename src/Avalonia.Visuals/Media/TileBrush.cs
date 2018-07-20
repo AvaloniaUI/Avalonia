@@ -3,6 +3,9 @@
 
 namespace Avalonia.Media
 {
+    using Avalonia.Visuals.Media;
+    using Avalonia.Visuals.Media.Imaging;
+
     /// <summary>
     /// Describes how a <see cref="TileBrush"/> is tiled.
     /// </summary>
@@ -128,6 +131,18 @@ namespace Avalonia.Media
         {
             get { return (TileMode)GetValue(TileModeProperty); }
             set { SetValue(TileModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the bitmap interpolation mode.
+        /// </summary>
+        /// <value>
+        /// The bitmap interpolation mode.
+        /// </value>
+        public BitmapInterpolationMode BitmapInterpolationMode
+        {
+            get { return RenderOptions.GetBitmapScalingMode(this); }
+            set { RenderOptions.SetBitmapScalingMode(this, value); }
         }
     }
 }

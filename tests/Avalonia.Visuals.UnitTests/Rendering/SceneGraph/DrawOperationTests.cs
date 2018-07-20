@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -53,7 +52,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 1,
                 new Rect(1, 1, 1, 1),
                 new Rect(1, 1, 1, 1),
-                BitmapScalingMode.LowQuality);
+                BitmapInterpolationMode.Default);
 
             Assert.Equal(2, bitmap.RefCount);
 
