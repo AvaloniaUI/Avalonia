@@ -3,6 +3,11 @@
         Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
         xmlns:local="clr-namespace:ControlCatalog;assembly=ControlCatalog">
     <Grid>
+        <Grid.Styles>
+            <Style Selector="Button">
+                <Setter Property="local:MyControl.Proportion" Value="{Binding Proportion}" />
+            </Style>
+        </Grid.Styles>
         <local:MyControl Height="200" Width="200" Background="Red">
             <Button local:MyControl.Proportion="0.2" />
         </local:MyControl>

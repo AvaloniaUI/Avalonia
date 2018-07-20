@@ -13,7 +13,7 @@ namespace ControlCatalog
         /// Defines the Proportion attached property.
         /// </summary>
         public static readonly AttachedProperty<double> ProportionProperty =
-            AvaloniaProperty.RegisterAttached<MyControl, IControl, double>("Proportion", double.NaN);
+            AvaloniaProperty.RegisterAttached<MyControl, IControl, double>("Proportion", double.NaN, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
         /// <summary>
         /// Gets the value of the Proportion attached property on the specified control.

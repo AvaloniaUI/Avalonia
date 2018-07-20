@@ -1,10 +1,23 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ReactiveUI;
 using System;
 
 namespace ControlCatalog
 {
+    public class MainWindowViewModel : ReactiveObject
+    {
+
+        private double _proportion = 0.5;
+
+        public double Proportion
+        {
+            get { return _proportion; }
+            set { this.RaiseAndSetIfChanged(ref _proportion, value); }
+        }
+    }
+
     public class MainWindow : Window
     {
         public MainWindow()
@@ -13,6 +26,9 @@ namespace ControlCatalog
             this.AttachDevTools();
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+
+            DataContext = new MainWindowViewModel();
+            ;
         }
 
         private void InitializeComponent()
