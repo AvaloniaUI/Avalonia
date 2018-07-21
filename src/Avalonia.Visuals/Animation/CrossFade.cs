@@ -58,17 +58,6 @@ namespace Avalonia.Animation
                 )
                 {
                     Cue = new Cue(0.0)
-                },
-                new KeyFrame
-                (
-                    new Setter
-                    {
-                        Property = Visual.OpacityProperty,
-                        Value = 1.0
-                    }
-                )
-                {
-                    Cue = new Cue(1.0)
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;
@@ -101,7 +90,7 @@ namespace Avalonia.Animation
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        public async Task Start(IVisual from, IVisual to)
+        public async Task Start(Visual from, Visual to)
         {
             var tasks = new List<Task>();
 
@@ -110,16 +99,15 @@ namespace Avalonia.Animation
                 to.Opacity = 0;
             }
 
-            if (from is Animatable fadeOut)
+            if (from != null)
             {
-                tasks.Add(_fadeOutAnimation.RunAsync(fadeOut));
+                tasks.Add(_fadeOutAnimation.RunAsync(from));
             }
 
-            if (to is Animatable fadeIn)
+            if (to != null)
             {
-                to.Opacity = 0;
                 to.IsVisible = true;
-                tasks.Add(_fadeInAnimation.RunAsync(fadeIn));
+                tasks.Add(_fadeInAnimation.RunAsync(to));
 
             }
 
@@ -128,7 +116,6 @@ namespace Avalonia.Animation
             if (from != null)
             {
                 from.IsVisible = false;
-                from.Opacity = 1;
             }
 
             if (to != null)
@@ -152,7 +139,7 @@ namespace Avalonia.Animation
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task IPageTransition.Start(IVisual from, IVisual to, bool forward)
+        Task IPageTransition.Start(Visual from, Visual to, bool forward)
         {
             return Start(from, to);
         }
