@@ -173,8 +173,6 @@ namespace Avalonia.Animation
             {
                 if (sender == control)
                     run.SetResult(null);
-                else
-                    run.SetCanceled();
             };
 
             this.Apply(control, Observable.Return(true));
