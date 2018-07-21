@@ -246,7 +246,7 @@ namespace Avalonia.Animation
 
                         _targetObserver.OnCompleted();
                         _targetAnimation.SetDone(_targetControl);
-
+                        Dispose();
                         handled = true;
                         break;
                     default:
