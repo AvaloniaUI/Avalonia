@@ -182,7 +182,7 @@ namespace Avalonia.Animation
 
         internal void SetDone(Animatable control)
         {
-            Done.Invoke(control, null);
+            Done?.Invoke(control, null);
         }
     }
 }
