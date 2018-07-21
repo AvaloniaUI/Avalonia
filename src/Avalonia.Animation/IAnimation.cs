@@ -18,6 +18,6 @@ namespace Avalonia.Animation
         /// <summary>
         /// Run the animation to the specified control
         /// </summary>
-        Task Run(Animatable control);
+        Task RunAsync(Animatable control);
     }
 }

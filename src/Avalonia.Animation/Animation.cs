@@ -162,27 +162,24 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public Task Run(Animatable control)
+        public Task RunAsync(Animatable control)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var run = new TaskCompletionSource<object>();
 
             if (this.RepeatCount == RepeatCount.Loop)
-            {
-                tcs.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
-                return tcs.Task;
-            }
+                run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
             this.Done += (sender, args) =>
             {
                 if (sender == control)
-                    tcs.SetResult(null);
+                    run.SetResult(null);
                 else
-                    tcs.SetCanceled();
+                    run.SetCanceled();
             };
 
             this.Apply(control, Observable.Return(true));
 
-            return tcs.Task;
+            return run.Task;
         }
 
         internal void SetDone(Animatable control)
