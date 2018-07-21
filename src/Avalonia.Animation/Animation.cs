@@ -169,11 +169,17 @@ namespace Avalonia.Animation
             if (this.RepeatCount == RepeatCount.Loop)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            this.Done += (sender, args) =>
+            EventHandler doneCallback = null;
+            doneCallback = (sender, args) =>
             {
                 if (sender == control)
+                {
                     run.SetResult(null);
+                    this.Done -= doneCallback;
+                }
             };
+
+            this.Done += doneCallback;
 
             this.Apply(control, Observable.Return(true));
 
