@@ -167,12 +167,18 @@ namespace Avalonia.Animation
             var tcs = new TaskCompletionSource<object>();
 
             if (this.RepeatCount == RepeatCount.Loop)
-                tcs.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
-
-            this.Done += delegate
             {
-                tcs.SetResult(null);
+                tcs.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
+                return tcs.Task;
             }
+
+            this.Done += (sender, args) =>
+            {
+                if (sender == control)
+                    tcs.SetResult(null);
+                else
+                    tcs.SetCanceled();
+            };
 
             this.Apply(control, Observable.Return(true));
 
