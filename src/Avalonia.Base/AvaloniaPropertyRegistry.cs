@@ -106,7 +106,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Finds a registered non-attached property on a type by name.
+        /// Finds a registered property on a type by name.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="name">The property name.</param>
@@ -130,7 +130,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Finds a registered non-attached property on a type by name.
+        /// Finds a registered property on an object by name.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="name">The property name.</param>
@@ -146,52 +146,6 @@ namespace Avalonia
             Contract.Requires<ArgumentNullException>(name != null);
 
             return FindRegistered(o.GetType(), name);
-        }
-
-        /// <summary>
-        /// Finds a registered attached property on a type by name.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="ownerType">The owner type.</param>
-        /// <param name="name">The property name.</param>
-        /// <returns>
-        /// The registered property or null if no matching property found.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        /// The property name contains a '.'.
-        /// </exception>
-        public AvaloniaProperty FindRegisteredAttached(Type type, Type ownerType, string name)
-        {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(ownerType != null);
-            Contract.Requires<ArgumentNullException>(name != null);
-
-            if (name.Contains('.'))
-            {
-                throw new InvalidOperationException("Attached properties not supported.");
-            }
-
-            return GetRegisteredAttached(type).FirstOrDefault(x => x.Name == name);
-        }
-
-        /// <summary>
-        /// Finds a registered non-attached property on a type by name.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="ownerType">The owner type.</param>
-        /// <param name="name">The property name.</param>
-        /// <returns>
-        /// The registered property or null if no matching property found.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">
-        /// The property name contains a '.'.
-        /// </exception>
-        public AvaloniaProperty FindRegisteredAttached(AvaloniaObject o, Type ownerType, string name)
-        {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(name != null);
-
-            return FindRegisteredAttached(o.GetType(), ownerType, name);
         }
 
         /// <summary>
