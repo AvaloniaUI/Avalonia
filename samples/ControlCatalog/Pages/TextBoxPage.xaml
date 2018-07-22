@@ -9,6 +9,7 @@
               Gap="16">
       <StackPanel Orientation="Vertical" Gap="8">
         <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+        <TextBox Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
         <TextBox Width="200" Watermark="Watermark" />
         <TextBox Width="200"
                  Watermark="Floating Watermark"
