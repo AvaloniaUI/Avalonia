@@ -436,7 +436,7 @@ namespace Avalonia
         /// Gets all priority values set on the object.
         /// </summary>
         /// <returns>A collection of property/value tuples.</returns>
-        internal IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => Values?.GetSetValues();
+        internal IDictionary<AvaloniaProperty, object> GetSetValues() => Values?.GetSetValues();
 
         /// <summary>
         /// Forces revalidation of properties when a property value changes.
