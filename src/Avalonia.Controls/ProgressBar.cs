@@ -21,18 +21,27 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateStartingOffset),
+                p => p.IndeterminateStartingOffset,
+                (p, o) => p.IndeterminateStartingOffset = o);
+
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateEndingOffset),
+                p => p.IndeterminateEndingOffset,
+                (p, o) => p.IndeterminateEndingOffset = o);
+
         private Border _indicator;
-        private IndeterminateAnimation _indeterminateAnimation;
 
         static ProgressBar()
         {
             PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
             PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass(IsIndeterminateProperty, ":indeterminate");
 
             ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
-
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
-                (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
         }
 
         public bool IsIndeterminate
@@ -45,6 +54,19 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
+        }
+        private double _indeterminateStartingOffset;
+        private double IndeterminateStartingOffset
+        {
+            get => _indeterminateStartingOffset;
+            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+        }
+
+        private double _indeterminateEndingOffset;
+        private double IndeterminateEndingOffset
+        {
+            get => _indeterminateEndingOffset;
+            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
         }
 
         /// <inheritdoc/>
@@ -60,7 +82,6 @@ namespace Avalonia.Controls
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             UpdateIndicator(Bounds.Size);
-            UpdateIsIndeterminate(IsIndeterminate);
         }
 
         private void UpdateIndicator(Size bounds)
@@ -70,9 +91,20 @@ namespace Avalonia.Controls
                 if (IsIndeterminate)
                 {
                     if (Orientation == Orientation.Horizontal)
-                        _indicator.Width = bounds.Width / 5.0;
+                    {
+                        var width = bounds.Width / 5.0;
+                        IndeterminateStartingOffset = -width;
+                        _indicator.Width = width;
+                        IndeterminateEndingOffset = bounds.Width;
+
+                    }
                     else
-                        _indicator.Height = bounds.Height / 5.0;
+                    {
+                        var height = bounds.Height / 5.0;
+                        IndeterminateStartingOffset = -bounds.Height;
+                        _indicator.Height = height;
+                        IndeterminateEndingOffset = height;
+                    }
                 }
                 else
                 {
@@ -86,53 +118,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateIsIndeterminate(bool isIndeterminate)
-        {
-            if (isIndeterminate)
-            {
-                if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
-                    _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
-            }
-            else
-                _indeterminateAnimation?.Dispose();
-        }
-
         private void ValueChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
-        }
-
-        // TODO: Implement Indeterminate Progress animation
-        //       in xaml (most ideal) or if it's not possible
-        //       then on this class.
-        private class IndeterminateAnimation : IDisposable
-        {
-            private WeakReference<ProgressBar> _progressBar;
-
-            private bool _disposed;
-
-            public bool Disposed => _disposed;
-
-            private IndeterminateAnimation(ProgressBar progressBar)
-            {
-                _progressBar = new WeakReference<ProgressBar>(progressBar);
-
-            }
-
-            public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)
-            {
-                return new IndeterminateAnimation(progressBar);
-            }
-
-            private Rect GetAnimationRect(TimeSpan time)
-            {
-                return Rect.Empty;
-            }
-
-            public void Dispose()
-            {
-                _disposed = true;
-            }
         }
     }
 }

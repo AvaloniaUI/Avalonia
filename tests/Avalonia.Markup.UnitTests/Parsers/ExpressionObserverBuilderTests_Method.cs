@@ -1,5 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Avalonia.Base.UnitTests.Data.Core
+namespace Avalonia.Markup.UnitTests.Parsers
 {
-    public class ExpressionObserverTests_Method
+    public class ExpressionObserverBuilderTests_Method
     {
         private class TestObject
         {
@@ -30,7 +31,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Method()
         {
             var data = new TestObject();
-            var observer = new ExpressionObserver(data, nameof(TestObject.MethodWithoutReturn));
+            var observer = ExpressionObserverBuilder.Build(data, nameof(TestObject.MethodWithoutReturn));
             var result = await observer.Take(1);
 
             Assert.NotNull(result);
@@ -46,7 +47,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Method_WithCorrectDelegateType(string methodName, Type expectedType)
         {
             var data = new TestObject();
-            var observer = new ExpressionObserver(data, methodName);
+            var observer = ExpressionObserverBuilder.Build(data, methodName);
             var result = await observer.Take(1);
 
             Assert.IsType(expectedType, result);
@@ -58,7 +59,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Can_Call_Method_Returned_From_Observer()
         {
             var data = new TestObject();
-            var observer = new ExpressionObserver(data, nameof(TestObject.MethodWithReturnAndParameters));
+            var observer = ExpressionObserverBuilder.Build(data, nameof(TestObject.MethodWithReturnAndParameters));
             var result = await observer.Take(1);
 
             var callback = (Func<int, int>)result;
@@ -74,7 +75,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Return_Error_Notification_If_Too_Many_Parameters(string methodName)
         {
             var data = new TestObject();
-            var observer = new ExpressionObserver(data, methodName);
+            var observer = ExpressionObserverBuilder.Build(data, methodName);
             var result = await observer.Take(1);
 
             Assert.IsType<BindingNotification>(result);

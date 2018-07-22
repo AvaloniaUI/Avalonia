@@ -24,15 +24,15 @@ namespace Avalonia.Animation
             var firstKF = pair.KFPair.FirstKeyFrame;
             var secondKF = pair.KFPair.SecondKeyFrame;
 
-            if (firstKF.Value.isNeutral)
+            if (firstKF.isNeutral)
                 y0 = neutralValue;
             else
-                y0 = firstKF.Value.TargetValue;
+                y0 = firstKF.TargetValue;
 
-            if (secondKF.Value.isNeutral)
+            if (secondKF.isNeutral)
                 y1 = neutralValue;
             else
-                y1 = secondKF.Value.TargetValue;
+                y1 = secondKF.TargetValue;
 
             // Do linear parametric interpolation 
             return y0 + (pair.IntraKFTime) * (y1 - y0);
