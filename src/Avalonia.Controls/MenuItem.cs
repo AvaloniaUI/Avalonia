@@ -72,10 +72,7 @@ namespace Avalonia.Controls
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel
-            {
-                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
-            });
+            new FuncTemplate<IPanel>(() => new StackPanel());
 
         /// <summary>
         /// The timer used to display submenus.

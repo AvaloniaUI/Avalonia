@@ -143,13 +143,6 @@ namespace Avalonia.Controls.Presenters
             Virtualizer = ItemVirtualizer.Create(this);
             ((ILogicalScrollable)this).InvalidateScroll?.Invoke();
 
-            if (!Panel.IsSet(KeyboardNavigation.DirectionalNavigationProperty))
-            {
-                KeyboardNavigation.SetDirectionalNavigation(
-                    (InputElement)Panel,
-                    KeyboardNavigationMode.Contained);
-            }
-
             KeyboardNavigation.SetTabNavigation(
                 (InputElement)Panel,
                 KeyboardNavigation.GetTabNavigation(this));
