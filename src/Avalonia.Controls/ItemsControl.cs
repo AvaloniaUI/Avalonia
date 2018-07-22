@@ -323,6 +323,41 @@ namespace Avalonia.Controls
             LogicalChildren.RemoveAll(toRemove);
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (Presenter?.Panel is INavigableContainer container)
+            {
+                var focus = FocusManager.Instance;
+                var current = focus.Current;
+                NavigationDirection? direction = null;
+
+                switch (e.Key)
+                {
+                    case Key.Up: direction = NavigationDirection.Up; break;
+                    case Key.Down: direction = NavigationDirection.Down; break;
+                    case Key.Left: direction = NavigationDirection.Left; break;
+                    case Key.Right: direction = NavigationDirection.Right; break;
+                    case Key.Home: direction = NavigationDirection.First; break;
+                    case Key.End: direction = NavigationDirection.Last; break;
+                    case Key.PageUp: direction = NavigationDirection.PageUp; break;
+                    case Key.PageDown: direction = NavigationDirection.PageDown; break;
+                }
+
+                if (direction != null && current != null)
+                {
+                    var next = container.GetControl(direction.Value, current);
+
+                    if (next != null)
+                    {
+                        focus.Focus(next, NavigationMethod.Directional);
+                        e.Handled = true;
+                    }
+                }
+            }
+
+            base.OnKeyDown(e);
+        }
+
         /// <summary>
         /// Caled when the <see cref="Items"/> property changes.
         /// </summary>
