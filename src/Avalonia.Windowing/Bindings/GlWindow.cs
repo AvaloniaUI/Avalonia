@@ -26,7 +26,13 @@ namespace Avalonia.Windowing.Bindings
         private static extern LogicalSize winit_gl_window_get_size(IntPtr handle);
 
         [DllImport("winit_wrapper")]
+        private static extern LogicalPosition winit_gl_window_get_position(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
         private static extern void winit_gl_window_present(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_show(IntPtr handle);
 
         [DllImport("winit_wrapper")]
         private static extern IntPtr winit_gl_window_get_proc_addr(IntPtr handle, string symbol);
@@ -64,15 +70,23 @@ namespace Avalonia.Windowing.Bindings
 
         public (double, double) GetSize() {
             var size = winit_gl_window_get_size(_handle);
-
             return (size.Width, size.Height);
         }
 
         public (double, double) GetFramebufferSize()
         {
-            var size = winit_gl_window_get_size(_handle);
+            return GetSize();
+        }
 
-            return (size.Width, size.Height);
+        public (double, double) GetPosition()
+        {
+            var position = winit_gl_window_get_position(_handle);
+            return (position.X, position.Y);
+        }
+
+        public void Show()
+        {
+            winit_gl_window_show(_handle);
         }
     }
 }

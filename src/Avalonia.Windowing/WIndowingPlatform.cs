@@ -82,6 +82,7 @@ namespace Avalonia.Windowing
 
         public void Signal(DispatcherPriority priority)
         {
+            // We need to run some sort of callback on wakeup don't we?
             _eventsLoop.Wakeup();
         }
 

@@ -31,14 +31,14 @@ namespace Avalonia.Skia
         {
             // TODO: These are hard coded for now. Don't do that.
             // TODO: Recreate the surface when the size changes.
-            // if (_surface == null)
-            //  {
+             if (_surface == null)
+             {
                 var (width, height) = _context.GetFramebufferSize();
 
                 _surface = SKSurface.Create(_grContext, new GRBackendRenderTargetDesc
                 {
-                    Height = (int)height,
-                    Width = (int)width,
+                    Height = (int)height * 2,
+                    Width = (int)width * 2,
                     SampleCount = 1,
                     StencilBits = 8,
                     Config = GRPixelConfig.Bgra8888,
@@ -47,12 +47,15 @@ namespace Avalonia.Skia
                 });
 
                 _canvas = _surface.Canvas;
-        //    }
+            }
+
+            _canvas.RestoreToCount(-1);
+            _canvas.ResetMatrix();
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = new Vector(96, 96),
+                Dpi = new Vector(192, 192),
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
             };

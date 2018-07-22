@@ -36,5 +36,15 @@ namespace Avalonia.Windowing.Bindings
         {
             return (0, 0);
         }
+
+        public (double, double) GetPosition()
+        {
+            return (0, 0);
+        }
+
+        public void Show()
+        {
+            
+        }
     }
 }

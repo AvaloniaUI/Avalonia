@@ -21,7 +21,19 @@ namespace Avalonia.Windowing
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Func<bool> Closing { get; set; }
-        public Point Position { get; set; }
+        public Point Position 
+        {
+            get 
+            {
+                var (x, y) = _windowWrapper.GetPosition();
+                return new Point(x, y);
+            } 
+            set 
+            {
+                var x = value; 
+            }
+        }
+
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -36,11 +48,11 @@ namespace Avalonia.Windowing
             get 
             {
                 var (width, height) = _windowWrapper.GetSize();
-                return new Size(width, height);
+                return new Size(width * 2, height * 2);
             }
         }
 
-        public double Scaling => 1.0;
+        public double Scaling => 192 / 96;
 
         public IEnumerable<object> Surfaces => new List<object>() { _windowWrapper };
 
@@ -89,18 +101,24 @@ namespace Avalonia.Windowing
 
         public Point PointToClient(Point point)
         {
-            return point;
+            point = point.WithY(ClientSize.Height - point.Y);
+            var (x, y) = _windowWrapper.GetPosition();
+            return new Point(point.X + x, point.Y + y);
         }
 
         public Point PointToScreen(Point point)
         {
-            return point;
+            point = point.WithY(ClientSize.Height - point.Y);
+            var (x, y) = _windowWrapper.GetPosition();
+            return new Point(point.X - x, point.Y - y);;
         }
 
         public void Resize(Size clientSize)
         {
             // This is where we size the window accordingly..
-            _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
+            _windowWrapper.SetSize(clientSize.Width / Scaling, clientSize.Height / Scaling);
+
+            // TODO: Move this to when we receive the Resized message.
             Resized(clientSize);
         }
 
@@ -135,6 +153,7 @@ namespace Avalonia.Windowing
 
         public void Show()
         {
+            _windowWrapper.Show();
         }
 
         public IDisposable ShowDialog()
