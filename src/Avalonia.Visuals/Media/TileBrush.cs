@@ -141,8 +141,8 @@ namespace Avalonia.Media
         /// </value>
         public BitmapInterpolationMode BitmapInterpolationMode
         {
-            get { return RenderOptions.GetBitmapScalingMode(this); }
-            set { RenderOptions.SetBitmapScalingMode(this, value); }
+            get { return RenderOptions.GetBitmapInterpolationMode(this); }
+            set { RenderOptions.SetBitmapInterpolationMode(this, value); }
         }
     }
 }

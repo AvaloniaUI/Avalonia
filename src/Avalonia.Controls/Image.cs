@@ -68,7 +68,7 @@ namespace Avalonia.Controls
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterRect(new Rect(destRect.Size / scale));
 
-                var scalingMode = RenderOptions.GetBitmapScalingMode(this);
+                var scalingMode = RenderOptions.GetBitmapInterpolationMode(this);
 
                 context.DrawImage(source, 1, sourceRect, destRect, scalingMode);
             }

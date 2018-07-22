@@ -3,12 +3,12 @@
 
 using Avalonia.Visuals.Media.Imaging;
 
-namespace Avalonia.Visuals.Media
+namespace Avalonia.Media
 { 
     public class RenderOptions
     {
         /// <summary>
-        /// Defines the <see cref="Imaging.BitmapInterpolationMode"/> property.
+        /// Defines the <see cref="Visuals.Media.Imaging.BitmapInterpolationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<BitmapInterpolationMode> BitmapInterpolationMode =
             AvaloniaProperty.RegisterAttached<RenderOptions, AvaloniaObject, BitmapInterpolationMode>(
@@ -20,7 +20,7 @@ namespace Avalonia.Visuals.Media
         /// </summary>
         /// <param name="element">The control.</param>
         /// <returns>The control's left coordinate.</returns>
-        public static BitmapInterpolationMode GetBitmapScalingMode(AvaloniaObject element)
+        public static BitmapInterpolationMode GetBitmapInterpolationMode(AvaloniaObject element)
         {
             return element.GetValue(BitmapInterpolationMode);
         }
@@ -30,7 +30,7 @@ namespace Avalonia.Visuals.Media
         /// </summary>
         /// <param name="element">The control.</param>
         /// <param name="value">The left value.</param>
-        public static void SetBitmapScalingMode(AvaloniaObject element, BitmapInterpolationMode value)
+        public static void SetBitmapInterpolationMode(AvaloniaObject element, BitmapInterpolationMode value)
         {
             element.SetValue(BitmapInterpolationMode, value);
         }
