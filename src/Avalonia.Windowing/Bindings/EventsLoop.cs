@@ -3,6 +3,34 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Windowing.Bindings
 {
+    public enum MouseEventType : int
+    {
+        MouseMoved
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MouseEvent 
+    {
+        public MouseEventType EventType { get; set; }
+        public LogicalPosition Position { get; set; }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LogicalPosition
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct LogicalSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+
+    public delegate void MouseEventCallback(IntPtr windowId, MouseEvent mouseEvent);
+
     public class EventsLoop : IDisposable
     {
         [DllImport("winit_wrapper")]
@@ -12,7 +40,7 @@ namespace Avalonia.Windowing.Bindings
         private static extern void winit_events_loop_destroy(IntPtr handle);
 
         [DllImport("winit_wrapper")]
-        private static extern void winit_events_loop_run(IntPtr handle);
+        private static extern void winit_events_loop_run(IntPtr handle, MouseEventCallback callback);
 
         public IntPtr Handle { get; private set;  }
         private readonly EventsLoopProxy _eventsLoopProxy;
@@ -27,7 +55,10 @@ namespace Avalonia.Windowing.Bindings
         {
             // We need a delegate callback here to support talking back to the C# code.
             // Send an event type enum and then unsafely construct the event
-            winit_events_loop_run(Handle);
+            winit_events_loop_run(Handle, (windowId, mouseEvent) => {
+                var (x, y) = (mouseEvent.Position.X, mouseEvent.Position.Y);
+                System.Diagnostics.Debug.WriteLine("Got evt {0} ({1}, {2})", mouseEvent.EventType, x, y);
+            });
         }
 
         public void Wakeup()

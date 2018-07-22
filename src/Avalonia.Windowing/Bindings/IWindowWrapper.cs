@@ -7,5 +7,7 @@ namespace Avalonia.Windowing.Bindings
     public interface IWindowWrapper : IDisposable
     {
         void SetTitle(string title);
+        void SetSize(double width, double height);
+        (double, double) GetSize();
     }
 }

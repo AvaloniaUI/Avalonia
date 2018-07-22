@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Gpu\Avalonia.Gpu.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -32,10 +32,17 @@ namespace Avalonia.Windowing
 
         public IScreenImpl Screen => new Monitors();
 
-        public Size ClientSize => Size.Empty;
+        public Size ClientSize {
+            get 
+            {
+                var (width, height) = _windowWrapper.GetSize();
+                return new Size(width, height);
+            }
+        }
+
         public double Scaling => 1.0;
 
-        public IEnumerable<object> Surfaces => new List<object>() { this };
+        public IEnumerable<object> Surfaces => new List<object>() { _windowWrapper };
 
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -77,7 +84,7 @@ namespace Avalonia.Windowing
 
         public void Invalidate(Rect rect)
         {
-            //Paint?.Invoke(rect);
+            Paint?.Invoke(rect);
         }
 
         public Point PointToClient(Point point)
@@ -93,6 +100,8 @@ namespace Avalonia.Windowing
         public void Resize(Size clientSize)
         {
             // This is where we size the window accordingly..
+            _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
+            Resized(clientSize);
         }
 
         public void SetCursor(IPlatformHandle cursor)

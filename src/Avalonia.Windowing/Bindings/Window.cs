@@ -26,5 +26,15 @@ namespace Avalonia.Windowing.Bindings
         {
             
         }
+
+        public void SetSize(double width, double height)
+        {
+            throw new NotImplementedException();
+        }
+
+        public (double, double) GetSize() 
+        {
+            return (0, 0);
+        }
     }
 }
