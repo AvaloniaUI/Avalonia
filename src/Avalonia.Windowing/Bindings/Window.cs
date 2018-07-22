@@ -12,6 +12,9 @@ namespace Avalonia.Windowing.Bindings
         private static extern IntPtr winit_window_destroy(IntPtr handle);
 
         private IntPtr _handle;
+
+        public IntPtr Id => IntPtr.Zero;
+
         public WindowWrapper(EventsLoop eventsLoop) 
         {
             _handle = winit_window_new(eventsLoop.Handle); 

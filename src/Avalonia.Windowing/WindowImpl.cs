@@ -48,7 +48,7 @@ namespace Avalonia.Windowing
             get 
             {
                 var (width, height) = _windowWrapper.GetSize();
-                return new Size(width * 2, height * 2);
+                return new Size(width, height);
             }
         }
 
@@ -62,7 +62,7 @@ namespace Avalonia.Windowing
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
 
-        public IMouseDevice MouseDevice => throw new NotImplementedException();
+        public IMouseDevice MouseDevice => new MouseDevice();
 
         public void Activate()
         {
@@ -101,14 +101,14 @@ namespace Avalonia.Windowing
 
         public Point PointToClient(Point point)
         {
-            point = point.WithY(ClientSize.Height - point.Y);
+         //   point = point.WithY(ClientSize.Height - point.Y);
             var (x, y) = _windowWrapper.GetPosition();
             return new Point(point.X + x, point.Y + y);
         }
 
         public Point PointToScreen(Point point)
         {
-            point = point.WithY(ClientSize.Height - point.Y);
+           // point = point.WithY(ClientSize.Height - point.Y);
             var (x, y) = _windowWrapper.GetPosition();
             return new Point(point.X - x, point.Y - y);;
         }
@@ -116,10 +116,7 @@ namespace Avalonia.Windowing
         public void Resize(Size clientSize)
         {
             // This is where we size the window accordingly..
-            _windowWrapper.SetSize(clientSize.Width / Scaling, clientSize.Height / Scaling);
-
-            // TODO: Move this to when we receive the Resized message.
-            Resized(clientSize);
+            _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -130,9 +127,8 @@ namespace Avalonia.Windowing
         {
         }
 
-        public void SetInputRoot(IInputRoot inputRoot)
-        {
-        }
+        private IInputRoot _inputRoot;
+        public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
@@ -163,6 +159,12 @@ namespace Avalonia.Windowing
 
         public void ShowTaskbarIcon(bool value)
         {
+        }
+
+        public void OnMouseEvent(MouseEvent evt) 
+        {
+            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, RawMouseEventType.Move, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));
+            Paint?.Invoke(Rect.Empty);       
         }
     }
 }

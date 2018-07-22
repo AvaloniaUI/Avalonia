@@ -31,8 +31,8 @@ namespace Avalonia.Skia
         {
             // TODO: These are hard coded for now. Don't do that.
             // TODO: Recreate the surface when the size changes.
-             if (_surface == null)
-             {
+         //   if (_surface == null)
+            {
                 var (width, height) = _context.GetFramebufferSize();
 
                 _surface = SKSurface.Create(_grContext, new GRBackendRenderTargetDesc
@@ -49,9 +49,10 @@ namespace Avalonia.Skia
                 _canvas = _surface.Canvas;
             }
 
-            _canvas.RestoreToCount(-1);
-            _canvas.ResetMatrix();
+           // _canvas.RestoreToCount(-1);
+         //   _canvas.ResetMatrix();
 
+            _canvas.Scale(2);
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
@@ -62,6 +63,7 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
+                _canvas.Flush();
                 _grContext.Flush();
                 _context.Present(); // Swap Buffers
             }));

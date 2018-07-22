@@ -37,7 +37,11 @@ namespace Avalonia.Windowing.Bindings
         [DllImport("winit_wrapper")]
         private static extern IntPtr winit_gl_window_get_proc_addr(IntPtr handle, string symbol);
 
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_gl_window_get_id(IntPtr handle);
+
         private IntPtr _handle;
+        public IntPtr Id => winit_gl_window_get_id(_handle);
         public GlWindowWrapper(EventsLoop eventsLoop)
         {
             _handle = winit_gl_window_new(eventsLoop.Handle);

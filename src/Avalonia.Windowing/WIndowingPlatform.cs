@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -39,11 +40,29 @@ namespace Avalonia.Windowing
     {
         internal static WindowingPlatform Instance { get; private set; }
         private readonly EventsLoop _eventsLoop;
+        private readonly Dictionary<IntPtr, Window> _windows;
 
         public WindowingPlatform()
         {
             _eventsLoop = new EventsLoop();
+            _eventsLoop.MouseEvent += _eventsLoop_MouseEvent;
+            _eventsLoop.Awakened += _eventsLoop_Awakened;
+            _windows = new Dictionary<IntPtr, Window>();
         }
+
+        private void _eventsLoop_MouseEvent(IntPtr windowId, MouseEvent mouseEvent)
+        {
+            if (_windows.ContainsKey(windowId)) 
+            {
+                _windows[windowId].OnMouseEvent(mouseEvent);    
+            }
+        }
+
+        private void _eventsLoop_Awakened()
+        {
+            Signaled?.Invoke(DispatcherPriority.Normal);
+        }
+
 
         public static void Initialize() 
         {
@@ -55,6 +74,7 @@ namespace Avalonia.Windowing
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IWindowingPlatform>().ToConstant(this)
+                .Bind<IMouseDevice>().ToConstant(new MouseDevice())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
@@ -73,7 +93,14 @@ namespace Avalonia.Windowing
             throw new NotImplementedException();
         }
 
-        public IWindowImpl CreateWindow() => new Window(new GlWindowWrapper(_eventsLoop));
+        public IWindowImpl CreateWindow() 
+        {
+            var windowWrapper = new GlWindowWrapper(_eventsLoop);
+            var window = new Window(windowWrapper);
+            _windows.Add(windowWrapper.Id, window);
+
+            return window;
+        }
 
         public void RunLoop(CancellationToken cancellationToken)
         {

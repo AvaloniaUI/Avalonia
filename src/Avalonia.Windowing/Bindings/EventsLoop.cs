@@ -30,6 +30,7 @@ namespace Avalonia.Windowing.Bindings
     }
 
     public delegate void MouseEventCallback(IntPtr windowId, MouseEvent mouseEvent);
+    public delegate void AwakenedEventCallback();
 
     public class EventsLoop : IDisposable
     {
@@ -40,10 +41,18 @@ namespace Avalonia.Windowing.Bindings
         private static extern void winit_events_loop_destroy(IntPtr handle);
 
         [DllImport("winit_wrapper")]
-        private static extern void winit_events_loop_run(IntPtr handle, MouseEventCallback callback);
+        private static extern void winit_events_loop_run
+        (
+            IntPtr handle, 
+            MouseEventCallback callback,
+            AwakenedEventCallback awakenedEventCallback
+        );
 
         public IntPtr Handle { get; private set;  }
         private readonly EventsLoopProxy _eventsLoopProxy;
+
+        public event MouseEventCallback MouseEvent;
+        public event AwakenedEventCallback Awakened;
 
         public EventsLoop()
         {
@@ -55,10 +64,16 @@ namespace Avalonia.Windowing.Bindings
         {
             // We need a delegate callback here to support talking back to the C# code.
             // Send an event type enum and then unsafely construct the event
-            winit_events_loop_run(Handle, (windowId, mouseEvent) => {
-                var (x, y) = (mouseEvent.Position.X, mouseEvent.Position.Y);
-                System.Diagnostics.Debug.WriteLine("Got evt {0} ({1}, {2})", mouseEvent.EventType, x, y);
-            });
+            winit_events_loop_run(
+                Handle, 
+                (windowId, mouseEvent) => {
+                    MouseEvent?.Invoke(windowId, mouseEvent);
+                },
+                () =>
+                {
+                    Awakened?.Invoke();
+                }
+            );
         }
 
         public void Wakeup()
@@ -77,6 +92,9 @@ namespace Avalonia.Windowing.Bindings
             [DllImport("winit_wrapper")]
             private static extern void winit_events_loop_proxy_destroy(IntPtr handle);
 
+            [DllImport("winit_wrapper")]
+            private static extern void winit_events_loop_proxy_wakeup(IntPtr handle);
+
             private readonly IntPtr _handle;
             public EventsLoopProxy(IntPtr handle)
             {
@@ -85,7 +103,7 @@ namespace Avalonia.Windowing.Bindings
 
             public void Wakeup()
             {
-
+                winit_events_loop_proxy_wakeup(_handle);
             }
 
             public void Dispose()
