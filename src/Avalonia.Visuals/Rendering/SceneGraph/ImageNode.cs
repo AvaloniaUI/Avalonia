@@ -21,7 +21,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap scaling mode.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
             : base(destRect, transform, null)
         {
@@ -59,7 +59,7 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect DestRect { get; }
 
         /// <summary>
-        /// Gets the bitmap scaling mode.
+        /// Gets the bitmap interpolation mode.
         /// </summary>
         /// <value>
         /// The scaling mode.
@@ -74,7 +74,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The opacity of the other draw operation.</param>
         /// <param name="sourceRect">The source rect of the other draw operation.</param>
         /// <param name="destRect">The dest rect of the other draw operation.</param>
-        /// <param name="bitmapInterpolationMode">The bitmap scaling mode.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent

@@ -22,7 +22,7 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
-        /// <param name="bitmapInterpolationMode">Controls the quality of interpolation.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         protected ImmutableTileBrush(
             AlignmentX alignmentX,
             AlignmentY alignmentY,
