@@ -103,14 +103,12 @@ namespace Avalonia.Windowing
 
         public Point PointToClient(Point point)
         {
-            point = point.WithY(ClientSize.Height - point.Y);
             var position = Position;
             return new Point(point.X + position.X, point.Y + position.Y);
         }
 
         public Point PointToScreen(Point point)
         {
-            point = point.WithY(ClientSize.Height - point.Y);
             var position = Position;
             return new Point(point.X - position.X, point.Y - position.Y);;
         }
