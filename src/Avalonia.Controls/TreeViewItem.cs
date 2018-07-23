@@ -124,7 +124,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnKeyDown(e);
+            // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
         }
     }
 }
