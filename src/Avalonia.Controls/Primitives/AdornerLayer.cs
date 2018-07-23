@@ -21,6 +21,7 @@ namespace Avalonia.Controls.Primitives
         static AdornerLayer()
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
+            IsHitTestVisibleProperty.OverrideDefaultValue(typeof(AdornerLayer), false);
         }
 
         public AdornerLayer()

@@ -26,16 +26,15 @@ namespace Avalonia.Skia
 
         SKSurface _surface;
         SKCanvas _canvas;
+        GRBackendRenderTargetDesc _desc;
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            // TODO: These are hard coded for now. Don't do that.
-            // TODO: Recreate the surface when the size changes.
-         //   if (_surface == null)
-            {
-                var (width, height) = _context.GetFramebufferSize();
+            var (width, height) = _context.GetFramebufferSize();
 
-                _surface = SKSurface.Create(_grContext, new GRBackendRenderTargetDesc
+            if (_surface == null || (_desc.Width != (int)width * 2 || _desc.Height != (int)height * 2))
+            {
+                _desc = new GRBackendRenderTargetDesc
                 {
                     Height = (int)height * 2,
                     Width = (int)width * 2,
@@ -44,15 +43,18 @@ namespace Avalonia.Skia
                     Config = GRPixelConfig.Bgra8888,
                     Origin = GRSurfaceOrigin.BottomLeft,
                     RenderTargetHandle = IntPtr.Zero
-                });
+                };
 
+                _surface?.Dispose();
+                _surface = SKSurface.Create(_grContext, _desc);
                 _canvas = _surface.Canvas;
             }
 
-           // _canvas.RestoreToCount(-1);
-         //   _canvas.ResetMatrix();
 
-            _canvas.Scale(2);
+            _canvas.Clear(SKColors.Orange);
+            _canvas.RestoreToCount(-1);
+            _canvas.ResetMatrix();
+
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
@@ -63,7 +65,6 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
-                _canvas.Flush();
                 _grContext.Flush();
                 _context.Present(); // Swap Buffers
             }));
@@ -71,6 +72,8 @@ namespace Avalonia.Skia
 
         public void Dispose()
         {
+            _canvas.Dispose();
+            _surface.Dispose();
             _grContext.Dispose();
         }
     }

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
 
 namespace Avalonia.Windowing
@@ -101,22 +102,26 @@ namespace Avalonia.Windowing
 
         public Point PointToClient(Point point)
         {
-         //   point = point.WithY(ClientSize.Height - point.Y);
-            var (x, y) = _windowWrapper.GetPosition();
-            return new Point(point.X + x, point.Y + y);
+            point = point.WithY(ClientSize.Height - point.Y);
+            var position = Position;
+            return new Point(point.X + position.X, point.Y + position.Y);
         }
 
         public Point PointToScreen(Point point)
         {
-           // point = point.WithY(ClientSize.Height - point.Y);
-            var (x, y) = _windowWrapper.GetPosition();
-            return new Point(point.X - x, point.Y - y);;
+            point = point.WithY(ClientSize.Height - point.Y);
+            var position = Position;
+            return new Point(point.X - position.X, point.Y - position.Y);;
         }
 
         public void Resize(Size clientSize)
         {
+            if (clientSize == ClientSize)
+                return;
+            
             // This is where we size the window accordingly..
             _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
+            //Resized(clientSize);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -163,8 +168,14 @@ namespace Avalonia.Windowing
 
         public void OnMouseEvent(MouseEvent evt) 
         {
-            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, RawMouseEventType.Move, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));
-            Paint?.Invoke(Rect.Empty);       
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
+            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, RawMouseEventType.Move, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));     
+        }
+
+        public void OnResizeEvent(ResizeEvent evt) 
+        {
+            Resized?.Invoke(ClientSize);
+            Paint?.Invoke(new Rect(ClientSize));
         }
     }
 }

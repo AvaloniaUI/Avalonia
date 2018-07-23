@@ -16,6 +16,12 @@ namespace Avalonia.Windowing.Bindings
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct ResizeEvent
+    {
+        public LogicalSize Size { get; set; }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct LogicalPosition
     {
         public double X { get; set; }
@@ -30,6 +36,7 @@ namespace Avalonia.Windowing.Bindings
     }
 
     public delegate void MouseEventCallback(IntPtr windowId, MouseEvent mouseEvent);
+    public delegate void ResizeEventCallback(IntPtr windowId, ResizeEvent mouseEvent);
     public delegate void AwakenedEventCallback();
 
     public class EventsLoop : IDisposable
@@ -45,7 +52,8 @@ namespace Avalonia.Windowing.Bindings
         (
             IntPtr handle, 
             MouseEventCallback callback,
-            AwakenedEventCallback awakenedEventCallback
+            AwakenedEventCallback awakenedEventCallback,
+            ResizeEventCallback resizeEventCallback
         );
 
         public IntPtr Handle { get; private set;  }
@@ -53,6 +61,7 @@ namespace Avalonia.Windowing.Bindings
 
         public event MouseEventCallback MouseEvent;
         public event AwakenedEventCallback Awakened;
+        public event ResizeEventCallback Resized;
 
         public EventsLoop()
         {
@@ -72,6 +81,9 @@ namespace Avalonia.Windowing.Bindings
                 () =>
                 {
                     Awakened?.Invoke();
+                },
+                (windowId, ResizeEvent) => {
+                    Resized?.Invoke(windowId, ResizeEvent);    
                 }
             );
         }

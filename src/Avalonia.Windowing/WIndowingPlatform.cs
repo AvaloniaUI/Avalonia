@@ -47,8 +47,19 @@ namespace Avalonia.Windowing
             _eventsLoop = new EventsLoop();
             _eventsLoop.MouseEvent += _eventsLoop_MouseEvent;
             _eventsLoop.Awakened += _eventsLoop_Awakened;
+            _eventsLoop.Resized += _eventsLoop_Resized;
             _windows = new Dictionary<IntPtr, Window>();
         }
+
+        void _eventsLoop_Resized(IntPtr windowId, ResizeEvent resizeEvent)
+        {
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+            if (_windows.ContainsKey(windowId)) 
+            {
+                _windows[windowId].OnResizeEvent(resizeEvent);    
+            }
+        }
+
 
         private void _eventsLoop_MouseEvent(IntPtr windowId, MouseEvent mouseEvent)
         {
@@ -61,6 +72,7 @@ namespace Avalonia.Windowing
         private void _eventsLoop_Awakened()
         {
             Signaled?.Invoke(DispatcherPriority.Normal);
+          //  Dispatcher.UIThread.RunJobs();
         }
 
 
