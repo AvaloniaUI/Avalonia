@@ -8,6 +8,7 @@
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
+    <ProjectReference Include="..\Avalonia.Windowing\Avalonia.Windowing.csproj" />
     <ProjectReference Include="..\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj" />
     <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />

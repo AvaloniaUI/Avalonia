@@ -5,7 +5,16 @@ namespace Avalonia.Windowing.Bindings
 {
     public enum MouseEventType : int
     {
-        MouseMoved
+        LeaveWindow,
+        LeftButtonDown,
+        LeftButtonUp,
+        RightButtonDown,
+        RightButtonUp,
+        MiddleButtonDown,
+        MiddleButtonUp,
+        Move,
+        Wheel,
+        NonClientLeftButtonDown
     }
 
     [StructLayout(LayoutKind.Sequential)]

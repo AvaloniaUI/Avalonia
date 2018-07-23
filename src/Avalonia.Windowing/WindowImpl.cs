@@ -169,7 +169,7 @@ namespace Avalonia.Windowing
         public void OnMouseEvent(MouseEvent evt) 
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
-            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, RawMouseEventType.Move, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));     
+            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));     
         }
 
         public void OnResizeEvent(ResizeEvent evt) 
