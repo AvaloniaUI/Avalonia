@@ -89,6 +89,7 @@ namespace Avalonia.Windowing
                 .Bind<IMouseDevice>().ToConstant(new MouseDevice())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
+                .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
         }
 
