@@ -13,6 +13,7 @@ namespace Avalonia.Windowing
     public class Window : IWindowImpl
     {
         IWindowWrapper _windowWrapper;
+        private LogicalPosition _lastPosition;
 
         public Window(IWindowWrapper wrapper)
         {
@@ -169,7 +170,13 @@ namespace Avalonia.Windowing
         public void OnMouseEvent(MouseEvent evt) 
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
-            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));     
+
+            if(evt.EventType == MouseEventType.Move)
+            {
+                _lastPosition = evt.Position;
+            }
+
+            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(_lastPosition.X, _lastPosition.Y), InputModifiers.None));     
         }
 
         public void OnResizeEvent(ResizeEvent evt) 
