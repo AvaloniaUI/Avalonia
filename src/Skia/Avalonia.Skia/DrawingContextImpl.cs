@@ -15,8 +15,6 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    using Avalonia.Controls;
-
     /// <summary>
     /// Skia based drawing context.
     /// </summary>

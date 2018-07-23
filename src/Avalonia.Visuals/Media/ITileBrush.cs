@@ -1,7 +1,10 @@
-﻿namespace Avalonia.Media
-{
-    using Avalonia.Visuals.Media.Imaging;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Visuals.Media.Imaging;
+
+namespace Avalonia.Media
+{  
     /// <summary>
     /// A brush which displays a repeating image.
     /// </summary>

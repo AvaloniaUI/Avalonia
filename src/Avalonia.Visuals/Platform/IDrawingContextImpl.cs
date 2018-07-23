@@ -4,11 +4,10 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
 {
-    using Avalonia.Visuals.Media.Imaging;
-
     /// <summary>
     /// Defines the interface through which drawing occurs.
     /// </summary>

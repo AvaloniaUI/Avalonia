@@ -9,7 +9,7 @@ using Avalonia.Threading;
 using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Controls.Remote
-{   
+{
     public class RemoteWidget : Control
     {
         private readonly IAvaloniaRemoteTransportConnection _connection;
