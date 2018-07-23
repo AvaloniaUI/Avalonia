@@ -77,6 +77,11 @@ namespace Avalonia.Media
         public static readonly StyledProperty<TileMode> TileModeProperty =
             AvaloniaProperty.Register<TileBrush, TileMode>(nameof(TileMode));
 
+        static TileBrush()
+        {
+            RenderOptions.BitmapInterpolationModeProperty.OverrideDefaultValue<TileBrush>(BitmapInterpolationMode.Default);
+        }
+
         /// <summary>
         /// Gets or sets the horizontal alignment of a tile in the destination.
         /// </summary>

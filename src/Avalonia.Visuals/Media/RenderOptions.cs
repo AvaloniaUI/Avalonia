@@ -8,11 +8,12 @@ namespace Avalonia.Media
     public class RenderOptions
     {
         /// <summary>
-        /// Defines the <see cref="Visuals.Media.Imaging.BitmapInterpolationMode"/> property.
+        /// Defines the <see cref="BitmapInterpolationMode"/> property.
         /// </summary>
-        public static readonly StyledProperty<BitmapInterpolationMode> BitmapInterpolationMode =
+        public static readonly StyledProperty<BitmapInterpolationMode> BitmapInterpolationModeProperty =
             AvaloniaProperty.RegisterAttached<RenderOptions, AvaloniaObject, BitmapInterpolationMode>(
-                "BitmapInterpolationMode",
+                "BitmapInterpolationMode", 
+                BitmapInterpolationMode.HighQuality,
                 inherits: true);
 
         /// <summary>
@@ -22,7 +23,7 @@ namespace Avalonia.Media
         /// <returns>The control's left coordinate.</returns>
         public static BitmapInterpolationMode GetBitmapInterpolationMode(AvaloniaObject element)
         {
-            return element.GetValue(BitmapInterpolationMode);
+            return element.GetValue(BitmapInterpolationModeProperty);
         }
 
         /// <summary>
@@ -32,7 +33,7 @@ namespace Avalonia.Media
         /// <param name="value">The left value.</param>
         public static void SetBitmapInterpolationMode(AvaloniaObject element, BitmapInterpolationMode value)
         {
-            element.SetValue(BitmapInterpolationMode, value);
+            element.SetValue(BitmapInterpolationModeProperty, value);
         }
     }
 }
