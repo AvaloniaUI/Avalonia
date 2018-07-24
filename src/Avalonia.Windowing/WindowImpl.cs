@@ -168,6 +168,11 @@ namespace Avalonia.Windowing
         {
         }
 
+        public void OnKeyboardEvent (KeyboardEvent evt)
+        {
+
+        }
+
         public void OnMouseEvent(MouseEvent evt)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);

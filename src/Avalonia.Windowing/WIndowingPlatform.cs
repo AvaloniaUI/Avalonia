@@ -37,6 +37,7 @@ namespace Avalonia.Windowing
         {
             _eventsLoop = new EventsLoop();
             _eventsLoop.OnMouseEvent += _eventsLoop_MouseEvent;
+            _eventsLoop.OnKeyboardEvent += _eventsLoop_OnKeyboardEvent;
             _eventsLoop.OnAwakened += _eventsLoop_Awakened;
             _eventsLoop.OnResized += _eventsLoop_Resized;
             _windows = new Dictionary<IntPtr, WindowImpl>();
@@ -57,6 +58,14 @@ namespace Avalonia.Windowing
             if (_windows.ContainsKey(windowId)) 
             {
                 _windows[windowId].OnMouseEvent(mouseEvent);    
+            }
+        }
+
+        void _eventsLoop_OnKeyboardEvent(IntPtr windowId, KeyboardEvent keyboardEvent)
+        {
+            if(_windows.ContainsKey(windowId))
+            {
+                _windows[windowId].OnKeyboardEvent(keyboardEvent);
             }
         }
 
