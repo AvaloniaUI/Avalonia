@@ -376,7 +376,7 @@ namespace Avalonia.Controls.Primitives
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    SelectedIndex = IndexOf(e.NewItems, SelectedItem);
+                    SelectedIndex = IndexOf(Items, SelectedItem);
                     break;
             }
         }
