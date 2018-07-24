@@ -172,9 +172,15 @@ namespace Avalonia.Windowing
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
 
-            if (evt.EventType == MouseEventType.Move)
+            switch(evt.EventType)
             {
-                _lastPosition = evt.Position;
+                case MouseEventType.Move:
+                    _lastPosition = evt.Position;
+                    break;
+
+                case MouseEventType.Wheel:
+                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));
+                    return;
             }
 
             Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(_lastPosition.X, _lastPosition.Y), InputModifiers.None));
