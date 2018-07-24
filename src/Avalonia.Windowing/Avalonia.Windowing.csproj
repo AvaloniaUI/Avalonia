@@ -11,6 +11,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="Bindings\EventsLoopProxy.cs" />
+    <Compile Remove="Bindings\Window.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Bindings\Units.rs" />
   </ItemGroup>
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

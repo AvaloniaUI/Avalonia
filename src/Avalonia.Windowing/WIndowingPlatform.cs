@@ -41,9 +41,9 @@ namespace Avalonia.Windowing
         public WindowingPlatform()
         {
             _eventsLoop = new EventsLoop();
-            _eventsLoop.MouseEvent += _eventsLoop_MouseEvent;
-            _eventsLoop.Awakened += _eventsLoop_Awakened;
-            _eventsLoop.Resized += _eventsLoop_Resized;
+            _eventsLoop.OnMouseEvent += _eventsLoop_MouseEvent;
+            _eventsLoop.OnAwakened += _eventsLoop_Awakened;
+            _eventsLoop.OnResized += _eventsLoop_Resized;
             _windows = new Dictionary<IntPtr, WindowImpl>();
         }
 
@@ -129,6 +129,7 @@ namespace Avalonia.Windowing
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
+            _eventsLoop.RunTimer();
             return Disposable.Create(() => { });
         }
     }
