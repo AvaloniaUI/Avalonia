@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
+using static Avalonia.Windowing.Bindings.EventsLoop;
 
 namespace Avalonia.Windowing
 {
@@ -121,10 +122,17 @@ namespace Avalonia.Windowing
             _eventsLoop.Wakeup();
         }
 
+        private IList<TimerDel> timerTickers = new List<TimerDel>();
+
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            _eventsLoop.RunTimer();
-            return Disposable.Create(() => { });
+            var x = new TimerDel(tick);
+            timerTickers.Add(x);
+
+            _eventsLoop.RunTimer(x);
+            return Disposable.Create(() => {
+         //       timerTickers.Remove(x);
+            });
         }
     }
 }

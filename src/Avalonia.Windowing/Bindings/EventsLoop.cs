@@ -55,16 +55,9 @@ namespace Avalonia.Windowing.Bindings
             );
         }
 
-        static TimerDel del = new TimerDel(() =>
+        public void RunTimer(TimerDel del)
         {
-            Console.WriteLine("WRK");
-        });
-
-        public void RunTimer()
-        {
-            winit_events_loop_timer(
-                del);
-            
+            winit_events_loop_timer(del);   
         }
 
         public void Wakeup()
