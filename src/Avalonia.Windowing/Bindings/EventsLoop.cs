@@ -3,51 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Windowing.Bindings
 {
-    public enum MouseEventType : int
-    {
-        LeaveWindow,
-        LeftButtonDown,
-        LeftButtonUp,
-        RightButtonDown,
-        RightButtonUp,
-        MiddleButtonDown,
-        MiddleButtonUp,
-        Move,
-        Wheel,
-        NonClientLeftButtonDown
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct MouseEvent 
-    {
-        public MouseEventType EventType { get; set; }
-        public LogicalPosition Position { get; set; }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct ResizeEvent
-    {
-        public LogicalSize Size { get; set; }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct LogicalPosition
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct LogicalSize
-    {
-        public double Width { get; set; }
-        public double Height { get; set; }
-    }
-
-    public delegate void MouseEventCallback(IntPtr windowId, MouseEvent mouseEvent);
-    public delegate void ResizeEventCallback(IntPtr windowId, ResizeEvent mouseEvent);
-    public delegate void AwakenedEventCallback();
-
     public class EventsLoop : IDisposable
     {
         [DllImport("winit_wrapper")]
@@ -60,41 +15,56 @@ namespace Avalonia.Windowing.Bindings
         private static extern void winit_events_loop_run
         (
             IntPtr handle, 
-            MouseEventCallback callback,
-            AwakenedEventCallback awakenedEventCallback,
-            ResizeEventCallback resizeEventCallback
+            EventNotifier notifier
+        );
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
+        public delegate void TimerDel();
+
+        [DllImport("winit_wrapper")]
+        private static extern void winit_events_loop_timer
+        (
+            TimerDel del2
         );
 
         public IntPtr Handle { get; private set;  }
         private readonly EventsLoopProxy _eventsLoopProxy;
+        private readonly EventNotifier _notifier;
 
-        public event MouseEventCallback MouseEvent;
-        public event AwakenedEventCallback Awakened;
-        public event ResizeEventCallback Resized;
+        public event MouseEventCallback OnMouseEvent;
+        public event AwakenedEventCallback OnAwakened;
+        public event ResizeEventCallback OnResized;
 
         public EventsLoop()
         {
             Handle = winit_events_loop_new(out var elpHandle);
-            _eventsLoopProxy = new EventsLoopProxy(elpHandle);
+            _eventsLoopProxy = new EventsLoopProxy(elpHandle); 
+            _notifier = new EventNotifier()
+            {
+                OnMouseEvent = (IntPtr windowId, MouseEvent mouseEvent) => OnMouseEvent?.Invoke(windowId, mouseEvent),
+                OnResized = (IntPtr windowId, ResizeEvent resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
+                OnAwakened = () => OnAwakened?.Invoke()
+            };
         }
 
         public void Run()
         {
-            // We need a delegate callback here to support talking back to the C# code.
-            // Send an event type enum and then unsafely construct the event
             winit_events_loop_run(
-                Handle, 
-                (windowId, mouseEvent) => {
-                    MouseEvent?.Invoke(windowId, mouseEvent);
-                },
-                () =>
-                {
-                    Awakened?.Invoke();
-                },
-                (windowId, ResizeEvent) => {
-                    Resized?.Invoke(windowId, ResizeEvent);    
-                }
+                Handle,
+                _notifier
             );
+        }
+
+        static TimerDel del = new TimerDel(() =>
+        {
+            Console.WriteLine("WRK");
+        });
+
+        public void RunTimer()
+        {
+            winit_events_loop_timer(
+                del);
+            
         }
 
         public void Wakeup()
@@ -106,6 +76,11 @@ namespace Avalonia.Windowing.Bindings
         {
             _eventsLoopProxy.Dispose();
             winit_events_loop_destroy(Handle);
+        }
+
+        public void GetAvailableMonitors() 
+        {
+            // TODO
         }
 
         private class EventsLoopProxy : IDisposable

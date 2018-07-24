@@ -35,6 +35,12 @@ namespace Avalonia.Windowing.Bindings
         private static extern void winit_gl_window_show(IntPtr handle);
 
         [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_hide(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_set_decorations(IntPtr handle, int visible);
+
+        [DllImport("winit_wrapper")]
         private static extern IntPtr winit_gl_window_get_proc_addr(IntPtr handle, string symbol);
 
         [DllImport("winit_wrapper")]
@@ -45,9 +51,12 @@ namespace Avalonia.Windowing.Bindings
 
         private IntPtr _handle;
         public IntPtr Id => winit_gl_window_get_id(_handle);
+        public EventsLoop EventsLoop { get;  }
+
         public GlWindowWrapper(EventsLoop eventsLoop)
         {
-            _handle = winit_gl_window_new(eventsLoop.Handle);
+            EventsLoop = eventsLoop;
+            _handle = winit_gl_window_new(EventsLoop.Handle);
         }
 
         public void Dispose()
@@ -99,6 +108,16 @@ namespace Avalonia.Windowing.Bindings
         public void ResizeContext(double width, double height)
         {
             winit_gl_window_resize_context(_handle, width, height);
+        }
+
+        public void ToggleDecorations(bool visible)
+        {
+            winit_gl_window_set_decorations(_handle, visible ? 1 : 0);
+        }
+
+        public void Hide()
+        {
+            winit_gl_window_hide(_handle);
         }
     }
 }

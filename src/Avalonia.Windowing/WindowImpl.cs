@@ -23,16 +23,16 @@ namespace Avalonia.Windowing
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Func<bool> Closing { get; set; }
-        public Point Position 
+        public Point Position
         {
-            get 
+            get
             {
                 var (x, y) = _windowWrapper.GetPosition();
                 return new Point(x, y);
-            } 
-            set 
+            }
+            set
             {
-                var x = value; 
+                var x = value;
             }
         }
 
@@ -46,8 +46,9 @@ namespace Avalonia.Windowing
 
         public IScreenImpl Screen => new Monitors();
 
-        public Size ClientSize {
-            get 
+        public Size ClientSize
+        {
+            get
             {
                 var (width, height) = _windowWrapper.GetSize();
                 return new Size(width, height);
@@ -94,6 +95,7 @@ namespace Avalonia.Windowing
 
         public void Hide()
         {
+            _windowWrapper.Hide();
         }
 
         public void Invalidate(Rect rect)
@@ -110,14 +112,14 @@ namespace Avalonia.Windowing
         public Point PointToScreen(Point point)
         {
             var position = Position;
-            return new Point(point.X - position.X, point.Y - position.Y);;
+            return new Point(point.X - position.X, point.Y - position.Y); ;
         }
 
         public void Resize(Size clientSize)
         {
             if (clientSize == ClientSize)
                 return;
-            
+
             // This is where we size the window accordingly..
             _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
             //Resized(clientSize);
@@ -140,6 +142,7 @@ namespace Avalonia.Windowing
 
         public void SetSystemDecorations(bool enabled)
         {
+            _windowWrapper.ToggleDecorations(enabled);
         }
 
         public void SetTitle(string title)
@@ -165,19 +168,19 @@ namespace Avalonia.Windowing
         {
         }
 
-        public void OnMouseEvent(MouseEvent evt) 
+        public void OnMouseEvent(MouseEvent evt)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
 
-            if(evt.EventType == MouseEventType.Move)
+            if (evt.EventType == MouseEventType.Move)
             {
                 _lastPosition = evt.Position;
             }
 
-            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(_lastPosition.X, _lastPosition.Y), InputModifiers.None));     
+            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(_lastPosition.X, _lastPosition.Y), InputModifiers.None));
         }
 
-        public void OnResizeEvent(ResizeEvent evt) 
+        public void OnResizeEvent(ResizeEvent evt)
         {
             Resized?.Invoke(ClientSize);
             Paint?.Invoke(new Rect(ClientSize));
