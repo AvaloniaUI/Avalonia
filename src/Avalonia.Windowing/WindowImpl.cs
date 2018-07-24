@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Gpu;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -179,7 +180,7 @@ namespace Avalonia.Windowing
                     break;
 
                 case MouseEventType.Wheel:
-                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X, evt.Position.Y), InputModifiers.None));
+                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X, evt.Position.Y / 2), InputModifiers.None));
                     return;
             }
 
@@ -189,7 +190,9 @@ namespace Avalonia.Windowing
         public void OnResizeEvent(ResizeEvent evt)
         {
             Resized?.Invoke(ClientSize);
-            Paint?.Invoke(new Rect(ClientSize));
+            if (_windowWrapper is IGpuContext gpuCtx) {
+                gpuCtx.ResizeContext(ClientSize.Width, ClientSize.Height);
+            }
         }
     }
 }
