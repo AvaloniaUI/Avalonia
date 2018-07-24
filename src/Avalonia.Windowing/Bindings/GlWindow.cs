@@ -40,6 +40,9 @@ namespace Avalonia.Windowing.Bindings
         [DllImport("winit_wrapper")]
         private static extern IntPtr winit_gl_window_get_id(IntPtr handle);
 
+        [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_resize_context(IntPtr handle, double width, double height);
+
         private IntPtr _handle;
         public IntPtr Id => winit_gl_window_get_id(_handle);
         public GlWindowWrapper(EventsLoop eventsLoop)
@@ -91,6 +94,11 @@ namespace Avalonia.Windowing.Bindings
         public void Show()
         {
             winit_gl_window_show(_handle);
+        }
+
+        public void ResizeContext(double width, double height)
+        {
+            winit_gl_window_resize_context(_handle, width, height);
         }
     }
 }
