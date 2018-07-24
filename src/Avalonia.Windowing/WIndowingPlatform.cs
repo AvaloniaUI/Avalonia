@@ -36,7 +36,7 @@ namespace Avalonia.Windowing
     {
         internal static WindowingPlatform Instance { get; private set; }
         private readonly EventsLoop _eventsLoop;
-        private readonly Dictionary<IntPtr, Window> _windows;
+        private readonly Dictionary<IntPtr, WindowImpl> _windows;
 
         public WindowingPlatform()
         {
@@ -44,7 +44,7 @@ namespace Avalonia.Windowing
             _eventsLoop.MouseEvent += _eventsLoop_MouseEvent;
             _eventsLoop.Awakened += _eventsLoop_Awakened;
             _eventsLoop.Resized += _eventsLoop_Resized;
-            _windows = new Dictionary<IntPtr, Window>();
+            _windows = new Dictionary<IntPtr, WindowImpl>();
         }
 
         void _eventsLoop_Resized(IntPtr windowId, ResizeEvent resizeEvent)
@@ -100,13 +100,17 @@ namespace Avalonia.Windowing
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            var windowWrapper = new GlWindowWrapper(_eventsLoop);
+            var window = new PopupImpl(windowWrapper);
+            _windows.Add(windowWrapper.Id, window);
+
+            return window;
         }
 
         public IWindowImpl CreateWindow() 
         {
             var windowWrapper = new GlWindowWrapper(_eventsLoop);
-            var window = new Window(windowWrapper);
+            var window = new WindowImpl(windowWrapper);
             _windows.Add(windowWrapper.Id, window);
 
             return window;

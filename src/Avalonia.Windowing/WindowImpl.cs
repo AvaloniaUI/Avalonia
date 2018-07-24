@@ -10,12 +10,12 @@ using Avalonia.Windowing.Bindings;
 
 namespace Avalonia.Windowing
 {
-    public class Window : IWindowImpl
+    public class WindowImpl : IWindowImpl
     {
         IWindowWrapper _windowWrapper;
         private LogicalPosition _lastPosition;
 
-        public Window(IWindowWrapper wrapper)
+        public WindowImpl(IWindowWrapper wrapper)
         {
             _windowWrapper = wrapper;
         }
