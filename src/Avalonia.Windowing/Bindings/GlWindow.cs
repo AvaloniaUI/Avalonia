@@ -26,6 +26,9 @@ namespace Avalonia.Windowing.Bindings
         private static extern LogicalSize winit_gl_window_get_size(IntPtr handle);
 
         [DllImport("winit_wrapper")]
+        private static extern double winit_gl_window_get_dpi_scale_factor(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
         private static extern LogicalPosition winit_gl_window_get_position(IntPtr handle);
 
         [DllImport("winit_wrapper")]
@@ -87,6 +90,11 @@ namespace Avalonia.Windowing.Bindings
         public (double, double) GetSize() {
             var size = winit_gl_window_get_size(_handle);
             return (size.Width, size.Height);
+        }
+
+        public double GetScaleFactor ()
+        {
+            return winit_gl_window_get_dpi_scale_factor(_handle);
         }
 
         public (double, double) GetFramebufferSize()

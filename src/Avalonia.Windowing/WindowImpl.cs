@@ -55,7 +55,7 @@ namespace Avalonia.Windowing
             }
         }
 
-        public double Scaling => 192 / 96;
+        public double Scaling => _windowWrapper.GetScaleFactor();
 
         public IEnumerable<object> Surfaces => new List<object>() { _windowWrapper };
 
