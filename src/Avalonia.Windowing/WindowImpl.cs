@@ -169,6 +169,11 @@ namespace Avalonia.Windowing
         {
         }
 
+        public void OnKeyboardEvent (KeyboardEvent evt)
+        {
+
+        }
+
         public void OnMouseEvent(MouseEvent evt)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
@@ -180,7 +185,7 @@ namespace Avalonia.Windowing
                     break;
 
                 case MouseEventType.Wheel:
-                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X, evt.Position.Y / 2), InputModifiers.None));
+                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X / 50, evt.Position.Y / 50), InputModifiers.None));
                     return;
             }
 
