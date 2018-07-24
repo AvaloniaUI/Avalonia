@@ -12,6 +12,7 @@ namespace Avalonia.Windowing.Bindings
         void SetTitle(string title);
         void SetSize(double width, double height);
 
+        double GetScaleFactor();
         (double, double) GetSize();
         (double, double) GetPosition();
 
