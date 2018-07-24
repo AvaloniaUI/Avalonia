@@ -10,14 +10,10 @@ using Avalonia.Windowing.Bindings;
 
 namespace Avalonia.Windowing
 {
-    // Exposing C# Enums to Rust will again prove to be a massive PITA.
-    public enum WinitEventType 
+    public class PlatformSettings : IPlatformSettings
     {
-        MouseMove    
-    }
-
-    public struct MouseMoveData
-    {
+        public Size DoubleClickSize => new Size(4, 4);
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(200);
     }
 
     public class DummyPlatformHandle : IPlatformHandle
@@ -71,8 +67,9 @@ namespace Avalonia.Windowing
 
         private void _eventsLoop_Awakened()
         {
-            Signaled?.Invoke(DispatcherPriority.Normal);
-          //  Dispatcher.UIThread.RunJobs();
+            Signaled?.Invoke(DispatcherPriority.Input);
+            Signaled?.Invoke(DispatcherPriority.Layout);
+            Signaled?.Invoke(DispatcherPriority.Render);
         }
 
 
@@ -89,6 +86,7 @@ namespace Avalonia.Windowing
                 .Bind<IMouseDevice>().ToConstant(new MouseDevice())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
+                .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
         }
 

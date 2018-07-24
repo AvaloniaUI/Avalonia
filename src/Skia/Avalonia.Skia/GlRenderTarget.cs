@@ -34,26 +34,25 @@ namespace Avalonia.Skia
 
             if (_surface == null || (_desc.Width != (int)width * 2 || _desc.Height != (int)height * 2))
             {
+                _context.ResizeContext(width, height);
                 _desc = new GRBackendRenderTargetDesc
                 {
                     Height = (int)height * 2,
                     Width = (int)width * 2,
                     SampleCount = 1,
                     StencilBits = 8,
-                    Config = GRPixelConfig.Bgra8888,
+                    Config = GRPixelConfig.Rgba8888,
                     Origin = GRSurfaceOrigin.BottomLeft,
                     RenderTargetHandle = IntPtr.Zero
                 };
 
                 _surface?.Dispose();
                 _surface = SKSurface.Create(_grContext, _desc);
+                _canvas?.Dispose();
                 _canvas = _surface.Canvas;
             }
 
-
             _canvas.Clear(SKColors.Orange);
-            _canvas.RestoreToCount(-1);
-            _canvas.ResetMatrix();
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
@@ -65,6 +64,7 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
+                _canvas.Flush();
                 _grContext.Flush();
                 _context.Present(); // Swap Buffers
             }));
