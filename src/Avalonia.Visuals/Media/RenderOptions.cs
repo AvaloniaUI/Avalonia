@@ -13,7 +13,7 @@ namespace Avalonia.Media
         public static readonly StyledProperty<BitmapInterpolationMode> BitmapInterpolationModeProperty =
             AvaloniaProperty.RegisterAttached<RenderOptions, AvaloniaObject, BitmapInterpolationMode>(
                 "BitmapInterpolationMode", 
-                BitmapInterpolationMode.HighQuality,
+                BitmapInterpolationMode.MediumQuality,
                 inherits: true);
 
         /// <summary>
