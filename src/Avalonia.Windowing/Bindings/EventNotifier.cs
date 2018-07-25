@@ -7,8 +7,7 @@ namespace Avalonia.Windowing.Bindings
     public delegate void MouseEventCallback(IntPtr windowId, MouseEvent mouseEvent);
     public delegate void ResizeEventCallback(IntPtr windowId, ResizeEvent resizeEvent);
     public delegate void KeyboardEventCallback(IntPtr windowId, KeyboardEvent keyboardEvent);
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
+    public delegate void CharacterEventCallback(IntPtr windowId, CharacterEvent characterEvent);
     public delegate void AwakenedEventCallback();
      
     [StructLayout(LayoutKind.Sequential)]
@@ -18,5 +17,6 @@ namespace Avalonia.Windowing.Bindings
         public AwakenedEventCallback OnAwakened;
         public ResizeEventCallback OnResized;
         public KeyboardEventCallback OnKeyboardEvent;
+        public CharacterEventCallback OnCharacterEvent;
     }
 }

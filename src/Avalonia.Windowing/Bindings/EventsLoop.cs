@@ -31,11 +31,10 @@ namespace Avalonia.Windowing.Bindings
         private readonly EventsLoopProxy _eventsLoopProxy;
         private readonly EventNotifier _notifier;
 
+        public event CharacterEventCallback OnCharacterEvent;
         public event KeyboardEventCallback OnKeyboardEvent;
         public event MouseEventCallback OnMouseEvent;
-
         public event AwakenedEventCallback OnAwakened;
-
         public event ResizeEventCallback OnResized;
 
         public EventsLoop()
@@ -46,6 +45,7 @@ namespace Avalonia.Windowing.Bindings
             {
                 OnMouseEvent = (IntPtr windowId, MouseEvent mouseEvent) => OnMouseEvent?.Invoke(windowId, mouseEvent),
                 OnKeyboardEvent = (IntPtr windowId, KeyboardEvent keyboardEvent) => OnKeyboardEvent?.Invoke(windowId, keyboardEvent),
+                OnCharacterEvent = (windowId, characterEvent) => OnCharacterEvent?.Invoke(windowId, characterEvent),
                 OnResized = (IntPtr windowId, ResizeEvent resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
                 OnAwakened = () => OnAwakened?.Invoke()
             };

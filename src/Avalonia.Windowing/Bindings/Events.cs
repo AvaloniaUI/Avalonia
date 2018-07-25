@@ -40,4 +40,10 @@ namespace Avalonia.Windowing.Bindings
     {
         public LogicalSize Size { get; set; }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CharacterEvent 
+    {
+        public char Character { get; set; }    
+    }
 }

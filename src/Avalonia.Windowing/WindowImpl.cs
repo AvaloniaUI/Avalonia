@@ -195,6 +195,22 @@ namespace Avalonia.Windowing
         {
         }
 
+        public void OnCharacterEvent(CharacterEvent evt) 
+        {
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+            var timeStamp = (uint)Environment.TickCount;
+
+            Input
+            (
+                new RawTextInputEventArgs
+                (
+                    KeyboardDevice,
+                    timeStamp,
+                    evt.Character.ToString()
+                )
+            );
+        }
+
         public void OnKeyboardEvent (KeyboardEvent evt)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
