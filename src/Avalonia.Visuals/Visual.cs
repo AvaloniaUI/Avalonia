@@ -11,6 +11,7 @@ using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -91,6 +92,12 @@ namespace Avalonia
         public static readonly StyledProperty<int> ZIndexProperty =
             AvaloniaProperty.Register<Visual, int>(nameof(ZIndex));
 
+        /// <summary>
+        /// Defines the <see cref="Effect"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Effect> EffectProperty =
+            AvaloniaProperty.Register<Visual, Effect>(nameof(Effect));
+
         private Rect _bounds;
         private TransformedBounds? _transformedBounds;
         private IRenderRoot _visualRoot;
@@ -108,6 +115,7 @@ namespace Avalonia
                 IsVisibleProperty,
                 OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
+            EffectProperty.Changed.Subscribe(EffectChanged);
         }
 
         /// <summary>
@@ -229,6 +237,15 @@ namespace Avalonia
         {
             get { return GetValue(ZIndexProperty); }
             set { SetValue(ZIndexProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets effect.
+        /// </summary>
+        public Effect Effect
+        {
+            get { return GetValue(EffectProperty); }
+            set { SetValue(EffectProperty, value); }
         }
 
         /// <summary>
@@ -472,6 +489,30 @@ namespace Avalonia
                 sender.InvalidateVisual();
             }
         }
+
+        private static void EffectChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var sender = e.Sender as Visual;
+
+            if (sender != null)
+            {
+                var oldValue = e.OldValue as Effect;
+                var newValue = e.NewValue as Effect;
+
+                if (oldValue != null)
+                {
+                    oldValue.Changed -= sender.RenderTransformChanged;
+                }
+
+                if (newValue != null)
+                {
+                    newValue.Changed += sender.RenderTransformChanged;
+                }
+
+                sender.InvalidateVisual();
+            }
+        }
+
 
         /// <summary>
         /// Ensures a visual child is not null and not already parented.

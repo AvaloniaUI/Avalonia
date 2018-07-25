@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -39,6 +40,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             Visual = visual;
             Parent = parent;
+            Effect = visual.Effect?.PlatformImpl;
             HasAncestorGeometryClip = parent != null && 
                 (parent.HasAncestorGeometryClip || parent.GeometryClip != null);
         }
@@ -336,7 +338,9 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         public bool Disposed { get; }
-        
+
+        public IEffectImpl Effect { get; private set; }
+
         public void Dispose()
         {
             _drawOperationsRefCounter?.Dispose();

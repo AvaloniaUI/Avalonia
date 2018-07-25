@@ -366,9 +366,9 @@ namespace Avalonia.Rendering.SceneGraph
         private static bool ShouldStartLayer(IVisual visual)
         {
             var o = visual as IAvaloniaObject;
-            return visual.VisualChildren.Count > 0 &&
+            return (visual.VisualChildren.Count > 0 &&
                 o != null &&
-                o.IsAnimating(Visual.OpacityProperty);
+                o.IsAnimating(Visual.OpacityProperty)) || visual.Effect != null; 
         }
 
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)

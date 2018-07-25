@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
@@ -401,6 +402,11 @@ namespace Avalonia.Rendering.SceneGraph
             }
 
             return null;
+        }
+
+        public void DrawEffect(IRef<IBitmapImpl> source, IEffectImpl effect)
+        {
+            throw new NotImplementedException();
         }
     }
 }

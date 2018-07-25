@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Platform
 {
@@ -93,5 +94,15 @@ namespace Avalonia.Platform
         /// <param name="stride">Bytes per row</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride);
+
+        /// <summary>
+        /// Creates Effect implementaion
+        /// </summary>
+        /// <param name="offsetX"></param>
+        /// <param name="offsetY"></param>
+        /// <param name="blur"></param>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color);
     }
 }

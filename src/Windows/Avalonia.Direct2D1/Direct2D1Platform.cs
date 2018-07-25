@@ -10,8 +10,10 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Direct2D1.Effects;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Rendering;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia
 {
@@ -191,6 +193,11 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
         {
             return new WicBitmapImpl(s_imagingFactory, format, data, width, height, stride);
+        }
+
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
+        {
+            return new DropShadowEffectImpl(offsetX, offsetY, blur, color);
         }
     }
 }

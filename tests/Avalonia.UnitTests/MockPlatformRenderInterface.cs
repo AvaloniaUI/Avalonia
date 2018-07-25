@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Visuals.Effects;
 using Moq;
 
 namespace Avalonia.UnitTests
@@ -55,6 +56,11 @@ namespace Avalonia.UnitTests
         }
 
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IDropShadowEffectImpl CreateDropShadowEffect(double offsetX, double offsetY, double blur, Color color)
         {
             throw new NotImplementedException();
         }

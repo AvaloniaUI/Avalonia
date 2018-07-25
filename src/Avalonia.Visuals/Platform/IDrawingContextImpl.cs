@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 
 namespace Avalonia.Platform
 {
@@ -137,5 +138,10 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+
+        /// <summary>
+        /// Draws Effect.
+        /// </summary>
+        void DrawEffect(IRef<IBitmapImpl> source, IEffectImpl effect);
     }
 }

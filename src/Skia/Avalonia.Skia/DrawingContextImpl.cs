@@ -9,7 +9,9 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Skia.Effects;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Effects;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -104,6 +106,7 @@ namespace Avalonia.Skia
             using (var paint =
                 new SKPaint {Color = new SKColor(255, 255, 255, (byte) (255 * opacity * _currentOpacity))})
             {
+                ((ISkiaPlatformEffectImpl)effect)?.Render(paint);
                 drawableImage.Draw(this, s, d, paint);
             }
         }
