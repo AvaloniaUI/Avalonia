@@ -31,18 +31,27 @@ namespace Avalonia.Skia
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var (width, height) = _context.GetFramebufferSize();
+            var (dpiX, dpiY) = _context.GetDpi();
 
-            if (_surface == null || (_desc.Width != (int)width * 2 || _desc.Height != (int)height * 2))
+            width *= dpiX;
+            height *= dpiY;
+
+            if (_surface == null || (_desc.Width != (int)width|| _desc.Height != (int)height))
             {
                 _context.ResizeContext(width, height);
                 _desc = new GRBackendRenderTargetDesc
                 {
-                    Height = (int)height * 2,
-                    Width = (int)width * 2,
+                    Height = (int)height,
+                    Width = (int)width,
+                    // TODO: Get these framebuffer parameters from the GLContext
                     SampleCount = 1,
                     StencilBits = 8,
+                    // TODO: Use the platform's preferred pixel format to reduce internal conversions
                     Config = GRPixelConfig.Bgra8888,
+
                     Origin = GRSurfaceOrigin.BottomLeft,
+
+                    // TODO: Get the FBO ID rather than assuming zero here. 
                     RenderTargetHandle = IntPtr.Zero
                 };
 
@@ -55,16 +64,15 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = new Vector(192, 192),
+                Dpi = new Vector(dpiX * SkiaPlatform.DefaultDpi.X, dpiY * SkiaPlatform.DefaultDpi.Y),
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
-               // _canvas.Flush();
                 _grContext.Flush();
-                _context.Present(); // Swap Buffers
+                _context.Present();
             }));
         }
 

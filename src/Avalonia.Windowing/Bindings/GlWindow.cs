@@ -127,5 +127,11 @@ namespace Avalonia.Windowing.Bindings
         {
             winit_gl_window_hide(_handle);
         }
+
+        public (double, double) GetDpi()
+        {
+            var scaleFactor = GetScaleFactor();
+            return (scaleFactor, scaleFactor);
+        }
     }
 }

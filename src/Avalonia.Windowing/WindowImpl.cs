@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
@@ -20,15 +21,18 @@ namespace Avalonia.Windowing
         IWindowWrapper _windowWrapper;
         private LogicalPosition _lastPosition;
 
+        const int FramesPerSecond = 60;
+
         public WindowImpl(IWindowWrapper wrapper)
         {
             _windowWrapper = wrapper;
 
             // TODO: This is only necessary when using ImmediateRenderer
-            Observable.Repeat(Observable.Timer(TimeSpan.FromMilliseconds(16)))
+            Observable.Repeat(Observable.Timer(TimeSpan.FromMilliseconds(1000 / FramesPerSecond)))
                       .SubscribeOn(AvaloniaScheduler.Instance)
                       .Subscribe((x) =>
                       {
+                            // Dont schedule a paint for empty invalidations.
                             if (coalescedRect != Rect.Empty) {
                               Dispatcher.UIThread.Post(() => Paint(coalescedRect), DispatcherPriority.Render);
                               coalescedRect = Rect.Empty;
@@ -48,6 +52,7 @@ namespace Avalonia.Windowing
             }
             set
             {
+                // TODO: SetPosition
                 var x = value;
             }
         }
@@ -183,7 +188,7 @@ namespace Avalonia.Windowing
 
         public IDisposable ShowDialog()
         {
-            return null;
+            return Disposable.Create(() => {});
         }
 
         public void ShowTaskbarIcon(bool value)
@@ -192,25 +197,55 @@ namespace Avalonia.Windowing
 
         public void OnKeyboardEvent (KeyboardEvent evt)
         {
-           Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-           Input(new RawKeyEventArgs(KeyboardDevice, (uint)Environment.TickCount, evt.Pressed == 1 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp, KeyTransform.TransformKeyCode(evt.VirtualKeyCode).Value, InputModifiers.None));
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+            var eventType = evt.Pressed == 1 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp;
+            var timeStamp = (uint)Environment.TickCount;
+
+            Input
+            (
+                new RawKeyEventArgs
+                (
+                    KeyboardDevice, 
+                    timeStamp,
+                    eventType, 
+                    KeyTransform.TransformKeyCode(evt.VirtualKeyCode).Value, 
+                    InputModifiers.None
+                )
+            );
         }
 
         public void OnMouseEvent(MouseEvent evt)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-            switch(evt.EventType)
-            {
-                case MouseEventType.Move:
-                    _lastPosition = evt.Position;
-                    break;
+            var eventType = (RawMouseEventType)evt.EventType;
+            var timeStamp = (uint)Environment.TickCount;
 
-                case MouseEventType.Wheel:
-                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X / 50, evt.Position.Y), InputModifiers.None));
-                    return;
-            }
-
-            Input(new RawMouseEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, (RawMouseEventType)evt.EventType, new Point(_lastPosition.X, _lastPosition.Y), InputModifiers.None));
+            if (evt.EventType == MouseEventType.Move)
+                _lastPosition = evt.Position;
+            
+            Input
+            (
+                eventType != RawMouseEventType.Wheel ?
+                new RawMouseEventArgs
+                (
+                    MouseDevice, 
+                    timeStamp, 
+                    _inputRoot,
+                    eventType,
+                    new Point(_lastPosition.X, _lastPosition.Y), 
+                    InputModifiers.None
+                )
+                :
+                new RawMouseWheelEventArgs 
+                (
+                    MouseDevice,
+                    timeStamp,
+                    _inputRoot,
+                    new Point(_lastPosition.X, _lastPosition.Y),
+                    new Point(evt.Position.X, evt.Position.Y),
+                    InputModifiers.None
+                )
+            );
         }
 
         public void OnResizeEvent(ResizeEvent evt)
