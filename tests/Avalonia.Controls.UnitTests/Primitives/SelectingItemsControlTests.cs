@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -13,6 +14,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -685,6 +687,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
         }
+
+        [Fact]
+        public void Resetting_Items_Collection_Should_Retain_Selection()
+        {
+            var itemsMock = new Mock<List<string>>();
+            var itemsMockAsINCC = itemsMock.As<INotifyCollectionChanged>();
+
+            itemsMock.Object.AddRange(new[] { "Foo", "Bar", "Baz" });
+            var target = new SelectingItemsControl
+            {
+                Items = itemsMock.Object
+            };
+
+            target.SelectedIndex = 1;
+
+            itemsMockAsINCC.Raise(e => e.CollectionChanged += null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
+            Assert.True(target.SelectedIndex == 1);
+        }
+
 
         private FuncControlTemplate Template()
         {
