@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -69,11 +70,17 @@ namespace Avalonia.Windowing
             }
         }
 
+        private bool _signaled;
         private void _eventsLoop_Awakened()
         {
-            Signaled?.Invoke(DispatcherPriority.Input);
-            Signaled?.Invoke(DispatcherPriority.Layout);
-            Signaled?.Invoke(DispatcherPriority.Render);
+            lock (this)
+            {
+                if (!_signaled)
+                    return;
+                _signaled = false;
+            }
+
+            Signaled?.Invoke(null);
         }
 
 
@@ -83,11 +90,15 @@ namespace Avalonia.Windowing
             Instance.DoInitialize();
         }
 
+        private readonly IKeyboardDevice keyboardDevice = new KeyboardDevice();
+        private readonly IMouseDevice mouseDevice = new MouseDevice();
+
         public void DoInitialize() 
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IMouseDevice>().ToConstant(new MouseDevice())
+                .Bind<IKeyboardDevice>().ToConstant(keyboardDevice)
+                .Bind<IMouseDevice>().ToConstant(mouseDevice)
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
@@ -127,7 +138,13 @@ namespace Avalonia.Windowing
 
         public void Signal(DispatcherPriority priority)
         {
-            // We need to run some sort of callback on wakeup don't we?
+            lock (this)
+            {
+                if (_signaled)
+                    return;
+                _signaled = true;
+            }
+
             _eventsLoop.Wakeup();
         }
 
@@ -135,10 +152,12 @@ namespace Avalonia.Windowing
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            var x = new TimerDel(tick);
-            timerTickers.Add(x);
+            // TODO: Need a way to cancel a timer when Dispose is called. 
 
-            _eventsLoop.RunTimer(x);
+           // var x = new TimerDel(tick);
+           // timerTickers.Add(x);
+
+         //   _eventsLoop.RunTimer(x);
             return Disposable.Create(() => {
          //       timerTickers.Remove(x);
             });

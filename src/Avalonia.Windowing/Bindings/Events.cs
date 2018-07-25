@@ -27,12 +27,12 @@ namespace Avalonia.Windowing.Bindings
     [StructLayout(LayoutKind.Sequential)]
     public struct KeyboardEvent
     {
-        public bool Pressed { get; set; }
-        public bool Shift { get; set; }
-        public bool Control { get; set; }
-        public bool Alt { get; set; }
-        public bool Logo { get; set; }
-        UInt32 VirtualKeyCode { get; set; }
+        public byte Pressed { get; set; }
+        public byte Shift { get; set; }
+        public byte Control { get; set; }
+        public byte Alt { get; set; }
+        public byte Logo { get; set; }
+        public VirtualKeyCode VirtualKeyCode { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]

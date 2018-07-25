@@ -41,18 +41,16 @@ namespace Avalonia.Skia
                     Width = (int)width * 2,
                     SampleCount = 1,
                     StencilBits = 8,
-                    Config = GRPixelConfig.Rgba8888,
+                    Config = GRPixelConfig.Bgra8888,
                     Origin = GRSurfaceOrigin.BottomLeft,
                     RenderTargetHandle = IntPtr.Zero
                 };
 
+                _canvas?.Dispose();
                 _surface?.Dispose();
                 _surface = SKSurface.Create(_grContext, _desc);
-                _canvas?.Dispose();
                 _canvas = _surface.Canvas;
             }
-
-            _canvas.Clear(SKColors.Orange);
 
             var createInfo = new DrawingContextImpl.CreateInfo
             {
@@ -64,7 +62,7 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
-                _canvas.Flush();
+               // _canvas.Flush();
                 _grContext.Flush();
                 _context.Present(); // Swap Buffers
             }));

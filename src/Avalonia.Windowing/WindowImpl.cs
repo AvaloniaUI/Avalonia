@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Gpu;
 using Avalonia.Input;
@@ -19,6 +23,17 @@ namespace Avalonia.Windowing
         public WindowImpl(IWindowWrapper wrapper)
         {
             _windowWrapper = wrapper;
+
+            // TODO: This is only necessary when using ImmediateRenderer
+            Observable.Repeat(Observable.Timer(TimeSpan.FromMilliseconds(16)))
+                      .SubscribeOn(AvaloniaScheduler.Instance)
+                      .Subscribe((x) =>
+                      {
+                            if (coalescedRect != Rect.Empty) {
+                              Dispatcher.UIThread.Post(() => Paint(coalescedRect), DispatcherPriority.Render);
+                              coalescedRect = Rect.Empty;
+                            }
+                      });
         }
 
         public WindowState WindowState { get; set; }
@@ -35,6 +50,12 @@ namespace Avalonia.Windowing
             {
                 var x = value;
             }
+        }
+
+        public bool timeToPaint = false;
+
+        public void Test() {
+            timeToPaint = true;
         }
 
         public Action<Point> PositionChanged { get; set; }
@@ -66,7 +87,8 @@ namespace Avalonia.Windowing
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
 
-        public IMouseDevice MouseDevice => new MouseDevice();
+        public IMouseDevice MouseDevice => AvaloniaLocator.Current.GetService<IMouseDevice>();
+        public IKeyboardDevice KeyboardDevice => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
 
         public void Activate()
         {
@@ -99,9 +121,10 @@ namespace Avalonia.Windowing
             _windowWrapper.Hide();
         }
 
+        private Rect coalescedRect = Rect.Empty;
         public void Invalidate(Rect rect)
         {
-            Paint?.Invoke(rect);
+            coalescedRect = coalescedRect.Union(rect);
         }
 
         public Point PointToClient(Point point)
@@ -121,9 +144,7 @@ namespace Avalonia.Windowing
             if (clientSize == ClientSize)
                 return;
 
-            // This is where we size the window accordingly..
             _windowWrapper.SetSize(clientSize.Width, clientSize.Height);
-            //Resized(clientSize);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -171,13 +192,13 @@ namespace Avalonia.Windowing
 
         public void OnKeyboardEvent (KeyboardEvent evt)
         {
-
+           Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+           Input(new RawKeyEventArgs(KeyboardDevice, (uint)Environment.TickCount, evt.Pressed == 1 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp, KeyTransform.TransformKeyCode(evt.VirtualKeyCode).Value, InputModifiers.None));
         }
 
         public void OnMouseEvent(MouseEvent evt)
         {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input);
-
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             switch(evt.EventType)
             {
                 case MouseEventType.Move:
@@ -185,7 +206,7 @@ namespace Avalonia.Windowing
                     break;
 
                 case MouseEventType.Wheel:
-                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X / 50, evt.Position.Y / 50), InputModifiers.None));
+                    Input(new RawMouseWheelEventArgs(MouseDevice, (uint)Environment.TickCount, _inputRoot, new Point(_lastPosition.X, _lastPosition.Y), new Point(evt.Position.X / 50, evt.Position.Y), InputModifiers.None));
                     return;
             }
 

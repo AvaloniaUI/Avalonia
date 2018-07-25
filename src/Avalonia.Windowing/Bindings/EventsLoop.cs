@@ -33,7 +33,9 @@ namespace Avalonia.Windowing.Bindings
 
         public event KeyboardEventCallback OnKeyboardEvent;
         public event MouseEventCallback OnMouseEvent;
+
         public event AwakenedEventCallback OnAwakened;
+
         public event ResizeEventCallback OnResized;
 
         public EventsLoop()
