@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -91,15 +92,15 @@ namespace Avalonia
 
         public void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
         {
-            ((IPriorityValueOwner)_owner).BindingNotificationReceived(property, notification);
+            _owner.BindingNotificationReceived(property, notification);
         }
 
         public void Changed(AvaloniaProperty property, int priority, object oldValue, object newValue)
         {
-            ((IPriorityValueOwner)_owner).Changed(property, priority, oldValue, newValue);
+            _owner.PriorityValueChanged(property, priority, oldValue, newValue);
         }
 
-        public IDictionary<AvaloniaProperty, PriorityValue> GetSetValues() => throw new NotImplementedException();
+        public IDictionary<AvaloniaProperty, object> GetSetValues() => _values;
 
         public object GetValue(AvaloniaProperty property)
         {
@@ -115,7 +116,7 @@ namespace Avalonia
 
         public bool IsAnimating(AvaloniaProperty property)
         {
-            return _values.TryGetValue(property, out var value) ? (value as PriorityValue)?.IsAnimating ?? false : false;
+            return _values.TryGetValue(property, out var value) && value is PriorityValue priority && priority.IsAnimating;
         }
 
         public bool IsSet(AvaloniaProperty property)
@@ -148,13 +149,11 @@ namespace Avalonia
                 validate2 = v => validate(_owner, v);
             }
 
-            PriorityValue result = new PriorityValue(
+            return new PriorityValue(
                 this,
                 property,
                 property.PropertyType,
                 validate2);
-
-            return result;
         }
 
         private object Validate(AvaloniaProperty property, object value)
@@ -167,6 +166,17 @@ namespace Avalonia
             }
 
             return value;
+        }
+
+        private DeferredSetter<object> _defferedSetter;
+
+        public DeferredSetter<object> Setter
+        {
+            get
+            {
+                return _defferedSetter ??
+                    (_defferedSetter = new DeferredSetter<object>());
+            }
         }
     }
 }

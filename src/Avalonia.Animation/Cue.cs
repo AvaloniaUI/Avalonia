@@ -10,7 +10,7 @@ namespace Avalonia.Animation
     /// A Cue object for <see cref="KeyFrame"/>. 
     /// </summary>
     [TypeConverter(typeof(CueTypeConverter))]
-    public struct Cue : IEquatable<Cue>, IEquatable<double>
+    public readonly struct Cue : IEquatable<Cue>, IEquatable<double>
     {
         /// <summary>
         /// The normalized percent value, ranging from 0.0 to 1.0

@@ -124,7 +124,7 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
-            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);            
+            _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
         }
 
         public bool AcceptsReturn
@@ -262,7 +262,7 @@ namespace Avalonia.Controls
 
             if (IsFocused)
             {
-                _presenter.ShowCaret();
+                DecideCaretVisibility();
             }
         }
 
@@ -282,10 +282,18 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter?.ShowCaret();
+                DecideCaretVisibility();
             }
 
             e.Handled = true;
+        }
+
+        private void DecideCaretVisibility()
+        {
+            if (!IsReadOnly)
+                _presenter?.ShowCaret();
+            else
+                _presenter?.HideCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
