@@ -1,12 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Image</TextBlock>
     <TextBlock Classes="h2">Displays an image</TextBlock>
 
     <StackPanel Orientation="Horizontal"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                Gap="16">
+                Spacing="16">
       <StackPanel Orientation="Vertical">
         <TextBlock>No Stretch</TextBlock>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"

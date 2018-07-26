@@ -1,12 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Menu</TextBlock>
     <TextBlock Classes="h2">A window menu</TextBlock>
 
         <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
-              Gap="16">
+              Spacing="16">
             <Menu>
                 <MenuItem Header="_First">
                     <MenuItem Header="Standard _Menu Item"/>
