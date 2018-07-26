@@ -1,13 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Calendar</TextBlock>
     <TextBlock Classes="h2">A calendar control for selecting dates</TextBlock>
         
     <StackPanel Orientation="Horizontal"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                Gap="16">
+                Spacing="16">
       <StackPanel Orientation="Vertical">
         <TextBlock Text="SelectionMode: None"/>
         <Calendar SelectionMode="None"
