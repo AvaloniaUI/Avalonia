@@ -22,6 +22,10 @@ namespace Avalonia.Windowing.Bindings
     {
         public MouseEventType EventType { get; set; }
         public LogicalPosition Position { get; set; }
+        public byte Shift { get; set; }
+        public byte Control { get; set; }
+        public byte Alt { get; set; }
+        public byte Logo { get; set; }
     }
 
     [StructLayout(LayoutKind.Sequential)]
