@@ -32,7 +32,7 @@ namespace Avalonia.Windowing
     {
         internal static WindowingPlatform Instance { get; private set; }
         private readonly EventsLoop _eventsLoop;
-        private readonly Dictionary<IntPtr, WindowImpl> _windows;
+        private readonly Dictionary<WindowId, WindowImpl> _windows;
 
         public WindowingPlatform()
         {
@@ -42,10 +42,10 @@ namespace Avalonia.Windowing
             _eventsLoop.OnCharacterEvent += _eventsLoop_OnCharacterEvent;
             _eventsLoop.OnAwakened += _eventsLoop_Awakened;
             _eventsLoop.OnResized += _eventsLoop_Resized;
-            _windows = new Dictionary<IntPtr, WindowImpl>();
+            _windows = new Dictionary<WindowId, WindowImpl>();
         }
 
-        void _eventsLoop_Resized(IntPtr windowId, ResizeEvent resizeEvent)
+        void _eventsLoop_Resized(WindowId windowId, ResizeEvent resizeEvent)
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             if (_windows.ContainsKey(windowId)) 
@@ -55,7 +55,7 @@ namespace Avalonia.Windowing
         }
 
 
-        private void _eventsLoop_MouseEvent(IntPtr windowId, MouseEvent mouseEvent)
+        private void _eventsLoop_MouseEvent(WindowId windowId, MouseEvent mouseEvent)
         {
             if (_windows.ContainsKey(windowId)) 
             {
@@ -63,7 +63,7 @@ namespace Avalonia.Windowing
             }
         }
 
-        void _eventsLoop_OnCharacterEvent(IntPtr windowId, CharacterEvent characterEvent)
+        void _eventsLoop_OnCharacterEvent(WindowId windowId, CharacterEvent characterEvent)
         {
             if (_windows.ContainsKey(windowId))
             {
@@ -72,7 +72,7 @@ namespace Avalonia.Windowing
         }
 
 
-        void _eventsLoop_OnKeyboardEvent(IntPtr windowId, KeyboardEvent keyboardEvent)
+        void _eventsLoop_OnKeyboardEvent(WindowId windowId, KeyboardEvent keyboardEvent)
         {
             if(_windows.ContainsKey(windowId))
             {
@@ -136,7 +136,8 @@ namespace Avalonia.Windowing
         {
             var windowWrapper = new GlWindowWrapper(_eventsLoop);
             var window = new WindowImpl(windowWrapper);
-            _windows.Add(windowWrapper.Id, window);
+            var id = windowWrapper.Id;
+            _windows.Add(id, window);
 
             return window;
         }

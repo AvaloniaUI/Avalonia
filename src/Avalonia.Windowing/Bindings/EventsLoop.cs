@@ -43,10 +43,10 @@ namespace Avalonia.Windowing.Bindings
             _eventsLoopProxy = new EventsLoopProxy(elpHandle); 
             _notifier = new EventNotifier()
             {
-                OnMouseEvent = (IntPtr windowId, MouseEvent mouseEvent) => OnMouseEvent?.Invoke(windowId, mouseEvent),
-                OnKeyboardEvent = (IntPtr windowId, KeyboardEvent keyboardEvent) => OnKeyboardEvent?.Invoke(windowId, keyboardEvent),
+                OnMouseEvent = (windowId, mouseEvent) => OnMouseEvent?.Invoke(windowId, mouseEvent),
+                OnKeyboardEvent = (windowId, keyboardEvent) => OnKeyboardEvent?.Invoke(windowId, keyboardEvent),
                 OnCharacterEvent = (windowId, characterEvent) => OnCharacterEvent?.Invoke(windowId, characterEvent),
-                OnResized = (IntPtr windowId, ResizeEvent resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
+                OnResized = (windowId, resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
                 OnAwakened = () => OnAwakened?.Invoke()
             };
         }

@@ -32,11 +32,14 @@ namespace Avalonia.Windowing
                       .SubscribeOn(AvaloniaScheduler.Instance)
                       .Subscribe((x) =>
                       {
-                            // Dont schedule a paint for empty invalidations.
-                            if (coalescedRect != Rect.Empty) {
-                              Dispatcher.UIThread.Post(() => Paint(coalescedRect), DispatcherPriority.Render);
-                              coalescedRect = Rect.Empty;
-                            }
+                        // Dont schedule a paint for empty invalidations.
+                        if (coalescedRect != Rect.Empty) {
+                            Dispatcher.UIThread.Post(() => 
+                            { 
+                                Paint(coalescedRect);
+                                coalescedRect = Rect.Empty;
+                            }, DispatcherPriority.Render);
+                        }
                       });
         }
 
@@ -52,15 +55,8 @@ namespace Avalonia.Windowing
             }
             set
             {
-                // TODO: SetPosition
-                var x = value;
+                _windowWrapper.SetPosition(value.X, value.Y);
             }
-        }
-
-        public bool timeToPaint = false;
-
-        public void Test() {
-            timeToPaint = true;
         }
 
         public Action<Point> PositionChanged { get; set; }
@@ -141,7 +137,7 @@ namespace Avalonia.Windowing
         public Point PointToScreen(Point point)
         {
             var position = Position;
-            return new Point(point.X - position.X, point.Y - position.Y); ;
+            return new Point(point.X + position.X, point.Y + position.Y); ;
         }
 
         public void Resize(Size clientSize)

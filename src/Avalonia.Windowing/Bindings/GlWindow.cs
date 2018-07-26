@@ -4,6 +4,12 @@ using Avalonia.Gpu;
 
 namespace Avalonia.Windowing.Bindings
 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WindowId
+    {
+        public long Value { get; set; }
+    }
+
     /// <summary>
     /// A window and GL context pair.
     /// Due to platform specific quirks, the ordering of window and context creation must be controlled by winit.
@@ -21,6 +27,9 @@ namespace Avalonia.Windowing.Bindings
 
         [DllImport("winit_wrapper")]
         private static extern void winit_gl_window_set_size(IntPtr handle, double width, double height);
+
+        [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_set_position(IntPtr handle, LogicalPosition position);
 
         [DllImport("winit_wrapper")]
         private static extern LogicalSize winit_gl_window_get_size(IntPtr handle);
@@ -47,13 +56,13 @@ namespace Avalonia.Windowing.Bindings
         private static extern IntPtr winit_gl_window_get_proc_addr(IntPtr handle, string symbol);
 
         [DllImport("winit_wrapper")]
-        private static extern IntPtr winit_gl_window_get_id(IntPtr handle);
+        private static extern WindowId winit_gl_window_get_id(IntPtr handle);
 
         [DllImport("winit_wrapper")]
         private static extern void winit_gl_window_resize_context(IntPtr handle, double width, double height);
 
         private IntPtr _handle;
-        public IntPtr Id => winit_gl_window_get_id(_handle);
+        public WindowId Id => winit_gl_window_get_id(_handle);
         public EventsLoop EventsLoop { get;  }
 
         public GlWindowWrapper(EventsLoop eventsLoop)
@@ -75,6 +84,12 @@ namespace Avalonia.Windowing.Bindings
         public void SetSize(double width, double height) 
         {
             winit_gl_window_set_size(_handle, width, height);   
+        }
+
+        public void SetPosition(double x, double y)
+        {
+            var position = new LogicalPosition { X = x, Y = y };
+            winit_gl_window_set_position(_handle, position);
         }
 
         public void Present()

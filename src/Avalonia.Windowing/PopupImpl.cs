@@ -13,6 +13,7 @@ namespace Avalonia.Windowing
     {
         public PopupImpl(IWindowWrapper wrapper) : base(wrapper)
         {
+            this.SetSystemDecorations(false);
         }
     }
 }

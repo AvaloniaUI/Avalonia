@@ -6,11 +6,12 @@ namespace Avalonia.Windowing.Bindings
     /// </summary>
     public interface IWindowWrapper : IDisposable
     {
-        IntPtr Id { get; }
+        WindowId Id { get; }
         EventsLoop EventsLoop { get; }
 
         void SetTitle(string title);
         void SetSize(double width, double height);
+        void SetPosition(double x, double y);
 
         double GetScaleFactor();
         (double, double) GetSize();

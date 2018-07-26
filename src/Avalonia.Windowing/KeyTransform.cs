@@ -216,7 +216,7 @@ namespace Avalonia.Windowing
             [VirtualKeyCode.Left] = Key.Left,
 
             [VirtualKeyCode.Capital] = Key.CapsLock,
-            [VirtualKeyCode.LAlt]= Key.LeftAlt,
+            [VirtualKeyCode.LAlt] = Key.LeftAlt,
             [VirtualKeyCode.RAlt] = Key.RightAlt,
             [VirtualKeyCode.LControl] = Key.LeftCtrl,
             [VirtualKeyCode.RControl] = Key.RightCtrl,
@@ -226,11 +226,18 @@ namespace Avalonia.Windowing
             [VirtualKeyCode.RWin] = Key.RWin,
             [VirtualKeyCode.Numlock] = Key.NumLock,
 
+            [VirtualKeyCode.Delete] = Key.Delete,
+            [VirtualKeyCode.LBracket] = Key.OemOpenBrackets,
+            [VirtualKeyCode.RBracket] = Key.OemCloseBrackets,
             [VirtualKeyCode.Add] = Key.OemPlus,
+            [VirtualKeyCode.Minus] = Key.OemMinus,
             [VirtualKeyCode.Subtract] = Key.Subtract,
             [VirtualKeyCode.Backslash] = Key.OemBackslash,
+            [VirtualKeyCode.Colon] = Key.OemSemicolon,
+            [VirtualKeyCode.Comma] = Key.OemComma,
             [VirtualKeyCode.Tab] = Key.Tab,
 
+            [VirtualKeyCode.Space] = Key.Space,
             [VirtualKeyCode.A] = Key.A,
             [VirtualKeyCode.B] = Key.B,
             [VirtualKeyCode.C] = Key.C,
@@ -255,8 +262,8 @@ namespace Avalonia.Windowing
             [VirtualKeyCode.V] = Key.V,
             [VirtualKeyCode.W] = Key.W,
             [VirtualKeyCode.X] = Key.X,
-            [VirtualKeyCode.X] = Key.Y,
-            [VirtualKeyCode.X] = Key.Z,
+            [VirtualKeyCode.Y] = Key.Y,
+            [VirtualKeyCode.Z] = Key.Z,
         };
 
         public static Key? TransformKeyCode(VirtualKeyCode code)
