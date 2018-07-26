@@ -20,7 +20,20 @@ namespace Avalonia.Controls.Primitives
             get;
             set;
         }
-        
+
+        private double _measureHeightOffset = 0;
+        private double CalculateEstimatedAvailableHeight(Size availableSize)
+        {
+            if(!Double.IsPositiveInfinity(availableSize.Height))
+            {
+                return availableSize.Height + _measureHeightOffset;
+            }
+            else
+            {
+                return availableSize.Height;
+            }
+        }
+
         /// <summary>
         /// Arranges the content of the <see cref="T:Avalonia.Controls.Primitives.DataGridRowsPresenter" />.
         /// </summary>
@@ -35,6 +48,16 @@ namespace Avalonia.Controls.Primitives
             if (finalSize.Height == 0 || OwningGrid == null)
             {
                 return base.ArrangeOverride(finalSize);
+            }
+
+            if(OwningGrid.RowsPresenterAvailableSize.HasValue)
+            {
+                var availableHeight = OwningGrid.RowsPresenterAvailableSize.Value.Height;
+                if(!Double.IsPositiveInfinity(availableHeight))
+                {
+                    _measureHeightOffset = finalSize.Height - availableHeight;
+                    OwningGrid.RowsPresenterEstimatedAvailableHeight = finalSize.Height;
+                }
             }
 
             OwningGrid.OnFillerColumnWidthNeeded(finalSize.Width);
@@ -97,6 +120,7 @@ namespace Avalonia.Controls.Primitives
             // The DataGrid uses the RowsPresenter available size in order to autogrow
             // and calculate the scrollbars
             OwningGrid.RowsPresenterAvailableSize = availableSize;
+            OwningGrid.RowsPresenterEstimatedAvailableHeight = CalculateEstimatedAvailableHeight(availableSize);
 
             OwningGrid.OnRowsMeasure();
 

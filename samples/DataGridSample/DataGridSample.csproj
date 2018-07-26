@@ -12,8 +12,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.6.2-build5521-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build5521-beta" />
+    <PackageReference Include="Avalonia" Version="0.6.2-build5800-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build5800-beta" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.DataGrid.Themes.Default\Avalonia.DataGrid.Themes.Default.csproj" />

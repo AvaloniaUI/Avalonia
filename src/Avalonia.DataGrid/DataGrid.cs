@@ -1512,7 +1512,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                return RowsPresenterAvailableSize?.Height ?? 0;
+                return RowsPresenterEstimatedAvailableHeight ?? 0;
             }
         }
 
@@ -1800,7 +1800,11 @@ namespace Avalonia.Controls
                 _rowsPresenterAvailableSize = value;
             }
         }
-
+        internal double? RowsPresenterEstimatedAvailableHeight
+        {
+            get;
+            set;
+        }
 
         internal double[] RowGroupSublevelIndents
         {
