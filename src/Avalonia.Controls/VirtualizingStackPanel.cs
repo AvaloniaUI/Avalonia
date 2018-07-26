@@ -200,7 +200,7 @@ namespace Avalonia.Controls
         private void UpdateAdd(IControl child)
         {
             var bounds = Bounds;
-            var gap = Gap;
+            var spacing = Spacing;
 
             child.Measure(_availableSpace);
             ++_averageCount;
@@ -208,13 +208,13 @@ namespace Avalonia.Controls
             if (Orientation == Orientation.Vertical)
             {
                 var height = child.DesiredSize.Height;
-                _takenSpace += height + gap;
+                _takenSpace += height + spacing;
                 AddToAverageItemSize(height);
             }
             else
             {
                 var width = child.DesiredSize.Width;
-                _takenSpace += width + gap;
+                _takenSpace += width + spacing;
                 AddToAverageItemSize(width);
             }
         }
@@ -222,18 +222,18 @@ namespace Avalonia.Controls
         private void UpdateRemove(IControl child)
         {
             var bounds = Bounds;
-            var gap = Gap;
+            var spacing = Spacing;
 
             if (Orientation == Orientation.Vertical)
             {
                 var height = child.DesiredSize.Height;
-                _takenSpace -= height + gap;
+                _takenSpace -= height + spacing;
                 RemoveFromAverageItemSize(height);
             }
             else
             {
                 var width = child.DesiredSize.Width;
-                _takenSpace -= width + gap;
+                _takenSpace -= width + spacing;
                 RemoveFromAverageItemSize(width);
             }
 

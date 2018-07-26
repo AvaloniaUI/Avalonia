@@ -5,7 +5,7 @@
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Gap="8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="{Binding Type}"/>
             <TextBlock Text="{Binding Classes}"/>
           </StackPanel>
