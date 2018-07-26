@@ -381,7 +381,7 @@ namespace Avalonia.Skia
         /// <param name="tileBrush">Tile brush to use.</param>
         /// <param name="tileBrushImage">Tile brush image.</param>
         /// <param name="interpolationMode">The bitmap interpolation mode.</param>
-        private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage, BitmapInterpolationMode interpolationMode)
+        private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
             var calc = new TileBrushCalculator(tileBrush,
                     new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
@@ -399,7 +399,7 @@ namespace Avalonia.Skia
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect, interpolationMode);
+                context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect, tileBrush.BitmapInterpolationMode);
                 context.PopClip();
             }
 
@@ -513,7 +513,7 @@ namespace Avalonia.Skia
 
             if (tileBrush != null && tileBrushImage != null)
             {
-                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage, tileBrush.BitmapInterpolationMode);
+                ConfigureTileBrush(ref paintWrapper, targetSize, tileBrush, tileBrushImage);
             }
             else
             {
