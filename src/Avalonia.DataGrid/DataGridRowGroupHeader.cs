@@ -468,7 +468,7 @@ namespace Avalonia.Controls
                     // Do these even if the OwningGrid is null in case it could improve the Designer experience for a standalone DataGridRowGroupHeader
                     RowGroupInfo.IsVisible = isVisible;
                 }
-                else
+                else if(RowGroupInfo.IsVisible != isVisible)
                 {
                     OwningGrid.OnRowGroupHeaderToggled(this, isVisible, setCurrent);
                 }
