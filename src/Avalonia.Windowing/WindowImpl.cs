@@ -196,15 +196,18 @@ namespace Avalonia.Windowing
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
             var timeStamp = (uint)Environment.TickCount;
 
-            Input
-            (
-                new RawTextInputEventArgs
+            if (evt.Character >= 32)
+            {
+                Input
                 (
-                    KeyboardDevice,
-                    timeStamp,
-                    evt.Character.ToString()
-                )
-            );
+                    new RawTextInputEventArgs
+                    (
+                        KeyboardDevice,
+                        timeStamp,
+                        evt.Character.ToString()
+                    )
+                );
+            }
         }
 
         public void OnKeyboardEvent (KeyboardEvent evt)
@@ -213,17 +216,44 @@ namespace Avalonia.Windowing
             var eventType = evt.Pressed == 1 ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp;
             var timeStamp = (uint)Environment.TickCount;
 
-            Input
-            (
-                new RawKeyEventArgs
+            var modifiers = InputModifiers.None;
+
+            if(evt.Control == 1)
+            {
+                modifiers |= InputModifiers.Control;
+            }
+
+            if (evt.Alt == 1)
+            {
+                modifiers |= InputModifiers.Alt;
+            }
+
+            if(evt.Shift == 1)
+            {
+                modifiers |= InputModifiers.Shift;
+            }
+
+            if (evt.Logo == 1)
+            {
+                modifiers |= InputModifiers.Windows;
+            }
+
+            var keyCode = KeyTransform.TransformKeyCode(evt.VirtualKeyCode);
+
+            if (keyCode.HasValue)
+            {
+                Input
                 (
-                    KeyboardDevice, 
-                    timeStamp,
-                    eventType, 
-                    KeyTransform.TransformKeyCode(evt.VirtualKeyCode).Value, 
-                    InputModifiers.None
-                )
-            );
+                    new RawKeyEventArgs
+                    (
+                        KeyboardDevice,
+                        timeStamp,
+                        eventType,
+                        keyCode.Value,
+                        modifiers
+                    )
+                );
+            }
         }
 
         public void OnMouseEvent(MouseEvent evt)
@@ -234,6 +264,28 @@ namespace Avalonia.Windowing
 
             if (evt.EventType == MouseEventType.Move)
                 _lastPosition = evt.Position;
+
+            var modifiers = InputModifiers.None;
+
+            if (evt.Control == 1)
+            {
+                modifiers |= InputModifiers.Control;
+            }
+
+            if (evt.Alt == 1)
+            {
+                modifiers |= InputModifiers.Alt;
+            }
+
+            if (evt.Shift == 1)
+            {
+                modifiers |= InputModifiers.Shift;
+            }
+
+            if (evt.Logo == 1)
+            {
+                modifiers |= InputModifiers.Windows;
+            }
             
             Input
             (
@@ -245,7 +297,7 @@ namespace Avalonia.Windowing
                     _inputRoot,
                     eventType,
                     new Point(_lastPosition.X, _lastPosition.Y), 
-                    InputModifiers.None
+                    modifiers
                 )
                 :
                 new RawMouseWheelEventArgs 
@@ -255,7 +307,7 @@ namespace Avalonia.Windowing
                     _inputRoot,
                     new Point(_lastPosition.X, _lastPosition.Y),
                     new Point(evt.Position.X, evt.Position.Y),
-                    InputModifiers.None
+                    modifiers
                 )
             );
         }
