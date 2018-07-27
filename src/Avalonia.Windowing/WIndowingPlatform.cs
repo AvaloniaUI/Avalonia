@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -42,7 +43,16 @@ namespace Avalonia.Windowing
             _eventsLoop.OnCharacterEvent += _eventsLoop_OnCharacterEvent;
             _eventsLoop.OnAwakened += _eventsLoop_Awakened;
             _eventsLoop.OnResized += _eventsLoop_Resized;
+            _eventsLoop.OnShouldExitEventLoop += _eventsLoop_OnShouldExitEventLoop;
             _windows = new Dictionary<WindowId, WindowImpl>();
+        }
+
+        byte _eventsLoop_OnShouldExitEventLoop(WindowId windowId)
+        {
+            if (_windows.ContainsKey(windowId))
+                _windows.Remove(windowId);
+            
+            return _windows.Any() ? (byte)0 : (byte)1;
         }
 
         void _eventsLoop_Resized(WindowId windowId, ResizeEvent resizeEvent)
@@ -158,8 +168,6 @@ namespace Avalonia.Windowing
 
             _eventsLoop.Wakeup();
         }
-
-        private IList<TimerDel> timerTickers = new List<TimerDel>();
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {

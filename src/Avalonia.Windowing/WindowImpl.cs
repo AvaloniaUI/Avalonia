@@ -131,7 +131,7 @@ namespace Avalonia.Windowing
         public Point PointToClient(Point point)
         {
             var position = Position;
-            return new Point(point.X + position.X, point.Y + position.Y);
+            return new Point(point.X - position.X, point.Y - position.Y);
         }
 
         public Point PointToScreen(Point point)

@@ -18,15 +18,6 @@ namespace Avalonia.Windowing.Bindings
             EventNotifier notifier
         );
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
-        public delegate void TimerDel();
-
-        [DllImport("winit_wrapper")]
-        private static extern void winit_events_loop_timer
-        (
-            TimerDel del2
-        );
-
         public IntPtr Handle { get; private set;  }
         private readonly EventsLoopProxy _eventsLoopProxy;
         private readonly EventNotifier _notifier;
@@ -36,6 +27,7 @@ namespace Avalonia.Windowing.Bindings
         public event MouseEventCallback OnMouseEvent;
         public event AwakenedEventCallback OnAwakened;
         public event ResizeEventCallback OnResized;
+        public event ShouldExitEventLoopCallback OnShouldExitEventLoop;
 
         public EventsLoop()
         {
@@ -47,7 +39,8 @@ namespace Avalonia.Windowing.Bindings
                 OnKeyboardEvent = (windowId, keyboardEvent) => OnKeyboardEvent?.Invoke(windowId, keyboardEvent),
                 OnCharacterEvent = (windowId, characterEvent) => OnCharacterEvent?.Invoke(windowId, characterEvent),
                 OnResized = (windowId, resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
-                OnAwakened = () => OnAwakened?.Invoke()
+                OnAwakened = () => OnAwakened?.Invoke(),
+                OnShouldExitEventLoop = (windowId) => (byte)OnShouldExitEventLoop?.Invoke(windowId)
             };
         }
 
@@ -57,11 +50,6 @@ namespace Avalonia.Windowing.Bindings
                 Handle,
                 _notifier
             );
-        }
-
-        public void RunTimer(TimerDel del)
-        {
-            winit_events_loop_timer(del);   
         }
 
         public void Wakeup()
