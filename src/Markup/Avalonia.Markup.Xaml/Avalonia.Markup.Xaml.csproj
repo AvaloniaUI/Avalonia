@@ -33,6 +33,7 @@
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
+        <Compile Include="Parsers\PropertyParser.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />

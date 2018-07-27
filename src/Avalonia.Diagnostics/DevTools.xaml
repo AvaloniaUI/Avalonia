@@ -7,7 +7,7 @@
 
     <ContentControl Content="{Binding Content}" Grid.Row="1"/> 
     
-    <StackPanel Gap="4" Orientation="Horizontal" Grid.Row="2">
+    <StackPanel Spacing="4" Orientation="Horizontal" Grid.Row="2">
       <TextBlock>Hold Ctrl+Shift over a control to inspect.</TextBlock>
       <Separator Width="8"/>
       <TextBlock>Focused:</TextBlock>
