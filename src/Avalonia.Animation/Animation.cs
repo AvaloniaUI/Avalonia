@@ -43,7 +43,6 @@ namespace Avalonia.Animation
             return null;
         }
 
-        private bool _isChildrenChanged = false;
         private List<IDisposable> _subscription = new List<IDisposable>();
         public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
@@ -76,16 +75,6 @@ namespace Avalonia.Animation
         /// Easing function to be used.
         /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
-
-        /// <summary>
-        /// Triggers when the animation is completed.
-        /// </summary>
-        public event EventHandler Done;
-
-        public Animation()
-        {
-            this.CollectionChanged += delegate { _isChildrenChanged = true; };
-        }
 
         private IList<IAnimator> InterpretKeyframes(Animatable control)
         {
@@ -152,11 +141,32 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
+        public IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete)
         {
-            foreach (IAnimator animator in InterpretKeyframes(control))
+            var animators = InterpretKeyframes(control);
+            if (animators.Count == 1)
             {
-                _subscription.Add(animator.Apply(this, control, matchObs));
+                _subscription.Add(animators[0].Apply(this, control, match, onComplete));
+            }
+            else
+            {
+                var completionTasks = onComplete != null ? new List<Task>() : null;
+                foreach (IAnimator animator in InterpretKeyframes(control))
+                {
+                    Action animatorOnComplete = null;
+                    if (onComplete != null)
+                    {
+                        var tcs = new TaskCompletionSource<object>();
+                        animatorOnComplete = () => tcs.SetResult(null);
+                        completionTasks.Add(tcs.Task);
+                    }
+                    _subscription.Add(animator.Apply(this, control, match, animatorOnComplete));
+                }
+
+                if (onComplete != null)
+                {
+                    Task.WhenAll(completionTasks).ContinueWith(_ => onComplete());
+                }
             }
             return this;
         }
@@ -169,26 +179,9 @@ namespace Avalonia.Animation
             if (this.RepeatCount == RepeatCount.Loop)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            EventHandler doneCallback = null;
-            doneCallback = (sender, args) =>
-            {
-                if (sender == control)
-                {
-                    run.SetResult(null);
-                    this.Done -= doneCallback;
-                }
-            };
-
-            this.Done += doneCallback;
-
-            this.Apply(control, Observable.Return(true));
+            this.Apply(control, Observable.Return(true), () => run.SetResult(null));
 
             return run.Task;
-        }
-
-        internal void SetDone(Animatable control)
-        {
-            Done?.Invoke(control, null);
         }
     }
 }
