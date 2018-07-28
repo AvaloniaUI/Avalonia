@@ -24,7 +24,7 @@ namespace Avalonia.Animation
         };
 
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
-            where TAnimator: IAnimator
+            where TAnimator : IAnimator
         {
             Animators.Insert(0, (condition, typeof(TAnimator)));
         }
@@ -61,6 +61,11 @@ namespace Avalonia.Animation
         public RepeatCount RepeatCount { get; set; }
 
         /// <summary>
+        /// Sets the speed multiple for this animation
+        /// </summary>
+        public double SpeedRatio { get; set; }
+
+        /// <summary>
         /// The playback direction for this animation.
         /// </summary>
         public PlaybackDirection PlaybackDirection { get; set; }
@@ -79,7 +84,7 @@ namespace Avalonia.Animation
         {
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
         }
- 
+
         private IList<IAnimator> InterpretKeyframes(Animatable control)
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();

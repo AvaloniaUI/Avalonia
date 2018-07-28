@@ -12,10 +12,10 @@ namespace Avalonia.Animation
         T lastInterpValue;
         object firstKFValue;
 
-        private ulong delayTotalFrameCount;
-        private ulong durationTotalFrameCount;
+        private long delayFC;
+        private long durationFC;
         private ulong repeatCount;
-        private ulong currentIteration;
+        private long currentIteration;
         private ulong firstFrameCount;
 
         private bool isLooping;
@@ -27,29 +27,15 @@ namespace Avalonia.Animation
 
         private FillMode fillMode;
         private PlaybackDirection animationDirection;
-        private KeyFramesStates currentState;
-        private KeyFramesStates savedState;
+        // private KeyFramesStates currentState;
+        // private KeyFramesStates savedState;
         private Animator<T> parent;
         private Animation targetAnimation;
         private Animatable targetControl;
         private T neutralValue;
-        internal bool _unsubscribe = false;
-        private IObserver<object> _targetObserver;
-
-        [Flags]
-        private enum KeyFramesStates
-        {
-            Initialize,
-            DoDelay,
-            DoRun,
-            RunForwards,
-            RunBackwards,
-            RunApplyValue,
-            RunComplete,
-            Pause,
-            Stop,
-            Disposed
-        }
+        internal bool unsubscribe = false;
+        private bool isDisposed;
+        private IObserver<object> targetObserver;
 
         public void Initialize(Animation animation, Animatable control, Animator<T> animator)
         {
@@ -58,8 +44,11 @@ namespace Avalonia.Animation
             targetControl = control;
             neutralValue = (T)targetControl.GetValue(parent.Property);
 
-            delayTotalFrameCount = (ulong)(animation.Delay.Ticks / Timing.FrameTick.Ticks);
-            durationTotalFrameCount = (ulong)(animation.Duration.Ticks / Timing.FrameTick.Ticks);
+            delayFC = (animation.Delay.Ticks / Timing.FrameTick.Ticks);
+            durationFC = (animation.Duration.Ticks / Timing.FrameTick.Ticks);
+
+            if (durationFC <= 0)
+                throw new InvalidOperationException("Animation duration cannot be negative or zero.");
 
             switch (animation.RepeatCount.RepeatType)
             {
@@ -78,10 +67,10 @@ namespace Avalonia.Animation
             animationDirection = targetAnimation.PlaybackDirection;
             fillMode = targetAnimation.FillMode;
 
-            if (durationTotalFrameCount > 0)
-                currentState = KeyFramesStates.DoDelay;
-            else
-                currentState = KeyFramesStates.DoRun;
+            // if (durationFC > 0)
+            //     currentState = KeyFramesStates.DoDelay;
+            // else
+            //     currentState = KeyFramesStates.DoRun;
         }
 
         public void Step(PlayState _playState, ulong frameTick, Func<double, T, T> Interpolator)
@@ -92,14 +81,12 @@ namespace Avalonia.Animation
             }
             catch (Exception e)
             {
-                _targetObserver?.OnError(e);
+                targetObserver?.OnError(e);
             }
         }
 
         private void InternalStep(PlayState playState, ulong frameTick, Func<double, T, T> Interpolator)
         {
-
-
             if (!gotFirstKFValue)
             {
                 firstKFValue = parent.First().Value;
@@ -112,23 +99,45 @@ namespace Avalonia.Animation
                 gotFirstFrameCount = true;
             }
 
-            if (currentState == KeyFramesStates.Disposed)
+            if (isDisposed)
                 throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
-            if (playState == PlayState.Stop)
-                currentState = KeyFramesStates.Stop;
+            // if (playState == PlayState.Stop)
+            //     currentState = KeyFramesStates.Stop;
 
             // Save state and pause the machine
-            if (playState == PlayState.Pause && currentState != KeyFramesStates.Pause)
+            // if (playState == PlayState.Pause && currentState != KeyFramesStates.Pause)
+            // {
+            //     savedState = currentState;
+            //     currentState = KeyFramesStates.Pause;
+            // }
+
+            // // Resume the previous state
+            // if (playState != PlayState.Pause && currentState == KeyFramesStates.Pause)
+            //     currentState = savedState;
+
+            // get the time with the initial fc as point of origin.
+            var curTime = (long)(frameTick - firstFrameCount);
+
+            // get the current iteration
+            currentIteration = (long)Math.Floor((double)curTime / (double)(delayFC + durationFC));
+
+            var isCurIterReverse = animationDirection == PlaybackDirection.Alternate ? (currentIteration % 2 == 0) ? false : true : 
+                                   animationDirection == PlaybackDirection.AlternateReverse ? (currentIteration % 2 == 0) ? true : false :
+                                   animationDirection == PlaybackDirection.Reverse ? true : false; 
+            
+
+            switch (currentIteration)
             {
-                savedState = currentState;
-                currentState = KeyFramesStates.Pause;
+                case 0:
+
+                    break;
+                default:
+
+                    break;
             }
 
-            // Resume the previous state
-            if (playState != PlayState.Pause && currentState == KeyFramesStates.Pause)
-                currentState = savedState;
-
+            /*
             double tempDuration = 0d, easedTime;
 
             bool handled = false;
@@ -258,18 +267,19 @@ namespace Avalonia.Animation
                         break;
                 }
             }
+            */
         }
 
         public IDisposable Subscribe(IObserver<object> observer)
         {
-            _targetObserver = observer;
+            targetObserver = observer;
             return this;
         }
 
         public void Dispose()
         {
-            _unsubscribe = true;
-            currentState = KeyFramesStates.Disposed;
+            unsubscribe = true;
+            isDisposed = true;
         }
     }
 }
