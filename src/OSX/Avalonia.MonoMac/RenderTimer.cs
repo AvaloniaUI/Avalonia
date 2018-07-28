@@ -8,26 +8,23 @@ using MonoMac.Foundation;
 namespace Avalonia.MonoMac
 {
     //TODO: Switch to using CVDisplayLink
-    public class RenderTimer : IRenderTimer
+    public class RenderTimer : DefaultRenderTimer
     {
-        private readonly object _lock = new object();
-        private readonly IDisposable _timer;
-
-        public RenderTimer()
+        public RenderTimer(int framesPerSecond) : base(framesPerSecond)
         {
-            _timer = AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(new TimeSpan(0, 0, 0, 0, 1000 / 60),
+        }
+
+        protected override IDisposable StartCore(Action<long> tick)
+        {
+            return AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(
+                TimeSpan.FromSeconds(1.0 / FramesPerSecond),
                 () =>
                 {
-                    lock (_lock)
+                    using (new NSAutoreleasePool())
                     {
-                        using (new NSAutoreleasePool())
-                        {
-                            Tick?.Invoke(Environment.TickCount); // TODO: Invoke with frame count instead of TickCount
-                        }
+                        tick(TimeStampToFrames());
                     }
                 });
         }
-
-        public event Action<long> Tick;
     }
 }
