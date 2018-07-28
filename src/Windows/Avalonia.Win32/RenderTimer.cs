@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
 
@@ -7,7 +8,21 @@ namespace Avalonia.Win32
 {
     internal class RenderTimer : DefaultRenderTimer
     {
-        private UnmanagedMethods.TimeCallback timerDelegate;
+        private UnmanagedMethods.WaitOrTimerCallback timerDelegate;
+
+        private static IntPtr _timerQueue;
+
+        private static void EnsureTimerQueueCreated()
+        {
+            if (Volatile.Read(ref _timerQueue) == null)
+            {
+                var queue = UnmanagedMethods.CreateTimerQueue();
+                if (Interlocked.CompareExchange(ref _timerQueue, queue, IntPtr.Zero) != IntPtr.Zero)
+                {
+                    UnmanagedMethods.DeleteTimerQueueEx(queue, IntPtr.Zero);
+                }
+            }
+        }
 
         public RenderTimer(int framesPerSecond)
             : base(framesPerSecond)
@@ -16,23 +31,25 @@ namespace Avalonia.Win32
 
         protected override IDisposable StartCore(Action<long> tick)
         {
-            timerDelegate = (id, uMsg, user, dw1, dw2) =>
-            {
-                UnmanagedMethods.QueryPerformanceCounter(out long tickCount);
-                tick(tickCount);
-            };
+            EnsureTimerQueueCreated();
+            var msPerFrame = 1000 / FramesPerSecond;
 
-            var handle = UnmanagedMethods.timeSetEvent(
-                (uint)(1000 / FramesPerSecond),
-                0,
+            timerDelegate = (_, __) => tick(TimeStampToFrames());
+
+            UnmanagedMethods.CreateTimerQueueTimer(
+                out var timer,
+                _timerQueue,
                 timerDelegate,
-                UIntPtr.Zero,
-                1);
+                IntPtr.Zero,
+                (uint)msPerFrame,
+                (uint)msPerFrame,
+                0
+                );
 
             return Disposable.Create(() =>
             {
                 timerDelegate = null;
-                UnmanagedMethods.timeKillEvent(handle);
+                UnmanagedMethods.DeleteTimerQueueTimer(_timerQueue, timer, IntPtr.Zero);
             });
         }
     }
