@@ -100,7 +100,7 @@ namespace Avalonia.Rendering
             _subscription = null;
         }
 
-        private long TimeStampToFrames()
+        protected long TimeStampToFrames()
                      => (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
                       / (Stopwatch.Frequency / FramesPerSecond);
 

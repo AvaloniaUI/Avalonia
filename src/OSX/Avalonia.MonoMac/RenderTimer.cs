@@ -22,7 +22,7 @@ namespace Avalonia.MonoMac
                     {
                         using (new NSAutoreleasePool())
                         {
-                            Tick?.Invoke(Environment.TickCount);
+                            Tick?.Invoke(Environment.TickCount); // TODO: Invoke with frame count instead of TickCount
                         }
                     }
                 });
