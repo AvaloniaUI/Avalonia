@@ -86,7 +86,7 @@ namespace Avalonia.MonoMac
             App = NSApplication.SharedApplication;
             UpdateActivationPolicy();
             s_renderLoop = new RenderLoop();
-            s_renderTimer = new RenderTimer(); //TODO: use CVDisplayLink
+            s_renderTimer = new RenderTimer(60); //TODO: use CVDisplayLink
             s_monoMacInitialized = true;
         }
 
