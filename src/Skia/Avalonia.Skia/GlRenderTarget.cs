@@ -66,7 +66,8 @@ namespace Avalonia.Skia
                 Canvas = _canvas,
                 Dpi = new Vector(dpiX * SkiaPlatform.DefaultDpi.X, dpiY * SkiaPlatform.DefaultDpi.Y),
                 VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
+                DisableTextLcdRendering = true,
+                GrContext = _grContext
             };
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>

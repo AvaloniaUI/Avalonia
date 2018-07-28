@@ -26,6 +26,7 @@ namespace Avalonia.Skia
         private readonly Stack<double> _opacityStack = new Stack<double>();
         private readonly Matrix? _postTransform;
         private readonly IVisualBrushRenderer _visualBrushRenderer;
+        private readonly GRContext _grContext;
         private double _currentOpacity = 1.0f;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
@@ -54,6 +55,11 @@ namespace Avalonia.Skia
             /// Render text without Lcd rendering.
             /// </summary>
             public bool DisableTextLcdRendering;
+
+            /// <summary>
+            /// Optional GPU context.
+            /// </summary>
+            public GRContext GrContext;
         }
 
         /// <summary>
@@ -65,6 +71,7 @@ namespace Avalonia.Skia
         {
             _dpi = createInfo.Dpi;
             _visualBrushRenderer = createInfo.VisualBrushRenderer;
+            _grContext = createInfo.GrContext;
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
 
@@ -615,7 +622,8 @@ namespace Avalonia.Skia
                 Height = height,
                 Dpi = dpi,
                 Format = format,
-                DisableTextLcdRendering = !_canTextUseLcdRendering
+                DisableTextLcdRendering = !_canTextUseLcdRendering,
+                GrContext = _grContext
             };
 
             return new SurfaceRenderTarget(createInfo);
