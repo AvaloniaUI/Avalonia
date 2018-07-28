@@ -27,7 +27,8 @@ namespace Avalonia.Animation
         /// <summary>
         /// The time span of each frame.
         /// </summary>
-        internal static readonly TimeSpan FrameTick = TimeSpan.FromSeconds(1.0 / FramesPerSecond);
+        internal static readonly TimeSpan FrameTick = 
+                TimeSpan.FromTicks((long)((1000d / FramesPerSecond) * TimeSpan.TicksPerMillisecond));
 
         public static bool HasSubscriptions => _timer.HasSubscriptions;
 
