@@ -44,14 +44,29 @@ namespace Avalonia.Windowing
             _eventsLoop.OnAwakened += _eventsLoop_Awakened;
             _eventsLoop.OnResized += _eventsLoop_Resized;
             _eventsLoop.OnShouldExitEventLoop += _eventsLoop_OnShouldExitEventLoop;
+            _eventsLoop.OnCloseRequested += _eventsLoop_OnCloseRequested;
+
             _windows = new Dictionary<WindowId, WindowImpl>();
+        }
+
+        void _eventsLoop_OnCloseRequested(WindowId windowId)
+        {
+            if (_windows.ContainsKey(windowId)) 
+            {
+                if (!_windows[windowId].OnCloseRequested()) 
+                {
+                    _windows[windowId].Dispose();    
+                }
+            }
         }
 
         byte _eventsLoop_OnShouldExitEventLoop(WindowId windowId)
         {
             if (_windows.ContainsKey(windowId))
+            {
+                _windows[windowId].OnClosed();
                 _windows.Remove(windowId);
-            
+            }
             return _windows.Any() ? (byte)0 : (byte)1;
         }
 

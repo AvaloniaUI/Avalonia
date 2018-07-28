@@ -6,7 +6,10 @@ namespace Avalonia.Windowing.Bindings
     public class EventsLoop : IDisposable
     {
         [DllImport("winit_wrapper")]
-        private static extern IntPtr winit_events_loop_new(out IntPtr eventsLoopProxyHandle);
+        private static extern IntPtr winit_events_loop_new();
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_events_loop_proxy_new(IntPtr eventsLoopHandle);
 
         [DllImport("winit_wrapper")]
         private static extern void winit_events_loop_destroy(IntPtr handle);
@@ -19,6 +22,7 @@ namespace Avalonia.Windowing.Bindings
         );
 
         public IntPtr Handle { get; private set;  }
+
         private readonly EventsLoopProxy _eventsLoopProxy;
         private readonly EventNotifier _notifier;
 
@@ -28,11 +32,12 @@ namespace Avalonia.Windowing.Bindings
         public event AwakenedEventCallback OnAwakened;
         public event ResizeEventCallback OnResized;
         public event ShouldExitEventLoopCallback OnShouldExitEventLoop;
+        public event CloseRequestedCallback OnCloseRequested;
 
         public EventsLoop()
         {
-            Handle = winit_events_loop_new(out var elpHandle);
-            _eventsLoopProxy = new EventsLoopProxy(elpHandle); 
+            Handle = winit_events_loop_new();
+            _eventsLoopProxy = new EventsLoopProxy(winit_events_loop_proxy_new(Handle)); 
             _notifier = new EventNotifier()
             {
                 OnMouseEvent = (windowId, mouseEvent) => OnMouseEvent?.Invoke(windowId, mouseEvent),
@@ -40,7 +45,8 @@ namespace Avalonia.Windowing.Bindings
                 OnCharacterEvent = (windowId, characterEvent) => OnCharacterEvent?.Invoke(windowId, characterEvent),
                 OnResized = (windowId, resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
                 OnAwakened = () => OnAwakened?.Invoke(),
-                OnShouldExitEventLoop = (windowId) => (byte)OnShouldExitEventLoop?.Invoke(windowId)
+                OnShouldExitEventLoop = (windowId) => (byte)OnShouldExitEventLoop?.Invoke(windowId),
+                OnCloseRequested = (windowId) => OnCloseRequested?.Invoke(windowId)
             };
         }
 

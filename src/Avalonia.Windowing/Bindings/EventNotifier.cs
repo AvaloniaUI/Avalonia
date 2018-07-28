@@ -10,6 +10,7 @@ namespace Avalonia.Windowing.Bindings
     public delegate void CharacterEventCallback(WindowId windowId, CharacterEvent characterEvent);
     public delegate void AwakenedEventCallback();
     public delegate byte ShouldExitEventLoopCallback(WindowId windowId);
+    public delegate void CloseRequestedCallback(WindowId windowId);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct EventNotifier
@@ -20,5 +21,6 @@ namespace Avalonia.Windowing.Bindings
         public KeyboardEventCallback OnKeyboardEvent;
         public CharacterEventCallback OnCharacterEvent;
         public ShouldExitEventLoopCallback OnShouldExitEventLoop;
+        public CloseRequestedCallback OnCloseRequested;
     }
 }

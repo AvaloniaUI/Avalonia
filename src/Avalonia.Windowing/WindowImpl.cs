@@ -319,5 +319,15 @@ namespace Avalonia.Windowing
                 gpuCtx.ResizeContext(ClientSize.Width, ClientSize.Height);
             }
         }
+
+        public void OnClosed() 
+        {
+            Closed?.Invoke();
+        }
+
+        public bool OnCloseRequested() 
+        {
+            return (bool)Closing?.Invoke();
+        }
     }
 }
