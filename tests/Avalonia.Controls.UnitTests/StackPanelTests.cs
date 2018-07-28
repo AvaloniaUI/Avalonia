@@ -54,11 +54,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Lays_Out_Children_Vertically_With_Gap()
+        public void Lays_Out_Children_Vertically_With_Spacing()
         {
             var target = new StackPanel
             {
-                Gap = 10,
+                Spacing = 10,
                 Children =
                 {
                     new Border { Height = 20, Width = 120 },
@@ -77,11 +77,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Lays_Out_Children_Horizontally_With_Gap()
+        public void Lays_Out_Children_Horizontally_With_Spacing()
         {
             var target = new StackPanel
             {
-                Gap = 10,
+                Spacing = 10,
                 Orientation = Orientation.Horizontal,
                 Children =
                 {
@@ -150,11 +150,11 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(Orientation.Horizontal)]
         [InlineData(Orientation.Vertical)]
-        public void Gap_Not_Added_For_Invisible_Children(Orientation orientation)
+        public void Spacing_Not_Added_For_Invisible_Children(Orientation orientation)
         {
             var targetThreeChildrenOneInvisble = new StackPanel
             {
-                Gap = 40,
+                Spacing = 40,
                 Orientation = orientation,
                 Children =
                 {
@@ -165,7 +165,7 @@ namespace Avalonia.Controls.UnitTests
             };
             var targetTwoChildrenNoneInvisible = new StackPanel
             {
-                Gap = 40,
+                Spacing = 40,
                 Orientation = orientation,
                 Children =
                 {

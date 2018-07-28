@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
+
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -10,8 +11,11 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Visuals.Media.Imaging;
 using Avalonia.VisualTree;
+
 using Moq;
+
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering
@@ -336,7 +340,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
             var borderLayer = target.Layers[border].Bitmap;
 
-            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>()));
+            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
         }
 
         private DeferredRenderer CreateTargetAndRunFrame(
