@@ -18,14 +18,16 @@ namespace Avalonia.Windowing
 {
     public class WindowImpl : IWindowImpl
     {
-        IWindowWrapper _windowWrapper;
-        private LogicalPosition _lastPosition;
+        private readonly IWindowWrapper _windowWrapper;
+        private readonly ManagedWindowResizeDragHelper _managedDrag;
 
-        const int FramesPerSecond = 60;
+        private LogicalPosition _lastPosition;
+        private const int FramesPerSecond = 60;
 
         public WindowImpl(IWindowWrapper wrapper)
         {
             _windowWrapper = wrapper;
+            _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
 
             // TODO: This is only necessary when using ImmediateRenderer
             Observable.Repeat(Observable.Timer(TimeSpan.FromMilliseconds(1000 / FramesPerSecond)))
@@ -41,6 +43,12 @@ namespace Avalonia.Windowing
                             }, DispatcherPriority.Render);
                         }
                       });
+        }
+
+        private void ResizeForManagedDrag(Rect obj)
+        {
+            //this._windowWrapper.SetPosition(obj.X, obj.Y);
+          //  this._windowWrapper.SetSize(obj.Width, obj.Height);
         }
 
         public WindowState WindowState { get; set; }
@@ -198,7 +206,7 @@ namespace Avalonia.Windowing
 
             if (evt.Character >= 32)
             {
-                Input
+                OnInput
                 (
                     new RawTextInputEventArgs
                     (
@@ -242,7 +250,7 @@ namespace Avalonia.Windowing
 
             if (keyCode.HasValue)
             {
-                Input
+                OnInput
                 (
                     new RawKeyEventArgs
                     (
@@ -254,6 +262,14 @@ namespace Avalonia.Windowing
                     )
                 );
             }
+        }
+
+        public void OnInput(RawInputEventArgs args)
+        {
+            if (_managedDrag.PreprocessInputEvent(ref args))
+                return;
+
+            Input?.Invoke(args);
         }
 
         public void OnMouseEvent(MouseEvent evt)
@@ -287,7 +303,7 @@ namespace Avalonia.Windowing
                 modifiers |= InputModifiers.Windows;
             }
             
-            Input
+            OnInput
             (
                 eventType != RawMouseEventType.Wheel ?
                 new RawMouseEventArgs
@@ -315,9 +331,9 @@ namespace Avalonia.Windowing
         public void OnResizeEvent(ResizeEvent evt)
         {
             Resized?.Invoke(ClientSize);
-            if (_windowWrapper is IGpuContext gpuCtx) {
-                gpuCtx.ResizeContext(ClientSize.Width, ClientSize.Height);
-            }
+
+            // TODO: There's a bug in winit where OSX resizing blocks the event loop, to work around this, paint while resizing.
+            Paint?.Invoke(new Rect(ClientSize));
         }
 
         public void OnClosed() 
@@ -327,7 +343,15 @@ namespace Avalonia.Windowing
 
         public bool OnCloseRequested() 
         {
-            return (bool)Closing?.Invoke();
+            return Closing?.Invoke() ?? false; 
+        }
+
+        public void OnFocused(bool focused) 
+        {
+            if (focused)
+                Activated?.Invoke();
+            else
+                Deactivated?.Invoke();
         }
     }
 }

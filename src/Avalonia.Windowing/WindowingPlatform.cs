@@ -45,7 +45,7 @@ namespace Avalonia.Windowing
             _eventsLoop.OnResized += _eventsLoop_Resized;
             _eventsLoop.OnShouldExitEventLoop += _eventsLoop_OnShouldExitEventLoop;
             _eventsLoop.OnCloseRequested += _eventsLoop_OnCloseRequested;
-
+            _eventsLoop.OnFocused += _eventsLoop_OnFocused;
             _windows = new Dictionary<WindowId, WindowImpl>();
         }
 
@@ -67,8 +67,18 @@ namespace Avalonia.Windowing
                 _windows[windowId].OnClosed();
                 _windows.Remove(windowId);
             }
+
             return _windows.Any() ? (byte)0 : (byte)1;
         }
+
+        void _eventsLoop_OnFocused(WindowId windowId, byte focused)
+        {
+            if (_windows.ContainsKey(windowId))
+            {
+                _windows[windowId].OnFocused(focused == 0 ? true : false);
+            }
+        }
+
 
         void _eventsLoop_Resized(WindowId windowId, ResizeEvent resizeEvent)
         {
@@ -169,6 +179,7 @@ namespace Avalonia.Windowing
 
         public void RunLoop(CancellationToken cancellationToken)
         {
+            // TODO: Support canceling the EventLoop here.
             _eventsLoop.Run();
         }
 

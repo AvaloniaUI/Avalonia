@@ -33,6 +33,7 @@ namespace Avalonia.Windowing.Bindings
         public event ResizeEventCallback OnResized;
         public event ShouldExitEventLoopCallback OnShouldExitEventLoop;
         public event CloseRequestedCallback OnCloseRequested;
+        public event FocusedCallback OnFocused;
 
         public EventsLoop()
         {
@@ -46,7 +47,8 @@ namespace Avalonia.Windowing.Bindings
                 OnResized = (windowId, resizeEvent) => OnResized?.Invoke(windowId, resizeEvent),
                 OnAwakened = () => OnAwakened?.Invoke(),
                 OnShouldExitEventLoop = (windowId) => (byte)OnShouldExitEventLoop?.Invoke(windowId),
-                OnCloseRequested = (windowId) => OnCloseRequested?.Invoke(windowId)
+                OnCloseRequested = (windowId) => OnCloseRequested?.Invoke(windowId),
+                OnFocused = (windowId, focused) => OnFocused?.Invoke(windowId, focused)
             };
         }
 

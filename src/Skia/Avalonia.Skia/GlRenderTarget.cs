@@ -10,7 +10,7 @@ namespace Avalonia.Skia
 {
     public class GlRenderTarget : IRenderTarget
     {
-        private readonly GRContext _grContext;
+        private GRContext _grContext;
         private readonly IGpuContext _context;
 
         public GlRenderTarget(IGpuContext context)
@@ -71,6 +71,7 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() =>
             {
+                _context.MakeCurrent();
                 _grContext.Flush();
                 _context.Present();
             }));

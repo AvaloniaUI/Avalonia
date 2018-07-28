@@ -8,6 +8,7 @@ namespace Avalonia.Gpu
         IntPtr GetProcAddress(string symbol);
         (double, double) GetFramebufferSize();
         void ResizeContext(double width, double height);
+        void MakeCurrent();
         (double, double) GetDpi();
     }
 }

@@ -44,6 +44,9 @@ namespace Avalonia.Windowing.Bindings
         private static extern void winit_gl_window_present(IntPtr handle);
 
         [DllImport("winit_wrapper")]
+        private static extern void winit_gl_window_make_current(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
         private static extern void winit_gl_window_show(IntPtr handle);
 
         [DllImport("winit_wrapper")]
@@ -164,6 +167,11 @@ namespace Avalonia.Windowing.Bindings
         {
             var scaleFactor = GetScaleFactor();
             return (scaleFactor, scaleFactor);
+        }
+
+        public void MakeCurrent()
+        {
+            winit_gl_window_make_current(_handle);
         }
     }
 }
