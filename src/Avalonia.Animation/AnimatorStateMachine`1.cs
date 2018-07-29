@@ -8,7 +8,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Provides statefulness for an iteration of a keyframe animation.
     /// </summary>
-    internal struct AnimatorStateMachine<T> : IObservable<object>, IDisposable
+    internal class AnimatorStateMachine<T> : IObservable<object>, IDisposable
     {
         T lastInterpValue;
         object firstKFValue;
@@ -25,6 +25,8 @@ namespace Avalonia.Animation
         private bool checkLoopAndRepeat;
         private bool gotFirstKFValue;
         private bool gotFirstFrameCount;
+
+        private bool delayBetweenIterations;
 
         private FillMode fillMode;
         private PlaybackDirection animationDirection;
@@ -101,7 +103,12 @@ namespace Avalonia.Animation
 
         private void DoComplete()
         {
-
+            if (fillMode == FillMode.Forward
+             || fillMode == FillMode.Both)
+            {
+                targetControl.SetValue(parent.Property, lastInterpValue, BindingPriority.LocalValue);
+            }
+            targetObserver.OnCompleted();
         }
         private void DoDelay()
         {
@@ -154,17 +161,23 @@ namespace Avalonia.Animation
             // get the time with the initial fc as point of origin.
             var curTime = (t - firstFrameCount);
 
-            // get the current iteration
-            // add 1 fc to the divisor to wholly include the last frame of an iteration.
-            currentIteration = (long)Math.Floor((double)curTime / (double)(delayFC + durationFC + 1));
+            if (curTime <= (delayFC + durationFC))
+            {
+                currentIteration = 0;
+                curTime = curTime % (delayFC + durationFC);
+            }
+            else
+            {
+                var totalDur = (double)((delayBetweenIterations ? delayFC : 0) + durationFC + 1);
+                currentIteration = (long)Math.Floor((double)curTime / totalDur);
+                curTime = curTime % (long)totalDur;
+            }
 
             // check if it's over the repeat count
-            if (currentIteration + 1 > (long)repeatCount)
+            if (currentIteration + 1 > (long)repeatCount && !isLooping)
             {
                 DoComplete();
             }
-
-
 
             // check if the current iteration should be reversed or not.
             var isCurIterReverse = animationDirection == PlaybackDirection.Normal ? false :
@@ -173,25 +186,27 @@ namespace Avalonia.Animation
                                    animationDirection == PlaybackDirection.Reverse ? true : false;
 
 
-            var x0 = (long)firstFrameCount;
-            var x1 = x0 + delayFC;
+            var x1 = delayFC;
             var x2 = x1 + durationFC;
 
-            if (t >= x0 && t <= x1)
+            if (delayFC > 0 && curTime >= 0 && curTime <= x1)
             {
                 if (currentIteration == 0)
                     DoDelay();
             }
-            else if (t > x1 && t <= x2)
+            else if (curTime >= x1 && curTime <= x2)
             {
-                var transformedTime = t - (x0 + x1);
-                var interpVal = t / (double)durationFC;
+                var interpVal = curTime / (double)durationFC;
+
+                if (isCurIterReverse)
+                    interpVal = 1 - interpVal;
 
                 var easedTime = EaseFunc.Ease(interpVal);
+
                 lastInterpValue = Interpolator(easedTime, neutralValue);
                 targetObserver.OnNext(lastInterpValue);
             }
-            else
+            else if (curTime > x2 && (currentIteration + 1 > repeatCount && !isLooping))
             {
                 DoComplete();
             }
