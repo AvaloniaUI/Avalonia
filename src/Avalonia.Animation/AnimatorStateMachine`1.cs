@@ -20,18 +20,13 @@ namespace Avalonia.Animation
         private long firstFrameCount;
 
         private bool isLooping;
-        private bool isRepeating;
-        private bool isReversed;
-        private bool checkLoopAndRepeat;
+        private bool isRepeating;  
         private bool gotFirstKFValue;
         private bool gotFirstFrameCount;
-
         private bool delayBetweenIterations;
 
         private FillMode fillMode;
-        private PlaybackDirection animationDirection;
-        // private KeyFramesStates currentState;
-        // private KeyFramesStates savedState;
+        private PlaybackDirection animationDirection; 
         private Animator<T> parent;
         private Animatable targetControl;
         private T neutralValue;
@@ -52,8 +47,7 @@ namespace Avalonia.Animation
                 throw new InvalidOperationException("Animation duration cannot be negative or zero.");
 
             parent = animator;
-            EaseFunc = animation.Easing;
-            //targetAnimation = animation;
+            EaseFunc = animation.Easing; 
             targetControl = control;
             neutralValue = (T)targetControl.GetValue(parent.Property);
 
@@ -68,17 +62,14 @@ namespace Avalonia.Animation
                     repeatCount = 1;
                     break;
                 case RepeatType.Loop:
-                    isLooping = true;
-                    checkLoopAndRepeat = true;
+                    isLooping = true; 
                     break;
                 case RepeatType.Repeat:
-                    isRepeating = true;
-                    checkLoopAndRepeat = true;
+                    isRepeating = true; 
                     repeatCount = (long)animation.RepeatCount.Value;
                     break;
             }
-
-            isReversed = (animation.PlaybackDirection & PlaybackDirection.Reverse) != 0;
+ 
             animationDirection = animation.PlaybackDirection;
             fillMode = animation.FillMode;
 
@@ -175,12 +166,13 @@ namespace Avalonia.Animation
             long x1 = delayFC;
             long x2 = x1 + durationFC;
 
-            if (delayFC > 0 && t >= 0 && t <= x1)
+            if (delayFC > 0 & t >= 0 & t <= x1 )
             {
-                if (currentIteration == 0)
+                if (currentIteration == 0 && delayBetweenIterations)
                     DoDelay();
+
             }
-            else if (t >= x1 && t <= x2)
+            else if (t >= x1 & t <= x2)
             {
                 var interpVal = t / (double)durationFC;
 
@@ -192,7 +184,7 @@ namespace Avalonia.Animation
                 lastInterpValue = Interpolator(easedTime, neutralValue);
                 targetObserver.OnNext(lastInterpValue);
             }
-            else if (t > x2 && (currentIteration + 1 > repeatCount && !isLooping))
+            else if (t > x2 & (currentIteration + 1 > repeatCount & !isLooping))
             {
                 DoComplete();
             }
