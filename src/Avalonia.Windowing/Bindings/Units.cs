@@ -4,6 +4,13 @@ using System.Runtime.InteropServices;
 namespace Avalonia.Windowing.Bindings
 {
     [StructLayout(LayoutKind.Sequential)]
+    public struct PhysicalSize
+    {
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct LogicalPosition
     {
         public double X { get; set; }

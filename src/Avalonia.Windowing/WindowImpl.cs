@@ -75,7 +75,7 @@ namespace Avalonia.Windowing
 
         public Size MaxClientSize => Size.Empty;
 
-        public IScreenImpl Screen => new Monitors();
+        public IScreenImpl Screen => new ScreenImpl(_windowWrapper.EventsLoop);
 
         public Size ClientSize
         {

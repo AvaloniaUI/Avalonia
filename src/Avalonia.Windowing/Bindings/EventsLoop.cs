@@ -21,6 +21,13 @@ namespace Avalonia.Windowing.Bindings
             EventNotifier notifier
         );
 
+
+        [DllImport("winit_wrapper")]
+        private static extern UInt32 winit_events_loop_get_monitor_count(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
+        private static extern Monitor winit_monitor_get_monitor(IntPtr handle, UInt32 id);
+
         public IntPtr Handle { get; private set;  }
 
         private readonly EventsLoopProxy _eventsLoopProxy;
@@ -71,9 +78,14 @@ namespace Avalonia.Windowing.Bindings
             winit_events_loop_destroy(Handle);
         }
 
-        public void GetAvailableMonitors() 
+        public UInt32 GetAvailableMonitors() 
         {
-            // TODO
+            return winit_events_loop_get_monitor_count(Handle);
+        }
+
+        public Monitor GetMonitor (UInt32 id)
+        {
+            return winit_monitor_get_monitor(Handle, id);
         }
 
         private class EventsLoopProxy : IDisposable

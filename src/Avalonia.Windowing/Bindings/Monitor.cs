@@ -8,5 +8,6 @@ namespace Avalonia.Windowing.Bindings
     {
         public LogicalSize Size { get; set; }
         public LogicalPosition Position { get; set; }
+        public byte IsPrimary { get; set; }
     }
 }
