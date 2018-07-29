@@ -63,7 +63,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Sets the speed multiple for this animation
         /// </summary>
-        public double SpeedRatio { get; set; }
+        public double SpeedRatio { get; set; } = 1d;
 
         /// <summary>
         /// The playback direction for this animation.
