@@ -51,7 +51,7 @@ namespace Avalonia.Designer
             {
             }
 
-            public void Test(string s1, string s2, string s3, string s4, string s5, string s6, int s7)
+            public void Test(string s1, string s2, string s3, string s4, string s5, string s6, int s7, float s8)
             {
                 //nothing here
             }
