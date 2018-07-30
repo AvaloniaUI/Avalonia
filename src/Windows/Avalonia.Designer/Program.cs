@@ -50,6 +50,11 @@ namespace Avalonia.Designer
             public override void Write(char value)
             {
             }
+
+            public void Test(string s1, string s2, string s3, string s4, string s5, string s6)
+            {
+                //nothing here
+            }
         }
 
         private static void DemoMain(string[] args)
