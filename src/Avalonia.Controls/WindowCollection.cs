@@ -96,7 +96,7 @@ namespace Avalonia
         {
             while (_windows.Count > 0)
             {
-                _windows[0].Close();
+                _windows[0].Close(true);
             }
         }
 
