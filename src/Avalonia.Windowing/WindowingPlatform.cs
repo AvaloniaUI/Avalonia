@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -197,15 +198,42 @@ namespace Avalonia.Windowing
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            // TODO: Need a way to cancel a timer when Dispose is called. 
+            return new WinitTimer(new Timer(delegate
+            {
+                var tcs = new TaskCompletionSource<int>();
 
-           // var x = new TimerDel(tick);
-           // timerTickers.Add(x);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        tick();
+                    }
+                    finally
+                    {
+                        tcs.SetResult(0);
+                    }
+                });
 
-         //   _eventsLoop.RunTimer(x);
-            return Disposable.Create(() => {
-         //       timerTickers.Remove(x);
-            });
+                tcs.Task.Wait();
+            }, null, TimeSpan.Zero, interval)); 
         }
     }
+
+	public class WinitTimer : IDisposable
+	{
+		private readonly IDisposable _timer;
+        private readonly GCHandle _gcHandle;
+
+        public WinitTimer(IDisposable timer) 
+        {
+            _timer = timer;
+            _gcHandle = GCHandle.Alloc(_timer);
+        }
+
+        public void Dispose()
+        {
+            _gcHandle.Free();
+            _timer.Dispose();
+        }
+	}
 }
