@@ -182,31 +182,31 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-            var carousel = (Carousel)target.Pages;
+            var contentPresenter = target.ContentPart;
 
-            var container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
-            container.UpdateChild();
-            var dataContext = ((TextBlock)container.Child).DataContext;
+            var container = contentPresenter.Child;
+            contentPresenter.UpdateChild();
+            var dataContext = container.DataContext;
             Assert.Equal(items[0], dataContext);
 
             target.SelectedIndex = 1;
-            container = (ContentPresenter)carousel.Presenter.Panel.Children.Single();
-            container.UpdateChild();
-            dataContext = ((Button)container.Child).DataContext;
+            container = contentPresenter.Child;
+            contentPresenter.UpdateChild();
+            dataContext = container.DataContext;
             Assert.Equal(items[1], dataContext);
 
             target.SelectedIndex = 2;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
+            dataContext = container.DataContext;
             Assert.Equal("Base", dataContext);
 
             target.SelectedIndex = 3;
-            container = (ContentPresenter)carousel.Presenter.Panel.Children[0];
-            container.UpdateChild();
-            dataContext = ((TextBlock)container.Child).DataContext;
+            container = contentPresenter.Child;
+            contentPresenter.UpdateChild();
+            dataContext = container.DataContext;
             Assert.Equal("Qux", dataContext);
 
             target.SelectedIndex = 4;
-            dataContext = ((TextBlock)carousel.Presenter.Panel.Children.Single()).DataContext;
+            dataContext = container.DataContext;
             Assert.Equal("Base", dataContext);
         }
 
@@ -236,7 +236,7 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            var result = target.TabStrip.GetLogicalChildren()
+            var result = target.TabStripPart.GetLogicalChildren()
                 .OfType<TabStripItem>()
                 .Select(x => x.Content)
                 .ToList();
@@ -262,8 +262,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedIndex = 2;
 
-            var carousel = (Carousel)target.Pages;
-            var page = (TabItem)carousel.SelectedItem;
+            var page = (TabItem)target.SelectedItem;
 
             Assert.Null(page.Content);
         }
@@ -274,58 +273,24 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children =
                 {
-                    new TabStrip
+                    new ItemsPresenter
                     {
                         Name = "PART_TabStrip",
-                        Template = new FuncControlTemplate<TabStrip>(CreateTabStripTemplate),
-                        MemberSelector = TabControl.HeaderSelector,
-                        [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                        [!!TabStrip.SelectedIndexProperty] = parent[!!TabControl.SelectedIndexProperty]
+                        [!ItemsPresenter.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty]
                     },
-                    new Carousel
+                    new ContentPresenter
                     {
                         Name = "PART_Content",
-                        Template = new FuncControlTemplate<Carousel>(CreateCarouselTemplate),
-                        MemberSelector = TabControl.ContentSelector,
-                        [!Carousel.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                        [!Carousel.SelectedItemProperty] = parent[!TabControl.SelectedItemProperty],
+                        [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
+                        [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
                     }
                 }
             };
         }
 
-        private Control CreateTabStripTemplate(TabStrip parent)
-        {
-            return new ItemsPresenter
-            {
-                Name = "PART_ItemsPresenter",
-                [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                [!CarouselPresenter.MemberSelectorProperty] = parent[!ItemsControl.MemberSelectorProperty],
-            };
-        }
-
-        private Control CreateCarouselTemplate(Carousel control)
-        {
-            return new CarouselPresenter
-            {
-                Name = "PART_ItemsPresenter",
-                [!CarouselPresenter.ItemsProperty] = control[!ItemsControl.ItemsProperty],
-                [!CarouselPresenter.ItemsPanelProperty] = control[!ItemsControl.ItemsPanelProperty],
-                [!CarouselPresenter.MemberSelectorProperty] = control[!ItemsControl.MemberSelectorProperty],
-                [!CarouselPresenter.SelectedIndexProperty] = control[!SelectingItemsControl.SelectedIndexProperty],
-                [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
-            };
-        }
-
         private void ApplyTemplate(TabControl target)
         {
-            target.ApplyTemplate();
-            var carousel = (Carousel)target.Pages;
-            carousel.ApplyTemplate();
-            carousel.Presenter.ApplyTemplate();
-            var tabStrip = (TabStrip)target.TabStrip;
-            tabStrip.ApplyTemplate();
-            tabStrip.Presenter.ApplyTemplate();
+            target.ApplyTemplate();          
         }
 
         private class Item

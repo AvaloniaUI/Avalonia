@@ -1,50 +1,74 @@
 <Styles xmlns="https://github.com/avaloniaui"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Style Selector="TabControl">
-    <Setter Property="Template">
-      <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
-          <DockPanel>
-            <TabStrip Name="PART_TabStrip"
-                      MemberSelector="{x:Static TabControl.HeaderSelector}"
-                      Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"/>
-            <Carousel Name="PART_Content"
-                      MemberSelector="{x:Static TabControl.ContentSelector}"
-                      Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding SelectedIndex}"
-                      PageTransition="{TemplateBinding PageTransition}"
-                      Grid.Row="1"/>
-          </DockPanel>
-        </Border>
-      </ControlTemplate>
-    </Setter>
-  </Style>
-  <Style Selector="TabControl[TabStripPlacement=Top] /template/ TabStrip">
-    <Setter Property="DockPanel.Dock" Value="Top"/>
-  </Style>
-  <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ TabStrip">
-    <Setter Property="DockPanel.Dock" Value="Bottom"/>
-  </Style>
-  <Style Selector="TabControl[TabStripPlacement=Left] /template/ TabStrip">
-    <Setter Property="DockPanel.Dock" Value="Left"/>
-    <Setter Property="ItemsPanel">
-      <Setter.Value>
-        <ItemsPanelTemplate>
-          <StackPanel Orientation="Vertical"/>
-        </ItemsPanelTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-  <Style Selector="TabControl[TabStripPlacement=Right] /template/ TabStrip">
-    <Setter Property="DockPanel.Dock" Value="Right"/>
-    <Setter Property="ItemsPanel">
-      <Setter.Value>
-        <ItemsPanelTemplate>
-          <StackPanel Orientation="Vertical"/>
-        </ItemsPanelTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
+    <Style Selector="TabControl">
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Margin="{TemplateBinding Margin}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}">
+                    <ScrollViewer
+                            Name="PART_ScrollViewer"
+                            HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                        <DockPanel>
+                            <ItemsPresenter
+                                Name="PART_TabStrip"
+                                Items="{TemplateBinding Items}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                MemberSelector="{TemplateBinding MemberSelector}"                     >
+                            </ItemsPresenter>
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                            </ContentPresenter>
+                        </DockPanel>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Top] /template/ #PART_TapStrip">
+        <Setter Property="DockPanel.Dock" Value="Top"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ #PART_TapStrip">
+        <Setter Property="DockPanel.Dock" Value="Bottom"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Left] /template/ #PART_TapStrip">
+        <Setter Property="DockPanel.Dock" Value="Left"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Left]">
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Right] /template/ #PART_TapStrip">
+        <Setter Property="DockPanel.Dock" Value="Right"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Right]">
+        <Setter Property="ItemsPanel">
+            <Setter.Value>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </Styles>

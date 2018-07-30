@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls.Templates;
+
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>
@@ -15,12 +17,41 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<ContentControl, object>(nameof(Header));
 
         /// <summary>
+        /// Defines the <see cref="HeaderTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
+            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(HeaderTemplate));
+
+        static HeaderedContentControl()
+        {
+            HeaderProperty.Changed.AddClassHandler<HeaderedContentControl>(x => x.OnHeaderChanged);
+            HeaderTemplateProperty.Changed.AddClassHandler<HeaderedContentControl>(x => x.OnHeaderTemplateChanged);
+        }           
+
+        /// <summary>
         /// Gets or sets the header content.
         /// </summary>
         public object Header
         {
             get { return GetValue(HeaderProperty); }
             set { SetValue(HeaderProperty, value); }
+        }     
+
+        /// <summary>
+        /// Gets or sets the data template used to display the content of the control.
+        /// </summary>
+        public IDataTemplate HeaderTemplate
+        {
+            get { return GetValue(HeaderTemplateProperty); }
+            set { SetValue(HeaderTemplateProperty, value); }
+        }
+
+        protected virtual void OnHeaderChanged(AvaloniaPropertyChangedEventArgs obj)
+        {
+        }
+
+        protected virtual void OnHeaderTemplateChanged(AvaloniaPropertyChangedEventArgs obj)
+        {
         }
     }
 }

@@ -45,7 +45,9 @@ namespace Avalonia.Controls
         static ContentControl()
         {
             ContentControlMixin.Attach<ContentControl>(ContentProperty, x => x.LogicalChildren);
-        }
+            ContentProperty.Changed.AddClassHandler<ContentControl>(x => x.OnContentChanged);
+            ContentTemplateProperty.Changed.AddClassHandler<ContentControl>(x => x.OnContentTemplateChanged);
+        }     
 
         /// <summary>
         /// Gets or sets the content to display.
@@ -65,7 +67,7 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
-        }
+        }     
 
         /// <summary>
         /// Gets the presenter from the control's template.
@@ -98,6 +100,14 @@ namespace Avalonia.Controls
         void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
             Presenter = presenter;
+        }
+
+        protected virtual void OnContentChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+        }
+
+        protected virtual void OnContentTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        {
         }
     }
 }

@@ -1,0 +1,38 @@
+<Styles xmlns="https://github.com/avaloniaui">
+    <Style Selector="TabItem">
+        <Setter Property="BorderBrush" Value="Black"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
+        <Setter Property="TabStripPlacement" Value="{Binding $parent[TabControl].TabStripPlacement}"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter 
+                    Name="PART_ContentPresenter"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                    Content="{TemplateBinding Header}"
+                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem[TabStripPlacement=Left]">
+        <Setter Property="BorderThickness" Value="1 1 1 0"/>
+    </Style>
+    <Style Selector="TabItem[TabStripPlacement=Right]">
+        <Setter Property="BorderThickness" Value="1 1 1 0"/>
+    </Style>
+    <Style Selector="TabItem[TabStripPlacement=Top]">
+        <Setter Property="BorderThickness" Value="0 1 1 1"/>
+    </Style>
+    <Style Selector="TabItem[TabStripPlacement=Bottom]">
+        <Setter Property="BorderThickness" Value="0 1 1 1"/>
+    </Style>
+    <Style Selector="TabItem:selected">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    </Style>
+</Styles>
