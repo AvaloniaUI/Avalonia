@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
@@ -148,6 +149,7 @@ namespace Avalonia.Windowing
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
+                .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
         }
 
