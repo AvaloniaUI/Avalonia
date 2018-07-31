@@ -29,7 +29,7 @@ namespace Avalonia.Controls
 
         private const string DATAGRIDROW_elementBottomGridLine = "PART_BottomGridLine";
         private const string DATAGRIDROW_elementCells = "PART_CellsPresenter";
-        private const string DATAGRIDROW_elementDetails = "Part_DetailsPresenter";
+        private const string DATAGRIDROW_elementDetails = "PART_DetailsPresenter";
         internal const string DATAGRIDROW_elementRoot = "PART_Root";
         internal const string DATAGRIDROW_elementRowHeader = "PART_RowHeader";
 
@@ -1080,11 +1080,12 @@ namespace Avalonia.Controls
                 _previousDetailsHeight = newValue.Height;
                 if (newValue.Height != oldValue && newValue.Height != _detailsDesiredHeight)
                 {
-                    // Update the new desired height for RowDetails
-                    _detailsDesiredHeight = newValue.Height;
 
                     if (AreDetailsVisible && _appliedDetailsTemplate != null)
                     {
+                        // Update the new desired height for RowDetails
+                        _detailsDesiredHeight = newValue.Height;
+
                         //if (DetailsVisibleStoryboard != null)
                         //{
                         //    DetailsVisibleStoryboard.SkipToFill();
@@ -1097,6 +1098,10 @@ namespace Avalonia.Controls
                         // to do.  In certain scenarios, this could cause a layout cycle
                         OnRowDetailsChanged();
                     }
+                    //else if(_detailsContent != null)
+                    //{
+                    //    _detailsDesiredHeight = _detailsContent.DesiredSize.Height;
+                    //}
                 }
             }
             else

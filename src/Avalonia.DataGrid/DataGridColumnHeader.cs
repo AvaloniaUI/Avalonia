@@ -248,6 +248,22 @@ namespace Avalonia.Controls
                 }
             }
             */
+
+            CurrentSortingState = null;
+            if (OwningGrid != null
+                && OwningGrid.DataConnection != null
+                && OwningGrid.DataConnection.AllowSort)
+            {
+                var sort = OwningColumn.GetSortDescription();
+                if(sort != null)
+                {
+                    CurrentSortingState = sort.Descending ? ListSortDirection.Descending : ListSortDirection.Ascending;
+                }
+            }
+            PseudoClasses.Set(":sortascending", 
+                CurrentSortingState.HasValue && CurrentSortingState.Value == ListSortDirection.Ascending);
+            PseudoClasses.Set(":sortdescending", 
+                CurrentSortingState.HasValue && CurrentSortingState.Value == ListSortDirection.Descending);
         }
 
 
