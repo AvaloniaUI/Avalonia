@@ -9,6 +9,11 @@
           <DataTemplate>
               <TextBlock Text="{Binding}" Background="Red"/>
           </DataTemplate>
-      </TabControl.ItemTemplate>     
+      </TabControl.ItemTemplate>
+      <TabControl.ContentTemplate>
+          <DataTemplate>
+              <TextBlock Text="{Binding}" Background="Green"/>
+          </DataTemplate>
+      </TabControl.ContentTemplate>
   </TabControl>
 </UserControl>

@@ -40,6 +40,7 @@
     </Style>
 
     <Style Selector="TabControl.sidebar TabItem">
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Margin" Value="0"/>

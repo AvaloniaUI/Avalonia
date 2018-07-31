@@ -10,8 +10,10 @@ using Avalonia.Layout;
 namespace Avalonia.Controls
 {
     using System;
+    using System.Collections;
     using System.Linq;
 
+    using Avalonia.Controls.Utils;
     using Avalonia.Input;
 
     /// <summary>
@@ -180,23 +182,31 @@ namespace Avalonia.Controls
         }
 
         private void OnSelectionChanged(SelectionChangedEventArgs obj)
-        {
+        {          
             if (obj.AddedItems.Count > 0)
             {
-                if (!(obj.AddedItems[0] is TabItem selectedTapItem))
+                var selectedItem = obj.AddedItems[0];
+
+                var tabItem = selectedItem as TabItem;
+
+                if (tabItem == null)
                 {
-                    var containerInfo =
-                        ItemContainerGenerator.Containers.SingleOrDefault(x => x.Item == obj.AddedItems[0]);
+                    var index = Items.IndexOf(selectedItem);
 
-                    if (containerInfo == null)
+                    if (index != -1)
                     {
-                        return;
-                    }
+                        tabItem = ItemContainerGenerator.ContainerFromIndex(index) as TabItem;
 
-                    selectedTapItem = containerInfo.ContainerControl as TabItem;
+                        if (tabItem == null)
+                        {
+                            ItemContainerGenerator.Materialize(index, selectedItem, null);
+
+                            tabItem = ItemContainerGenerator.ContainerFromIndex(index) as TabItem;
+                        }
+                    }                  
                 }
 
-                if (selectedTapItem == null)
+                if (tabItem == null)
                 {
                     SelectedContent = null;
 
@@ -205,9 +215,18 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                SelectedContent = selectedTapItem.Content;
+                //ToDo: Update SelectedContent and SelectedContentTemplate on change (TabItem.DataContext, TabItem.Content)
 
-                SelectedContentTemplate = selectedTapItem.ContentTemplate ?? ContentTemplate;
+                SelectedContentTemplate = tabItem.ContentTemplate ?? ContentTemplate;
+
+                if (tabItem.Content == null && tabItem.DataContext != null)
+                {
+                    SelectedContent = tabItem.DataContext;
+                }
+                else
+                {
+                    SelectedContent = tabItem.Content;
+                }                        
             }
             else
             {
