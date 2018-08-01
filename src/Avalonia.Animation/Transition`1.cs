@@ -61,7 +61,7 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
-            var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue).Select(p => (object)p);
+            var transition = DoTransition(Timing.GetTransitionsTimer(Duration), (T)oldValue, (T)newValue).Select(p => (object)p);
             return control.Bind(Property, transition, Data.BindingPriority.Animation);
         }
     }

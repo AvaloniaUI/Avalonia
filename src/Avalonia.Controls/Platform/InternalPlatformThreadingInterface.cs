@@ -9,12 +9,12 @@ using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
-    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderLoop
+    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderTimer
     {
         public InternalPlatformThreadingInterface()
         {
             TlsCurrentThreadIsLoopThread = true;
-            StartTimer(DispatcherPriority.Render, new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(this, new EventArgs()));
+            StartTimer(DispatcherPriority.Render, new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(Environment.TickCount));
         }
 
         private readonly AutoResetEvent _signaled = new AutoResetEvent(false);
@@ -105,7 +105,7 @@ namespace Avalonia.Controls.Platform
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
         public event Action<DispatcherPriority?> Signaled;
-        public event EventHandler<EventArgs> Tick;
+        public event Action<long> Tick;
 
     }
 }
