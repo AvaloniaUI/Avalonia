@@ -7,10 +7,10 @@ namespace Avalonia.Animation
     /// <summary>
     /// Provides statefulness for an iteration of a keyframe animation.
     /// </summary>
-    internal class AnimatorStateMachine<T> : IObservable<object>, IDisposable
+    internal class AnimatorStateMachine<T> : IObservable<T>, IDisposable
     {
-        object _lastInterpValue;
-        object _firstKFValue;
+        T _lastInterpValue;
+        T _firstKFValue;
 
         private ulong _delayTotalFrameCount;
         private ulong _durationTotalFrameCount;
@@ -34,7 +34,7 @@ namespace Avalonia.Animation
         private Animatable _targetControl;
         private T _neutralValue;
         internal bool _unsubscribe = false;
-        private IObserver<object> _targetObserver;
+        private IObserver<T> _targetObserver;
 
         [Flags]
         private enum KeyFramesStates
@@ -100,7 +100,7 @@ namespace Avalonia.Animation
         {
             if (!_gotFirstKFValue)
             {
-                _firstKFValue = _parent.First().Value;
+                _firstKFValue = (T)_parent.First().Value;
                 _gotFirstKFValue = true;
             }
 
@@ -253,7 +253,7 @@ namespace Avalonia.Animation
             }
         }
 
-        public IDisposable Subscribe(IObserver<object> observer)
+        public IDisposable Subscribe(IObserver<T> observer)
         {
             _targetObserver = observer;
             return this;
