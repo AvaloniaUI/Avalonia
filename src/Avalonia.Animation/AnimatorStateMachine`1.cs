@@ -13,10 +13,10 @@ namespace Avalonia.Animation
         T lastInterpValue;
         T firstKFValue;
 
-        private long delayFC;
-        private long durationFC;
+        private double delayFC;
+        private double durationFC;
         private long repeatCount;
-        private long currentIteration;
+        private double currentIteration;
         private long firstFrameCount;
 
         private bool isLooping;
@@ -52,8 +52,9 @@ namespace Avalonia.Animation
             neutralValue = (T)targetControl.GetValue(parent.Property);
 
             speedRatio = animation.SpeedRatio;
-            delayFC = (long)((animation.Delay.Ticks / Timing.FrameTick.Ticks) * speedRatio);
-            durationFC = (long)((animation.Duration.Ticks / Timing.FrameTick.Ticks) * speedRatio);
+            delayFC = ((animation.Delay.Ticks / Timing.FrameTick.Ticks) * speedRatio);
+            durationFC = ((animation.Duration.Ticks / Timing.FrameTick.Ticks) * speedRatio);
+            delayBetweenIterations = animation.DelayBetweenRepeats;
 
             switch (animation.RepeatCount.RepeatType)
             {
@@ -85,7 +86,7 @@ namespace Avalonia.Animation
                 targetObserver?.OnError(e);
             }
         }
-        
+
         private void DoComplete()
         {
             if (fillMode == FillMode.Forward || fillMode == FillMode.Both)
@@ -135,7 +136,7 @@ namespace Avalonia.Animation
             //     currentState = savedState;
 
             // get the time with the initial fc as point of origin.
-            var t = (frameTick - firstFrameCount);
+            double t = (frameTick - firstFrameCount);
 
             // check if t is within the zeroth iteration
             if (t <= (delayFC + durationFC))
@@ -146,12 +147,12 @@ namespace Avalonia.Animation
             else
             {
                 var totalDur = (double)((delayBetweenIterations ? delayFC : 0) + durationFC + 1);
-                currentIteration = (long)Math.Floor((double)t / totalDur);
-                t = t % (long)totalDur;
+                currentIteration = Math.Floor(t / totalDur);
+                t = t % totalDur;
             }
 
             // check if it's over the repeat count
-            if (currentIteration > ((long)repeatCount - 1) && !isLooping)
+            if (currentIteration > (repeatCount - 1) && !isLooping)
             {
                 DoComplete();
             }
@@ -162,8 +163,8 @@ namespace Avalonia.Animation
                                     animationDirection == PlaybackDirection.AlternateReverse ? (currentIteration % 2 == 0) ? true : false :
                                     animationDirection == PlaybackDirection.Reverse ? true : false;
 
-            long x1 = delayFC;
-            long x2 = x1 + durationFC;
+            double x1 = delayFC;
+            double x2 = x1 + durationFC;
 
             if (delayFC > 0 & t >= 0 & t <= x1)
             {
@@ -173,7 +174,7 @@ namespace Avalonia.Animation
             }
             else if (t >= x1 & t <= x2)
             {
-                var interpVal = t / (double)durationFC;
+                var interpVal = t / durationFC;
 
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;
