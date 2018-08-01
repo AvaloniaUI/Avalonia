@@ -75,6 +75,16 @@ namespace Avalonia.Animation
         /// </summary> 
         public Easing Easing { get; set; } = new LinearEasing();
 
+        /// <summary>
+        /// Sets the speed multiple for this animation.
+        /// </summary>
+        public double SpeedRatio { get; set; } = 1d;
+
+        /// <summary>
+        /// Sets the behavior for having a delay between repeats for this animation.
+        /// </summary>
+        public bool DelayBetweenRepeats { get; set; }
+        
         public Animation()
         {
             this.CollectionChanged += delegate { _isChildrenChanged = true; };
