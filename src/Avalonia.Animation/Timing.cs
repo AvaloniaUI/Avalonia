@@ -16,6 +16,7 @@ namespace Avalonia.Animation
     public static class Timing
     {
         static ulong _transitionsFrameCount;
+        static long _tickStartTimeStamp;
         static PlayState _globalState = PlayState.Run;
 
         /// <summary>
@@ -33,12 +34,16 @@ namespace Avalonia.Animation
         /// </summary>
         static Timing()
         {
+
+            _tickStartTimeStamp = Stopwatch.GetTimestamp();
+
             var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
             AnimationStateTimer = globalTimer
                 .Select(_ =>
                 {
-                    return _globalState;
+                    return (_globalState, (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
+                      / (Stopwatch.Frequency / FramesPerSecond));
                 })
                 .Publish()
                 .RefCount();
@@ -76,7 +81,7 @@ namespace Avalonia.Animation
         /// defined in <see cref="FramesPerSecond"/>.
         /// The parameter passed to a subsciber is the current playstate of the animation.
         /// </remarks>
-        internal static IObservable<PlayState> AnimationStateTimer
+        internal static IObservable<(PlayState, long)> AnimationStateTimer
         {
             get;
         }
