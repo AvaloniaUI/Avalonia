@@ -29,7 +29,7 @@ namespace Avalonia.Animation
                                 {
                                     if (this._playState == PlayState.Pause)
                                     {
-                                        return PlayState.Pause;
+                                        return (PlayState.Pause, p.Item2);
                                     }
                                     else return p;
                                 })
@@ -41,7 +41,7 @@ namespace Avalonia.Animation
         /// The specific animations timer for this control.
         /// </summary>
         /// <returns></returns>
-        public IObservable<PlayState> AnimatableTimer;
+        public IObservable<(PlayState, long)> AnimatableTimer;
 
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.

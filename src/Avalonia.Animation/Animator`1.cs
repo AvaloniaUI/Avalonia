@@ -104,7 +104,7 @@ namespace Avalonia.Animation
 
             Timing.AnimationStateTimer
                         .TakeWhile(_ => !stateMachine.unsubscribe)
-                        .Subscribe(p => stateMachine.Step(p, DoInterpolation));
+                        .Subscribe(p => stateMachine.Step(p.Item1, p.Item2, DoInterpolation));
 
             return control.Bind<T>((AvaloniaProperty<T>)Property, stateMachine, BindingPriority.Animation);
         }
