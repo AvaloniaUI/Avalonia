@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Styling;
@@ -40,6 +41,7 @@ namespace Avalonia.Controls.Presenters
             ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenterBase>();
 
         private IEnumerable _items;
+        private IDisposable _itemsSubscription;
         private bool _createdPanel;
         private IItemContainerGenerator _generator;
 
@@ -63,24 +65,12 @@ namespace Avalonia.Controls.Presenters
 
             set
             {
-                if (_createdPanel)
+                _itemsSubscription?.Dispose();
+                _itemsSubscription = null;
+
+                if (_createdPanel && value is INotifyCollectionChanged incc)
                 {
-                    INotifyCollectionChanged incc = _items as INotifyCollectionChanged;
-
-                    if (incc != null)
-                    {
-                        incc.CollectionChanged -= ItemsCollectionChanged;
-                    }
-                }
-
-                if (_createdPanel && value != null)
-                {
-                    INotifyCollectionChanged incc = value as INotifyCollectionChanged;
-
-                    if (incc != null)
-                    {
-                        incc.CollectionChanged += ItemsCollectionChanged;
-                    }
+                    _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
                 }
 
                 SetAndRaise(ItemsProperty, ref _items, value);
@@ -233,11 +223,9 @@ namespace Avalonia.Controls.Presenters
 
             _createdPanel = true;
 
-            INotifyCollectionChanged incc = Items as INotifyCollectionChanged;
-
-            if (incc != null)
+            if (_itemsSubscription == null && Items is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged += ItemsCollectionChanged;
+                _itemsSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }
 
             PanelCreated(Panel);

@@ -161,6 +161,11 @@ namespace Avalonia.Controls.Presenters
         /// <returns>An <see cref="ItemVirtualizer"/>.</returns>
         public static ItemVirtualizer Create(ItemsPresenter owner)
         {
+            if (owner.Panel == null)
+            {
+                return null;
+            }
+
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
             var scrollable = (ILogicalScrollable)owner;
             ItemVirtualizer result = null;
