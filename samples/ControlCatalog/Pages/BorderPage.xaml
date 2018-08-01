@@ -1,12 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Border</TextBlock>
     <TextBlock Classes="h2">A control which decorates a child with a border and background</TextBlock>
 
     <StackPanel Orientation="Vertical"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                Gap="16">
+                Spacing="16">
       <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16">
         <TextBlock>Border</TextBlock>
       </Border>
