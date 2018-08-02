@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -114,13 +115,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             var next = NextDrawAs<ImageNode>();
 
-            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect))
+            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode));
             }
             else
             {
