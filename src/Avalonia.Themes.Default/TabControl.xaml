@@ -23,7 +23,7 @@
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                         <DockPanel>
                             <ItemsPresenter
-                                Name="PART_TabStrip"
+                                Name="PART_ItemsPresenter"
                                 DockPanel.Dock="Top"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"

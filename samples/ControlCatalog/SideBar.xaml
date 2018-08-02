@@ -17,7 +17,7 @@
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                             Background="{TemplateBinding Background}">
                             <ItemsPresenter
-                                Name="PART_TabStrip"
+                                Name="PART_ItemsPresenter"
                                 MinWidth="190"                            
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
@@ -39,7 +39,7 @@
         </Setter>
     </Style>
 
-    <Style Selector="TabControl.sidebar TabItem">
+    <Style Selector="TabControl.sidebar > TabItem">
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="14"/>
@@ -53,11 +53,11 @@
         </Setter>
     </Style>
 
-    <Style Selector="TabControl.sidebar TabItem:pointerover">
+    <Style Selector="TabControl.sidebar > TabItem:pointerover">
         <Setter Property="Opacity" Value="1"/>
     </Style>
 
-    <Style Selector="TabControl.sidebar TabItem:selected">
+    <Style Selector="TabControl.sidebar > TabItem:selected">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
         <Setter Property="Opacity" Value="1"/>
     </Style>

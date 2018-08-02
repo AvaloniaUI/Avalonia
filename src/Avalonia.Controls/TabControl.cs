@@ -39,7 +39,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
-            AvaloniaProperty.Register<TabControl, IDataTemplate>(nameof(ContentTemplate));
+            ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
 
         /// <summary>
         /// The selected content property
@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new WrapPanel { Orientation = Orientation.Horizontal });
 
-        internal ItemsPresenter TabStripPart { get; private set; }
+        internal ItemsPresenter ItemsPresenterPart { get; private set; }
 
         internal ContentPresenter ContentPart { get; private set; }
 
@@ -136,16 +136,13 @@ namespace Avalonia.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TabControlContainerGenerator(
-                this,
-                HeaderedContentControl.HeaderProperty,
-                HeaderedContentControl.HeaderTemplateProperty);
+            return new TabControlContainerGenerator(this);
         }
 
         private class TabControlContainerGenerator : ItemContainerGenerator<TabItem>
         {
-            public TabControlContainerGenerator(TabControl owner, AvaloniaProperty contentProperty, AvaloniaProperty contentTemplateProperty)
-                : base(owner, contentProperty, contentTemplateProperty)
+            public TabControlContainerGenerator(TabControl owner)
+                : base(owner, ContentControl.ContentProperty, ContentControl.ContentTemplateProperty)
             {
                 Owner = owner;
             }
@@ -158,6 +155,35 @@ namespace Avalonia.Controls
 
                 tabItem.ParentTabControl = Owner;
 
+                if (tabItem.Header == null)
+                {
+                    if (item is IHeadered headered)
+                    {
+                        if (tabItem.Header != headered.Header)
+                        {
+                            tabItem.Header = headered.Header;
+                        }
+                    }
+                    else
+                    {
+                        if (!(tabItem.DataContext is IControl))
+                        {
+                            tabItem.Header = tabItem.DataContext;
+                        }
+                    }
+                }
+
+                if (tabItem.Content == null)
+                {
+                    //Only update the ContentTemplate if no content is set otherwise the default template would be used for static content
+                    if (tabItem.ContentTemplate == null)
+                    {
+                        tabItem[!TabItem.ContentTemplateProperty] = Owner[!TabControl.ContentTemplateProperty];
+                    }
+
+                    tabItem[!TabItem.ContentProperty] = tabItem[!TabItem.DataContextProperty];
+                }
+
                 return tabItem;
             }
         }
@@ -166,9 +192,9 @@ namespace Avalonia.Controls
         {
             base.OnTemplateApplied(e);
 
-            TabStripPart = e.NameScope.Find<ItemsPresenter>("PART_TabStrip");
+            ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
 
-            if (TabStripPart == null)
+            if (ItemsPresenterPart == null)
             {
                 throw new NotSupportedException("ItemsPresenter not found.");
             }
@@ -204,7 +230,7 @@ namespace Avalonia.Controls
         }
 
         private void OnSelectionChanged(SelectionChangedEventArgs obj)
-        {          
+        {
             if (obj.RemovedItems.Count > 0)
             {
                 SelectedContent = null;

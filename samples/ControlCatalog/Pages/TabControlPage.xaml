@@ -49,7 +49,11 @@
                 </DataTemplate>
             </TabItem.ContentTemplate>
         </TabItem>
-        <TextBlock Text="Hello D"/>
+        <TextBlock
+            Text="Hello D"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+        </TextBlock>
         <TabItem Header="Nested TabControl">
             <TabControl>
                 <TabItem Header="Nested Tab">
@@ -63,23 +67,19 @@
         </TabItem>
         <TabControl.ItemTemplate>
             <DataTemplate>
-                <TextBlock Text="{Binding}" Background="Blue"/>
+                <ContentPresenter Content="{Binding}" Background="Blue"/>
             </DataTemplate>
         </TabControl.ItemTemplate>
         <TabControl.ContentTemplate>
             <DataTemplate>
-                <Border
+                <ContentPresenter
+                    Content="{Binding}"
                     Background="Blue"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Width="150"
                     Height="150">
-                    <TextBlock
-                         Text="{Binding}"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center">
-                    </TextBlock>
-                </Border>
+                </ContentPresenter>
             </DataTemplate>
         </TabControl.ContentTemplate>
     </TabControl>

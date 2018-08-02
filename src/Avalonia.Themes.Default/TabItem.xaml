@@ -1,8 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui">
     <Style Selector="TabItem">
-        <Setter Property="Header" Value="{Binding}"/>
-        <Setter Property="Content" Value="{Binding}"/>
-        <Setter Property="ContentTemplate" Value="{Binding $parent[TabControl].ContentTemplate}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
         <Setter Property="Background" Value="Transparent"/>

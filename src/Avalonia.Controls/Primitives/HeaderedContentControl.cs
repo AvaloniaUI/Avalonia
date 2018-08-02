@@ -14,13 +14,13 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="Header"/> property.
         /// </summary>
         public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<ContentControl, object>(nameof(Header));
+            AvaloniaProperty.Register<HeaderedContentControl, object>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="HeaderTemplate"/> property.
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(HeaderTemplate));          
+            AvaloniaProperty.Register<HeaderedContentControl, IDataTemplate>(nameof(HeaderTemplate));          
 
         /// <summary>
         /// Gets or sets the header content.

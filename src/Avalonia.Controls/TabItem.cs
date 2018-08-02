@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<Dock> TabStripPlacementProperty =
-            TabControl.TabStripPlacementProperty.AddOwner<TabItem>();   
+            TabControl.TabStripPlacementProperty.AddOwner<TabItem>();
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -33,6 +33,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             IsSelectedProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateSelectedContent);
+            DataContextProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateHeader);
         }
 
         /// <summary>
@@ -55,17 +56,54 @@ namespace Avalonia.Controls
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public TabControl ParentTabControl
+        internal TabControl ParentTabControl
         {
             get => _parentTabControl;
             set => _parentTabControl = value;
         }
 
+        private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
+        {
+            if (Header == null)
+            {
+                if (obj.NewValue is IHeadered headered)
+                {
+                    if (Header != headered.Header)
+                    {
+                        Header = headered.Header;
+                    }
+                }
+                else
+                {
+                    if (!(obj.NewValue is IControl))
+                    {
+                        Header = obj.NewValue;
+                    }
+                }
+            }
+            else
+            {
+                if (Header == obj.OldValue)
+                {
+                    Header = obj.NewValue;
+                }
+            }          
+        }
+
         private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
         {
-            if (IsSelected)
+            if (!IsSelected)
+            {
+                return;
+            }
+
+            if (ParentTabControl.SelectedContentTemplate != ContentTemplate)
             {
                 ParentTabControl.SelectedContentTemplate = ContentTemplate;
+            }
+
+            if (ParentTabControl.SelectedContent != Content)
+            {
                 ParentTabControl.SelectedContent = Content;
             }
         }
