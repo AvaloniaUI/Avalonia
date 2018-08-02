@@ -209,12 +209,12 @@ namespace Avalonia.Controls.UnitTests
         }
 
         /// <summary>
-        /// Non-headered control items should result in TabStripItems with empty content.
+        /// Non-headered control items should result in TabItems with empty header.
         /// </summary>
         /// <remarks>
-        /// If a TabStrip is created with non IHeadered controls as its items, don't try to
-        /// display the control in the TabStripItem: if the TabStrip is part of a TabControl
-        /// then *that* will also try to display the control, resulting in dual-parentage 
+        /// If a TabControl is created with non IHeadered controls as its items, don't try to
+        /// display the control in the header: if the control is part of the header then
+        /// *that* control would also end up in the content region, resulting in dual-parentage 
         /// breakage.
         /// </remarks>
         [Fact]
@@ -238,7 +238,7 @@ namespace Avalonia.Controls.UnitTests
 
             var result = logicalChildren
                 .OfType<TabItem>()
-                .Select(x => x.Content)
+                .Select(x => x.Header)
                 .ToList();
 
             Assert.Equal(new object[] { null, null }, result);
