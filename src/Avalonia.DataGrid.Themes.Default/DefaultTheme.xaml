@@ -248,7 +248,7 @@
                             RowDefinitions="*,Auto,Auto"
                             ColumnDefinitions="Auto,*">
 
-          <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2" Fill="#FFBADDE9"/>
+          <Rectangle Name="BackgroundRectangle" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
 
           <prim:DataGridRowHeader Grid.RowSpan="3" Name="PART_RowHeader" prim:DataGridFrozenGrid.IsFrozen="True" />
           <prim:DataGridCellsPresenter Grid.Column="1" Name="PART_CellsPresenter" prim:DataGridFrozenGrid.IsFrozen="True" />
@@ -344,6 +344,7 @@
   <!--FIX-->
   <Style Selector="dg|DataGridRow /template/ Rectangle#BackgroundRectangle">
     <Setter Property="IsVisible" Value="False"/>
+    <Setter Property="Fill" Value="#FFBADDE9" />
   </Style>
   <Style Selector="dg|DataGridRow:pointerover /template/ Rectangle#BackgroundRectangle">
     <Setter Property="IsVisible" Value="True"/>

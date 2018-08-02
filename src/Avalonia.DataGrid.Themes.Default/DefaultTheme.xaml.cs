@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
-namespace Avalonia.Themes.DataGrid.Default
+namespace Avalonia.DataGrid.Themes.Default
 {
     public class DefaultTheme : Styles
     {
