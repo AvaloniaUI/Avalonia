@@ -5,7 +5,7 @@
         <Setter Property="ContentTemplate" Value="{Binding $parent[TabControl].ContentTemplate}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
         <Setter Property="TabStripPlacement" Value="{Binding $parent[TabControl].TabStripPlacement}"/>
