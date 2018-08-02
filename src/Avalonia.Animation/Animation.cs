@@ -173,7 +173,7 @@ namespace Avalonia.Animation
             subscriptions = this.Apply(control, Observable.Return(true), () =>
             {
                 run.SetResult(null);
-                subscriptions.Dispose();
+                subscriptions?.Dispose();
             });
 
             return run.Task;
