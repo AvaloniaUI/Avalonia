@@ -1,21 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
-    using System;
-    using System.Collections;
-    using System.Linq;
-
-    using Avalonia.Controls.Utils;
-    using Avalonia.Input;
-
     /// <summary>
     /// A tab control that displays a tab strip along with the content of the selected tab.
     /// </summary>
@@ -45,9 +41,15 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
             AvaloniaProperty.Register<TabControl, IDataTemplate>(nameof(ContentTemplate));
 
+        /// <summary>
+        /// The selected content property
+        /// </summary>
         public static readonly StyledProperty<object> SelectedContentProperty =
             AvaloniaProperty.Register<TabControl, object>(nameof(SelectedContent));
 
+        /// <summary>
+        /// The selected content template property
+        /// </summary>
         public static readonly StyledProperty<IDataTemplate> SelectedContentTemplateProperty =
             AvaloniaProperty.Register<TabControl, IDataTemplate>(nameof(SelectedContentTemplate));
 
@@ -134,10 +136,30 @@ namespace Avalonia.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<TabItem>(
+            return new TabControlContainerGenerator(
                 this,
                 HeaderedContentControl.HeaderProperty,
                 HeaderedContentControl.HeaderTemplateProperty);
+        }
+
+        private class TabControlContainerGenerator : ItemContainerGenerator<TabItem>
+        {
+            public TabControlContainerGenerator(TabControl owner, AvaloniaProperty contentProperty, AvaloniaProperty contentTemplateProperty)
+                : base(owner, contentProperty, contentTemplateProperty)
+            {
+                Owner = owner;
+            }
+
+            public new TabControl Owner { get; }
+
+            protected override IControl CreateContainer(object item)
+            {
+                var tabItem = (TabItem)base.CreateContainer(item);
+
+                tabItem.ParentTabControl = Owner;
+
+                return tabItem;
+            }
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -183,52 +205,7 @@ namespace Avalonia.Controls
 
         private void OnSelectionChanged(SelectionChangedEventArgs obj)
         {          
-            if (obj.AddedItems.Count > 0)
-            {
-                var selectedItem = obj.AddedItems[0];
-
-                var tabItem = selectedItem as TabItem;
-
-                if (tabItem == null)
-                {
-                    var index = Items.IndexOf(selectedItem);
-
-                    if (index != -1)
-                    {
-                        tabItem = ItemContainerGenerator.ContainerFromIndex(index) as TabItem;
-
-                        if (tabItem == null)
-                        {
-                            ItemContainerGenerator.Materialize(index, selectedItem, null);
-
-                            tabItem = ItemContainerGenerator.ContainerFromIndex(index) as TabItem;
-                        }
-                    }                  
-                }
-
-                if (tabItem == null)
-                {
-                    SelectedContent = null;
-
-                    SelectedContentTemplate = null;
-
-                    return;
-                }
-
-                //ToDo: Update SelectedContent and SelectedContentTemplate on change (TabItem.DataContext, TabItem.Content)
-
-                SelectedContentTemplate = tabItem.ContentTemplate ?? ContentTemplate;
-
-                if (tabItem.Content == null && tabItem.DataContext != null)
-                {
-                    SelectedContent = tabItem.DataContext;
-                }
-                else
-                {
-                    SelectedContent = tabItem.Content;
-                }                        
-            }
-            else
+            if (obj.RemovedItems.Count > 0)
             {
                 SelectedContent = null;
 

@@ -22,7 +22,7 @@
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
-                                MemberSelector="{TemplateBinding MemberSelector}"                     >
+                                MemberSelector="{TemplateBinding MemberSelector}">
                             </ItemsPresenter>
                         </ScrollViewer>
                         <ContentPresenter

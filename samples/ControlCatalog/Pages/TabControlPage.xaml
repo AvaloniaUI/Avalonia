@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:pages="clr-namespace:ControlCatalog.Pages"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <TabControl TabStripPlacement="Left">
+        <TabItem DataContext="Hello A">
+            <TabItem.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" Background="Green"/>
+                </DataTemplate>
+            </TabItem.HeaderTemplate>
+            <TabItem.ContentTemplate>
+                <DataTemplate>
+                    <Border
+                        Background="Yellow"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="150"
+                        Height="150">
+                        <TextBlock
+                            Text="{Binding}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        </TextBlock>
+                    </Border>
+                </DataTemplate>
+            </TabItem.ContentTemplate>
+        </TabItem>
+        <TabItem Header="Hello B" Content="Hello"/>
+        <TabItem DataContext="Hello C">
+            <TabItem.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" Background="Red"/>
+                </DataTemplate>
+            </TabItem.HeaderTemplate>
+            <TabItem.ContentTemplate>
+                <DataTemplate>
+                    <Border
+                        Background="Gray"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="150"
+                        Height="150">
+                        <TextBlock
+                             Text="{Binding}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center">
+                        </TextBlock>
+                    </Border>
+                </DataTemplate>
+            </TabItem.ContentTemplate>
+        </TabItem>
+        Hello D
+        <TabControl.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding}" Background="Blue"/>
+            </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+            <DataTemplate>
+                <Border
+                    Background="Blue"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Width="150"
+                    Height="150">
+                    <TextBlock
+                         Text="{Binding}"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center">
+                    </TextBlock>
+                </Border>
+            </DataTemplate>
+        </TabControl.ContentTemplate>
+    </TabControl>
+</UserControl>

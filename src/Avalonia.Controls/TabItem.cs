@@ -6,8 +6,6 @@ using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls
 {
-    using Avalonia.Controls.Generators;
-
     /// <summary>
     /// An item in  a <see cref="TabStrip"/> or <see cref="TabControl"/>.
     /// </summary>
@@ -25,6 +23,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TabItem>();
 
+        private TabControl _parentTabControl;
+
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.
         /// </summary>
@@ -32,6 +32,7 @@ namespace Avalonia.Controls
         {
             SelectableMixin.Attach<TabItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
+            IsSelectedProperty.Changed.AddClassHandler<TabItem>(x => x.UpdateSelectedContent);
         }
 
         /// <summary>
@@ -52,6 +53,21 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
-        }       
+        }
+
+        public TabControl ParentTabControl
+        {
+            get => _parentTabControl;
+            set => _parentTabControl = value;
+        }
+
+        private void UpdateSelectedContent(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (IsSelected)
+            {
+                ParentTabControl.SelectedContentTemplate = ContentTemplate;
+                ParentTabControl.SelectedContent = Content;
+            }
+        }
     }
 }

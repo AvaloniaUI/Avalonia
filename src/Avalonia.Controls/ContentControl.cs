@@ -45,8 +45,6 @@ namespace Avalonia.Controls
         static ContentControl()
         {
             ContentControlMixin.Attach<ContentControl>(ContentProperty, x => x.LogicalChildren);
-            ContentProperty.Changed.AddClassHandler<ContentControl>(x => x.OnContentChanged);
-            ContentTemplateProperty.Changed.AddClassHandler<ContentControl>(x => x.OnContentTemplateChanged);
         }     
 
         /// <summary>
@@ -100,14 +98,6 @@ namespace Avalonia.Controls
         void IContentPresenterHost.RegisterContentPresenter(IContentPresenter presenter)
         {
             Presenter = presenter;
-        }
-
-        protected virtual void OnContentChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-        }
-
-        protected virtual void OnContentTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
         }
     }
 }
