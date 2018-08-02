@@ -3,14 +3,16 @@
         <Setter Property="Header" Value="{Binding}"/>
         <Setter Property="Content" Value="{Binding}"/>
         <Setter Property="ContentTemplate" Value="{Binding $parent[TabControl].ContentTemplate}"/>
-        <Setter Property="BorderBrush" Value="Black"/>
-        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+        <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
         <Setter Property="TabStripPlacement" Value="{Binding $parent[TabControl].TabStripPlacement}"/>
+        <Setter Property="Margin" Value="2 2 0 0"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <ContentPresenter 
+                <ContentPresenter
                     Name="PART_ContentPresenter"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -19,23 +21,15 @@
                     Content="{TemplateBinding Header}"
                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Margin="{TemplateBinding Margin}"
                     Padding="{TemplateBinding Padding}"/>
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="TabItem[TabStripPlacement=Left]">
-        <Setter Property="BorderThickness" Value="1 1 1 0"/>
-    </Style>
-    <Style Selector="TabItem[TabStripPlacement=Right]">
-        <Setter Property="BorderThickness" Value="1 1 1 0"/>
-    </Style>
-    <Style Selector="TabItem[TabStripPlacement=Top]">
-        <Setter Property="BorderThickness" Value="0 1 1 1"/>
-    </Style>
-    <Style Selector="TabItem[TabStripPlacement=Bottom]">
-        <Setter Property="BorderThickness" Value="0 1 1 1"/>
-    </Style>
     <Style Selector="TabItem:selected">
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    </Style>
+    <Style Selector="TabItem:disabled">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
     </Style>
 </Styles>

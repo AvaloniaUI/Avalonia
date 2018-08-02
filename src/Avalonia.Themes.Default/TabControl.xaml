@@ -24,6 +24,7 @@
                         <DockPanel>
                             <ItemsPresenter
                                 Name="PART_TabStrip"
+                                DockPanel.Dock="Top"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
@@ -42,9 +43,6 @@
                 </Border>
             </ControlTemplate>
         </Setter>
-    </Style>
-    <Style Selector="TabControl[TabStripPlacement=Top] /template/ #PART_TapStrip">
-        <Setter Property="DockPanel.Dock" Value="Top"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ #PART_TapStrip">
         <Setter Property="DockPanel.Dock" Value="Bottom"/>

@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <TabControl TabStripPlacement="Left">
+    <TabControl>
         <TabItem DataContext="Hello A">
             <TabItem.HeaderTemplate>
                 <DataTemplate>
@@ -49,7 +49,18 @@
                 </DataTemplate>
             </TabItem.ContentTemplate>
         </TabItem>
-        Hello D
+        <TextBlock Text="Hello D"/>
+        <TabItem Header="Nested TabControl">
+            <TabControl>
+                <TabItem Header="Nested Tab">
+                    <TextBlock
+                        Text="Nested Tab Content"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    </TextBlock>
+                </TabItem>
+            </TabControl>
+        </TabItem>
         <TabControl.ItemTemplate>
             <DataTemplate>
                 <TextBlock Text="{Binding}" Background="Blue"/>
