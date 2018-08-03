@@ -231,6 +231,11 @@ namespace Avalonia.Controls
 
         private void OnSelectionChanged(SelectionChangedEventArgs obj)
         {
+            if (obj.Source != this)
+            {
+                return;
+            }
+
             if (obj.RemovedItems.Count > 0)
             {
                 SelectedContent = null;
