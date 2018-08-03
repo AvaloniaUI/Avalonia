@@ -18,18 +18,18 @@
     <TabItem Header="Basic">
       <StackPanel Orientation="Vertical">
         <StackPanel Orientation="Horizontal">
-          <StackPanel Margin="18" Gap="4" Width="200">
+          <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Simple Bindings"/>
             <TextBox Watermark="Two Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue}" Name="first"/>
             <TextBox Watermark="One Way" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneWay}"/>
             <TextBox Watermark="One Time" UseFloatingWatermark="True" Text="{Binding Path=StringValue, Mode=OneTime}"/>
           </StackPanel>
-          <StackPanel Margin="18" Gap="4" Width="200">
+          <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Collection Bindings"/>
             <TextBox Watermark="Items[1].StringValue" UseFloatingWatermark="True" Text="{Binding Path=Items[1].StringValue}"/>
             <Button Command="{Binding ShuffleItems}">Shuffle</Button>
           </StackPanel>
-          <StackPanel Margin="18" Gap="4" Width="200">
+          <StackPanel Margin="18" Spacing="4" Width="200">
             <TextBlock FontSize="16" Text="Negated Bindings"/>
             <TextBox Watermark="Boolean String" UseFloatingWatermark="True" Text="{Binding Path=BooleanString}"/>
             <CheckBox IsChecked="{Binding !BooleanString}">!BooleanString</CheckBox>
@@ -37,13 +37,13 @@
           </StackPanel>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-          <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
+          <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Numeric Bindings"/>
             <TextBox Watermark="Double" UseFloatingWatermark="True" Text="{Binding Path=DoubleValue, Mode=TwoWay}"/>
             <TextBlock Text="{Binding Path=DoubleValue}"/>
             <ProgressBar Maximum="10" Value="{Binding DoubleValue}"/>
           </StackPanel>
-          <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
+          <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Binding Sources"/>
             <TextBox Watermark="Value of first TextBox" UseFloatingWatermark="True" 
                      Text="{Binding #first.Text, Mode=TwoWay}"/>
@@ -52,7 +52,7 @@
             <TextBox Watermark="Value of SharedItem.StringValue (duplicate)" UseFloatingWatermark="True"
                      Text="{Binding StringValue, Source={StaticResource SharedItem}, Mode=TwoWay}"/>
           </StackPanel>
-          <StackPanel Margin="18" Gap="4" Width="200" HorizontalAlignment="Left">
+          <StackPanel Margin="18" Spacing="4" Width="200" HorizontalAlignment="Left">
             <TextBlock FontSize="16" Text="Scheduler"/>
             <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
             <TextBlock FontSize="16" Text="Stream Operator"/>
@@ -68,11 +68,11 @@
             <TextBlock Text="{Binding StringValue}"/>
           </DataTemplate>
         </StackPanel.DataTemplates>
-        <StackPanel Margin="18" Gap="4" Width="200">
+        <StackPanel Margin="18" Spacing="4" Width="200">
           <TextBlock FontSize="16" Text="Multiple"/>
           <ListBox Items="{Binding Items}" SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}"/>
         </StackPanel>
-        <StackPanel Margin="18" Gap="4" Width="200">
+        <StackPanel Margin="18" Spacing="4" Width="200">
           <TextBlock FontSize="16" Text="Multiple"/>
           <ListBox Items="{Binding Items}" SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}"/>
         </StackPanel>
@@ -87,16 +87,16 @@
     </TabItem>
     <TabItem Header="Property Validation">
       <StackPanel Orientation="Horizontal">
-        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding ExceptionDataValidation}">
+        <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding ExceptionDataValidation}">
           <TextBlock FontSize="16" Text="Exception Validation"/>
           <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
         </StackPanel>
-        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding IndeiDataValidation}">
+        <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding IndeiDataValidation}">
           <TextBlock FontSize="16" Text="INotifyDataErrorInfo Validation"/>
           <TextBox Watermark="Maximum" UseFloatingWatermark="True" Text="{Binding Path=Maximum}"/>
           <TextBox Watermark="Value" UseFloatingWatermark="True" Text="{Binding Path=Value}"/>
         </StackPanel>
-        <StackPanel Margin="18" Gap="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
+        <StackPanel Margin="18" Spacing="4" MinWidth="200" DataContext="{Binding DataAnnotationsValidation}">
           <TextBlock FontSize="16" Text="Data Annotations Validation"/>
           <TextBox Watermark="Phone #" UseFloatingWatermark="True" Text="{Binding PhoneNumber}"/>
           <TextBox Watermark="Less Than 10" UseFloatingWatermark="True" Text="{Binding Path=LessThan10}"/>
@@ -104,7 +104,7 @@
       </StackPanel>
     </TabItem>
     <TabItem Header="Commands">
-      <StackPanel Margin="18" Gap="4" Width="200">
+      <StackPanel Margin="18" Spacing="4" Width="200">
         <Button Content="Button" Command="{Binding StringValueCommand}" CommandParameter="Button"/>
         <ToggleButton Content="ToggleButton" IsChecked="{Binding BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="ToggleButton"/>
         <CheckBox Content="CheckBox" IsChecked="{Binding !BooleanFlag, Mode=OneWay}" Command="{Binding StringValueCommand}" CommandParameter="CheckBox"/>

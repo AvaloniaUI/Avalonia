@@ -1,12 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Expander</TextBlock>
     <TextBlock Classes="h2">Expands to show nested content</TextBlock>
 
     <StackPanel Orientation="Vertical"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                Gap="16">
+                Spacing="16">
       <Expander Header="Expand Up" ExpandDirection="Up">
         <StackPanel>
           <TextBlock>Expanded content</TextBlock>

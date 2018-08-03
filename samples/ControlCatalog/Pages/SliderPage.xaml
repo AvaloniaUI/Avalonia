@@ -1,9 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Slider</TextBlock>
     <TextBlock Classes="h2">A control that lets the user select from a range of values by moving a Thumb control along a Track.</TextBlock>
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Gap="16">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="16">
       <Slider Value="0"
               Minimum="0"
               Maximum="100"

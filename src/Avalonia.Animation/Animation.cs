@@ -12,13 +12,14 @@ using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : AvaloniaList<KeyFrame>, IDisposable, IAnimation
+    public class Animation : AvaloniaList<KeyFrame>, IAnimation
     {
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
@@ -43,8 +44,6 @@ namespace Avalonia.Animation
             return null;
         }
 
-        private bool _isChildrenChanged = false;
-        private List<IDisposable> _subscription = new List<IDisposable>();
         public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
         /// <summary>
@@ -77,20 +76,11 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
 
-        /// <summary>
-        /// Triggers when the animation is completed.
-        /// </summary>
-        public event EventHandler Done;
-
-        public Animation()
-        {
-            this.CollectionChanged += delegate { _isChildrenChanged = true; };
-        }
-
-        private IList<IAnimator> InterpretKeyframes(Animatable control)
+        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
+            var subscriptions = new List<IDisposable>();
 
             foreach (var keyframe in this)
             {
@@ -115,7 +105,7 @@ namespace Avalonia.Animation
 
                     var newKF = new AnimatorKeyFrame(handler, cue);
 
-                    _subscription.Add(newKF.BindSetter(setter, control));
+                    subscriptions.Add(newKF.BindSetter(setter, control));
 
                     animatorKeyFrames.Add(newKF);
                 }
@@ -137,28 +127,38 @@ namespace Avalonia.Animation
                 animator.Add(keyframe);
             }
 
-            return newAnimatorInstances;
-        }
-
-        /// <summary>
-        /// Cancels the animation.
-        /// </summary>
-        public void Dispose()
-        {
-            foreach (var sub in _subscription)
-            {
-                sub.Dispose();
-            }
+            return (newAnimatorInstances, subscriptions);
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
+        public IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete)
         {
-            foreach (IAnimator animator in InterpretKeyframes(control))
+            var (animators, subscriptions) = InterpretKeyframes(control);
+            if (animators.Count == 1)
             {
-                _subscription.Add(animator.Apply(this, control, matchObs));
+                subscriptions.Add(animators[0].Apply(this, control, match, onComplete));
             }
-            return this;
+            else
+            {
+                var completionTasks = onComplete != null ? new List<Task>() : null;
+                foreach (IAnimator animator in animators)
+                {
+                    Action animatorOnComplete = null;
+                    if (onComplete != null)
+                    {
+                        var tcs = new TaskCompletionSource<object>();
+                        animatorOnComplete = () => tcs.SetResult(null);
+                        completionTasks.Add(tcs.Task);
+                    }
+                    subscriptions.Add(animator.Apply(this, control, match, animatorOnComplete));
+                }
+
+                if (onComplete != null)
+                {
+                    Task.WhenAll(completionTasks).ContinueWith(_ => onComplete());
+                }
+            }
+            return new CompositeDisposable(subscriptions);
         }
 
         /// <inheritdocs/>
@@ -169,26 +169,14 @@ namespace Avalonia.Animation
             if (this.RepeatCount == RepeatCount.Loop)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
-            EventHandler doneCallback = null;
-            doneCallback = (sender, args) =>
+            IDisposable subscriptions = null;
+            subscriptions = this.Apply(control, Observable.Return(true), () =>
             {
-                if (sender == control)
-                {
-                    run.SetResult(null);
-                    this.Done -= doneCallback;
-                }
-            };
-
-            this.Done += doneCallback;
-
-            this.Apply(control, Observable.Return(true));
+                run.SetResult(null);
+                subscriptions?.Dispose();
+            });
 
             return run.Task;
-        }
-
-        internal void SetDone(Animatable control)
-        {
-            Done?.Invoke(control, null);
         }
     }
 }

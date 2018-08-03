@@ -35,6 +35,7 @@ namespace Avalonia.Animation
         private T _neutralValue;
         internal bool _unsubscribe = false;
         private IObserver<object> _targetObserver;
+        private readonly Action _onComplete;
 
         [Flags]
         private enum KeyFramesStates
@@ -51,7 +52,7 @@ namespace Avalonia.Animation
             Disposed
         }
 
-        public void Initialize(Animation animation, Animatable control, Animator<T> animator)
+        public AnimatorStateMachine(Animation animation, Animatable control, Animator<T> animator, Action onComplete)
         {
             _parent = animator;
             _targetAnimation = animation;
@@ -82,6 +83,7 @@ namespace Avalonia.Animation
                 _currentState = KeyFramesStates.DoDelay;
             else
                 _currentState = KeyFramesStates.DoRun;
+            _onComplete = onComplete;
         }
 
         public void Step(PlayState _playState, Func<double, T, T> Interpolator)
@@ -245,7 +247,7 @@ namespace Avalonia.Animation
                         }
 
                         _targetObserver.OnCompleted();
-                        _targetAnimation.SetDone(_targetControl);
+                        _onComplete?.Invoke();
                         Dispose();
                         handled = true;
                         break;

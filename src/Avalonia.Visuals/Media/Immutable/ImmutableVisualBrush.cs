@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Avalonia.Visuals.Media.Imaging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media.Immutable
@@ -21,6 +24,7 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
+        /// <param name="bitmapInterpolationMode">Controls the quality of interpolation.</param>
         public ImmutableVisualBrush(
             IVisual visual,
             AlignmentX alignmentX = AlignmentX.Center,
@@ -29,7 +33,8 @@ namespace Avalonia.Media.Immutable
             double opacity = 1,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
-            TileMode tileMode = TileMode.None)
+            TileMode tileMode = TileMode.None,
+            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
             : base(
                   alignmentX,
                   alignmentY,
@@ -37,7 +42,8 @@ namespace Avalonia.Media.Immutable
                   opacity,
                   sourceRect ?? RelativeRect.Fill,
                   stretch,
-                  tileMode)
+                  tileMode,
+                  bitmapInterpolationMode)
         {
             Visual = visual;
         }
