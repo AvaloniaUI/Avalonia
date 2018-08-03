@@ -145,7 +145,7 @@ namespace Avalonia.Animation
             if (t <= (delayFC + durationFC))
             {
                 currentIteration = 0;
-                t = t % (delayFC + durationFC);
+                t = t % (delayFC + durationFC + 1);
             }
             else
             {
