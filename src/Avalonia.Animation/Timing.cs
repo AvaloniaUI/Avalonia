@@ -15,14 +15,16 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
-        static ulong _transitionsFrameCount;
         static long _tickStartTimeStamp;
         static PlayState _globalState = PlayState.Run;
+        static long TicksPerFrame = Stopwatch.Frequency / FramesPerSecond;
+
 
         /// <summary>
         /// The number of frames per second.
         /// </summary>
         public const int FramesPerSecond = 60;
+
 
         /// <summary>
         /// The time span of each frame.
@@ -39,17 +41,18 @@ namespace Avalonia.Animation
 
             var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
+
             AnimationStateTimer = globalTimer
                 .Select(_ =>
                 {
                     return (_globalState, (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
-                      / (Stopwatch.Frequency / FramesPerSecond));
+                      / TicksPerFrame);
                 })
                 .Publish()
                 .RefCount();
 
             TransitionsTimer = globalTimer
-                               .Select(p => _transitionsFrameCount++)
+                               .Select(p => p)
                                .Publish()
                                .RefCount();
         }
@@ -95,7 +98,7 @@ namespace Avalonia.Animation
         /// The parameter passed to a subsciber is the number of frames since the animation system was
         /// initialized.
         /// </remarks>
-        public static IObservable<ulong> TransitionsTimer
+        public static IObservable<long> TransitionsTimer
         {
             get;
         }
@@ -113,16 +116,14 @@ namespace Avalonia.Animation
         /// </remarks>
         public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
-            var startTime = _transitionsFrameCount;
-            var _duration = (ulong)(duration.Ticks / FrameTick.Ticks);
-            var endTime = startTime + _duration;
+            var _duration = (duration.Ticks / FrameTick.Ticks);
+            var endTime = _duration;
 
             return TransitionsTimer
                 .TakeWhile(x => x < endTime)
-                .Select(x => (double)(x - startTime) / _duration)
+                .Select(x => (double)x / _duration)
                 .StartWith(0.0)
                 .Concat(Observable.Return(1.0));
         }
-
     }
 }

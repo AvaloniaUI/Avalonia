@@ -163,16 +163,16 @@ namespace Avalonia.Animation
                                     animationDirection == PlaybackDirection.AlternateReverse ? (currentIteration % 2 == 0) ? true : false :
                                     animationDirection == PlaybackDirection.Reverse ? true : false;
 
-            double x1 = delayFC;
-            double x2 = x1 + durationFC;
+            double delayEndpoint = delayFC;
+            double iterationEndpoint = delayEndpoint + durationFC;
 
-            if (delayFC > 0 & t >= 0 & t <= x1)
+            if (delayFC > 0 & t >= 0 & t <= delayEndpoint)
             {
-                if (currentIteration == 0 && delayBetweenIterations)
+                if (currentIteration == 0 || delayBetweenIterations)
                     DoDelay();
 
             }
-            else if (t >= x1 & t <= x2)
+            else if (t >= delayEndpoint & t <= iterationEndpoint)
             {
                 var interpVal = t / durationFC;
 
@@ -184,7 +184,7 @@ namespace Avalonia.Animation
                 lastInterpValue = Interpolator(easedTime, neutralValue);
                 targetObserver.OnNext(lastInterpValue);
             }
-            else if (t > x2 & (currentIteration + 1 > repeatCount & !isLooping))
+            else if (t > iterationEndpoint & (currentIteration + 1 > repeatCount & !isLooping))
             {
                 DoComplete();
             }
