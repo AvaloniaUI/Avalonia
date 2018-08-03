@@ -9,7 +9,7 @@ namespace Avalonia.Animation
     /// Provides statefulness for an iteration of a keyframe animation.
     /// </summary>
     internal class AnimatorStateMachine<T> : IObservable<T>, IDisposable
-    {
+    { 
         T lastInterpValue;
         T firstKFValue;
 
@@ -36,8 +36,9 @@ namespace Avalonia.Animation
 
         private Easings.Easing EaseFunc;
         private IObserver<T> targetObserver;
+        private readonly Action onComplete;
 
-        public void Initialize(Animation animation, Animatable control, Animator<T> animator)
+        public AnimatorStateMachine(Animation animation, Animatable control, Animator<T> animator, Action onComplete)
         {
 
             if (animation.SpeedRatio <= 0 || DoubleUtils.AboutEqual(animation.SpeedRatio, 0))
@@ -71,8 +72,8 @@ namespace Avalonia.Animation
             }
 
             animationDirection = animation.PlaybackDirection;
-            fillMode = animation.FillMode;
-
+            fillMode = animation.FillMode; 
+            onComplete = onComplete;
         }
 
         public void Step(PlayState playState, long frameTick, Func<double, T, T> Interpolator)
@@ -93,6 +94,8 @@ namespace Avalonia.Animation
                 targetControl.SetValue(parent.Property, lastInterpValue, BindingPriority.LocalValue);
 
             targetObserver.OnCompleted();
+            onComplete?.Invoke();
+            Dispose();
         }
 
         private void DoDelay()

@@ -35,7 +35,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete)
         {
             if (!_isVerfifiedAndConverted)
                 VerifyConvertKeyFrames();
@@ -45,7 +45,7 @@ namespace Avalonia.Animation
                 .Where(p => p && Timing.GetGlobalPlayState() != PlayState.Pause)
                 .Subscribe(_ =>
                 {
-                    var timerObs = RunKeyFrames(animation, control);
+                    var timerObs = RunKeyFrames(animation, control, onComplete);
                 });
         }
 
@@ -97,10 +97,9 @@ namespace Avalonia.Animation
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control)
+        private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
         {
-            var stateMachine = new AnimatorStateMachine<T>();
-            stateMachine.Initialize(animation, control, this);
+            var stateMachine = new AnimatorStateMachine<T>(animation, control, this, onComplete);
 
             Timing.AnimationStateTimer
                         .TakeWhile(_ => !stateMachine.unsubscribe)

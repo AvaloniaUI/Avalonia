@@ -16,7 +16,7 @@ namespace Avalonia.Animation
     public class AnimatorKeyFrame : AvaloniaObject
     {
         public static readonly DirectProperty<AnimatorKeyFrame, object> ValueProperty =
-            AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object>(nameof(Value), k => k._value, (k, v) => k._value = v);
+            AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
 
         public AnimatorKeyFrame()
         {
