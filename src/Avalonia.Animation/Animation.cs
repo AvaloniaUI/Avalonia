@@ -85,12 +85,7 @@ namespace Avalonia.Animation
         /// Sets the behavior for having a delay between repeats for this animation.
         /// </summary>
         public bool DelayBetweenRepeats { get; set; }
-        
-        public Animation()
-        {
-            this.CollectionChanged += delegate { _isChildrenChanged = true; };
-        }
-  
+
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
             var handlerList = new List<(Type type, AvaloniaProperty property)>();

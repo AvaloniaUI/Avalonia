@@ -73,7 +73,7 @@ namespace Avalonia.Animation
 
             animationDirection = animation.PlaybackDirection;
             fillMode = animation.FillMode; 
-            onComplete = onComplete;
+            this.onComplete = onComplete;
         }
 
         public void Step(PlayState playState, long frameTick, Func<double, T, T> Interpolator)
