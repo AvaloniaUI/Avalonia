@@ -10,13 +10,16 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Reactive.Linq;
+using System.Reactive.Disposables;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : AvaloniaList<KeyFrame>, IDisposable, IAnimation
+    public class Animation : AvaloniaList<KeyFrame>, IAnimation
     {
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
@@ -24,7 +27,7 @@ namespace Avalonia.Animation
         };
 
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
-            where TAnimator: IAnimator
+            where TAnimator : IAnimator
         {
             Animators.Insert(0, (condition, typeof(TAnimator)));
         }
@@ -41,8 +44,6 @@ namespace Avalonia.Animation
             return null;
         }
 
-        private bool _isChildrenChanged = false;
-        private List<IDisposable> _subscription = new List<IDisposable>();
         public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
         /// <summary>
@@ -68,22 +69,18 @@ namespace Avalonia.Animation
         /// <summary>
         /// The value fill mode for this animation.
         /// </summary>
-        public FillMode FillMode { get; set; } 
+        public FillMode FillMode { get; set; }
 
         /// <summary>
         /// Easing function to be used.
-        /// </summary> 
+        /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
 
-        public Animation()
+        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
-            this.CollectionChanged += delegate { _isChildrenChanged = true; };
-        }
- 
-        private void InterpretKeyframes()
-        {
-            var handlerList = new List<(Type, AvaloniaProperty)>();
-            var kfList = new List<AnimatorKeyFrame>();
+            var handlerList = new List<(Type type, AvaloniaProperty property)>();
+            var animatorKeyFrames = new List<AnimatorKeyFrame>();
+            var subscriptions = new List<IDisposable>();
 
             foreach (var keyframe in this)
             {
@@ -99,68 +96,87 @@ namespace Avalonia.Animation
                     if (!handlerList.Contains((handler, setter.Property)))
                         handlerList.Add((handler, setter.Property));
 
-                    var newKF = new AnimatorKeyFrame()
-                    {
-                        Handler = handler,
-                        Property = setter.Property,
-                        Cue = keyframe.Cue,
-                        KeyTime = keyframe.KeyTime,
-                        timeSpanSet = keyframe.timeSpanSet,
-                        cueSet = keyframe.cueSet,
-                        Value = setter.Value
-                    };
+                    var cue = keyframe.Cue;
 
-                    kfList.Add(newKF);
+                    if (keyframe.TimingMode == KeyFrameTimingMode.TimeSpan)
+                    {
+                        cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
+                    }
+
+                    var newKF = new AnimatorKeyFrame(handler, cue);
+
+                    subscriptions.Add(newKF.BindSetter(setter, control));
+
+                    animatorKeyFrames.Add(newKF);
                 }
             }
 
-            var newAnimatorInstances = new List<(Type handler, AvaloniaProperty prop, IAnimator inst)>();
+            var newAnimatorInstances = new List<IAnimator>();
 
-            foreach (var handler in handlerList)
+            foreach (var (handlerType, property) in handlerList)
             {
-                var newInstance = (IAnimator)Activator.CreateInstance(handler.Item1);
-                newInstance.Property = handler.Item2;
-                newAnimatorInstances.Add((handler.Item1, handler.Item2, newInstance));
+                var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
+                newInstance.Property = property;
+                newAnimatorInstances.Add(newInstance);
             }
 
-            foreach (var kf in kfList)
+            foreach (var keyframe in animatorKeyFrames)
             {
-                var parent = newAnimatorInstances.Where(p => p.handler == kf.Handler &&
-                                                             p.prop == kf.Property)
-                                                 .First();
-                parent.inst.Add(kf);
+                var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
+                                                             a.Property == keyframe.Property);
+                animator.Add(keyframe);
             }
 
-            foreach(var instance in newAnimatorInstances)
-                _animators.Add(instance.inst);
-
-        }
-
-        /// <summary>
-        /// Cancels the animation.
-        /// </summary>
-        public void Dispose()
-        {
-            foreach (var sub in _subscription)
-            {
-                sub.Dispose();
-            }
+            return (newAnimatorInstances, subscriptions);
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, IObservable<bool> matchObs)
+        public IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete)
         {
-            if (_isChildrenChanged)
+            var (animators, subscriptions) = InterpretKeyframes(control);
+            if (animators.Count == 1)
             {
-                InterpretKeyframes();
-                _isChildrenChanged = false;
+                subscriptions.Add(animators[0].Apply(this, control, match, onComplete));
             }
+            else
+            {
+                var completionTasks = onComplete != null ? new List<Task>() : null;
+                foreach (IAnimator animator in animators)
+                {
+                    Action animatorOnComplete = null;
+                    if (onComplete != null)
+                    {
+                        var tcs = new TaskCompletionSource<object>();
+                        animatorOnComplete = () => tcs.SetResult(null);
+                        completionTasks.Add(tcs.Task);
+                    }
+                    subscriptions.Add(animator.Apply(this, control, match, animatorOnComplete));
+                }
 
-            foreach (IAnimator keyframes in _animators)
-            {
-                _subscription.Add(keyframes.Apply(this, control, matchObs));
+                if (onComplete != null)
+                {
+                    Task.WhenAll(completionTasks).ContinueWith(_ => onComplete());
+                }
             }
-            return this;
+            return new CompositeDisposable(subscriptions);
+        }
+
+        /// <inheritdocs/>
+        public Task RunAsync(Animatable control)
+        {
+            var run = new TaskCompletionSource<object>();
+
+            if (this.RepeatCount == RepeatCount.Loop)
+                run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
+
+            IDisposable subscriptions = null;
+            subscriptions = this.Apply(control, Observable.Return(true), () =>
+            {
+                run.SetResult(null);
+                subscriptions?.Dispose();
+            });
+
+            return run.Task;
         }
     }
 }

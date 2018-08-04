@@ -36,6 +36,7 @@ namespace Avalonia.Markup.Xaml.Context
         private static readonly IEnumerable<Assembly> ForcedAssemblies = new[]
         {
             typeof(AvaloniaObject).GetTypeInfo().Assembly,
+            typeof(Animation.Animation).GetTypeInfo().Assembly,
             typeof(Control).GetTypeInfo().Assembly,
             typeof(Style).GetTypeInfo().Assembly,
             typeof(DataTemplate).GetTypeInfo().Assembly,

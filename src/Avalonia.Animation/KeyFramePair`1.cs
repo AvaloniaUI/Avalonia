@@ -22,7 +22,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="FirstKeyFrame"></param>
         /// <param name="LastKeyFrame"></param>
-        public KeyFramePair(KeyValuePair<double, (T, bool)> FirstKeyFrame, KeyValuePair<double, (T, bool)> LastKeyFrame) : this()
+        public KeyFramePair((T TargetValue, bool isNeutral) FirstKeyFrame, (T TargetValue, bool isNeutral) LastKeyFrame) : this()
         {
             this.FirstKeyFrame = FirstKeyFrame;
             this.SecondKeyFrame = LastKeyFrame;
@@ -31,11 +31,11 @@ namespace Avalonia.Animation
         /// <summary>
         /// First <see cref="KeyFrame"/> object.
         /// </summary>
-        public KeyValuePair<double, (T TargetValue, bool isNeutral)> FirstKeyFrame { get; private set; }
+        public (T TargetValue, bool isNeutral) FirstKeyFrame { get; }
 
         /// <summary>
         /// Second <see cref="KeyFrame"/> object.
         /// </summary>
-        public KeyValuePair<double, (T TargetValue, bool isNeutral)> SecondKeyFrame { get; private set; }
+        public (T TargetValue, bool isNeutral) SecondKeyFrame { get; }
     }
 }
