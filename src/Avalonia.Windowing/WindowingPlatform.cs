@@ -35,6 +35,7 @@ namespace Avalonia.Windowing
         internal static WindowingPlatform Instance { get; private set; }
         private readonly EventsLoop _eventsLoop;
         private readonly Dictionary<WindowId, WindowImpl> _windows;
+        private int _uiThreadId;
 
         public WindowingPlatform()
         {
@@ -47,6 +48,7 @@ namespace Avalonia.Windowing
             _eventsLoop.OnShouldExitEventLoop += _eventsLoop_OnShouldExitEventLoop;
             _eventsLoop.OnCloseRequested += _eventsLoop_OnCloseRequested;
             _eventsLoop.OnFocused += _eventsLoop_OnFocused;
+            _uiThreadId = Thread.CurrentThread.ManagedThreadId;
             _windows = new Dictionary<WindowId, WindowImpl>();
         }
 
@@ -126,6 +128,7 @@ namespace Avalonia.Windowing
                 _signaled = false;
             }
 
+            System.Diagnostics.Debug.WriteLine(string.Format("TID {0}", Thread.CurrentThread.ManagedThreadId));
             Signaled?.Invoke(null);
         }
 
@@ -151,7 +154,7 @@ namespace Avalonia.Windowing
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
         }
 
-        public bool CurrentThreadIsLoopThread => true;
+        public bool CurrentThreadIsLoopThread => _uiThreadId == Thread.CurrentThread.ManagedThreadId;
         public event Action<DispatcherPriority?> Signaled;
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
