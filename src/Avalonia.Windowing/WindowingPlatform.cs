@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
-using static Avalonia.Windowing.Bindings.EventsLoop;
 
 namespace Avalonia.Windowing
 {
@@ -150,6 +148,7 @@ namespace Avalonia.Windowing
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
+                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsImpl())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this);
         }
 

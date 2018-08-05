@@ -11,7 +11,7 @@ namespace Avalonia.Windowing
         private static extern IntPtr winit_clipboard_get_text();
 
         [DllImport("winit_wrapper")]
-        private static extern void winit_clipboard_free_string(IntPtr stringPtr);
+        private static extern void winit_free_string(IntPtr stringPtr);
 
         [DllImport("winit_wrapper")]
         private static extern void winit_clipboard_set_text(IntPtr cstringPtr);
@@ -27,7 +27,7 @@ namespace Avalonia.Windowing
 
             var result = Marshal.PtrToStringAnsi(textPtr);
 
-            winit_clipboard_free_string(textPtr);
+            winit_free_string(textPtr);
 
             return Task.FromResult<string>(result);
         }
