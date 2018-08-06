@@ -67,7 +67,7 @@ namespace Avalonia.Windowing
             set
             {
                 _position = value;
-                if (_visible && _visible)
+                if (_visible)
                     _windowWrapper.SetPosition(_position.X, _position.Y);
             }
         }
