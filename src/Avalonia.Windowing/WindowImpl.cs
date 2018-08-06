@@ -288,7 +288,7 @@ namespace Avalonia.Windowing
 
             if (evt.EventType == MouseEventType.Move)
                 _lastPosition = evt.Position;
-
+            
             var modifiers = InputModifiers.None;
 
             if (evt.Control == 1)
