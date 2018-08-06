@@ -84,7 +84,6 @@ namespace Avalonia.Windowing
 
         void _eventsLoop_Resized(WindowId windowId, ResizeEvent resizeEvent)
         {
-            Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
             if (_windows.ContainsKey(windowId)) 
             {
                 _windows[windowId].OnResizeEvent(resizeEvent);    
@@ -127,7 +126,6 @@ namespace Avalonia.Windowing
                 _signaled = false;
             }
 
-            System.Diagnostics.Debug.WriteLine(string.Format("TID {0}", Thread.CurrentThread.ManagedThreadId));
             Signaled?.Invoke(null);
         }
 
@@ -205,7 +203,6 @@ namespace Avalonia.Windowing
             return new WinitTimer(new Timer(delegate
             {
                 var tcs = new TaskCompletionSource<int>();
-
                 Dispatcher.UIThread.Post(() =>
                 {
                     try
@@ -219,16 +216,16 @@ namespace Avalonia.Windowing
                 });
 
                 tcs.Task.Wait();
-            }, null, TimeSpan.Zero, interval)); 
+            }, null, interval.Milliseconds, Timeout.Infinite)); 
         }
     }
 
 	public class WinitTimer : IDisposable
 	{
-		private readonly IDisposable _timer;
+		private readonly Timer _timer;
         private readonly GCHandle _gcHandle;
 
-        public WinitTimer(IDisposable timer) 
+        public WinitTimer(Timer timer) 
         {
             _timer = timer;
             _gcHandle = GCHandle.Alloc(_timer);
@@ -236,8 +233,8 @@ namespace Avalonia.Windowing
 
         public void Dispose()
         {
-            _gcHandle.Free();
             _timer.Dispose();
+            _gcHandle.Free();
         }
 	}
 }
