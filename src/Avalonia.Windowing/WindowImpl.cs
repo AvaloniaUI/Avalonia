@@ -23,6 +23,7 @@ namespace Avalonia.Windowing
 
         private LogicalPosition _lastPosition;
         private const int FramesPerSecond = 60;
+        private bool _visible = false;
 
         public WindowImpl(IWindowWrapper wrapper)
         {
@@ -54,6 +55,8 @@ namespace Avalonia.Windowing
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Func<bool> Closing { get; set; }
+
+        private Point _position;
         public Point Position
         {
             get
@@ -63,7 +66,9 @@ namespace Avalonia.Windowing
             }
             set
             {
-                _windowWrapper.SetPosition(value.X, value.Y);
+                _position = value;
+                if (_visible && _visible)
+                    _windowWrapper.SetPosition(_position.X, _position.Y);
             }
         }
 
@@ -128,6 +133,7 @@ namespace Avalonia.Windowing
         public void Hide()
         {
             _windowWrapper.Hide();
+            _visible = false;
         }
 
         private Rect coalescedRect = Rect.Empty;
@@ -187,7 +193,9 @@ namespace Avalonia.Windowing
 
         public void Show()
         {
+            _visible = true;
             _windowWrapper.Show();
+            Position = _position;
         }
 
         public IDisposable ShowDialog()
