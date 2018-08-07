@@ -116,7 +116,6 @@ namespace Avalonia.Windowing
             }
         }
 
-        private bool _signaled;
         private void _eventsLoop_Awakened()
         {
             Signaled?.Invoke(null);
