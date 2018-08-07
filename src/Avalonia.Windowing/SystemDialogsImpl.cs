@@ -14,6 +14,10 @@ namespace Avalonia.Windowing
         private static extern void winit_open_file_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
         [DllImport("winit_wrapper")]
+        private static extern void winit_save_file_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
+
+
+        [DllImport("winit_wrapper")]
         private static extern void winit_free_string(IntPtr stringPtr);
 
         private delegate void DialogResultCallback(IntPtr result);
@@ -24,32 +28,33 @@ namespace Avalonia.Windowing
         {
             var completionSource = new TaskCompletionSource<string[]>();
 
+            DialogResultCallback del = null;
+
+            del = resultPtr =>
+            {
+                var paths = Marshal.PtrToStringAnsi(resultPtr);
+
+                _pinnedDelegates.Remove(del);
+
+                completionSource.SetResult(paths?.Split(';'));
+            };
+
+            _pinnedDelegates.Add(del);
+
+            var initialPathPtr = Marshal.StringToHGlobalAnsi(dialog.InitialFileName);
+            var filtersPtr = Marshal.StringToHGlobalAnsi("");
+
             if (dialog is OpenFileDialog openDialog)
             {
-                var initialPathPtr = Marshal.StringToHGlobalAnsi(dialog.InitialFileName);
-                var filtersPtr = Marshal.StringToHGlobalAnsi("");
-
-                DialogResultCallback del = null;
-
-                del = resultPtr =>
-                {
-                    var paths = Marshal.PtrToStringAnsi(resultPtr);
-
-                    _pinnedDelegates.Remove(del);
-
-                    completionSource.SetResult(paths.Split(';'));
-                };
-
-                _pinnedDelegates.Add(del);
                 winit_open_file_dialog(initialPathPtr, filtersPtr, del);
-
-                Marshal.FreeHGlobal(initialPathPtr);
-                Marshal.FreeHGlobal(filtersPtr);
             }
             else
             {
-                // Save file dialog
+                winit_save_file_dialog(initialPathPtr, filtersPtr, del);
             }
+
+            Marshal.FreeHGlobal(initialPathPtr);
+            Marshal.FreeHGlobal(filtersPtr);
 
             return completionSource.Task;
         }

@@ -16,7 +16,7 @@ namespace ControlCatalog.Pages
                     Title = "Open file"
                 }.ShowAsync(GetWindow());
 
-                if(result.Length == 1)
+                if(result?.Length == 1)
                 {
 
                 }
