@@ -14,6 +14,9 @@ namespace Avalonia.Windowing
         private static extern void winit_open_file_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
         [DllImport("winit_wrapper")]
+        private static extern void winit_open_folder_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
+
+        [DllImport("winit_wrapper")]
         private static extern void winit_save_file_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
 
@@ -61,7 +64,30 @@ namespace Avalonia.Windowing
 
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-            throw new NotImplementedException();
+            var completionSource = new TaskCompletionSource<string>();
+
+            DialogResultCallback del = null;
+
+            del = resultPtr =>
+            {
+                var paths = Marshal.PtrToStringAnsi(resultPtr);
+
+                _pinnedDelegates.Remove(del);
+
+                completionSource.SetResult(paths);
+            };
+
+            _pinnedDelegates.Add(del);
+
+            var initialPathPtr = Marshal.StringToHGlobalAnsi(dialog.InitialDirectory);
+            var filtersPtr = Marshal.StringToHGlobalAnsi("");
+
+            winit_open_folder_dialog(initialPathPtr, filtersPtr, del);
+
+            Marshal.FreeHGlobal(initialPathPtr);
+            Marshal.FreeHGlobal(filtersPtr);
+
+            return completionSource.Task;
         }
     }
 }
