@@ -116,16 +116,8 @@ namespace Avalonia.Windowing
             }
         }
 
-        private bool _signaled;
         private void _eventsLoop_Awakened()
         {
-            lock (this)
-            {
-                if (!_signaled)
-                    return;
-                _signaled = false;
-            }
-
             Signaled?.Invoke(null);
         }
 
@@ -188,13 +180,6 @@ namespace Avalonia.Windowing
 
         public void Signal(DispatcherPriority priority)
         {
-            lock (this)
-            {
-                if (_signaled)
-                    return;
-                _signaled = true;
-            }
-
             _eventsLoop.Wakeup();
         }
 
