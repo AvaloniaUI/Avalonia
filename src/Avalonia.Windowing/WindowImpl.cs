@@ -31,17 +31,14 @@ namespace Avalonia.Windowing
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
 
             // TODO: This is only necessary when using ImmediateRenderer
-            Observable.Repeat(Observable.Timer(TimeSpan.FromMilliseconds(1000 / FramesPerSecond)))
-                      .SubscribeOn(AvaloniaScheduler.Instance)
+            Observable.Interval(TimeSpan.FromMilliseconds(1000 / FramesPerSecond))
+                      .ObserveOn(AvaloniaScheduler.Instance)
                       .Subscribe((x) =>
                       {
                         // Dont schedule a paint for empty invalidations.
                         if (coalescedRect != Rect.Empty) {
-                            Dispatcher.UIThread.Post(() => 
-                            { 
-                                Paint(coalescedRect);
-                                coalescedRect = Rect.Empty;
-                            }, DispatcherPriority.Render);
+                            Paint(coalescedRect);
+                            coalescedRect = Rect.Empty;
                         }
                       });
         }
