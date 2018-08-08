@@ -12,13 +12,13 @@ namespace Avalonia.Windowing
     public class SystemDialogsImpl : ISystemDialogImpl
     {
         [DllImport("winit_wrapper")]
-        private static extern void winit_open_file_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
+        private static extern void winit_open_file_dialog(IntPtr title, IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
         [DllImport("winit_wrapper")]
-        private static extern void winit_open_folder_dialog(IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
+        private static extern void winit_open_folder_dialog(IntPtr title, IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
         [DllImport("winit_wrapper")]
-        private static extern void winit_save_file_dialog(IntPtr initalPathString, IntPtr initialFileString, IntPtr filterString, DialogResultCallback callback);
+        private static extern void winit_save_file_dialog(IntPtr title, IntPtr initalPathString, IntPtr initialFileString, IntPtr filterString, DialogResultCallback callback);
 
 
         [DllImport("winit_wrapper")]
@@ -48,23 +48,25 @@ namespace Avalonia.Windowing
             IntPtr initialPathPtr;
             
             var filtersPtr = Marshal.StringToHGlobalAnsi("");
+            var titlePtr = Marshal.StringToHGlobalAnsi(dialog.Title);
 
             if (dialog is OpenFileDialog openDialog)
             {
                 initialPathPtr = Marshal.StringToHGlobalAnsi(Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
                                                                           string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName));
-                winit_open_file_dialog(initialPathPtr, filtersPtr, del);
+                winit_open_file_dialog(titlePtr, initialPathPtr, filtersPtr, del);
             }
             else
             {
                 var initialFileNamePtr = Marshal.StringToHGlobalAnsi(dialog.InitialFileName);
                 initialPathPtr = Marshal.StringToHGlobalAnsi(dialog.InitialDirectory);
-                winit_save_file_dialog(initialPathPtr, initialFileNamePtr, filtersPtr, del);
+                winit_save_file_dialog(titlePtr, initialPathPtr, initialFileNamePtr, filtersPtr, del);
                 Marshal.FreeHGlobal(initialFileNamePtr);
             }
 
             Marshal.FreeHGlobal(initialPathPtr);
             Marshal.FreeHGlobal(filtersPtr);
+            Marshal.FreeHGlobal(titlePtr);
 
             return completionSource.Task;
         }
@@ -87,12 +89,14 @@ namespace Avalonia.Windowing
             _pinnedDelegates.Add(del);
 
             var initialPathPtr = Marshal.StringToHGlobalAnsi(dialog.InitialDirectory);
+            var titlePtr = Marshal.StringToHGlobalAnsi(dialog.Title);
             var filtersPtr = Marshal.StringToHGlobalAnsi("");
 
-            winit_open_folder_dialog(initialPathPtr, filtersPtr, del);
+            winit_open_folder_dialog(titlePtr, initialPathPtr, filtersPtr, del);
 
             Marshal.FreeHGlobal(initialPathPtr);
             Marshal.FreeHGlobal(filtersPtr);
+            Marshal.FreeHGlobal(titlePtr);
 
             return completionSource.Task;
         }
