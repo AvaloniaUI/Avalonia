@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
 
@@ -142,7 +144,8 @@ namespace Avalonia.Windowing
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsImpl())
-                .Bind<IPlatformThreadingInterface>().ToConstant(this);
+                .Bind<IPlatformThreadingInterface>().ToConstant(this)
+                .Bind<IRenderLoop>().ToConstant(new WinitRenderLoop(this));
         }
 
         public bool CurrentThreadIsLoopThread => _uiThreadId == Thread.CurrentThread.ManagedThreadId;

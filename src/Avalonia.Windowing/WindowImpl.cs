@@ -31,7 +31,7 @@ namespace Avalonia.Windowing
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
 
             // TODO: This is only necessary when using ImmediateRenderer
-            Observable.Interval(TimeSpan.FromMilliseconds(1000 / FramesPerSecond))
+       /*     Observable.Interval(TimeSpan.FromMilliseconds(1000 / FramesPerSecond))
                       .ObserveOn(AvaloniaScheduler.Instance)
                       .Subscribe((x) =>
                       {
@@ -40,7 +40,7 @@ namespace Avalonia.Windowing
                             Paint(coalescedRect);
                             coalescedRect = Rect.Empty;
                         }
-                      });
+                      });*/
         }
 
         private void ResizeForManagedDrag(Rect obj)
@@ -119,7 +119,7 @@ namespace Avalonia.Windowing
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
         }
 
         public void Dispose()
@@ -307,7 +307,7 @@ namespace Avalonia.Windowing
             {
                 modifiers |= InputModifiers.Windows;
             }
-            
+
             OnInput
             (
                 eventType != RawMouseEventType.Wheel ?
