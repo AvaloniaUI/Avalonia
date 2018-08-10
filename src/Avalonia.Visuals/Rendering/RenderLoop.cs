@@ -5,6 +5,13 @@ using Avalonia.Threading;
 
 namespace Avalonia.Rendering
 {
+    /// <summary>
+    /// The application render loop.
+    /// </summary>
+    /// <remarks>
+    /// The render loop is responsible for advancing the animation timer and updating the scene
+    /// graph for visible windows.
+    /// </remarks>
     public class RenderLoop : IRenderLoop
     {
         private readonly IDispatcher _dispatcher;
@@ -12,17 +19,28 @@ namespace Avalonia.Rendering
         private IRenderTimer _timer;
         private bool inTick;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RenderLoop"/> class.
+        /// </summary>
         public RenderLoop()
         {
             _dispatcher = Dispatcher.UIThread;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RenderLoop"/> class.
+        /// </summary>
+        /// <param name="timer">The render timer.</param>
+        /// <param name="dispatcher">The UI thread dispatcher.</param>
         public RenderLoop(IRenderTimer timer, IDispatcher dispatcher)
         {
             _timer = timer;
             _dispatcher = dispatcher;
         }
 
+        /// <summary>
+        /// Gets the render timer.
+        /// </summary>
         protected IRenderTimer Timer
         {
             get
@@ -36,6 +54,7 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc/>
         public void Add(IRenderLoopTask i)
         {
             Contract.Requires<ArgumentNullException>(i != null);
@@ -49,6 +68,7 @@ namespace Avalonia.Rendering
             }
         }
 
+        /// <inheritdoc/>
         public void Remove(IRenderLoopTask i)
         {
             Contract.Requires<ArgumentNullException>(i != null);
