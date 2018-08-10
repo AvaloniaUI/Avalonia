@@ -1,9 +1,5 @@
 ﻿using System;
-<<<<<<< HEAD
-using System.Reactive.Linq;
-=======
 using Avalonia.Platform;
->>>>>>> windowing-prototype3
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
