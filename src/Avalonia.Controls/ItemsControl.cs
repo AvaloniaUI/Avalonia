@@ -330,31 +330,34 @@ namespace Avalonia.Controls
         /// <param name="e">The key events.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var focus = FocusManager.Instance;
-            var direction = e.Key.ToNavigationDirection();
-            var container = Presenter?.Panel as INavigableContainer;
-
-            if (container == null ||
-                focus.Current == null ||
-                direction == null ||
-                direction.Value.IsTab())
+            if (!e.Handled)
             {
-                return;
-            }
+                var focus = FocusManager.Instance;
+                var direction = e.Key.ToNavigationDirection();
+                var container = Presenter?.Panel as INavigableContainer;
 
-            var current = focus.Current
-                .GetSelfAndVisualAncestors()
-                .OfType<IInputElement>()
-                .FirstOrDefault(x => x.VisualParent == container);
-
-            if (current != null)
-            {
-                var next = container.GetControl(direction.Value, current);
-
-                if (next != null)
+                if (container == null ||
+                    focus.Current == null ||
+                    direction == null ||
+                    direction.Value.IsTab())
                 {
-                    focus.Focus(next, NavigationMethod.Directional);
-                    e.Handled = true;
+                    return;
+                }
+
+                var current = focus.Current
+                    .GetSelfAndVisualAncestors()
+                    .OfType<IInputElement>()
+                    .FirstOrDefault(x => x.VisualParent == container);
+
+                if (current != null)
+                {
+                    var next = GetNextControl(container, direction.Value, current);
+
+                    if (next != null)
+                    {
+                        focus.Focus(next, NavigationMethod.Directional);
+                        e.Handled = true;
+                    }
                 }
             }
 
@@ -497,6 +500,28 @@ namespace Avalonia.Controls
             {
                 ItemCount = Items.Count();
             }
+        }
+
+        protected static IInputElement GetNextControl(
+            INavigableContainer container,
+            NavigationDirection direction,
+            IInputElement from)
+        {
+            IInputElement result;
+
+            while (from != null)
+            {
+                result = container.GetControl(direction, from);
+
+                if (result?.Focusable == true)
+                {
+                    return result;
+                }
+
+                from = result;
+            }
+
+            return null;
         }
     }
 }
