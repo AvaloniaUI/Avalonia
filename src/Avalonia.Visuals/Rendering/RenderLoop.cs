@@ -10,7 +10,7 @@ namespace Avalonia.Rendering
         private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private IRenderTimer _timer;
-        private volatile bool inTick;
+        private bool inTick;
 
         public RenderLoop()
         {
