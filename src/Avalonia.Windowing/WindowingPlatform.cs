@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,33 +9,21 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Windowing.Bindings;
 
 namespace Avalonia.Windowing
 {
-    public class DummyPlatformHandle : IPlatformHandle
-    {
-        public IntPtr Handle => IntPtr.Zero;
-
-        public string HandleDescriptor => "Dummy";
-    }
-
-
-    public class CursorFactory : IStandardCursorFactory
-    {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-        {
-            return new DummyPlatformHandle();
-        }
-    }
-
     public class WindowingPlatform : IPlatformThreadingInterface, IWindowingPlatform
     {
-        internal static WindowingPlatform Instance { get; private set; }
+        private static WindowingPlatform Instance { get; set; }
         private readonly EventsLoop _eventsLoop;
         private readonly Dictionary<WindowId, WindowImpl> _windows;
         private int _uiThreadId;
+
+        public bool CurrentThreadIsLoopThread => _uiThreadId == Thread.CurrentThread.ManagedThreadId;
+        public event Action<DispatcherPriority?> Signaled;
 
         public WindowingPlatform()
         {
@@ -116,7 +105,6 @@ namespace Avalonia.Windowing
             }
         }
 
-        private bool _signaled;
         private void _eventsLoop_Awakened()
         {
             Signaled?.Invoke(null);
@@ -129,30 +117,22 @@ namespace Avalonia.Windowing
             Instance.DoInitialize();
         }
 
-        private readonly IKeyboardDevice keyboardDevice = new KeyboardDevice();
-        private readonly IMouseDevice mouseDevice = new MouseDevice();
-
         public void DoInitialize() 
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IKeyboardDevice>().ToConstant(keyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(mouseDevice)
+                .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
+                .Bind<IMouseDevice>().ToConstant(new MouseDevice())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoader())
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory())
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettings())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsImpl())
-                .Bind<IPlatformThreadingInterface>().ToConstant(this);
+                .Bind<IPlatformThreadingInterface>().ToConstant(this)
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop());
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThreadId == Thread.CurrentThread.ManagedThreadId;
-        public event Action<DispatcherPriority?> Signaled;
-
-        public IEmbeddableWindowImpl CreateEmbeddableWindow()
-        {
-            throw new NotImplementedException();
-        }
+        public IEmbeddableWindowImpl CreateEmbeddableWindow() => throw new NotImplementedException();
 
         public IPopupImpl CreatePopup()
         {
@@ -175,7 +155,6 @@ namespace Avalonia.Windowing
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            // TODO: Support canceling the EventLoop here.
             _eventsLoop.Run();
         }
 
@@ -186,7 +165,7 @@ namespace Avalonia.Windowing
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return new WinitTimer(new Timer(delegate
+            return new Timer(delegate
             {
                 var tcs = new TaskCompletionSource<int>();
                 Dispatcher.UIThread.Post(() =>
@@ -202,25 +181,7 @@ namespace Avalonia.Windowing
                 });
 
                 tcs.Task.Wait();
-            }, null, interval.Milliseconds, Timeout.Infinite)); 
+            }, null, interval.Milliseconds, Timeout.Infinite);
         }
     }
-
-	public class WinitTimer : IDisposable
-	{
-		private readonly Timer _timer;
-        private readonly GCHandle _gcHandle;
-
-        public WinitTimer(Timer timer) 
-        {
-            _timer = timer;
-            _gcHandle = GCHandle.Alloc(_timer);
-        }
-
-        public void Dispose()
-        {
-            _timer.Dispose();
-            _gcHandle.Free();
-        }
-	}
 }

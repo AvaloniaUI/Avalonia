@@ -119,7 +119,7 @@ namespace Avalonia.Windowing
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
         }
 
         public void Dispose()
