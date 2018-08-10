@@ -1,22 +1,27 @@
 ﻿using System;
+<<<<<<< HEAD
 using System.Reactive.Linq;
+=======
+using Avalonia.Platform;
+>>>>>>> windowing-prototype3
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Windowing
 {
-    public class WinitRenderLoop : IRenderLoop
+    public class RenderLoop : IRenderLoop
     {
-        public event EventHandler<EventArgs> Tick;
-
         private readonly IDisposable _timer;
-        public WinitRenderLoop(WindowingPlatform platform)
+        public RenderLoop()
         {
-            _timer = Observable.Interval(TimeSpan.FromMilliseconds(1000 / 60), AvaloniaScheduler.Instance)
-                               .Subscribe((_) =>
-            {
-                Tick?.Invoke(this, EventArgs.Empty);
-            });
+            _timer = AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(
+                TimeSpan.FromMilliseconds(1000 / 60),
+                () =>
+                {
+                    Dispatcher.UIThread.Post(() => Tick?.Invoke(this, EventArgs.Empty), DispatcherPriority.Render);    
+                });
         }
+
+        public event EventHandler<EventArgs> Tick;
     }
 }
