@@ -7,10 +7,19 @@ namespace Avalonia.Controls
     using System;
     using System.Reactive.Linq;
     using System.Linq;
+    using System.ComponentModel;
+
     public class ContextMenu : SelectingItemsControl
     {
         private bool _isOpen;
         private Popup _popup;
+
+        /// <summary>
+        /// Defines the <see cref="IsOpen"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ContextMenu, bool> IsOpenProperty =
+                            AvaloniaProperty.RegisterDirect<ContextMenu, bool>(nameof(IsOpen), o => o.IsOpen);
+
 
         /// <summary>
         /// Initializes static members of the <see cref="ContextMenu"/> class.
@@ -21,6 +30,26 @@ namespace Avalonia.Controls
 
             MenuItem.ClickEvent.AddClassHandler<ContextMenu>(x => x.OnContextMenuClick, handledEventsToo: true);
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the popup is open
+        /// </summary>
+        public bool IsOpen => _isOpen;
+
+        /// <summary>
+        /// Occurs when the value of the
+        /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
+        /// property is changing from false to true.
+        /// </summary>
+        public event CancelEventHandler ContextMenuOpening;
+
+        /// <summary>
+        /// Occurs when the value of the
+        /// <see cref="P:Avalonia.Controls.ContextMenu.IsOpen" />
+        /// property is changing from true to false.
+        /// </summary>
+        public event CancelEventHandler ContextMenuClosing;
+
 
         /// <summary>
         /// Called when the <see cref="Control.ContextMenu"/> property changes on a control.
@@ -59,12 +88,12 @@ namespace Avalonia.Controls
         {
             if (_popup != null && _popup.IsVisible)
             {
-                _popup.Close();
+                _popup.IsOpen = false;
             }
 
             SelectedIndex = -1;
 
-            _isOpen = false;
+            SetAndRaise(IsOpenProperty, ref _isOpen, false);
         }
 
         /// <summary>
@@ -89,11 +118,11 @@ namespace Avalonia.Controls
                 }
 
                 ((ISetLogicalParent)_popup).SetParent(control);
-                _popup.Child = control.ContextMenu;
+                _popup.Child = this;
 
-                _popup.Open();
+                _popup.IsOpen = true;
 
-                control.ContextMenu._isOpen = true;
+                SetAndRaise(IsOpenProperty, ref _isOpen, true);
             }
         }
 
@@ -118,21 +147,37 @@ namespace Avalonia.Controls
             var control = (Control)sender;
             var contextMenu = control.ContextMenu;
 
+            if (control.ContextMenu._isOpen)
+            {
+                if (contextMenu.CancelClosing())
+                    return;
+
+                control.ContextMenu.Hide();
+                e.Handled = true;
+            }
+
             if (e.MouseButton == MouseButton.Right)
             {
-                if (control.ContextMenu._isOpen)
-                {
-                    control.ContextMenu.Hide();
-                }
+                if (contextMenu.CancelOpening())
+                    return;
 
                 contextMenu.Show(control);
                 e.Handled = true;
             }
-            else if (contextMenu._isOpen)
-            {
-                control.ContextMenu.Hide();
-                e.Handled = true;
-            }
+        }
+
+        private bool CancelClosing()
+        {
+            var eventArgs = new CancelEventArgs();
+            ContextMenuClosing?.Invoke(this, eventArgs);
+            return eventArgs.Cancel;
+        }
+
+        private bool CancelOpening()
+        {
+            var eventArgs = new CancelEventArgs();
+            ContextMenuOpening?.Invoke(this, eventArgs);
+            return eventArgs.Cancel;
         }
     }
 }
