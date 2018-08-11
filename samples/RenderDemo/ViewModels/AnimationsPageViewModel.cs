@@ -10,21 +10,21 @@ namespace RenderDemo.ViewModels
 
         public AnimationsPageViewModel()
         {
-            ToggleGlobalPlayState = ReactiveCommand.Create(()=>TogglePlayState());
+            ToggleGlobalPlayState = ReactiveCommand.Create(() => TogglePlayState());
         }
 
         void TogglePlayState()
         {
-            switch (Timing.GetGlobalPlayState())
+            switch (Timing.GlobalPlayState)
             {
                 case PlayState.Run:
                     PlayStateText = "Resume all animations";
-                    Timing.SetGlobalPlayState(PlayState.Pause);
+                    Timing.GlobalPlayState = PlayState.Pause;
                     break;
 
                 case PlayState.Pause:
                     PlayStateText = "Pause all animations";
-                    Timing.SetGlobalPlayState(PlayState.Run);
+                    Timing.GlobalPlayState = PlayState.Run;
                     break;
             }
         }
@@ -36,5 +36,5 @@ namespace RenderDemo.ViewModels
         }
 
         public ReactiveCommand ToggleGlobalPlayState { get; }
-     }
+    }
 }

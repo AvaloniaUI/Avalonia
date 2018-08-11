@@ -21,7 +21,7 @@ namespace Avalonia.Animation
         /// </summary>
         private readonly SortedList<double, (AnimatorKeyFrame, bool isNeutral)> _convertedKeyframes = new SortedList<double, (AnimatorKeyFrame, bool)>();
 
-        private bool _isVerfifiedAndConverted;
+        private bool isVerfifiedAndConverted;
 
         /// <summary>
         /// Gets or sets the target property for the keyframe.
@@ -31,18 +31,17 @@ namespace Avalonia.Animation
         public Animator()
         {
             // Invalidate keyframes when changed.
-            this.CollectionChanged += delegate { _isVerfifiedAndConverted = false; };
+            this.CollectionChanged += delegate { isVerfifiedAndConverted = false; };
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> Match, Action onComplete)
         {
-            if (!_isVerfifiedAndConverted)
+            if (!isVerfifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return obsMatch
-                // Ignore triggers when global timers are paused.
-                .Where(p => p && Timing.GetGlobalPlayState() != PlayState.Pause)
+            return Match
+                .Where(p => p)
                 .Subscribe(_ =>
                 {
                     var timerObs = RunKeyFrames(animation, control, onComplete);
@@ -101,9 +100,9 @@ namespace Avalonia.Animation
         {
             var stateMachine = new AnimatorStateMachine<T>(animation, control, this, onComplete);
 
-            Timing.AnimationStateTimer
+            Timing.AnimationsTimer
                         .TakeWhile(_ => !stateMachine.unsubscribe)
-                        .Subscribe(p => stateMachine.Step(p.Item1, p.Item2, DoInterpolation));
+                        .Subscribe(p => stateMachine.Step(p, DoInterpolation));
 
             return control.Bind<T>((AvaloniaProperty<T>)Property, stateMachine, BindingPriority.Animation);
         }
@@ -124,7 +123,7 @@ namespace Avalonia.Animation
             }
 
             AddNeutralKeyFramesIfNeeded();
-            _isVerfifiedAndConverted = true;
+            isVerfifiedAndConverted = true;
 
         }
 
@@ -133,7 +132,7 @@ namespace Avalonia.Animation
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
 
-            // Make start and end keyframe mandatory.
+            // Check if there's start and end keyframes.
             foreach (var converted in _convertedKeyframes.Keys)
             {
                 if (DoubleUtils.AboutEqual(converted, 0.0))

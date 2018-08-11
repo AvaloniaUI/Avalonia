@@ -16,15 +16,17 @@ namespace Avalonia.Animation
     public static class Timing
     {
         static long _tickStartTimeStamp;
-        static PlayState _globalState = PlayState.Run;
         static long TicksPerFrame = Stopwatch.Frequency / FramesPerSecond;
 
+        /// <summary>
+        /// Gets or sets the animation play state for all animations
+        /// </summary> 
+        public static PlayState GlobalPlayState { get; set; } = PlayState.Run;
 
         /// <summary>
         /// The number of frames per second.
         /// </summary>
         public const int FramesPerSecond = 60;
-
 
         /// <summary>
         /// The time span of each frame.
@@ -36,45 +38,20 @@ namespace Avalonia.Animation
         /// </summary>
         static Timing()
         {
-
             _tickStartTimeStamp = Stopwatch.GetTimestamp();
 
             var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
-
-            AnimationStateTimer = globalTimer
+            AnimationsTimer = globalTimer
                 .Select(_ =>
                 {
-                    return (_globalState, (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
-                      / TicksPerFrame);
+                    return (Stopwatch.GetTimestamp() - _tickStartTimeStamp)
+                      / TicksPerFrame * 2;
                 })
                 .Publish()
                 .RefCount();
-
-            TransitionsTimer = globalTimer
-                               .Select(p => p)
-                               .Publish()
-                               .RefCount();
         }
 
-
-        /// <summary>
-        /// Sets the animation play state for all animations
-        /// </summary>
-        public static void SetGlobalPlayState(PlayState playState)
-        {
-            Dispatcher.UIThread.VerifyAccess();
-            _globalState = playState;
-        }
-
-        /// <summary>
-        /// Gets the animation play state for all animations
-        /// </summary>
-        public static PlayState GetGlobalPlayState()
-        {
-            Dispatcher.UIThread.VerifyAccess();
-            return _globalState;
-        }
 
         /// <summary>
         /// Gets the animation timer.
@@ -84,21 +61,7 @@ namespace Avalonia.Animation
         /// defined in <see cref="FramesPerSecond"/>.
         /// The parameter passed to a subsciber is the current playstate of the animation.
         /// </remarks>
-        internal static IObservable<(PlayState, long)> AnimationStateTimer
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets the transitions timer.
-        /// </summary>
-        /// <remarks>
-        /// The transitions timer increments usually 60 times per second as
-        /// defined in <see cref="FramesPerSecond"/>.
-        /// The parameter passed to a subsciber is the number of frames since the animation system was
-        /// initialized.
-        /// </remarks>
-        public static IObservable<long> TransitionsTimer
+        internal static IObservable<long> AnimationsTimer
         {
             get;
         }
@@ -116,10 +79,12 @@ namespace Avalonia.Animation
         /// </remarks>
         public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
         {
+            // TODO: Fix this mess.
             var _duration = (duration.Ticks / FrameTick.Ticks);
-            var endTime = _duration;
+            long? endTime = ((Stopwatch.GetTimestamp() - _tickStartTimeStamp)
+                      / TicksPerFrame) + _duration;
 
-            return TransitionsTimer
+            return AnimationsTimer
                 .TakeWhile(x => x < endTime)
                 .Select(x => (double)x / _duration)
                 .StartWith(0.0)
