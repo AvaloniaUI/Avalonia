@@ -1,15 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Data.Core;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Data.Core.Parsers
+namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> Parse(Reader r, char open, char close)
+        public static IList<string> Parse(CharacterReader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {
@@ -20,7 +22,7 @@ namespace Avalonia.Data.Core.Parsers
                 while (!r.End)
                 {
                     var builder = new StringBuilder();
-                    while (!r.End && r.Peek != ',' && r.Peek != close && !char.IsWhiteSpace(r.Peek))
+                    while (!r.End && r.Peek != delimiter && r.Peek != close && !char.IsWhiteSpace(r.Peek))
                     {
                         builder.Append(r.Take());
                     }
@@ -34,7 +36,7 @@ namespace Avalonia.Data.Core.Parsers
 
                     if (r.End)
                     {
-                        throw new ExpressionParseException(r.Position, "Expected ','.");
+                        throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                     }
                     else if (r.TakeIf(close))
                     {
@@ -42,9 +44,9 @@ namespace Avalonia.Data.Core.Parsers
                     }
                     else
                     {
-                        if (r.Take() != ',')
+                        if (r.Take() != delimiter)
                         {
-                            throw new ExpressionParseException(r.Position, "Expected ','.");
+                            throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                         }
 
                         r.SkipWhitespace();

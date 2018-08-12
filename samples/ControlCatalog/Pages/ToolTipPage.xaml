@@ -1,6 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui">
     <StackPanel Orientation="Vertical"
-                Gap="4">
+                Spacing="4">
         <TextBlock Classes="h1">ToolTip</TextBlock>
         <TextBlock Classes="h2">A control which pops up a hint when a control is hovered</TextBlock>
 

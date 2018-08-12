@@ -6,7 +6,7 @@ using Avalonia.Markup.Parsers;
 using Sprache;
 using Xunit;
 
-namespace Avalonia.Markup.UnitTest.Parsers
+namespace Avalonia.Markup.UnitTests.Parsers
 {
     public class SelectorGrammarTests
     {

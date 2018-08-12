@@ -189,6 +189,12 @@ namespace Avalonia.Controls.Presenters
                     _caretTimer.Start();
                     InvalidateVisual();
                 }
+                else
+                {
+                    _caretTimer.Start();
+                    InvalidateVisual();
+                    _caretTimer.Stop();
+                }
 
                 if (IsMeasureValid)
                 {
