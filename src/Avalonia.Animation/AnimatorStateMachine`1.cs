@@ -13,11 +13,8 @@ namespace Avalonia.Animation
         T lastInterpValue;
         T firstKFValue;
 
-        private double delayFC;
-        private double durationFC;
         private long repeatCount;
         private double currentIteration;
-        private long firstFrameCount;
 
         private bool isLooping;
         private bool isRepeating;
@@ -34,10 +31,11 @@ namespace Avalonia.Animation
         internal bool unsubscribe;
         private bool isDisposed;
 
-        private long? internalClock;
-
-        private long? previousClock = null;
-        private long currentDiscreteTime;
+        private TimeSpan delayFC;
+        private TimeSpan durationFC;
+        private TimeSpan firstFrameCount;
+        private TimeSpan internalClock;
+        private TimeSpan? previousClock;
 
         private Easings.Easing EaseFunc;
         private IObserver<T> targetObserver;
@@ -58,8 +56,10 @@ namespace Avalonia.Animation
             neutralValue = (T)targetControl.GetValue(parent.Property);
 
             speedRatio = animation.SpeedRatio;
-            delayFC = ((animation.Delay.Ticks / Timing.FrameTick.Ticks) * speedRatio);
-            durationFC = ((animation.Duration.Ticks / Timing.FrameTick.Ticks) * speedRatio);
+
+            delayFC = animation.Delay;
+            durationFC = animation.Duration;
+
             delayBetweenIterations = animation.DelayBetweenIterations;
 
             switch (animation.RepeatCount.RepeatType)
@@ -81,7 +81,7 @@ namespace Avalonia.Animation
             this.onComplete = onComplete;
         }
 
-        public void Step(long frameTick, Func<double, T, T> Interpolator)
+        public void Step(TimeSpan frameTick, Func<double, T, T> Interpolator)
         {
             try
             {
@@ -112,30 +112,27 @@ namespace Avalonia.Animation
                     targetObserver.OnNext(lastInterpValue);
         }
 
-        private void InternalStep(long time, Func<double, T, T> Interpolator)
+        private void DoPlayStatesAndTime(TimeSpan systemTime)
         {
             if (Timing.GlobalPlayState == PlayState.Stop || targetControl.PlayState == PlayState.Stop)
                 DoComplete();
 
             if (!previousClock.HasValue)
             {
-                previousClock = time;
-                internalClock = 0;
+                previousClock = systemTime;
+                internalClock = TimeSpan.Zero;
             }
             else
             {
                 if (Timing.GlobalPlayState == PlayState.Pause || targetControl.PlayState == PlayState.Pause)
                 {
-                    previousClock = time;
+                    previousClock = systemTime;
                     return;
                 }
-                var delta = time - previousClock;
-                internalClock += delta;
-                previousClock = time;
+                var delta = systemTime - previousClock;
+                internalClock += delta.Value;
+                previousClock = systemTime;
             }
-
-            // currentDiscreteTime = internalClock.Value;
-            currentDiscreteTime++;
 
             if (!gotFirstKFValue)
             {
@@ -145,47 +142,47 @@ namespace Avalonia.Animation
 
             if (!gotFirstFrameCount)
             {
-                firstFrameCount = currentDiscreteTime;
+                firstFrameCount = internalClock;
                 gotFirstFrameCount = true;
             }
+        }
+
+        private void InternalStep(TimeSpan systemTime, Func<double, T, T> Interpolator)
+        {
+            DoPlayStatesAndTime(systemTime);
 
             if (isDisposed)
                 throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
-            // get the time with the initial fc as point of origin.
-            double t = (currentDiscreteTime - firstFrameCount);
+            var t = internalClock - firstFrameCount;
 
-            // check if t is within the zeroth iteration
+            var delayEndpoint = delayFC;
+            var iterationEndpoint = delayEndpoint + durationFC;
 
-            double delayEndpoint = delayFC;
-            double iterationEndpoint = delayEndpoint + durationFC;
+            currentIteration = (int)Math.Floor((double)t.Ticks / iterationEndpoint.Ticks);
+            t = TimeSpan.FromTicks(t.Ticks % iterationEndpoint.Ticks);
 
-            currentIteration = Math.Floor(t / iterationEndpoint);
-            t = t % iterationEndpoint;
-
-            // check if it's over the repeat count
             if (currentIteration > (repeatCount - 1) && !isLooping)
-            {
                 DoComplete();
-            }
 
-            // check if the current iteration should be reversed or not.
+            if (t > iterationEndpoint & !isLooping)
+                DoComplete();
+            
             bool isCurIterReverse = animationDirection == PlaybackDirection.Normal ? false :
                                     animationDirection == PlaybackDirection.Alternate ? (currentIteration % 2 == 0) ? false : true :
                                     animationDirection == PlaybackDirection.AlternateReverse ? (currentIteration % 2 == 0) ? true : false :
                                     animationDirection == PlaybackDirection.Reverse ? true : false;
 
-
-            if (delayFC > 0 & t <= delayEndpoint)
+            if (delayFC > TimeSpan.Zero & t < delayEndpoint)
             {
                 if (currentIteration == 0)
                     DoDelay();
             }
-            else if (t > delayEndpoint & t < iterationEndpoint)
+            else if (t >= delayEndpoint & t <= iterationEndpoint)
             {
-                double k = t - delayFC;
-                var interpVal = k / (double)durationFC;
- 
+                var k = t - delayFC;
+                var interpVal = (double)k.Ticks / durationFC.Ticks;
+
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;
 
@@ -194,10 +191,7 @@ namespace Avalonia.Animation
                 lastInterpValue = Interpolator(easedTime, neutralValue);
                 targetObserver.OnNext(lastInterpValue);
             }
-            else if (t > iterationEndpoint && !isLooping)
-            {
-                DoComplete();
-            }
+            
         }
 
         public IDisposable Subscribe(IObserver<T> observer)
@@ -205,6 +199,7 @@ namespace Avalonia.Animation
             targetObserver = observer;
             return this;
         }
+        
         public void Dispose()
         {
             unsubscribe = true;
