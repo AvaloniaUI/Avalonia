@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -83,7 +84,7 @@ namespace Avalonia.Windowing
 
                 _pinnedDelegates.Remove(del);
 
-                completionSource.SetResult(paths?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
+                completionSource.SetResult(paths?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault());
             };
 
             _pinnedDelegates.Add(del);
