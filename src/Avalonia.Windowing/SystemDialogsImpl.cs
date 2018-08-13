@@ -12,7 +12,7 @@ namespace Avalonia.Windowing
     public class SystemDialogsImpl : ISystemDialogImpl
     {
         [DllImport("winit_wrapper")]
-        private static extern void winit_open_file_dialog(IntPtr title, IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
+        private static extern void winit_open_file_dialog(byte allowMultiple, IntPtr title, IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
 
         [DllImport("winit_wrapper")]
         private static extern void winit_open_folder_dialog(IntPtr title, IntPtr initalPathString, IntPtr filterString, DialogResultCallback callback);
@@ -40,7 +40,7 @@ namespace Avalonia.Windowing
 
                 _pinnedDelegates.Remove(del);
 
-                completionSource.SetResult(paths?.Split(';'));
+                completionSource.SetResult(paths?.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries));
             };
 
             _pinnedDelegates.Add(del);
@@ -54,7 +54,7 @@ namespace Avalonia.Windowing
             {
                 initialPathPtr = Marshal.StringToHGlobalAnsi(Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
                                                                           string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName));
-                winit_open_file_dialog(titlePtr, initialPathPtr, filtersPtr, del);
+                winit_open_file_dialog((byte)(openDialog.AllowMultiple ? 1 : 0), titlePtr, initialPathPtr, filtersPtr, del);
             }
             else
             {
@@ -74,7 +74,7 @@ namespace Avalonia.Windowing
         public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
             var completionSource = new TaskCompletionSource<string>();
-
+                  
             DialogResultCallback del = null;
 
             del = resultPtr =>
@@ -83,7 +83,7 @@ namespace Avalonia.Windowing
 
                 _pinnedDelegates.Remove(del);
 
-                completionSource.SetResult(paths);
+                completionSource.SetResult(paths?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
             };
 
             _pinnedDelegates.Add(del);
