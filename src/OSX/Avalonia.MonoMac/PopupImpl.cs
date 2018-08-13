@@ -8,11 +8,23 @@ namespace Avalonia.MonoMac
         public PopupImpl()
         {
             UpdateStyle();
+            Window.Level = NSWindowLevel.PopUpMenu;
         }
 
         protected override NSWindowStyle GetStyle()
         {
             return NSWindowStyle.Borderless;
+        }
+
+        protected override CustomWindow CreateCustomWindow() => new CustomPopupWindow(this);
+
+        private class CustomPopupWindow : CustomWindow
+        {
+            public CustomPopupWindow(WindowBaseImpl impl)
+                : base(impl)
+            { }
+
+            public override bool WorksWhenModal() => true;
         }
     }
 }
