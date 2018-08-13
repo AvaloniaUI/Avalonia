@@ -83,19 +83,22 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void SnapInsideScreenEdges()
         {
-            var screen = Application.Current.MainWindow.Screens.ScreenFromPoint(Position);
+            var screen = Application.Current.MainWindow?.Screens.ScreenFromPoint(Position);
 
-            var screenX = Position.X + Bounds.Width - screen.Bounds.X;
-            var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
-
-            if (screenX > screen.Bounds.Width)
+            if (screen != null)
             {
-                Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
-            }
+                var screenX = Position.X + Bounds.Width - screen.Bounds.X;
+                var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
 
-            if (screenY > screen.Bounds.Height)
-            {
-                Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
+                if (screenX > screen.Bounds.Width)
+                {
+                    Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
+                }
+
+                if (screenY > screen.Bounds.Height)
+                {
+                    Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
+                }
             }
         }
 
