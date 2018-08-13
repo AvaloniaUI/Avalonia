@@ -1,10 +1,12 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input.Raw;
+using Avalonia.Interactivity;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Avalonia.Input.UnitTests
@@ -125,6 +127,71 @@ namespace Avalonia.Input.UnitTests
                 Assert.True(border.IsPointerOver);
                 Assert.False(canvas.IsPointerOver);
                 Assert.True(root.IsPointerOver);
+            }
+        }
+
+        [Fact]
+        public void PointerEnter_Leave_Should_Be_Raised_In_Correct_Order()
+        {
+            var renderer = new Mock<IRenderer>();
+            var result = new List<(object, string)>();
+
+            void HandleEvent(object sender, PointerEventArgs e)
+            {
+                result.Add((sender, e.RoutedEvent.Name));
+            }
+
+            using (TestApplication(renderer.Object))
+            {
+                var inputManager = InputManager.Instance;
+
+                Canvas canvas;
+                Border border;
+                Decorator decorator;
+
+                var root = new TestRoot
+                {
+                    MouseDevice = new MouseDevice(),
+                    Renderer = renderer.Object,
+                    Child = new Panel
+                    {
+                        Children =
+                        {
+                            (canvas = new Canvas()),
+                            (border = new Border
+                            {
+                                Child = decorator = new Decorator(),
+                            })
+                        }
+                    }
+                };
+
+                SetHit(renderer, canvas);
+                SendMouseMove(inputManager, root);
+
+                AddEnterLeaveHandlers(HandleEvent, root, canvas, border, decorator);
+                SetHit(renderer, decorator);
+                SendMouseMove(inputManager, root);
+
+                Assert.Equal(
+                    new[]
+                    {
+                        ((object)canvas, "PointerLeave"),
+                        ((object)decorator, "PointerEnter"),
+                        ((object)border, "PointerEnter"),
+                    },
+                    result);
+            }
+        }
+
+        private void AddEnterLeaveHandlers(
+            EventHandler<PointerEventArgs> handler,
+            params IControl[] controls)
+        {
+            foreach (var c in controls)
+            {
+                c.PointerEnter += handler;
+                c.PointerLeave += handler;
             }
         }
 
