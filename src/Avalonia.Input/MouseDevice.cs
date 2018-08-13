@@ -363,6 +363,7 @@ namespace Avalonia.Input
                 }
 
                 e.Source = el;
+                e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
@@ -373,6 +374,7 @@ namespace Avalonia.Input
             while (el != null && el != branch)
             {
                 e.Source = el;
+                e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
