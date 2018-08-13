@@ -14,6 +14,8 @@ namespace Avalonia.MonoMac
         private readonly ManagedWindowResizeDragHelper _managedDrag;
         public CustomWindow Window { get; private set; }
 
+        private bool _closed;
+
         public WindowBaseImpl()
         {
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
@@ -78,9 +80,8 @@ namespace Avalonia.MonoMac
 
             public override void WillClose(global::MonoMac.Foundation.NSNotification notification)
             {
-                _impl.Window.Dispose();
-                _impl.Window = null;
-                _impl.Dispose();
+                _impl._closed = true;
+                _impl.Closed?.Invoke();
             }
 
             public override CGRect WillUseStandardFrame(NSWindow window, CGRect newFrame)
@@ -94,8 +95,19 @@ namespace Avalonia.MonoMac
             {
                 return true;
             }
+
+            public override void DidResize(NSNotification notification)
+            {
+                _impl.OnResized();
+            }
         }
 
+        /// <summary>
+        /// As you can't combine NSWindowDelegate overrides and events this is a workaround
+        /// </summary>
+        protected virtual void OnResized()
+        {
+        }
 
         public Point Position
         {
@@ -185,12 +197,11 @@ namespace Avalonia.MonoMac
             return cocoaScreenPoint.ConvertPointY().ToAvaloniaPoint();
         }
 
-
-
         public override void Dispose()
         {
-            Window?.Close();
-            Window?.Dispose();
+            if (!_closed)
+                Window.Close();
+            Window.Dispose();
             base.Dispose();
         }
     }

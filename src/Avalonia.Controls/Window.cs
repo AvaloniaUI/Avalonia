@@ -302,17 +302,23 @@ namespace Avalonia.Controls
 
         internal void Close(bool ignoreCancel)
         {
+            bool close = true;
+
             try
             {
                 if (!ignoreCancel && HandleClosing())
                 {
+                    close = false;
                     return;
                 }
             }
             finally
             {
-                PlatformImpl?.Dispose();
-                HandleClosed();
+                if (close)
+                {
+                    PlatformImpl?.Dispose();
+                    HandleClosed();
+                }
             }
         }
 

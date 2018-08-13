@@ -1,5 +1,5 @@
-﻿using System;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media.Immutable
 {
@@ -21,6 +21,7 @@ namespace Avalonia.Media.Immutable
         /// How the source rectangle will be stretched to fill the destination rect.
         /// </param>
         /// <param name="tileMode">The tile mode.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImmutableImageBrush(
             IBitmap source,
             AlignmentX alignmentX = AlignmentX.Center,
@@ -29,7 +30,8 @@ namespace Avalonia.Media.Immutable
             double opacity = 1,
             RelativeRect? sourceRect = null,
             Stretch stretch = Stretch.Uniform,
-            TileMode tileMode = TileMode.None)
+            TileMode tileMode = TileMode.None,
+            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
             : base(
                   alignmentX,
                   alignmentY,
@@ -37,7 +39,8 @@ namespace Avalonia.Media.Immutable
                   opacity,
                   sourceRect ?? RelativeRect.Fill,
                   stretch,
-                  tileMode)
+                  tileMode,
+                  bitmapInterpolationMode)
         {
             Source = source;
         }

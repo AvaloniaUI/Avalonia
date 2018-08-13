@@ -19,7 +19,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// List of type-converted keyframes.
         /// </summary>
-        private Dictionary<double, (T, bool isNeutral)> _convertedKeyframes = new Dictionary<double, (T, bool)>();
+        private readonly SortedList<double, (AnimatorKeyFrame, bool isNeutral)> _convertedKeyframes = new SortedList<double, (AnimatorKeyFrame, bool)>();
 
         private bool _isVerfifiedAndConverted;
 
@@ -35,18 +35,17 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete)
         {
             if (!_isVerfifiedAndConverted)
-                VerifyConvertKeyFrames(animation, typeof(T));
+                VerifyConvertKeyFrames();
 
             return obsMatch
-                .Where(p => p == true)
                 // Ignore triggers when global timers are paused.
-                .Where(p => Timing.GetGlobalPlayState() != PlayState.Pause)
+                .Where(p => p && Timing.GetGlobalPlayState() != PlayState.Pause)
                 .Subscribe(_ =>
                 {
-                    var timerObs = RunKeyFrames(animation, control);
+                    var timerObs = RunKeyFrames(animation, control, onComplete);
                 });
         }
 
@@ -60,8 +59,8 @@ namespace Avalonia.Animation
         /// <param name="t">The time parameter, relative to the total animation time</param>
         protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
         {
-            KeyValuePair<double, (T, bool)> firstCue, lastCue;
-            int kvCount = _convertedKeyframes.Count();
+            KeyValuePair<double, (AnimatorKeyFrame frame, bool isNeutral)> firstCue, lastCue;
+            int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
                 if (DoubleUtils.AboutEqual(t, 0.0) || t < 0.0)
@@ -76,8 +75,8 @@ namespace Avalonia.Animation
                 }
                 else
                 {
-                    firstCue = _convertedKeyframes.Where(j => j.Key <= t).Last();
-                    lastCue = _convertedKeyframes.Where(j => j.Key >= t).First();
+                    firstCue = _convertedKeyframes.Last(j => j.Key <= t);
+                    lastCue = _convertedKeyframes.First(j => j.Key >= t);
                 }
             }
             else
@@ -89,26 +88,24 @@ namespace Avalonia.Animation
             double t0 = firstCue.Key;
             double t1 = lastCue.Key;
             var intraframeTime = (t - t0) / (t1 - t0);
-            return (intraframeTime, new KeyFramePair<T>(firstCue, lastCue));
+            var firstFrameData = (firstCue.Value.frame.GetTypedValue<T>(), firstCue.Value.isNeutral);
+            var lastFrameData = (lastCue.Value.frame.GetTypedValue<T>(), lastCue.Value.isNeutral);
+            return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
         }
 
 
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control)
+        private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
         {
-            var _kfStateMach = new AnimatorStateMachine<T>();
-            _kfStateMach.Initialize(animation, control, this);
+            var stateMachine = new AnimatorStateMachine<T>(animation, control, this, onComplete);
 
             Timing.AnimationStateTimer
-                        .TakeWhile(_ => !_kfStateMach._unsubscribe)
-                        .Subscribe(p =>
-                        {
-                            _kfStateMach.Step(p, DoInterpolation);
-                        });
+                        .TakeWhile(_ => !stateMachine._unsubscribe)
+                        .Subscribe(p => stateMachine.Step(p, DoInterpolation));
 
-            return control.Bind(Property, _kfStateMach, BindingPriority.Animation);
+            return control.Bind(Property, stateMachine, BindingPriority.Animation);
         }
 
         /// <summary>
@@ -119,39 +116,19 @@ namespace Avalonia.Animation
         /// <summary>
         /// Verifies and converts keyframe values according to this class's target type.
         /// </summary>
-        private void VerifyConvertKeyFrames(Animation animation, Type type)
+        private void VerifyConvertKeyFrames()
         {
-            var typeConv = TypeDescriptor.GetConverter(type);
-
-            foreach (AnimatorKeyFrame k in this)
+            foreach (AnimatorKeyFrame keyframe in this)
             {
-                if (k.Value == null)
-                {
-                    throw new ArgumentNullException($"KeyFrame value can't be null.");
-                }
-                if (!typeConv.CanConvertTo(k.Value.GetType()))
-                {
-                    throw new InvalidCastException($"KeyFrame value doesnt match property type.");
-                }
-
-                T convertedValue = (T)typeConv.ConvertTo(k.Value, type);
-
-                Cue _normalizedCue = k.Cue;
-
-                if (k.timeSpanSet)
-                {
-                    _normalizedCue = new Cue(k.KeyTime.Ticks / animation.Duration.Ticks);
-                }
-
-                _convertedKeyframes.Add(_normalizedCue.CueValue, (convertedValue, false));
+                _convertedKeyframes.Add(keyframe.Cue.CueValue, (keyframe, false));
             }
 
-            SortKeyFrameCues(_convertedKeyframes);
+            AddNeutralKeyFramesIfNeeded();
             _isVerfifiedAndConverted = true;
 
         }
 
-        private void SortKeyFrameCues(Dictionary<double, (T, bool)> convertedValues)
+        private void AddNeutralKeyFramesIfNeeded()
         {
             bool hasStartKey, hasEndKey;
             hasStartKey = hasEndKey = false;
@@ -170,22 +147,19 @@ namespace Avalonia.Animation
             }
 
             if (!hasStartKey || !hasEndKey)
-                AddNeutralKeyFrames(hasStartKey, hasEndKey, _convertedKeyframes);
-
-            _convertedKeyframes = _convertedKeyframes.OrderBy(p => p.Key)
-                                                     .ToDictionary((k) => k.Key, (v) => v.Value);
+                AddNeutralKeyFrames(hasStartKey, hasEndKey);
         }
 
-        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey, Dictionary<double, (T, bool)> convertedKeyframes)
+        private void AddNeutralKeyFrames(bool hasStartKey, bool hasEndKey)
         {
             if (!hasStartKey)
             {
-                convertedKeyframes.Add(0.0d, (default(T), true));
+                _convertedKeyframes.Add(0.0d, (new AnimatorKeyFrame { Value = default(T) }, true));
             }
 
             if (!hasEndKey)
             {
-                convertedKeyframes.Add(1.0d, (default(T), true));
+                _convertedKeyframes.Add(1.0d, (new AnimatorKeyFrame { Value = default(T) }, true));
             }
         }
     }
