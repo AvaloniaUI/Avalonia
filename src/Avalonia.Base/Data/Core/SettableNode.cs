@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Data.Core
 {
-    internal abstract class SettableNode : ExpressionNode
+    public abstract class SettableNode : ExpressionNode
     {
         public bool SetTargetValue(object value, BindingPriority priority)
         {

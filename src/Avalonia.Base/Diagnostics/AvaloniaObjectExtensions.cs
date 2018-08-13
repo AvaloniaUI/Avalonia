@@ -23,15 +23,24 @@ namespace Avalonia.Diagnostics
         {
             var set = o.GetSetValues();
 
-            PriorityValue value;
-
-            if (set.TryGetValue(property, out value))
+            if (set.TryGetValue(property, out var obj))
             {
-                return new AvaloniaPropertyValue(
-                    property,
-                    o.GetValue(property),
-                    (BindingPriority)value.ValuePriority,
-                    value.GetDiagnostic());
+                if (obj is PriorityValue value)
+                {
+                    return new AvaloniaPropertyValue(
+                        property,
+                        o.GetValue(property),
+                        (BindingPriority)value.ValuePriority,
+                        value.GetDiagnostic());
+                }
+                else
+                {
+                    return new AvaloniaPropertyValue(
+                        property,
+                        obj,
+                        BindingPriority.LocalValue,
+                        "Local value");
+                }
             }
             else
             {

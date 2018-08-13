@@ -7,6 +7,11 @@ using Avalonia.Collections;
 
 namespace Avalonia.Animation
 {
+    internal enum KeyFrameTimingMode
+    {
+        TimeSpan = 1,
+        Cue
+    }
 
     /// <summary>
     /// Stores data regarding a specific key
@@ -14,7 +19,6 @@ namespace Avalonia.Animation
     /// </summary>
     public class KeyFrame : AvaloniaList<IAnimationSetter>
     {
-        internal bool timeSpanSet, cueSet;
         private TimeSpan _ktimeSpan;
         private Cue _kCue;
 
@@ -30,6 +34,8 @@ namespace Avalonia.Animation
         {
         }
 
+        internal KeyFrameTimingMode TimingMode { get; private set; }
+
         /// <summary>
         /// Gets or sets the key time of this <see cref="KeyFrame"/>.
         /// </summary>
@@ -42,11 +48,11 @@ namespace Avalonia.Animation
             }
             set
             {
-                if (cueSet)
+                if (TimingMode == KeyFrameTimingMode.Cue)
                 {
                     throw new InvalidOperationException($"You can only set either {nameof(KeyTime)} or {nameof(Cue)}.");
                 }
-                timeSpanSet = true;
+                TimingMode = KeyFrameTimingMode.TimeSpan;
                 _ktimeSpan = value;
             }
         }
@@ -63,11 +69,11 @@ namespace Avalonia.Animation
             }
             set
             {
-                if (timeSpanSet)
+                if (TimingMode == KeyFrameTimingMode.TimeSpan)
                 {
                     throw new InvalidOperationException($"You can only set either {nameof(KeyTime)} or {nameof(Cue)}.");
                 }
-                cueSet = true;
+                TimingMode = KeyFrameTimingMode.Cue;
                 _kCue = value;
             }
         }

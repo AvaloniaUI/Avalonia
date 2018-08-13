@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">ProgressBar</TextBlock>
     <TextBlock Classes="h2">A progress bar control</TextBlock>
 
@@ -7,8 +7,8 @@
       <StackPanel Orientation="Horizontal"
                   Margin="0,16,0,0"
                   HorizontalAlignment="Center"
-                  Gap="16">
-        <StackPanel Gap="16">
+                  Spacing="16">
+        <StackPanel Spacing="16">
           <ProgressBar Value="{Binding #hprogress.Value}" />
           <ProgressBar IsIndeterminate="True"/>
         </StackPanel>

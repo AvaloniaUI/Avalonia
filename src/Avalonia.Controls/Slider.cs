@@ -17,7 +17,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<Slider, Orientation>(nameof(Orientation), Orientation.Horizontal);
+            ScrollBar.OrientationProperty.AddOwner<Slider>();
 
         /// <summary>
         /// Defines the <see cref="IsSnapToTickEnabled"/> property.
@@ -41,8 +41,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Slider()
         {
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);

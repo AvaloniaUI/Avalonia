@@ -360,7 +360,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         if (!AlwaysSelected)
                         {
-                            SelectedIndex = -1;
+                            selectedIndex = SelectedIndex = -1;
                         }
                         else
                         {
@@ -368,10 +368,15 @@ namespace Avalonia.Controls.Primitives
                         }
                     }
 
+                    var items = Items?.Cast<object>();
+                    if (selectedIndex >= items.Count())
+                    {
+                        selectedIndex = SelectedIndex = items.Count() - 1;
+                    }
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    SelectedIndex = IndexOf(e.NewItems, SelectedItem);
+                    SelectedIndex = IndexOf(Items, SelectedItem);
                     break;
             }
         }
@@ -408,12 +413,15 @@ namespace Avalonia.Controls.Primitives
 
             var panel = (InputElement)Presenter.Panel;
 
-            foreach (var container in e.Containers)
+            if (panel != null)
             {
-                if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                foreach (var container in e.Containers)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                    break;
+                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                    {
+                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
+                        break;
+                    }
                 }
             }
         }

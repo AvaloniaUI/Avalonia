@@ -7,21 +7,23 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Data.Converters;
 using Avalonia.Logging;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
     /// <summary>
     /// Binds to an expression on an object using a type value converter to convert the values
-    /// that are send and received.
+    /// that are sent and received.
     /// </summary>
-    public class BindingExpression : ISubject<object>, IDescription
+    public class BindingExpression : LightweightObservableBase<object>, ISubject<object>, IDescription
     {
         private readonly ExpressionObserver _inner;
         private readonly Type _targetType;
         private readonly object _fallbackValue;
         private readonly BindingPriority _priority;
-        private readonly Subject<object> _errors = new Subject<object>();
+        InnerListener _innerListener;
+        WeakReference<object> _value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
@@ -139,7 +141,7 @@ namespace Avalonia.Data.Core
                                 "IValueConverter should not return non-errored BindingNotification.");
                         }
 
-                        _errors.OnNext(notification);
+                        PublishNext(notification);
 
                         if (_fallbackValue != AvaloniaProperty.UnsetValue)
                         {
@@ -170,12 +172,18 @@ namespace Avalonia.Data.Core
             }
         }
 
-        /// <inheritdoc/>
-        public IDisposable Subscribe(IObserver<object> observer)
+        protected override void Initialize() => _innerListener = new InnerListener(this);
+        protected override void Deinitialize() => _innerListener.Dispose();
+
+        protected override void Subscribed(IObserver<object> observer, bool first)
         {
-            return _inner.Select(ConvertValue).Merge(_errors).Subscribe(observer);
+            if (!first && _value != null && _value.TryGetTarget(out var val) == true)
+            {
+                observer.OnNext(val);
+            }
         }
 
+        /// <inheritdoc/>
         private object ConvertValue(object value)
         {
             var notification = value as BindingNotification;
@@ -300,6 +308,29 @@ namespace Avalonia.Data.Core
             }
 
             return a;
+        }
+
+        public class InnerListener : IObserver<object>, IDisposable
+        {
+            private readonly BindingExpression _owner;
+            private readonly IDisposable _dispose;
+
+            public InnerListener(BindingExpression owner)
+            {
+                _owner = owner;
+                _dispose = owner._inner.Subscribe(this);
+            }
+
+            public void Dispose() => _dispose.Dispose();
+            public void OnCompleted() => _owner.PublishCompleted();
+            public void OnError(Exception error) => _owner.PublishError(error);
+
+            public void OnNext(object value)
+            {
+                var converted = _owner.ConvertValue(value);
+                _owner._value = new WeakReference<object>(converted);
+                _owner.PublishNext(converted);
+            }
         }
     }
 }

@@ -99,17 +99,6 @@ namespace Avalonia.Base.UnitTests
             Assert.Null(result);
         }
 
-        [Fact]
-        public void FindRegisteredAttached_Finds_Property()
-        {
-            var result = AvaloniaPropertyRegistry.Instance.FindRegisteredAttached(
-                typeof(Class1),
-                typeof(AttachedOwner),
-                "Attached");
-
-            Assert.Equal(AttachedOwner.AttachedProperty, result);
-        }
-
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =

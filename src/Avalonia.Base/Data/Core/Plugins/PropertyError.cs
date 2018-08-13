@@ -1,6 +1,4 @@
 using System;
-using System.Reactive.Disposables;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -37,10 +35,13 @@ namespace Avalonia.Data.Core.Plugins
             return false;
         }
 
-        public IDisposable Subscribe(IObserver<object> observer)
+        public void Subscribe(Action<object> listener)
         {
-            observer.OnNext(_error);
-            return Disposable.Empty;
+            listener(_error);
+        }
+
+        public void Unsubscribe()
+        {
         }
     }
 }

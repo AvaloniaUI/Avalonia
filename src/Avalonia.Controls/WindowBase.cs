@@ -179,10 +179,9 @@ namespace Avalonia.Controls
 
                 if (!_hasExecutedInitialLayoutPass)
                 {
-                    LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+                    LayoutManager.ExecuteInitialLayoutPass(this);
                     _hasExecutedInitialLayoutPass = true;
                 }
-
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
@@ -262,7 +261,7 @@ namespace Avalonia.Controls
                 Height = clientSize.Height;
             }
             ClientSize = clientSize;
-            LayoutManager.Instance.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 

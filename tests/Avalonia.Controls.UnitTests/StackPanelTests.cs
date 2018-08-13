@@ -54,11 +54,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Lays_Out_Children_Vertically_With_Gap()
+        public void Lays_Out_Children_Vertically_With_Spacing()
         {
             var target = new StackPanel
             {
-                Gap = 10,
+                Spacing = 10,
                 Children =
                 {
                     new Border { Height = 20, Width = 120 },
@@ -77,11 +77,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Lays_Out_Children_Horizontally_With_Gap()
+        public void Lays_Out_Children_Horizontally_With_Spacing()
         {
             var target = new StackPanel
             {
-                Gap = 10,
+                Spacing = 10,
                 Orientation = Orientation.Horizontal,
                 Children =
                 {
@@ -145,6 +145,45 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 20, 120), target.Children[0].Bounds);
             Assert.Equal(new Rect(20, 0, 30, 120), target.Children[1].Bounds);
             Assert.Equal(new Rect(50, 0, 50, 120), target.Children[2].Bounds);
+        }
+
+        [Theory]
+        [InlineData(Orientation.Horizontal)]
+        [InlineData(Orientation.Vertical)]
+        public void Spacing_Not_Added_For_Invisible_Children(Orientation orientation)
+        {
+            var targetThreeChildrenOneInvisble = new StackPanel
+            {
+                Spacing = 40,
+                Orientation = orientation,
+                Children =
+                {
+                    new StackPanel { Width = 10, Height= 10, IsVisible = false },
+                    new StackPanel { Width = 10, Height= 10 },
+                    new StackPanel { Width = 10, Height= 10 },
+                }
+            };
+            var targetTwoChildrenNoneInvisible = new StackPanel
+            {
+                Spacing = 40,
+                Orientation = orientation,
+                Children =
+                {
+                    new StackPanel { Width = 10, Height= 10 },
+                    new StackPanel { Width = 10, Height= 10 }
+                }
+            };
+
+            targetThreeChildrenOneInvisble.Measure(Size.Infinity);
+            targetThreeChildrenOneInvisble.Arrange(new Rect(targetThreeChildrenOneInvisble.DesiredSize));
+
+            targetTwoChildrenNoneInvisible.Measure(Size.Infinity);
+            targetTwoChildrenNoneInvisible.Arrange(new Rect(targetTwoChildrenNoneInvisible.DesiredSize));
+
+            Size sizeWithTwoChildren = targetTwoChildrenNoneInvisible.Bounds.Size;
+            Size sizeWithThreeChildren = targetThreeChildrenOneInvisble.Bounds.Size;
+
+            Assert.Equal(sizeWithTwoChildren, sizeWithThreeChildren);
         }
     }
 }
