@@ -15,16 +15,16 @@ namespace RenderDemo.ViewModels
 
         void TogglePlayState()
         {
-            switch (Timing.GlobalPlayState)
+            switch (Animation.GlobalPlayState)
             {
                 case PlayState.Run:
                     PlayStateText = "Resume all animations";
-                    Timing.GlobalPlayState = PlayState.Pause;
+                    Animation.GlobalPlayState = PlayState.Pause;
                     break;
 
                 case PlayState.Pause:
                     PlayStateText = "Pause all animations";
-                    Timing.GlobalPlayState = PlayState.Run;
+                    Animation.GlobalPlayState = PlayState.Run;
                     break;
             }
         }

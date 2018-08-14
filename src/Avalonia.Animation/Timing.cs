@@ -16,11 +16,6 @@ namespace Avalonia.Animation
     public static class Timing
     {
         /// <summary>
-        /// Gets or sets the animation play state for all animations
-        /// </summary> 
-        public static PlayState GlobalPlayState { get; set; } = PlayState.Run;
-
-        /// <summary>
         /// The number of frames per second.
         /// </summary>
         public const int FramesPerSecond = 60;
@@ -38,13 +33,12 @@ namespace Avalonia.Animation
             var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
             AnimationsTimer = globalTimer
-                .Select(_ =>
-                {
-                    return TimeSpan.FromMilliseconds(Environment.TickCount);
-                })
+                .Select(_ => GetTickCount())
                 .Publish()
                 .RefCount();
         }
+
+        internal static TimeSpan GetTickCount() => TimeSpan.FromMilliseconds(Environment.TickCount);
 
         /// <summary>
         /// Gets the animation timer.
@@ -57,32 +51,6 @@ namespace Avalonia.Animation
         internal static IObservable<TimeSpan> AnimationsTimer
         {
             get;
-        }
-
-        /// <summary>
-        /// Gets a timer that fires every frame for the specified duration with delay.
-        /// </summary>
-        /// <returns>
-        /// An observable that notifies the subscriber of the progress along the transition.
-        /// </returns>
-        /// <remarks>
-        /// The parameter passed to the subscriber is the progress along the transition, with
-        /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
-        /// immediately on subscribe and 1 at the end of the duration.
-        /// </remarks>
-        public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
-        {
-            // TODO: Fix this mess.
-            // var _duration = (duration.Ticks / FrameTick.Ticks);
-            // long? endTime = ((Stopwatch.GetTimestamp() - _tickStartTimeStamp)
-            //           / TicksPerFrame) + _duration;
-
-            // return AnimationsTimer
-            //     .TakeWhile(x => x < endTime)
-            //     .Select(x => (double)x / _duration)
-            //     .StartWith(0.0)
-            //     .Concat(Observable.Return(1.0));
-            return Observable.Empty<double>();
         }
     }
 }

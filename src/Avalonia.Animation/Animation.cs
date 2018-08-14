@@ -21,6 +21,10 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animation : AvaloniaList<KeyFrame>, IAnimation
     {
+        /// <summary>
+        /// Gets or sets the animation play state for all animations
+        /// </summary> 
+        public static PlayState GlobalPlayState { get; set; } = PlayState.Run;
 
         public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
 
@@ -72,7 +76,6 @@ namespace Avalonia.Animation
         /// iteration of the animation. 
         /// </remarks> 
         public bool DelayBetweenIterations { get; set; }
-
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {

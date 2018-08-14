@@ -111,7 +111,7 @@ namespace Avalonia.Animation
 
         private void DoPlayStatesAndTime(TimeSpan systemTime)
         {
-            if (Timing.GlobalPlayState == PlayState.Stop || targetControl.PlayState == PlayState.Stop)
+            if (Animation.GlobalPlayState == PlayState.Stop || targetControl.PlayState == PlayState.Stop)
                 DoComplete();
 
             if (!previousClock.HasValue)
@@ -121,7 +121,7 @@ namespace Avalonia.Animation
             }
             else
             {
-                if (Timing.GlobalPlayState == PlayState.Pause || targetControl.PlayState == PlayState.Pause)
+                if (Animation.GlobalPlayState == PlayState.Pause || targetControl.PlayState == PlayState.Pause)
                 {
                     previousClock = systemTime;
                     return;

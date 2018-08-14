@@ -98,7 +98,7 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
         {
-            var stateMachine = new AnimatorStateMachine<T>(animation, control, this, onComplete);
+            var stateMachine = new AnimationsEngine<T>(animation, control, this, onComplete);
 
             Timing.AnimationsTimer
                         .TakeWhile(_ => !stateMachine.unsubscribe)

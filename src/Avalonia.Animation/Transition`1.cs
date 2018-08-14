@@ -5,6 +5,7 @@ using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
+using Avalonia.Animation.Utils;
 
 namespace Avalonia.Animation
 {
@@ -51,8 +52,10 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
-            var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue);
+            var transition = DoTransition(new TransitionsEngine(Duration), (T)oldValue, (T)newValue);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
+
+
     }
 }
