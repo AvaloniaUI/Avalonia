@@ -351,7 +351,7 @@ namespace Avalonia.Controls
 
                 if (current != null)
                 {
-                    var next = GetNextControl(container, direction.Value, current);
+                    var next = GetNextControl(container, direction.Value, current, false);
 
                     if (next != null)
                     {
@@ -505,13 +505,14 @@ namespace Avalonia.Controls
         protected static IInputElement GetNextControl(
             INavigableContainer container,
             NavigationDirection direction,
-            IInputElement from)
+            IInputElement from,
+            bool wrap)
         {
             IInputElement result;
 
-            while (from != null)
+            do
             {
-                result = container.GetControl(direction, from);
+                result = container.GetControl(direction, from, wrap);
 
                 if (result?.Focusable == true)
                 {
@@ -519,7 +520,7 @@ namespace Avalonia.Controls
                 }
 
                 from = result;
-            }
+            } while (from != null);
 
             return null;
         }
