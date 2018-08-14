@@ -6,7 +6,7 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Provides statefulness for an iteration of a keyframe animation.
+    /// Provides statefulness for keyframe animations.
     /// </summary>
     internal class AnimatorStateMachine<T> : IObservable<T>, IDisposable
     {
@@ -17,10 +17,9 @@ namespace Avalonia.Animation
         private double currentIteration;
 
         private bool isLooping;
-        private bool isRepeating;
         private bool gotFirstKFValue;
         private bool gotFirstFrameCount;
-        private bool delayBetweenIterations;
+        private bool iterationDelay;
 
         private FillMode fillMode;
         private PlaybackDirection animationDirection;
@@ -31,36 +30,34 @@ namespace Avalonia.Animation
         internal bool unsubscribe;
         private bool isDisposed;
 
-        private TimeSpan delayFC;
-        private TimeSpan durationFC;
+        private TimeSpan delay;
+        private TimeSpan duration;
         private TimeSpan firstFrameCount;
         private TimeSpan internalClock;
         private TimeSpan? previousClock;
 
-        private Easings.Easing EaseFunc;
+        private Easings.Easing easeFunc;
         private IObserver<T> targetObserver;
-        private readonly Action onComplete;
+        private readonly Action onCompleteAction;
 
-        public AnimatorStateMachine(Animation animation, Animatable control, Animator<T> animator, Action onComplete)
+        public AnimatorStateMachine(Animation animation, Animatable control, Animator<T> animator, Action OnComplete)
         {
-
             if (animation.SpeedRatio <= 0 || DoubleUtils.AboutEqual(animation.SpeedRatio, 0))
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
 
             if (animation.Duration.TotalSeconds <= 0 || DoubleUtils.AboutEqual(animation.Duration.TotalSeconds, 0))
-                throw new InvalidOperationException("Animation duration cannot be negative or zero.");
-
+                throw new InvalidOperationException("Duration cannot be negative or zero.");
+ 
             parent = animator;
-            EaseFunc = animation.Easing;
+            easeFunc = animation.Easing;
             targetControl = control;
             neutralValue = (T)targetControl.GetValue(parent.Property);
 
             speedRatio = animation.SpeedRatio;
 
-            delayFC = animation.Delay;
-            durationFC = animation.Duration;
-
-            delayBetweenIterations = animation.DelayBetweenIterations;
+            delay = animation.Delay;
+            duration = animation.Duration;
+            iterationDelay = animation.DelayBetweenIterations;
 
             switch (animation.RepeatCount.RepeatType)
             {
@@ -71,14 +68,13 @@ namespace Avalonia.Animation
                     isLooping = true;
                     break;
                 case RepeatType.Repeat:
-                    isRepeating = true;
                     repeatCount = (long)animation.RepeatCount.Value;
                     break;
             }
 
             animationDirection = animation.PlaybackDirection;
             fillMode = animation.FillMode;
-            this.onComplete = onComplete;
+            onCompleteAction = OnComplete;
         }
 
         public void Step(TimeSpan frameTick, Func<double, T, T> Interpolator)
@@ -99,7 +95,7 @@ namespace Avalonia.Animation
                 targetControl.SetValue(parent.Property, lastInterpValue, BindingPriority.LocalValue);
 
             targetObserver.OnCompleted();
-            onComplete?.Invoke();
+            onCompleteAction?.Invoke();
             Dispose();
         }
 
@@ -154,44 +150,74 @@ namespace Avalonia.Animation
             if (isDisposed)
                 throw new InvalidProgramException("This KeyFrames Animation is already disposed.");
 
-            var t = internalClock - firstFrameCount;
+            var time = internalClock - firstFrameCount;
+            var delayEndpoint = delay;
+            var iterationEndpoint = delayEndpoint + duration;
 
-            var delayEndpoint = delayFC;
-            var iterationEndpoint = delayEndpoint + durationFC;
+            //determine if time is currently in the first iteration.
+            if (time >= TimeSpan.Zero & time <= iterationEndpoint)
+            {
+                currentIteration = 1;
+            }
+            else if (time > iterationEndpoint)
+            {
+                //Subtract first iteration to properly get the subsequent iteration time
+                time -= iterationEndpoint;
 
-            currentIteration = (int)Math.Floor((double)t.Ticks / iterationEndpoint.Ticks);
-            t = TimeSpan.FromTicks(t.Ticks % iterationEndpoint.Ticks);
+                if (!iterationDelay & delayEndpoint > TimeSpan.Zero)
+                {
+                    delayEndpoint = TimeSpan.Zero;
+                    iterationEndpoint = duration;
+                }
 
-            if (currentIteration > (repeatCount - 1) && !isLooping)
-                DoComplete();
+                //Calculate the current iteration number
+                currentIteration = (int)Math.Floor((double)time.Ticks / iterationEndpoint.Ticks) + 2;
+            }
+            else
+            {
+                previousClock = systemTime;
+                return;
+            }
 
-            if (t > iterationEndpoint & !isLooping)
-                DoComplete();
-            
+            time = TimeSpan.FromTicks(time.Ticks % iterationEndpoint.Ticks);
+
+            if (!isLooping)
+            {
+                if (currentIteration > repeatCount)
+                    DoComplete();
+
+                if (time > iterationEndpoint)
+                    DoComplete();
+            }
+
+            // Determine if the current iteration should have its normalized time inverted.
             bool isCurIterReverse = animationDirection == PlaybackDirection.Normal ? false :
                                     animationDirection == PlaybackDirection.Alternate ? (currentIteration % 2 == 0) ? false : true :
                                     animationDirection == PlaybackDirection.AlternateReverse ? (currentIteration % 2 == 0) ? true : false :
                                     animationDirection == PlaybackDirection.Reverse ? true : false;
 
-            if (delayFC > TimeSpan.Zero & t < delayEndpoint)
+            if (delayEndpoint > TimeSpan.Zero & time < delayEndpoint)
             {
-                if (currentIteration == 0)
-                    DoDelay();
+                DoDelay();
             }
-            else if (t >= delayEndpoint & t <= iterationEndpoint)
+            else
             {
-                var k = t - delayFC;
-                var interpVal = (double)k.Ticks / durationFC.Ticks;
+                // Offset the delay time            
+                time -= delayEndpoint;
+                iterationEndpoint -= delayEndpoint;
+
+                // Normalize time
+                var interpVal = (double)time.Ticks / iterationEndpoint.Ticks;
 
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;
 
-                var easedTime = EaseFunc.Ease(interpVal);
-
+                // Ease and interpolate
+                var easedTime = easeFunc.Ease(interpVal);
                 lastInterpValue = Interpolator(easedTime, neutralValue);
+
                 targetObserver.OnNext(lastInterpValue);
             }
-            
         }
 
         public IDisposable Subscribe(IObserver<T> observer)
@@ -199,7 +225,7 @@ namespace Avalonia.Animation
             targetObserver = observer;
             return this;
         }
-        
+
         public void Dispose()
         {
             unsubscribe = true;
