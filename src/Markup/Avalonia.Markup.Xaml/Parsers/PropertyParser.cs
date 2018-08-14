@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.Parsers
             {
                 var token = r.ParseIdentifier();
 
-                if (token == null)
+                if (token.IsEmpty)
                 {
                     if (r.End)
                     {
