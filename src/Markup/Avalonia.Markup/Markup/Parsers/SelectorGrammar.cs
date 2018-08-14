@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 // Don't need to override GetHashCode as the ISyntax objects will not be stored in a hash; the 
 // only reason they have overridden Equals methods is for unit testing.
@@ -12,7 +13,7 @@ using Avalonia.Data.Core;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal class SelectorGrammar
+    internal static class SelectorGrammar
     {
         private enum State
         {
@@ -31,7 +32,7 @@ namespace Avalonia.Markup.Parsers
 
         public static IEnumerable<ISyntax> Parse(string s)
         {
-            var r = new Reader(s.AsSpan());
+            var r = new CharacterReader(s.AsSpan());
             var state = State.Start;
             var selector = new List<ISyntax>();
             while (!r.End && state != State.End)
@@ -84,7 +85,7 @@ namespace Avalonia.Markup.Parsers
             return selector;
         }
 
-        private static State ParseStart(ref Reader r)
+        private static State ParseStart(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.End)
@@ -107,7 +108,7 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static State ParseMiddle(ref Reader r)
+        private static State ParseMiddle(ref CharacterReader r)
         {
             if (r.TakeIf(':'))
             {
@@ -132,7 +133,7 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static State ParseCanHaveType(ref Reader r)
+        private static State ParseCanHaveType(ref CharacterReader r)
         {
             if (r.TakeIf('['))
             {
@@ -141,7 +142,7 @@ namespace Avalonia.Markup.Parsers
             return State.Middle;
         }
 
-        private static (State, ISyntax) ParseColon(ref Reader r)
+        private static (State, ISyntax) ParseColon(ref CharacterReader r)
         {
             var identifier = r.ParseIdentifier();
 
@@ -172,7 +173,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseTraversal(ref Reader r)
+        private static (State, ISyntax) ParseTraversal(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.TakeIf('>'))
@@ -194,7 +195,7 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static (State, ISyntax) ParseClass(ref Reader r)
+        private static (State, ISyntax) ParseClass(ref CharacterReader r)
         {
             var @class = r.ParseIdentifier();
             if (@class.IsEmpty)
@@ -205,7 +206,7 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new ClassSyntax { Class = @class.ToString() });
         }
 
-        private static (State, ISyntax) ParseTemplate(ref Reader r)
+        private static (State, ISyntax) ParseTemplate(ref CharacterReader r)
         {
             var template = r.ParseIdentifier();
             const string TemplateKeyword = "template";
@@ -220,7 +221,7 @@ namespace Avalonia.Markup.Parsers
             return (State.Start, new TemplateSyntax());
         }
 
-        private static (State, ISyntax) ParseName(ref Reader r)
+        private static (State, ISyntax) ParseName(ref CharacterReader r)
         {
             var name = r.ParseIdentifier();
             if (name.IsEmpty)
@@ -230,12 +231,12 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new NameSyntax { Name = name.ToString() });
         }
 
-        private static (State, ISyntax) ParseTypeName(ref Reader r)
+        private static (State, ISyntax) ParseTypeName(ref CharacterReader r)
         {
             return (State.CanHaveType, ParseType(ref r, new OfTypeSyntax()));
         }
 
-        private static (State, ISyntax) ParseProperty(ref Reader r)
+        private static (State, ISyntax) ParseProperty(ref CharacterReader r)
         {
             var property = r.ParseIdentifier();
 
@@ -251,7 +252,7 @@ namespace Avalonia.Markup.Parsers
             return (State.CanHaveType, new PropertySyntax { Property = property.ToString(), Value = value.ToString() });
         }
 
-        private static TSyntax ParseType<TSyntax>(ref Reader r, TSyntax syntax)
+        private static TSyntax ParseType<TSyntax>(ref CharacterReader r, TSyntax syntax)
             where TSyntax : ITypeSyntax
         {
             ReadOnlySpan<char> ns = null;

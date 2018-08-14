@@ -3,12 +3,19 @@
 
 using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers.Nodes;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Avalonia.Markup.Parsers
 {
+    internal enum SourceMode
+    {
+        Data,
+        Control
+    }
+
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
@@ -20,10 +27,11 @@ namespace Avalonia.Markup.Parsers
             _enableValidation = enableValidation;
         }
 
-        public ExpressionNode Parse(ref Reader r)
+        public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
             var nodes = new List<ExpressionNode>();
             var state = State.Start;
+            var mode = SourceMode.Data;
 
             while (!r.End && state != State.End)
             {
@@ -48,6 +56,16 @@ namespace Avalonia.Markup.Parsers
                     case State.Indexer:
                         state = ParseIndexer(ref r, nodes);
                         break;
+
+                    case State.ElementName:
+                        state = ParseElementName(ref r, nodes);
+                        mode = SourceMode.Control;
+                        break;
+
+                    case State.RelativeSource:
+                        state = ParseRelativeSource(ref r, nodes);
+                        mode = SourceMode.Control;
+                        break;
                 }
             }
 
@@ -61,15 +79,24 @@ namespace Avalonia.Markup.Parsers
                 nodes[n].Next = nodes[n + 1];
             }
 
-            return nodes.FirstOrDefault();
+            return (nodes.FirstOrDefault(), mode);
         }
 
-        private State ParseStart(ref Reader r, IList<ExpressionNode> nodes)
+        private State ParseStart(ref CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseNot(ref r))
             {
                 nodes.Add(new LogicalNotNode());
                 return State.Start;
+            }
+
+            else if (ParseSharp(ref r))
+            {
+                return State.ElementName;
+            }
+            else if (ParseDollarSign(ref r))
+            {
+                return State.RelativeSource;
             }
             else if (ParseOpenBrace(ref r))
             {
@@ -93,7 +120,7 @@ namespace Avalonia.Markup.Parsers
             return State.End;
         }
 
-        private static State ParseAfterMember(ref Reader r, IList<ExpressionNode> nodes)
+        private static State ParseAfterMember(ref CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseMemberAccessor(ref r))
             {
@@ -112,7 +139,7 @@ namespace Avalonia.Markup.Parsers
             return State.End;
         }
 
-        private State ParseBeforeMember(ref Reader r, IList<ExpressionNode> nodes)
+        private State ParseBeforeMember(ref CharacterReader r, IList<ExpressionNode> nodes)
         {
             if (ParseOpenBrace(ref r))
             {
@@ -132,21 +159,9 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private State ParseAttachedProperty(ref Reader r, List<ExpressionNode> nodes)
+        private State ParseAttachedProperty(ref CharacterReader r, List<ExpressionNode> nodes)
         {
-            ReadOnlySpan<char> ns = ReadOnlySpan<char>.Empty;
-            ReadOnlySpan<char> owner;
-            var ownerOrNamespace = r.ParseIdentifier();
-
-            if (r.TakeIf(':'))
-            {
-                ns = ownerOrNamespace;
-                owner = r.ParseIdentifier();
-            }
-            else
-            {
-                owner = ownerOrNamespace;
-            }
+            var (ns, owner) = ParseTypeName(ref r);
 
             if (r.End || !r.TakeIf('.'))
             {
@@ -171,7 +186,7 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
 
-        private State ParseIndexer(ref Reader r, List<ExpressionNode> nodes)
+        private State ParseIndexer(ref CharacterReader r, List<ExpressionNode> nodes)
         {
             var args = r.ParseArguments('[', ']');
 
@@ -183,40 +198,153 @@ namespace Avalonia.Markup.Parsers
             nodes.Add(new StringIndexerNode(args));
             return State.AfterMember;
         }
+
+        private State ParseElementName(ref CharacterReader r, List<ExpressionNode> nodes)
+        {
+            var name = r.ParseIdentifier();
+
+            if (name == null)
+            {
+                throw new ExpressionParseException(r.Position, "Element name expected after '#'.");
+            }
+
+            nodes.Add(new ElementNameNode(name.ToString()));
+            return State.AfterMember;
+        }
+
+        private State ParseRelativeSource(ref CharacterReader r, List<ExpressionNode> nodes)
+        {
+            var mode = r.ParseIdentifier();
+
+            if (mode == "self".AsSpan())
+            {
+                nodes.Add(new SelfNode());
+            }
+            else if (mode == "parent".AsSpan())
+            {
+                Type ancestorType = null;
+                var ancestorLevel = 0;
+                if (PeekOpenBracket(ref r))
+                {
+                    var args = r.ParseArguments('[', ']', ';');
+                    if (args.Count > 2 || args.Count == 0)
+                    {
+                        throw new ExpressionParseException(r.Position, "Too many arguments in RelativeSource syntax sugar");
+                    }
+                    else if (args.Count == 1)
+                    {
+                        if (int.TryParse(args[0], out int level))
+                        {
+                            ancestorType = null;
+                            ancestorLevel = level;
+                        }
+                        else
+                        {
+                            var reader = new CharacterReader(args[0].AsSpan());
+                            var typeName = ParseTypeName(ref reader);
+                            ancestorType = _typeResolver(typeName.Namespace.ToString(), typeName.Type.ToString());
+                        }
+                    }
+                    else
+                    {
+                        var reader = new CharacterReader(args[0].AsSpan());
+                        var typeName = ParseTypeName(ref reader);
+                        ancestorType = _typeResolver(typeName.Namespace.ToString(), typeName.Type.ToString());
+                        ancestorLevel = int.Parse(args[1]);
+                    }
+                }
+                nodes.Add(new FindAncestorNode(ancestorType, ancestorLevel));
+            }
+            else
+            {
+                throw new ExpressionParseException(r.Position, "Unknown RelativeSource mode.");
+            }
+
+            return State.AfterMember;
+        }
         
-        private static bool ParseNot(ref Reader r)
+        private static TypeName ParseTypeName(ref CharacterReader r)
+        {
+            ReadOnlySpan<char> ns, typeName;
+            ns = ReadOnlySpan<char>.Empty;
+            var typeNameOrNamespace = r.ParseIdentifier();
+
+            if (!r.End && r.TakeIf(':'))
+            {
+                ns = typeNameOrNamespace;
+                typeName = r.ParseIdentifier();
+            }
+            else
+            {
+                typeName = typeNameOrNamespace;
+            }
+
+            return new TypeName(ns, typeName);
+        }
+      
+        private static bool ParseNot(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('!');
         }
 
-        private static bool ParseMemberAccessor(ref Reader r)
+        private static bool ParseMemberAccessor(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('.');
         }
 
-        private static bool ParseOpenBrace(ref Reader r)
+        private static bool ParseOpenBrace(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('(');
         }
 
-        private static bool PeekOpenBracket(ref Reader r)
+        private static bool PeekOpenBracket(ref CharacterReader r)
         {
             return !r.End && r.Peek == '[';
         }
 
-        private static bool ParseStreamOperator(ref Reader r)
+        private static bool ParseStreamOperator(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('^');
+        }
+
+        private static bool ParseDollarSign(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf('$');
+        }
+
+        private static bool ParseSharp(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf('#');
         }
 
         private enum State
         {
             Start,
+            RelativeSource,
+            ElementName,
             AfterMember,
             BeforeMember,
             AttachedProperty,
             Indexer,
             End,
+        }
+
+        private readonly ref struct TypeName
+        {
+            public TypeName(ReadOnlySpan<char> ns, ReadOnlySpan<char> typeName)
+            {
+                Namespace = ns;
+                Type = typeName;
+            }
+
+            public readonly ReadOnlySpan<char> Namespace;
+            public readonly ReadOnlySpan<char> Type;
+
+            public void Deconstruct(out ReadOnlySpan<char> ns, out ReadOnlySpan<char> typeName)
+            {
+                ns = Namespace;
+                typeName = Type;
+            }
         }
     }
 }

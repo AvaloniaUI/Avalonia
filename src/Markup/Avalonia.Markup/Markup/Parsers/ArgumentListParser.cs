@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data.Core;
+using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> ParseArguments(this ref Reader r, char open, char close)
+        public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {
@@ -20,7 +21,7 @@ namespace Avalonia.Markup.Parsers
 
                 while (!r.End)
                 {
-                    var argument = r.TakeWhile(c => c != ',' && c != close);
+                    var argument = r.TakeWhile(c => c != delimiter && c != close && !char.IsWhiteSpace(c));
                     if (argument.IsEmpty)
                     {
                         throw new ExpressionParseException(r.Position, "Expected indexer argument.");
@@ -32,7 +33,7 @@ namespace Avalonia.Markup.Parsers
 
                     if (r.End)
                     {
-                        throw new ExpressionParseException(r.Position, "Expected ','.");
+                        throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                     }
                     else if (r.TakeIf(close))
                     {
@@ -40,9 +41,9 @@ namespace Avalonia.Markup.Parsers
                     }
                     else
                     {
-                        if (r.Take() != ',')
+                        if (r.Take() != delimiter)
                         {
-                            throw new ExpressionParseException(r.Position, "Expected ','.");
+                            throw new ExpressionParseException(r.Position, $"Expected '{delimiter}'.");
                         }
 
                         r.SkipWhitespace();

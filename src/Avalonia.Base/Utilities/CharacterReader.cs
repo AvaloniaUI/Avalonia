@@ -5,13 +5,13 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Utilities
 {
-    internal ref struct Reader
+    public ref struct CharacterReader
     {
         private ReadOnlySpan<char> _s;
 
-        public Reader(ReadOnlySpan<char> s)
+        public CharacterReader(ReadOnlySpan<char> s)
             :this()
         {
             _s = s;

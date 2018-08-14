@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Avalonia.Markup.Parsers
+namespace Avalonia.Utilities
 {
-    internal static class IdentifierParser
+    public static class IdentifierParser
     {
-        public static ReadOnlySpan<char> ParseIdentifier(this ref Reader r)
+        public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {

@@ -1,15 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">CheckBox</TextBlock>
     <TextBlock Classes="h2">A check box control</TextBlock>
 
     <StackPanel Orientation="Horizontal"
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
-                Gap="16">
+                Spacing="16">
       <StackPanel Orientation="Vertical"
-                  Gap="16">
+                  Spacing="16">
         <CheckBox>Unchecked</CheckBox>
         <CheckBox IsChecked="True">Checked</CheckBox>
         <CheckBox IsChecked="{x:Null}">Indeterminate</CheckBox>
@@ -17,7 +17,7 @@
       </StackPanel>
       <StackPanel Orientation="Vertical"
                   HorizontalAlignment="Center"
-                  Gap="16">
+                  Spacing="16">
         <CheckBox IsChecked="False" IsThreeState="True">Three State: Unchecked</CheckBox>
         <CheckBox IsChecked="True" IsThreeState="True">Three State: Checked</CheckBox>
         <CheckBox IsChecked="{x:Null}" IsThreeState="True">Three State: Indeterminate</CheckBox>

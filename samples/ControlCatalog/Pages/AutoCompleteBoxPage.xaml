@@ -1,12 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">AutoCompleteBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
 
     <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
-              Gap="8">
+              Spacing="8">
       <StackPanel Orientation="Vertical">
         <TextBlock Text="MinimumPrefixLength: 1"/>
         <AutoCompleteBox Width="200"

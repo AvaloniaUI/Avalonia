@@ -162,8 +162,9 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.Equal(e.Arguments.ToArray(), args);
         }
 
-        private List<ExpressionNode> ToList(ExpressionNode node)
+        private List<ExpressionNode> ToList((ExpressionNode node, SourceMode mode) parsed)
         {
+            var (node, _) = parsed;
             var result = new List<ExpressionNode>();
             
             while (node != null)

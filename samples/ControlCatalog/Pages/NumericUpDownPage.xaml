@@ -1,6 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
 
@@ -26,7 +26,7 @@
                   VerticalAlignment="Center" Margin="2">
           <DropDown.ItemTemplate>
             <DataTemplate>
-              <StackPanel Orientation="Horizontal" Gap="2">
+              <StackPanel Orientation="Horizontal" Spacing="2">
                 <TextBlock Text="{Binding Name}"/>
                 <TextBlock Text="-"/>
                 <TextBlock Text="{Binding Value}"/>
@@ -69,7 +69,7 @@
       </Grid>
     </Grid>
 
-    <StackPanel Margin="2,10,2,2" Orientation="Horizontal" Gap="10">
+    <StackPanel Margin="2,10,2,2" Orientation="Horizontal" Spacing="10">
       <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of NumericUpDown:</TextBlock>
       <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
                      CultureInfo="en-US" VerticalAlignment="Center" Height="25" Width="100"
