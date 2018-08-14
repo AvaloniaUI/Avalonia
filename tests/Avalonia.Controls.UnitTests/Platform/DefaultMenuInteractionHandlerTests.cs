@@ -371,9 +371,27 @@ namespace Avalonia.Controls.UnitTests.Platform
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var e = new PointerEventArgs { RoutedEvent = MenuItem.PointerLeaveItemEvent, Source = item };
 
+                Mock.Get(parentItem).SetupGet(x => x.SelectedItem).Returns(item);
                 target.PointerLeave(item, e);
 
                 Mock.Get(parentItem).VerifySet(x => x.SelectedItem = null);
+                Assert.False(e.Handled);
+            }
+
+            [Fact]
+            public void PointerLeave_Doesnt_Deselect_Sibling()
+            {
+                var target = new DefaultMenuInteractionHandler();
+                var menu = Mock.Of<IMenu>();
+                var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
+                var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
+                var sibling = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
+                var e = new PointerEventArgs { RoutedEvent = MenuItem.PointerLeaveItemEvent, Source = item };
+
+                Mock.Get(parentItem).SetupGet(x => x.SelectedItem).Returns(sibling);
+                target.PointerLeave(item, e);
+
+                Mock.Get(parentItem).VerifySet(x => x.SelectedItem = null, Times.Never);
                 Assert.False(e.Handled);
             }
 

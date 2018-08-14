@@ -301,16 +301,19 @@ namespace Avalonia.Controls.Platform
                 return;
             }
 
-            if (item.IsTopLevel)
+            if (item.Parent.SelectedItem == item)
             {
-                if (!((IMenu)item.Parent).IsOpen && item.Parent.SelectedItem == item)
+                if (item.IsTopLevel)
+                {
+                    if (!((IMenu)item.Parent).IsOpen)
+                    {
+                        item.Parent.SelectedItem = null;
+                    }
+                }
+                else if (!item.HasSubMenu)
                 {
                     item.Parent.SelectedItem = null;
                 }
-            }
-            else if (!item.HasSubMenu)
-            {
-                item.Parent.SelectedItem = null;
             }
         }
 
