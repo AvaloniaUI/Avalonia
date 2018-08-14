@@ -6,9 +6,10 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Provides statefulness for keyframe animations.
+    /// Handles interpolatoin and time-related functions 
+    /// for keyframe animations.
     /// </summary>
-    internal class AnimatorStateMachine<T> : IObservable<T>, IDisposable
+    internal class AnimationsEngine<T> : IObservable<T>, IDisposable
     {
         T lastInterpValue;
         T firstKFValue;
@@ -40,7 +41,7 @@ namespace Avalonia.Animation
         private IObserver<T> targetObserver;
         private readonly Action onCompleteAction;
 
-        public AnimatorStateMachine(Animation animation, Animatable control, Animator<T> animator, Action OnComplete)
+        public AnimationsEngine(Animation animation, Animatable control, Animator<T> animator, Action OnComplete)
         {
             if (animation.SpeedRatio <= 0 || DoubleUtils.AboutEqual(animation.SpeedRatio, 0))
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
