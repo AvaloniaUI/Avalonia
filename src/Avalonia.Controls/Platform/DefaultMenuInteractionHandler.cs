@@ -135,6 +135,8 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void KeyDown(IMenuItem item, KeyEventArgs e)
         {
+            Contract.Requires<ArgumentNullException>(item != null);
+
             switch (e.Key)
             {
                 case Key.Up:
@@ -154,7 +156,7 @@ namespace Avalonia.Controls.Platform
                     break;
 
                 case Key.Left:
-                    if (item?.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
+                    if (item.Parent is IMenuItem parent && !parent.IsTopLevel && parent.IsSubMenuOpen)
                     {
                         parent.Close();
                         parent.Focus();
@@ -203,20 +205,17 @@ namespace Avalonia.Controls.Platform
                 default:
                     var direction = e.Key.ToNavigationDirection();
 
-                    if (direction.HasValue)
+                    if (direction.HasValue && item.Parent?.MoveSelection(direction.Value, true) == true)
                     {
-                        if (item.Parent?.MoveSelection(direction.Value, true) == true)
+                        // If the the parent is an IMenu which successfully moved its selection,
+                        // and the current menu is open then close the current menu and open the
+                        // new menu.
+                        if (item.IsSubMenuOpen && item.Parent is IMenu)
                         {
-                            // If the the parent is an IMenu which successfully moved its selection,
-                            // and the current menu is open then close the current menu and open the
-                            // new menu.
-                            if (item.IsSubMenuOpen && item.Parent is IMenu)
-                            {
-                                item.Close();
-                                Open(item.Parent.SelectedItem, true);
-                            }
-                            e.Handled = true;
+                            item.Close();
+                            Open(item.Parent.SelectedItem, true);
                         }
+                        e.Handled = true;
                     }
 
                     break;
@@ -387,7 +386,7 @@ namespace Avalonia.Controls.Platform
 
             while (current != null && !(current is IMenu))
             {
-                current = (current as IMenuItem).Parent;
+                current = (current as IMenuItem)?.Parent;
             }
 
             current?.Close();
