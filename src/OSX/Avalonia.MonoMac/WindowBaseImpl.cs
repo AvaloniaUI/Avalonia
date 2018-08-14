@@ -19,14 +19,13 @@ namespace Avalonia.MonoMac
         public WindowBaseImpl()
         {
             _managedDrag = new ManagedWindowResizeDragHelper(this, _ => { }, ResizeForManagedDrag);
-            Window = new CustomWindow(this)
-            {
-                StyleMask = NSWindowStyle.Titled,
-                BackingType = NSBackingStore.Buffered,
-                ContentView = View,
-                // ReSharper disable once VirtualMemberCallInConstructor
-                Delegate = CreateWindowDelegate()
-            };
+            // ReSharper disable once VirtualMemberCallInConstructor
+            Window = CreateCustomWindow();
+            Window.StyleMask = NSWindowStyle.Titled;
+            Window.BackingType = NSBackingStore.Buffered;
+            Window.ContentView = View;
+            // ReSharper disable once VirtualMemberCallInConstructor
+            Window.Delegate = CreateWindowDelegate();
         }
 
         public class CustomWindow : NSWindow
@@ -57,6 +56,7 @@ namespace Avalonia.MonoMac
             public void SetCanBecomeKeyAndMain() => _canBecomeKeyAndMain = true;
         }
 
+        protected virtual CustomWindow CreateCustomWindow() => new CustomWindow(this);
         protected virtual NSWindowDelegate CreateWindowDelegate() => new WindowBaseDelegate(this);
 
         public class WindowBaseDelegate : NSWindowDelegate
