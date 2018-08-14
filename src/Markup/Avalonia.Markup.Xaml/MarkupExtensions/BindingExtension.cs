@@ -43,8 +43,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Path = Path,
                 Priority = Priority,
                 Source = Source,
+                StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor((ITypeDescriptorContext)serviceProvider))
+                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext))
             };
         }
 
@@ -78,6 +79,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public BindingPriority Priority { get; set; } = BindingPriority.LocalValue;
 
         public object Source { get; set; }
+
+        public string StringFormat { get; set; }
 
         public RelativeSource RelativeSource { get; set; }
     }

@@ -64,7 +64,10 @@ namespace Avalonia.Controls.UnitTests
                 {
                     ContextMenu = sut
                 };
-                new Window { Content = target };
+
+                var window = new Window { Content = target };
+
+                Avalonia.Application.Current.MainWindow = window;
 
                 target.RaiseEvent(new PointerReleasedEventArgs
                 {
