@@ -51,7 +51,7 @@ namespace Avalonia.Gtk3
         private static IntPtr X11Display;
         private ILockedFramebuffer LockX11Framebuffer(int width, int height)
         {
-            if (!_window.GdkWindowHandle.HasValue)
+            if (_window.GdkWindowHandle == IntPtr.Zero)
                 return null;
             if (X11Display == IntPtr.Zero)
             {
@@ -60,7 +60,7 @@ namespace Avalonia.Gtk3
                     return null;
                 X11.XSetErrorHandler(X11ErrorHandlerDelegate);
             }
-            return new X11Framebuffer(X11Display, _window.GdkWindowHandle.Value, width, height, _window.LastKnownScaleFactor);
+            return new X11Framebuffer(X11Display, _window.GdkWindowHandle, width, height, _window.LastKnownScaleFactor);
         }
     }
 }

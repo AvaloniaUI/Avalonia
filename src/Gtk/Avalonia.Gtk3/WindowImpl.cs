@@ -13,12 +13,10 @@ namespace Avalonia.Gtk3
         {
         }
 
-        protected unsafe override bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        internal override void OnStateChanged(GdkWindowState changed_mask, GdkWindowState new_window_state)
         {
-            var windowStateEvent = (GdkEventWindowState*)pev;
-            var newWindowState = windowStateEvent->new_window_state;
-            var windowState = newWindowState.HasFlag(GdkWindowState.Iconified) ? WindowState.Minimized
-                : (newWindowState.HasFlag(GdkWindowState.Maximized) ? WindowState.Maximized : WindowState.Normal);
+            var windowState = new_window_state.HasFlag(GdkWindowState.Iconified) ? WindowState.Minimized
+                : (new_window_state.HasFlag(GdkWindowState.Maximized) ? WindowState.Maximized : WindowState.Normal);
 
             if (windowState != _lastWindowState)
             {
@@ -26,7 +24,7 @@ namespace Avalonia.Gtk3
                 WindowStateChanged?.Invoke(windowState);
             }
 
-            return base.OnStateChanged(w, pev, userData);
+            base.OnStateChanged(changed_mask, new_window_state);
         }
 
         public void SetTitle(string title)
@@ -64,7 +62,8 @@ namespace Avalonia.Gtk3
 
         public IDisposable ShowDialog()
         {
-            Native.GtkWindowSetModal(GtkWidget, true);
+            //Native.GtkWindowSetModal(GtkWidget, true);
+            EventManager.EnterModal(this);
             Show();
             return new EmptyDisposable();
         }

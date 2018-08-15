@@ -367,7 +367,7 @@ namespace Avalonia.Gtk3.Interop
             public delegate bool signal_widget_draw(IntPtr gtkWidget, IntPtr cairoContext, IntPtr userData);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool signal_generic(IntPtr gtkWidget, IntPtr userData);
+            public delegate void signal_generic(IntPtr gtkWidget, IntPtr userData);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool signal_dialog_response(IntPtr gtkWidget, GtkResponseType response, IntPtr userData);
@@ -390,7 +390,14 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate bool TickCallback(IntPtr widget, IntPtr clock, IntPtr userdata);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_event_get_window(IntPtr ev);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate IntPtr gdk_window_get_toplevel(IntPtr window);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_transient_for (GtkWidget widget, GtkWidget parent);
         }
 
         public static D.gdk_display_get_n_screens GdkDisplayGetNScreens;
@@ -430,6 +437,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_set_default_size GtkWindowSetDefaultSize;
         public static D.gtk_window_set_geometry_hints GtkWindowSetGeometryHints;
         public static D.gtk_window_get_position GtkWindowGetPosition;
+        public static D.gtk_window_set_transient_for GtkWindowSetTransientFor;
         public static D.gtk_window_move GtkWindowMove;
         public static D.gtk_file_chooser_dialog_new GtkFileChooserDialogNew;
         public static D.gtk_file_chooser_set_select_multiple GtkFileChooserSetSelectMultiple;
@@ -458,7 +466,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_clipboard_request_text GtkClipboardRequestText;
         public static D.gtk_clipboard_set_text GtkClipboardSetText;
         public static D.gtk_clipboard_clear GtkClipboardRequestClear;
-        
+
         public static D.gtk_im_multicontext_new GtkImMulticontextNew;
         public static D.gtk_im_context_filter_keypress GtkImContextFilterKeypress;
         public static D.gtk_im_context_set_client_window GtkImContextSetClientWindow;
@@ -480,10 +488,12 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_begin_move_drag GdkWindowBeginMoveDrag;
         public static D.gdk_window_begin_resize_drag GdkWindowBeginResizeDrag;
         public static D.gdk_event_request_motions GdkEventRequestMotions;
+        public static D.gdk_event_get_window GdkEventGetWindow;
+        public static D.gdk_window_get_toplevel GdkWindowGetTopLevel;
         public static D.gdk_window_process_updates GdkWindowProcessUpdates;
         public static D.gdk_window_begin_paint_rect GdkWindowBeginPaintRect;
         public static D.gdk_window_end_paint GdkWindowEndPaint;
-        
+
 
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
         public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;

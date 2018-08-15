@@ -34,13 +34,18 @@ namespace Avalonia.Gtk3.Interop
             }
         }
 
-        public static IDisposable Connect<T>(GObject obj, string name, T handler) 
+        public static IDisposable Connect<T>(GObject obj, string name, T handler)
+        {
+            return Connect<T>(obj, name, handler, IntPtr.Zero);
+        }
+
+        public static IDisposable Connect<T>(GObject obj, string name, T handler, IntPtr userData) 
         {
             var handle = GCHandle.Alloc(handler);
             var ptr = Marshal.GetFunctionPointerForDelegate((Delegate)(object)handler);
             using (var utf = new Utf8Buffer(name))
             {
-                var id = Native.GSignalConnectObject(obj, utf, ptr, IntPtr.Zero, 0);
+                var id = Native.GSignalConnectObject(obj, utf, ptr, userData, 0);
                 if (id == 0)
                     throw new ArgumentException("Unable to connect to signal " + name);
                 return new ConnectedSignal(obj, handle, id);

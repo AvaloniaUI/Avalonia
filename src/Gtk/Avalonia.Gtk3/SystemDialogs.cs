@@ -41,7 +41,6 @@ namespace Avalonia.Gtk3
                 {
                     tcs.TrySetResult(null);
                     dispose();
-                    return false;
                 }),
                 Signal.Connect<Native.D.signal_dialog_response>(dlg, "response", (_, resp, __)=>
                 {
