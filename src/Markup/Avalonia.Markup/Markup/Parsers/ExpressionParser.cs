@@ -216,11 +216,11 @@ namespace Avalonia.Markup.Parsers
         {
             var mode = r.ParseIdentifier();
 
-            if (mode == "self".AsSpan())
+            if (mode.Equals("self".AsSpan(), StringComparison.InvariantCulture))
             {
                 nodes.Add(new SelfNode());
             }
-            else if (mode == "parent".AsSpan())
+            else if (mode.Equals("parent".AsSpan(), StringComparison.InvariantCulture))
             {
                 Type ancestorType = null;
                 var ancestorLevel = 0;
