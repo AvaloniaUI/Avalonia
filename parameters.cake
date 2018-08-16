@@ -1,6 +1,5 @@
 public class Parameters
 {
-    public string Platform { get; private set; }
     public string Configuration { get; private set; }
     public bool SkipTests { get; private set; }
     public string MainRepo { get; private set; }
@@ -9,10 +8,6 @@ public class Parameters
     public string ReleasePlatform { get; private set; }
     public string ReleaseConfiguration { get; private set; }
     public string MSBuildSolution { get; private set; }
-    public bool IsPlatformAnyCPU { get; private set; }
-    public bool IsPlatformX86 { get; private set; }
-    public bool IsPlatformX64 { get; private set; }
-    public bool IsPlatformNetCoreOnly { get; private set; }
     public bool IsLocalBuild { get; private set; }
     public bool IsRunningOnUnix { get; private set; }
     public bool IsRunningOnWindows { get; private set; }
@@ -43,7 +38,6 @@ public class Parameters
         var buildSystem = context.BuildSystem();
 
         // ARGUMENTS
-        Platform = context.Argument("platform", "Any CPU");
         Configuration = context.Argument("configuration", "Release");
         SkipTests = context.HasArgument("skip-tests");
 
@@ -51,15 +45,10 @@ public class Parameters
         MainRepo = "AvaloniaUI/Avalonia";
         MasterBranch = "master";
         AssemblyInfoPath = context.File("./src/Shared/SharedAssemblyInfo.cs");
-        ReleasePlatform = "Any CPU";
         ReleaseConfiguration = "Release";
-        MSBuildSolution = "./Avalonia.sln";
+        MSBuildSolution = "./dirs.proj";
 
         // PARAMETERS
-        IsPlatformAnyCPU = StringComparer.OrdinalIgnoreCase.Equals(Platform, "Any CPU");
-        IsPlatformX86 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x86");
-        IsPlatformX64 = StringComparer.OrdinalIgnoreCase.Equals(Platform, "x64");
-        IsPlatformNetCoreOnly = StringComparer.OrdinalIgnoreCase.Equals(Platform, "NetCoreOnly");
         IsLocalBuild = buildSystem.IsLocalBuild;
         IsRunningOnUnix = context.IsRunningOnUnix();
         IsRunningOnWindows = context.IsRunningOnWindows();
@@ -69,8 +58,7 @@ public class Parameters
         IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, buildSystem.AppVeyor.Environment.Repository.Branch);
         IsTagged = buildSystem.AppVeyor.Environment.Repository.Tag.IsTag 
                 && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
-        IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleasePlatform, Platform) 
-                    && StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
+        IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
         IsMyGetRelease = !IsTagged && IsReleasable;
 
         // VERSION

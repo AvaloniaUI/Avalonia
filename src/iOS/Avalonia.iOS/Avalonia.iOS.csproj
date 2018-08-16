@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4488AD85-1495-4809-9AA4-DDFE0A48527E}</ProjectGuid>
@@ -108,7 +108,5 @@
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\..\build\Rx.props" />
-  <PropertyGroup Condition="'$(UseRoslynPathHack)' == 'true'">
-    <CscToolPath>$(MSBuildToolsPath)\..\Roslyn</CscToolPath>
-  </PropertyGroup>
+  <Import Project="..\..\..\build\iOSWorkarounds.props" />
 </Project>

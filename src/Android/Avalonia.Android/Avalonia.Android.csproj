@@ -133,4 +133,5 @@
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\..\build\Rx.props" />
+  <Import Project="..\..\..\build\AndroidWorkarounds.props" />
 </Project>

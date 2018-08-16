@@ -121,7 +121,6 @@ public class Packages
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
         var SystemMemoryVersion = packageVersions["System.Memory"].FirstOrDefault().Item1;
-        var SystemComponentModeTypeConverterVersion = packageVersions["System.ComponentModel.TypeConverter"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
@@ -219,26 +218,16 @@ public class Packages
         };
 
         var toolHostAppNetFx = new NuSpecContent{
-            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/Avalonia.Designer.HostApp.exe")).FullPath, 
+            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/net461/Avalonia.Designer.HostApp.exe")).FullPath, 
             Target = "tools/net461/previewer"
         };
 
-        IList<NuSpecContent> coreFiles;
-
-        if (!parameters.IsPlatformNetCoreOnly) {
-            var toolsContent = new[] { toolHostApp, toolHostAppNetFx };
-            coreFiles = coreLibrariesNuSpecContent
-                .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
-                .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
-                .Concat(toolsContent)
-                .ToList();
-        } else {
-            var toolsContent = new[] { toolHostApp };
-            coreFiles = coreLibrariesNuSpecContent
-                .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
-                .Concat(toolsContent)
-                .ToList();
-        }
+        var toolsContent = new[] { toolHostApp, toolHostAppNetFx };
+        var coreFiles = coreLibrariesNuSpecContent
+            .Concat(netFrameworkCoreLibrariesNuSpecContent).Concat(netFrameworkRuntimePlatform)
+            .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+            .Concat(toolsContent)
+            .ToList();
 
         var nuspecNuGetSettingsCore = new []
         {
@@ -254,7 +243,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netcoreapp2.0" },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="net461" },
                     new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion, TargetFramework="net461" },
-                    new NuSpecDependency() { Id = "System.ComponentModel.TypeConverter", Version = SystemComponentModeTypeConverterVersion, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "System.ComponentModel.TypeConverter", Version = "4.3.0", TargetFramework="net461" },
                     new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="net461"}
                 }
                 .Deps(new string[]{"netstandard2.0", "netcoreapp2.0", "net461"},
@@ -511,7 +500,7 @@ public class Packages
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsCore);
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsDesktop);
 
-        if (!parameters.IsPlatformNetCoreOnly) {
+        if (parameters.IsRunningOnWindows) {
             NuspecNuGetSettings.Add(nuspecNuGetSettingInterop);
             NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
         }
