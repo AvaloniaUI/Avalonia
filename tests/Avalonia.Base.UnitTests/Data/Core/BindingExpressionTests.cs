@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
@@ -22,7 +23,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Get_Simple_Property_Value()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(string));
             var result = await target.Take(1);
 
             Assert.Equal("foo", result);
@@ -34,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Simple_Property_Value()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(string));
 
             target.OnNext("bar");
 
@@ -47,7 +48,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Set_Indexed_Value()
         {
             var data = new { Foo = new[] { "foo" } };
-            var target = new BindingExpression(new ExpressionObserver(data, "Foo[0]"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.Foo[0]), typeof(string));
 
             target.OnNext("bar");
 
@@ -60,7 +61,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_Get_String_To_Double()
         {
             var data = new Class1 { StringValue = $"{5.6}" };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(double));
             var result = await target.Take(1);
 
             Assert.Equal(5.6, result);
@@ -72,7 +73,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Getting_Invalid_Double_String_Should_Return_BindingError()
         {
             var data = new Class1 { StringValue = "foo" };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(double));
             var result = await target.Take(1);
 
             Assert.IsType<BindingNotification>(result);
@@ -84,7 +85,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Coerce_Get_Null_Double_String_To_UnsetValue()
         {
             var data = new Class1 { StringValue = null };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(double));
             var result = await target.Take(1);
 
             Assert.Equal(AvaloniaProperty.UnsetValue, result);
@@ -96,7 +97,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Convert_Set_String_To_Double()
         {
             var data = new Class1 { StringValue = $"{5.6}" };
-            var target = new BindingExpression(new ExpressionObserver(data, "StringValue"), typeof(double));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(double));
 
             target.OnNext(6.7);
 
@@ -109,7 +110,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public async Task Should_Convert_Get_Double_To_String()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
             var result = await target.Take(1);
 
             Assert.Equal($"{5.6}", result);
@@ -121,7 +122,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Convert_Set_Double_To_String()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
 
             target.OnNext($"{6.7}");
 
@@ -135,7 +136,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
-                new ExpressionObserver(data, "StringValue"),
+                ExpressionObserver.Create(data, o => o.StringValue),
                 typeof(int),
                 42,
                 DefaultValueConverter.Instance);
@@ -156,7 +157,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
-                new ExpressionObserver(data, "StringValue", true),
+                ExpressionObserver.Create(data, o => o.StringValue, true),
                 typeof(int),
                 42,
                 DefaultValueConverter.Instance);
@@ -177,7 +178,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
-                new ExpressionObserver(data, "StringValue"),
+                ExpressionObserver.Create(data, o => o.StringValue),
                 typeof(int),
                 "bar",
                 DefaultValueConverter.Instance);
@@ -199,7 +200,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { StringValue = "foo" };
             var target = new BindingExpression(
-                new ExpressionObserver(data, "StringValue", true),
+                ExpressionObserver.Create(data, o => o.StringValue, true),
                 typeof(int),
                 "bar",
                 DefaultValueConverter.Instance);
@@ -220,7 +221,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Setting_Invalid_Double_String_Should_Not_Change_Target()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
 
             target.OnNext("foo");
 
@@ -234,7 +235,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var target = new BindingExpression(
-                new ExpressionObserver(data, "DoubleValue"),
+                ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 "9.8",
                 DefaultValueConverter.Instance);
@@ -250,7 +251,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Coerce_Setting_Null_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
 
             target.OnNext(null);
 
@@ -263,7 +264,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Coerce_Setting_UnsetValue_Double_To_Default_Value()
         {
             var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue"), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
 
             target.OnNext(AvaloniaProperty.UnsetValue);
 
@@ -279,7 +280,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var converter = new Mock<IValueConverter>();
 
             var target = new BindingExpression(
-                new ExpressionObserver(data, "DoubleValue"),
+                ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
                 converterParameter: "foo");
@@ -297,7 +298,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
             var target = new BindingExpression(
-                new ExpressionObserver(data, "DoubleValue"),
+                ExpressionObserver.Create(data, o => o.DoubleValue),
                 typeof(string),
                 converter.Object,
                 converterParameter: "foo");
@@ -314,7 +315,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         {
             var data = new Class1 { DoubleValue = 5.6 };
             var converter = new Mock<IValueConverter>();
-            var target = new BindingExpression(new ExpressionObserver(data, "DoubleValue", true), typeof(string));
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue, true), typeof(string));
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
@@ -333,6 +334,21 @@ namespace Avalonia.Base.UnitTests.Data.Core
                         BindingErrorType.Error)
                 },
                 result);
+
+            GC.KeepAlive(data);
+        }
+
+        [Fact]
+        public void Second_Subscription_Should_Fire_Immediately()
+        {
+            var data = new Class1 { StringValue = "foo" };
+            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(string));
+            object result = null;
+
+            target.Subscribe();
+            target.Subscribe(x => result = x);
+
+            Assert.Equal("foo", result);
 
             GC.KeepAlive(data);
         }

@@ -7,7 +7,7 @@ using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {
-    internal class LogicalNotNode : ExpressionNode, ITransformNode
+    public class LogicalNotNode : ExpressionNode, ITransformNode
     {
         public override string Description => "!";
 

@@ -74,15 +74,16 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Layout_Pass_Should_Not_Be_Automatically_Scheduled()
         {
-            var services = TestServices.StyledWindow.With(layoutManager: Mock.Of<ILayoutManager>());
+            var services = TestServices.StyledWindow;
 
             using (UnitTestApplication.Start(services))
             {
                 var impl = new Mock<ITopLevelImpl>();
-                var target = new TestTopLevel(impl.Object);
+                
+                var target = new TestTopLevel(impl.Object, Mock.Of<ILayoutManager>());
 
                 // The layout pass should be scheduled by the derived class.
-                var layoutManagerMock = Mock.Get(LayoutManager.Instance);
+                var layoutManagerMock = Mock.Get(target.LayoutManager);
                 layoutManagerMock.Verify(x => x.ExecuteLayoutPass(), Times.Never);
             }
         }
@@ -107,7 +108,7 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                LayoutManager.Instance.ExecuteInitialLayoutPass(target);
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
 
                 Assert.Equal(new Rect(0, 0, 321, 432), target.Bounds);
             }
@@ -122,7 +123,7 @@ namespace Avalonia.Controls.UnitTests
                 impl.Setup(x => x.ClientSize).Returns(new Size(123, 456));
 
                 var target = new TestTopLevel(impl.Object);
-                LayoutManager.Instance.ExecuteLayoutPass();
+                target.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(double.NaN, target.Width);
                 Assert.Equal(double.NaN, target.Height);
@@ -248,12 +249,16 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestTopLevel : TopLevel
         {
+            private readonly ILayoutManager _layoutManager;
             public bool IsClosed { get; private set; }
 
-            public TestTopLevel(ITopLevelImpl impl)
+            public TestTopLevel(ITopLevelImpl impl, ILayoutManager layoutManager = null)
                 : base(impl)
             {
+                _layoutManager = layoutManager ?? new LayoutManager();
             }
+
+            protected override ILayoutManager CreateLayoutManager() => _layoutManager;
 
             protected override void HandleApplicationExiting()
             {

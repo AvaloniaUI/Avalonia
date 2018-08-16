@@ -23,7 +23,6 @@ namespace Avalonia.UnitTests
     {
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
-            layoutManager: new LayoutManager(),
             platform: new AppBuilder().RuntimePlatform,
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<IStandardCursorFactory>(),
@@ -52,10 +51,7 @@ namespace Avalonia.UnitTests
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager());
-
-        public static readonly TestServices RealLayoutManager = new TestServices(
-            layoutManager: new LayoutManager());
-
+        
         public static readonly TestServices RealStyler = new TestServices(
             styler: new Styler());
 
@@ -65,7 +61,6 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             IKeyboardNavigationHandler keyboardNavigation = null,
-            ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
@@ -83,7 +78,6 @@ namespace Avalonia.UnitTests
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             KeyboardNavigation = keyboardNavigation;
-            LayoutManager = layoutManager;
             MouseDevice = mouseDevice;
             Platform = platform;
             RenderInterface = renderInterface;
@@ -101,7 +95,6 @@ namespace Avalonia.UnitTests
         public IFocusManager FocusManager { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public IKeyboardNavigationHandler KeyboardNavigation { get; }
-        public ILayoutManager LayoutManager { get; }
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
         public IPlatformRenderInterface RenderInterface { get; }
@@ -119,7 +112,6 @@ namespace Avalonia.UnitTests
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             IKeyboardNavigationHandler keyboardNavigation = null,
-            ILayoutManager layoutManager = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
@@ -138,7 +130,6 @@ namespace Avalonia.UnitTests
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
-                layoutManager: layoutManager ?? LayoutManager,
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,
                 renderInterface: renderInterface ?? RenderInterface,

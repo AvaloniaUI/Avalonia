@@ -8,9 +8,9 @@ using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Xunit;
 using System.ComponentModel;
-using Portable.Xaml.ComponentModel;
 using Portable.Xaml;
 using Portable.Xaml.Markup;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -27,7 +27,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public void ConvertFrom_Finds_Fully_Qualified_Property()
         {
             var target = new AvaloniaPropertyTypeConverter();
-            var context = CreateContext();
+            var style = new Style(x => x.OfType<Class1>());
+            var context = CreateContext(style);
             var result = target.ConvertFrom(context, null, "Class1.Foo");
 
             Assert.Equal(Class1.FooProperty, result);
@@ -48,12 +49,48 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         public void ConvertFrom_Finds_Attached_Property()
         {
             var target = new AvaloniaPropertyTypeConverter();
-            var context = CreateContext();
+            var style = new Style(x => x.OfType<Class1>());
+            var context = CreateContext(style);
             var result = target.ConvertFrom(context, null, "AttachedOwner.Attached");
 
             Assert.Equal(AttachedOwner.AttachedProperty, result);
         }
-        
+
+        [Fact]
+        public void ConvertFrom_Finds_Attached_Property_With_Parentheses()
+        {
+            var target = new AvaloniaPropertyTypeConverter();
+            var style = new Style(x => x.OfType<Class1>());
+            var context = CreateContext(style);
+            var result = target.ConvertFrom(context, null, "(AttachedOwner.Attached)");
+
+            Assert.Equal(AttachedOwner.AttachedProperty, result);
+        }
+
+        [Fact]
+        public void ConvertFrom_Throws_For_Nonexistent_Property()
+        {
+            var target = new AvaloniaPropertyTypeConverter();
+            var style = new Style(x => x.OfType<Class1>());
+            var context = CreateContext(style);
+
+            var ex = Assert.Throws<XamlLoadException>(() => target.ConvertFrom(context, null, "Nonexistent"));
+
+            Assert.Equal("Could not find property 'Class1.Nonexistent'.", ex.Message);
+        }
+
+        [Fact]
+        public void ConvertFrom_Throws_For_Nonexistent_Attached_Property()
+        {
+            var target = new AvaloniaPropertyTypeConverter();
+            var style = new Style(x => x.OfType<Class1>());
+            var context = CreateContext(style);
+
+            var ex = Assert.Throws<XamlLoadException>(() => target.ConvertFrom(context, null, "AttachedOwner.NonExistent"));
+
+            Assert.Equal("Could not find property 'AttachedOwner.NonExistent'.", ex.Message);
+        }
+
         private ITypeDescriptorContext CreateContext(Style style = null)
         {
             var tdMock = new Mock<ITypeDescriptorContext>();

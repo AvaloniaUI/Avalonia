@@ -60,35 +60,7 @@ namespace Avalonia.Data.Core.Plugins
 
         private static AvaloniaProperty LookupProperty(AvaloniaObject o, string propertyName)
         {
-            if (!propertyName.Contains("."))
-            {
-                return AvaloniaPropertyRegistry.Instance.FindRegistered(o, propertyName);
-            }
-            else
-            {
-                var split = propertyName.Split('.');
-
-                if (split.Length == 2)
-                {
-                    // HACK: We need a way to resolve types here using something like IXamlTypeResolver.
-                    // We don't currently have that so we have to make our best guess.
-                    var type = split[0];
-                    var name = split[1];
-                    var registry = AvaloniaPropertyRegistry.Instance;
-                    var registered = registry.GetRegisteredAttached(o.GetType())
-                        .Concat(registry.GetRegistered(o.GetType()));
-
-                    foreach (var p in registered)
-                    {
-                        if (p.Name == name && IsOfType(p.OwnerType, type))
-                        {
-                            return p;
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return AvaloniaPropertyRegistry.Instance.FindRegistered(o, propertyName);
         }
 
         private static bool IsOfType(Type type, string typeName)
@@ -145,15 +117,15 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
-            protected override void Dispose(bool disposing)
+            protected override void SubscribeCore()
+            {
+                _subscription = Instance?.GetObservable(_property).Subscribe(PublishValue);
+            }
+
+            protected override void UnsubscribeCore()
             {
                 _subscription?.Dispose();
                 _subscription = null;
-            }
-
-            protected override void SubscribeCore(IObserver<object> observer)
-            {
-                _subscription = Instance?.GetWeakObservable(_property).Subscribe(observer);
             }
         }
     }

@@ -126,7 +126,7 @@ namespace Avalonia.Styling
 
                 if (source != null)
                 {
-                    var cloned = Clone(source, style, activator);
+                    var cloned = Clone(source, source.Mode == BindingMode.Default ? Property.GetMetadata(control.GetType()).DefaultBindingMode : source.Mode, style, activator);
                     return BindingOperations.Apply(control, Property, cloned, null);
                 }
             }
@@ -134,13 +134,13 @@ namespace Avalonia.Styling
             return Disposable.Empty;
         }
 
-        private InstancedBinding Clone(InstancedBinding sourceInstance, IStyle style, IObservable<bool> activator)
+        private InstancedBinding Clone(InstancedBinding sourceInstance, BindingMode mode, IStyle style, IObservable<bool> activator)
         {
             if (activator != null)
             {
                 var description = style?.ToString();
 
-                switch (sourceInstance.Mode)
+                switch (mode)
                 {
                     case BindingMode.OneTime:
                         if (sourceInstance.Observable != null)
@@ -158,18 +158,11 @@ namespace Avalonia.Styling
                             var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
                             return InstancedBinding.OneWay(activated, BindingPriority.StyleTrigger);
                         }
-                    case BindingMode.OneWayToSource:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.OneWayToSource(activated, BindingPriority.StyleTrigger);
-                        }
-                    case BindingMode.TwoWay:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.TwoWay(activated, BindingPriority.StyleTrigger);
-                        }
                     default:
-                        throw new NotSupportedException("Unsupported BindingMode.");
+                        {
+                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                            return new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                        }
                 }
 
             }

@@ -164,8 +164,9 @@ namespace Avalonia.MonoMac
                 
                 var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
                 DraggingInfo info = new DraggingInfo(sender);
+                
                 var pt = TranslateLocalPoint(info.Location);
-                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp, GetModifiers(NSEvent.CurrentModifierFlags));
                 input(args);
                 return DraggingInfo.ConvertDragOperation(args.Effects);
             }

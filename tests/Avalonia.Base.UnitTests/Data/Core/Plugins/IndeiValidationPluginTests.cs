@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Xunit;
@@ -58,9 +57,9 @@ namespace Avalonia.Base.UnitTests.Data.Core.Plugins
             var validator = validatorPlugin.Start(new WeakReference(data), nameof(data.Value), accessor);
 
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
-            var sub = validator.Subscribe(_ => { });
+            validator.Subscribe(_ => { });
             Assert.Equal(1, data.ErrorsChangedSubscriptionCount);
-            sub.Dispose();
+            validator.Unsubscribe();
             Assert.Equal(0, data.ErrorsChangedSubscriptionCount);
         }
 

@@ -102,80 +102,73 @@ namespace Avalonia.Layout.UnitTests
         public void Only_Calls_LayoutManager_InvalidateMeasure_Once()
         {
             var target = new Mock<ILayoutManager>();
-
-            using (Start(target.Object))
+            var control = new Decorator();
+            var root = new LayoutTestRoot
             {
-                var control = new Decorator();
-                var root = new LayoutTestRoot { Child = control };
+                Child = control,
+                LayoutManager = target.Object,
+            };
 
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-                target.ResetCalls();
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+            target.ResetCalls();
 
-                control.InvalidateMeasure();
-                control.InvalidateMeasure();
+            control.InvalidateMeasure();
+            control.InvalidateMeasure();
 
-                target.Verify(x => x.InvalidateMeasure(control), Times.Once());
-            }
+            target.Verify(x => x.InvalidateMeasure(control), Times.Once());
         }
 
         [Fact]
         public void Only_Calls_LayoutManager_InvalidateArrange_Once()
         {
             var target = new Mock<ILayoutManager>();
-
-            using (Start(target.Object))
+            var control = new Decorator();
+            var root = new LayoutTestRoot
             {
-                var control = new Decorator();
-                var root = new LayoutTestRoot { Child = control };
+                Child = control,
+                LayoutManager = target.Object,
+            };
 
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-                target.ResetCalls();
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+            target.ResetCalls();
 
-                control.InvalidateArrange();
-                control.InvalidateArrange();
+            control.InvalidateArrange();
+            control.InvalidateArrange();
 
-                target.Verify(x => x.InvalidateArrange(control), Times.Once());
-            }
+            target.Verify(x => x.InvalidateArrange(control), Times.Once());
         }
 
         [Fact]
         public void Attaching_Control_To_Tree_Invalidates_Parent_Measure()
         {
             var target = new Mock<ILayoutManager>();
-
-            using (Start(target.Object))
+            var control = new Decorator();
+            var root = new LayoutTestRoot
             {
-                var control = new Decorator();
-                var root = new LayoutTestRoot { Child = control };
+                Child = control,
+                LayoutManager = target.Object,
+            };
 
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-                Assert.True(control.IsMeasureValid);
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+            Assert.True(control.IsMeasureValid);
 
-                root.Child = null;
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
+            root.Child = null;
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
 
-                Assert.False(control.IsMeasureValid);
-                Assert.True(root.IsMeasureValid);
+            Assert.False(control.IsMeasureValid);
+            Assert.True(root.IsMeasureValid);
 
-                target.ResetCalls();
+            target.ResetCalls();
 
-                root.Child = control;
+            root.Child = control;
 
-                Assert.False(root.IsMeasureValid);
-                Assert.False(control.IsMeasureValid);
-                target.Verify(x => x.InvalidateMeasure(root), Times.Once());
-            }
-        }
-
-        private IDisposable Start(ILayoutManager layoutManager)
-        {
-            var result = AvaloniaLocator.EnterScope();
-            AvaloniaLocator.CurrentMutable.Bind<ILayoutManager>().ToConstant(layoutManager);
-            return result;
+            Assert.False(root.IsMeasureValid);
+            Assert.False(control.IsMeasureValid);
+            target.Verify(x => x.InvalidateMeasure(root), Times.Once());
         }
 
         private class TestLayoutable : Layoutable

@@ -41,6 +41,20 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Should_Error_When_Activator_Errors()
+        {
+            var activator = new BehaviorSubject<bool>(false);
+            var target = new ActivatedValue(activator, 1, string.Empty);
+            var error = new Exception();
+            var completed = false;
+
+            target.Subscribe(_ => { }, x => completed = true);
+            activator.OnError(error);
+
+            Assert.True(completed);
+        }
+
+        [Fact]
         public void Should_Unsubscribe_From_Activator_When_All_Subscriptions_Disposed()
         {
             var scheduler = new TestScheduler();

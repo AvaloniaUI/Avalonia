@@ -11,10 +11,11 @@ namespace Avalonia.Win32
         private const int DRAGDROP_S_DROP = 0x00040100;
         private const int DRAGDROP_S_CANCEL = 0x00040101;
 
-        private const int KEYSTATE_LEFTMB = 1;
-        private const int KEYSTATE_MIDDLEMB = 16;
-        private const int KEYSTATE_RIGHTMB = 2;
-        private static readonly int[] MOUSE_BUTTONS = new int[] { KEYSTATE_LEFTMB, KEYSTATE_MIDDLEMB, KEYSTATE_RIGHTMB };
+        private static readonly int[] MOUSE_BUTTONS = new int[] {
+            (int)UnmanagedMethods.ModifierKeys.MK_LBUTTON,
+            (int)UnmanagedMethods.ModifierKeys.MK_MBUTTON,
+            (int)UnmanagedMethods.ModifierKeys.MK_RBUTTON
+        };
 
         public int QueryContinueDrag(int fEscapePressed, int grfKeyState)
         {

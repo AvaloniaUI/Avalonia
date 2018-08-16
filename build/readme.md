@@ -15,7 +15,6 @@
 <Import Project="..\..\build\SkiaSharp.Desktop.props" />
 <Import Project="..\..\build\SkiaSharp.props" />
 <Import Project="..\..\build\Splat.props" />
-<Import Project="..\..\build\Sprache.props" />
 <Import Project="..\..\build\XUnit.props" />
 ```
 
