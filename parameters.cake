@@ -1,10 +1,12 @@
+using System.Xml.Linq;
+using System.Linq;
+
 public class Parameters
 {
     public string Configuration { get; private set; }
     public bool SkipTests { get; private set; }
     public string MainRepo { get; private set; }
     public string MasterBranch { get; private set; }
-    public string AssemblyInfoPath { get; private set; }
     public string ReleasePlatform { get; private set; }
     public string ReleaseConfiguration { get; private set; }
     public string MSBuildSolution { get; private set; }
@@ -44,7 +46,6 @@ public class Parameters
         // CONFIGURATION
         MainRepo = "AvaloniaUI/Avalonia";
         MasterBranch = "master";
-        AssemblyInfoPath = context.File("./src/Shared/SharedAssemblyInfo.cs");
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./dirs.proj";
 
@@ -62,7 +63,7 @@ public class Parameters
         IsMyGetRelease = !IsTagged && IsReleasable;
 
         // VERSION
-        Version = context.Argument("force-nuget-version", context.ParseAssemblyInfo(AssemblyInfoPath).AssemblyVersion);
+        Version = context.Argument("force-nuget-version", GetVersion());
 
         if (IsRunningOnAppVeyor)
         {
@@ -99,5 +100,11 @@ public class Parameters
         ZipNuGetArtifacts = ZipRoot.CombineWithFilePath("Avalonia-NuGet-" + FileZipSuffix);
         ZipSourceControlCatalogDesktopDirs = (DirectoryPath)context.Directory("./samples/ControlCatalog.Desktop/bin/" + DirSuffix + "/net461");
         ZipTargetControlCatalogDesktopDirs = ZipRoot.CombineWithFilePath("ControlCatalog.Desktop-" + FileZipSuffix);
+    }
+
+    private static string GetVersion()
+    {
+        var xdoc = XDocument.Load("./build/SharedVersion.props");
+        return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
     }
 }
