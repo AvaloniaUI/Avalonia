@@ -18,4 +18,8 @@
     <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
     <ProjectReference Remove="samples/interop/**/*.*proj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

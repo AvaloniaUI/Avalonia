@@ -187,3 +187,5 @@ project.lock.json
 ## BenchmarkDotNet
 ##################
 BenchmarkDotNet.Artifacts/
+
+dirs.sln
