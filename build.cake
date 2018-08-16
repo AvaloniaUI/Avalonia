@@ -110,10 +110,7 @@ void DotNetCoreBuild(Parameters parameters)
     var settings = new DotNetCoreBuildSettings 
     {
         Configuration = parameters.Configuration,
-        MSBuildSettings = new DotNetCoreMSBuildSettings(),
     };
-
-    settings.MSBuildSettings.SetConfiguration(parameters.Configuration);
 
     DotNetCoreBuild(parameters.MSBuildSolution, settings);
 }
@@ -126,11 +123,8 @@ Task("Build-Impl")
         MSBuild(data.Parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(data.Parameters.Configuration);
             settings.SetVerbosity(Verbosity.Minimal);
-            settings.WithProperty("UseRoslynPathHack", "true");
+            settings.WithProperty("iOSRoslynPathHackRequired", "true");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
-            settings.WithProperty("Windows", "True");
-            settings.SetNodeReuse(false);
-            settings.SetMaxCpuCount(0);
             settings.WithRestore();
         });
     }
@@ -178,7 +172,7 @@ Task("Run-Unit-Tests-Impl")
     RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
     if (data.Parameters.IsRunningOnWindows)
     {
-        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
+        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, false);
     }
 });
 
