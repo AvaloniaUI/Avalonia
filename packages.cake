@@ -110,7 +110,6 @@ public class Packages
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
         var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
         var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
-        var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
         var ReactiveUIVersion = packageVersions["reactiveui"].FirstOrDefault().Item1;
         var SystemValueTupleVersion = packageVersions["System.ValueTuple"].FirstOrDefault().Item1;
@@ -121,10 +120,10 @@ public class Packages
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
+        var SystemMemoryVersion = packageVersions["System.Memory"].FirstOrDefault().Item1;
         var SystemComponentModelAnnotationsVersion = packageVersions["System.ComponentModel.Annotations"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
-        context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
         context.Information("Package: reactiveui, version: {0}", ReactiveUIVersion);
         context.Information("Package: System.ValueTuple, version: {0}", SystemValueTupleVersion);
@@ -135,6 +134,7 @@ public class Packages
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
         context.Information("Package: SharpDX.Direct3D9, version: {0}", SharpDXDirect3D9Version);
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
+        context.Information("Package: System.Memory, version: {0}", SystemMemoryVersion);
 
         var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
             ?? System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE") ?? System.Environment.GetEnvironmentVariable("HOME"), ".nuget");
@@ -253,9 +253,9 @@ public class Packages
                     new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Serilog.Sinks.Debug", Version = SerilogSinksDebugVersion },
                     new NuSpecDependency() { Id = "Serilog.Sinks.Trace", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "System.Memory", Version = SystemMemoryVersion },
                     new NuSpecDependency() { Id = "System.ComponentModel.Annotations", Version = SystemComponentModelAnnotationsVersion },
                     //.NET Core
                     new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
@@ -264,9 +264,9 @@ public class Packages
                     new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
                     new NuSpecDependency() { Id = "Serilog.Sinks.Debug", TargetFramework = "netcoreapp2.0", Version = SerilogSinksDebugVersion },
                     new NuSpecDependency() { Id = "Serilog.Sinks.Trace", TargetFramework = "netcoreapp2.0", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
                     new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
                     new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", TargetFramework = "netcoreapp2.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "System.Memory", TargetFramework = "netcoreapp2.0", Version = SystemMemoryVersion },
                 }
                 .Deps(new string[]{null, "netcoreapp2.0"},
                     "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",

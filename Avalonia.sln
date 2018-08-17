@@ -150,7 +150,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\SharpDX.props = build\SharpDX.props
 		build\SkiaSharp.props = build\SkiaSharp.props
 		build\Splat.props = build\Splat.props
-		build\Sprache.props = build\Sprache.props
+		build\System.Memory.props = build\System.Memory.props
 		build\XUnit.props = build\XUnit.props
 	EndProjectSection
 EndProject
