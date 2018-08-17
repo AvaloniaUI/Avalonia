@@ -27,7 +27,6 @@ public class Parameters
     public DirectoryPath ZipRoot { get; private set; }
     public DirectoryPath BinRoot { get; private set; }
     public string DirSuffix { get; private set; }
-    public string DirSuffixIOS { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
     public FilePath ZipCoreArtifacts { get; private set; }
@@ -94,7 +93,6 @@ public class Parameters
         BinRoot = ArtifactsDir.Combine("bin");
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
         DirSuffix = Configuration;
-        DirSuffixIOS = "iPhone" + "/" + Configuration;
         FileZipSuffix = Version + ".zip";
         ZipCoreArtifacts = ZipRoot.CombineWithFilePath("Avalonia-" + FileZipSuffix);
         ZipNuGetArtifacts = ZipRoot.CombineWithFilePath("Avalonia-NuGet-" + FileZipSuffix);

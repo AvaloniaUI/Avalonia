@@ -303,7 +303,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" }
                 },
-                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix),
+                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix + "/monoandroid44/MonoAndroid44"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -321,7 +321,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
                 },
-                BasePath = context.Directory("./src/iOS/Avalonia.iOS/bin/" + parameters.DirSuffixIOS),
+                BasePath = context.Directory("./src/iOS/Avalonia.iOS/bin/" + parameters.DirSuffix + "/xamarin.ios10/"),
                 OutputDirectory = parameters.NugetRoot
             }
         };
