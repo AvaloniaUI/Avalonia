@@ -303,7 +303,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" }
                 },
-                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix + "/monoandroid44/MonoAndroid44"),
+                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix + "/monoandroid44/"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
