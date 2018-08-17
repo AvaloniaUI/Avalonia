@@ -21,4 +21,5 @@
     <ProjectReference Include="..\..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
     <ProjectReference Include="..\..\..\samples\ControlCatalog.Desktop\ControlCatalog.Desktop.csproj" />
   </ItemGroup>
+  <Import Condition="'$(TargetFramework)'=='net461'" Project="..\..\..\build\NetFX.props" />
 </Project>

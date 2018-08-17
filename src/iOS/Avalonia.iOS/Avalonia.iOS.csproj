@@ -1,4 +1,5 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="MSBuild.Sdk.Extras" />
   <PropertyGroup>
     <TargetFramework>xamarin.ios10</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -15,5 +16,6 @@
   </ItemGroup>
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\..\build\Rx.props" />
+  <Import Project="Sdk.targets" Sdk="MSBuild.Sdk.Extras" />
   <Import Project="..\..\..\build\iOSWorkarounds.props" />
 </Project>
