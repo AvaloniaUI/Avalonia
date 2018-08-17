@@ -22,9 +22,9 @@ namespace Avalonia.Markup.Xaml.Parsers
 
             do
             {
-                var token = IdentifierParser.Parse(r);
+                var token = r.ParseIdentifier();
 
-                if (token == null)
+                if (token.IsEmpty)
                 {
                     if (r.End)
                     {
@@ -47,18 +47,18 @@ namespace Avalonia.Markup.Xaml.Parsers
                 else if (!r.End && r.TakeIf(':'))
                 {
                     ns = ns == null ?
-                        token :
+                        token.ToString() :
                         throw new ExpressionParseException(r.Position, "Unexpected ':'.");
                 }
                 else if (!r.End && r.TakeIf('.'))
                 {
                     owner = owner == null ?
-                        token :
+                        token.ToString() :
                         throw new ExpressionParseException(r.Position, "Unexpected '.'.");
                 }
                 else
                 {
-                    name = token;
+                    name = token.ToString();
                 }
             } while (!r.End);
 
