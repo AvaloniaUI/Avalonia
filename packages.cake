@@ -473,7 +473,7 @@ public class Packages
             },
             Files = new []
             {
-                new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/net461/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net461" }
+                new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/net461/Avalonia.Win32.Interop.dll", Target = "lib/net461" }
             },
             BasePath = context.Directory("./src/Windows"),
             OutputDirectory = parameters.NugetRoot
