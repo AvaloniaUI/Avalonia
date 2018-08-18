@@ -51,7 +51,6 @@ namespace Avalonia
                 }
                 if (args.Type == RawMouseEventType.Move)
                 {
-                   // Console.WriteLine(args.Position);
                     MoveWindow(args.Position);
                     return true;
                 }
@@ -71,9 +70,6 @@ namespace Avalonia
             if (_edge == null && _isMove)
             {
                 rc = rc.WithX(rc.X + diff.X).WithY(rc.Y + diff.Y);
-
-                _prevPoint = position;
-                //Console.WriteLine(rc);
 
                 if (_resize != null)
                 {
