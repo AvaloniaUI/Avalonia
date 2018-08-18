@@ -368,9 +368,12 @@ namespace Avalonia.Controls
         /// </summary>
         private void CloseSubmenus()
         {
-            foreach (var child in Items.OfType<MenuItem>())
+            if (Items != null)
             {
-                child.IsSubMenuOpen = false;
+                foreach (var child in Items.OfType<MenuItem>())
+                {
+                    child.IsSubMenuOpen = false;
+                }
             }
         }
 
