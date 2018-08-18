@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup Condition="'$(AndroidApplication)' == 'true'">
+    <!-- WORKAROUND: The packages below are transitively referenced by System.Memory,
+      but Xamarin.Android applications need the newest versions directly referenced for the linker. -->
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.1" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+  </ItemGroup>
+</Project>
