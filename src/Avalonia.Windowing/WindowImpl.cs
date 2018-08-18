@@ -45,8 +45,8 @@ namespace Avalonia.Windowing
 
         private void ResizeForManagedDrag(Rect obj)
         {
-            //this._windowWrapper.SetPosition(obj.X, obj.Y);
-          //  this._windowWrapper.SetSize(obj.Width, obj.Height);
+            this._windowWrapper.SetPosition(obj.X, obj.Y);
+            this._windowWrapper.SetSize(obj.Width, obj.Height);
         }
 
         public WindowState WindowState { get; set; }
@@ -107,6 +107,7 @@ namespace Avalonia.Windowing
 
         public void BeginMoveDrag()
         {
+            _managedDrag.BeginMoveDrag(new Point(_lastPosition.X, _lastPosition.Y));
         }
 
         public void BeginResizeDrag(WindowEdge edge)
