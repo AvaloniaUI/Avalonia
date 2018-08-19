@@ -31,4 +31,5 @@
   <Import Project="..\..\build\Serilog.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />
+  <Import Condition="'$(TargetFramework)'=='net461'" Project="..\..\build\NetFX.props" />
 </Project>
