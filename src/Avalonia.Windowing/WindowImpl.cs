@@ -198,6 +198,9 @@ namespace Avalonia.Windowing
 
         public IDisposable ShowDialog()
         {
+            _visible = true;
+            _windowWrapper.Show();
+            Position = _position;
             return Disposable.Create(() => {});
         }
 
