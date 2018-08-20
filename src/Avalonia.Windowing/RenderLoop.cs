@@ -14,7 +14,7 @@ namespace Avalonia.Windowing
                 TimeSpan.FromMilliseconds(1000 / 60),
                 () =>
                 {
-                    Dispatcher.UIThread.Post(() => Tick?.Invoke(this, EventArgs.Empty), DispatcherPriority.Render);    
+                    Dispatcher.UIThread.Post(() => Tick?.Invoke(this, EventArgs.Empty), DispatcherPriority.Render);
                 });
         }
 

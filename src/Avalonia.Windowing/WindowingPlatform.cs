@@ -42,11 +42,11 @@ namespace Avalonia.Windowing
 
         void _eventsLoop_OnCloseRequested(WindowId windowId)
         {
-            if (_windows.ContainsKey(windowId)) 
+            if (_windows.ContainsKey(windowId))
             {
-                if (!_windows[windowId].OnCloseRequested()) 
+                if (!_windows[windowId].OnCloseRequested())
                 {
-                    _windows[windowId].Dispose();    
+                    _windows[windowId].Dispose();
                 }
             }
         }
@@ -73,18 +73,18 @@ namespace Avalonia.Windowing
 
         void _eventsLoop_Resized(WindowId windowId, ResizeEvent resizeEvent)
         {
-            if (_windows.ContainsKey(windowId)) 
+            if (_windows.ContainsKey(windowId))
             {
-                _windows[windowId].OnResizeEvent(resizeEvent);    
+                _windows[windowId].OnResizeEvent(resizeEvent);
             }
         }
 
 
         private void _eventsLoop_MouseEvent(WindowId windowId, MouseEvent mouseEvent)
         {
-            if (_windows.ContainsKey(windowId)) 
+            if (_windows.ContainsKey(windowId))
             {
-                _windows[windowId].OnMouseEvent(mouseEvent);    
+                _windows[windowId].OnMouseEvent(mouseEvent);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Avalonia.Windowing
 
         void _eventsLoop_OnKeyboardEvent(WindowId windowId, KeyboardEvent keyboardEvent)
         {
-            if(_windows.ContainsKey(windowId))
+            if (_windows.ContainsKey(windowId))
             {
                 _windows[windowId].OnKeyboardEvent(keyboardEvent);
             }
@@ -111,13 +111,13 @@ namespace Avalonia.Windowing
         }
 
 
-        public static void Initialize() 
+        public static void Initialize()
         {
             Instance = new WindowingPlatform();
             Instance.DoInitialize();
         }
 
-        public void DoInitialize() 
+        public void DoInitialize()
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IWindowingPlatform>().ToConstant(this)
@@ -143,7 +143,7 @@ namespace Avalonia.Windowing
             return window;
         }
 
-        public IWindowImpl CreateWindow() 
+        public IWindowImpl CreateWindow()
         {
             var windowWrapper = new GlWindowWrapper(_eventsLoop);
             var window = new WindowImpl(windowWrapper);
