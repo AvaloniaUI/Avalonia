@@ -25,6 +25,12 @@ namespace Avalonia.UnitTests
             return Task.FromResult<object>(null);
         }
 
+        public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            var result = function();
+            return Task.FromResult(result);
+        }
+
         public void VerifyAccess()
         {
         }
