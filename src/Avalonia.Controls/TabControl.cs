@@ -136,56 +136,7 @@ namespace Avalonia.Controls
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new TabControlContainerGenerator(this);
-        }
-
-        private class TabControlContainerGenerator : ItemContainerGenerator<TabItem>
-        {
-            public TabControlContainerGenerator(TabControl owner)
-                : base(owner, ContentControl.ContentProperty, ContentControl.ContentTemplateProperty)
-            {
-                Owner = owner;
-            }
-
-            public new TabControl Owner { get; }
-
-            protected override IControl CreateContainer(object item)
-            {
-                var tabItem = (TabItem)base.CreateContainer(item);
-
-                tabItem.ParentTabControl = Owner;
-
-                if (tabItem.Header == null)
-                {
-                    if (item is IHeadered headered)
-                    {
-                        if (tabItem.Header != headered.Header)
-                        {
-                            tabItem.Header = headered.Header;
-                        }
-                    }
-                    else
-                    {
-                        if (!(tabItem.DataContext is IControl))
-                        {
-                            tabItem.Header = tabItem.DataContext;
-                        }
-                    }
-                }
-
-                if (tabItem.Content == null)
-                {
-                    //Only update the ContentTemplate if no content is set otherwise the default template would be used for static content
-                    if (tabItem.ContentTemplate == null)
-                    {
-                        tabItem[!TabItem.ContentTemplateProperty] = Owner[!TabControl.ContentTemplateProperty];
-                    }
-
-                    tabItem[!TabItem.ContentProperty] = tabItem[!TabItem.DataContextProperty];
-                }
-
-                return tabItem;
-            }
+            return new TabItemContainerGenerator(this);
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
