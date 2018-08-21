@@ -18,4 +18,5 @@
 
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\Serilog.props" />
+  <Import Project="..\..\build\NetFX.props" />
 </Project>

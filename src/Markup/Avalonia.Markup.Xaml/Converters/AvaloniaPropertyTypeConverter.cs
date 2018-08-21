@@ -26,8 +26,7 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             var registry = AvaloniaPropertyRegistry.Instance;
             var parser = new PropertyParser();
-            var reader = new CharacterReader((string)value);
-            var (ns, owner, propertyName) = parser.Parse(reader);
+            var (ns, owner, propertyName) = parser.Parse(new CharacterReader(((string)value).AsSpan()));
             var ownerType = TryResolveOwnerByName(context, ns, owner);
             var targetType = context.GetFirstAmbientValue<ControlTemplate>()?.TargetType ??
                 context.GetFirstAmbientValue<Style>()?.Selector?.TargetType ??
