@@ -58,11 +58,9 @@
 
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
             <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
-            <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
-                <DropDownItem>Left</DropDownItem>
-                <DropDownItem>Top</DropDownItem>
-                <DropDownItem>Right</DropDownItem>
-                <DropDownItem>Bottom</DropDownItem>
+            <DropDown 
+                Items="{Binding Placements}" 
+                SelectedItem="{Binding TabPlacement, Mode=TwoWay}">
             </DropDown>
         </StackPanel>
     </StackPanel>

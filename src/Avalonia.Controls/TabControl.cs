@@ -70,7 +70,6 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
-            SelectionChangedEvent.AddClassHandler<TabControl>(x => x.OnSelectionChanged);
             AffectsMeasure(TabStripPlacementProperty);
         }
 
@@ -177,21 +176,6 @@ namespace Avalonia.Controls
             if (e.MouseButton == MouseButton.Left)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
-            }
-        }
-
-        private void OnSelectionChanged(SelectionChangedEventArgs obj)
-        {
-            if (obj.Source != this)
-            {
-                return;
-            }
-
-            if (obj.RemovedItems.Count > 0)
-            {
-                SelectedContent = null;
-
-                SelectedContentTemplate = null;
             }
         }
     }

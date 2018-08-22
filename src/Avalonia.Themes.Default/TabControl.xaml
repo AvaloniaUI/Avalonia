@@ -24,7 +24,6 @@
                         <DockPanel>
                             <ItemsPresenter
                                 Name="PART_ItemsPresenter"
-                                DockPanel.Dock="Top"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
@@ -44,10 +43,13 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ #PART_TapStrip">
+    <Style Selector="TabControl[TabStripPlacement=Top] /template/ #PART_ItemsPresenter">
+        <Setter Property="DockPanel.Dock" Value="Top"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ #PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Bottom"/>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Left] /template/ #PART_TapStrip">
+    <Style Selector="TabControl[TabStripPlacement=Left] /template/ #PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Left"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Left]">
@@ -59,7 +61,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Right] /template/ #PART_TapStrip">
+    <Style Selector="TabControl[TabStripPlacement=Right] /template/ #PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Right"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Right]">

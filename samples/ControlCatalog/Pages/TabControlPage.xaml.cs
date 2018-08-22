@@ -10,6 +10,8 @@ using ReactiveUI;
 
 namespace ControlCatalog.Pages
 {
+    using System.Collections.Generic;
+
     public class TabControlPage : UserControl
     {
         public TabControlPage()
@@ -65,6 +67,15 @@ namespace ControlCatalog.Pages
                 get { return _tabPlacement; }
                 set { this.RaiseAndSetIfChanged(ref _tabPlacement, value); }
             }
+
+            public IEnumerable<Dock> Placements =>
+                new List<Dock>
+                {
+                    Dock.Left,
+                    Dock.Top,
+                    Dock.Right,
+                    Dock.Bottom
+                };
         }
 
         private class TabItemViewModel
@@ -72,7 +83,7 @@ namespace ControlCatalog.Pages
             public string Header { get; set; }
             public string Text { get; set; }
             public IBitmap Image { get; set; }
-            public bool IsEnabled { get; set; } = true;
+            public bool IsEnabled { get; set; } = true;           
         }
     }
 }
