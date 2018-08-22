@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Primitives;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
@@ -15,9 +16,9 @@ namespace Avalonia.Controls
         private class RadioButtonGroupManager
         {
             public static readonly RadioButtonGroupManager Default = new RadioButtonGroupManager();
-            static readonly List<(WeakReference<IRenderRoot> Root, RadioButtonGroupManager Manager)> s_registeredVisualRoots
-                = new List<(WeakReference<IRenderRoot> Root, RadioButtonGroupManager Manager)>();
-
+            static readonly ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager> s_registeredVisualRoots
+                = new ConditionalWeakTable<IRenderRoot, RadioButtonGroupManager>();
+            
             readonly Dictionary<string, List<WeakReference<RadioButton>>> s_registeredGroups
                 = new Dictionary<string, List<WeakReference<RadioButton>>>();
 
@@ -25,33 +26,7 @@ namespace Avalonia.Controls
             {
                 if (root == null)
                     return Default;
-                lock (s_registeredVisualRoots)
-                {
-                    int i = 0;
-                    while (i < s_registeredVisualRoots.Count)
-                    {
-                        var item = s_registeredVisualRoots[i].Root;
-                        if (!item.TryGetTarget(out var target))
-                        {
-                            s_registeredVisualRoots.RemoveAt(i);
-                            continue;
-                        }
-                        if (root == target)
-                            break;
-                        i++;
-                    }
-                    RadioButtonGroupManager manager;
-                    if (i >= s_registeredVisualRoots.Count)
-                    {
-                        manager = new RadioButtonGroupManager();
-                        s_registeredVisualRoots.Add((new WeakReference<IRenderRoot>(root), manager));
-                    }
-                    else
-                    {
-                        manager = s_registeredVisualRoots[i].Manager;
-                    }
-                    return manager;
-                }
+                return s_registeredVisualRoots.GetValue(root, key => new RadioButtonGroupManager());
             }
 
             public void Add(RadioButton radioButton)
