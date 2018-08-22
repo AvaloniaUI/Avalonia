@@ -11,7 +11,7 @@ mono:
   - 5.2.0
 dotnet: 2.1.200
 script:
-  - ./build.sh --target "Travis" --platform "NetCoreOnly" --configuration "Release"
+  - ./build.sh --target "Travis" --configuration "Release"
 notifications:
   email: false
   webhooks:
