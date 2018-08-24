@@ -4,6 +4,5 @@
         xmlns:local="clr-namespace:ControlCatalog">
     <Grid>
         <local:MainView/>
-        <Grid Background="Transparent" />
     </Grid>
 </Window>
