@@ -22,5 +22,10 @@ namespace Avalonia.Layout
         /// The scaling factor to use in layout.
         /// </summary>
         double LayoutScaling { get; }
+
+        /// <summary>
+        /// Associated instance of layout manager
+        /// </summary>
+        ILayoutManager LayoutManager { get; }
     }
 }

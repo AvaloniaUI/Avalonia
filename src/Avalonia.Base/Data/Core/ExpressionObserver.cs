@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Data;
+using Avalonia.Data.Core.Parsers;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Reactive;
 
@@ -14,9 +16,7 @@ namespace Avalonia.Data.Core
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : LightweightObservableBase<object>,
-        IDescription,
-        IObserver<object>
+    public class ExpressionObserver : LightweightObservableBase<object>, IDescription
     {
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize
@@ -55,7 +55,6 @@ namespace Avalonia.Data.Core
 
         private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
-        private IDisposable _nodeSubscription;
         private object _root;
         private IDisposable _rootSubscription;
         private WeakReference<object> _value;
@@ -64,27 +63,22 @@ namespace Avalonia.Data.Core
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="root">The root object.</param>
-        /// <param name="expression">The expression.</param>
-        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="node">The expression.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             object root,
-            string expression,
-            bool enableDataValidation = false,
+            ExpressionNode node,
             string description = null)
         {
-            Contract.Requires<ArgumentNullException>(expression != null);
-
             if (root == AvaloniaProperty.UnsetValue)
             {
                 root = null;
             }
 
-            Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
+            _node = node;
+            Description = description;
             _root = new WeakReference(root);
         }
 
@@ -92,23 +86,19 @@ namespace Avalonia.Data.Core
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="rootObservable">An observable which provides the root object.</param>
-        /// <param name="expression">The expression.</param>
-        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
+        /// <param name="node">The expression.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             IObservable<object> rootObservable,
-            string expression,
-            bool enableDataValidation = false,
-            string description = null)
+            ExpressionNode node,
+            string description)
         {
             Contract.Requires<ArgumentNullException>(rootObservable != null);
-            Contract.Requires<ArgumentNullException>(expression != null);
-
-            Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
+            
+            _node = node;
+            Description = description;
             _root = rootObservable;
         }
 
@@ -116,28 +106,90 @@ namespace Avalonia.Data.Core
         /// Initializes a new instance of the <see cref="ExpressionObserver"/> class.
         /// </summary>
         /// <param name="rootGetter">A function which gets the root object.</param>
-        /// <param name="expression">The expression.</param>
+        /// <param name="node">The expression.</param>
         /// <param name="update">An observable which triggers a re-read of the getter.</param>
-        /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
         /// <param name="description">
-        /// A description of the expression. If null, <paramref name="expression"/> will be used.
+        /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             Func<object> rootGetter,
-            string expression,
+            ExpressionNode node,
+            IObservable<Unit> update,
+            string description)
+        {
+            Contract.Requires<ArgumentNullException>(rootGetter != null);
+            Contract.Requires<ArgumentNullException>(update != null);
+            Description = description;
+            _node = node;
+            _node.Target = new WeakReference(rootGetter());
+            _root = update.Select(x => rootGetter());
+        }
+
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="root">The root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
+        public static ExpressionObserver Create<T, U>(
+            T root,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            return new ExpressionObserver(root, Parse(expression, enableDataValidation), description ?? expression.ToString());
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootObservable">An observable which provides the root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
+        public static ExpressionObserver Create<T, U>(
+            IObservable<T> rootObservable,
+            Expression<Func<T, U>> expression,
+            bool enableDataValidation = false,
+            string description = null)
+        {
+            Contract.Requires<ArgumentNullException>(rootObservable != null);
+            return new ExpressionObserver(
+                rootObservable.Select(o => (object)o),
+                Parse(expression, enableDataValidation),
+                description ?? expression.ToString());
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="ExpressionObserver"/> class.
+        /// </summary>
+        /// <param name="rootGetter">A function which gets the root object.</param>
+        /// <param name="expression">The expression.</param>
+        /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        /// <param name="enableDataValidation">Whether or not to track data validation</param>
+        /// <param name="description">
+        /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
+        /// </param>
+        public static ExpressionObserver Create<T, U>(
+            Func<T> rootGetter,
+            Expression<Func<T, U>> expression,
             IObservable<Unit> update,
             bool enableDataValidation = false,
             string description = null)
         {
             Contract.Requires<ArgumentNullException>(rootGetter != null);
-            Contract.Requires<ArgumentNullException>(expression != null);
-            Contract.Requires<ArgumentNullException>(update != null);
 
-            Expression = expression;
-            Description = description ?? expression;
-            _node = Parse(expression, enableDataValidation);
-            _node.Target = new WeakReference(rootGetter());
-            _root = update.Select(x => rootGetter());
+            return new ExpressionObserver(
+                () => rootGetter(),
+                Parse(expression, enableDataValidation),
+                update,
+                description ?? expression.ToString());
         }
 
         /// <summary>
@@ -202,34 +254,18 @@ namespace Avalonia.Data.Core
             }
         }
 
-        void IObserver<object>.OnNext(object value)
-        {
-            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
-            broken?.Commit(Description);
-            _value = new WeakReference<object>(value);
-            PublishNext(value);
-        }
-
-        void IObserver<object>.OnCompleted()
-        {
-        }
-
-        void IObserver<object>.OnError(Exception error)
-        {
-        }
-
         protected override void Initialize()
         {
             _value = null;
-            _nodeSubscription = _node.Subscribe(this);
+            _node.Subscribe(ValueChanged);
             StartRoot();
         }
 
         protected override void Deinitialize()
         {
             _rootSubscription?.Dispose();
-            _nodeSubscription?.Dispose();
-            _rootSubscription = _nodeSubscription = null;
+            _rootSubscription = null;
+            _node.Unsubscribe();
         }
 
         protected override void Subscribed(IObserver<object> observer, bool first)
@@ -240,16 +276,9 @@ namespace Avalonia.Data.Core
             }
         }
 
-        private static ExpressionNode Parse(string expression, bool enableDataValidation)
+        private static ExpressionNode Parse(LambdaExpression expression, bool enableDataValidation)
         {
-            if (!string.IsNullOrWhiteSpace(expression))
-            {
-                return ExpressionNodeBuilder.Build(expression, enableDataValidation);
-            }
-            else
-            {
-                return new EmptyExpressionNode();
-            }
+            return ExpressionTreeParser.Parse(expression, enableDataValidation);
         }
 
         private void StartRoot()
@@ -265,6 +294,14 @@ namespace Avalonia.Data.Core
             {
                 _node.Target = (WeakReference)_root;
             }
+        }
+
+        private void ValueChanged(object value)
+        {
+            var broken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
+            broken?.Commit(Description);
+            _value = new WeakReference<object>(value);
+            PublishNext(value);
         }
     }
 }

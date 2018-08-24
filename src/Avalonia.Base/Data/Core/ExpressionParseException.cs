@@ -17,8 +17,9 @@ namespace Avalonia.Data.Core
         /// </summary>
         /// <param name="column">The column position of the error.</param>
         /// <param name="message">The exception message.</param>
-        public ExpressionParseException(int column, string message)
-            : base(message)
+        /// <param name="innerException">The exception that caused the parsing failure.</param>
+        public ExpressionParseException(int column, string message, Exception innerException = null)
+            : base(message, innerException)
         {
             Column = column;
         }

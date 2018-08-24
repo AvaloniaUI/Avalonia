@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -13,22 +14,25 @@ namespace Avalonia
         /// <summary>
         /// Called when a <see cref="PriorityValue"/>'s value changes.
         /// </summary>
-        /// <param name="sender">The source of the change.</param>
+        /// <param name="property">The the property that has changed.</param>
+        /// <param name="priority">The priority of the value.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        void Changed(PriorityValue sender, object oldValue, object newValue);
+        void Changed(AvaloniaProperty property, int priority, object oldValue, object newValue);
 
         /// <summary>
         /// Called when a <see cref="BindingNotification"/> is received by a 
         /// <see cref="PriorityValue"/>.
         /// </summary>
-        /// <param name="sender">The source of the change.</param>
+        /// <param name="property">The the property that has changed.</param>
         /// <param name="notification">The notification.</param>
-        void BindingNotificationReceived(PriorityValue sender, BindingNotification notification);
+        void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification);
 
         /// <summary>
         /// Ensures that the current thread is the UI thread.
         /// </summary>
         void VerifyAccess();
+
+        DeferredSetter<object> Setter { get; }
     }
 }

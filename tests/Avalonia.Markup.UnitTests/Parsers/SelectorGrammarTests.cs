@@ -2,28 +2,28 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Linq;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Parsers;
-using Sprache;
 using Xunit;
 
-namespace Avalonia.Markup.UnitTest.Parsers
+namespace Avalonia.Markup.UnitTests.Parsers
 {
     public class SelectorGrammarTests
     {
         [Fact]
         public void OfType()
         {
-            var result = SelectorGrammar.Selector.Parse("Button").ToList();
+            var result = SelectorGrammar.Parse("Button");
 
             Assert.Equal(
-                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = null } },
+                new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = "" } },
                 result);
         }
 
         [Fact]
         public void NamespacedOfType()
         {
-            var result = SelectorGrammar.Selector.Parse("x|Button").ToList();
+            var result = SelectorGrammar.Parse("x|Button");
 
             Assert.Equal(
                 new[] { new SelectorGrammar.OfTypeSyntax { TypeName = "Button", Xmlns = "x" } },
@@ -33,7 +33,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void Name()
         {
-            var result = SelectorGrammar.Selector.Parse("#foo").ToList();
+            var result = SelectorGrammar.Parse("#foo");
 
             Assert.Equal(
                 new[] { new SelectorGrammar.NameSyntax { Name = "foo" }, },
@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Name()
         {
-            var result = SelectorGrammar.Selector.Parse("Button#foo").ToList();
+            var result = SelectorGrammar.Parse("Button#foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -57,17 +57,17 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void Is()
         {
-            var result = SelectorGrammar.Selector.Parse(":is(Button)").ToList();
+            var result = SelectorGrammar.Parse(":is(Button)");
 
             Assert.Equal(
-                new[] { new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = null } },
+                new[] { new SelectorGrammar.IsSyntax { TypeName = "Button", Xmlns = "" } },
                 result);
         }
 
         [Fact]
         public void Is_Name()
         {
-            var result = SelectorGrammar.Selector.Parse(":is(Button)#foo").ToList();
+            var result = SelectorGrammar.Parse(":is(Button)#foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -81,7 +81,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void NamespacedIs_Name()
         {
-            var result = SelectorGrammar.Selector.Parse(":is(x|Button)#foo").ToList();
+            var result = SelectorGrammar.Parse(":is(x|Button)#foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -95,7 +95,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void Class()
         {
-            var result = SelectorGrammar.Selector.Parse(".foo").ToList();
+            var result = SelectorGrammar.Parse(".foo");
 
             Assert.Equal(
                 new[] { new SelectorGrammar.ClassSyntax { Class = "foo" } },
@@ -105,7 +105,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void Pseudoclass()
         {
-            var result = SelectorGrammar.Selector.Parse(":foo").ToList();
+            var result = SelectorGrammar.Parse(":foo");
 
             Assert.Equal(
                 new[] { new SelectorGrammar.ClassSyntax { Class = ":foo" } },
@@ -115,7 +115,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Class()
         {
-            var result = SelectorGrammar.Selector.Parse("Button.foo").ToList();
+            var result = SelectorGrammar.Parse("Button.foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[] 
@@ -129,7 +129,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Child_Class()
         {
-            var result = SelectorGrammar.Selector.Parse("Button > .foo").ToList();
+            var result = SelectorGrammar.Parse("Button > .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -144,7 +144,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Child_Class_No_Spaces()
         {
-            var result = SelectorGrammar.Selector.Parse("Button>.foo").ToList();
+            var result = SelectorGrammar.Parse("Button>.foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -159,7 +159,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Descendant_Class()
         {
-            var result = SelectorGrammar.Selector.Parse("Button .foo").ToList();
+            var result = SelectorGrammar.Parse("Button .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -174,7 +174,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Template_Class()
         {
-            var result = SelectorGrammar.Selector.Parse("Button /template/ .foo").ToList();
+            var result = SelectorGrammar.Parse("Button /template/ .foo");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -189,7 +189,7 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void OfType_Property()
         {
-            var result = SelectorGrammar.Selector.Parse("Button[Foo=bar]").ToList();
+            var result = SelectorGrammar.Parse("Button[Foo=bar]");
 
             Assert.Equal(
                 new SelectorGrammar.ISyntax[]
@@ -203,25 +203,25 @@ namespace Avalonia.Markup.UnitTest.Parsers
         [Fact]
         public void Namespace_Alone_Fails()
         {
-            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse("ns|").ToList());
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse("ns|"));
         }
 
         [Fact]
         public void Dot_Alone_Fails()
         {
-            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse(". dot").ToList());
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(". dot"));
         }
 
         [Fact]
         public void Invalid_Identifier_Fails()
         {
-            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse("%foo").ToList());
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse("%foo"));
         }
 
         [Fact]
         public void Invalid_Class_Fails()
         {
-            Assert.Throws<ParseException>(() => SelectorGrammar.Selector.Parse(".%foo").ToList());
+            Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse(".%foo"));
         }
     }
 }

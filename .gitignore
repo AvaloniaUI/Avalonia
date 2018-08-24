@@ -166,6 +166,11 @@ $RECYCLE.BIN/
 .idea
 
 #################
+## VS Code
+#################
+.vscode/
+
+#################
 ## Cake
 #################
 tools/*
@@ -176,5 +181,11 @@ nuget
 Avalonia.XBuild.sln
 project.lock.json
 .idea/*
-**/obj-Skia/*
-**/obj-Direct2D1/*
+
+
+##################
+## BenchmarkDotNet
+##################
+BenchmarkDotNet.Artifacts/
+
+dirs.sln

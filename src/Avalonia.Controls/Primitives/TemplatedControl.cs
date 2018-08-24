@@ -247,6 +247,7 @@ namespace Avalonia.Controls.Primitives
                     foreach (var child in this.GetTemplateChildren())
                     {
                         child.SetValue(TemplatedParentProperty, null);
+                        ((ISetLogicalParent)child).SetParent(null);
                     }
 
                     VisualChildren.Clear();

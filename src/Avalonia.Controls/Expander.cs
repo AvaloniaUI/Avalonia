@@ -66,9 +66,7 @@ namespace Avalonia.Controls
 
         protected virtual void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            IVisual visualContent = Presenter;
-
-            if (Content != null && ContentTransition != null && visualContent != null)
+            if (Content != null && ContentTransition != null && Presenter is Visual visualContent)
             {
                 bool forward = ExpandDirection == ExpandDirection.Left ||
                                 ExpandDirection == ExpandDirection.Up;

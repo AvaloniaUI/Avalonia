@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Avalonia.Data;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Plugins
@@ -40,26 +39,11 @@ namespace Avalonia.Data.Core.Plugins
             {
                 if (e.PropertyName == _name || string.IsNullOrEmpty(e.PropertyName))
                 {
-                    Observer.OnNext(CreateBindingNotification(Value));
+                    PublishValue(CreateBindingNotification(Value));
                 }
             }
 
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-
-                var target = _reference.Target as INotifyDataErrorInfo;
-
-                if (target != null)
-                {
-                    WeakSubscriptionManager.Unsubscribe(
-                        target,
-                        nameof(target.ErrorsChanged),
-                        this);
-                }
-            }
-
-            protected override void SubscribeCore(IObserver<object> observer)
+            protected override void SubscribeCore()
             {
                 var target = _reference.Target as INotifyDataErrorInfo;
 
@@ -71,12 +55,27 @@ namespace Avalonia.Data.Core.Plugins
                         this);
                 }
 
-                base.SubscribeCore(observer);
+                base.SubscribeCore();
+            }
+
+            protected override void UnsubscribeCore()
+            {
+                var target = _reference.Target as INotifyDataErrorInfo;
+
+                if (target != null)
+                {
+                    WeakSubscriptionManager.Unsubscribe(
+                        target,
+                        nameof(target.ErrorsChanged),
+                        this);
+                }
+
+                base.UnsubscribeCore();
             }
 
             protected override void InnerValueChanged(object value)
             {
-                base.InnerValueChanged(CreateBindingNotification(value));
+                PublishValue(CreateBindingNotification(value));
             }
 
             private BindingNotification CreateBindingNotification(object value)

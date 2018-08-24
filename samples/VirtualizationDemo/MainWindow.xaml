@@ -6,7 +6,7 @@
         <StackPanel DockPanel.Dock="Right" 
                     Margin="16 0 0 0" 
                     MinWidth="150"
-                    Gap="4">
+                    Spacing="4">
             <DropDown Items="{Binding VirtualizationModes}"
                       SelectedItem="{Binding VirtualizationMode}"/>
             <DropDown Items="{Binding Orientations}"
