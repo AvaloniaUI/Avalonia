@@ -346,12 +346,7 @@ namespace Avalonia.Input
 
             IInputElement branch = null;
 
-            var e = new PointerEventArgs
-            {
-                RoutedEvent = InputElement.PointerEnterEvent,
-                Device = device,
-            };
-
+            var e = new PointerEventArgs { Device = device, };
             var el = element;
 
             while (el != null)
@@ -361,9 +356,6 @@ namespace Avalonia.Input
                     branch = el;
                     break;
                 }
-
-                e.Source = el;
-                el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
 
@@ -373,11 +365,21 @@ namespace Avalonia.Input
             while (el != null && el != branch)
             {
                 e.Source = el;
+                e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
 
-            root.PointerOverElement = element;
+            el = root.PointerOverElement = element;
+            e.RoutedEvent = InputElement.PointerEnterEvent;
+
+            while (el != null && el != branch)
+            {
+                e.Source = el;
+                e.Handled = false;
+                el.RaiseEvent(e);
+                el = (IInputElement)el.VisualParent;
+            }
         }
     }
 }

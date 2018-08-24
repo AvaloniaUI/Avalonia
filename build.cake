@@ -2,7 +2,6 @@
 // ADDINS
 ///////////////////////////////////////////////////////////////////////////////
 
-#addin "nuget:?package=Polly&version=5.3.1"
 #addin "nuget:?package=NuGet.Core&version=2.14.0"
 #tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
 #tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
@@ -22,7 +21,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Polly;
 using NuGet;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,9 +55,8 @@ Setup<AvaloniaBuildData>(context =>
     var parameters = new Parameters(context);
     var buildContext = new AvaloniaBuildData(parameters, new Packages(context, parameters));
 
-    Information("Building version {0} of Avalonia ({1}, {2}) using version {3} of Cake.", 
+    Information("Building version {0} of Avalonia ({1}) using version {2} of Cake.", 
         parameters.Version,
-        parameters.Platform,
         parameters.Configuration,
         typeof(ICakeContext).Assembly.GetName().Version.ToString());
 
@@ -69,7 +66,6 @@ Setup<AvaloniaBuildData>(context =>
         Information("Repository Branch: " + BuildSystem.AppVeyor.Environment.Repository.Branch);
     }
     Information("Target:" + context.TargetTask.Name);
-    Information("Platform: " + parameters.Platform);
     Information("Configuration: " + parameters.Configuration);
     Information("IsLocalBuild: " + parameters.IsLocalBuild);
     Information("IsRunningOnUnix: " + parameters.IsRunningOnUnix);
@@ -109,42 +105,12 @@ Task("Clean-Impl")
     CleanDirectory(data.Parameters.BinRoot);
 });
 
-Task("Restore-NuGet-Packages-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
-    .Does<AvaloniaBuildData>(data =>
-{
-    var maxRetryCount = 5;
-    var toolTimeout = 2d;
-    Policy
-        .Handle<Exception>()
-        .Retry(maxRetryCount, (exception, retryCount, context) => {
-            if (retryCount == maxRetryCount)
-            {
-                throw exception;
-            }
-            else
-            {
-                Verbose("{0}", exception);
-                toolTimeout+=0.5;
-            }})
-        .Execute(()=> {
-                NuGetRestore(data.Parameters.MSBuildSolution, new NuGetRestoreSettings {
-                    ToolTimeout = TimeSpan.FromMinutes(toolTimeout)
-                });
-        });
-});
-
 void DotNetCoreBuild(Parameters parameters)
 {
     var settings = new DotNetCoreBuildSettings 
     {
         Configuration = parameters.Configuration,
-        MSBuildSettings = new DotNetCoreMSBuildSettings(),
     };
-
-    settings.MSBuildSettings.SetConfiguration(parameters.Configuration);
-    settings.MSBuildSettings.WithProperty("Platform", "\"" + parameters.Platform + "\"");
 
     DotNetCoreBuild(parameters.MSBuildSolution, settings);
 }
@@ -152,17 +118,14 @@ void DotNetCoreBuild(Parameters parameters)
 Task("Build-Impl")
     .Does<AvaloniaBuildData>(data =>
 {
-    if(data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
+    if(data.Parameters.IsRunningOnWindows)
     {
         MSBuild(data.Parameters.MSBuildSolution, settings => {
             settings.SetConfiguration(data.Parameters.Configuration);
             settings.SetVerbosity(Verbosity.Minimal);
-            settings.WithProperty("Platform", "\"" + data.Parameters.Platform + "\"");
-            settings.WithProperty("UseRoslynPathHack", "true");
+            settings.WithProperty("iOSRoslynPathHackRequired", "true");
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
-            settings.WithProperty("Windows", "True");
-            settings.SetNodeReuse(false);
-            settings.SetMaxCpuCount(0);
+            settings.WithRestore();
         });
     }
     else
@@ -207,9 +170,9 @@ Task("Run-Unit-Tests-Impl")
     RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
-    if (data.Parameters.IsRunningOnWindows && !data.Parameters.IsPlatformNetCoreOnly)
+    if (data.Parameters.IsRunningOnWindows)
     {
-        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, true);
+        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, false);
     }
 });
 
@@ -223,7 +186,6 @@ Task("Run-Designer-Tests-Impl")
 Task("Run-Render-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does<AvaloniaBuildData>(data =>
 {
     RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", data.Parameters, true);
@@ -233,7 +195,6 @@ Task("Run-Render-Tests-Impl")
 Task("Run-Leak-Tests-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.SkipTests)
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
     var dotMemoryUnit = Context.Tools.Resolve("dotMemoryUnit.exe");
@@ -266,15 +227,13 @@ Task("Zip-Files-Impl")
 
     Zip(data.Parameters.NugetRoot, data.Parameters.ZipNuGetArtifacts);
 
-    if (!data.Parameters.IsPlatformNetCoreOnly) {
-        Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
-            data.Parameters.ZipTargetControlCatalogDesktopDirs, 
-            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
-            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
-            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
-            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
-            GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
-    }
+    Zip(data.Parameters.ZipSourceControlCatalogDesktopDirs, 
+        data.Parameters.ZipTargetControlCatalogDesktopDirs, 
+        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dll") + 
+        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.config") + 
+        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.so") + 
+        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.dylib") + 
+        GetFiles(data.Parameters.ZipSourceControlCatalogDesktopDirs.FullPath + "/*.exe"));
 });
 
 Task("Create-NuGet-Packages-Impl")
@@ -353,7 +312,6 @@ Task("Publish-NuGet-Impl")
 
 Task("Inspect-Impl")
     .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPlatformNetCoreOnly)
     .Does(() =>
 {
     var badIssues = new []{"PossibleNullReferenceException"};
@@ -392,10 +350,12 @@ Task("Inspect-Impl")
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
 
-Task("Run-Tests")
+Task("Build")
     .IsDependentOn("Clean-Impl")
-    .IsDependentOn("Restore-NuGet-Packages-Impl")
-    .IsDependentOn("Build-Impl")
+    .IsDependentOn("Build-Impl");
+
+Task("Run-Tests")
+    .IsDependentOn("Build")
     .IsDependentOn("Run-Unit-Tests-Impl")
     .IsDependentOn("Run-Render-Tests-Impl")
     .IsDependentOn("Run-Designer-Tests-Impl")

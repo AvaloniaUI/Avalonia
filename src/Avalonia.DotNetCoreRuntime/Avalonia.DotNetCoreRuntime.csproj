@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Avalonia.Windowing\Avalonia.Windowing.csproj" />
     <ProjectReference Include="..\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj" />
     <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
     <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
   </ItemGroup>  
   <Import Project="..\..\build\NetCore.props" />

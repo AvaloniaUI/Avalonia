@@ -84,6 +84,11 @@ namespace Avalonia.Data
         /// </summary>
         public object Source { get; set; }
 
+        /// <summary>
+        /// Gets or sets the string format.
+        /// </summary>
+        public string StringFormat { get; set; }
+
         public WeakReference DefaultAnchor { get; set; }
 
         /// <summary>
@@ -181,11 +186,23 @@ namespace Avalonia.Data
                 fallback = null;
             }
 
+            var converter = Converter;
+            var targetType = targetProperty?.PropertyType ?? typeof(object);
+
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                converter = new StringFormatValueConverter(StringFormat, converter);
+            }
+
             var subject = new BindingExpression(
                 observer,
-                targetProperty?.PropertyType ?? typeof(object),
+                targetType,
                 fallback,
-                Converter ?? DefaultValueConverter.Instance,
+                converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 Priority);
 
