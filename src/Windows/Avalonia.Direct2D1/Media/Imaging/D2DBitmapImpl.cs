@@ -56,9 +56,12 @@ namespace Avalonia.Direct2D1.Media
                     new PixelFormat(SharpDX.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied),
                     _direct2D.DotsPerInch.Width,
                     _direct2D.DotsPerInch.Height,
-                    0, 0, PixelWidth, PixelHeight);
+                    0, 
+                    0, 
+                    PixelWidth, 
+                    PixelHeight);
 
-                imageEncoder.WriteFrame(_direct2D, frameEncode, ref parameters);
+                imageEncoder.WriteFrame(_direct2D, frameEncode, parameters);
                 frameEncode.Commit();
                 encoder.Commit();
             }

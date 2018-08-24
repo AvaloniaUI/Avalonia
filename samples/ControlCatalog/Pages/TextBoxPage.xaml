@@ -36,6 +36,7 @@
                 <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
                 <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-Italic.ttf?assembly=ControlCatalog#Source Sans Pro"/>
                 <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-*.ttf?assembly=ControlCatalog#Source Sans Pro"/>
+          <TextBox Text="👉😎👉 💩"></TextBox>
         </StackPanel>
       </StackPanel>
   </StackPanel>

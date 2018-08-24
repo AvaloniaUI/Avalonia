@@ -27,16 +27,17 @@ namespace Avalonia.Direct2D1.Media
 
             var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
 
-            textFormat.SetWordWrapping(wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap);
+            textFormat.WordWrapping = wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
             TextLayout = new DWrite.TextLayout(
-                factory,
-                Text ?? string.Empty,
-                textFormat,
-                (float)constraint.Width,
-                (float)constraint.Height);
-
-            TextLayout.SetTextAlignment(textAlignment.ToDirect2D());
+                             factory,
+                             Text ?? string.Empty,
+                             textFormat,
+                             (float)constraint.Width,
+                             (float)constraint.Height)
+                             {
+                                 TextAlignment = textAlignment.ToDirect2D()
+                             };
 
             textFormat.Dispose();
 

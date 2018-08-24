@@ -81,7 +81,6 @@ namespace Avalonia.Direct2D1.Media
                             break;
                         }
 
-                        //ToDo: SharpDX fix
                         var colorGlyphRun = colorGlyphRunEnumerator.CurrentRun;
 
                         brush = new SolidColorBrush(_renderTarget, colorGlyphRun.RunColor);
