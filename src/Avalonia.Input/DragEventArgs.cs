@@ -13,6 +13,8 @@ namespace Avalonia.Input
 
         public IDataObject Data { get; private set; }
 
+        public InputModifiers Modifiers { get; private set; }
+
         public Point GetPosition(IVisual relativeTo)
         {
             var point = new Point(0, 0);
@@ -29,12 +31,13 @@ namespace Avalonia.Input
             return point;
         }
 
-        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation)
+        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, InputModifiers modifiers)
             : base(routedEvent)
         {
             this.Data = data;
             this._target = target;
             this._targetLocation = targetLocation;
+            this.Modifiers = modifiers;
         }
 
     }

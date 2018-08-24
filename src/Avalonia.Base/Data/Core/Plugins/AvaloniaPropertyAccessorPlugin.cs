@@ -153,7 +153,7 @@ namespace Avalonia.Data.Core.Plugins
 
             protected override void SubscribeCore(IObserver<object> observer)
             {
-                _subscription = Instance?.GetWeakObservable(_property).Subscribe(observer);
+                _subscription = Instance?.GetObservable(_property).Subscribe(observer);
             }
         }
     }

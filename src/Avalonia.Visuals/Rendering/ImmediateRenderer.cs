@@ -133,6 +133,7 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Dispose()
         {
+            _renderTarget?.Dispose();
         }
 
         /// <inheritdoc/>
