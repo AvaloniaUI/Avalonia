@@ -32,6 +32,14 @@ namespace Avalonia.Controls
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v);
 
+        /// <summary>
+        /// Defines the <see cref="SelectedItemChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SelectedItemChangedEventArgs> SelectedItemChangedEvent =
+            RoutedEvent.Register<TreeView, SelectedItemChangedEventArgs>(
+                "SelectedItemChanged",
+                RoutingStrategies.Bubble);
+
         private object _selectedItem;
 
         /// <summary>
@@ -40,6 +48,15 @@ namespace Avalonia.Controls
         static TreeView()
         {
             // HACK: Needed or SelectedItem property will not be found in Release build.
+        }
+
+        /// <summary>
+        /// Occurs when the control's selection changes.
+        /// </summary>
+        public event EventHandler<SelectedItemChangedEventArgs> SelectedItemChanged
+        {
+            add { AddHandler(SelectedItemChangedEvent, value); }
+            remove { RemoveHandler(SelectedItemChangedEvent, value); }
         }
 
         /// <summary>
@@ -75,6 +92,7 @@ namespace Avalonia.Controls
                     MarkContainerSelected(container, false);
                 }
 
+                var oldItem = _selectedItem;
                 SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
 
                 if (_selectedItem != null)
@@ -86,6 +104,15 @@ namespace Avalonia.Controls
                     {
                         container.BringIntoView();
                     }
+                }
+
+                if (oldItem != _selectedItem)
+                {
+                    var changed = new SelectedItemChangedEventArgs(
+                        SelectedItemChangedEvent,
+                        _selectedItem,
+                        oldItem);
+                    RaiseEvent(changed);
                 }
             }
         }

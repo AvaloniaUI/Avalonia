@@ -166,6 +166,38 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(container.IsSelected);
         }
 
+
+        [Fact]
+        public void Setting_SelectedItem_Should_Raise_SelectedItemChanged_Event()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            var item = tree[0].Children[1].Children[0];
+
+            var called = false;
+            target.SelectedItemChanged += (s, e) =>
+            {
+                Assert.Null(e.OldItem);
+                Assert.Same(item, e.NewItem);
+                called = true;
+            };
+
+            target.SelectedItem = item;
+            Assert.True(called);
+        }
+
+
         [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
