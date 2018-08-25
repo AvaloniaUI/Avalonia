@@ -15,10 +15,10 @@ namespace Avalonia.Markup.Parsers
             {
                 return (new EmptyExpressionNode(), default);
             }
-
-            var reader = new CharacterReader(expression);
+            
+            var reader = new CharacterReader(expression.AsSpan());
             var parser = new ExpressionParser(enableValidation, typeResolver);
-            var node = parser.Parse(reader);
+            var node = parser.Parse(ref reader);
 
             if (!reader.End)
             {

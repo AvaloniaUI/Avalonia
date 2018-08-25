@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> Parse(CharacterReader r, char open, char close, char delimiter = ',')
+        public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {
@@ -21,16 +21,13 @@ namespace Avalonia.Markup.Parsers
 
                 while (!r.End)
                 {
-                    var builder = new StringBuilder();
-                    while (!r.End && r.Peek != delimiter && r.Peek != close && !char.IsWhiteSpace(r.Peek))
-                    {
-                        builder.Append(r.Take());
-                    }
-                    if (builder.Length == 0)
+                    var argument = r.TakeWhile(c => c != delimiter && c != close && !char.IsWhiteSpace(c));
+                    if (argument.IsEmpty)
                     {
                         throw new ExpressionParseException(r.Position, "Expected indexer argument.");
                     }
-                    result.Add(builder.ToString());
+
+                    result.Add(argument.ToString());
 
                     r.SkipWhitespace();
 

@@ -77,6 +77,5 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Markup.props" />
   <Import Project="..\..\..\build\Rx.props" />
 </Project>
