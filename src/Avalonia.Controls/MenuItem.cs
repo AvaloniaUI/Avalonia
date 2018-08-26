@@ -342,7 +342,7 @@ namespace Avalonia.Controls
 
             if (menuItem != null && menuItem.Parent == this)
             {
-                foreach (var child in Items.OfType<MenuItem>())
+                foreach (var child in ((IMenuItem)this).SubItems)
                 {
                     if (child != menuItem && child.IsSubMenuOpen)
                     {
@@ -368,12 +368,9 @@ namespace Avalonia.Controls
         /// </summary>
         private void CloseSubmenus()
         {
-            if (Items != null)
+            foreach (var child in ((IMenuItem)this).SubItems)
             {
-                foreach (var child in Items.OfType<MenuItem>())
-                {
-                    child.IsSubMenuOpen = false;
-                }
+                child.IsSubMenuOpen = false;
             }
         }
 
