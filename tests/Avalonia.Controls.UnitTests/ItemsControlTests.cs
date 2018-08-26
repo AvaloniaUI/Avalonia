@@ -11,6 +11,7 @@ using Avalonia.VisualTree;
 using Xunit;
 using System.Collections.ObjectModel;
 using Avalonia.UnitTests;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -492,6 +493,77 @@ namespace Avalonia.Controls.UnitTests
             container.UpdateChild();
 
             Assert.NotNull(NameScope.GetNameScope((TextBlock)container.Child));
+        }
+
+        [Fact]
+        public void Focuses_Next_Item_On_Key_Down()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new object[]
+                {
+                    new Button(),
+                    new Button(),
+                };
+
+                var target = new ItemsControl
+                {
+                    Template = GetTemplate(),
+                    Items = items,
+                };
+
+                var root = new TestRoot { Child = target };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.Presenter.Panel.Children[0].Focus();
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+
+                Assert.Equal(
+                    target.Presenter.Panel.Children[1],
+                    FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Does_Not_Focus_Non_Focusable_Item_On_Key_Down()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new object[]
+                {
+                    new Button(),
+                    new Button { Focusable = false },
+                    new Button(),
+                };
+
+                var target = new ItemsControl
+                {
+                    Template = GetTemplate(),
+                    Items = items,
+                };
+
+                var root = new TestRoot { Child = target };
+
+                target.ApplyTemplate();
+                target.Presenter.ApplyTemplate();
+                target.Presenter.Panel.Children[0].Focus();
+
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+
+                Assert.Equal(
+                    target.Presenter.Panel.Children[2],
+                    FocusManager.Instance.Current);
+            }
         }
 
         private class Item

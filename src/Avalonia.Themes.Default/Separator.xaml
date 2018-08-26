@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui">
 
   <Style Selector="Separator">
+    <Setter Property="Focusable" Value="False"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border BorderBrush="{TemplateBinding BorderBrush}"
