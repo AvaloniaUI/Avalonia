@@ -64,6 +64,12 @@ namespace Avalonia.Windowing.Bindings
         [DllImport("winit_wrapper")]
         private static extern void winit_gl_window_resize_context(IntPtr handle, double width, double height);
 
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_gl_window_get_nsview(IntPtr handle);
+
+        [DllImport("winit_wrapper")]
+        private static extern void Test(IntPtr nsview);
+
         private IntPtr _handle;
         public WindowId Id => winit_gl_window_get_id(_handle);
         public EventsLoop EventsLoop { get;  }
@@ -82,6 +88,13 @@ namespace Avalonia.Windowing.Bindings
                 winit_gl_window_destroy(_handle);
                 disposed = true;
             }
+        }
+
+        public IntPtr NSView => winit_gl_window_get_nsview(_handle);
+
+        public void Test ()
+        {
+            Test(NSView);
         }
 
         public void SetTitle(string title)

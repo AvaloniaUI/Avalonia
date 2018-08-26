@@ -9,6 +9,9 @@ namespace Avalonia.Windowing.Bindings
         WindowId Id { get; }
         EventsLoop EventsLoop { get; }
 
+        IntPtr NSView { get; }
+        void Test();
+
         void SetTitle(string title);
         void SetSize(double width, double height);
         void SetPosition(double x, double y);
