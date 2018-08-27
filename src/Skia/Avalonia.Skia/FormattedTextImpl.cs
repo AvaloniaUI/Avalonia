@@ -30,6 +30,11 @@ namespace Avalonia.Skia
 
             SKTypeface skiaTypeface = TypefaceCache.Default;
 
+            if (typeface == null)
+            {
+                typeface = Typeface.Default;
+            }
+
             if (typeface.FontFamily.Key != null)
             {
                 var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
