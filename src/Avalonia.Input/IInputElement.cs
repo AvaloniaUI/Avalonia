@@ -15,7 +15,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        event EventHandler<RoutedEventArgs> GotFocus;
+        event EventHandler<GotFocusEventArgs> GotFocus;
 
         /// <summary>
         /// Occurs when the control loses focus.
