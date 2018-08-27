@@ -177,7 +177,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> GotFocus
+        public event EventHandler<GotFocusEventArgs> GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
