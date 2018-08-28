@@ -6,6 +6,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 
@@ -21,7 +22,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
-                "IsExpanded",
+                nameof(IsExpanded),
                 o => o.IsExpanded,
                 (o, v) => o.IsExpanded = v);
 
@@ -31,11 +32,20 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
+        /// <summary>
+        /// Defines the <see cref="Depth"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TreeViewItem, int> DepthProperty =
+            AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
+                nameof(Depth),
+                o => o.Depth);
+
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
         private TreeView _treeView;
         private bool _isExpanded;
+        private int _depth;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -63,6 +73,34 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the depth of the item.
+        /// </summary>
+        public int Depth
+        {
+            get { return this.GetDepth(this); }
+        }
+
+        private int GetDepth(TreeViewItem item)
+        {
+            TreeViewItem parent;
+            while ((parent = GetParent(item)) != null)
+            {
+                return GetDepth(parent) + 1;
+            }
+            return 0;
+        }
+
+        private static TreeViewItem GetParent(TreeViewItem item)
+        {
+            var parent = item.InheritanceParent;
+            while (!(parent == null || parent is TreeViewItem || parent is TreeView))
+            {
+                parent = item.Parent;
+            }
+            return parent as TreeViewItem;
         }
 
         /// <summary>

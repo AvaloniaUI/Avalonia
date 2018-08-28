@@ -25,6 +25,8 @@
     <Color x:Key="ErrorColor">#FFFF0000</Color>
     <Color x:Key="ErrorLightColor">#10FF0000</Color>
 
+    <Color x:Key="InvisibleSelectionColor">#01000000</Color>
+
     <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource ThemeBackgroundColor}"></SolidColorBrush>
     <SolidColorBrush x:Key="ThemeBorderLightBrush" Color="{DynamicResource ThemeBorderLightColor}"></SolidColorBrush>
     <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource ThemeBorderMidColor}"></SolidColorBrush>
@@ -45,7 +47,9 @@
     <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}"></SolidColorBrush>
     <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
     <SolidColorBrush x:Key="ErrorLightBrush" Color="{DynamicResource ErrorLightColor}"></SolidColorBrush>
-
+    
+    <SolidColorBrush x:Key="InvisibleSelectionBrush" Color="{DynamicResource InvisibleSelectionColor}"></SolidColorBrush>
+      
     <Thickness x:Key="ThemeBorderThickness">2</Thickness>
     <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
 
