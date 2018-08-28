@@ -56,11 +56,49 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
+        /// <param name="wrap">Whether to wrap around when the first or last item is reached.</param>
         /// <returns>The control.</returns>
-        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from)
+        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from, bool wrap)
         {
-            var fromControl = from as IControl;
-            return (fromControl != null) ? GetControlInDirection(direction, fromControl) : null;
+            var result = GetControlInDirection(direction, from as IControl);
+
+            if (result == null && wrap)
+            {
+                if (Orientation == Orientation.Vertical)
+                {
+                    switch (direction)
+                    {
+                        case NavigationDirection.Up:
+                        case NavigationDirection.Previous:
+                        case NavigationDirection.PageUp:
+                            result = GetControlInDirection(NavigationDirection.Last, null);
+                            break;
+                        case NavigationDirection.Down:
+                        case NavigationDirection.Next:
+                        case NavigationDirection.PageDown:
+                            result = GetControlInDirection(NavigationDirection.First, null);
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (direction)
+                    {
+                        case NavigationDirection.Left:
+                        case NavigationDirection.Previous:
+                        case NavigationDirection.PageUp:
+                            result = GetControlInDirection(NavigationDirection.Last, null);
+                            break;
+                        case NavigationDirection.Right:
+                        case NavigationDirection.Next:
+                        case NavigationDirection.PageDown:
+                            result = GetControlInDirection(NavigationDirection.First, null);
+                            break;
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -72,7 +110,7 @@ namespace Avalonia.Controls
         protected virtual IInputElement GetControlInDirection(NavigationDirection direction, IControl from)
         {
             var horiz = Orientation == Orientation.Horizontal;
-            int index = Children.IndexOf((IControl)from);
+            int index = from != null ? Children.IndexOf(from) : -1;
 
             switch (direction)
             {
@@ -83,22 +121,22 @@ namespace Avalonia.Controls
                     index = Children.Count - 1;
                     break;
                 case NavigationDirection.Next:
-                    ++index;
+                    if (index != -1) ++index;
                     break;
                 case NavigationDirection.Previous:
-                    --index;
+                    if (index != -1) --index;
                     break;
                 case NavigationDirection.Left:
-                    index = horiz ? index - 1 : -1;
+                    if (index != -1) index = horiz ? index - 1 : -1;
                     break;
                 case NavigationDirection.Right:
-                    index = horiz ? index + 1 : -1;
+                    if (index != -1) index = horiz ? index + 1 : -1;
                     break;
                 case NavigationDirection.Up:
-                    index = horiz ? -1 : index - 1;
+                    if (index != -1) index = horiz ? -1 : index - 1;
                     break;
                 case NavigationDirection.Down:
-                    index = horiz ? -1 : index + 1;
+                    if (index != -1) index = horiz ? -1 : index + 1;
                     break;
                 default:
                     index = -1;
