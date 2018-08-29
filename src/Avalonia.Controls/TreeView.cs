@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -35,8 +36,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItemChanged"/> event.
         /// </summary>
-        public static readonly RoutedEvent<SelectedItemChangedEventArgs> SelectedItemChangedEvent =
-            RoutedEvent.Register<TreeView, SelectedItemChangedEventArgs>(
+        public static readonly RoutedEvent<SelectionChangedEventArgs> SelectedItemChangedEvent =
+            RoutedEvent.Register<TreeView, SelectionChangedEventArgs>(
                 "SelectedItemChanged",
                 RoutingStrategies.Bubble);
 
@@ -53,7 +54,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when the control's selection changes.
         /// </summary>
-        public event EventHandler<SelectedItemChangedEventArgs> SelectedItemChanged
+        public event EventHandler<SelectionChangedEventArgs> SelectedItemChanged
         {
             add { AddHandler(SelectedItemChangedEvent, value); }
             remove { RemoveHandler(SelectedItemChangedEvent, value); }
@@ -108,10 +109,23 @@ namespace Avalonia.Controls
 
                 if (oldItem != _selectedItem)
                 {
-                    var changed = new SelectedItemChangedEventArgs(
+                    // Fire the SelectionChanged event
+                    List<object> removed = new List<object>();
+                    if (oldItem != null)
+                    {
+                        removed.Add(oldItem);
+                    }
+
+                    List<object> added = new List<object>();
+                    if (_selectedItem != null)
+                    {
+                        added.Add(_selectedItem);
+                    }
+
+                    var changed = new SelectionChangedEventArgs(
                         SelectedItemChangedEvent,
-                        _selectedItem,
-                        oldItem);
+                        added,
+                        removed);
                     RaiseEvent(changed);
                 }
             }

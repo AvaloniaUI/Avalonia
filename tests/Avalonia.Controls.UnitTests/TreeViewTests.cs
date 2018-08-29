@@ -188,8 +188,9 @@ namespace Avalonia.Controls.UnitTests
             var called = false;
             target.SelectedItemChanged += (s, e) =>
             {
-                Assert.Null(e.OldItem);
-                Assert.Same(item, e.NewItem);
+                Assert.Empty(e.RemovedItems);
+                Assert.Equal(1, e.AddedItems.Count);
+                Assert.Same(item, e.AddedItems[0]);
                 called = true;
             };
 
