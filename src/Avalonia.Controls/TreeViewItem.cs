@@ -6,7 +6,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 
@@ -37,8 +36,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TreeViewItem, int> DepthProperty =
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
-                nameof(Depth),
-                o => o.Depth);
+                nameof(Depth), o => o.Depth);
 
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
@@ -80,27 +78,8 @@ namespace Avalonia.Controls
         /// </summary>
         public int Depth
         {
-            get { return this.GetDepth(this); }
-        }
-
-        private int GetDepth(TreeViewItem item)
-        {
-            TreeViewItem parent;
-            while ((parent = GetParent(item)) != null)
-            {
-                return GetDepth(parent) + 1;
-            }
-            return 0;
-        }
-
-        private static TreeViewItem GetParent(TreeViewItem item)
-        {
-            var parent = item.InheritanceParent;
-            while (!(parent == null || parent is TreeViewItem || parent is TreeView))
-            {
-                parent = item.Parent;
-            }
-            return parent as TreeViewItem;
+            get { return _depth; }
+            private set { SetAndRaise(DepthProperty, ref _depth, value); }
         }
 
         /// <summary>
@@ -126,6 +105,8 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+
+            Depth = this.CalculateDistanceFromLogicalParent<TreeView>() - 1;
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {

@@ -87,5 +87,20 @@ namespace Avalonia.LogicalTree
         {
             return target.GetLogicalAncestors().Any(x => x == logical);
         }
+
+        public static int CalculateDistanceFromLogicalParent<T>(this ILogical logical, int @default = -1) where T : class
+        {
+            Contract.Requires<ArgumentNullException>(logical != null);
+
+            var result = 0;
+
+            while (logical != null && logical.GetType() != typeof(T))
+            {
+                ++result;
+                logical = logical.LogicalParent;
+            }
+
+            return logical != null ? result : @default;
+        }
     }
 }
