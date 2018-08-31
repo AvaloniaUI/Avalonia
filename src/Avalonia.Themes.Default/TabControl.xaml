@@ -44,13 +44,79 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ #PART_TapStrip">
-        <Setter Property="DockPanel.Dock" Value="Bottom"/>
-    </Style>
-    <Style Selector="TabControl[TabStripPlacement=Left] /template/ #PART_TapStrip">
-        <Setter Property="DockPanel.Dock" Value="Left"/>
+    <Style Selector="TabControl[TabStripPlacement=Bottom]">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Margin="{TemplateBinding Margin}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    <ScrollViewer
+                        Name="PART_ScrollViewer"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                        <DockPanel>
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                DockPanel.Dock="Bottom"
+                                Items="{TemplateBinding Items}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                MemberSelector="{TemplateBinding MemberSelector}"                     >
+                            </ItemsPresenter>
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                            </ContentPresenter>
+                        </DockPanel>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Left]">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Margin="{TemplateBinding Margin}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    <ScrollViewer
+                        Name="PART_ScrollViewer"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                        <DockPanel>
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                DockPanel.Dock="Left"
+                                Items="{TemplateBinding Items}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                MemberSelector="{TemplateBinding MemberSelector}"                     >
+                            </ItemsPresenter>
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                            </ContentPresenter>
+                        </DockPanel>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
@@ -59,10 +125,42 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Right] /template/ #PART_TapStrip">
-        <Setter Property="DockPanel.Dock" Value="Right"/>
-    </Style>
     <Style Selector="TabControl[TabStripPlacement=Right]">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border
+                    Margin="{TemplateBinding Margin}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    Background="{TemplateBinding Background}"
+                    HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                    VerticalAlignment="{TemplateBinding VerticalAlignment}">
+                    <ScrollViewer
+                        Name="PART_ScrollViewer"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                        <DockPanel>
+                            <ItemsPresenter
+                                Name="PART_ItemsPresenter"
+                                DockPanel.Dock="Right"
+                                Items="{TemplateBinding Items}"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"
+                                ItemTemplate="{TemplateBinding ItemTemplate}"
+                                MemberSelector="{TemplateBinding MemberSelector}"                     >
+                            </ItemsPresenter>
+                            <ContentPresenter
+                                Name="PART_Content"
+                                Margin="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Content="{TemplateBinding SelectedContent}"
+                                ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                            </ContentPresenter>
+                        </DockPanel>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter>
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>

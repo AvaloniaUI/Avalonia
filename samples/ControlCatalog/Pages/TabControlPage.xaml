@@ -35,7 +35,14 @@
                 <TabControl Items="{Binding Tabs}" Margin="0 16" TabStripPlacement="{Binding TabPlacement}">
                     <TabControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Header}"/>
+                            <Border  
+                                Padding="8">
+                                <TextBlock
+                                    Text="{Binding Header}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">                                   
+                                </TextBlock>                  
+                            </Border>
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                     <TabControl.ContentTemplate>
@@ -60,9 +67,9 @@
             <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
             <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
                 <DropDownItem>Left</DropDownItem>
-                <DropDownItem>Top</DropDownItem>
-                <DropDownItem>Right</DropDownItem>
                 <DropDownItem>Bottom</DropDownItem>
+                <DropDownItem>Right</DropDownItem>
+                <DropDownItem>Top</DropDownItem>
             </DropDown>
         </StackPanel>
     </StackPanel>

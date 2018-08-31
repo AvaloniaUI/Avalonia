@@ -6,6 +6,8 @@
         <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
         <Setter Property="TabStripPlacement" Value="{Binding $parent[TabControl].TabStripPlacement}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Margin" Value="2 2 0 0"/>
         <Setter Property="Template">
             <ControlTemplate>

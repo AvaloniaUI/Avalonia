@@ -42,6 +42,12 @@
       <DependentUpon>TabControlPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Pages\TabControlPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
   
   <Import Project="..\..\build\Serilog.props" />
 </Project>

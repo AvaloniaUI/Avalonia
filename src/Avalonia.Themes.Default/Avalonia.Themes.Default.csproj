@@ -18,4 +18,9 @@
   </ItemGroup>  
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
+  <ItemGroup>
+    <EmbeddedResource Update="TabItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>
