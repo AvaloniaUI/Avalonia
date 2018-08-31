@@ -67,15 +67,6 @@ namespace ControlCatalog.Pages
                 get { return _tabPlacement; }
                 set { this.RaiseAndSetIfChanged(ref _tabPlacement, value); }
             }
-
-            public IEnumerable<Dock> Placements =>
-                new List<Dock>
-                {
-                    Dock.Left,
-                    Dock.Top,
-                    Dock.Right,
-                    Dock.Bottom
-                };
         }
 
         private class TabItemViewModel
