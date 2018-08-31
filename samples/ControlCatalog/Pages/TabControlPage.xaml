@@ -1,48 +1,92 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-    <StackPanel Orientation="Vertical" Spacing="4">
-        <TextBlock Classes="h1">TabControl</TextBlock>
-        <TextBlock Classes="h2">A tab control that displays a tab strip along with the content of the selected tab</TextBlock>
-
-        <StackPanel Orientation="Horizontal"
-                    Margin="0,16,0,0"
-                    HorizontalAlignment="Center"
-                    Spacing="8">
-            <StackPanel>
-                <TextBlock Classes="h1">From Inline TabItems</TextBlock>
-
-                <TabControl Margin="0 16" TabStripPlacement="{Binding TabPlacement}">
-                    <TabItem Header="Arch" Padding="8">
+    <DockPanel>
+        <TextBlock 
+            DockPanel.Dock="Top" 
+            Classes="h1"
+            Text="TabControl"
+            Margin="4">           
+        </TextBlock>
+        <TextBlock 
+            DockPanel.Dock="Top" 
+            Classes="h2"
+            Text="A tab control that displays a tab strip along with the content of the selected tab"
+            Margin="4">          
+        </TextBlock>
+        <Grid 
+            ColumnDefinitions="*,*" 
+            RowDefinitions="*,100">
+            <DockPanel
+                Grid.Column="0"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From Inline TabItems">
+                </TextBlock>
+                <TabControl
+                    Margin="0 16"
+                    TabStripPlacement="{Binding TabPlacement}">
+                    <TabItem>
+                        <TabItem.Header>
+                            <TextBlock
+                               Text="Arch"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Margin="8">
+                            </TextBlock>
+                        </TabItem.Header>
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the first page in the TabControl.</TextBlock>
                             <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="Leaf" Padding="8">
+                    <TabItem>
+                        <TabItem.Header>
+                            <TextBlock
+                               Text="Leaf"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Margin="8">
+                            </TextBlock>
+                        </TabItem.Header>
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the second page in the TabControl.</TextBlock>
                             <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="Disabled" IsEnabled="False">
+                    <TabItem IsEnabled="False">
+                        <TabItem.Header>
+                            <TextBlock
+                               Text="Disabled"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Margin="8">
+                            </TextBlock>
+                        </TabItem.Header>
                         <TextBlock>You should not see this.</TextBlock>
                     </TabItem>
                 </TabControl>
-            </StackPanel>
-
-            <StackPanel>
-                <TextBlock Classes="h1">From DataTemplate</TextBlock>
-
-                <TabControl Items="{Binding Tabs}" Margin="0 16" TabStripPlacement="{Binding TabPlacement}">
+            </DockPanel>
+            <DockPanel
+                Grid.Column="1"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From DataTemplate">
+                </TextBlock>
+                <TabControl
+                    Items="{Binding Tabs}"
+                    Margin="0 16"
+                    TabStripPlacement="{Binding TabPlacement}">
                     <TabControl.ItemTemplate>
                         <DataTemplate>
-                            <Border  
-                                Padding="8">
-                                <TextBlock
-                                    Text="{Binding Header}"
-                                    VerticalAlignment="Center"
-                                    HorizontalAlignment="Center">                                   
-                                </TextBlock>                  
-                            </Border>
+                            <TextBlock
+                                Text="{Binding Header}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Margin="8">
+                            </TextBlock>
                         </DataTemplate>
                     </TabControl.ItemTemplate>
                     <TabControl.ContentTemplate>
@@ -59,18 +103,22 @@
                         </Style>
                     </TabControl.Styles>
                 </TabControl>
+            </DockPanel>
+            <StackPanel
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Orientation="Horizontal"
+                Spacing="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
+                <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+                    <DropDownItem>Left</DropDownItem>
+                    <DropDownItem>Bottom</DropDownItem>
+                    <DropDownItem>Right</DropDownItem>
+                    <DropDownItem>Top</DropDownItem>
+                </DropDown>
             </StackPanel>
-
-        </StackPanel>
-
-        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-            <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
-            <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
-                <DropDownItem>Left</DropDownItem>
-                <DropDownItem>Bottom</DropDownItem>
-                <DropDownItem>Right</DropDownItem>
-                <DropDownItem>Top</DropDownItem>
-            </DropDown>
-        </StackPanel>
-    </StackPanel>
+        </Grid>
+    </DockPanel>
 </UserControl>
