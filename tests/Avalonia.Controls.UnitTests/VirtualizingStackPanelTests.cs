@@ -219,7 +219,7 @@ namespace Avalonia.Controls.UnitTests
                 scrollable.Setup(x => x.IsLogicalScrollEnabled).Returns(true);
 
                 ((ISetLogicalParent)target).SetParent(presenter.Object);
-                ((INavigableContainer)target).GetControl(NavigationDirection.Next, from);
+                ((INavigableContainer)target).GetControl(NavigationDirection.Next, from, false);
 
                 scrollable.Verify(x => x.GetControlInDirection(NavigationDirection.Next, from));
             }

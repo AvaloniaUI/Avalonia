@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Avalonia.Controls.Generators
-{  
+{
+    using Avalonia.Controls.Primitives;
+
     public class TabItemContainerGenerator : ItemContainerGenerator<TabItem>
     {
         public TabItemContainerGenerator(TabControl owner)
@@ -18,6 +20,11 @@ namespace Avalonia.Controls.Generators
             var tabItem = (TabItem)base.CreateContainer(item);
 
             tabItem.ParentTabControl = Owner;
+
+            if (tabItem.HeaderTemplate == null)
+            {
+                tabItem[~HeaderedContentControl.HeaderTemplateProperty] = Owner[~ItemsControl.ItemTemplateProperty];
+            }
 
             if (tabItem.Header == null)
             {
@@ -37,20 +44,15 @@ namespace Avalonia.Controls.Generators
                 }
             }
 
-            if (tabItem.HeaderTemplate == null)
+            if (!(tabItem.Content is IControl))
             {
-                tabItem[~TabItem.HeaderTemplateProperty] = Owner[~TabControl.ItemTemplateProperty];
+                tabItem[~ContentControl.ContentTemplateProperty] = Owner[~TabControl.ContentTemplateProperty];
             }
 
             if (tabItem.Content == null)
             {              
-                tabItem[~TabItem.ContentProperty] = tabItem[~TabItem.DataContextProperty];
-            }
-           
-            if (!(tabItem.Content is IControl))
-            {
-                tabItem[~TabItem.ContentTemplateProperty] = Owner[~TabControl.ContentTemplateProperty];
-            }
+                tabItem[~ContentControl.ContentProperty] = tabItem[~StyledElement.DataContextProperty];
+            }                    
 
             return tabItem;
         }

@@ -127,11 +127,6 @@
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
   </Style>
 
-  <Style Selector="MenuItem:pointerover /template/ Border#root">
-    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
-  </Style>
-
   <Style Selector="MenuItem:empty /template/ Path#rightArrow">
     <Setter Property="IsVisible" Value="False"/>
   </Style>
