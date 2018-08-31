@@ -1,0 +1,45 @@
+<Styles xmlns="https://github.com/avaloniaui">
+    <Style Selector="TabItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="2 1"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter
+                    Name="PART_ContentPresenter"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                    Content="{TemplateBinding Header}"
+                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Margin="{TemplateBinding Margin}"
+                    Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabItem:disabled">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
+    </Style>
+    <Style Selector="TabItem:pointerover /template/ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
+    </Style>
+
+    <Style Selector="TabItem:selected /template/ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    </Style>
+
+    <Style Selector="TabItem:selected:focus /template/ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:selected:pointerover /template/ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
+    </Style>
+
+    <Style Selector="ListBoxItem:selected:focus:pointerover /template/ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
+    </Style>
+</Styles>

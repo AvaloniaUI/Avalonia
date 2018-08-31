@@ -12,6 +12,9 @@
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Pages\TabControlPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
@@ -32,6 +35,18 @@
     <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\TabControlPage.xaml.cs">
+      <DependentUpon>TabControlPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Pages\TabControlPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   
   <Import Project="..\..\build\Serilog.props" />
