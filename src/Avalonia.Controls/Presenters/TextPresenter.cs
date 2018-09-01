@@ -41,6 +41,7 @@ namespace Avalonia.Controls.Presenters
         {
             AffectsRender(PasswordCharProperty);
         }
+
         public TextPresenter()
         {
             _caretTimer = new DispatcherTimer();
