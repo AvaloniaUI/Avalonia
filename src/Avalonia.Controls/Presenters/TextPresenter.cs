@@ -36,7 +36,11 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private IBrush _highlightBrush;
-
+        
+        static TextPresenter()
+        {
+            AffectsRender(PasswordCharProperty);
+        }
         public TextPresenter()
         {
             _caretTimer = new DispatcherTimer();
@@ -50,6 +54,9 @@ namespace Avalonia.Controls.Presenters
 
             this.GetObservable(CaretIndexProperty)
                 .Subscribe(CaretIndexChanged);
+
+            this.GetObservable(PasswordCharProperty)
+                .Subscribe(_ => InvalidateFormattedText());
         }
 
         public int CaretIndex
@@ -116,7 +123,7 @@ namespace Avalonia.Controls.Presenters
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
-                // issue #600: set constaint before any FormattedText manipulation
+                // issue #600: set constraint before any FormattedText manipulation
                 //             see base.Render(...) implementation
                 FormattedText.Constraint = Bounds.Size;
 
