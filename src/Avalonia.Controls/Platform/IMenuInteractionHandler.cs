@@ -1,7 +1,4 @@
-﻿using System;
-using Avalonia.Input;
-
-namespace Avalonia.Controls.Platform
+﻿namespace Avalonia.Controls.Platform
 {
     /// <summary>
     /// Handles user interaction for menus.

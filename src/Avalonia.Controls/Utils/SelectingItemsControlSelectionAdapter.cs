@@ -4,15 +4,12 @@
 // All other rights reserved.
 
 using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using Avalonia.Input;
-using Avalonia.LogicalTree;
 using System.Collections;
-using System.Diagnostics;
+using System.Linq;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Utils
 {

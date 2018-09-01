@@ -20,12 +20,12 @@ namespace Avalonia.Platform
     public interface ITopLevelImpl : IDisposable
     {
         /// <summary>
-        /// Gets the client size of the toplevel.
+        /// Gets the client size of the top level.
         /// </summary>
         Size ClientSize { get; }
 
         /// <summary>
-        /// Gets the scaling factor for the toplevel.
+        /// Gets the scaling factor for the top level.
         /// </summary>
         double Scaling { get; }
 
@@ -42,38 +42,38 @@ namespace Avalonia.Platform
         IEnumerable<object> Surfaces { get; }
 
         /// <summary>
-        /// Gets or sets a method called when the toplevel receives input.
+        /// Gets or sets a method called when the top level receives input.
         /// </summary>
         Action<RawInputEventArgs> Input { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the toplevel requires painting.
+        /// Gets or sets a method called when the top level requires painting.
         /// </summary>
         Action<Rect> Paint { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the toplevel is resized.
+        /// Gets or sets a method called when the top level is resized.
         /// </summary>
         Action<Size> Resized { get; set; }
 
         /// <summary>
-        /// Gets or sets a method called when the toplevel's scaling changes.
+        /// Gets or sets a method called when the top level's scaling changes.
         /// </summary>
         Action<double> ScalingChanged { get; set; }
 
         /// <summary>
-        /// Creates a new renderer for the toplevel.
+        /// Creates a new renderer for the top level.
         /// </summary>
-        /// <param name="root">The toplevel.</param>
+        /// <param name="root">The top level.</param>
         IRenderer CreateRenderer(IRenderRoot root);
 
         /// <summary>
-        /// Invalidates a rect on the toplevel.
+        /// Invalidates a rect on the top level.
         /// </summary>
         void Invalidate(Rect rect);
 
         /// <summary>
-        /// Sets the <see cref="IInputRoot"/> for the toplevel.
+        /// Sets the <see cref="IInputRoot"/> for the top level.
         /// </summary>
         void SetInputRoot(IInputRoot inputRoot);
 
@@ -92,7 +92,7 @@ namespace Avalonia.Platform
         Point PointToScreen(Point point);
 
         /// <summary>
-        /// Sets the cursor associated with the toplevel.
+        /// Sets the cursor associated with the top level.
         /// </summary>
         /// <param name="cursor">The cursor. Use null for default cursor</param>
         void SetCursor(IPlatformHandle cursor);
@@ -103,7 +103,7 @@ namespace Avalonia.Platform
         Action Closed { get; set; }
 
         /// <summary>
-        /// Gets a mouse device associated with toplevel
+        /// Gets a mouse device associated with top level
         /// </summary>
         [CanBeNull]
         IMouseDevice MouseDevice { get; }

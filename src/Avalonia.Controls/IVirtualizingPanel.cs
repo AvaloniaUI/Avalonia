@@ -14,7 +14,7 @@ namespace Avalonia.Controls
         /// Gets or sets the controller for the virtualizing panel.
         /// </summary>
         /// <remarks>
-        /// A virtualizing controller is responsible for maintaing the controls in the virtualizing
+        /// A virtualizing controller is responsible for maintaining the controls in the virtualizing
         /// panel. This property will be set by the controller when virtualization is initialized.
         /// Note that this property may remain null if the panel is added to a control that does
         /// not act as a virtualizing controller.

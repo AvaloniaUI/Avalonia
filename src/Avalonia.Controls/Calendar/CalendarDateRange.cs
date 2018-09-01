@@ -4,7 +4,6 @@
 // All other rights reserved.
 
 using System;
-using System.Diagnostics;
 
 namespace Avalonia.Controls
 {

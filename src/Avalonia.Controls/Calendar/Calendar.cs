@@ -3,14 +3,14 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 
 namespace Avalonia.Controls
 {

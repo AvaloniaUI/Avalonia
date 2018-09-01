@@ -25,7 +25,7 @@ namespace Avalonia.Controls.Templates
         /// <summary>
         /// Selects a member of an object.
         /// </summary>
-        /// <param name="o">The obeject.</param>
+        /// <param name="o">The object.</param>
         /// <returns>The selected member.</returns>
         public object Select(object o)
         {
