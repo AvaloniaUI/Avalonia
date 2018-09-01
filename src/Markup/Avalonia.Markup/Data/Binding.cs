@@ -150,7 +150,9 @@ namespace Avalonia.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                observer = CreateSourceObserver(target, node);
+                observer = CreateSourceObserver(
+                    (target as IStyledElement) ?? (anchor as IStyledElement),
+                    node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
