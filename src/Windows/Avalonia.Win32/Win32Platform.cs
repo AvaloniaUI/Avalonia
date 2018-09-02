@@ -50,7 +50,12 @@ namespace Avalonia.Win32
             // Declare that this process is aware of per monitor DPI
             if (UnmanagedMethods.ShCoreAvailable)
             {
-                UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                var osVersion = Environment.OSVersion.Version;
+                if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor > 2))
+                {
+                    UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS
+                        .PROCESS_PER_MONITOR_DPI_AWARE);
+                }
             }
 
             CreateMessageWindow();
