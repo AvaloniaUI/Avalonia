@@ -23,11 +23,6 @@ namespace Avalonia.MonoMac
 {
     public class DragSource : NSDraggingSource, IPlatformDragSource
     {
-        public override NSDragOperation DraggingSourceOperationMaskForLocal(bool flag)
-        {
-            return DraggingInfo.ConvertDragOperation(_allowedEffects);
-        }
-
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
         private const string NSPasteboardTypeFileUrl = "public.file-url";
         
@@ -115,10 +110,10 @@ namespace Avalonia.MonoMac
             return await _result;
         }
         
-        /*public override NSDragOperation DraggingSourceOperationMaskForLocal(bool flag)
+        public override NSDragOperation DraggingSourceOperationMaskForLocal(bool flag)
         {
             return DraggingInfo.ConvertDragOperation(_allowedEffects);
-        }*/
+        }
             
         public override void DraggedImageEndedAtOperation(NSImage image, CGPoint screenPoint, NSDragOperation operation)
         {
