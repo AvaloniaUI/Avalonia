@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -41,20 +42,10 @@ namespace Avalonia.Controls.UnitTests.Mixins
             var p1 = new ContentPresenter { Name = "Content_1_Presenter" };
             var p2 = new ContentPresenter { Name = "Content_2_Presenter" };
 
-            var callIndex = -1;
-            var called = new bool[4];
+            var itemsAddedThroughMixin = new List<bool>();
+            var itemsNotAddedThroughMixin = new List<bool>();
 
-            void Callback()
-            {
-                if (callIndex >= 0)
-                    called[callIndex] = true;
-            }
-
-            var listMock = new Mock<IAvaloniaList<ILogical>>();
-            listMock.Setup(l => l.Contains(It.IsAny<ILogical>())).Returns(false).Callback(Callback);
-            var list = listMock.Object;
-
-            var target = new TestControl(list)
+            var target = new TestControl
             {
                 Template = new FuncControlTemplate(_ => new Panel
                 {
@@ -67,26 +58,28 @@ namespace Avalonia.Controls.UnitTests.Mixins
             };
             target.ApplyTemplate();
 
-            callIndex = 0;
-            p1.Content = new Control();
-            p1.UpdateChild();
+            Control tc;
 
-            callIndex = 1;
-            p2.Content = new Control();
+            p1.Content = tc = new Control();
+            p1.UpdateChild();
+            itemsAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
+
+            p2.Content = tc = new Control();
             p2.UpdateChild();
+            itemsAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
 
             target.Template = null;
 
-            callIndex = 2;
-            p1.Content = new Control();
+            p1.Content = tc = new Control();
             p1.UpdateChild();
+            itemsNotAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
 
-            callIndex = 3;
-            p2.Content = new Control();
+            p2.Content = tc = new Control();
             p2.UpdateChild();
+            itemsNotAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
 
-
-            Assert.Equal(new[] { true, true, false, false }, called);
+            Assert.Equal(new[] { true, true }, itemsAddedThroughMixin);
+            Assert.Equal(new[] { false, false }, itemsNotAddedThroughMixin);
         }
 
         private class TestControl : TemplatedControl
@@ -97,27 +90,10 @@ namespace Avalonia.Controls.UnitTests.Mixins
             public static readonly StyledProperty<object> Content2Property =
                 AvaloniaProperty.Register<TestControl, object>(nameof(Content2));
 
-
             static TestControl()
             {
-                ContentControlMixin.Attach<TestControl>(Content1Property, x => x.GetLogicalChildren(), "Content_1_Presenter");
-                ContentControlMixin.Attach<TestControl>(Content2Property, x => x.GetLogicalChildren(), "Content_2_Presenter");
-            }
-
-            private IAvaloniaList<ILogical> _mock;
-
-            public TestControl()
-            {
-            }
-
-            public TestControl(IAvaloniaList<ILogical> mock)
-            {
-                _mock = mock;
-            }
-
-            public IAvaloniaList<ILogical> GetLogicalChildren()
-            {
-                return _mock ?? LogicalChildren;
+                ContentControlMixin.Attach<TestControl>(Content1Property, x => x.LogicalChildren, "Content_1_Presenter");
+                ContentControlMixin.Attach<TestControl>(Content2Property, x => x.LogicalChildren, "Content_2_Presenter");
             }
 
             public object Content1
