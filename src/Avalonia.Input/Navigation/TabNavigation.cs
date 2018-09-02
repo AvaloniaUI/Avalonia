@@ -168,7 +168,7 @@ namespace Avalonia.Input.Navigation
                 {
                     while (element != null)
                     {
-                        element = navigable.GetControl(direction, element);
+                        element = navigable.GetControl(direction, element, false);
 
                         if (element != null && element.CanFocus())
                         {
