@@ -129,7 +129,8 @@ namespace Avalonia.Windowing
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsImpl())
                 .Bind<IPlatformThreadingInterface>().ToConstant(this)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop());
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IPlatformDragSource>().ToTransient<DragSource>();
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow() => throw new NotImplementedException();

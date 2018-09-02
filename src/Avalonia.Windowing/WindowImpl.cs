@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
@@ -24,6 +24,8 @@ namespace Avalonia.Windowing
         private LogicalPosition _lastPosition;
         private const int FramesPerSecond = 60;
         private bool _visible = false;
+
+        public IWindowWrapper WindowWrapper => _windowWrapper;
 
         public WindowImpl(IWindowWrapper wrapper)
         {
