@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -15,7 +16,51 @@ namespace Avalonia.Windowing
     public class DragSource : IPlatformDragSource
     {
         [DllImport("winit_wrapper")]
-        private static extern void winit_wrapper_begin_drag(IntPtr nsview, LogicalPosition position);
+        private static extern unsafe void winit_wrapper_begin_drag(IntPtr nsview, IntPtr items, Int32 numItems, LogicalPosition position, IntPtr sourceHandle);
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_wrapper_create_dragging_source();
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_wrapper_initialise_drag_module();
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_wrapper_create_paste_board_item();
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_wrapper_nsdata_from_string(IntPtr dataString);
+
+        [DllImport("winit_wrapper")]
+        private static extern byte winit_wrapper_paste_board_item_set_data_for_type(IntPtr pasteBoardItem, IntPtr data, IntPtr typeString);
+
+        [DllImport("winit_wrapper")]
+        private static extern IntPtr winit_wrapper_create_ns_dragging_item(IntPtr pasteBoardItem);
+
+
+        private IntPtr NSDataFromString (string dataString)
+        {
+            var ansiString = Marshal.StringToHGlobalAnsi(dataString);
+
+            var result = winit_wrapper_nsdata_from_string(ansiString);
+
+            Marshal.FreeHGlobal(ansiString);
+
+            return result;
+        }
+
+        static DragSource()
+        {
+            winit_wrapper_initialise_drag_module();
+        }
+
+        private IntPtr _handle;
+
+        public DragSource()
+        {
+            _inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
+
+            _handle = winit_wrapper_create_dragging_source();
+        }
 
         private const string NSPasteboardTypeString = "public.utf8-plain-text";
         private const string NSPasteboardTypeFileUrl = "public.file-url";
@@ -26,10 +71,6 @@ namespace Avalonia.Windowing
 
         //public override bool IgnoreModifierKeysWhileDragging => false;
 
-        public DragSource()
-        {
-            _inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
-        }
 
         private string DataFormatToUTI(string s)
         {
@@ -40,20 +81,22 @@ namespace Avalonia.Windowing
             return s;
         }
 
-        /*private NSDraggingItem CreateDraggingItem(string format, object data)
+        private IntPtr CreateDraggingItem(string format, object data)
         {
-            var pasteboardItem = new NSPasteboardItem();
-            NSData nsData;
+            var pasteboardItem = winit_wrapper_create_paste_board_item();
+
+            IntPtr nsData = IntPtr.Zero;
             if (data is string s)
             {
                 if (format == DataFormats.FileNames)
                     s = new Uri(s).AbsoluteUri; // Ensure file uris...
-                nsData = NSData.FromString(s);
+                nsData = NSDataFromString(s);
+                //nsData = NSData.FromString(s);
             }
-            else if (data is Stream strm)
+            /*else if (data is Stream strm)
                 nsData = NSData.FromStream(strm);
             else if (data is byte[] bytes)
-                nsData = NSData.FromArray(bytes);
+                nsData = NSData.FromArray(bytes);e
             else
             {
                 BinaryFormatter bf = new BinaryFormatter();
@@ -63,15 +106,16 @@ namespace Avalonia.Windowing
                     ms.Position = 0;
                     nsData = NSData.FromStream(ms);
                 }
-            }
-            pasteboardItem.SetDataForType(nsData, DataFormatToUTI(format));
+            }*/
 
-            NSPasteboardWriting writing = new NSPasteboardWriting(pasteboardItem.Handle);
 
-            return new NSDraggingItem(writing);
+            var typeStringPtr = Marshal.StringToHGlobalAnsi(DataFormatToUTI(format));
+            winit_wrapper_paste_board_item_set_data_for_type(pasteboardItem, nsData, typeStringPtr);
+
+            return winit_wrapper_create_ns_dragging_item(pasteboardItem);
         }
 
-        public IEnumerable<NSDraggingItem> CreateDraggingItems(string format, object data)
+        public IEnumerable<IntPtr> CreateDraggingItems(string format, object data)
         {
             if (format == DataFormats.FileNames && data is IEnumerable<string> files)
             {
@@ -82,7 +126,7 @@ namespace Avalonia.Windowing
             }
 
             yield return CreateDraggingItem(format, data);
-        }*/
+        }
 
 
         public async Task<DragDropEffects> DoDragDrop(IDataObject data, DragDropEffects allowedEffects)
@@ -104,11 +148,21 @@ namespace Avalonia.Windowing
             _allowedEffects = allowedEffects;
 
             // 3) create NSDraggingItem from the data.
-            //var items = data.GetDataFormats().SelectMany(fmt => CreateDraggingItems(fmt, data.Get(fmt))).ToArray();
+            var items = data.GetDataFormats().SelectMany(fmt => CreateDraggingItems(fmt, data.Get(fmt))).ToArray();
 
             // 4) Call BeginDraggingSession on the view.
             //view.BeginDraggingSession(items, ev, this);
-            winit_wrapper_begin_drag(view.WindowWrapper.NSView, pt);
+
+            var handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            try
+            {
+                IntPtr myPinnedPointer = handle.AddrOfPinnedObject();
+                winit_wrapper_begin_drag(view.WindowWrapper.NSView, myPinnedPointer, items.Length, pt, _handle);
+            }
+            finally
+            {
+                handle.Free();
+            }
 
             return await _result;
         }
