@@ -41,10 +41,6 @@ namespace Avalonia.Controls.UnitTests.Mixins
         {
             var p1 = new ContentPresenter { Name = "Content_1_Presenter" };
             var p2 = new ContentPresenter { Name = "Content_2_Presenter" };
-
-            var itemsAddedThroughMixin = new List<bool>();
-            var itemsNotAddedThroughMixin = new List<bool>();
-
             var target = new TestControl
             {
                 Template = new FuncControlTemplate(_ => new Panel
@@ -62,24 +58,22 @@ namespace Avalonia.Controls.UnitTests.Mixins
 
             p1.Content = tc = new Control();
             p1.UpdateChild();
-            itemsAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
+            Assert.Contains(tc, target.GetLogicalChildren());
 
             p2.Content = tc = new Control();
             p2.UpdateChild();
-            itemsAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
+            Assert.Contains(tc, target.GetLogicalChildren());
 
             target.Template = null;
 
             p1.Content = tc = new Control();
             p1.UpdateChild();
-            itemsNotAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
+            Assert.DoesNotContain(tc, target.GetLogicalChildren());
 
             p2.Content = tc = new Control();
             p2.UpdateChild();
-            itemsNotAddedThroughMixin.Add(target.GetLogicalChildren().Contains(tc));
+            Assert.DoesNotContain(tc, target.GetLogicalChildren());
 
-            Assert.Equal(new[] { true, true }, itemsAddedThroughMixin);
-            Assert.Equal(new[] { false, false }, itemsNotAddedThroughMixin);
         }
 
         private class TestControl : TemplatedControl
