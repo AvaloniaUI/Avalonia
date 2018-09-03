@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<TextBlock>();
 
-        // TODO: Define these attached properties elswhere (e.g. on a Text class) and AddOwner
+        // TODO: Define these attached properties elsewhere (e.g. on a Text class) and AddOwner
         // them into TextBlock.
 
         /// <summary>

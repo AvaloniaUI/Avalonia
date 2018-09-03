@@ -5,7 +5,7 @@ using Avalonia.Threading;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Handeles <see cref="ToolTip"/> interaction with controls.
+    /// Handles <see cref="ToolTip"/> interaction with controls.
     /// </summary>
     internal sealed class ToolTipService
     {
