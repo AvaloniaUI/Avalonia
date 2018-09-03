@@ -1,0 +1,37 @@
+./build.ps1 -target Build --force-nuget-version=0.7.1.5
+./build.ps1 -target Create-NuGet-Packages-Impl --force-nuget-version=0.7.1.5
+
+
+./build.ps1 -target Build -Configuration Debug --force-nuget-version=0.7.1.5
+./build.ps1 -target Create-NuGet-Packages-Impl -Configuration Debug --force-nuget-version=0.7.1.5
+
+
+cmd
+
+set avver=0.7.1.5
+set nugetdir=%UserProfile%\.nuget\packages
+set buildconfig=Debug
+set buildconfig=Release
+
+quick avalonia base only:
+
+copy /y .\samples\ControlCatalog.Desktop\bin\%buildconfig%\net461\Avalonia**.dll "%nugetdir%\avalonia\%avver%\lib\net461\"
+copy /y .\samples\ControlCatalog.NetCore\bin\%buildconfig%\netcoreapp2.0\Avalonia**.dll "%nugetdir%\avalonia\%avver%\lib\netcoreapp2.0\"
+copy /y .\samples\ControlCatalog.NetCore\bin\%buildconfig%\netcoreapp2.0\Avalonia**.dll "%nugetdir%\avalonia\%avver%\lib\netstandard2.0\"
+
+nuget local:
+
+rmdir /q /s "%nugetdir%\avalonia\%avver%"
+rmdir /q /s "%nugetdir%\Avalonia.Direct2D1\%avver%"
+rmdir /q /s "%nugetdir%\Avalonia.Skia\%avver%"
+rmdir /q /s "%nugetdir%\Avalonia.Win32\%avver%"
+rmdir /q /s "%nugetdir%\Avalonia.Win32.Interoperability\%avver%"
+rmdir /q /s "%nugetdir%\Avalonia.ReactiveUI\%avver%"
+rmdir /q /s "%nugetdir%\avalonia.remote.protocol\%avver%"
+rmdir /q /s "%nugetdir%\avalonia.desktop\%avver%"
+rmdir /q /s "%nugetdir%\avalonia.gtk3\%avver%"
+
+copy D:\Development\github\Avalonia\artifacts\nuget\Avalonia.*%avver%.nupkg D:\Development\Synergy\NuGet
+
+
+copy D:\Development\github\Avalonia\artifacts\nuget\*.nupkg D:\Development\Synergy\NuGet

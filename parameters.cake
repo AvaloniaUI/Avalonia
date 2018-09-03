@@ -53,6 +53,8 @@ public class Parameters
         ReleaseBranchPrefix = "refs/heads/release/";
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./dirs.proj";
+        //TODO: add param for desktop only projects
+        MSBuildSolution = "./Avalonia.Desktop.sln";
 
         // PARAMETERS
         IsLocalBuild = buildSystem.IsLocalBuild;

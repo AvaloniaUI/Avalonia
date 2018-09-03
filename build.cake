@@ -165,7 +165,7 @@ Task("Run-Unit-Tests-Impl")
     RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests", data, false);
     if (data.IsRunningOnWindows)
     {
-        RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data, false);
+        //RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data, false);
     }
 });
 
@@ -272,7 +272,7 @@ Task("Build")
 Task("Run-Tests")
     .IsDependentOn("Build")
     .IsDependentOn("Run-Unit-Tests-Impl")
-    .IsDependentOn("Run-Render-Tests-Impl")
+    //.IsDependentOn("Run-Render-Tests-Impl")
     .IsDependentOn("Run-Designer-Tests-Impl")
     .IsDependentOn("Run-Leak-Tests-Impl");
 
