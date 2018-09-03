@@ -59,7 +59,7 @@ namespace Avalonia.Rendering
                         Render(context, _root, _root.Bounds);
                     }
 
-                    if (DrawDirtyRects)
+                    if (false)
                     {
                         var color = (uint)new Random().Next(0xffffff) | 0x44000000;
                         context.FillRectangle(
@@ -67,7 +67,7 @@ namespace Avalonia.Rendering
                             rect);
                     }
 
-                    if (DrawFps)
+                    if (true)
                     {
                         RenderFps(context.PlatformImpl, _root.Bounds, null);
                     }
@@ -223,7 +223,7 @@ namespace Avalonia.Rendering
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
-
+            
             if (visual.IsVisible && opacity > 0)
             {
                 var m = Matrix.CreateTranslation(visual.Bounds.Position);

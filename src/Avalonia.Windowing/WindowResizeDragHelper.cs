@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -29,7 +29,7 @@ namespace Avalonia
             _edge = edge;
         }
 
-        public void BeginMoveDrag (Point currentMousePosition)
+        public void BeginMoveDrag(Point currentMousePosition)
         {
             _captureMouse(true);
             _prevPoint = currentMousePosition;
@@ -65,14 +65,13 @@ namespace Avalonia
         private void MoveWindow(Point position)
         {
             var diff = position - _prevPoint;
-            var edge = _edge.Value;
             var rc = new Rect(_window.Position, _window.ClientSize);
 
             if (_edge == null && _isMove)
             {
-                rc = rc.WithX(diff.X).WithY(diff.Y);
+                rc = rc.WithX(rc.X + diff.X).WithY(rc.Y + diff.Y);
 
-                if(_resize != null)
+                if (_resize != null)
                 {
                     _resize(rc);
                 }
@@ -83,6 +82,9 @@ namespace Avalonia
             }
             else
             {
+
+                var edge = _edge.Value;
+
                 if (edge == WindowEdge.East || edge == WindowEdge.NorthEast || edge == WindowEdge.SouthEast)
                 {
                     rc = rc.WithWidth(rc.Width + diff.X);

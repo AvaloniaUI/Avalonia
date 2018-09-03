@@ -19,7 +19,8 @@ namespace Avalonia.Skia
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
-        
+        private readonly GRContext _grContext;
+
         /// <summary>
         /// Create new surface render target.
         /// </summary>
@@ -30,8 +31,8 @@ namespace Avalonia.Skia
             PixelHeight = createInfo.Height;
             _dpi = createInfo.Dpi;
             _disableLcdRendering = createInfo.DisableTextLcdRendering;
-
-            _surface = CreateSurface(PixelWidth, PixelHeight, createInfo.Format);
+            _grContext = createInfo.GrContext;
+            _surface = CreateSurface(PixelWidth, PixelHeight, createInfo.GrContext, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -48,11 +49,10 @@ namespace Avalonia.Skia
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
         /// <returns></returns>
-        private static SKSurface CreateSurface(int width, int height, PixelFormat? format)
+        private static SKSurface CreateSurface(int width, int height, GRContext grContext, PixelFormat? format)
         {
             var imageInfo = MakeImageInfo(width, height, format);
-
-            return SKSurface.Create(imageInfo);
+            return grContext != null ? SKSurface.Create(grContext, false, imageInfo) : SKSurface.Create(imageInfo);
         }
 
         /// <inheritdoc />
@@ -73,7 +73,7 @@ namespace Avalonia.Skia
                 Canvas = _canvas,
                 Dpi = _dpi,
                 VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = _disableLcdRendering
+                DisableTextLcdRendering = true
             };
 
             return new DrawingContextImpl(createInfo);
@@ -164,6 +164,11 @@ namespace Avalonia.Skia
             /// Render text without Lcd rendering.
             /// </summary>
             public bool DisableTextLcdRendering;
+
+            /// <summary>
+            /// Optional GPU context.
+            /// </summary>
+            public GRContext GrContext;
         }
     }
 }

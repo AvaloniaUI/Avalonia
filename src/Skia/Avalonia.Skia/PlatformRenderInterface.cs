@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Gpu;
 using Avalonia.Media;
 using Avalonia.Platform;
 
@@ -92,6 +93,11 @@ namespace Avalonia.Skia
                 if (surface is IFramebufferPlatformSurface framebufferSurface)
                 {
                     return new FramebufferRenderTarget(framebufferSurface);
+                }
+
+                if (surface is IGpuContext gpuContext) 
+                {
+                    return new GlRenderTarget(gpuContext);
                 }
             }
 
