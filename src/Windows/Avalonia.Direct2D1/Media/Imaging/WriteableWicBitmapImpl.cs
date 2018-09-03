@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using Avalonia.Platform;
 using SharpDX.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
@@ -11,8 +10,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
 {
     class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
-        public WriteableWicBitmapImpl(ImagingFactory factory, int width, int height, PixelFormat? pixelFormat) 
-            : base(factory, width, height, pixelFormat)
+        public WriteableWicBitmapImpl(int width, int height, PixelFormat? pixelFormat) 
+            : base(width, height, pixelFormat)
         {
         }
 
@@ -27,7 +26,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
                 _format = format;
             }
 
-
             public void Dispose()
             {
                 _lock.Dispose();
@@ -39,7 +37,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
             public int RowBytes => _lock.Stride;
             public Vector Dpi { get; } = new Vector(96, 96);
             public PixelFormat Format => _format;
-
         }
 
         public ILockedFramebuffer Lock() => new LockedBitmap(WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);

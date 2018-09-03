@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Platform.Surfaces;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using SharpDX;
@@ -22,7 +19,7 @@ namespace Avalonia.Direct2D1
 
         protected override SwapChain1 CreateSwapChain(Factory2 dxgiFactory, SwapChainDescription1 swapChainDesc)
         {
-            return new SwapChain1(dxgiFactory, DxgiDevice, _window.Handle, ref swapChainDesc);
+            return new SwapChain1(dxgiFactory, Direct2D1Platform.DxgiDevice, _window.Handle, ref swapChainDesc);
         }
 
         protected override Size2F GetWindowDpi()
