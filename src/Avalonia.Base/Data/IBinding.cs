@@ -17,7 +17,7 @@ namespace Avalonia.Data
         /// An optional anchor from which to locate required context. When binding to objects that
         /// are not in the logical tree, certain types of binding need an anchor into the tree in 
         /// order to locate named controls or resources. The <paramref name="anchor"/> parameter 
-        /// can be used to provice this context.
+        /// can be used to provide this context.
         /// </param>
         /// <param name="enableDataValidation">Whether data validation should be enabled.</param>
         /// <returns>

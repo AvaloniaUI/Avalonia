@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Generators
         Type ContainerType { get; }
 
         /// <summary>
-        /// Signalled whenever new containers are materialized.
+        /// Signaled whenever new containers are materialized.
         /// </summary>
         event EventHandler<ItemContainerEventArgs> Materialized;
 

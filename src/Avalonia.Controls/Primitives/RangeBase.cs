@@ -130,7 +130,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Throws an exception if the double valus is NaN or Inf.
+        /// Throws an exception if the double value is NaN or Inf.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="property">The name of the property being set.</param>

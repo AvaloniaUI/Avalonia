@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Avalonia.Data;
-using Avalonia.Logging;
 
 namespace Avalonia
 {
