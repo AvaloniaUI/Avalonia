@@ -1,13 +1,10 @@
-using System;
-using System.Reflection;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.iOS;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
-using UIKit;
-using Avalonia.Controls;
 using Avalonia.Rendering;
+using Avalonia.Shared.PlatformSupport;
 
 namespace Avalonia
 {

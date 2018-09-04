@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Diagnostics;
-using Avalonia.Animation.Utils;
-using Avalonia.Data;
-
-namespace Avalonia.Animation
+﻿namespace Avalonia.Animation
 {
     /// <summary>
     /// Animator that handles <see cref="double"/> properties.

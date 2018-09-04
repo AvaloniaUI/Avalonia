@@ -3,7 +3,6 @@ using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using MonoMac.AppKit;
-using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;

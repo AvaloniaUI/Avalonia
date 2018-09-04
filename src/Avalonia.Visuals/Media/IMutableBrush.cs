@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Avalonia.Media
+﻿namespace Avalonia.Media
 {
     /// <summary>
     /// Represents a mutable brush which can return an immutable clone of itself.

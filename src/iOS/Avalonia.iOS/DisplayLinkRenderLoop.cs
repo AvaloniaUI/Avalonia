@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Avalonia.Rendering;
 using CoreAnimation;
 using Foundation;
-using UIKit;
 
 namespace Avalonia.iOS
 {

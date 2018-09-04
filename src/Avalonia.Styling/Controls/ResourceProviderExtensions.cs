@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
