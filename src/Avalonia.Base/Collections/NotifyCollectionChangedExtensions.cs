@@ -25,7 +25,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Subcribes to the CollectionChanged event using a weak subscription.
+        /// Subscribes to the CollectionChanged event using a weak subscription.
         /// </summary>
         /// <param name="collection">The collection.</param>
         /// <param name="handler">
@@ -44,7 +44,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Subcribes to the CollectionChanged event using a weak subscription.
+        /// Subscribes to the CollectionChanged event using a weak subscription.
         /// </summary>
         /// <param name="collection">The collection.</param>
         /// <param name="handler">

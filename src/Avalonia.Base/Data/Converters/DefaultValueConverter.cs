@@ -3,9 +3,8 @@
 
 using System;
 using System.Globalization;
-using Avalonia.Data;
-using Avalonia.Utilities;
 using System.Windows.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Converters
 {
