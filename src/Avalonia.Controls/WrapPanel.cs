@@ -132,7 +132,7 @@ namespace Avalonia.Controls
             double accumulatedV = 0;
             var uvFinalSize = CreateUVSize(finalSize);
             var lineSize = CreateUVSize();
-            int firstChildInLineindex = 0;
+            int firstChildInLineIndex = 0;
             for (int index = 0; index < Children.Count; index++)
             {
                 var child = Children[index];
@@ -144,32 +144,32 @@ namespace Avalonia.Controls
                 }
                 else // moving to next line
                 {
-                    var controlsInLine = GetContolsBetween(firstChildInLineindex, index);
+                    var controlsInLine = GetControlsBetween(firstChildInLineIndex, index);
                     ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
                     accumulatedV += lineSize.V;
                     lineSize = childSize;
-                    firstChildInLineindex = index;
+                    firstChildInLineIndex = index;
                 }
             }
 
-            if (firstChildInLineindex < Children.Count)
+            if (firstChildInLineIndex < Children.Count)
             {
-                var controlsInLine = GetContolsBetween(firstChildInLineindex, Children.Count);
+                var controlsInLine = GetControlsBetween(firstChildInLineIndex, Children.Count);
                 ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
             }
             return finalSize;
         }
 
-        private IEnumerable<IControl> GetContolsBetween(int first, int last)
+        private IEnumerable<IControl> GetControlsBetween(int first, int last)
         {
             return Children.Skip(first).Take(last - first);
         }
 
-        private void ArrangeLine(double v, double lineV, IEnumerable<IControl> contols)
+        private void ArrangeLine(double v, double lineV, IEnumerable<IControl> controls)
         {
             double u = 0;
             bool isHorizontal = (Orientation == Orientation.Horizontal);
-            foreach (var child in contols)
+            foreach (var child in controls)
             {
                 var childSize = CreateUVSize(child.DesiredSize);
                 var x = isHorizontal ? u : v;
@@ -181,9 +181,9 @@ namespace Avalonia.Controls
             }
         }
         /// <summary>
-        /// Used to not not write sepearate code for horizontal and vertical orientation.
+        /// Used to not not write separate code for horizontal and vertical orientation.
         /// U is direction in line. (x if orientation is horizontal)
-        /// V is direction of lines. (y if orientation is horizonral)
+        /// V is direction of lines. (y if orientation is horizontal)
         /// </summary>
         [DebuggerDisplay("U = {U} V = {V}")]
         private struct UVSize
