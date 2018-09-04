@@ -23,7 +23,7 @@ namespace Avalonia.Data.Core.Plugins
             return new Validator(reference, name, accessor);
         }
 
-        private class Validator : DataValidatiorBase, IWeakSubscriber<DataErrorsChangedEventArgs>
+        private class Validator : DataValidationBase, IWeakSubscriber<DataErrorsChangedEventArgs>
         {
             WeakReference _reference;
             string _name;

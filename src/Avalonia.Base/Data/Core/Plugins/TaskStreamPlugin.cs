@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core.Plugins
 {
