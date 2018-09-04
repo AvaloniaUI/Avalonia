@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
         /// </summary>
-        /// <param name="interactionHandler">The menu iteraction handler.</param>
+        /// <param name="interactionHandler">The menu interaction handler.</param>
         public ContextMenu(IMenuInteractionHandler interactionHandler)
         {
             Contract.Requires<ArgumentNullException>(interactionHandler != null);

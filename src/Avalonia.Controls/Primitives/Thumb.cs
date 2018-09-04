@@ -4,7 +4,6 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {

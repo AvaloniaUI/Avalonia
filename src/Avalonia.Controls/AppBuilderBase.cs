@@ -57,14 +57,14 @@ namespace Avalonia.Controls
         public Action<TAppBuilder> AfterSetupCallback { get; private set; } = builder => { };
 
         /// <summary>
-        /// Gets or sets a method to call before Startis called on the <see cref="Application"/>.
+        /// Gets or sets a method to call before Start is called on the <see cref="Application"/>.
         /// </summary>
         public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
-        protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformSevices)
+        protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformServices)
         {
             RuntimePlatform = platform;
-            RuntimePlatformServicesInitializer = () => platformSevices((TAppBuilder)this);
+            RuntimePlatformServicesInitializer = () => platformServices((TAppBuilder)this);
         }
 
         /// <summary>

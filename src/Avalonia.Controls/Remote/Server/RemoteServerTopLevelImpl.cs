@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Embedding.Offscreen;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -94,10 +91,10 @@ namespace Avalonia.Controls.Remote.Server
             RenderIfNeeded();
         }
 
-        protected virtual Size Measure(Size constaint)
+        protected virtual Size Measure(Size constraint)
         {
             var l = (ILayoutable) InputRoot;
-            l.Measure(constaint);
+            l.Measure(constraint);
             return l.DesiredSize;
         }
 
