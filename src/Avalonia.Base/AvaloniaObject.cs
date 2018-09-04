@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
-using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 

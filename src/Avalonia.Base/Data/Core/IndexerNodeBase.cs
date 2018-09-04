@@ -3,12 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
-using System.Text;
-using Avalonia.Data;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
