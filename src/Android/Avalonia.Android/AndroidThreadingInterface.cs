@@ -1,16 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reactive.Disposables;
-using System.Text;
 using System.Threading;
-using Android.App;
-using Android.Content;
 using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Avalonia.Platform;
 using Avalonia.Threading;
 
@@ -88,4 +79,3 @@ namespace Avalonia.Android
         public event Action<DispatcherPriority?> Signaled;
     }
 }
- 

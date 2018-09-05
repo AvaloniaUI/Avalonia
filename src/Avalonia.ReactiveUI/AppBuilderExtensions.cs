@@ -4,9 +4,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
-using System;
-using System.Reactive.Concurrency;
-using System.Threading;
 
 namespace Avalonia
 {

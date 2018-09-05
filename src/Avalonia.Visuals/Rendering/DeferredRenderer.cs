@@ -2,17 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
-using System.Collections.Generic;
-using System.IO;
-using Avalonia.Media.Immutable;
-using System.Threading;
-using System.Linq;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
