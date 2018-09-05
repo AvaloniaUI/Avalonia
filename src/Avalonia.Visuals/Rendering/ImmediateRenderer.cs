@@ -54,6 +54,8 @@ namespace Avalonia.Rendering
             {
                 using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
                 {
+                    context.PlatformImpl.Clear(Colors.Transparent);
+
                     using (context.PushTransformContainer())
                     {
                         Render(context, _root, _root.Bounds);
