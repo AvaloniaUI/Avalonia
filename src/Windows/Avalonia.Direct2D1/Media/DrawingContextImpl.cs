@@ -24,8 +24,6 @@ namespace Avalonia.Direct2D1.Media
         private readonly SharpDX.Direct2D1.RenderTarget _renderTarget;
         private readonly SharpDX.DXGI.SwapChain1 _swapChain;
         private readonly Action _finishedCallback;
-        private readonly SharpDX.WIC.ImagingFactory _imagingFactory;
-        private SharpDX.DirectWrite.Factory _directWriteFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DrawingContextImpl"/> class.
@@ -36,16 +34,12 @@ namespace Avalonia.Direct2D1.Media
         /// An object to use to create layers. May be null, in which case a
         /// <see cref="WicRenderTargetBitmapImpl"/> will created when a new layer is requested.
         /// </param>
-        /// <param name="directWriteFactory">The DirectWrite factory.</param>
-        /// <param name="imagingFactory">The WIC imaging factory.</param>
         /// <param name="swapChain">An optional swap chain associated with this drawing context.</param>
         /// <param name="finishedCallback">An optional delegate to be called when context is disposed.</param>
         public DrawingContextImpl(
             IVisualBrushRenderer visualBrushRenderer,
             ILayerFactory layerFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
-            SharpDX.DirectWrite.Factory directWriteFactory,
-            SharpDX.WIC.ImagingFactory imagingFactory,
             SharpDX.DXGI.SwapChain1 swapChain = null,
             Action finishedCallback = null)
         {
@@ -54,8 +48,6 @@ namespace Avalonia.Direct2D1.Media
             _renderTarget = renderTarget;
             _swapChain = swapChain;
             _finishedCallback = finishedCallback;
-            _directWriteFactory = directWriteFactory;
-            _imagingFactory = imagingFactory;
             _renderTarget.BeginDraw();
         }
 
@@ -443,7 +435,7 @@ namespace Avalonia.Direct2D1.Media
                             return new ImageBrushImpl(
                                 visualBrush,
                                 _renderTarget,
-                                new D2DBitmapImpl(_imagingFactory, intermediate.Bitmap),
+                                new D2DBitmapImpl(intermediate.Bitmap),
                                 destinationSize);
                         }
                     }

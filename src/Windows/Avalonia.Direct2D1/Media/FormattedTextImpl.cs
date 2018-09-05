@@ -21,15 +21,13 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
-
             var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
 
             textFormat.WordWrapping =
                 wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
             TextLayout = new DWrite.TextLayout(
-                             factory,
+                             Direct2D1Platform.DirectWriteFactory,
                              Text ?? string.Empty,
                              textFormat,
                              (float)constraint.Width,

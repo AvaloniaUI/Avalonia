@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 using SharpDX.WIC;
 using PixelFormat = Avalonia.Platform.PixelFormat;
@@ -11,8 +7,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
 {
     class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
-        public WriteableWicBitmapImpl(ImagingFactory factory, int width, int height, PixelFormat? pixelFormat) 
-            : base(factory, width, height, pixelFormat)
+        public WriteableWicBitmapImpl(int width, int height, PixelFormat? pixelFormat) 
+            : base(width, height, pixelFormat)
         {
         }
 

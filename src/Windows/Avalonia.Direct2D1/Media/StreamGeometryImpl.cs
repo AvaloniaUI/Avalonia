@@ -31,8 +31,7 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc/>
         public IStreamGeometryImpl Clone()
         {
-            Factory factory = AvaloniaLocator.Current.GetService<Factory>();
-            var result = new PathGeometry(factory);
+            var result = new PathGeometry(Direct2D1Platform.Direct2D1Factory);
             var sink = result.Open();
             ((PathGeometry)Geometry).Stream(sink);
             sink.Close();
@@ -47,8 +46,7 @@ namespace Avalonia.Direct2D1.Media
 
         private static Geometry CreateGeometry()
         {
-            Factory factory = AvaloniaLocator.Current.GetService<Factory>();
-            return new PathGeometry(factory);
+            return new PathGeometry(Direct2D1Platform.Direct2D1Factory);
         }
     }
 }
