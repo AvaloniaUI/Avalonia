@@ -171,11 +171,7 @@ namespace Avalonia.Controls
         /// <param name="value">Value that want to snap to closest Tick.</param>
         private void MoveToNextTick(double value)
         {
-            double next = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value)));
-            if (Value != next)
-            {
-                Value = next;
-            }
+            Value = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value)));
         }
 
         /// <summary>
