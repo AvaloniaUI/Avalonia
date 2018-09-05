@@ -172,7 +172,7 @@ namespace Avalonia.Controls
         private void MoveToNextTick(double value)
         {
             double next = SnapToTick(Math.Max(Minimum, Math.Min(Maximum, value)));
-            if (next != value)
+            if (Value != next)
             {
                 Value = next;
             }
