@@ -1,27 +1,23 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX;
-using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1
 {
+    using SharpDX.Direct2D1;
+
     class ExternalRenderTarget : IRenderTarget, ILayerFactory
     {
         private readonly IExternalDirect2DRenderTargetSurface _externalRenderTargetProvider;
-        private readonly DirectWriteFactory _dwFactory;
-        private readonly SharpDX.WIC.ImagingFactory _wicFactory;
 
-        public ExternalRenderTarget(
-            IExternalDirect2DRenderTargetSurface externalRenderTargetProvider,
-            DirectWriteFactory dwFactory,
-            SharpDX.WIC.ImagingFactory wicFactory)
+        public ExternalRenderTarget(IExternalDirect2DRenderTargetSurface externalRenderTargetProvider)
         {
             _externalRenderTargetProvider = externalRenderTargetProvider;
-            _dwFactory = dwFactory;
-            _wicFactory = wicFactory;
         }
 
         public void Dispose()
@@ -33,7 +29,12 @@ namespace Avalonia.Direct2D1
         {
             var target =  _externalRenderTargetProvider.GetOrCreateRenderTarget();
             _externalRenderTargetProvider.BeforeDrawing();
-            return new DrawingContextImpl(visualBrushRenderer, null, target, _dwFactory, _wicFactory, null, () =>
+            return new DrawingContextImpl(
+                visualBrushRenderer, 
+                null, 
+                target.QueryInterface<DeviceContext>(), 
+                null, 
+                () =>
             {
                 try
                 {
@@ -49,11 +50,7 @@ namespace Avalonia.Direct2D1
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             var target = _externalRenderTargetProvider.GetOrCreateRenderTarget();
-            return D2DRenderTargetBitmapImpl.CreateCompatible(
-                _wicFactory,
-                _dwFactory,
-                target,
-                size);
+            return D2DRenderTargetBitmapImpl.CreateCompatible(target, size);
         }
     }
 }

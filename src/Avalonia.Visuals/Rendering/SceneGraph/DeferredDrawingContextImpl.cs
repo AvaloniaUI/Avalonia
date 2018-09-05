@@ -231,6 +231,21 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public void BeginDraw()
+        {
+            //nothing to do here because we do not draw anything.
+        }
+
+        public void EndDraw()
+        {
+            //nothing to do here because we do not draw anything.
+        }
+
+        public void Present()
+        {
+            //nothing to do here because we do not present anything.
+        }
+
         /// <inheritdoc/>
         public void PopOpacity()
         {

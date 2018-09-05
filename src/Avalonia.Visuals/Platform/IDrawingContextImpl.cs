@@ -139,5 +139,11 @@ namespace Avalonia.Platform
         /// Pops the latest pushed geometry clip.
         /// </summary>
         void PopGeometryClip();
+
+        void BeginDraw();
+
+        void EndDraw();
+
+        void Present();
     }
 }

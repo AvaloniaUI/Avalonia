@@ -204,11 +204,11 @@ namespace Avalonia.Rendering
             {
                 if (scene != null && scene.Size != Size.Empty)
                 {
-                    IDrawingContextImpl context = null;
+                    var context = RenderTarget.CreateDrawingContext(this);
+                    context.BeginDraw();
 
                     if (scene.Generation != _lastSceneId)
                     {
-                        context = RenderTarget.CreateDrawingContext(this);
                         Layers.Update(scene, context);
 
                         RenderToLayers(scene);
@@ -225,22 +225,24 @@ namespace Avalonia.Rendering
 
                     if (renderOverlay)
                     {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderOverlay(scene, context);
+
                         RenderComposite(scene, context);
                     }
                     else if (composite)
                     {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderComposite(scene, context);
                     }
 
+                    context.EndDraw();
+                    context.Present();
                     context?.Dispose();
                 }
             }
             catch (RenderTargetCorruptedException ex)
             {
                 Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+
                 RenderTarget?.Dispose();
                 RenderTarget = null;
             }
@@ -288,6 +290,8 @@ namespace Avalonia.Rendering
                     {
                         using (var context = renderTarget.Item.CreateDrawingContext(this))
                         {
+                            context.BeginDraw();
+
                             foreach (var rect in layer.Dirty)
                             {
                                 context.Transform = Matrix.Identity;
@@ -301,6 +305,9 @@ namespace Avalonia.Rendering
                                     _dirtyRectsDisplay.Add(rect);
                                 }
                             }
+
+                            context.EndDraw();
+                            context.Present();
                         }
                     }
                 }
@@ -315,8 +322,13 @@ namespace Avalonia.Rendering
 
                 using (var context = overlay.Item.CreateDrawingContext(this))
                 {
+                    context.BeginDraw();
                     context.Clear(Colors.Transparent);
+
                     RenderDirtyRects(context);
+
+                    context.EndDraw();
+                    context.Present();
                 }
             }
             else
