@@ -7,11 +7,13 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
 
-using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-using PixelFormat = SharpDX.Direct2D1.PixelFormat;
-
 namespace Avalonia.Direct2D1
 {
+
+    using AlphaMode = SharpDX.Direct2D1.AlphaMode;
+    using DeviceContext = SharpDX.Direct2D1.DeviceContext;
+    using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+
     public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;
@@ -32,7 +34,8 @@ namespace Avalonia.Direct2D1
             {
                 _savedSize = size;
                 _savedDpi = dpi;
-                CreateSwapChain();
+
+                Resize();
             }
 
             return new DrawingContextImpl(visualBrushRenderer, this, _deviceContext, _swapChain);
@@ -42,7 +45,7 @@ namespace Avalonia.Direct2D1
         {
             if (_deviceContext == null)
             {
-                CreateSwapChain();
+                CreateDeviceContext();
             }
 
             return D2DRenderTargetBitmapImpl.CreateCompatible(_deviceContext, size);
@@ -51,54 +54,68 @@ namespace Avalonia.Direct2D1
         public void Dispose()
         {
             _deviceContext?.Dispose();
+
             _swapChain?.Dispose();
+        }
+
+        private void Resize()
+        {
+            _deviceContext?.Dispose();
+            _deviceContext = null;
+
+            _swapChain?.ResizeBuffers(0, 0, 0, Format.Unknown, SwapChainFlags.None);
+
+            CreateDeviceContext();
         }
 
         private void CreateSwapChain()
         {
-            using (var dxgiAdaptor = Direct2D1Platform.DxgiDevice.Adapter)
-            using (var dxgiFactory = dxgiAdaptor.GetParent<SharpDX.DXGI.Factory2>())
+            var swapChainDescription = new SwapChainDescription1
             {
-                _deviceContext?.Dispose();
-                _deviceContext = new DeviceContext(Direct2D1Platform.Direct2D1Device, DeviceContextOptions.None) { DotsPerInch = _savedDpi };
-
-                var swapChainDesc = new SwapChainDescription1
+                Width = _savedSize.Width,
+                Height = _savedSize.Height,
+                Format = Format.B8G8R8A8_UNorm,
+                SampleDescription = new SampleDescription
                 {
-                    Width = _savedSize.Width,
-                    Height = _savedSize.Height,
-                    Format = Format.B8G8R8A8_UNorm,
-                    Stereo = false,
-                    SampleDescription = new SampleDescription
+                    Count = 1,
+                    Quality = 0,
+                },
+                Usage = Usage.RenderTargetOutput,
+                BufferCount = 1,
+                SwapEffect = SwapEffect.Discard,
+            };
+
+            using (var dxgiAdapter = Direct2D1Platform.DxgiDevice.Adapter)
+            using (var dxgiFactory = dxgiAdapter.GetParent<SharpDX.DXGI.Factory2>())
+            {
+                _swapChain = CreateSwapChain(dxgiFactory, swapChainDescription);
+            }
+        }
+
+        private void CreateDeviceContext()
+        {
+            _deviceContext = new DeviceContext(Direct2D1Platform.Direct2D1Device, DeviceContextOptions.None) { DotsPerInch = _savedDpi };
+
+            if (_swapChain == null)
+            {
+                CreateSwapChain();
+            }
+
+            using (var dxgiBackBuffer = _swapChain.GetBackBuffer<Surface>(0))
+            using (var d2dBackBuffer = new Bitmap1(
+                _deviceContext,
+                dxgiBackBuffer,
+                new BitmapProperties1(
+                    new PixelFormat
                     {
-                        Count = 1,
-                        Quality = 0,
+                        AlphaMode = AlphaMode.Premultiplied,
+                        Format = Format.B8G8R8A8_UNorm
                     },
-                    Usage = Usage.RenderTargetOutput,
-                    BufferCount = 1,
-                    Scaling = Scaling.Stretch,
-                    SwapEffect = SwapEffect.Discard,
-                    Flags = 0,
-                };
-
-                _swapChain?.Dispose();
-                _swapChain = CreateSwapChain(dxgiFactory, swapChainDesc);
-
-                using (var dxgiBackBuffer = _swapChain.GetBackBuffer<Surface>(0))
-                using (var d2dBackBuffer = new Bitmap1(
-                    _deviceContext,
-                    dxgiBackBuffer,
-                    new BitmapProperties1(
-                        new PixelFormat
-                        {
-                            AlphaMode = AlphaMode.Premultiplied,
-                            Format = Format.B8G8R8A8_UNorm
-                        },
-                        _savedDpi.Width,
-                        _savedDpi.Height,
-                        BitmapOptions.Target | BitmapOptions.CannotDraw)))
-                {
-                    _deviceContext.Target = d2dBackBuffer;
-                }
+                    _savedSize.Width,
+                    _savedSize.Height,
+                    BitmapOptions.Target | BitmapOptions.CannotDraw)))
+            {
+                _deviceContext.Target = d2dBackBuffer;
             }
         }
 
