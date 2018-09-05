@@ -6,7 +6,7 @@ using System;
 namespace Avalonia.Data
 {
     /// <summary>
-    /// An exception returned through <see cref="BindingNotification"/> signalling that a
+    /// An exception returned through <see cref="BindingNotification"/> signaling that a
     /// requested binding expression could not be evaluated because of a null in one of the links
     /// of the binding chain.
     /// </summary>
@@ -15,14 +15,14 @@ namespace Avalonia.Data
         private string _message;
 
         /// <summary>
-        /// Initalizes a new instance of the <see cref="BindingChainException"/> class.
+        /// Initializes a new instance of the <see cref="BindingChainException"/> class.
         /// </summary>
         public BindingChainException()
         {
         }
 
         /// <summary>
-        /// Initalizes a new instance of the <see cref="BindingChainException"/> class.
+        /// Initializes a new instance of the <see cref="BindingChainException"/> class.
         /// </summary>
         /// <param name="message">The error message.</param>
         public BindingChainException(string message)
@@ -31,7 +31,7 @@ namespace Avalonia.Data
         }
 
         /// <summary>
-        /// Initalizes a new instance of the <see cref="BindingChainException"/> class.
+        /// Initializes a new instance of the <see cref="BindingChainException"/> class.
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="expression">The expression.</param>
@@ -51,7 +51,7 @@ namespace Avalonia.Data
         public string Expression { get; protected set; }
 
         /// <summary>
-        /// Gets the point in the expression at which the error occured.
+        /// Gets the point in the expression at which the error occurred.
         /// </summary>
         public string ExpressionErrorPoint { get; protected set; }
 

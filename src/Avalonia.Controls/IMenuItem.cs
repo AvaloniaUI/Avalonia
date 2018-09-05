@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.

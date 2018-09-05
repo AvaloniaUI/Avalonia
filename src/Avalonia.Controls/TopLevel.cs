@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -225,7 +223,7 @@ namespace Avalonia.Controls
         protected virtual IRenderTarget CreateRenderTarget()
         {
             if(PlatformImpl == null)
-                throw new InvalidOperationException("Cann't create render target, PlatformImpl is null (might be already disposed)");
+                throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 

@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -14,7 +13,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Displays a hierachical tree of data.
+    /// Displays a hierarchical tree of data.
     /// </summary>
     public class TreeView : ItemsControl, ICustomKeyboardNavigation
     {

@@ -4,7 +4,6 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 

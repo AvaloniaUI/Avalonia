@@ -6,7 +6,7 @@ using Avalonia.Data;
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
-    /// Interface representing a template used to build hierachical data.
+    /// Interface representing a template used to build hierarchical data.
     /// </summary>
     public interface ITreeDataTemplate : IDataTemplate
     {

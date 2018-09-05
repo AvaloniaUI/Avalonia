@@ -231,7 +231,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Tests two <see cref="AvaloniaProperty"/>s for unequality.
+        /// Tests two <see cref="AvaloniaProperty"/>s for inequality.
         /// </summary>
         /// <param name="a">The first property.</param>
         /// <param name="b">The second property.</param>

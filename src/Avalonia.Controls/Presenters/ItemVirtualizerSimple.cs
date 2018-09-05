@@ -390,7 +390,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="delta">The delta of the move.</param>
         /// <remarks>
         /// If the move is less than a page, then this method moves the containers for the items
-        /// that are still visible to the correct place, and recyles and moves the others. For
+        /// that are still visible to the correct place, and recycles and moves the others. For
         /// example: if there are 20 items and 10 containers visible and the user scrolls 5
         /// items down, then the bottom 5 containers will be moved to the top and the top 5 will
         /// be moved to the bottom and recycled to display the newly visible item. Updates 
