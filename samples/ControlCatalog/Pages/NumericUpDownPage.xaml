@@ -14,7 +14,7 @@
         <CheckBox Grid.Row="1" Grid.Column="1" IsChecked="{Binding #upDown.IsReadOnly}" VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">AllowSpin:</TextBlock>
-        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding #upDown.AllowSpin}" IsEnabled="{Binding #upDown.!IsReadOnly}" VerticalAlignment="Center" Margin="2"/>
+        <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding #upDown.AllowSpin}" VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">ClipValueToMinMax:</TextBlock>
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>

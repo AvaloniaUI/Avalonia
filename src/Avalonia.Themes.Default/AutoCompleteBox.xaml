@@ -36,8 +36,4 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  
-  <Style Selector="AutoCompleteBox ListBoxItem:pointerover">
-    <Setter Property="Background" Value="#ffd0d0d0"/>
-  </Style>
 </Styles>
