@@ -52,11 +52,11 @@
             </Transitions>
         </Setter>
     </Style>
-    <Style Selector="TabControl.sidebar > TabItem:pointerover">
+    <Style Selector="TabControl.sidebar > TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Opacity" Value="1"/>
     </Style>
-    <Style Selector="TabControl.sidebar > TabItem:selected">
+    <Style Selector="TabControl.sidebar > TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
         <Setter Property="Opacity" Value="1"/>
     </Style>

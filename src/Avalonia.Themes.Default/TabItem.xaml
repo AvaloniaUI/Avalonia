@@ -25,19 +25,19 @@
     <Style Selector="TabItem:disabled">
         <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
     </Style>
-    <Style Selector="TabItem:pointerover">
+    <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
     </Style>
-    <Style Selector="TabItem:selected">
+    <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
     </Style>
-    <Style Selector="TabItem:selected:focus">
+    <Style Selector="TabItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
     </Style>
-    <Style Selector="TabItem:selected:pointerover">
+    <Style Selector="TabItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
     </Style>
-    <Style Selector="TabItem:selected:focus:pointerover">
+    <Style Selector="TabItem:selected:focus:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
     </Style>
 </Styles>
