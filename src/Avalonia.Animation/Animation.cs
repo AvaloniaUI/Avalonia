@@ -22,8 +22,6 @@ namespace Avalonia.Animation
         /// </summary> 
         public static PlayState GlobalPlayState { get; set; } = PlayState.Run;
 
-        public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
-
         /// <summary>
         /// Gets or sets the active time of this animation.
         /// </summary>

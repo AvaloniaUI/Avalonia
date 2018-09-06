@@ -32,12 +32,12 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> Match, Action onComplete)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> match, Action onComplete)
         {
              if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return Match
+            return match
                 .Where(p => p)
                 .Subscribe(_ =>
                 {
@@ -103,12 +103,7 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
         {
-            var stateMachine = new AnimationsEngine<T>(animation, control, this, onComplete);
-
-            Timing.AnimationsTimer
-                        .TakeWhile(_ => !stateMachine.unsubscribe)
-                        .Subscribe(p => stateMachine.Step(p, DoInterpolation));
-
+            var stateMachine = new AnimationsEngine<T>(animation, control, this, onComplete, DoInterpolation);
             return control.Bind<T>((AvaloniaProperty<T>)Property, stateMachine, BindingPriority.Animation);
         }
 

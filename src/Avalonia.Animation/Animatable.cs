@@ -14,15 +14,7 @@ namespace Avalonia.Animation
     /// Base class for control which can have property transitions.
     /// </summary>
     public class Animatable : AvaloniaObject
-    {
-        /// <summary>
-        /// Initializes this <see cref="Animatable"/> object.
-        /// </summary>
-        public Animatable()
-        {
-            Transitions = new Transitions(); 
-        } 
-
+    { 
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.
         /// </summary>
@@ -42,27 +34,25 @@ namespace Avalonia.Animation
         {
             get { return _playState; }
             set { SetAndRaise(PlayStateProperty, ref _playState, value); }
-
         }
-
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animatable, IEnumerable<ITransition>> TransitionsProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, IEnumerable<ITransition>>(
+        public static readonly DirectProperty<Animatable, Transitions> TransitionsProperty =
+            AvaloniaProperty.RegisterDirect<Animatable, Transitions>(
                 nameof(Transitions),
                 o => o.Transitions,
                 (o, v) => o.Transitions = v);
 
-        private IEnumerable<ITransition> _transitions = new AvaloniaList<ITransition>();
+        private Transitions _transitions;
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
-        public IEnumerable<ITransition> Transitions
+        public Transitions Transitions
         {
-            get { return _transitions; }
+            get { return _transitions ?? (_transitions = new Transitions()); }
             set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
         }
 
@@ -83,6 +73,5 @@ namespace Avalonia.Animation
                 }
             }
         }
-
     }
 }

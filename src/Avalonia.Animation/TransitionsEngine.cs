@@ -6,12 +6,15 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 using Avalonia.Animation.Utils;
+using Avalonia.Reactive;
 
 namespace Avalonia.Animation
 {
-    public class TransitionsEngine : IObservable<double>, IDisposable
+    /// <summary>
+    /// Handles the timing and lifetime of a <see cref="Transition{T}"/>.
+    /// </summary>
+    public class TransitionsEngine : SingleSubscriberObservableBase<double>
     {
-        private IObserver<double> observer;
         private IDisposable timerSubscription;
         private readonly TimeSpan startTime;
         private readonly TimeSpan duration;
@@ -20,10 +23,6 @@ namespace Avalonia.Animation
         {
             startTime = Timing.GetTickCount();
             duration = Duration;
-
-            timerSubscription = Timing
-                                .AnimationsTimer
-                                .Subscribe(t => TimerTick(t));
         }
 
         private void TimerTick(TimeSpan t)
@@ -33,26 +32,23 @@ namespace Avalonia.Animation
             if (interpVal > 1d
              || interpVal < 0d)
             {
-                this.Dispose();
+                PublishCompleted();
                 return;
             }
 
-            observer?.OnNext(interpVal);
+            PublishNext(interpVal);
         }
-
-        public void Dispose()
+  
+        protected override void Unsubscribed()
         {
             timerSubscription?.Dispose();
-            observer?.OnCompleted();
         }
 
-        public IDisposable Subscribe(IObserver<double> Observer)
+        protected override void Subscribed()
         {
-            if (Observer is null)
-                throw new InvalidProgramException("Can only set the subscription once.");
-
-            observer = Observer;
-            return this;
+            timerSubscription = Timing
+                                .AnimationsTimer
+                                .Subscribe(t => TimerTick(t));
         }
     }
 }
