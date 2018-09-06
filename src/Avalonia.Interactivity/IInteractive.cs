@@ -11,7 +11,7 @@ namespace Avalonia.Interactivity
     public interface IInteractive
     {
         /// <summary>
-        /// Gets the interactive parent of the object for bubbling and tunnelling events.
+        /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive InteractiveParent { get; }
 

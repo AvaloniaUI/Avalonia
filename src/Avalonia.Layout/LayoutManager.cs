@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -100,7 +99,7 @@ namespace Avalonia.Layout
                 }
 
                 stopwatch.Stop();
-                Logger.Information(LogArea.Layout, this, "Layout pass finised in {Time}", stopwatch.Elapsed);
+                Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
             }
 
             _queued = false;
@@ -150,7 +149,7 @@ namespace Avalonia.Layout
             // Controls closest to the visual root need to be arranged first. We don't try to store
             // ordered invalidation lists, instead we traverse the tree upwards, measuring the
             // controls closest to the root first. This has been shown by benchmarks to be the
-            // fastest and most memory-efficent algorithm.
+            // fastest and most memory-efficient algorithm.
             if (control.VisualParent is ILayoutable parent)
             {
                 Measure(parent);

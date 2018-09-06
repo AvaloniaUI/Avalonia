@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
@@ -7,8 +9,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using System;
-using System.ComponentModel;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
@@ -120,7 +120,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             _lastFocusedElement = element;
         }
 
-        public void ActivateAutoShowKeybord()
+        public void ActivateAutoShowKeyboard()
         {
             var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
 

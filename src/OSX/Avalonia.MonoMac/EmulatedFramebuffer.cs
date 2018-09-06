@@ -1,8 +1,8 @@
 ﻿using System;
-using Avalonia.Platform;
-using MonoMac.AppKit;
 using System.Runtime.InteropServices;
+using Avalonia.Platform;
 using Avalonia.Threading;
+using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
 
 namespace Avalonia.MonoMac

@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Direct2D1.Media;
+﻿using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;

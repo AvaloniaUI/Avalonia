@@ -1,6 +1,5 @@
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {

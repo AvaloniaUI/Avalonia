@@ -153,7 +153,7 @@
 
           <Rectangle Name="DisabledVisual"
                      Stretch="Fill"
-                     Fill="#FFFFFFFF"
+                     Fill="{DynamicResource ThemeControlLightBrush}"
                      Opacity="{DynamicResource ThemeDisabledOpacity}"
                      Margin="0,2,0,2" />
 

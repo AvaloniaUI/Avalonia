@@ -20,7 +20,7 @@ namespace Avalonia.Data.Core.Plugins
             return new Validator(reference, name, inner);
         }
 
-        private class Validator : DataValidatiorBase
+        private class Validator : DataValidationBase
         {
             public Validator(WeakReference reference, string name, IPropertyAccessor inner)
                 : base(inner)

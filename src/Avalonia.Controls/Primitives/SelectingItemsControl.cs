@@ -11,7 +11,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Metadata;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 

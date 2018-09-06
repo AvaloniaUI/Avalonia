@@ -17,6 +17,7 @@
     <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
     <TabItem Header="Image"><pages:ImagePage/></TabItem>
     <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
+    <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
     <TabItem Header="Menu"><pages:MenuPage/></TabItem>
 	<TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
     <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>

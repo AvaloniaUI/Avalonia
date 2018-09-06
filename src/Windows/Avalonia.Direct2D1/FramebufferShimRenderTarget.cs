@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
-using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;

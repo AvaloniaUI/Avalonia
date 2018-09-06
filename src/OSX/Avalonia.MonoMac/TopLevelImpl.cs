@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using MonoMac.AppKit;
-using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;

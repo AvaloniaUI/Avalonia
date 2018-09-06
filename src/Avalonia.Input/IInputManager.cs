@@ -7,24 +7,24 @@ using Avalonia.Input.Raw;
 namespace Avalonia.Input
 {
     /// <summary>
-    /// Recieves input from the windowing subsystem and dispatches it to interested parties
+    /// Receives input from the windowing subsystem and dispatches it to interested parties
     /// for processing.
     /// </summary>
     public interface IInputManager
     {
         /// <summary>
-        /// Gets an observable that notifies on each input event recieved before
+        /// Gets an observable that notifies on each input event received before
         /// <see cref="Process"/>.
         /// </summary>
         IObservable<RawInputEventArgs> PreProcess { get; }
 
         /// <summary>
-        /// Gets an observable that notifies on each input event recieved.
+        /// Gets an observable that notifies on each input event received.
         /// </summary>
         IObservable<RawInputEventArgs> Process { get; }
 
         /// <summary>
-        /// Gets an observable that notifies on each input event recieved after
+        /// Gets an observable that notifies on each input event received after
         /// <see cref="Process"/>.
         /// </summary>
         IObservable<RawInputEventArgs> PostProcess { get; }

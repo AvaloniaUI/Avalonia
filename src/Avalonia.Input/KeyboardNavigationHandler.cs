@@ -46,7 +46,7 @@ namespace Avalonia.Input
         /// <param name="direction">The navigation direction.</param>
         /// <returns>
         /// The next element in the specified direction, or null if <paramref name="element"/>
-        /// was the last in therequested direction.
+        /// was the last in the requested direction.
         /// </returns>
         public static IInputElement GetNext(
             IInputElement element,

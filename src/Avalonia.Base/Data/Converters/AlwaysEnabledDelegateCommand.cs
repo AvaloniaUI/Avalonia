@@ -1,10 +1,8 @@
-﻿using Avalonia.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using System.Windows.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Converters
 {
