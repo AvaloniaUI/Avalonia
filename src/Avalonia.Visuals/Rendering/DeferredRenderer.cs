@@ -32,7 +32,6 @@ namespace Avalonia.Rendering
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
-        private bool _updateQueued;
         private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -394,42 +393,34 @@ namespace Avalonia.Rendering
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
-
-            try
+            if (_root.IsVisible)
             {
-                if (_root.IsVisible)
+                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                var scene = sceneRef.Item;
+
+                if (_dirty == null)
                 {
-                    var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
-                    var scene = sceneRef.Item;
-
-                    if (_dirty == null)
-                    {
-                        _dirty = new DirtyVisuals();
-                        _sceneBuilder.UpdateAll(scene);
-                    }
-                    else if (_dirty.Count > 0)
-                    {
-                        foreach (var visual in _dirty)
-                        {
-                            _sceneBuilder.Update(scene, visual);
-                        }
-                    }
-
-                    var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
-                    oldScene?.Dispose();
-
-                    _dirty.Clear();
-                    (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
+                    _dirty = new DirtyVisuals();
+                    _sceneBuilder.UpdateAll(scene);
                 }
-                else
+                else if (_dirty.Count > 0)
                 {
-                    var oldScene = Interlocked.Exchange(ref _scene, null);
-                    oldScene?.Dispose();
+                    foreach (var visual in _dirty)
+                    {
+                        _sceneBuilder.Update(scene, visual);
+                    }
                 }
+
+                var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
+                oldScene?.Dispose();
+
+                _dirty.Clear();
+                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
-            finally
+            else
             {
-                _updateQueued = false;
+                var oldScene = Interlocked.Exchange(ref _scene, null);
+                oldScene?.Dispose();
             }
         }
 
