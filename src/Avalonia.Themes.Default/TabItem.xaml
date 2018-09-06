@@ -1,6 +1,8 @@
 <Styles xmlns="https://github.com/avaloniaui">
     <Style Selector="TabItem">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="2 1"/>
@@ -23,23 +25,19 @@
     <Style Selector="TabItem:disabled">
         <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
     </Style>
-    <Style Selector="TabItem:pointerover /template/ContentPresenter">
+    <Style Selector="TabItem:pointerover">
         <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
     </Style>
-
-    <Style Selector="TabItem:selected /template/ContentPresenter">
+    <Style Selector="TabItem:selected">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
     </Style>
-
-    <Style Selector="TabItem:selected:focus /template/ContentPresenter">
+    <Style Selector="TabItem:selected:focus">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
     </Style>
-
-    <Style Selector="ListBoxItem:selected:pointerover /template/ContentPresenter">
+    <Style Selector="TabItem:selected:pointerover">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
     </Style>
-
-    <Style Selector="ListBoxItem:selected:focus:pointerover /template/ContentPresenter">
+    <Style Selector="TabItem:selected:focus:pointerover">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
     </Style>
 </Styles>
