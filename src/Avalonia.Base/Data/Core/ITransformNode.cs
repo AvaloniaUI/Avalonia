@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Avalonia.Data.Core
+﻿namespace Avalonia.Data.Core
 {
     interface ITransformNode
     {

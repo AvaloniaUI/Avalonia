@@ -26,7 +26,7 @@ namespace Avalonia.Media.Fonts
         }
 
         /// <summary>
-        /// Searches for font assets at a given location and returns a quanity of found assets
+        /// Searches for font assets at a given location and returns a quantity of found assets
         /// </summary>
         /// <param name="location"></param>
         /// <returns></returns>

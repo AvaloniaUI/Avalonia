@@ -35,6 +35,9 @@ Install-Package Avalonia.Desktop
 Try out the latest build of Avalonia available for download here:
 https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
 
+or use nightly build feeds as described here:
+https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed
+
 ## Documentation
 
 As mentioned above, Avalonia is still in beta and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).

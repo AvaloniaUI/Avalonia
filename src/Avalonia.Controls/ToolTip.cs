@@ -55,7 +55,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
         /// <summary>
-        /// Stores the curernt <see cref="ToolTip"/> instance in the control.
+        /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
         private static readonly AttachedProperty<ToolTip> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");

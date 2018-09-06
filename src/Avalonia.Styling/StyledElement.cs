@@ -4,7 +4,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -160,7 +159,7 @@ namespace Avalonia
         /// <para>
         /// Even though this property can be set, the setter is only intended for use in object
         /// initializers. Assigning to this property does not change the underlying collection,
-        /// it simply clears the existing collection and addds the contents of the assigned
+        /// it simply clears the existing collection and adds the contents of the assigned
         /// collection.
         /// </para>
         /// </remarks>
@@ -469,7 +468,7 @@ namespace Avalonia
 
                     if (newRoot == null)
                     {
-                        throw new AvaloniaInternalException("Parent is atttached to logical tree but cannot find root.");
+                        throw new AvaloniaInternalException("Parent is attached to logical tree but cannot find root.");
                     }
 
                     var e = new LogicalTreeAttachmentEventArgs(newRoot);
@@ -749,7 +748,7 @@ namespace Avalonia
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    throw new NotSupportedException("Reset should not be signalled on LogicalChildren collection");
+                    throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
             }
         }
 

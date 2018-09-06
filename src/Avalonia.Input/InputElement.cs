@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -177,7 +176,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> GotFocus
+        public event EventHandler<GotFocusEventArgs> GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }

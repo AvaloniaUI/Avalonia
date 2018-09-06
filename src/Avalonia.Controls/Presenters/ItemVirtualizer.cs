@@ -8,7 +8,6 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {

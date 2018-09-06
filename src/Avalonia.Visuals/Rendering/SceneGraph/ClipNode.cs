@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 
 namespace Avalonia.Rendering.SceneGraph
 {

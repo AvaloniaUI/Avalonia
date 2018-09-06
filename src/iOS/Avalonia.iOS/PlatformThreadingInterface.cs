@@ -1,15 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Text;
 using System.Threading;
-using CoreAnimation;
-using Foundation;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Threading;
+using Foundation;
 
 namespace Avalonia.iOS
 {

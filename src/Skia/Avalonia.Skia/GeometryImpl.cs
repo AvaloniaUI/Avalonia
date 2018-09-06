@@ -108,7 +108,7 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
-        /// Invalidate all caches. Call after chaning path contents.
+        /// Invalidate all caches. Call after chaining path contents.
         /// </summary>
         protected void InvalidateCaches()
         {

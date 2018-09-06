@@ -1,11 +1,11 @@
-using ObjCRuntime;
+using System;
+using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using System;
-using System.ComponentModel;
-using System.Linq;
+using ObjCRuntime;
 using UIKit;
 
 namespace Avalonia.iOS.Specific
@@ -122,7 +122,7 @@ namespace Avalonia.iOS.Specific
             _lastFocusedElement = element;
         }
 
-        public void ActivateAutoShowKeybord()
+        public void ActivateAutoShowKeyboard()
         {
             var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
 

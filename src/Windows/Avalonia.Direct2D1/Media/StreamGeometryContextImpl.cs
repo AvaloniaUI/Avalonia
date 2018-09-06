@@ -1,13 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
-using SweepDirection = SharpDX.Direct2D1.SweepDirection;
 using D2D = SharpDX.Direct2D1;
-using Avalonia.Logging;
-using System;
+using SweepDirection = SharpDX.Direct2D1.SweepDirection;
 
 namespace Avalonia.Direct2D1.Media
 {

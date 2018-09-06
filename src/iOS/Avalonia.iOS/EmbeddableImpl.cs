@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reactive.Disposables;
-using System.Text;
 using Avalonia.Platform;
-using UIKit;
 
 namespace Avalonia.iOS
 {

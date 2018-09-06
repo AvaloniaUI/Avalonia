@@ -32,10 +32,7 @@ namespace Avalonia.Controls
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
         private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel
-            {                
-                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
-            });
+            new FuncTemplate<IPanel>(() => new StackPanel());
 
         private TreeView _treeView;
         private bool _isExpanded;
@@ -127,7 +124,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnKeyDown(e);
+            // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
         }
     }
 }

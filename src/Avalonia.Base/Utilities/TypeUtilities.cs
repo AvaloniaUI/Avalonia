@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -103,8 +102,8 @@ namespace Avalonia.Utilities
         /// <param name="to">The type to cast to.</param>
         /// <param name="value">The value to cast.</param>
         /// <param name="culture">The culture to use.</param>
-        /// <param name="result">If sucessful, contains the cast value.</param>
-        /// <returns>True if the cast was sucessful, otherwise false.</returns>
+        /// <param name="result">If successful, contains the cast value.</param>
+        /// <returns>True if the cast was successful, otherwise false.</returns>
         public static bool TryConvert(Type to, object value, CultureInfo culture, out object result)
         {
             if (value == null)
@@ -208,8 +207,8 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="to">The type to cast to.</param>
         /// <param name="value">The value to cast.</param>
-        /// <param name="result">If sucessful, contains the cast value.</param>
-        /// <returns>True if the cast was sucessful, otherwise false.</returns>
+        /// <param name="result">If successful, contains the cast value.</param>
+        /// <returns>True if the cast was successful, otherwise false.</returns>
         public static bool TryConvertImplicit(Type to, object value, out object result)
         {
             if (value == null)
@@ -315,7 +314,7 @@ namespace Avalonia.Utilities
         /// Determines if a type is numeric.  Nullable numeric types are considered numeric.
         /// </summary>
         /// <returns>
-        /// True if the type is numberic; otherwise false.
+        /// True if the type is numeric; otherwise false.
         /// </returns>
         /// <remarks>
         /// Boolean is not considered numeric.
