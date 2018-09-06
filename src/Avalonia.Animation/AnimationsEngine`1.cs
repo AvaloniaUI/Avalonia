@@ -39,10 +39,10 @@ namespace Avalonia.Animation
 
         public AnimationsEngine(Animation animation, Animatable control, Animator<T> animator, Action OnComplete, Func<double, T, T> Interpolator)
         {
-            if (animation.SpeedRatio <= 0 || DoubleUtils.AboutEqual(animation.SpeedRatio, 0))
+            if (animation.SpeedRatio <= 0)
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
 
-            if (animation.Duration.TotalSeconds <= 0 || DoubleUtils.AboutEqual(animation.Duration.TotalSeconds, 0))
+            if (animation.Duration.TotalSeconds <= 0)
                 throw new InvalidOperationException("Duration cannot be negative or zero.");
 
             _parent = animator;

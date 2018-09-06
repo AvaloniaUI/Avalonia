@@ -59,12 +59,12 @@ namespace Avalonia.Animation
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
-                if (DoubleUtils.AboutEqual(t, 0.0) || t < 0.0)
+                if (t <= 0.0)
                 {
                     firstCue = _convertedKeyframes[0];
                     lastCue = _convertedKeyframes[1];
                 }
-                else if (DoubleUtils.AboutEqual(t, 1.0) || t > 1.0)
+                else if (t >= 1.0)
                 {
                     firstCue = _convertedKeyframes[_convertedKeyframes.Count - 2];
                     lastCue = _convertedKeyframes[_convertedKeyframes.Count - 1];
@@ -143,11 +143,11 @@ namespace Avalonia.Animation
             // Check if there's start and end keyframes.
             foreach (var frame in _convertedKeyframes)
             {
-                if (DoubleUtils.AboutEqual(frame.Cue.CueValue, 0.0))
+                if (frame.Cue.CueValue == 0.0d)
                 {
                     hasStartKey = true;
                 }
-                else if (DoubleUtils.AboutEqual(frame.Cue.CueValue, 1.0))
+                else if (frame.Cue.CueValue == 1.0d)
                 {
                     hasEndKey = true;
                 }
