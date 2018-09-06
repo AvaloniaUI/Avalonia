@@ -16,12 +16,11 @@ namespace Avalonia.Animation
     public class TransitionsEngine : SingleSubscriberObservableBase<double>
     {
         private IDisposable timerSubscription;
-        private readonly TimeSpan startTime;
-        private readonly TimeSpan duration;
+        private TimeSpan startTime;
+        private TimeSpan duration;
 
         public TransitionsEngine(TimeSpan Duration)
         {
-            startTime = Timing.GetTickCount();
             duration = Duration;
         }
 
@@ -46,6 +45,7 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
+            startTime = Timing.GetTickCount();
             timerSubscription = Timing
                                 .AnimationsTimer
                                 .Subscribe(t => TimerTick(t));
