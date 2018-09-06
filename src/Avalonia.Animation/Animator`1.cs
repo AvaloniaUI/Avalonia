@@ -86,10 +86,18 @@ namespace Avalonia.Animation
 
             double t0 = firstCue.Key;
             double t1 = lastCue.Key;
-            var intraframeTime = (t - t0) / (t1 - t0);
-            var firstFrameData = (firstCue.Value.frame.GetTypedValue<T>(), firstCue.Value.isNeutral);
-            var lastFrameData = (lastCue.Value.frame.GetTypedValue<T>(), lastCue.Value.isNeutral);
-            return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
+            if (t0 != t1)
+            {
+                var intraframeTime = (t - t0) / (t1 - t0);
+                var firstFrameData = (firstCue.Value.frame.GetTypedValue<T>(), firstCue.Value.isNeutral);
+                var lastFrameData = (lastCue.Value.frame.GetTypedValue<T>(), lastCue.Value.isNeutral);
+                return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
+            }
+            else
+            {
+                var frameData = (firstCue.Value.frame.GetTypedValue<T>(), firstCue.Value.isNeutral);
+                return (0.0, new KeyFramePair<T>(frameData, frameData));
+            }
         }
 
 
