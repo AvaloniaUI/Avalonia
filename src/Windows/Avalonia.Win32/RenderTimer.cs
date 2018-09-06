@@ -34,7 +34,7 @@ namespace Avalonia.Win32
             EnsureTimerQueueCreated();
             var msPerFrame = 1000 / FramesPerSecond;
 
-            timerDelegate = (_, __) => tick(TimeStampToFrames());
+            timerDelegate = (_, __) => tick(Environment.TickCount);
 
             UnmanagedMethods.CreateTimerQueueTimer(
                 out var timer,

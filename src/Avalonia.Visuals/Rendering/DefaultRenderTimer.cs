@@ -85,7 +85,7 @@ namespace Avalonia.Rendering
                 _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Stopwatch.GetTimestamp()));
+            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Environment.TickCount));
         }
 
         /// <summary>
