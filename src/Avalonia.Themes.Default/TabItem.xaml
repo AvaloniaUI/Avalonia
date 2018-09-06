@@ -3,12 +3,9 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="2 1"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <ContentPresenter
+                <ContentPresenter 
                     Name="PART_ContentPresenter"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -17,7 +14,6 @@
                     Content="{TemplateBinding Header}"
                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                    Margin="{TemplateBinding Margin}"
                     Padding="{TemplateBinding Padding}"/>
             </ControlTemplate>
         </Setter>
