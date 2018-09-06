@@ -1,12 +1,12 @@
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
-using Avalonia.Platform;
-using Avalonia.Win32.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.Platform;
+using Avalonia.Platform;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {

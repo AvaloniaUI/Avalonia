@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Converters
 {

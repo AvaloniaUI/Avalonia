@@ -5,7 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
-{   
+{
     public sealed class DrawingContext : IDisposable
     {
         private int _currentLevel;
@@ -205,7 +205,7 @@ namespace Avalonia.Media
 
 
         /// <summary>
-        /// Pushes a clip rectange.
+        /// Pushes a clip rectangle.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         /// <returns>A disposable used to undo the clip rectangle.</returns>

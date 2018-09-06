@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 /*
  We are keeping copies of core events here, so they can be used 
  without referencing Avalonia itself, e. g. from projects that

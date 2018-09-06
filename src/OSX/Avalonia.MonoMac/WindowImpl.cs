@@ -1,9 +1,9 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
-using Avalonia.Threading;
 
 namespace Avalonia.MonoMac
 {

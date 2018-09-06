@@ -595,7 +595,7 @@ namespace Avalonia.RenderHelpers
                     double cos4 = Math.Cos(4 * eta);
                     double cos6 = Math.Cos(6 * eta);
 
-                    // select the right coeficients set according to degree and b/a
+                    // select the right coefficients set according to degree and b/a
                     double[][][] coeffs;
                     double[] safety;
                     if (degree == 2)
@@ -654,7 +654,7 @@ namespace Avalonia.RenderHelpers
                 if (IsPieSlice)
                 {
                     // check the location of the test point with respect to the
-                    // angular sector counted from the centre of the ellipse
+                    // angular sector counted from the center of the ellipse
                     double dxC = x - Cx;
                     double dyC = y - Cy;
                     double u = dxC * _cosTheta + dyC * _sinTheta;

@@ -6,8 +6,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
-using Avalonia.Data;
-using Avalonia.Logging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Plugins

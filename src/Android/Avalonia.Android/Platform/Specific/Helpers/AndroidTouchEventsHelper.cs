@@ -1,10 +1,8 @@
-using Android.Graphics;
+using System;
 using Android.Views;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.Platform;
-using System;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {

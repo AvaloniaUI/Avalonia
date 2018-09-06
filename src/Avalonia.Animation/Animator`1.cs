@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Avalonia.Collections;
-using System.ComponentModel;
-using Avalonia.Animation.Utils;
-using System.Reactive.Linq;
 using System.Linq;
+using System.Reactive.Linq;
+using Avalonia.Animation.Utils;
+using Avalonia.Collections;
 using Avalonia.Data;
-using System.Reactive.Disposables;
 
 namespace Avalonia.Animation
 {
@@ -20,8 +17,8 @@ namespace Avalonia.Animation
         /// List of type-converted keyframes.
         /// </summary>
         private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
-
-        private bool isVerfifiedAndConverted;
+ 
+        private bool _isVerifiedAndConverted;
 
         /// <summary>
         /// Gets or sets the target property for the keyframe.
@@ -31,13 +28,13 @@ namespace Avalonia.Animation
         public Animator()
         {
             // Invalidate keyframes when changed.
-            this.CollectionChanged += delegate { isVerfifiedAndConverted = false; };
+             this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
         }
 
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> Match, Action onComplete)
         {
-            if (!isVerfifiedAndConverted)
+             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
             return Match
@@ -140,8 +137,7 @@ namespace Avalonia.Animation
                 _convertedKeyframes.Add(keyframe);
             }
 
-            isVerfifiedAndConverted = true;
-
+            _isVerifiedAndConverted = true;
         }
 
         private void AddNeutralKeyFramesIfNeeded()

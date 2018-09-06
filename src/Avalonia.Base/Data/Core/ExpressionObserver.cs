@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia.Data;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Reactive;

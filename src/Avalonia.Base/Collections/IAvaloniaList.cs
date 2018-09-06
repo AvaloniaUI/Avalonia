@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Avalonia.Collections
 {
     /// <summary>
-    /// A notiftying list.
+    /// A notifying list.
     /// </summary>
     /// <typeparam name="T">The type of the items in the list.</typeparam>
     public interface IAvaloniaList<T> : IList<T>, IAvaloniaReadOnlyList<T>

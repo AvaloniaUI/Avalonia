@@ -23,7 +23,7 @@ namespace Avalonia.Media
         public event EventHandler Changed;
 
         /// <summary>
-        /// Gets the tranform's <see cref="Matrix"/>.
+        /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public abstract Matrix Value { get; }
 

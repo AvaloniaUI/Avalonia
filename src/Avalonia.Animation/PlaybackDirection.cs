@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Avalonia.Animation
+﻿namespace Avalonia.Animation
 {
     /// <summary>
     /// Determines the playback direction of an animation.

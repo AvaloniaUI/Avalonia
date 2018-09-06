@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using SharpDX;
 using SharpDX.DXGI;
