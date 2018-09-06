@@ -1,4 +1,7 @@
-﻿using Avalonia.Platform;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;

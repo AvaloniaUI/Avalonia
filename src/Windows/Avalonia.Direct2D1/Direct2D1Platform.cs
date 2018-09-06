@@ -29,6 +29,8 @@ namespace Avalonia.Direct2D1
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
+        public static SharpDX.Direct3D11.Device Direct3D11Device { get; private set; }
+
         public static SharpDX.Direct2D1.Factory1 Direct2D1Factory { get; private set; }
 
         public static SharpDX.Direct2D1.Device1 Direct2D1Device { get; private set; }
@@ -88,14 +90,12 @@ namespace Avalonia.Direct2D1
                     SharpDX.Direct3D.FeatureLevel.Level_9_1,
                 };
 
-                using (var d3dDevice = new SharpDX.Direct3D11.Device(
+                Direct3D11Device = new SharpDX.Direct3D11.Device(
                     SharpDX.Direct3D.DriverType.Hardware,
-                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | 
-                    SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
-                    featureLevels))
-                {
-                    DxgiDevice = d3dDevice.QueryInterface<SharpDX.DXGI.Device1>();
-                }
+                    SharpDX.Direct3D11.DeviceCreationFlags.BgraSupport | SharpDX.Direct3D11.DeviceCreationFlags.VideoSupport,
+                    featureLevels);
+
+                DxgiDevice = Direct3D11Device.QueryInterface<SharpDX.DXGI.Device1>();
 
                 using (var device = new SharpDX.Direct2D1.Device(Direct2D1Factory, DxgiDevice))
                 {

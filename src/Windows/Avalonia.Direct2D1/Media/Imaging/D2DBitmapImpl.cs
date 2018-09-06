@@ -1,19 +1,20 @@
 ﻿using System;
 using System.IO;
 using SharpDX.Direct2D1;
-using ImageParameters = SharpDX.WIC.ImageParameters;
-using ImagingFactory2 = SharpDX.WIC.ImagingFactory2;
-using PngBitmapEncoder = SharpDX.WIC.PngBitmapEncoder;
-using WICFactory = SharpDX.WIC.ImagingFactory;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using SharpDX.WIC;
+
+    using Bitmap = SharpDX.Direct2D1.Bitmap;
+    using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+
     /// <summary>
     /// A Direct2D Bitmap implementation that uses a GPU memory bitmap as its image.
     /// </summary>
     public class D2DBitmapImpl : BitmapImpl
     {
-        private Bitmap _direct2DBitmap;
+        private readonly Bitmap _direct2DBitmap;
 
         /// <summary>
         /// Initialize a new instance of the <see cref="BitmapImpl"/> class
@@ -29,7 +30,7 @@ namespace Avalonia.Direct2D1.Media
         {
             _direct2DBitmap = d2DBitmap ?? throw new ArgumentNullException(nameof(d2DBitmap));
         }
-              
+
         public override int PixelWidth => _direct2DBitmap.PixelSize.Width;
         public override int PixelHeight => _direct2DBitmap.PixelSize.Height;
 
@@ -47,18 +48,12 @@ namespace Avalonia.Direct2D1.Media
         public override void Save(Stream stream)
         {
             using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
-            using (var frameEncode = new SharpDX.WIC.BitmapFrameEncode(encoder))
-            //ToDo: Not supported under Windows 7!
-            using (var imageEncoder = new SharpDX.WIC.ImageEncoder((ImagingFactory2)Direct2D1Platform.ImagingFactory, null))
+            using (var frame = new BitmapFrameEncode(encoder))
+            using (var bitmapSource = _direct2DBitmap.QueryInterface<BitmapSource>())
             {
-                var parameters = new ImageParameters(
-                    new PixelFormat(SharpDX.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied),
-                    _direct2DBitmap.DotsPerInch.Width,
-                    _direct2DBitmap.DotsPerInch.Height,
-                    0, 0, PixelWidth, PixelHeight);
-
-                imageEncoder.WriteFrame(_direct2DBitmap, frameEncode, parameters);
-                frameEncode.Commit();
+                frame.Initialize();
+                frame.WriteSource(bitmapSource);
+                frame.Commit();
                 encoder.Commit();
             }
         }
