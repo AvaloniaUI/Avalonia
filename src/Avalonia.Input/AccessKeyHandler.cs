@@ -49,7 +49,7 @@ namespace Avalonia.Input
         private bool _altIsDown;
 
         /// <summary>
-        /// Element to restore folowing AltKey taking focus.
+        /// Element to restore following AltKey taking focus.
         /// </summary>
         private IInputElement _restoreFocusElement;
 

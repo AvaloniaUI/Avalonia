@@ -1,18 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Animation.Easings;
-using Avalonia.Animation;
-using Avalonia.Collections;
-using Avalonia.Metadata;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Reflection;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Reactive.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Avalonia.Animation.Easings;
+using Avalonia.Collections;
 
 namespace Avalonia.Animation
 {

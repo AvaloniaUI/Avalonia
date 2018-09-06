@@ -41,7 +41,7 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
-        /// Gets the immedate result of the selector match, in the case of selectors that cannot
+        /// Gets the immediate result of the selector match, in the case of selectors that cannot
         /// change over time.
         /// </summary>
         public bool? ImmediateResult { get; }

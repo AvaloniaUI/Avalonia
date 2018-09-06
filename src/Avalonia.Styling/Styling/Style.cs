@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Reactive.Linq;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
-using Avalonia.Animation;
-using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
@@ -200,7 +198,7 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
-        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signalled to remove
+        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signaled to remove
         /// all applied styles.
         /// </summary>
         /// <param name="control">The control.</param>

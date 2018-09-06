@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
 namespace Avalonia.Styling
 {

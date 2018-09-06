@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
 using Avalonia.Threading;

@@ -1,8 +1,8 @@
-﻿using __u32 = System.UInt32;
+﻿using System;
+using System.Runtime.InteropServices;
 using __s32 = System.Int32;
 using __u16 = System.UInt16;
-using System;
-using System.Runtime.InteropServices;
+using __u32 = System.UInt32;
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable ArrangeTypeMemberModifiers
 // ReSharper disable BuiltInTypeReferenceStyle
@@ -69,7 +69,7 @@ namespace Avalonia.LinuxFramebuffer
         FB_VBLANK_HAVE_VCOUNT = 0x020 /* the vcount field is valid */,
         FB_VBLANK_HAVE_HCOUNT = 0x040 /* the hcount field is valid */,
         FB_VBLANK_VSYNCING = 0x080 /* currently in a vsync */,
-        FB_VBLANK_HAVE_VSYNC = 0x100 /* verical syncs can be detected */
+        FB_VBLANK_HAVE_VSYNC = 0x100 /* vertical syncs can be detected */
     }
 
     [StructLayout(LayoutKind.Sequential)]

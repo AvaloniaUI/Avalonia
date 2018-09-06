@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Data.Core;
+﻿using Avalonia.Data.Core;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {

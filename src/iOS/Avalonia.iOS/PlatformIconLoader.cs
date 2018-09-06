@@ -1,5 +1,5 @@
-﻿using Avalonia.Platform;
-using System.IO;
+﻿using System.IO;
+using Avalonia.Platform;
 
 namespace Avalonia.iOS
 {
