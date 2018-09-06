@@ -24,7 +24,6 @@
                         <DockPanel>
                             <ItemsPresenter
                                 Name="PART_ItemsPresenter"
-                                DockPanel.Dock="Top"
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
@@ -44,31 +43,22 @@
             </ControlTemplate>
         </Setter>
     </Style>
+    <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
+        <Setter Property="DockPanel.Dock" Value="Top"/>
+    </Style>
     <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Bottom"/>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Left]">
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
     <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter">
-        <Setter Property="DockPanel.Dock" Value="Left"/>       
+        <Setter Property="DockPanel.Dock" Value="Left"/>
     </Style>
-    <Style Selector="TabControl[TabStripPlacement=Right]">
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
+    <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter">
-        <Setter Property="DockPanel.Dock" Value="Right"/>       
+        <Setter Property="DockPanel.Dock" Value="Right"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
     </Style>
 </Styles>
