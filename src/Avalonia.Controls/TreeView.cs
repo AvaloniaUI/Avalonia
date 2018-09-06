@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -31,6 +33,14 @@ namespace Avalonia.Controls
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v);
 
+        /// <summary>
+        /// Defines the <see cref="SelectedItemChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SelectionChangedEventArgs> SelectedItemChangedEvent =
+            RoutedEvent.Register<TreeView, SelectionChangedEventArgs>(
+                "SelectedItemChanged",
+                RoutingStrategies.Bubble);
+
         private object _selectedItem;
 
         /// <summary>
@@ -39,6 +49,15 @@ namespace Avalonia.Controls
         static TreeView()
         {
             // HACK: Needed or SelectedItem property will not be found in Release build.
+        }
+
+        /// <summary>
+        /// Occurs when the control's selection changes.
+        /// </summary>
+        public event EventHandler<SelectionChangedEventArgs> SelectedItemChanged
+        {
+            add { AddHandler(SelectedItemChangedEvent, value); }
+            remove { RemoveHandler(SelectedItemChangedEvent, value); }
         }
 
         /// <summary>
@@ -74,6 +93,7 @@ namespace Avalonia.Controls
                     MarkContainerSelected(container, false);
                 }
 
+                var oldItem = _selectedItem;
                 SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
 
                 if (_selectedItem != null)
@@ -85,6 +105,28 @@ namespace Avalonia.Controls
                     {
                         container.BringIntoView();
                     }
+                }
+
+                if (oldItem != _selectedItem)
+                {
+                    // Fire the SelectionChanged event
+                    List<object> removed = new List<object>();
+                    if (oldItem != null)
+                    {
+                        removed.Add(oldItem);
+                    }
+
+                    List<object> added = new List<object>();
+                    if (_selectedItem != null)
+                    {
+                        added.Add(_selectedItem);
+                    }
+
+                    var changed = new SelectionChangedEventArgs(
+                        SelectedItemChangedEvent,
+                        added,
+                        removed);
+                    RaiseEvent(changed);
                 }
             }
         }
