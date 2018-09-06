@@ -42,7 +42,7 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 RenderTransformOrigin="0.5,0.5"
-                Fill="#FF000000"
+                Fill="{DynamicResource ThemeForegroundBrush}"
                 Stretch="Fill"
                 Data="M8.1772461,11.029181 L10.433105,11.029181 L11.700684,12.801641 L12.973633,11.029181 L15.191895,11.029181 L12.844727,13.999395 L15.21875,17.060919 L12.962891,17.060919 L11.673828,15.256231 L10.352539,17.060919 L8.1396484,17.060919 L10.519043,14.042364 z" />
           
@@ -103,7 +103,7 @@
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
   </Style>
   <Style Selector="CalendarDayButton:today /template/ ContentControl#Content">
-    <Setter Property="Foreground" Value="#FFFFFFFF"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeControlLightBrush}"/>
   </Style>
 
   <Style Selector="CalendarDayButton /template/ Path#BlackoutVisual">

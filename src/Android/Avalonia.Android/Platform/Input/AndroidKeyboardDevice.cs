@@ -1,12 +1,11 @@
-using System;
-using Avalonia.Input;
 //using Android.InputMethodServices;
 using System.Collections.Generic;
 using Android.Views;
+using Avalonia.Input;
 
 namespace Avalonia.Android.Platform.Input
 {
-  public class AndroidKeyboardDevice : KeyboardDevice, IKeyboardDevice {
+    public class AndroidKeyboardDevice : KeyboardDevice, IKeyboardDevice {
     private static readonly Dictionary<Keycode, Key> KeyDic = new Dictionary<Keycode, Key>
      {
          //   { Keycode.Cancel?, Key.Cancel },

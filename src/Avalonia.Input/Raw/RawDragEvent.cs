@@ -1,8 +1,4 @@
-﻿using System;
-using Avalonia.Input;
-using Avalonia.Input.Raw;
-
-namespace Avalonia.Input.Raw
+﻿namespace Avalonia.Input.Raw
 {
     public class RawDragEvent : RawInputEventArgs
     {

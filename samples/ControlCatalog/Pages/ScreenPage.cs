@@ -42,7 +42,11 @@ namespace ControlCatalog.Pages
                     context.DrawRectangle(p, boundsRect);
                     context.DrawRectangle(p, workingAreaRect);
                     
-                    FormattedText text = new FormattedText();
+                    FormattedText text = new FormattedText()
+                    {
+                        Typeface = Typeface.Default
+                    };
+
                     text.Text = $"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}";
                     context.DrawText(Brushes.Black, boundsRect.Position.WithY(boundsRect.Size.Height), text);
                     

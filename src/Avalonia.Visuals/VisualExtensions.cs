@@ -2,15 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Reactive.Linq;
-using Avalonia.Animation;
-using Avalonia.Collections;
-using Avalonia.Data;
-using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 

@@ -2,18 +2,21 @@
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
+using AlphaMode = SharpDX.Direct2D1.AlphaMode;
+using Device = SharpDX.Direct2D1.Device;
+using Factory = SharpDX.Direct2D1.Factory;
+using Factory2 = SharpDX.DXGI.Factory2;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+
+using AlphaMode = SharpDX.Direct2D1.AlphaMode;
+using DeviceContext = SharpDX.Direct2D1.DeviceContext;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 
 namespace Avalonia.Direct2D1
-{
-
-    using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-    using DeviceContext = SharpDX.Direct2D1.DeviceContext;
-    using PixelFormat = SharpDX.Direct2D1.PixelFormat;
-
+{   
     public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;

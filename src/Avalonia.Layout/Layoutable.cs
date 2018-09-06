@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Avalonia.Logging;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -654,7 +653,7 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Tests whether any of a <see cref="Rect"/>'s properties incude nagative values,
+        /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,
         /// a NaN or Infinity.
         /// </summary>
         /// <param name="rect">The rect.</param>
@@ -669,7 +668,7 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Tests whether any of a <see cref="Size"/>'s properties incude nagative values,
+        /// Tests whether any of a <see cref="Size"/>'s properties include negative values,
         /// a NaN or Infinity.
         /// </summary>
         /// <param name="size">The size.</param>

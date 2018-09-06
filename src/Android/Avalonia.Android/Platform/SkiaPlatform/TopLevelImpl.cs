@@ -1,18 +1,15 @@
-using Android.App;
+using System;
+using System.Collections.Generic;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
-using Avalonia.Android.Platform.Input;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android.Platform.SkiaPlatform

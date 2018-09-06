@@ -40,6 +40,9 @@
       </ControlTemplate>
     </Setter>
   </Style>
+  <Style Selector="CheckBox:invalid /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="IsVisible" Value="False"/>
+  </Style>
   <Style Selector="CheckBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
   </Style>

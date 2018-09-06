@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using SharpDX.Direct2D1;
-using ImagingFactory2 = SharpDX.WIC.ImagingFactory2;
 using ImageParameters = SharpDX.WIC.ImageParameters;
+using ImagingFactory2 = SharpDX.WIC.ImagingFactory2;
 using PngBitmapEncoder = SharpDX.WIC.PngBitmapEncoder;
+using WICFactory = SharpDX.WIC.ImagingFactory;
 
 namespace Avalonia.Direct2D1.Media
 {

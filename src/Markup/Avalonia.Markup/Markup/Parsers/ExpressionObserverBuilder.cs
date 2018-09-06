@@ -1,9 +1,7 @@
-﻿using Avalonia.Data.Core;
-using Avalonia.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Reactive;
-using System.Text;
+using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {

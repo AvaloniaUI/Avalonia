@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -21,12 +20,12 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="rect">The dirt rectangle.</param>
         /// <remarks>
-        /// We probably want to do this more intellegently because:
+        /// We probably want to do this more intelligently because:
         /// - Adding e.g. the top left quarter of a scene and the bottom left quarter of a scene
         ///   will cause the whole scene to be invalidated if they overlap by a single pixel
         /// - Adding two adjacent rectangles that don't overlap will not cause them to be 
         /// coalesced
-        /// - It only coaleces the first intersecting rectangle found - one needs to
+        /// - It only coalesces the first intersecting rectangle found - one needs to
         ///  call <see cref="Coalesce"/> at the end of the draw cycle to coalesce the rest.
         /// </remarks>
         public void Add(Rect rect)

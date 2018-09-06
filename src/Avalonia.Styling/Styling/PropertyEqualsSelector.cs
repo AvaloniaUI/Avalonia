@@ -60,7 +60,7 @@ namespace Avalonia.Styling
 
                 builder.Append(_property.Name);
                 builder.Append('=');
-                builder.Append(_value);
+                builder.Append(_value ?? string.Empty);
                 builder.Append(']');
 
                 _selectorString = builder.ToString();
@@ -78,11 +78,11 @@ namespace Avalonia.Styling
             }
             else if (subscribe)
             {
-                return new SelectorMatch(control.GetObservable(_property).Select(v => Equals(v, _value)));
+                return new SelectorMatch(control.GetObservable(_property).Select(v => Equals(v ?? string.Empty, _value)));
             }
             else
             {
-                return new SelectorMatch(control.GetValue(_property).Equals(_value));
+                return new SelectorMatch((control.GetValue(_property) ?? string.Empty).Equals(_value));
             }
         }
 

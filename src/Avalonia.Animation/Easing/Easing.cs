@@ -1,10 +1,7 @@
-using Avalonia.Collections;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Avalonia.Animation.Easings
 {

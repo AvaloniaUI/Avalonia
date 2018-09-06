@@ -6,11 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
-using JetBrains.Annotations;
 
 namespace Avalonia.Data
 {
