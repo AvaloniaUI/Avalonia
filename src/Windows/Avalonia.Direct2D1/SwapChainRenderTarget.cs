@@ -1,19 +1,13 @@
-﻿using Avalonia.Direct2D1.Media;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
-using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-using Device = SharpDX.Direct2D1.Device;
-using Factory = SharpDX.Direct2D1.Factory;
-using Factory2 = SharpDX.DXGI.Factory2;
-using PixelFormat = SharpDX.Direct2D1.PixelFormat;
-
-using AlphaMode = SharpDX.Direct2D1.AlphaMode;
-using DeviceContext = SharpDX.Direct2D1.DeviceContext;
-using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 
 namespace Avalonia.Direct2D1
 {   
@@ -109,9 +103,9 @@ namespace Avalonia.Direct2D1
                 _deviceContext,
                 dxgiBackBuffer,
                 new BitmapProperties1(
-                    new PixelFormat
+                    new SharpDX.Direct2D1.PixelFormat
                     {
-                        AlphaMode = AlphaMode.Premultiplied,
+                        AlphaMode = SharpDX.Direct2D1.AlphaMode.Premultiplied,
                         Format = Format.B8G8R8A8_UNorm
                     },
                     _savedSize.Width,
