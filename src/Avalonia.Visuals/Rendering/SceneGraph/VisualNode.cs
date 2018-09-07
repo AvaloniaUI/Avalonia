@@ -266,7 +266,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (OpacityMask != null)
             {
-                context.PushOpacityMask(OpacityMask, ClipBounds);
+                context.PushOpacityMask(OpacityMask, Bounds);
             }
         }
 
