@@ -77,8 +77,6 @@ namespace Avalonia.Win32
 
         public static void Initialize(bool deferredRendering = true)
         {
-            var clock = new RenderLoopClock();
-
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
@@ -87,7 +85,6 @@ namespace Avalonia.Win32
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
-                .Bind<Clock>().ToConstant(clock)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
@@ -97,8 +94,6 @@ namespace Avalonia.Win32
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-
-            AvaloniaLocator.Current.GetService<IRenderLoop>().Add(clock);
         }
 
         public bool HasMessages()
