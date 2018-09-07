@@ -49,6 +49,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
+        /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
         public static readonly StyledProperty<SizeToContent> SizeToContentProperty =
@@ -85,7 +86,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
 
         /// <summary>
-        /// Defines the <see cref="WindowStartupLocation"/> proeprty.
+        /// Defines the <see cref="WindowStartupLocation"/> property.
         /// </summary>
         public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
             AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
@@ -99,7 +100,7 @@ namespace Avalonia.Controls
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
-        private WindowStartupLocation _windowStartupLoction;
+        private WindowStartupLocation _windowStartupLocation;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -236,8 +237,8 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowStartupLocation WindowStartupLocation
         {
-            get { return _windowStartupLoction; }
-            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLoction, value); }
+            get { return _windowStartupLocation; }
+            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLocation, value); }
         }
 
         /// <inheritdoc/>
@@ -408,7 +409,7 @@ namespace Avalonia.Controls
         /// The type of the result produced by the dialog.
         /// </typeparam>
         /// <returns>.
-        /// A task that can be used to retrive the result of the dialog when it closes.
+        /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {

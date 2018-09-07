@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Shapes

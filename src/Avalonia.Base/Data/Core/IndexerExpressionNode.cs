@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core
 {

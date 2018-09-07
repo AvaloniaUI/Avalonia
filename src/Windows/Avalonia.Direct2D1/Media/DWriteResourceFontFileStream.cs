@@ -5,7 +5,7 @@ using SharpDX.DirectWrite;
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
-    /// This FontFileStream implem is reading data from a <see cref="DataStream"/>.
+    /// This FontFileStream implementation is reading data from a <see cref="DataStream"/>.
     /// </summary>
     public class DWriteResourceFontFileStream : CallbackBase, FontFileStream
     {

@@ -8,7 +8,6 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Diagnostics;
-using Avalonia.Platform;
 
 namespace Avalonia.Collections
 {

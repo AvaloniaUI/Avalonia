@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Sprache;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -36,79 +35,68 @@ namespace Avalonia.Markup.Parsers
         /// <returns>The parsed selector.</returns>
         public Selector Parse(string s)
         {
-            var syntax = SelectorGrammar.Selector.Parse(s);
+            var syntax = SelectorGrammar.Parse(s);
             var result = default(Selector);
 
             foreach (var i in syntax)
             {
-                var ofType = i as SelectorGrammar.OfTypeSyntax;
-                var @is = i as SelectorGrammar.IsSyntax;
-                var @class = i as SelectorGrammar.ClassSyntax;
-                var name = i as SelectorGrammar.NameSyntax;
-                var property = i as SelectorGrammar.PropertySyntax;
-                var child = i as SelectorGrammar.ChildSyntax;
-                var descendant = i as SelectorGrammar.DescendantSyntax;
-                var template = i as SelectorGrammar.TemplateSyntax;
+                switch (i)
+                {
 
-                if (ofType != null)
-                {
-                    result = result.OfType(_typeResolver(ofType.Xmlns, ofType.TypeName));
-                }
-                if (@is != null)
-                {
-                    result = result.Is(_typeResolver(@is.Xmlns, @is.TypeName));
-                }
-                else if (@class != null)
-                {
-                    result = result.Class(@class.Class);
-                }
-                else if (name != null)
-                {
-                    result = result.Name(name.Name);
-                }
-                else if (property != null)
-                {
-                    var type = result?.TargetType;
+                    case SelectorGrammar.OfTypeSyntax ofType:
+                        result = result.OfType(_typeResolver(ofType.Xmlns, ofType.TypeName));
+                        break;
+                    case SelectorGrammar.IsSyntax @is:
+                        result = result.Is(_typeResolver(@is.Xmlns, @is.TypeName));
+                        break;
+                    case SelectorGrammar.ClassSyntax @class:
+                        result = result.Class(@class.Class);
+                        break;
+                    case SelectorGrammar.NameSyntax name:
+                        result = result.Name(name.Name);
+                        break;
+                    case SelectorGrammar.PropertySyntax property:
+                        {
+                            var type = result?.TargetType;
 
-                    if (type == null)
-                    {
-                        throw new InvalidOperationException("Property selectors must be applied to a type.");
-                    }
+                            if (type == null)
+                            {
+                                throw new InvalidOperationException("Property selectors must be applied to a type.");
+                            }
 
-                    var targetProperty = AvaloniaPropertyRegistry.Instance.FindRegistered(type, property.Property);
+                            var targetProperty = AvaloniaPropertyRegistry.Instance.FindRegistered(type, property.Property);
 
-                    if (targetProperty == null)
-                    {
-                        throw new InvalidOperationException($"Cannot find '{property.Property}' on '{type}");
-                    }
+                            if (targetProperty == null)
+                            {
+                                throw new InvalidOperationException($"Cannot find '{property.Property}' on '{type}");
+                            }
 
-                    object typedValue;
+                            object typedValue;
 
-                    if (TypeUtilities.TryConvert(
-                            targetProperty.PropertyType, 
-                            property.Value, 
-                            CultureInfo.InvariantCulture,
-                            out typedValue))
-                    {
-                        result = result.PropertyEquals(targetProperty, typedValue);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException(
-                            $"Could not convert '{property.Value}' to '{targetProperty.PropertyType}");
-                    }
-                }
-                else if (child != null)
-                {
-                    result = result.Child();
-                }
-                else if (descendant != null)
-                {
-                    result = result.Descendant();
-                }
-                else if (template != null)
-                {
-                    result = result.Template();
+                            if (TypeUtilities.TryConvert(
+                                    targetProperty.PropertyType,
+                                    property.Value,
+                                    CultureInfo.InvariantCulture,
+                                    out typedValue))
+                            {
+                                result = result.PropertyEquals(targetProperty, typedValue);
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException(
+                                    $"Could not convert '{property.Value}' to '{targetProperty.PropertyType}");
+                            }
+                            break;
+                        }
+                    case SelectorGrammar.ChildSyntax child:
+                        result = result.Child();
+                        break;
+                    case SelectorGrammar.DescendantSyntax descendant:
+                        result = result.Descendant();
+                        break;
+                    case SelectorGrammar.TemplateSyntax template:
+                        result = result.Template();
+                        break;
                 }
             }
 

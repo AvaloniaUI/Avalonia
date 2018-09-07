@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -24,5 +26,10 @@ namespace Avalonia.Input
         /// Opens the menu in response to the Alt/F10 key.
         /// </summary>
         void Open();
+
+        /// <summary>
+        /// Occurs when the main menu closes.
+        /// </summary>
+        event EventHandler<RoutedEventArgs> MenuClosed;
     }
 }

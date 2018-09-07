@@ -3,13 +3,13 @@
 
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls.Mixins
 {
@@ -74,6 +74,12 @@ namespace Avalonia.Controls.Mixins
                             logicalChildren,
                             null,
                             presenter.GetValue(ContentPresenter.ChildProperty));
+
+                        if (subscriptions.Value.TryGetValue(sender, out IDisposable previousSubscription))
+                        {
+                            subscription = new CompositeDisposable(previousSubscription, subscription);
+                            subscriptions.Value.Remove(sender);
+                        }
 
                         subscriptions.Value.Add(sender, subscription);
                     }

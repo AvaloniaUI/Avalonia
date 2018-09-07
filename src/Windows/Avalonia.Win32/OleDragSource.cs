@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32

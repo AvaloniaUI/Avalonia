@@ -14,7 +14,7 @@ namespace Avalonia.Input
         IEnumerable<string> GetDataFormats();
 
         /// <summary>
-        /// Checks wether a given DataFormat is present in this object
+        /// Checks whether a given DataFormat is present in this object
         /// <seealso cref="DataFormats"/>
         /// </summary>
         bool Contains(string dataFormat);

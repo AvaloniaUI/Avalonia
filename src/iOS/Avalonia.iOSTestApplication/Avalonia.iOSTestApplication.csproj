@@ -186,4 +186,5 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\..\build\Rx.props" />
+  <Import Project="..\..\..\build\iOSWorkarounds.props" />
 </Project>

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -162,8 +161,8 @@ namespace Avalonia.Input
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
             KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
             TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
-            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnter);
-            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeave);
+            PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnterCore);
+            PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeaveCore);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
             PointerPressedEvent.AddClassHandler<InputElement>(x => x.OnPointerPressed);
             PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
@@ -177,7 +176,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the control receives focus.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> GotFocus
+        public event EventHandler<GotFocusEventArgs> GotFocus
         {
             add { AddHandler(GotFocusEvent, value); }
             remove { RemoveHandler(GotFocusEvent, value); }
@@ -445,7 +444,6 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerEnter(PointerEventArgs e)
         {
-            IsPointerOver = true;
         }
 
         /// <summary>
@@ -454,7 +452,6 @@ namespace Avalonia.Input
         /// <param name="e">The event args.</param>
         protected virtual void OnPointerLeave(PointerEventArgs e)
         {
-            IsPointerOver = false;
         }
 
         /// <summary>
@@ -492,6 +489,26 @@ namespace Avalonia.Input
         private static void IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
         {
             ((InputElement)e.Sender).UpdateIsEnabledCore();
+        }
+
+        /// <summary>
+        /// Called before the <see cref="PointerEnter"/> event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void OnPointerEnterCore(PointerEventArgs e)
+        {
+            IsPointerOver = true;
+            OnPointerEnter(e);
+        }
+
+        /// <summary>
+        /// Called before the <see cref="PointerLeave"/> event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void OnPointerLeaveCore(PointerEventArgs e)
+        {
+            IsPointerOver = false;
+            OnPointerLeave(e);
         }
 
         /// <summary>

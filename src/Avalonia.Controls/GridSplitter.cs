@@ -116,27 +116,27 @@ namespace Avalonia.Controls
 
             _orientation = DetectOrientation();
 
-            int defenitionIndex; //row or col
+            int definitionIndex; //row or col
             if (_orientation == Orientation.Vertical)
             {
                 Cursor = new Cursor(StandardCursorType.SizeWestEast);
                 _definitions = _grid.ColumnDefinitions.Cast<DefinitionBase>().ToList();
-                defenitionIndex = GetValue(Grid.ColumnProperty);
+                definitionIndex = GetValue(Grid.ColumnProperty);
                 PseudoClasses.Add(":vertical");
             }
             else
             {
                 Cursor = new Cursor(StandardCursorType.SizeNorthSouth);
-                defenitionIndex = GetValue(Grid.RowProperty);
+                definitionIndex = GetValue(Grid.RowProperty);
                 _definitions = _grid.RowDefinitions.Cast<DefinitionBase>().ToList();
                 PseudoClasses.Add(":horizontal");
             }
 
-            if (defenitionIndex > 0)
-                _prevDefinition = _definitions[defenitionIndex - 1];
+            if (definitionIndex > 0)
+                _prevDefinition = _definitions[definitionIndex - 1];
 
-            if (defenitionIndex < _definitions.Count - 1)
-                _nextDefinition = _definitions[defenitionIndex + 1];
+            if (definitionIndex < _definitions.Count - 1)
+                _nextDefinition = _definitions[definitionIndex + 1];
         }
 
         private Orientation DetectOrientation()

@@ -1,9 +1,7 @@
-﻿using Avalonia.Data.Core;
-using Avalonia.Utilities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Reactive;
-using System.Text;
+using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -15,10 +13,10 @@ namespace Avalonia.Markup.Parsers
             {
                 return (new EmptyExpressionNode(), default);
             }
-
-            var reader = new CharacterReader(expression);
+            
+            var reader = new CharacterReader(expression.AsSpan());
             var parser = new ExpressionParser(enableValidation, typeResolver);
-            var node = parser.Parse(reader);
+            var node = parser.Parse(ref reader);
 
             if (!reader.End)
             {

@@ -5,15 +5,15 @@
     </Style>
   </UserControl.Styles>
 
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">TextBlock</TextBlock>
     <TextBlock Classes="h2">A control that displays a block of text</TextBlock>
 
     <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
-              Gap="16">
-      <StackPanel Orientation="Vertical" Gap="8">
+              Spacing="16">
+      <StackPanel Orientation="Vertical" Spacing="8">
         <TextBlock>A simple TextBlock with unformatted text.</TextBlock>
         <TextBlock>
           A <Run Classes="code">TextBlock</Run> with <Run FontWeight="Bold">differing</Run>

@@ -3,11 +3,9 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Input;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
 {

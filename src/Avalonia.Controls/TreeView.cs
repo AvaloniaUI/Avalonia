@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -14,7 +15,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Displays a hierachical tree of data.
+    /// Displays a hierarchical tree of data.
     /// </summary>
     public class TreeView : ItemsControl, ICustomKeyboardNavigation
     {
@@ -32,6 +33,14 @@ namespace Avalonia.Controls
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v);
 
+        /// <summary>
+        /// Defines the <see cref="SelectedItemChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SelectionChangedEventArgs> SelectedItemChangedEvent =
+            RoutedEvent.Register<TreeView, SelectionChangedEventArgs>(
+                "SelectedItemChanged",
+                RoutingStrategies.Bubble);
+
         private object _selectedItem;
 
         /// <summary>
@@ -40,6 +49,15 @@ namespace Avalonia.Controls
         static TreeView()
         {
             // HACK: Needed or SelectedItem property will not be found in Release build.
+        }
+
+        /// <summary>
+        /// Occurs when the control's selection changes.
+        /// </summary>
+        public event EventHandler<SelectionChangedEventArgs> SelectedItemChanged
+        {
+            add { AddHandler(SelectedItemChangedEvent, value); }
+            remove { RemoveHandler(SelectedItemChangedEvent, value); }
         }
 
         /// <summary>
@@ -75,6 +93,7 @@ namespace Avalonia.Controls
                     MarkContainerSelected(container, false);
                 }
 
+                var oldItem = _selectedItem;
                 SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
 
                 if (_selectedItem != null)
@@ -86,6 +105,28 @@ namespace Avalonia.Controls
                     {
                         container.BringIntoView();
                     }
+                }
+
+                if (oldItem != _selectedItem)
+                {
+                    // Fire the SelectionChanged event
+                    List<object> removed = new List<object>();
+                    if (oldItem != null)
+                    {
+                        removed.Add(oldItem);
+                    }
+
+                    List<object> added = new List<object>();
+                    if (_selectedItem != null)
+                    {
+                        added.Add(_selectedItem);
+                    }
+
+                    var changed = new SelectionChangedEventArgs(
+                        SelectedItemChangedEvent,
+                        added,
+                        removed);
+                    RaiseEvent(changed);
                 }
             }
         }
@@ -134,6 +175,92 @@ namespace Avalonia.Controls
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0);
             }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            var direction = e.Key.ToNavigationDirection();
+
+            if (direction?.IsDirectional() == true && !e.Handled)
+            {
+                if (SelectedItem != null)
+                {
+                    var next = GetContainerInDirection(
+                        GetContainerFromEventSource(e.Source) as TreeViewItem,
+                        direction.Value,
+                        true);
+
+                    if (next != null)
+                    {
+                        FocusManager.Instance.Focus(next, NavigationMethod.Directional);
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
+                    SelectedItem = ElementAt(Items, 0);
+                }
+            }
+        }
+
+        private TreeViewItem GetContainerInDirection(
+            TreeViewItem from,
+            NavigationDirection direction,
+            bool intoChildren)
+        {
+            IItemContainerGenerator parentGenerator;
+
+            if (from?.Parent is TreeView treeView)
+            {
+                parentGenerator = treeView.ItemContainerGenerator;
+            }
+            else if (from?.Parent is TreeViewItem item)
+            {
+                parentGenerator = item.ItemContainerGenerator;
+            }
+            else
+            {
+                return null;
+            }
+
+            var index = parentGenerator.IndexFromContainer(from);
+            var parent = from.Parent as ItemsControl;
+            TreeViewItem result = null;
+
+            switch (direction)
+            {
+                case NavigationDirection.Up:
+                    if (index > 0)
+                    {
+                        var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
+                        result = previous.IsExpanded ?
+                            (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
+                            previous;
+                    }
+                    else
+                    {
+                        result = from.Parent as TreeViewItem;
+                    }
+
+                    break;
+
+                case NavigationDirection.Down:
+                    if (from.IsExpanded && intoChildren)
+                    {
+                        result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0);
+                    }
+                    else if (index < parent?.ItemCount - 1)
+                    {
+                        result = (TreeViewItem)parentGenerator.ContainerFromIndex(index + 1);
+                    }
+                    else if (parent is TreeViewItem parentItem)
+                    {
+                        return GetContainerInDirection(parentItem, direction, false);
+                    }
+                    break;
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

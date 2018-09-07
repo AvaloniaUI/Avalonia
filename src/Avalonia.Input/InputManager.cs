@@ -8,7 +8,7 @@ using Avalonia.Input.Raw;
 namespace Avalonia.Input
 {
     /// <summary>
-    /// Recieves input from the windowing subsystem and dispatches it to interested parties
+    /// Receives input from the windowing subsystem and dispatches it to interested parties
     /// for processing.
     /// </summary>
     public class InputManager : IInputManager

@@ -84,6 +84,11 @@ namespace Avalonia.Data
         /// </summary>
         public object Source { get; set; }
 
+        /// <summary>
+        /// Gets or sets the string format.
+        /// </summary>
+        public string StringFormat { get; set; }
+
         public WeakReference DefaultAnchor { get; set; }
 
         /// <summary>
@@ -145,7 +150,9 @@ namespace Avalonia.Data
             }
             else if (RelativeSource.Mode == RelativeSourceMode.Self)
             {
-                observer = CreateSourceObserver(target, node);
+                observer = CreateSourceObserver(
+                    (target as IStyledElement) ?? (anchor as IStyledElement),
+                    node);
             }
             else if (RelativeSource.Mode == RelativeSourceMode.TemplatedParent)
             {
@@ -181,11 +188,23 @@ namespace Avalonia.Data
                 fallback = null;
             }
 
+            var converter = Converter;
+            var targetType = targetProperty?.PropertyType ?? typeof(object);
+
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                converter = new StringFormatValueConverter(StringFormat, converter);
+            }
+
             var subject = new BindingExpression(
                 observer,
-                targetProperty?.PropertyType ?? typeof(object),
+                targetType,
                 fallback,
-                Converter ?? DefaultValueConverter.Instance,
+                converter ?? DefaultValueConverter.Instance,
                 ConverterParameter,
                 Priority);
 
@@ -303,7 +322,7 @@ namespace Avalonia.Data
         private IObservable<object> GetParentDataContext(IAvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
-            // seem unintuitive considering the fact that property inheritance works on the logical
+            // seem counter intuitive considering the fact that property inheritance works on the logical
             // tree, but consider a ContentControl with a ContentPresenter. The ContentControl's
             // Content property is bound to a value which becomes the ContentPresenter's 
             // DataContext - it is from this that the child hosted by the ContentPresenter needs to

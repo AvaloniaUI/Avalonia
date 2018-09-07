@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Data.Core.Parsers;
 
 namespace Avalonia.Data.Core
 {
@@ -17,6 +16,7 @@ namespace Avalonia.Data.Core
         /// </summary>
         /// <param name="column">The column position of the error.</param>
         /// <param name="message">The exception message.</param>
+        /// <param name="innerException">The exception that caused the parsing failure.</param>
         public ExpressionParseException(int column, string message, Exception innerException = null)
             : base(message, innerException)
         {

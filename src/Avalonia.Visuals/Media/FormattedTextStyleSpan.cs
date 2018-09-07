@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Avalonia.Media
+﻿namespace Avalonia.Media
 {
     /// <summary>
     /// Describes the formatting for a span of text in a <see cref="FormattedText"/> object.

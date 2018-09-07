@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         static Canvas()
         {
             ClipToBoundsProperty.OverrideDefaultValue<Canvas>(false);
-            AffectsCanvasArrange(LeftProperty, TopProperty, RightProperty, BottomProperty);
+            AffectsParentArrange<Canvas>(LeftProperty, TopProperty, RightProperty, BottomProperty);
         }
 
         /// <summary>
@@ -136,8 +136,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
+        /// <param name="wrap">Whether to wrap around when the first or last item is reached.</param>
         /// <returns>The control.</returns>
-        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from)
+        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from, bool wrap)
         {
             // TODO: Implement this
             return null;
@@ -205,30 +206,6 @@ namespace Avalonia.Controls
             }
 
             return finalSize;
-        }
-
-        /// <summary>
-        /// Marks a property on a child as affecting the canvas' arrangement.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        private static void AffectsCanvasArrange(params AvaloniaProperty[] properties)
-        {
-            foreach (var property in properties)
-            {
-                property.Changed.Subscribe(AffectsCanvasArrangeInvalidate);
-            }
-        }
-
-        /// <summary>
-        /// Calls <see cref="Layoutable.InvalidateArrange"/> on the parent of the control whose
-        /// property changed, if that parent is a canvas.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsCanvasArrangeInvalidate(AvaloniaPropertyChangedEventArgs e)
-        {
-            var control = e.Sender as IControl;
-            var canvas = control?.VisualParent as Canvas;
-            canvas?.InvalidateArrange();
         }
     }
 }

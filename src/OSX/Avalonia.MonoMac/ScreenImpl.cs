@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.Utilities;
+﻿using Avalonia.Platform;
 using MonoMac.AppKit;
 using MonoMac.Foundation;
 

@@ -72,7 +72,9 @@ namespace Avalonia.Interactivity
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            return new RoutedEvent<TEventArgs>(name, routingStrategy, typeof(TOwner));
+            var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, typeof(TOwner));
+            RoutedEventRegistry.Instance.Register(typeof(TOwner), routedEvent);
+            return routedEvent;
         }
 
         public static RoutedEvent<TEventArgs> Register<TEventArgs>(
@@ -83,7 +85,9 @@ namespace Avalonia.Interactivity
         {
             Contract.Requires<ArgumentNullException>(name != null);
 
-            return new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
+            var routedEvent = new RoutedEvent<TEventArgs>(name, routingStrategy, ownerType);
+            RoutedEventRegistry.Instance.Register(ownerType, routedEvent);
+            return routedEvent;
         }
 
         public IDisposable AddClassHandler(

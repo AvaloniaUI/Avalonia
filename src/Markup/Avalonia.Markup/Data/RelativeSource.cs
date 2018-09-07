@@ -21,7 +21,7 @@ namespace Avalonia.Data
         TemplatedParent,
 
         /// <summary>
-        /// The binding will be to the control iself.
+        /// The binding will be to the control itself.
         /// </summary>
         Self,
 

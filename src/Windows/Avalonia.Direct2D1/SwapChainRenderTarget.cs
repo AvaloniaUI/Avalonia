@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Avalonia.Direct2D1.Media;
+using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DXGI;
-using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct2D1.Device;
 using Factory = SharpDX.Direct2D1.Factory;
 using Factory2 = SharpDX.DXGI.Factory2;
-using Avalonia.Rendering;
-using Avalonia.Direct2D1.Media;
-using Avalonia.Direct2D1.Media.Imaging;
+using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 
 namespace Avalonia.Direct2D1
 {
@@ -119,7 +118,7 @@ namespace Avalonia.Direct2D1
                     new BitmapProperties1(
                         new PixelFormat
                         {
-                            AlphaMode = AlphaMode.Ignore,
+                            AlphaMode = AlphaMode.Premultiplied,
                             Format = Format.B8G8R8A8_UNorm
                         },
                         _savedDpi.Width,

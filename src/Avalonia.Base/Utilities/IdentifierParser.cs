@@ -1,29 +1,22 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Globalization;
-using System.Text;
 
 namespace Avalonia.Utilities
 {
     public static class IdentifierParser
     {
-        public static string Parse(CharacterReader r)
+        public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {
-                var result = new StringBuilder();
-
-                while (!r.End && IsValidIdentifierChar(r.Peek))
-                {
-                    result.Append(r.Take());
-                }
-
-                return result.ToString();
+                return r.TakeWhile(IsValidIdentifierChar);
             }
             else
             {
-                return null;
+                return ReadOnlySpan<char>.Empty;
             }
         }
 
