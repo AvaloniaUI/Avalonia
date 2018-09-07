@@ -15,7 +15,7 @@ namespace Avalonia.Animation
 
         void IRenderLoopTask.Update(long tickCount)
         {
-            Pulse(tickCount);
+            Pulse(TimeSpan.FromMilliseconds(tickCount));
         }
     }
 }

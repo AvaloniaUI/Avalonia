@@ -14,13 +14,21 @@ namespace Avalonia.Animation
 
         private IObservable<TimeSpan> _connectedObservable;
 
+        private IDisposable _parentSubscription;
+
         private TimeSpan? _previousTime;
         private TimeSpan _internalTime;
 
-        public Clock()
+        protected Clock()
         {
             _observable = new ClockObservable();
             _connectedObservable = _observable.Publish().RefCount();
+        }
+
+        public Clock(Clock parent)
+            :this()
+        {
+            _parentSubscription = parent.Subscribe(Pulse);
         }
 
         public bool HasSubscriptions => _observable.HasSubscriptions;
@@ -29,10 +37,8 @@ namespace Avalonia.Animation
 
         public PlayState PlayState { get; set; }
 
-        public void Pulse(long tickCount)
+        protected void Pulse(TimeSpan systemTime)
         {
-            var systemTime = TimeSpan.FromMilliseconds(tickCount);
-
             if (!_previousTime.HasValue)
             {
                 _previousTime = systemTime;
@@ -62,7 +68,7 @@ namespace Avalonia.Animation
         private class ClockObservable : LightweightObservableBase<TimeSpan>
         {
             public bool HasSubscriptions { get; private set; }
-            public void Pulse(TimeSpan tickCount) => PublishNext(tickCount);
+            public void Pulse(TimeSpan time) => PublishNext(time);
             protected override void Initialize() => HasSubscriptions = true;
             protected override void Deinitialize() => HasSubscriptions = false;
         }
