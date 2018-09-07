@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Threading;
@@ -89,18 +90,7 @@ namespace Avalonia.Rendering
             {
                 try
                 {
-                    var needsUpdate = false;
-
-                    foreach (var i in _items)
-                    {
-                        if (i.NeedsUpdate)
-                        {
-                            needsUpdate = true;
-                            break;
-                        }
-                    }
-
-                    if (needsUpdate)
+                    if (_items.Any(item => item.NeedsUpdate))
                     {
                         await _dispatcher.InvokeAsync(() =>
                         {
@@ -108,7 +98,7 @@ namespace Avalonia.Rendering
                             {
                                 i.Update(tickCount);
                             }
-                        }).ConfigureAwait(false);
+                        }, DispatcherPriority.Render).ConfigureAwait(false);
                     }
 
                     foreach (var i in _items)
