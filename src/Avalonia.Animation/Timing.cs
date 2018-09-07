@@ -13,9 +13,6 @@ namespace Avalonia.Animation
     /// </summary>
     public static class Timing
     {
-        static ulong _transitionsFrameCount;
-        static PlayState _globalState = PlayState.Run;
-
         /// <summary>
         /// The number of frames per second.
         /// </summary>
@@ -30,41 +27,16 @@ namespace Avalonia.Animation
         /// Initializes static members of the <see cref="Timing"/> class.
         /// </summary>
         static Timing()
-        {
+        { 
             var globalTimer = Observable.Interval(FrameTick, AvaloniaScheduler.Instance);
 
-            AnimationStateTimer = globalTimer
-                .Select(_ =>
-                {
-                    return _globalState;
-                })
+            AnimationsTimer = globalTimer
+                .Select(_ => GetTickCount())
                 .Publish()
                 .RefCount();
-
-            TransitionsTimer = globalTimer
-                               .Select(p => _transitionsFrameCount++)
-                               .Publish()
-                               .RefCount();
         }
 
-
-        /// <summary>
-        /// Sets the animation play state for all animations
-        /// </summary>
-        public static void SetGlobalPlayState(PlayState playState)
-        {
-            Dispatcher.UIThread.VerifyAccess();
-            _globalState = playState;
-        }
-
-        /// <summary>
-        /// Gets the animation play state for all animations
-        /// </summary>
-        public static PlayState GetGlobalPlayState()
-        {
-            Dispatcher.UIThread.VerifyAccess();
-            return _globalState;
-        }
+        internal static TimeSpan GetTickCount() => TimeSpan.FromMilliseconds(Environment.TickCount);
 
         /// <summary>
         /// Gets the animation timer.
@@ -74,48 +46,9 @@ namespace Avalonia.Animation
         /// defined in <see cref="FramesPerSecond"/>.
         /// The parameter passed to a subsciber is the current playstate of the animation.
         /// </remarks>
-        internal static IObservable<PlayState> AnimationStateTimer
+        internal static IObservable<TimeSpan> AnimationsTimer
         {
             get;
         }
-
-        /// <summary>
-        /// Gets the transitions timer.
-        /// </summary>
-        /// <remarks>
-        /// The transitions timer increments usually 60 times per second as
-        /// defined in <see cref="FramesPerSecond"/>.
-        /// The parameter passed to a subsciber is the number of frames since the animation system was
-        /// initialized.
-        /// </remarks>
-        public static IObservable<ulong> TransitionsTimer
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Gets a timer that fires every frame for the specified duration with delay.
-        /// </summary>
-        /// <returns>
-        /// An observable that notifies the subscriber of the progress along the transition.
-        /// </returns>
-        /// <remarks>
-        /// The parameter passed to the subscriber is the progress along the transition, with
-        /// 0 being the start and 1 being the end. The observable is guaranteed to fire 0
-        /// immediately on subscribe and 1 at the end of the duration.
-        /// </remarks>
-        public static IObservable<double> GetTransitionsTimer(Animatable control, TimeSpan duration, TimeSpan delay = default(TimeSpan))
-        {
-            var startTime = _transitionsFrameCount;
-            var _duration = (ulong)(duration.Ticks / FrameTick.Ticks);
-            var endTime = startTime + _duration;
-
-            return TransitionsTimer
-                .TakeWhile(x => x < endTime)
-                .Select(x => (double)(x - startTime) / _duration)
-                .StartWith(0.0)
-                .Concat(Observable.Return(1.0));
-        }
-
     }
 }

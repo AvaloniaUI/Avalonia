@@ -73,6 +73,32 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Marks a property on a child as affecting the parent panel's arrangement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentArrange<TPanel>(params AvaloniaProperty[] properties)
+            where TPanel : class, IPanel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsParentArrangeInvalidate<TPanel>);
+            }
+        }
+
+        /// <summary>
+        /// Marks a property on a child as affecting the parent panel's measurement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentMeasure<TPanel>(params AvaloniaProperty[] properties)
+            where TPanel : class, IPanel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsParentMeasureInvalidate<TPanel>);
+            }
+        }
+
+        /// <summary>
         /// Called when the <see cref="Children"/> collection changes.
         /// </summary>
         /// <param name="sender">The event sender.</param>
@@ -115,6 +141,22 @@ namespace Avalonia.Controls
             }
 
             InvalidateMeasure();
+        }
+
+        private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
+            where TPanel : class, IPanel
+        {
+            var control = e.Sender as IControl;
+            var panel = control?.VisualParent as TPanel;
+            panel?.InvalidateArrange();
+        }
+
+        private static void AffectsParentMeasureInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
+            where TPanel : class, IPanel
+        {
+            var control = e.Sender as IControl;
+            var panel = control?.VisualParent as TPanel;
+            panel?.InvalidateMeasure();
         }
     }
 }

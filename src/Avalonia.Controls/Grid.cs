@@ -48,6 +48,11 @@ namespace Avalonia.Controls
 
         private RowDefinitions _rowDefinitions;
 
+        static Grid()
+        {
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+        }
+
         /// <summary>
         /// Gets or sets the columns definitions for the grid.
         /// </summary>
