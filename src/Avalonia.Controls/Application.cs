@@ -340,7 +340,7 @@ namespace Avalonia
 
             var clock = new RenderLoopClock();
             AvaloniaLocator.CurrentMutable
-                .Bind<Clock>().ToConstant(clock)
+                .Bind<IClock>().ToConstant(clock)
                 .GetService<IRenderLoop>().Add(clock);
         }
     }
