@@ -69,7 +69,7 @@ namespace Avalonia.Animation
 
                 if (match != null)
                 {
-                    match.Apply(this, e.OldValue, e.NewValue);
+                    match.Apply(this, Clock.GlobalClock, e.OldValue, e.NewValue);
                 }
             }
         }

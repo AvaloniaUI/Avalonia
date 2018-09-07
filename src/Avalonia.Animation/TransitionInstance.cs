@@ -18,10 +18,12 @@ namespace Avalonia.Animation
         private IDisposable timerSubscription;
         private TimeSpan startTime;
         private TimeSpan duration;
+        private readonly Clock _clock;
 
-        public TransitionInstance(TimeSpan Duration)
+        public TransitionInstance(Clock clock, TimeSpan Duration)
         {
             duration = Duration;
+            _clock = clock;
         }
 
         private void TimerTick(TimeSpan t)
@@ -45,8 +47,8 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
-            startTime = Clock.GlobalClock.CurrentTime;
-            timerSubscription = Clock.GlobalClock.Subscribe(TimerTick);
+            startTime = _clock.CurrentTime;
+            timerSubscription = _clock.Subscribe(TimerTick);
             PublishNext(0.0d);
         }
     }
