@@ -51,7 +51,7 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
-            var transition = DoTransition(new TransitionIteration(Duration), (T)oldValue, (T)newValue);
+            var transition = DoTransition(new TransitionInstance(Duration), (T)oldValue, (T)newValue);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
 
