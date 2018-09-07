@@ -39,6 +39,8 @@ namespace Avalonia.Controls.Primitives
 
         static Track()
         {
+            PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass<Track, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             ThumbProperty.Changed.AddClassHandler<Track>(x => x.ThumbChanged);
             IncreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
             DecreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
