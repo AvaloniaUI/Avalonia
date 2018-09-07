@@ -17,16 +17,6 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animation : AvaloniaList<KeyFrame>, IAnimation
     {
-
-        /// <summary>
-        /// Gets or sets the animation play state for all animations
-        /// </summary> 
-        public static PlayState GlobalPlayState
-        {
-            get => AvaloniaLocator.Current.GetService<Clock>().PlayState;
-            set => AvaloniaLocator.Current.GetService<Clock>().PlayState = value;
-        }
-
         /// <summary>
         /// Gets or sets the active time of this animation.
         /// </summary>

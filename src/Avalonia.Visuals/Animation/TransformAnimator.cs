@@ -44,7 +44,7 @@ namespace Avalonia.Animation
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, clock, obsMatch, onComplete);
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -53,7 +53,7 @@ namespace Avalonia.Animation
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform, clock, obsMatch, onComplete);
+                            return childKeyFrames.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
                         }
                     }
                 }

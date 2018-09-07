@@ -103,7 +103,13 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control, IClock clock, Action onComplete)
         {
-            var instance = new AnimationInstance<T>(animation, control, this, clock, onComplete, DoInterpolation);
+            var instance = new AnimationInstance<T>(
+                animation,
+                control,
+                this,
+                clock ?? control.Clock ?? Clock.GlobalClock,
+                onComplete,
+                DoInterpolation);
             return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
         }
 
