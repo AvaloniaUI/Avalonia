@@ -14,7 +14,10 @@ namespace Avalonia.Animation
     /// Base class for all animatable objects.
     /// </summary>
     public class Animatable : AvaloniaObject
-    { 
+    {
+        public static readonly StyledProperty<IClock> ClockProperty =
+            AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
+
         /// <summary>
         /// Defines the <see cref="PlayState"/> property.
         /// </summary>

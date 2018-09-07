@@ -32,7 +32,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, Clock clock, IObservable<bool> match, Action onComplete)
+        public virtual IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
              if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
@@ -101,7 +101,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control, Clock clock, Action onComplete)
+        private IDisposable RunKeyFrames(Animation animation, Animatable control, IClock clock, Action onComplete)
         {
             var instance = new AnimationInstance<T>(animation, control, this, clock, onComplete, DoInterpolation);
             return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);

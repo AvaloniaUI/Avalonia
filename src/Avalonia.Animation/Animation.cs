@@ -154,7 +154,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, Clock clock, IObservable<bool> match, Action onComplete)
+        public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
             if (animators.Count == 1)
@@ -185,7 +185,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public Task RunAsync(Animatable control, Clock clock = null)
+        public Task RunAsync(Animatable control, IClock clock = null)
         {
             if (clock == null)
             {

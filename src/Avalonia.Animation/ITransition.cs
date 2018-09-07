@@ -13,7 +13,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Applies the transition to the specified <see cref="Animatable"/>.
         /// </summary>
-        IDisposable Apply(Animatable control, Clock clock, object oldValue, object newValue);
+        IDisposable Apply(Animatable control, IClock clock, object oldValue, object newValue);
 
         /// <summary>
         /// Gets the property to be animated.

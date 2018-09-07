@@ -49,7 +49,7 @@ namespace Avalonia.Animation
         public abstract IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue);
 
         /// <inheritdocs/>
-        public virtual IDisposable Apply(Animatable control, Clock clock, object oldValue, object newValue)
+        public virtual IDisposable Apply(Animatable control, IClock clock, object oldValue, object newValue)
         {
             var transition = DoTransition(new TransitionInstance(clock, Duration), (T)oldValue, (T)newValue);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
