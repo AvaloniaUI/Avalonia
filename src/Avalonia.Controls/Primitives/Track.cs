@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
             ThumbProperty.Changed.AddClassHandler<Track>(x => x.ThumbChanged);
             IncreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
             DecreaseButtonProperty.Changed.AddClassHandler<Track>(x => x.ButtonChanged);
-            AffectsArrange(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
+            AffectsArrange<Track>(MinimumProperty, MaximumProperty, ValueProperty, OrientationProperty);
         }
 
         public double Minimum

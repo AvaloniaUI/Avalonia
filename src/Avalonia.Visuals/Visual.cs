@@ -100,7 +100,7 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender(
+            AffectsRender<Visual>(
                 BoundsProperty,
                 ClipProperty,
                 ClipToBoundsProperty,
@@ -320,11 +320,12 @@ namespace Avalonia
         /// on the control which when changed should cause a redraw. This is similar to WPF's
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
-        protected static void AffectsRender(params AvaloniaProperty[] properties)
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : class, IVisual
         {
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsRenderInvalidate);
+                property.Changed.Subscribe(AffectsRenderInvalidate<T>);
             }
         }
 
@@ -416,9 +417,10 @@ namespace Avalonia
         /// Called when a property changes that should invalidate the visual.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void AffectsRenderInvalidate(AvaloniaPropertyChangedEventArgs e)
+        private static void AffectsRenderInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
+            where T : class, IVisual
         {
-            (e.Sender as Visual)?.InvalidateVisual();
+            (e.Sender as T)?.InvalidateVisual();
         }
 
         /// <summary>
