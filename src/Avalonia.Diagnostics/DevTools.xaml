@@ -3,6 +3,7 @@
     <TabStrip SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabStripItem Content="Logical Tree"/>
       <TabStripItem Content="Visual Tree"/>
+      <TabStripItem Content="Events"/>
     </TabStrip>
 
     <ContentControl Content="{Binding Content}" Grid.Row="1"/> 
