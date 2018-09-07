@@ -12,7 +12,7 @@ namespace Avalonia.Animation
         DoubleAnimator childKeyFrames;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, Clock clock, IObservable<bool> obsMatch, Action onComplete)
+        public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
         {
             var ctrl = (Visual)control;
 

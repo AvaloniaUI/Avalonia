@@ -34,7 +34,7 @@ namespace Avalonia.Animation
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
         private IDisposable _timerSubscription;
-        private readonly Clock _clock;
+        private readonly IClock _clock;
 
         public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, Clock clock, Action OnComplete, Func<double, T, T> Interpolator)
         {
@@ -117,7 +117,7 @@ namespace Avalonia.Animation
 
         private void DoPlayStatesAndTime(TimeSpan systemTime)
         {
-            if (_clock.PlayState == PlayState.Stop || _targetControl.PlayState == PlayState.Stop)
+            if (_clock.PlayState == PlayState.Stop)
                 DoComplete();
 
             if (!_gotFirstKFValue)

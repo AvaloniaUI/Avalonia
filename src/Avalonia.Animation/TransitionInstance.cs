@@ -18,7 +18,7 @@ namespace Avalonia.Animation
         private IDisposable timerSubscription;
         private TimeSpan startTime;
         private TimeSpan duration;
-        private readonly Clock _clock;
+        private readonly IClock _clock;
 
         public TransitionInstance(Clock clock, TimeSpan Duration)
         {
