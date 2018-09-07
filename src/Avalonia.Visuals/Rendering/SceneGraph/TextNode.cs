@@ -1,7 +1,6 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -71,7 +70,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
-        /// <param name="foreground">The foregroundof the other draw operation.</param>
+        /// <param name="foreground">The foreground of the other draw operation.</param>
         /// <param name="origin">The draw origin of the other draw operation.</param>
         /// <param name="text">The text of the other draw operation.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>

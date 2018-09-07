@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Input;
 using Avalonia.Win32.Interop;
 using IDataObject = Avalonia.Input.IDataObject;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Avalonia.Win32
 {

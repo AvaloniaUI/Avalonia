@@ -1,8 +1,6 @@
-﻿﻿using System;
- using System.ComponentModel;
- using MonoMac.AppKit;
- using MonoMac.CoreGraphics;
- using MonoMac.OpenGL;
+﻿using System;
+using MonoMac.AppKit;
+using MonoMac.CoreGraphics;
 
 namespace Avalonia.MonoMac
 {

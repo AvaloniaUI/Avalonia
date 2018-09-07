@@ -8,7 +8,7 @@ using Avalonia.Skia;
 namespace Avalonia
 {
     /// <summary>
-    /// Skia appication extensions.
+    /// Skia application extensions.
     /// </summary>
     public static class SkiaApplicationExtensions
     {
@@ -17,7 +17,6 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">Builder type.</typeparam>
         /// <param name="builder">Builder.</param>
-        /// <param name="preferredBackendType">Preferred backend type.</param>
         /// <returns>Configure builder.</returns>
         public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
         {

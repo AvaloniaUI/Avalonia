@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using Avalonia;
-using Avalonia.Controls.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {

@@ -1,10 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Utilities;
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -102,7 +101,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Checks for unequality between two <see cref="RelativeRect"/>s.
+        /// Checks for inequality between two <see cref="RelativeRect"/>s.
         /// </summary>
         /// <param name="left">The first rectangle.</param>
         /// <param name="right">The second rectangle.</param>

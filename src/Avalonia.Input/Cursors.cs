@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.Input
@@ -69,7 +65,7 @@ namespace Avalonia.Input
         {
             return Enum.TryParse<StandardCursorType>(s, true, out var t) ?
                 new Cursor(t) :
-                throw new ArgumentException($"Unrecognised cursor type '{s}'.");
+                throw new ArgumentException($"Unrecognized cursor type '{s}'.");
         }
 
         private static IPlatformHandle GetCursor(StandardCursorType type)

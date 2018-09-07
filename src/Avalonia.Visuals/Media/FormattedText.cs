@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using Avalonia.Platform;
 
@@ -76,7 +75,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets or sets the aligment of the text.
+        /// Gets or sets the alignment of the text.
         /// </summary>
         public TextAlignment TextAlignment
         {

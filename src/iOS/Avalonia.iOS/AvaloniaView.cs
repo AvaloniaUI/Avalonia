@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Controls.Embedding;
+﻿using Avalonia.Controls.Embedding;
 using CoreGraphics;
 using UIKit;
 

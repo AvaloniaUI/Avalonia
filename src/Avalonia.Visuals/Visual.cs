@@ -5,7 +5,6 @@ using System;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;

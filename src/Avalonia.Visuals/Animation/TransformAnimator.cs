@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Collections;
-using System.ComponentModel;
-using Avalonia.Animation.Utils;
-using System.Reactive.Linq;
-using System.Linq;
-using Avalonia.Media;
 using Avalonia.Logging;
+using Avalonia.Media;
 
 namespace Avalonia.Animation
 {

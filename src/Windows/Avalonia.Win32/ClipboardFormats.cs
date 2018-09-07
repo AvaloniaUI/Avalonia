@@ -7,7 +7,7 @@ using Avalonia.Input;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
-{   
+{
     static class ClipboardFormats
     {
         private const int MAX_FORMAT_NAME_LENGTH = 260;
