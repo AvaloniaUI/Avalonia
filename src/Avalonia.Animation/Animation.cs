@@ -154,12 +154,12 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete)
+        public IDisposable Apply(Animatable control, Clock clock, IObservable<bool> match, Action onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
             if (animators.Count == 1)
             {
-                subscriptions.Add(animators[0].Apply(this, control, match, onComplete));
+                subscriptions.Add(animators[0].Apply(this, control, clock, match, onComplete));
             }
             else
             {
@@ -173,7 +173,7 @@ namespace Avalonia.Animation
                         animatorOnComplete = () => tcs.SetResult(null);
                         completionTasks.Add(tcs.Task);
                     }
-                    subscriptions.Add(animator.Apply(this, control, match, animatorOnComplete));
+                    subscriptions.Add(animator.Apply(this, control, clock, match, animatorOnComplete));
                 }
 
                 if (onComplete != null)
@@ -185,15 +185,20 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public Task RunAsync(Animatable control)
+        public Task RunAsync(Animatable control, Clock clock = null)
         {
+            if (clock == null)
+            {
+                clock = Clock.GlobalClock;
+            }
+
             var run = new TaskCompletionSource<object>();
 
             if (this.RepeatCount == RepeatCount.Loop)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
             IDisposable subscriptions = null;
-            subscriptions = this.Apply(control, Observable.Return(true), () =>
+            subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
                 run.SetResult(null);
                 subscriptions?.Dispose();

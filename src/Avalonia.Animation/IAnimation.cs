@@ -11,11 +11,11 @@ namespace Avalonia.Animation
         /// <summary>
         /// Apply the animation to the specified control
         /// </summary>
-        IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete = null);
+        IDisposable Apply(Animatable control, Clock clock, IObservable<bool> match, Action onComplete = null);
 
         /// <summary>
         /// Run the animation to the specified control
         /// </summary>
-        Task RunAsync(Animatable control);
+        Task RunAsync(Animatable control, Clock clock);
     }
 }

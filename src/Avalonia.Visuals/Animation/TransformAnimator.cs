@@ -12,7 +12,7 @@ namespace Avalonia.Animation
         DoubleAnimator childKeyFrames;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete)
+        public override IDisposable Apply(Animation animation, Animatable control, Clock clock, IObservable<bool> obsMatch, Action onComplete)
         {
             var ctrl = (Visual)control;
 
@@ -44,7 +44,7 @@ namespace Avalonia.Animation
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch, onComplete);
+                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -53,7 +53,7 @@ namespace Avalonia.Animation
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform, obsMatch, onComplete);
+                            return childKeyFrames.Apply(animation, transform, clock, obsMatch, onComplete);
                         }
                     }
                 }

@@ -120,7 +120,7 @@ namespace Avalonia.Styling
                             obsMatch = Observable.Return(true);
                         } 
 
-                        var sub = animation.Apply((Animatable)control, obsMatch);
+                        var sub = animation.Apply((Animatable)control, Clock.GlobalClock, obsMatch);
                         subs.Add(sub);
                     }
 

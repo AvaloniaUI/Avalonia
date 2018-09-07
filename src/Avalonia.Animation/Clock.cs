@@ -58,6 +58,16 @@ namespace Avalonia.Animation
 
             _observable.Pulse(_internalTime);
             CurrentTime = _internalTime;
+
+            if (PlayState == PlayState.Stop)
+            {
+                Stop();
+            }
+        }
+
+        protected virtual void Stop()
+        {
+            _parentSubscription?.Dispose();
         }
 
         public IDisposable Subscribe(IObserver<TimeSpan> observer)

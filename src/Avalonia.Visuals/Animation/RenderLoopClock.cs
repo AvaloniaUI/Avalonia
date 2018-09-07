@@ -7,6 +7,11 @@ namespace Avalonia.Animation
 {
     public class RenderLoopClock : Clock, IRenderLoopTask
     {
+        protected override void Stop()
+        {
+            AvaloniaLocator.Current.GetService<IRenderLoop>().Remove(this);
+        }
+
         bool IRenderLoopTask.NeedsUpdate => HasSubscriptions;
 
         void IRenderLoopTask.Render()

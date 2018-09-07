@@ -34,8 +34,9 @@ namespace Avalonia.Animation
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
         private IDisposable _timerSubscription;
+        private readonly Clock _clock;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, Action OnComplete, Func<double, T, T> Interpolator)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, Clock clock, Action OnComplete, Func<double, T, T> Interpolator)
         {
             if (animation.SpeedRatio <= 0)
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
@@ -71,6 +72,7 @@ namespace Avalonia.Animation
             _fillMode = animation.FillMode;
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
+            _clock = clock;
         }
 
         protected override void Unsubscribed()
@@ -80,7 +82,7 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
-            _timerSubscription = Clock.GlobalClock.Subscribe(Step);
+            _timerSubscription = _clock.Subscribe(Step);
         }
 
         public void Step(TimeSpan frameTick)
@@ -115,7 +117,7 @@ namespace Avalonia.Animation
 
         private void DoPlayStatesAndTime(TimeSpan systemTime)
         {
-            if (Animation.GlobalPlayState == PlayState.Stop || _targetControl.PlayState == PlayState.Stop)
+            if (_clock.PlayState == PlayState.Stop || _targetControl.PlayState == PlayState.Stop)
                 DoComplete();
 
             if (!_gotFirstKFValue)
