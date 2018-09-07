@@ -14,6 +14,9 @@ namespace Avalonia.Animation
 
         private IObservable<TimeSpan> _connectedObservable;
 
+        private TimeSpan? _previousTime;
+        private TimeSpan _internalTime;
+
         public Clock()
         {
             _observable = new ClockObservable();
@@ -28,9 +31,27 @@ namespace Avalonia.Animation
 
         public void Pulse(long tickCount)
         {
-            var time = TimeSpan.FromMilliseconds(tickCount);
-            _observable.Pulse(time);
-            CurrentTime = time;
+            var systemTime = TimeSpan.FromMilliseconds(tickCount);
+
+            if (!_previousTime.HasValue)
+            {
+                _previousTime = systemTime;
+                _internalTime = TimeSpan.Zero;
+            }
+            else
+            {
+                if (PlayState == PlayState.Pause)
+                {
+                    _previousTime = systemTime;
+                    return;
+                }
+                var delta = systemTime - _previousTime;
+                _internalTime += delta.Value;
+                _previousTime = systemTime;
+            }
+
+            _observable.Pulse(_internalTime);
+            CurrentTime = _internalTime;
         }
 
         public IDisposable Subscribe(IObserver<TimeSpan> observer)

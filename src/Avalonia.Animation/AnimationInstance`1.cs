@@ -8,7 +8,7 @@ using Avalonia.Reactive;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Handles interpolatoin and time-related functions 
+    /// Handles interpolation and time-related functions 
     /// for keyframe animations.
     /// </summary>
     internal class AnimationInstance<T> : SingleSubscriberObservableBase<T>
@@ -30,8 +30,6 @@ namespace Avalonia.Animation
         private TimeSpan _delay;
         private TimeSpan _duration;
         private TimeSpan _firstFrameCount;
-        private TimeSpan _internalClock;
-        private TimeSpan? _previousClock;
         private Easings.Easing _easeFunc;
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
@@ -120,23 +118,6 @@ namespace Avalonia.Animation
             if (Animation.GlobalPlayState == PlayState.Stop || _targetControl.PlayState == PlayState.Stop)
                 DoComplete();
 
-            if (!_previousClock.HasValue)
-            {
-                _previousClock = systemTime;
-                _internalClock = TimeSpan.Zero;
-            }
-            else
-            {
-                if (Animation.GlobalPlayState == PlayState.Pause || _targetControl.PlayState == PlayState.Pause)
-                {
-                    _previousClock = systemTime;
-                    return;
-                }
-                var delta = systemTime - _previousClock;
-                _internalClock += delta.Value;
-                _previousClock = systemTime;
-            }
-
             if (!_gotFirstKFValue)
             {
                 _firstKFValue = (T)_parent.First().Value;
@@ -145,7 +126,7 @@ namespace Avalonia.Animation
 
             if (!_gotFirstFrameCount)
             {
-                _firstFrameCount = _internalClock;
+                _firstFrameCount = systemTime;
                 _gotFirstFrameCount = true;
             }
         }
@@ -154,7 +135,7 @@ namespace Avalonia.Animation
         {
             DoPlayStatesAndTime(systemTime);
  
-            var time = _internalClock - _firstFrameCount;
+            var time = systemTime - _firstFrameCount;
             var delayEndpoint = _delay;
             var iterationEndpoint = delayEndpoint + _duration;
 
@@ -179,7 +160,6 @@ namespace Avalonia.Animation
             }
             else
             {
-                _previousClock = systemTime;
                 return;
             }
 
