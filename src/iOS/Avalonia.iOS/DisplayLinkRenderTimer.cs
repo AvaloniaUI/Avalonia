@@ -5,11 +5,12 @@ using Foundation;
 
 namespace Avalonia.iOS
 {
-    class DisplayLinkRenderLoop : IRenderLoop
+    class DisplayLinkRenderTimer : IRenderTimer
     {
-        public event EventHandler<EventArgs> Tick;
+        public event Action<long> Tick;
         private CADisplayLink _link;
-        public DisplayLinkRenderLoop()
+
+        public DisplayLinkRenderTimer()
         {
 
             _link = CADisplayLink.Create(OnFrame);
@@ -20,7 +21,7 @@ namespace Avalonia.iOS
         {
             try
             {
-                Tick?.Invoke(this, new EventArgs());
+                Tick?.Invoke(Environment.TickCount);
             }
             catch (Exception)
             {
