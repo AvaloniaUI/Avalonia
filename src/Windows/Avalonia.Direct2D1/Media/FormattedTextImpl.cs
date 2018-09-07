@@ -9,6 +9,8 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System;
+
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -107,7 +109,18 @@ namespace Avalonia.Direct2D1.Media
 
         private Size Measure()
         {
-            var metrics = TextLayout.Metrics;
+            DWrite.TextMetrics metrics;
+
+            // SharpDX bug
+            try
+            {
+                metrics = TextLayout.Metrics;
+            }
+            catch (ObjectDisposedException)
+            {
+                metrics = TextLayout.Metrics;
+            }
+
             var width = metrics.WidthIncludingTrailingWhitespace;
 
             if (float.IsNaN(width))

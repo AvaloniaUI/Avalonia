@@ -132,7 +132,7 @@ namespace Direct3DInteropSample
                 signature,
                 inputElements);
 
-            // Instantiate Vertex buiffer from vertex data
+            // Instantiate Vertex buffer from vertex data
             var vertices = Buffer.Create(
                 device,
                 BindFlags.VertexBuffer,
