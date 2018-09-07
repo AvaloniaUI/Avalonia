@@ -11,7 +11,7 @@ using Avalonia.Data;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Base class for control which can have property transitions.
+    /// Base class for all animatable objects.
     /// </summary>
     public class Animatable : AvaloniaObject
     { 

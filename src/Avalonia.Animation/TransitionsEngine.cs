@@ -37,7 +37,7 @@ namespace Avalonia.Animation
 
             PublishNext(interpVal);
         }
-  
+
         protected override void Unsubscribed()
         {
             timerSubscription?.Dispose();
@@ -49,6 +49,7 @@ namespace Avalonia.Animation
             timerSubscription = Timing
                                 .AnimationsTimer
                                 .Subscribe(t => TimerTick(t));
+            PublishNext(0.0d);
         }
     }
 }
