@@ -52,50 +52,70 @@ namespace Avalonia.Animation
         /// (i.e., the normalized time between the selected keyframes, relative to the
         /// time parameter).
         /// </summary>
-        /// <param name="t">The time parameter, relative to the total animation time</param>
-        protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
+        /// <param name="animationTime">The time parameter, relative to the total animation time</param>
+        protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double animationTime)
         {
-            AnimatorKeyFrame firstCue, lastCue ;
+            AnimatorKeyFrame firstKeyframe, lastKeyframe ;
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
-                if (t <= 0.0)
+                if (animationTime <= 0.0)
                 {
-                    firstCue = _convertedKeyframes[0];
-                    lastCue = _convertedKeyframes[1];
+                    firstKeyframe = _convertedKeyframes[0];
+                    lastKeyframe = _convertedKeyframes[1];
                 }
-                else if (t >= 1.0)
+                else if (animationTime >= 1.0)
                 {
-                    firstCue = _convertedKeyframes[_convertedKeyframes.Count - 2];
-                    lastCue = _convertedKeyframes[_convertedKeyframes.Count - 1];
+                    firstKeyframe = _convertedKeyframes[_convertedKeyframes.Count - 2];
+                    lastKeyframe = _convertedKeyframes[_convertedKeyframes.Count - 1];
                 }
                 else
                 {
-                    (double time, int index) maxval = (0.0d, 0);
-                    for (int i = 0; i < _convertedKeyframes.Count; i++)
-                    {
-                        var comp = _convertedKeyframes[i].Cue.CueValue;
-                        if (t >= comp)
-                        {
-                            maxval = (comp, i);
-                        }
-                    }
-                    firstCue = _convertedKeyframes[maxval.index];
-                    lastCue = _convertedKeyframes[maxval.index + 1];
+                    int index = FindClosestBeforeKeyFrame(animationTime);
+                    firstKeyframe = _convertedKeyframes[index];
+                    lastKeyframe = _convertedKeyframes[index + 1];
                 }
             }
             else
             {
-                firstCue = _convertedKeyframes[0];
-                lastCue = _convertedKeyframes[1];
+                firstKeyframe = _convertedKeyframes[0];
+                lastKeyframe = _convertedKeyframes[1];
             }
 
-            double t0 = firstCue.Cue.CueValue;
-            double t1 = lastCue.Cue.CueValue;
-            var intraframeTime = (t - t0) / (t1 - t0);
-            var firstFrameData = (firstCue.GetTypedValue<T>(), firstCue.isNeutral);
-            var lastFrameData = (lastCue.GetTypedValue<T>(), lastCue.isNeutral);
+            double t0 = firstKeyframe.Cue.CueValue;
+            double t1 = lastKeyframe.Cue.CueValue;
+            var intraframeTime = (animationTime - t0) / (t1 - t0);
+            var firstFrameData = (firstKeyframe.GetTypedValue<T>(), firstKeyframe.isNeutral);
+            var lastFrameData = (lastKeyframe.GetTypedValue<T>(), lastKeyframe.isNeutral);
             return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
+        }
+
+        private int FindClosestBeforeKeyFrame(double time)
+        {
+            int FindClosestBeforeKeyFrame(int startIndex, int length)
+            {
+                if (length == 0 || length == 1)
+                {
+                    return startIndex;
+                }
+
+                int middle = startIndex + (length / 2);
+
+                if (_convertedKeyframes[middle].Cue.CueValue < time)
+                {
+                    return FindClosestBeforeKeyFrame(middle, length - middle);
+                }
+                else if (_convertedKeyframes[middle].Cue.CueValue > time)
+                {
+                    return FindClosestBeforeKeyFrame(startIndex, middle - startIndex);
+                }
+                else
+                {
+                    return middle;
+                }
+            }
+
+            return FindClosestBeforeKeyFrame(0, _convertedKeyframes.Count);
         }
 
         /// <summary>
@@ -130,14 +150,6 @@ namespace Avalonia.Animation
 
             AddNeutralKeyFramesIfNeeded();
 
-            var copy = _convertedKeyframes.ToList().OrderBy(p => p.Cue.CueValue);
-            _convertedKeyframes.Clear();
-
-            foreach (AnimatorKeyFrame keyframe in copy)
-            {
-                _convertedKeyframes.Add(keyframe);
-            }
-
             _isVerifiedAndConverted = true;
         }
 
@@ -167,7 +179,7 @@ namespace Avalonia.Animation
         {
             if (!hasStartKey)
             {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
             }
 
             if (!hasEndKey)

@@ -6,8 +6,6 @@ namespace Avalonia.Animation
 {
     public interface IClock : IObservable<TimeSpan>
     {
-        bool HasSubscriptions { get; }
-        TimeSpan CurrentTime { get; }
         PlayState PlayState { get; set; }
     }
 }

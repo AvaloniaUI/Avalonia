@@ -177,11 +177,6 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public Task RunAsync(Animatable control, IClock clock = null)
         {
-            if (clock == null)
-            {
-                clock = Clock.GlobalClock;
-            }
-
             var run = new TaskCompletionSource<object>();
 
             if (this.RepeatCount == RepeatCount.Loop)

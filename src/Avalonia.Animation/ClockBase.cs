@@ -21,9 +21,7 @@ namespace Avalonia.Animation
             _connectedObservable = _observable.Publish().RefCount();
         }
 
-        public bool HasSubscriptions => _observable.HasSubscriptions;
-
-        public TimeSpan CurrentTime { get; private set; }
+        protected bool HasSubscriptions => _observable.HasSubscriptions;
 
         public PlayState PlayState { get; set; }
 
@@ -47,7 +45,6 @@ namespace Avalonia.Animation
             }
 
             _observable.Pulse(_internalTime);
-            CurrentTime = _internalTime;
 
             if (PlayState == PlayState.Stop)
             {

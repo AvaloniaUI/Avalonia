@@ -8,7 +8,7 @@ namespace RenderDemo.ViewModels
     {
         private bool _isPlaying = true;
 
-        private string _playStateText = "Pause all animations";
+        private string _playStateText = "Pause animations on this page";
 
         public void TogglePlayState()
         {

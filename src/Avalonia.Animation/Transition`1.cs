@@ -14,7 +14,6 @@ namespace Avalonia.Animation
     public abstract class Transition<T> : AvaloniaObject, ITransition
     {
         private AvaloniaProperty _prop;
-        private Easing _easing;
 
         /// <summary>
         /// Gets the duration of the animation.
@@ -54,7 +53,5 @@ namespace Avalonia.Animation
             var transition = DoTransition(new TransitionInstance(clock, Duration), (T)oldValue, (T)newValue);
             return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
-
-
     }
 }
