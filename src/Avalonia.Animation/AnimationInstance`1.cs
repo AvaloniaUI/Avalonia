@@ -11,7 +11,7 @@ namespace Avalonia.Animation
     /// Handles interpolatoin and time-related functions 
     /// for keyframe animations.
     /// </summary>
-    internal class AnimationsEngine<T> : SingleSubscriberObservableBase<T>
+    internal class AnimationInstance<T> : SingleSubscriberObservableBase<T>
     {
         private T _lastInterpValue;
         private T _firstKFValue;
@@ -37,7 +37,7 @@ namespace Avalonia.Animation
         private Func<double, T, T> _interpolator;
         private IDisposable _timerSubscription;
 
-        public AnimationsEngine(Animation animation, Animatable control, Animator<T> animator, Action OnComplete, Func<double, T, T> Interpolator)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, Action OnComplete, Func<double, T, T> Interpolator)
         {
             if (animation.SpeedRatio <= 0)
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");

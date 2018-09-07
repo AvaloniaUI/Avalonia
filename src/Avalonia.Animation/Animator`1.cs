@@ -103,8 +103,8 @@ namespace Avalonia.Animation
         /// </summary>
         private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
         {
-            var stateMachine = new AnimationsEngine<T>(animation, control, this, onComplete, DoInterpolation);
-            return control.Bind<T>((AvaloniaProperty<T>)Property, stateMachine, BindingPriority.Animation);
+            var instance = new AnimationInstance<T>(animation, control, this, onComplete, DoInterpolation);
+            return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
         }
 
         /// <summary>

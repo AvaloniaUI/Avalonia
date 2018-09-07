@@ -13,13 +13,13 @@ namespace Avalonia.Animation
     /// <summary>
     /// Handles the timing and lifetime of a <see cref="Transition{T}"/>.
     /// </summary>
-    public class TransitionsEngine : SingleSubscriberObservableBase<double>
+    internal class TransitionIteration : SingleSubscriberObservableBase<double>
     {
         private IDisposable timerSubscription;
         private TimeSpan startTime;
         private TimeSpan duration;
 
-        public TransitionsEngine(TimeSpan Duration)
+        public TransitionIteration(TimeSpan Duration)
         {
             duration = Duration;
         }
@@ -46,9 +46,8 @@ namespace Avalonia.Animation
         protected override void Subscribed()
         {
             startTime = Timing.GetTickCount();
-            timerSubscription = Timing
-                                .AnimationsTimer
-                                .Subscribe(t => TimerTick(t));
+            timerSubscription = Timing.AnimationsTimer
+                                      .Subscribe(t => TimerTick(t));
             PublishNext(0.0d);
         }
     }
