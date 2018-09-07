@@ -24,6 +24,8 @@ namespace Avalonia.Animation
 
         public TimeSpan CurrentTime { get; private set; }
 
+        public PlayState PlayState { get; set; }
+
         public void Pulse(long tickCount)
         {
             var time = TimeSpan.FromMilliseconds(tickCount);
