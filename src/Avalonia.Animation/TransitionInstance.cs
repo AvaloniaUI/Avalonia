@@ -45,9 +45,8 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
-            startTime = Timing.GetTickCount();
-            timerSubscription = Timing.AnimationsTimer
-                                      .Subscribe(t => TimerTick(t));
+            startTime = Clock.GlobalClock.CurrentTime;
+            timerSubscription = Clock.GlobalClock.Subscribe(TimerTick);
             PublishNext(0.0d);
         }
     }

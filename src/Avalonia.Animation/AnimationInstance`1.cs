@@ -82,8 +82,7 @@ namespace Avalonia.Animation
 
         protected override void Subscribed()
         {
-            _timerSubscription = Timing.AnimationsTimer
-                                       .Subscribe(p => this.Step(p));
+            _timerSubscription = Clock.GlobalClock.Subscribe(Step);
         }
 
         public void Step(TimeSpan frameTick)

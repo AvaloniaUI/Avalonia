@@ -166,7 +166,7 @@ namespace Avalonia.Rendering
 
         bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
 
-        void IRenderLoopTask.Update() => UpdateScene();
+        void IRenderLoopTask.Update(long tickCount) => UpdateScene();
 
         void IRenderLoopTask.Render()
         {

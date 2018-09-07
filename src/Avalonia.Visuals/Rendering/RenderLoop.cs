@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -17,7 +18,7 @@ namespace Avalonia.Rendering
         private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private IRenderTimer _timer;
-        private bool inTick;
+        private int inTick;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderLoop"/> class.
@@ -84,13 +85,11 @@ namespace Avalonia.Rendering
 
         private async void TimerTick(long tickCount)
         {
-            if (!inTick)
+            if (Interlocked.CompareExchange(ref inTick, 1, 0) == 0)
             {
-                inTick = true;
-
                 try
                 {
-                    var needsUpdate = Animation.Timing.HasSubscriptions;
+                    var needsUpdate = false;
 
                     foreach (var i in _items)
                     {
@@ -105,13 +104,11 @@ namespace Avalonia.Rendering
                     {
                         await _dispatcher.InvokeAsync(() =>
                         {
-                            Animation.Timing.Pulse(tickCount);
-
                             foreach (var i in _items)
                             {
-                                i.Update();
+                                i.Update(tickCount);
                             }
-                        });
+                        }).ConfigureAwait(false);
                     }
 
                     foreach (var i in _items)
@@ -125,7 +122,7 @@ namespace Avalonia.Rendering
                 }
                 finally
                 {
-                    inTick = false;
+                    Interlocked.Exchange(ref inTick, 0);
                 }
             }
         }
