@@ -427,6 +427,21 @@ namespace Avalonia.Layout
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
         /// </remarks>
+        [Obsolete("Use AffectsMeasure<T> and specify the control type.")]
+        protected static void AffectsMeasure(params AvaloniaProperty[] properties)
+        {
+            AffectsMeasure<Layoutable>(properties);
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the control's measurement.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
+        /// </remarks>
         protected static void AffectsMeasure<T>(params AvaloniaProperty[] properties)
             where T : class, ILayoutable
         {
@@ -439,6 +454,21 @@ namespace Avalonia.Layout
         /// <summary>
         /// Marks a property as affecting the control's arrangement.
         /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
+        /// </remarks>
+        [Obsolete("Use AffectsArrange<T> and specify the control type.")]
+        protected static void AffectsArrange(params AvaloniaProperty[] properties)
+        {
+            AffectsArrange<Layoutable>(properties);
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the control's arrangement.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
         /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a control's static constructor, any change to the
