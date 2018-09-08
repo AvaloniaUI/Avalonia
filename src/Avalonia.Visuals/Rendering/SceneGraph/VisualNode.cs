@@ -59,6 +59,9 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect ClipBounds { get; set; }
 
         /// <inheritdoc/>
+        public Rect LayoutBounds { get; set; }
+
+        /// <inheritdoc/>
         public bool ClipToBounds { get; set; }
 
         /// <inheritdoc/>
@@ -266,7 +269,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (OpacityMask != null)
             {
-                context.PushOpacityMask(OpacityMask, Bounds);
+                context.PushOpacityMask(OpacityMask, LayoutBounds);
             }
         }
 
