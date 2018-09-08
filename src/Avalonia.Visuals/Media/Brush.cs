@@ -10,13 +10,16 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : AvaloniaObject, IBrush
+    public abstract class Brush : AvaloniaObject, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
         /// </summary>
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
+
+        /// <inheritdoc/>
+        public event EventHandler Changed;
 
         /// <summary>
         /// Gets or sets the opacity of the brush.
@@ -50,5 +53,36 @@ namespace Avalonia.Media
 
             throw new FormatException($"Invalid brush string: '{s}'.");
         }
+
+        /// <inheritdoc/>
+        public abstract IBrush ToImmutable();
+
+        /// <summary>
+        /// Marks a property as affecting the brush's visual representation.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a brush's static constructor, any change to the
+        /// property will cause the <see cref="Changed"/> event to be raised on the brush.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : Brush
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.RaiseChanged(EventArgs.Empty);
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Changed"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseChanged(EventArgs e) => Changed?.Invoke(this, e);
     }
 }
