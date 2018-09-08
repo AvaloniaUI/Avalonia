@@ -3,11 +3,15 @@
   <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
   <Setter Property="Padding" Value="4"/>
+  <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+  <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
   <Setter Property="Template">
     <ControlTemplate>
       <Border BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}">
-        <ScrollViewer Background="{TemplateBinding Background}">
+        <ScrollViewer Background="{TemplateBinding Background}"
+                      HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                      VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
           <ItemsPresenter Name="PART_ItemsPresenter"
                           Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
