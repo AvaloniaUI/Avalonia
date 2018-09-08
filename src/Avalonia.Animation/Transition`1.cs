@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
+using Avalonia.Animation.Utils;
 
 namespace Avalonia.Animation
 {
@@ -23,17 +24,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets the easing class to be used.
         /// </summary>
-        public Easing Easing
-        {
-            get
-            {
-                return _easing ?? (_easing = new LinearEasing());
-            }
-            set
-            {
-                _easing = value;
-            }
-        }
+        public Easing Easing { get; set; } = new LinearEasing();
 
         /// <inheritdocs/>
         public AvaloniaProperty Property
@@ -60,8 +51,10 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
         {
-            var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue).Select(p => (object)p);
-            return control.Bind(Property, transition, Data.BindingPriority.Animation);
+            var transition = DoTransition(new TransitionInstance(Duration), (T)oldValue, (T)newValue);
+            return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
+
+
     }
 }
