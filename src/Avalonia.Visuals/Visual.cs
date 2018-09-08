@@ -340,9 +340,14 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : class, IVisual
         {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateVisual();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsRenderInvalidate<T>);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -428,16 +433,6 @@ namespace Avalonia
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
             RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
-        }
-
-        /// <summary>
-        /// Called when a property changes that should invalidate the visual.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsRenderInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
-            where T : class, IVisual
-        {
-            (e.Sender as T)?.InvalidateVisual();
         }
 
         /// <summary>

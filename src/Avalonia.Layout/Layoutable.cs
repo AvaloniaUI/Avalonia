@@ -445,9 +445,14 @@ namespace Avalonia.Layout
         protected static void AffectsMeasure<T>(params AvaloniaProperty[] properties)
             where T : class, ILayoutable
         {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateMeasure();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsMeasureInvalidate<T>);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -477,9 +482,14 @@ namespace Avalonia.Layout
         protected static void AffectsArrange<T>(params AvaloniaProperty[] properties)
             where T : class, ILayoutable
         {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateArrange();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsArrangeInvalidate<T>);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -662,28 +672,6 @@ namespace Avalonia.Layout
             }
 
             base.OnVisualParentChanged(oldParent, newParent);
-        }
-
-        /// <summary>
-        /// Calls <see cref="InvalidateMeasure"/> on the control on which a property changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsMeasureInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
-            where T : class, ILayoutable
-        {
-            var control = e.Sender as T;
-            control?.InvalidateMeasure();
-        }
-
-        /// <summary>
-        /// Calls <see cref="InvalidateArrange"/> on the control on which a property changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsArrangeInvalidate<T>(AvaloniaPropertyChangedEventArgs e)
-            where T : class, ILayoutable
-        {
-            var control = e.Sender as T;
-            control?.InvalidateArrange();
         }
 
         /// <summary>
