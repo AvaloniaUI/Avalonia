@@ -86,7 +86,7 @@ namespace Avalonia.Animation
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = 0
+                            Value = 0.0
                         }
                     )
                     {
@@ -130,7 +130,7 @@ namespace Avalonia.Animation
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = 0
+                            Value = 0.0
                         }
                     )
                     {
