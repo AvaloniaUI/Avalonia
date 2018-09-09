@@ -122,7 +122,12 @@ namespace Avalonia.Direct2D1.Media
             {
                 if (span.ForegroundBrush != null)
                 {
-                    _drawingEffects.Add(new DrawingEffect { Brush = span.ForegroundBrush, Range = new DWrite.TextRange(span.StartIndex, span.Length) });
+                    _drawingEffects.Add(
+                        new DrawingEffect
+                        {
+                            Brush = span.ForegroundBrush.ToImmutable(),
+                            Range = new DWrite.TextRange(span.StartIndex, span.Length)
+                        });
                 }
             }
         }
