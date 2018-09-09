@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Avalonia.Direct2D1.Media;
-using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
-using Avalonia.Rendering;
+using Avalonia.Media;
+using Avalonia.Platform;
 
 namespace Avalonia
 {

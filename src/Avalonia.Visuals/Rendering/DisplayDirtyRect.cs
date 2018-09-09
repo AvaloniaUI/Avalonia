@@ -30,7 +30,7 @@ namespace Avalonia.Rendering
         public DateTimeOffset Born { get; private set; }
 
         /// <summary>
-        /// Gets the time at which the rectagle should no longer be displayed.
+        /// Gets the time at which the rectangle should no longer be displayed.
         /// </summary>
         public DateTimeOffset Dies { get; private set; }
 

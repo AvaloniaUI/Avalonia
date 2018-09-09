@@ -3,15 +3,13 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// An ARGB color.
     /// </summary>
-    public struct Color
+    public readonly struct Color
     {
         /// <summary>
         /// Gets or sets the Alpha component of the color.
@@ -88,6 +86,9 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static Color Parse(string s)
         {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            if (s.Length == 0) throw new FormatException();
+
             if (s[0] == '#')
             {
                 var or = 0u;
@@ -103,21 +104,15 @@ namespace Avalonia.Media
 
                 return FromUInt32(uint.Parse(s.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture) | or);
             }
-            else
-            {
-                var upper = s.ToUpperInvariant();
-                var member = typeof(Colors).GetTypeInfo().DeclaredProperties
-                    .FirstOrDefault(x => x.Name.ToUpperInvariant() == upper);
 
-                if (member != null)
-                {
-                    return (Color)member.GetValue(null);
-                }
-                else
-                {
-                    throw new FormatException($"Invalid color string: '{s}'.");
-                }
+            var knownColor = KnownColors.GetKnownColor(s);
+
+            if (knownColor != KnownColor.None)
+            {
+                return knownColor.ToColor();
             }
+
+            throw new FormatException($"Invalid color string: '{s}'.");
         }
 
         /// <summary>
@@ -128,8 +123,8 @@ namespace Avalonia.Media
         /// </returns>
         public override string ToString()
         {
-            uint rgb = ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
-            return $"#{rgb:x8}";
+            uint rgb = ToUint32();
+            return KnownColors.GetKnownColorName(rgb) ?? $"#{rgb:x8}";
         }
 
         /// <summary>

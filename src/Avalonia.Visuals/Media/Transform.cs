@@ -12,13 +12,18 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class Transform : Animatable
     {
+        static Transform()
+        {
+            Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
+        }
+
         /// <summary>
         /// Raised when the transform changes.
         /// </summary>
         public event EventHandler Changed;
 
         /// <summary>
-        /// Gets the tranform's <see cref="Matrix"/>.
+        /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public abstract Matrix Value { get; }
 

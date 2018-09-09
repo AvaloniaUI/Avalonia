@@ -83,6 +83,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(10, 20, 30, 40),
                         Child = canvas = new Canvas
                         {
+                            ClipToBounds = true,
                             Background = Brushes.AliceBlue,
                         }
                     }
@@ -129,6 +130,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -173,6 +175,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                             (border = new Border
                             {
                                 Background = Brushes.AliceBlue,
+                                ClipToBounds = true,
                                 Width = 100,
                                 Height = 100,
                                 [Canvas.LeftProperty] = 50,
@@ -254,6 +257,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                         Margin = new Thickness(24, 26),
                         Child = target = new Border
                         {
+                            ClipToBounds = true,
                             Margin = new Thickness(26, 24),
                             Width = 100,
                             Height = 100,
@@ -516,9 +520,53 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         }
 
         [Fact]
+        public void Should_Update_ClipBounds_For_Negative_Margin()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                Decorator decorator;
+                Border border;
+                var tree = new TestRoot
+                {
+                    Width = 100,
+                    Height = 100,
+                    Child = decorator = new Decorator
+                    {
+                        Margin = new Thickness(0, 10, 0, 0),
+                        Child = border = new Border
+                        {
+                            Background = Brushes.Red,
+                            ClipToBounds = true,
+                            Margin = new Thickness(0, -5, 0, 0),
+                        }
+                    }
+                };
+
+                var layout = tree.LayoutManager;
+                layout.ExecuteInitialLayoutPass(tree);
+
+                var scene = new Scene(tree);
+                var sceneBuilder = new SceneBuilder();
+                sceneBuilder.UpdateAll(scene);
+
+                var borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 5, 100, 95), borderNode.ClipBounds);
+
+                border.Margin = new Thickness(0, -8, 0, 0);
+                layout.ExecuteLayoutPass();
+
+                scene = scene.CloneScene();
+                sceneBuilder.Update(scene, border);
+
+                borderNode = scene.FindNode(border);
+                Assert.Equal(new Rect(0, 2, 100, 98), borderNode.ClipBounds);
+            }
+        }
+
+        [Fact]
         public void Should_Update_Descendent_Tranform_When_Margin_Changed()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -537,7 +585,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var scene = new Scene(tree);
@@ -565,7 +613,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void DirtyRects_Should_Contain_Old_And_New_Bounds_When_Margin_Changed()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -585,7 +633,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var scene = new Scene(tree);
@@ -612,7 +660,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Resizing_Scene_Should_Add_DirtyRects()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -659,7 +707,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Setting_Opacity_Should_Add_Descendent_Bounds_To_DirtyRects()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -696,7 +744,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Should_Set_GeometryClip()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var clip = StreamGeometry.Parse("M100,0 L0,100 100,100");
                 Decorator decorator;
@@ -720,7 +768,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Disposing_Scene_Releases_DrawOperation_References()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
                 Image img;
@@ -752,7 +800,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Replacing_Control_Releases_DrawOperation_Reference()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
                 Image img;
@@ -781,13 +829,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     Assert.Equal(2, bitmap.RefCount);
                 }
             }
-        }
-
-        private IDisposable TestApplication()
-        {
-            return UnitTestApplication.Start(
-                TestServices.MockPlatformRenderInterface.With(
-                    layoutManager: new LayoutManager()));
         }
     }
 }

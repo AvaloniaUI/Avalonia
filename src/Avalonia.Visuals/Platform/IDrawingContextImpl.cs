@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Platform
 {
@@ -30,7 +31,8 @@ namespace Avalonia.Platform
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect);
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -96,7 +98,7 @@ namespace Avalonia.Platform
         IRenderTargetBitmapImpl CreateLayer(Size size);
 
         /// <summary>
-        /// Pushes a clip rectange.
+        /// Pushes a clip rectangle.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);

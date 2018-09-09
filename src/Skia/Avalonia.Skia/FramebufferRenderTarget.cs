@@ -1,82 +1,198 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Reactive.Disposables;
 using Avalonia.Controls.Platform.Surfaces;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    /// <summary>
+    /// Skia render target that renders to a framebuffer surface. No gpu acceleration available.
+    /// </summary>
     public class FramebufferRenderTarget : IRenderTarget
     {
-        private readonly IFramebufferPlatformSurface _surface;
+        private readonly IFramebufferPlatformSurface _platformSurface;
+        private SKImageInfo _currentImageInfo;
+        private IntPtr _currentFramebufferAddress;
+        private SKSurface _framebufferSurface;
+        private PixelFormatConversionShim _conversionShim;
+        private IDisposable _preFramebufferCopyHandler;
 
-        public FramebufferRenderTarget(IFramebufferPlatformSurface surface)
+        /// <summary>
+        /// Create new framebuffer render target using a target surface.
+        /// </summary>
+        /// <param name="platformSurface">Target surface.</param>
+        public FramebufferRenderTarget(IFramebufferPlatformSurface platformSurface)
         {
-            _surface = surface;
+            _platformSurface = platformSurface;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            //Nothing to do here, since we don't own framebuffer
+            FreeSurface();
         }
 
-        class PixelFormatShim : IDisposable
-        {
-            private readonly SKImageInfo _nfo;
-            private readonly IntPtr _fb;
-            private readonly int _rowBytes;
-            private SKBitmap _bitmap;
-
-            public PixelFormatShim(SKImageInfo nfo, IntPtr fb, int rowBytes)
-            {
-                _nfo = nfo;
-                _fb = fb;
-                _rowBytes = rowBytes;
-
-               
-                _bitmap = new SKBitmap(nfo.Width, nfo.Height);
-                if (!_bitmap.CanCopyTo(nfo.ColorType))
-                {
-                    _bitmap.Dispose();
-                    throw new Exception(
-                        $"Unable to create pixel format shim for conversion from {_bitmap.ColorType} to {nfo.ColorType}");
-                }
-            }
-
-            public SKSurface CreateSurface() => SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
-
-            public void Dispose()
-            {
-                using (var tmp = _bitmap.Copy(_nfo.ColorType))
-                    tmp.CopyPixelsTo(_fb, _nfo.BytesPerPixel * _nfo.Height * _rowBytes, _rowBytes);
-                _bitmap.Dispose();
-            }
-            
-        }
-
+        /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            var fb = _surface.Lock();
-            PixelFormatShim shim = null;
-            SKImageInfo framebuffer = new SKImageInfo(fb.Width, fb.Height, fb.Format.ToSkColorType(),
-                SKAlphaType.Premul);
-            var surface = SKSurface.Create(framebuffer, fb.Address, fb.RowBytes) ??
-                          (shim = new PixelFormatShim(framebuffer, fb.Address, fb.RowBytes))
-                          .CreateSurface();
-            if (surface == null)
-                throw new Exception("Unable to create a surface for pixel format " + fb.Format +
-                                    " or pixel format translator");
-            var canvas = surface.Canvas;
+            var framebuffer = _platformSurface.Lock();
+            var framebufferImageInfo = new SKImageInfo(framebuffer.Width, framebuffer.Height,
+                framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
 
+            CreateSurface(framebufferImageInfo, framebuffer);
 
+            var canvas = _framebufferSurface.Canvas;
 
-            canvas.RestoreToCount(0);
+            canvas.RestoreToCount(-1);
             canvas.Save();
             canvas.ResetMatrix();
-            return new DrawingContextImpl(canvas, fb.Dpi, visualBrushRenderer, canvas, surface, shim, fb);
+
+            var createInfo = new DrawingContextImpl.CreateInfo
+            {
+                Canvas = canvas,
+                Dpi = framebuffer.Dpi,
+                VisualBrushRenderer = visualBrushRenderer,
+                DisableTextLcdRendering = true
+            };
+
+            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, framebuffer);
+        }
+
+        /// <summary>
+        /// Check if two images info are compatible.
+        /// </summary>
+        /// <param name="currentImageInfo">Current.</param>
+        /// <param name="desiredImageInfo">Desired.</param>
+        /// <returns>True, if images are compatible.</returns>
+        private static bool AreImageInfosCompatible(SKImageInfo currentImageInfo, SKImageInfo desiredImageInfo)
+        {
+            return currentImageInfo.Width == desiredImageInfo.Width &&
+                   currentImageInfo.Height == desiredImageInfo.Height &&
+                   currentImageInfo.ColorType == desiredImageInfo.ColorType;
+        }
+
+        /// <summary>
+        /// Create Skia surface backed by given framebuffer.
+        /// </summary>
+        /// <param name="desiredImageInfo">Desired image info.</param>
+        /// <param name="framebuffer">Backing framebuffer.</param>
+        private void CreateSurface(SKImageInfo desiredImageInfo, ILockedFramebuffer framebuffer)
+        {
+            if (_framebufferSurface != null && AreImageInfosCompatible(_currentImageInfo, desiredImageInfo) && _currentFramebufferAddress == framebuffer.Address)
+            {
+                return;
+            }
+            
+            FreeSurface();
+            
+            _currentFramebufferAddress = framebuffer.Address;
+
+            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, framebuffer.RowBytes);
+
+            // If surface cannot be created - try to create a compatibility shim first
+            if (surface == null)
+            {
+                _conversionShim = new PixelFormatConversionShim(desiredImageInfo, framebuffer.Address);
+                _preFramebufferCopyHandler = _conversionShim.SurfaceCopyHandler;
+
+                surface = _conversionShim.Surface;
+            }
+
+            _framebufferSurface = surface ?? throw new Exception("Unable to create a surface for pixel format " +
+                                                                 framebuffer.Format +
+                                                                 " or pixel format translator");
+            _currentImageInfo = desiredImageInfo;
+        }
+
+        /// <summary>
+        /// Free Skia surface.
+        /// </summary>
+        private void FreeSurface()
+        {
+            _conversionShim?.Dispose();
+            _conversionShim = null;
+            _preFramebufferCopyHandler = null;
+
+            if (_conversionShim != null)
+            {
+                _framebufferSurface?.Dispose();
+            }
+
+            _framebufferSurface = null;
+            _currentFramebufferAddress = IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Converts non-compatible pixel formats using bitmap copies.
+        /// </summary>
+        private class PixelFormatConversionShim : IDisposable
+        {
+            private readonly SKBitmap _bitmap;
+            private readonly SKImageInfo _destinationInfo;
+            private readonly IntPtr _framebufferAddress;
+
+            public PixelFormatConversionShim(SKImageInfo destinationInfo, IntPtr framebufferAddress)
+            {
+                _destinationInfo = destinationInfo;
+                _framebufferAddress = framebufferAddress;
+
+                // Create bitmap using default platform settings
+                _bitmap = new SKBitmap(destinationInfo.Width, destinationInfo.Height);
+
+                if (!_bitmap.CanCopyTo(destinationInfo.ColorType))
+                {
+                    _bitmap.Dispose();
+
+                    throw new Exception(
+                        $"Unable to create pixel format shim for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                }
+
+                Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
+
+                if (Surface == null)
+                {
+                    _bitmap.Dispose();
+
+                    throw new Exception(
+                        $"Unable to create pixel format shim surface for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                }
+
+                SurfaceCopyHandler = Disposable.Create(CopySurface);
+            }
+
+            /// <summary>
+            /// Skia surface.
+            /// </summary>
+            public SKSurface Surface { get; }
+
+            /// <summary>
+            /// Handler to start conversion via surface copy.
+            /// </summary>
+            public IDisposable SurfaceCopyHandler { get; }
+
+            /// <inheritdoc />
+            public void Dispose()
+            {
+                Surface.Dispose();
+                _bitmap.Dispose();
+            }
+
+            /// <summary>
+            /// Convert and copy surface to a framebuffer.
+            /// </summary>
+            private void CopySurface()
+            {
+                using (var snapshot = Surface.Snapshot())
+                {
+                    snapshot.ReadPixels(_destinationInfo, _framebufferAddress, _destinationInfo.RowBytes, 0, 0,
+                        SKImageCachingHint.Disallow);
+                }
+            }
         }
     }
 }

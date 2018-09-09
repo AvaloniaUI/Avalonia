@@ -1,8 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-
 namespace Avalonia.Media
 {
     /// <summary>
@@ -50,6 +48,21 @@ namespace Avalonia.Media
         {
             get { return GetValue(ColorProperty); }
             set { SetValue(ColorProperty, value); }
+        }
+
+        /// <summary>
+        /// Parses a brush string.
+        /// </summary>
+        /// <param name="s">The brush string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        /// <remarks>
+        /// Whereas <see cref="Brush.Parse(string)"/> may return an immutable solid color brush,
+        /// this method always returns a mutable <see cref="SolidColorBrush"/>.
+        /// </remarks>
+        public static new SolidColorBrush Parse(string s)
+        {
+            var brush = (ISolidColorBrush)Brush.Parse(s);
+            return brush is SolidColorBrush solid ? solid : new SolidColorBrush(brush.Color);
         }
 
         /// <summary>

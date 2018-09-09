@@ -12,7 +12,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parse_Parses_RGB_Hash_Brush()
         {
-            var result = (SolidColorBrush)Brush.Parse("#ff8844");
+            var result = (ISolidColorBrush)Brush.Parse("#ff8844");
 
             Assert.Equal(0xff, result.Color.R);
             Assert.Equal(0x88, result.Color.G);
@@ -23,7 +23,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parse_Parses_ARGB_Hash_Brush()
         {
-            var result = (SolidColorBrush)Brush.Parse("#40ff8844");
+            var result = (ISolidColorBrush)Brush.Parse("#40ff8844");
 
             Assert.Equal(0xff, result.Color.R);
             Assert.Equal(0x88, result.Color.G);
@@ -34,7 +34,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parse_Parses_Named_Brush_Lowercase()
         {
-            var result = (SolidColorBrush)Brush.Parse("red");
+            var result = (ISolidColorBrush)Brush.Parse("red");
 
             Assert.Equal(0xff, result.Color.R);
             Assert.Equal(0x00, result.Color.G);
@@ -45,12 +45,22 @@ namespace Avalonia.Visuals.UnitTests.Media
         [Fact]
         public void Parse_Parses_Named_Brush_Uppercase()
         {
-            var result = (SolidColorBrush)Brush.Parse("RED");
+            var result = (ISolidColorBrush)Brush.Parse("RED");
 
             Assert.Equal(0xff, result.Color.R);
             Assert.Equal(0x00, result.Color.G);
             Assert.Equal(0x00, result.Color.B);
             Assert.Equal(0xff, result.Color.A);
+        }
+
+        [Fact]
+        public void Parse_ToString_Named_Brush_Roundtrip()
+        {
+            const string expectedName = "Red";
+            var brush = (ISolidColorBrush)Brush.Parse(expectedName);
+            var name = brush.ToString();
+
+            Assert.Equal(expectedName, name);
         }
 
         [Fact]

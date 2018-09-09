@@ -11,7 +11,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Metadata;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -360,7 +359,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         if (!AlwaysSelected)
                         {
-                            SelectedIndex = -1;
+                            selectedIndex = SelectedIndex = -1;
                         }
                         else
                         {
@@ -368,10 +367,15 @@ namespace Avalonia.Controls.Primitives
                         }
                     }
 
+                    var items = Items?.Cast<object>();
+                    if (selectedIndex >= items.Count())
+                    {
+                        selectedIndex = SelectedIndex = items.Count() - 1;
+                    }
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    SelectedIndex = IndexOf(e.NewItems, SelectedItem);
+                    SelectedIndex = IndexOf(Items, SelectedItem);
                     break;
             }
         }
@@ -408,12 +412,15 @@ namespace Avalonia.Controls.Primitives
 
             var panel = (InputElement)Presenter.Panel;
 
-            foreach (var container in e.Containers)
+            if (panel != null)
             {
-                if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                foreach (var container in e.Containers)
                 {
-                    KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                    break;
+                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
+                    {
+                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
+                        break;
+                    }
                 }
             }
         }
@@ -447,6 +454,42 @@ namespace Avalonia.Controls.Primitives
             {
                 UpdateFinished();
             }
+        }
+
+        /// <summary>
+        /// Moves the selection in the specified direction relative to the current selection.
+        /// </summary>
+        /// <param name="direction">The direction to move.</param>
+        /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
+        /// <returns>True if the selection was moved; otherwise false.</returns>
+        protected bool MoveSelection(NavigationDirection direction, bool wrap)
+        {
+            var from = SelectedIndex != -1 ? ItemContainerGenerator.ContainerFromIndex(SelectedIndex) : null;
+            return MoveSelection(from, direction, wrap);
+        }
+
+        /// <summary>
+        /// Moves the selection in the specified direction relative to the specified container.
+        /// </summary>
+        /// <param name="from">The container which serves as a starting point for the movement.</param>
+        /// <param name="direction">The direction to move.</param>
+        /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
+        /// <returns>True if the selection was moved; otherwise false.</returns>
+        protected bool MoveSelection(IControl from, NavigationDirection direction, bool wrap)
+        {
+            if (Presenter?.Panel is INavigableContainer container &&
+                GetNextControl(container, direction, from, wrap) is IControl next)
+            {
+                var index = ItemContainerGenerator.IndexFromContainer(next);
+
+                if (index != -1)
+                {
+                    SelectedIndex = index;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

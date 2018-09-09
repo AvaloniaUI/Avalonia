@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
@@ -70,6 +68,10 @@ namespace Avalonia.LinuxFramebuffer
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
         public Action Closed { get; set; }
-        public event Action LostFocus;
+        public event Action LostFocus
+        {
+            add {}
+            remove {}
+        }
     }
 }

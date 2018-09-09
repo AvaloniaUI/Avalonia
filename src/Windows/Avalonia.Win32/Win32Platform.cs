@@ -1,27 +1,23 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Platform;
-using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
-using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using System.IO;
-#if NETSTANDARD
-using Win32Exception = Avalonia.Win32.NetStandard.AvaloniaWin32Exception;
-#else
-using System.ComponentModel;
-#endif
+using Avalonia.Win32.Input;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia
 {
@@ -54,7 +50,12 @@ namespace Avalonia.Win32
             // Declare that this process is aware of per monitor DPI
             if (UnmanagedMethods.ShCoreAvailable)
             {
-                UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                var osVersion = Environment.OSVersion.Version;
+                if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor > 2))
+                {
+                    UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS
+                        .PROCESS_PER_MONITOR_DPI_AWARE);
+                }
             }
 
             CreateMessageWindow();
@@ -88,6 +89,9 @@ namespace Avalonia.Win32
 
             UseDeferredRendering = deferredRendering;
             _uiThread = UnmanagedMethods.GetCurrentThreadId();
+
+            if (OleContext.Current != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
         }
 
         public bool HasMessages()

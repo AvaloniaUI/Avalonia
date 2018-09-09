@@ -51,6 +51,10 @@ namespace Avalonia.MonoMac
                 [StandardCursorType.TopSide] = NSCursor.ResizeUpCursor,
                 [StandardCursorType.UpArrow] = NSCursor.ResizeUpCursor,
                 [StandardCursorType.Wait] = NSCursor.ArrowCursor, //TODO
+                [StandardCursorType.DragMove] = NSCursor.DragCopyCursor, // TODO
+                [StandardCursorType.DragCopy] = NSCursor.DragCopyCursor,
+                [StandardCursorType.DragLink] = NSCursor.DragLinkCursor,
+
             };
         }
 

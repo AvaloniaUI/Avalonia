@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Data;
@@ -164,6 +165,39 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(container.IsSelected);
         }
+
+
+        [Fact]
+        public void Setting_SelectedItem_Should_Raise_SelectedItemChanged_Event()
+        {
+            var tree = CreateTestTreeData();
+            var target = new TreeView
+            {
+                Template = CreateTreeViewTemplate(),
+                Items = tree,
+            };
+
+            var visualRoot = new TestRoot();
+            visualRoot.Child = target;
+
+            CreateNodeDataTemplate(target);
+            ApplyTemplates(target);
+
+            var item = tree[0].Children[1].Children[0];
+
+            var called = false;
+            target.SelectedItemChanged += (s, e) =>
+            {
+                Assert.Empty(e.RemovedItems);
+                Assert.Equal(1, e.AddedItems.Count);
+                Assert.Same(item, e.AddedItems[0]);
+                called = true;
+            };
+
+            target.SelectedItem = item;
+            Assert.True(called);
+        }
+
 
         [Fact]
         public void LogicalChildren_Should_Be_Set()
@@ -514,7 +548,7 @@ namespace Avalonia.Controls.UnitTests
 
             public InstancedBinding ItemsSelector(object item)
             {
-                var obs = new ExpressionObserver(item, nameof(Node.Children));
+                var obs = ExpressionObserver.Create(item, o => (o as Node).Children);
                 return InstancedBinding.OneWay(obs);
             }
 

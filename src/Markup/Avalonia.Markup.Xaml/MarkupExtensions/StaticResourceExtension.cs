@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Portable.Xaml;
 using Portable.Xaml.ComponentModel;
 using Portable.Xaml.Markup;
@@ -36,13 +36,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             // Look upwards though the ambient context for IResourceProviders which might be able
             // to give us the resource.
-            //
-            // TODO: If we're in a template then only the ambient values since the root of the
-            // template wil be included here. We need some way to get hold of the parent ambient
-            // context and search that. See the test:
-            //
-            //   StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File
-            //
             foreach (var ambientValue in ambientValues)
             {
                 // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
@@ -76,7 +69,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
-        private object GetValue(IControl control)
+        private object GetValue(IStyledElement control)
         {
             return control.FindResource(ResourceKey);
         }

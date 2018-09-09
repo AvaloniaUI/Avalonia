@@ -1,30 +1,43 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">TextBox</TextBlock>
     <TextBlock Classes="h2">A control into which the user can input text</TextBlock>
 
     <StackPanel Orientation="Horizontal"
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
-              Gap="16">
-      <StackPanel Orientation="Vertical" Gap="8">
+              Spacing="16">
+      <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit." Width="200" />
+        <TextBox Watermark="ReadOnly" IsReadOnly="True" Text="This is read only"/>
         <TextBox Width="200" Watermark="Watermark" />
-        <TextBox Width="200" 
-                 Watermark="Floating Watermark" 
+        <TextBox Width="200"
+                 Watermark="Floating Watermark"
                  UseFloatingWatermark="True"
                  Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit."/>
+
+        <TextBox Width="200"
+                 Watermark="Password Box"
+                 UseFloatingWatermark="True"
+                 PasswordChar="*"
+                 Text="Password" />
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
       </StackPanel>
 
-      <StackPanel Orientation="Vertical" Gap="8">
+      <StackPanel Orientation="Vertical" Spacing="8">
         <TextBox AcceptsReturn="True" TextWrapping="Wrap" Width="200" Height="125"
                  Text="Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
         <TextBox AcceptsReturn="True" Width="200" Height="125"
                  Text="Multiline TextBox with no TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
       </StackPanel>
-    </StackPanel>
+        <StackPanel Orientation="Vertical" Spacing="8">
+            <TextBox Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
+                <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Source Sans Pro"/>
+                <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-Italic.ttf?assembly=ControlCatalog#Source Sans Pro"/>
+                <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="resm:ControlCatalog.Assets.Fonts.SourceSansPro-*.ttf?assembly=ControlCatalog#Source Sans Pro"/>
+        </StackPanel>
+      </StackPanel>
   </StackPanel>
 </UserControl>

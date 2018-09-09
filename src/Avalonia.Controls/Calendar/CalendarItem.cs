@@ -3,13 +3,13 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System;
+using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using System;
-using System.Diagnostics;
-using System.Globalization;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -517,7 +517,7 @@ namespace Avalonia.Controls.Primitives
             for (int childIndex = Calendar.ColumnsPerMonth; childIndex < count; childIndex++)
             {
                 CalendarDayButton childButton = MonthView.Children[childIndex] as CalendarDayButton;
-                Debug.Assert(childButton != null, "childButton should not be null!");
+                Contract.Requires<ArgumentNullException>(childButton != null);
 
                 childButton.Index = childIndex;
                 SetButtonState(childButton, dateToAdd);
@@ -554,7 +554,7 @@ namespace Avalonia.Controls.Primitives
                     for (int i = childIndex; i < count; i++)
                     {
                         childButton = MonthView.Children[i] as CalendarDayButton;
-                        Debug.Assert(childButton != null, "childButton should not be null!");
+                        Contract.Requires<ArgumentNullException>(childButton != null);
                         // button needs a content to occupy the necessary space
                         // for the content presenter
                         childButton.Content = i.ToString(DateTimeHelper.GetCurrentDateFormat());
@@ -650,7 +650,7 @@ namespace Avalonia.Controls.Primitives
             foreach (object child in YearView.Children)
             {
                 CalendarButton childButton = child as CalendarButton;
-                Debug.Assert(childButton != null, "childButton should not be null!");
+                Contract.Requires<ArgumentNullException>(childButton != null);
                 // There should be no time component. Time is 12:00 AM
                 DateTime day = new DateTime(_currentMonth.Year, count + 1, 1);
                 childButton.DataContext = day;
@@ -746,7 +746,7 @@ namespace Avalonia.Controls.Primitives
             foreach (object child in YearView.Children)
             {
                 CalendarButton childButton = child as CalendarButton;
-                Debug.Assert(childButton != null, "childButton should not be null!");
+                Contract.Requires<ArgumentNullException>(childButton != null);
                 year = decade + count;
 
                 if (year <= DateTime.MaxValue.Year && year >= DateTime.MinValue.Year)
@@ -826,7 +826,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     Owner.Focus();
                 }
-                Button b = sender as Button;
+                Button b = (Button)sender;
                 DateTime d;
 
                 if (b.IsEnabled)
@@ -863,7 +863,7 @@ namespace Avalonia.Controls.Primitives
                     Owner.Focus();
                 }
 
-                Button b = sender as Button;
+                Button b = (Button)sender;
                 if (b.IsEnabled)
                 {
                     Owner.OnPreviousClick();
@@ -878,7 +878,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     Owner.Focus();
                 }
-                Button b = sender as Button;
+                Button b = (Button)sender;
 
                 if (b.IsEnabled)
                 {
@@ -891,8 +891,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (Owner != null)
             {
-                CalendarDayButton b = sender as CalendarDayButton;
-                if (_isMouseLeftButtonDown && b != null && b.IsEnabled && !b.IsBlackout)
+                if (_isMouseLeftButtonDown && sender is CalendarDayButton b && b.IsEnabled && !b.IsBlackout)
                 {
                     // Update the states of all buttons to be selected starting
                     // from HoverStart to b
@@ -918,7 +917,7 @@ namespace Avalonia.Controls.Primitives
                                 Debug.Assert(b.DataContext != null, "The DataContext should not be null!");
                                 Owner.UnHighlightDays();
                                 Owner.HoverEndIndex = b.Index;
-                                Owner.HoverEnd = (DateTime)b.DataContext;
+                                Owner.HoverEnd = (DateTime?)b.DataContext;
                                 // Update the States of the buttons
                                 Owner.HighlightDays();
                                 return;
@@ -931,7 +930,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_isMouseLeftButtonDown)
             {
-                CalendarDayButton b = sender as CalendarDayButton;
+                CalendarDayButton b = (CalendarDayButton)sender;
                 // The button is in Pressed state. Change the state to normal.
                 if (e.Device.Captured == b)
                     e.Device.Capture(null);
@@ -973,7 +972,7 @@ namespace Avalonia.Controls.Primitives
                     if (b.IsEnabled && !b.IsBlackout)
                     {
                         DateTime selectedDate = (DateTime)b.DataContext;
-                        Debug.Assert(selectedDate != null, "selectedDate should not be null!");
+                        Contract.Requires<ArgumentNullException>(selectedDate != null);
                         _isMouseLeftButtonDown = true;
                         // null check is added for unit tests
                         if (e != null)
@@ -1149,7 +1148,7 @@ namespace Avalonia.Controls.Primitives
                 if (_isControlPressed && Owner.SelectionMode == CalendarSelectionMode.MultipleRange)
                 {
                     CalendarDayButton b = sender as CalendarDayButton;
-                    Debug.Assert(b != null, "The sender should be a non-null CalendarDayButton!");
+                    Contract.Requires<ArgumentNullException>(b != null);
 
                     if (b.IsSelected)
                     {
@@ -1169,7 +1168,7 @@ namespace Avalonia.Controls.Primitives
         private void Month_CalendarButtonMouseDown(object sender, PointerPressedEventArgs e)
         {
             CalendarButton b = sender as CalendarButton;
-            Debug.Assert(b != null, "The sender should be a non-null CalendarDayButton!");
+            Contract.Requires<ArgumentNullException>(b != null);
 
             _isMouseLeftButtonDownYearView = true;
 
@@ -1208,7 +1207,7 @@ namespace Avalonia.Controls.Primitives
             if (_isMouseLeftButtonDownYearView)
             {
                 CalendarButton b = sender as CalendarButton;
-                Debug.Assert(b != null, "The sender should be a non-null CalendarDayButton!");
+                Contract.Requires<ArgumentNullException>(b != null);
                 UpdateYearViewSelection(b);
             }
         }
@@ -1217,7 +1216,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_isMouseLeftButtonDownYearView)
             {
-                CalendarButton b = sender as CalendarButton;
+                CalendarButton b = (CalendarButton)sender;
                 // The button is in Pressed state. Change the state to normal.
                 if (e.Device.Captured == b)
                     e.Device.Capture(null);

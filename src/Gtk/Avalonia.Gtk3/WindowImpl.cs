@@ -1,16 +1,32 @@
 ﻿using System;
-using System.Linq.Expressions;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Gtk3
 {
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
+        private WindowState _lastWindowState;
+
         public WindowImpl() : base(Native.GtkWindowNew(GtkWindowType.TopLevel))
         {
+        }
+
+        protected unsafe override bool OnStateChanged(IntPtr w, IntPtr pev, IntPtr userData)
+        {
+            var windowStateEvent = (GdkEventWindowState*)pev;
+            var newWindowState = windowStateEvent->new_window_state;
+            var windowState = newWindowState.HasFlag(GdkWindowState.Iconified) ? WindowState.Minimized
+                : (newWindowState.HasFlag(GdkWindowState.Maximized) ? WindowState.Maximized : WindowState.Normal);
+
+            if (windowState != _lastWindowState)
+            {
+                _lastWindowState = windowState;
+                WindowStateChanged?.Invoke(windowState);
+            }
+
+            return base.OnStateChanged(w, pev, userData);
         }
 
         public void SetTitle(string title)
@@ -43,7 +59,9 @@ namespace Avalonia.Gtk3
                 }
             }
         }
-        
+
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         public IDisposable ShowDialog()
         {
             Native.GtkWindowSetModal(GtkWidget, true);
@@ -61,7 +79,9 @@ namespace Avalonia.Gtk3
         }
 
         public void ShowTaskbarIcon(bool value) => Native.GtkWindowSetSkipTaskbarHint(GtkWidget, !value);
-        
+
+        public void CanResize(bool value) => Native.GtkWindowSetResizable(GtkWidget, value);
+
 
         class EmptyDisposable : IDisposable
         {

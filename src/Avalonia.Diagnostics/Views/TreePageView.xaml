@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels;assembly=Avalonia.Diagnostics">
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
   <Grid ColumnDefinitions="*,4,3*">    
     <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Gap="8">
+          <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="{Binding Type}"/>
             <TextBlock Text="{Binding Classes}"/>
           </StackPanel>

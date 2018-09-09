@@ -23,7 +23,7 @@ namespace Avalonia.Markup.Xaml.Converters
             var result = new List<Point>(pointStrs.Length);
             foreach (var pointStr in pointStrs)
             {
-                result.Add(Point.Parse(pointStr, culture));
+                result.Add(Point.Parse(pointStr));
             }
 
             return result;

@@ -1,189 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>netstandard2.0</TargetFramework>    
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Pages\ContextMenuPage.xaml" />
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <EmbeddedResource Include="App.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainView.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DecoratedWindow.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ButtonSpinnerPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\DialogsPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\BorderPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ButtonPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CalendarPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CanvasPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CarouselPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CheckBoxPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ContextMenuPage.xaml" />
-    <EmbeddedResource Include="Pages\DropDownPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\DatePickerPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ExpanderPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ImagePage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\LayoutTransformControlPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\MenuPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ProgressBarPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\RadioButtonPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\SliderPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\TextBoxPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\ToolTipPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
+    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
+    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
+    <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainView.xaml.cs">
-      <DependentUpon>MainView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DecoratedWindow.xaml.cs">
-      <DependentUpon>DecoratedWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\DialogsPage.xaml.cs">
-      <DependentUpon>DialogsPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\BorderPage.xaml.cs">
-      <DependentUpon>BorderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ButtonPage.xaml.cs">
-      <DependentUpon>ButtonPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CalendarPage.xaml.cs">
-      <DependentUpon>CalendarPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CanvasPage.xaml.cs">
-      <DependentUpon>CanvasPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CarouselPage.xaml.cs">
-      <DependentUpon>CarouselPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ContextMenuPage.xaml.cs">
-      <DependentUpon>ContextMenuPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\CheckBoxPage.xaml.cs">
-      <DependentUpon>CheckBoxPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\DropDownPage.xaml.cs">
-      <DependentUpon>DropDownPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\DatePickerPage.xaml.cs">
-      <DependentUpon>DatePickerPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ExpanderPage.xaml.cs">
-      <DependentUpon>ExpanderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ImagePage.xaml.cs">
-      <DependentUpon>ImagePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\LayoutTransformControlPage.xaml.cs">
-      <DependentUpon>LayoutTransformControlPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\MenuPage.xaml.cs">
-      <DependentUpon>MenuPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ProgressBarPage.xaml.cs">
-      <DependentUpon>ProgressBarPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\RadioButtonPage.xaml.cs">
-      <DependentUpon>RadioButtonPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\SliderPage.xaml.cs">
-      <DependentUpon>SliderPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\TreeViewPage.xaml.cs">
-      <DependentUpon>TreeViewPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\TextBoxPage.xaml.cs">
-      <DependentUpon>TextBoxPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ToolTipPage.xaml.cs">
-      <DependentUpon>ToolTipPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ButtonSpinnerPage.xaml.cs">
-      <DependentUpon>ButtonSpinnerPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\ScreenPage.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\delicate-arch-896885_640.jpg" />
-    <EmbeddedResource Include="Assets\github_icon.png" />
-    <EmbeddedResource Include="Assets\hirsch-899118_640.jpg" />
-    <EmbeddedResource Include="Assets\maple-leaf-888807_640.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="SideBar.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
@@ -191,7 +25,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
@@ -200,20 +33,6 @@
     <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\test_icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\TreeViewPage.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>
-      </SubType>
-    </EmbeddedResource>
-  </ItemGroup>
+  
   <Import Project="..\..\build\Serilog.props" />
 </Project>

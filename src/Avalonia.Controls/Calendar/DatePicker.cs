@@ -3,15 +3,14 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Controls.Primitives;
-using Avalonia.Data;
-using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -842,7 +841,7 @@ namespace Avalonia.Controls
         private void Calendar_KeyDown(object sender, KeyEventArgs e)
         {
             Calendar c = sender as Calendar;
-            Debug.Assert(c != null, "The Calendar should not be null!");
+            Contract.Requires<ArgumentNullException>(c != null);
 
             if (!e.Handled && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape) && c.DisplayMode == CalendarMode.Month)
             {
@@ -1083,7 +1082,7 @@ namespace Avalonia.Controls
                 else
                 {
                     // If parse error: TextBox should have the latest valid
-                    // selecteddate value:
+                    // SelectedDate value:
                     if (SelectedDate != null)
                     {
                         string newtext = this.DateTimeToString(SelectedDate.Value);

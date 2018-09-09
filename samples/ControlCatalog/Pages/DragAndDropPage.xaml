@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui">
+    <StackPanel Orientation="Vertical" Spacing="4">
+        <TextBlock Classes="h1">Drag+Drop</TextBlock>
+        <TextBlock Classes="h2">Example of Drag+Drop capabilities</TextBlock>
+
+        <StackPanel Orientation="Horizontal"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+            <Border BorderBrush="{DynamicResource ThemeAccentBrush}" BorderThickness="2" Padding="16" Name="DragMe">
+                <TextBlock Name="DragState">Drag Me</TextBlock>
+            </Border>
+            <Border Background="{DynamicResource ThemeAccentBrush2}" Padding="16" 
+                    DragDrop.AllowDrop="True">
+                <TextBlock Name="DropState">Drop some text or files here</TextBlock>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

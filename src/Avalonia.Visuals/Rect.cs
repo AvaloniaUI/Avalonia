@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
     /// Defines a rectangle.
     /// </summary>
-    public struct Rect
+    public readonly struct Rect
     {
         /// <summary>
         /// An empty rectangle.
@@ -172,7 +172,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Checks for unequality between two <see cref="Rect"/>s.
+        /// Checks for inequality between two <see cref="Rect"/>s.
         /// </summary>
         /// <param name="left">The first rect.</param>
         /// <param name="right">The second rect.</param>
@@ -486,25 +486,17 @@ namespace Avalonia
         /// Parses a <see cref="Rect"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The parsed <see cref="Rect"/>.</returns>
-        public static Rect Parse(string s, CultureInfo culture)
+        public static Rect Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 4)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Rect"))
             {
                 return new Rect(
-                    double.Parse(parts[0], culture),
-                    double.Parse(parts[1], culture),
-                    double.Parse(parts[2], culture),
-                    double.Parse(parts[3], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Rect.");
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
             }
         }
     }

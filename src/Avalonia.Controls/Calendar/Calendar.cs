@@ -3,14 +3,14 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 
 namespace Avalonia.Controls
 {
@@ -769,7 +769,7 @@ namespace Avalonia.Controls
         }
         private static void UpdateDisplayDate(Calendar c, DateTime addedDate, DateTime removedDate)
         {
-            Debug.Assert(c != null, "c should not be null!");
+            Contract.Requires<ArgumentNullException>(c != null);
 
             // If DisplayDate < DisplayDateStart, DisplayDate = DisplayDateStart
             if (DateTime.Compare(addedDate, c.DisplayDateRangeStart) < 0)
@@ -1016,8 +1016,6 @@ namespace Avalonia.Controls
 
         internal CalendarDayButton FindDayButtonFromDay(DateTime day)
         {
-            CalendarDayButton b;
-            DateTime? d;
             CalendarItem monthControl = MonthControl;
 
             // REMOVE_RTM: should be updated if we support MultiCalendar
@@ -1028,34 +1026,22 @@ namespace Avalonia.Controls
                 {
                     for (int childIndex = ColumnsPerMonth; childIndex < count; childIndex++)
                     {
-                        b = monthControl.MonthView.Children[childIndex] as CalendarDayButton;
-                        d = b.DataContext as DateTime?;
-
-                        if (d.HasValue)
+                        if (monthControl.MonthView.Children[childIndex] is CalendarDayButton b)
                         {
-                            if (DateTimeHelper.CompareDays(d.Value, day) == 0)
+                            var d = b.DataContext as DateTime?;
+
+                            if (d.HasValue)
                             {
-                                return b;
+                                if (DateTimeHelper.CompareDays(d.Value, day) == 0)
+                                {
+                                    return b;
+                                }
                             }
                         }
                     }
                 }
             }
             return null;
-        }
-
-        private void Calendar_SizeChanged(object sender, EventArgs e)
-        {
-            Debug.Assert(sender is Calendar, "The sender should be a Calendar!");
-
-            var size = Bounds.Size;
-            RectangleGeometry rg = new RectangleGeometry();
-            rg.Rect = new Rect(0, 0, size.Width, size.Height);
-
-            if (Root != null)
-            {
-                Root.Clip = rg;
-            }
         }
 
         private void OnSelectedMonthChanged(DateTime? selectedMonth)
@@ -1090,7 +1076,6 @@ namespace Avalonia.Controls
 
         internal void ResetStates()
         {
-            CalendarDayButton d;
             CalendarItem monthControl = MonthControl;
             int count = RowsPerMonth * ColumnsPerMonth;
             if (monthControl != null)
@@ -1099,7 +1084,7 @@ namespace Avalonia.Controls
                 {
                     for (int childIndex = ColumnsPerMonth; childIndex < count; childIndex++)
                     {
-                        d = monthControl.MonthView.Children[childIndex] as CalendarDayButton;
+                        var d = (CalendarDayButton)monthControl.MonthView.Children[childIndex];
                         d.IgnoreMouseOverState();
                     }
                 }
@@ -1190,8 +1175,6 @@ namespace Avalonia.Controls
             if (HoverEnd != null && HoverStart != null)
             {
                 int startIndex, endIndex, i;
-                CalendarDayButton b;
-                DateTime? d;
                 CalendarItem monthControl = MonthControl;
 
                 // This assumes a contiguous set of dates:
@@ -1201,18 +1184,20 @@ namespace Avalonia.Controls
 
                     for (i = startIndex; i <= endIndex; i++)
                     {
-                        b = monthControl.MonthView.Children[i] as CalendarDayButton;
-                        b.IsSelected = true;
-                        d = b.DataContext as DateTime?;
-
-                        if (d.HasValue && DateTimeHelper.CompareDays(HoverEnd.Value, d.Value) == 0)
+                        if (monthControl.MonthView.Children[i] is CalendarDayButton b)
                         {
-                            if (FocusButton != null)
+                            b.IsSelected = true;
+                            var d = b.DataContext as DateTime?;
+
+                            if (d.HasValue && DateTimeHelper.CompareDays(HoverEnd.Value, d.Value) == 0)
                             {
-                                FocusButton.IsCurrent = false;
+                                if (FocusButton != null)
+                                {
+                                    FocusButton.IsCurrent = false;
+                                }
+                                b.IsCurrent = HasFocusInternal;
+                                FocusButton = b;
                             }
-                            b.IsCurrent = HasFocusInternal;
-                            FocusButton = b;
                         }
                     }
                 }
@@ -1228,8 +1213,6 @@ namespace Avalonia.Controls
             if (HoverEnd != null && HoverStart != null)
             {
                 CalendarItem monthControl = MonthControl;
-                CalendarDayButton b;
-                DateTime? d;
 
                 if (HoverEndIndex != null && HoverStartIndex != null)
                 {
@@ -1240,15 +1223,17 @@ namespace Avalonia.Controls
                     {
                         for (i = startIndex; i <= endIndex; i++)
                         {
-                            b = monthControl.MonthView.Children[i] as CalendarDayButton;
-                            d = b.DataContext as DateTime?;
-
-                            if (d.HasValue)
+                            if (monthControl.MonthView.Children[i] is CalendarDayButton b)
                             {
-                                if (!SelectedDates.Contains(d.Value))
+                                var d = b.DataContext as DateTime?;
+
+                                if (d.HasValue)
                                 {
-                                    b.IsSelected = false;
-                                }
+                                    if (!SelectedDates.Contains(d.Value))
+                                    {
+                                        b.IsSelected = false;
+                                    }
+                                } 
                             }
                         }
                     }
@@ -1257,7 +1242,7 @@ namespace Avalonia.Controls
                         // It is SingleRange
                         for (i = startIndex; i <= endIndex; i++)
                         {
-                            (monthControl.MonthView.Children[i] as CalendarDayButton).IsSelected = false;
+                            ((CalendarDayButton)monthControl.MonthView.Children[i]).IsSelected = false;
                         }
                     }
                 }
@@ -1628,16 +1613,15 @@ namespace Avalonia.Controls
                 e.Handled = true;
             }
         }
-        internal void Calendar_KeyDown(object sender, KeyEventArgs e)
-        {
-            Calendar c = sender as Calendar;
-            Debug.Assert(c != null, "c should not be null!");
 
-            if (!e.Handled && c.IsEnabled)
+        internal void Calendar_KeyDown(KeyEventArgs e)
+        {
+            if (!e.Handled && IsEnabled)
             {
                 e.Handled = ProcessCalendarKey(e);
             }
         }
+
         internal bool ProcessCalendarKey(KeyEventArgs e)
         {
             if (DisplayMode == CalendarMode.Month)
@@ -1976,7 +1960,7 @@ namespace Avalonia.Controls
                     }
             }
         }
-        private void Calendar_KeyUp(object sender, KeyEventArgs e)
+        private void Calendar_KeyUp(KeyEventArgs e)
         {
             if (!e.Handled && (e.Key == Key.LeftShift || e.Key == Key.RightShift))
             {
@@ -2083,6 +2067,9 @@ namespace Avalonia.Controls
             DisplayDateProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateChanged);
             DisplayDateStartProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateStartChanged);
             DisplayDateEndProperty.Changed.AddClassHandler<Calendar>(x => x.OnDisplayDateEndChanged);
+            KeyDownEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyDown);
+            KeyUpEvent.AddClassHandler<Calendar>(x => x.Calendar_KeyUp);
+            
         }
 
         /// <summary>
@@ -2122,10 +2109,6 @@ namespace Avalonia.Controls
                     month.Owner = this;
                 }
             }
-
-            LayoutUpdated += Calendar_SizeChanged;
-            KeyDown += Calendar_KeyDown;
-            KeyUp += Calendar_KeyUp;
         }
 
     }

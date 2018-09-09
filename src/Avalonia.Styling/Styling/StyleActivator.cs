@@ -48,8 +48,8 @@ namespace Avalonia.Styling
             else
             {
                 return inputs.CombineLatest()
-                .Select(values => values.Any(x => x))
-                .DistinctUntilChanged();
+                    .Select(values => values.Any(x => x))
+                    .DistinctUntilChanged();
             }
         }
     }

@@ -46,7 +46,7 @@ namespace Avalonia.Input
         /// <param name="direction">The navigation direction.</param>
         /// <returns>
         /// The next element in the specified direction, or null if <paramref name="element"/>
-        /// was the last in therequested direction.
+        /// was the last in the requested direction.
         /// </returns>
         public static IInputElement GetNext(
             IInputElement element,
@@ -85,7 +85,7 @@ namespace Avalonia.Input
             }
             else
             {
-                return DirectionalNavigation.GetNext(element, direction);
+                throw new NotSupportedException();
             }
         }
 
@@ -122,47 +122,12 @@ namespace Avalonia.Input
         {
             var current = FocusManager.Instance.Current;
 
-            if (current != null)
+            if (current != null && e.Key == Key.Tab)
             {
-                NavigationDirection? direction = null;
-
-                switch (e.Key)
-                {
-                    case Key.Tab:
-                        direction = (e.Modifiers & InputModifiers.Shift) == 0 ?
-                            NavigationDirection.Next : NavigationDirection.Previous;
-                        break;
-                    case Key.Up:
-                        direction = NavigationDirection.Up;
-                        break;
-                    case Key.Down:
-                        direction = NavigationDirection.Down;
-                        break;
-                    case Key.Left:
-                        direction = NavigationDirection.Left;
-                        break;
-                    case Key.Right:
-                        direction = NavigationDirection.Right;
-                        break;
-                    case Key.PageUp:
-                        direction = NavigationDirection.PageUp;
-                        break;
-                    case Key.PageDown:
-                        direction = NavigationDirection.PageDown;
-                        break;
-                    case Key.Home:
-                        direction = NavigationDirection.First;
-                        break;
-                    case Key.End:
-                        direction = NavigationDirection.Last;
-                        break;
-                }
-
-                if (direction.HasValue)
-                {
-                    Move(current, direction.Value, e.Modifiers);
-                    e.Handled = true;
-                }
+                var direction = (e.Modifiers & InputModifiers.Shift) == 0 ?
+                    NavigationDirection.Next : NavigationDirection.Previous;
+                Move(current, direction, e.Modifiers);
+                e.Handled = true;
             }
         }
     }

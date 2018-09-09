@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Layout;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Embedding.Offscreen
@@ -22,7 +17,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
         }
 
         private void EnsureInitialized()
@@ -57,7 +52,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         Type IStyleable.StyleKey => typeof(EmbeddableControlRoot);
         public void Dispose()
         {
-            PlatformImpl.Dispose();
+            PlatformImpl?.Dispose();
         }
     }
 }

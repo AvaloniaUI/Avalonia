@@ -1,4 +1,5 @@
-﻿using Avalonia.Markup.Xaml.Data;
+﻿using Avalonia.Data;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;
@@ -43,14 +44,40 @@ namespace Avalonia.Controls.Primitives.UnitTests
             Assert.False(toggleButton.IsChecked);
         }
 
+        [Fact]
+        public void ToggleButton_ThreeState_Checked_Binds_To_Nullable_Bool()
+        {
+            var threeStateButton = new ToggleButton();
+            var source = new Class1();
+
+            threeStateButton.DataContext = source;
+            threeStateButton.Bind(ToggleButton.IsCheckedProperty, new Binding(nameof(Class1.NullableFoo)));
+
+            source.NullableFoo = true;
+            Assert.True(threeStateButton.IsChecked);
+
+            source.NullableFoo = false;
+            Assert.False(threeStateButton.IsChecked);
+
+            source.NullableFoo = null;
+            Assert.Null(threeStateButton.IsChecked);
+        }
+
         private class Class1 : NotifyingBase
         {
             private bool _foo;
+            private bool? nullableFoo;
 
             public bool Foo
             {
                 get { return _foo; }
                 set { _foo = value; RaisePropertyChanged(); }
+            }
+
+            public bool? NullableFoo
+            {
+                get { return nullableFoo; }
+                set { nullableFoo = value; RaisePropertyChanged(); }
             }
         }
     }

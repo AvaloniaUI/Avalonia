@@ -111,10 +111,6 @@
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
-      <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
-      <Name>Avalonia.HtmlRenderer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
       <Name>Avalonia.Input</Name>
@@ -158,4 +154,5 @@
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <Import Project="..\..\build\AndroidWorkarounds.props" />
 </Project>

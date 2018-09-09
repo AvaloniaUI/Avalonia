@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Input.Raw;
@@ -27,7 +26,7 @@ namespace Avalonia.Input
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
         /// <remarks>
-        /// When an element captures the mouse, it recieves mouse input whether the cursor is 
+        /// When an element captures the mouse, it receives mouse input whether the cursor is 
         /// within the control's bounds or not. To set the mouse capture, call the 
         /// <see cref="Capture"/> method.
         /// </remarks>
@@ -66,7 +65,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="control">The control.</param>
         /// <remarks>
-        /// When an element captures the mouse, it recieves mouse input whether the cursor is 
+        /// When an element captures the mouse, it receives mouse input whether the cursor is 
         /// within the control's bounds or not. The current mouse capture control is exposed
         /// by the <see cref="Captured"/> property.
         /// </remarks>
@@ -346,12 +345,7 @@ namespace Avalonia.Input
 
             IInputElement branch = null;
 
-            var e = new PointerEventArgs
-            {
-                RoutedEvent = InputElement.PointerEnterEvent,
-                Device = device,
-            };
-
+            var e = new PointerEventArgs { Device = device, };
             var el = element;
 
             while (el != null)
@@ -361,9 +355,6 @@ namespace Avalonia.Input
                     branch = el;
                     break;
                 }
-
-                e.Source = el;
-                el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
 
@@ -373,11 +364,21 @@ namespace Avalonia.Input
             while (el != null && el != branch)
             {
                 e.Source = el;
+                e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
             }
 
-            root.PointerOverElement = element;
+            el = root.PointerOverElement = element;
+            e.RoutedEvent = InputElement.PointerEnterEvent;
+
+            while (el != null && el != branch)
+            {
+                e.Source = el;
+                e.Handled = false;
+                el.RaiseEvent(e);
+                el = (IInputElement)el.VisualParent;
+            }
         }
     }
 }

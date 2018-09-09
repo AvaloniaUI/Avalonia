@@ -9,12 +9,12 @@
             <TabStrip Name="PART_TabStrip"
                       MemberSelector="{x:Static TabControl.HeaderSelector}"
                       Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding Path=SelectedIndex, Mode=TwoWay}"/>
+                      SelectedIndex="{TemplateBinding SelectedIndex, Mode=TwoWay}"/>
             <Carousel Name="PART_Content"
                       MemberSelector="{x:Static TabControl.ContentSelector}"
                       Items="{TemplateBinding Items}"
-                      SelectedIndex="{TemplateBinding Path=SelectedIndex}"
-                      Transition="{TemplateBinding Transition}"
+                      SelectedIndex="{TemplateBinding SelectedIndex}"
+                      PageTransition="{TemplateBinding PageTransition}"
                       Grid.Row="1"/>
           </DockPanel>
         </Border>

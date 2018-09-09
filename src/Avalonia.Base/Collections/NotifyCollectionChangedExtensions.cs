@@ -2,13 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reactive;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Collections
@@ -29,7 +25,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Subcribes to the CollectionChanged event using a weak subscription.
+        /// Subscribes to the CollectionChanged event using a weak subscription.
         /// </summary>
         /// <param name="collection">The collection.</param>
         /// <param name="handler">
@@ -43,13 +39,12 @@ namespace Avalonia.Collections
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            return
-                collection.GetWeakCollectionChangedObservable()
-                          .Subscribe(e => handler.Invoke(collection, e));
+            return collection.GetWeakCollectionChangedObservable()
+                .Subscribe(e => handler(collection, e));
         }
 
         /// <summary>
-        /// Subcribes to the CollectionChanged event using a weak subscription.
+        /// Subscribes to the CollectionChanged event using a weak subscription.
         /// </summary>
         /// <param name="collection">The collection.</param>
         /// <param name="handler">
@@ -63,18 +58,13 @@ namespace Avalonia.Collections
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(handler != null);
 
-            return
-                collection.GetWeakCollectionChangedObservable()
-                          .Subscribe(handler);
+            return collection.GetWeakCollectionChangedObservable().Subscribe(handler);
         }
 
-        private class WeakCollectionChangedObservable : ObservableBase<NotifyCollectionChangedEventArgs>,
+        private class WeakCollectionChangedObservable : LightweightObservableBase<NotifyCollectionChangedEventArgs>,
             IWeakSubscriber<NotifyCollectionChangedEventArgs>
         {
             private WeakReference<INotifyCollectionChanged> _sourceReference;
-            private readonly Subject<NotifyCollectionChangedEventArgs> _changed = new Subject<NotifyCollectionChangedEventArgs>();
-
-            private int _count;
 
             public WeakCollectionChangedObservable(WeakReference<INotifyCollectionChanged> source)
             {
@@ -83,43 +73,28 @@ namespace Avalonia.Collections
 
             public void OnEvent(object sender, NotifyCollectionChangedEventArgs e)
             {
-                _changed.OnNext(e);
+                PublishNext(e);
             }
 
-            protected override IDisposable SubscribeCore(IObserver<NotifyCollectionChangedEventArgs> observer)
+            protected override void Initialize()
             {
                 if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
                 {
-                    if (_count++ == 0)
-                    {
-                        WeakSubscriptionManager.Subscribe(
-                            instance,
-                            nameof(instance.CollectionChanged),
-                            this);
-                    }
-
-                    return Observable.Using(() => Disposable.Create(DecrementCount), _ => _changed)
-                        .Subscribe(observer);
-                }
-                else
-                {
-                    _changed.OnCompleted();
-                    observer.OnCompleted();
-                    return Disposable.Empty;
+                    WeakSubscriptionManager.Subscribe(
+                    instance,
+                    nameof(instance.CollectionChanged),
+                    this);
                 }
             }
 
-            private void DecrementCount()
+            protected override void Deinitialize()
             {
-                if (--_count == 0)
+                if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
                 {
-                    if (_sourceReference.TryGetTarget(out INotifyCollectionChanged instance))
-                    {
-                        WeakSubscriptionManager.Unsubscribe(
-                            instance,
-                            nameof(instance.CollectionChanged),
-                            this);
-                    }
+                    WeakSubscriptionManager.Unsubscribe(
+                        instance,
+                        nameof(instance.CollectionChanged),
+                        this);
                 }
             }
         }

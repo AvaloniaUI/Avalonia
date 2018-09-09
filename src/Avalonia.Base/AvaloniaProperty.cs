@@ -231,7 +231,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Tests two <see cref="AvaloniaProperty"/>s for unequality.
+        /// Tests two <see cref="AvaloniaProperty"/>s for inequality.
         /// </summary>
         /// <param name="a">The first property.</param>
         /// <param name="b">The second property.</param>
@@ -311,7 +311,9 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, typeof(TOwner), metadata, inherits);
-            AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
+            var registry = AvaloniaPropertyRegistry.Instance;
+            registry.Register(typeof(TOwner), result);
+            registry.RegisterAttached(typeof(THost), result);
             return result;
         }
 
@@ -344,7 +346,9 @@ namespace Avalonia
                 defaultBindingMode: defaultBindingMode);
 
             var result = new AttachedProperty<TValue>(name, ownerType, metadata, inherits);
-            AvaloniaPropertyRegistry.Instance.Register(typeof(THost), result);
+            var registry = AvaloniaPropertyRegistry.Instance;
+            registry.Register(ownerType, result);
+            registry.RegisterAttached(typeof(THost), result);
             return result;
         }
 

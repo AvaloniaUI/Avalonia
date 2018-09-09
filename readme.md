@@ -18,7 +18,9 @@ Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a fl
 
 ## Getting Started
 
-Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/tutorial/images/add-dialogs.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
+Avalonia [Visual Studio Extension](https://marketplace.visualstudio.com/items?itemName=AvaloniaTeam.AvaloniaforVisualStudio) contains project and control templates that will help you get started. After installing it, open "New Project" dialog in Visual Studio, choose "Avalonia" in "Visual C#" section, select "Avalonia .NET Core Application" and press OK (<a href="http://avaloniaui.net/docs/quickstart/images/new-project-dialog.png">screenshot</a>). Now you can write code and markup that will work on multiple platforms!
+
+For those without Visual Studio, starter guide for .NET Core CLI can be found [here](http://avaloniaui.net/docs/quickstart/create-new-project#net-core).
 
 Avalonia is delivered via <b>NuGet</b> package manager. You can find the packages here: ([stable(ish)](https://www.nuget.org/packages/Avalonia/), [nightly](https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed))
 
@@ -33,9 +35,12 @@ Install-Package Avalonia.Desktop
 Try out the latest build of Avalonia available for download here:
 https://ci.appveyor.com/project/AvaloniaUI/Avalonia/branch/master/artifacts
 
+or use nightly build feeds as described here:
+https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed
+
 ## Documentation
 
-As mentioned above, Avalonia is still in alpha and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/guides/quickstart) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+As mentioned above, Avalonia is still in beta and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
 
 There's also a high-level [architecture document](http://avaloniaui.net/architecture/project-structure) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
@@ -52,7 +57,7 @@ Please read the [contribution guidelines](http://avaloniaui.net/contributing/con
 ### Contributors
 
 This project exists thanks to all the people who contribute. [[Contribute](http://avaloniaui.net/contributing/contributing)].
-<a href="graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
+<a href="https://github.com/AvaloniaUI/Avalonia/graphs/contributors"><img src="https://opencollective.com/Avalonia/contributors.svg?width=890&button=false" /></a>
 
 
 ### Backers

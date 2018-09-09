@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD1_3;PCL;NETSTANDARD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>CS1591</NoWarn>
@@ -19,64 +18,37 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>NETSTANDARD1_3;PCL;NETSTANDARD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\..\Shared\SharedAssemblyInfo.cs">
-            <Link>Properties\SharedAssemblyInfo.cs</Link>
-        </Compile>
-        <Compile Include="AvaloniaXamlLoaderPortableXaml.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
-        <Compile Include="Converters\MatrixTypeConverter.cs" />
-        <Compile Include="Converters\RectTypeConverter.cs" />
+        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
+        <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
-        <Compile Include="Data\ResourceInclude.cs" />
+        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
+        <Compile Include="Parsers\PropertyParser.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaNameScope.cs" />
-        <Compile Include="PortableXaml\AvaloniaDefaultTypeConverters.cs" />
+        <Compile Include="AvaloniaTypeConverters.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlObjectWriter.cs" />
         <Compile Include="PortableXaml\AvaloniaRuntimeTypeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlSchemaContext.cs" />
         <Compile Include="Converters\BitmapTypeConverter.cs" />
-        <Compile Include="Converters\BrushTypeConverter.cs" />
-        <Compile Include="Converters\ClassesTypeConverter.cs" />
-        <Compile Include="Converters\ColorTypeConverter.cs" />
-        <Compile Include="Converters\ColumnDefinitionsTypeConverter.cs" />
-        <Compile Include="Converters\CursorTypeConverter.cs" />
-        <Compile Include="Converters\GeometryTypeConverter.cs" />
-        <Compile Include="Converters\GridLengthTypeConverter.cs" />
         <Compile Include="Converters\IconTypeConverter.cs" />
-        <Compile Include="Converters\KeyGestureConverter.cs" />
-        <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
-        <Compile Include="Converters\AvaloniaListTypeConverter.cs" />
         <Compile Include="Converters\AvaloniaPropertyTypeConverter.cs" />
         <Compile Include="Converters\PointsListTypeConverter.cs" />
-        <Compile Include="Converters\SizeTypeConverter.cs" />
-        <Compile Include="Converters\PointTypeConverter.cs" />
-        <Compile Include="Converters\RelativePointTypeConverter.cs" />
-        <Compile Include="Converters\RelativeRectTypeConverter.cs" />
-        <Compile Include="Converters\RowDefinitionsTypeConverter.cs" />
         <Compile Include="Converters\SelectorTypeConverter.cs" />
-        <Compile Include="Converters\ThicknessTypeConverter.cs" />
-        <Compile Include="Converters\TimeSpanTypeConverter.cs" />
-        <Compile Include="Data\Binding.cs" />
-        <Compile Include="Data\DelayedBinding.cs" />
-        <Compile Include="Data\MultiBinding.cs" />
-        <Compile Include="Data\RelativeSource.cs" />
         <Compile Include="MarkupExtensions\BindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
-        <Compile Include="MarkupExtensions\TemplateBindingExtension.cs" />
-        <Compile Include="Parsers\SelectorGrammar.cs" />
-        <Compile Include="Parsers\SelectorParser.cs" />
         <Compile Include="PortableXaml\AvaloniaTypeAttributeProvider.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlType.cs" />
         <Compile Include="PortableXaml\TypeDescriptorExtensions.cs" />
@@ -93,7 +65,6 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
-        <Compile Remove="**\UriTypeConverter.cs" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -106,7 +77,5 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Markup.props" />
-  <Import Project="..\..\..\build\Sprache.props" />
   <Import Project="..\..\..\build\Rx.props" />
 </Project>

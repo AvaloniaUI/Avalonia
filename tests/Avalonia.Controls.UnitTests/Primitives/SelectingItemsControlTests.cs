@@ -3,15 +3,18 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -143,6 +146,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.SelectedItem = items[1];
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void SelectedIndex_Item_Is_Updated_As_Items_Removed_When_Last_Item_Is_Selected()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "FooBar"
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItem = items[2];
+
+            Assert.Equal(items[2], target.SelectedItem);
+            Assert.Equal(2, target.SelectedIndex);
+
+            items.RemoveAt(0);
 
             Assert.Equal(items[1], target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
@@ -656,6 +687,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
         }
+
+        [Fact]
+        public void Resetting_Items_Collection_Should_Retain_Selection()
+        {
+            var itemsMock = new Mock<List<string>>();
+            var itemsMockAsINCC = itemsMock.As<INotifyCollectionChanged>();
+
+            itemsMock.Object.AddRange(new[] { "Foo", "Bar", "Baz" });
+            var target = new SelectingItemsControl
+            {
+                Items = itemsMock.Object
+            };
+
+            target.SelectedIndex = 1;
+
+            itemsMockAsINCC.Raise(e => e.CollectionChanged += null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
+            Assert.True(target.SelectedIndex == 1);
+        }
+
 
         private FuncControlTemplate Template()
         {

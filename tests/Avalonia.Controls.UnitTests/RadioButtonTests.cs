@@ -1,4 +1,4 @@
-﻿using Avalonia.Markup.Xaml.Data;
+﻿using Avalonia.Markup.Data;
 using Avalonia.UnitTests;
 
 using Xunit;
@@ -31,6 +31,44 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(radioButton1.IsChecked);
             Assert.Null(radioButton2.IsChecked);
+        }
+
+        [Fact]
+        public void RadioButton_In_Same_Group_Is_Unchecked()
+        {
+            var parent = new Panel();
+
+            var panel1 = new Panel();
+            var panel2 = new Panel();
+
+            parent.Children.Add(panel1);
+            parent.Children.Add(panel2);
+
+            var radioButton1 = new RadioButton();
+            radioButton1.GroupName = "A";
+            radioButton1.IsChecked = false;
+
+            var radioButton2 = new RadioButton();
+            radioButton2.GroupName = "A";
+            radioButton2.IsChecked = true;
+
+            var radioButton3 = new RadioButton();
+            radioButton3.GroupName = "A";
+            radioButton3.IsChecked = false;
+
+            panel1.Children.Add(radioButton1);
+            panel1.Children.Add(radioButton2);
+            panel2.Children.Add(radioButton3);
+
+            Assert.False(radioButton1.IsChecked);
+            Assert.True(radioButton2.IsChecked);
+            Assert.False(radioButton3.IsChecked);
+
+            radioButton3.IsChecked = true;
+
+            Assert.False(radioButton1.IsChecked);
+            Assert.False(radioButton2.IsChecked);
+            Assert.True(radioButton3.IsChecked);
         }
     }
 }

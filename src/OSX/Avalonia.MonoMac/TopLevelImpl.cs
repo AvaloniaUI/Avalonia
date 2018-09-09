@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using MonoMac.AppKit;
-using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -18,6 +17,7 @@ namespace Avalonia.MonoMac
     {
         public TopLevelView View { get; }
         private readonly IMouseDevice _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+        private readonly IDragDropDevice _dragDevice = AvaloniaLocator.Current.GetService<IDragDropDevice>();
         protected TopLevelImpl()
         {
             View = new TopLevelView(this);
@@ -53,6 +53,10 @@ namespace Avalonia.MonoMac
                 _tl = tl;
                 _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
                 _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+                
+                RegisterForDraggedTypes(new string[] {
+                    "public.data" // register for any kind of data.
+                });
             }
 
             protected override void Dispose(bool disposing)
@@ -148,6 +152,49 @@ namespace Avalonia.MonoMac
                 _cursor = cursor ?? ArrowCursor;
                 UpdateCursor();
             }
+
+            private NSDragOperation SendRawDragEvent(NSDraggingInfo sender, RawDragEventType type)
+            {
+                Action<RawInputEventArgs> input = _tl.Input;
+                IDragDropDevice dragDevice = _tl._dragDevice;
+                IInputRoot root = _tl?.InputRoot;
+                if (root == null || dragDevice == null || input == null)
+                    return NSDragOperation.None;
+                
+                var dragOp = DraggingInfo.ConvertDragOperation(sender.DraggingSourceOperationMask);
+                DraggingInfo info = new DraggingInfo(sender);
+                
+                var pt = TranslateLocalPoint(info.Location);
+                var args = new RawDragEvent(dragDevice, type, root, pt, info, dragOp, GetModifiers(NSEvent.CurrentModifierFlags));
+                input(args);
+                return DraggingInfo.ConvertDragOperation(args.Effects);
+            }
+
+            public override NSDragOperation DraggingEntered(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragEnter);
+            }
+
+            public override NSDragOperation DraggingUpdated(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver);
+            }
+
+            public override void DraggingExited(NSDraggingInfo sender)
+            {
+                SendRawDragEvent(sender, RawDragEventType.DragLeave);
+            }
+
+            public override bool PrepareForDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.DragOver) != NSDragOperation.None;
+            }
+
+            public override bool PerformDragOperation(NSDraggingInfo sender)
+            {
+                return SendRawDragEvent(sender, RawDragEventType.Drop) != NSDragOperation.None;
+            }
+            
 
             public override void SetFrameSize(CGSize newSize)
             {

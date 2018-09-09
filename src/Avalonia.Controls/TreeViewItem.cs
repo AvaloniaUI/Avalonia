@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
-                "IsExpanded",
+                nameof(IsExpanded),
                 o => o.IsExpanded,
                 (o, v) => o.IsExpanded = v);
 
@@ -31,20 +31,25 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TreeViewItem>();
 
+        /// <summary>
+        /// Defines the <see cref="Level"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TreeViewItem, int> LevelProperty =
+            AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
+                nameof(Level), o => o.Level);
+
         private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel
-            {                
-                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Continue,
-            });
+            new FuncTemplate<IPanel>(() => new StackPanel());
 
         private TreeView _treeView;
         private bool _isExpanded;
+        private int _level;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
         /// </summary>
         static TreeViewItem()
-        {            
+        {
             SelectableMixin.Attach<TreeViewItem>(IsSelectedProperty);
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
@@ -66,6 +71,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets the level/indentation of the item.
+        /// </summary>
+        public int Level
+        {
+            get { return _level; }
+            private set { SetAndRaise(LevelProperty, ref _level, value); }
         }
 
         /// <summary>
@@ -91,6 +105,8 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToLogicalTree(e);
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
+
+            Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
@@ -127,7 +143,20 @@ namespace Avalonia.Controls
                 }
             }
 
-            base.OnKeyDown(e);
+            // Don't call base.OnKeyDown - let events bubble up to containing TreeView.
+        }
+
+        private static int CalculateDistanceFromLogicalParent<T>(ILogical logical, int @default = -1) where T : class
+        {
+            var result = 0;
+
+            while (logical != null && logical.GetType() != typeof(T))
+            {
+                ++result;
+                logical = logical.LogicalParent;
+            }
+
+            return logical != null ? result : @default;
         }
     }
 }

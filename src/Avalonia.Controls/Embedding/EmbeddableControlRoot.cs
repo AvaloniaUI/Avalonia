@@ -1,7 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using JetBrains.Annotations;
@@ -28,7 +27,7 @@ namespace Avalonia.Controls.Embedding
         {
             EnsureInitialized();
             ApplyTemplate();
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
         }
 
         private void EnsureInitialized()

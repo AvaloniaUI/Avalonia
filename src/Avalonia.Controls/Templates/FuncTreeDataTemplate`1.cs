@@ -7,7 +7,7 @@ using System.Collections;
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
-    /// A template used to build hierachical data.
+    /// A template used to build hierarchical data.
     /// </summary>
     /// <typeparam name="T">The type of the template's data.</typeparam>
     public class FuncTreeDataTemplate<T> : FuncTreeDataTemplate

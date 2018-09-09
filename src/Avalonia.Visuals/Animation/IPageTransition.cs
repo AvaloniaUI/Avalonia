@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Threading.Tasks;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Animation
 {
@@ -26,6 +25,6 @@ namespace Avalonia.Animation
         /// <returns>
         /// A <see cref="Task"/> that tracks the progress of the animation.
         /// </returns>
-        Task Start(IVisual from, IVisual to, bool forward);
+        Task Start(Visual from, Visual to, bool forward);
     }
 }

@@ -1,30 +1,56 @@
 <Style xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
        xmlns:sys="clr-namespace:System;assembly=mscorlib">
-  <Style.Resources>
-    <SolidColorBrush x:Key="ThemeBackgroundBrush">#FFFFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeBorderLightBrush">#FFAAAAAA</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeBorderMidBrush">#FF888888</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeBorderDarkBrush">#FF333333</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeControlLightBrush">#FFFFFFFF</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeControlMidBrush">#FFAAAAAA</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeControlDarkBrush">#FF888888</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeForegroundBrush">#FF000000</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeForegroundLightBrush">#FF808080</SolidColorBrush>
+    <Style.Resources>
 
-    <SolidColorBrush x:Key="HighlightBrush">#FF086F9E</SolidColorBrush>    
-    <SolidColorBrush x:Key="ThemeAccentBrush">#CC119EDA</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeAccentBrush2">#99119EDA</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeAccentBrush3">#66119EDA</SolidColorBrush>
-    <SolidColorBrush x:Key="ThemeAccentBrush4">#33119EDA</SolidColorBrush>
-    <SolidColorBrush x:Key="ErrorBrush">Red</SolidColorBrush>
-    <SolidColorBrush x:Key="ErrorBrushLight">#10ff0000</SolidColorBrush>
+        <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
+        <Color x:Key="ThemeAccentColor2">#99119EDA</Color>
+        <Color x:Key="ThemeAccentColor3">#66119EDA</Color>
+        <Color x:Key="ThemeAccentColor4">#33119EDA</Color>
 
-    <sys:Double x:Key="ThemeBorderThickness">2</sys:Double>
-    <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
+        <Color x:Key="ThemeBackgroundColor">#FFFFFFFF</Color>
+        <Color x:Key="ThemeBorderLightColor">#FFAAAAAA</Color>
+        <Color x:Key="ThemeBorderMidColor">#FF888888</Color>
+        <Color x:Key="ThemeBorderDarkColor">#FF333333</Color>
+        <Color x:Key="ThemeControlLightColor">#FFFFFFFF</Color>
+        <Color x:Key="ThemeControlMidColor">#FFAAAAAA</Color>
+        <Color x:Key="ThemeControlDarkColor">#FF888888</Color>
+        <Color x:Key="ThemeControlHighlightLowColor">#FFF0F0F0</Color>
+        <Color x:Key="ThemeControlHighlightMidColor">#FFD0D0D0</Color>
+        <Color x:Key="ThemeControlHighlightDarkColor">#FF808080</Color>
+        <Color x:Key="ThemeForegroundColor">#FF000000</Color>
+        <Color x:Key="ThemeForegroundLightColor">#FF808080</Color>
 
-    <sys:Double x:Key="FontSizeSmall">10</sys:Double>
-    <sys:Double x:Key="FontSizeNormal">12</sys:Double>
-    <sys:Double x:Key="FontSizeLarge">16</sys:Double>
-  </Style.Resources>
+        <Color x:Key="HighlightColor">#FF086F9E</Color>
+        <Color x:Key="ErrorColor">#FFFF0000</Color>
+        <Color x:Key="ErrorLightColor">#10FF0000</Color>
+
+        <SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource ThemeBackgroundColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeBorderLightBrush" Color="{DynamicResource ThemeBorderLightColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeBorderMidBrush" Color="{DynamicResource ThemeBorderMidColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeBorderDarkBrush" Color="{DynamicResource ThemeBorderDarkColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlLightBrush" Color="{DynamicResource ThemeControlLightColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlMidBrush" Color="{DynamicResource ThemeControlMidColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlDarkBrush" Color="{DynamicResource ThemeControlDarkColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlHighlightLowBrush" Color="{DynamicResource ThemeControlHighlightLowColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlHighlightMidBrush" Color="{DynamicResource ThemeControlHighlightMidColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeControlHighlightDarkBrush" Color="{DynamicResource ThemeControlHighlightDarkColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ThemeForegroundColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeForegroundLightBrush" Color="{DynamicResource ThemeForegroundLightColor}"></SolidColorBrush>
+
+        <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource HighlightColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeAccentBrush" Color="{DynamicResource ThemeAccentColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeAccentBrush2" Color="{DynamicResource ThemeAccentColor2}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeAccentBrush3" Color="{DynamicResource ThemeAccentColor3}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="ErrorLightBrush" Color="{DynamicResource ErrorLightColor}"></SolidColorBrush>
+
+        <Thickness x:Key="ThemeBorderThickness">2</Thickness>
+        <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
+
+        <sys:Double x:Key="FontSizeSmall">10</sys:Double>
+        <sys:Double x:Key="FontSizeNormal">12</sys:Double>
+        <sys:Double x:Key="FontSizeLarge">16</sys:Double>
+    </Style.Resources>
 </Style>

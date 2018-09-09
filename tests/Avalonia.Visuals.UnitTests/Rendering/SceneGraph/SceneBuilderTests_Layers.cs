@@ -17,7 +17,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Control_With_Animated_Opacity_And_Children_Should_Start_New_Layer()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -39,7 +39,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var animation = new BehaviorSubject<double>(0.5);
@@ -85,7 +85,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Control_With_Animated_Opacity_And_No_Children_Should_Not_Start_New_Layer()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -104,7 +104,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var animation = new BehaviorSubject<double>(0.5);
@@ -121,7 +121,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Removing_Control_With_Animated_Opacity_Should_Remove_Layers()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -146,7 +146,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var animation = new BehaviorSubject<double>(0.5);
@@ -171,7 +171,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Hiding_Transparent_Control_Should_Remove_Layers()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 Decorator decorator;
                 Border border;
@@ -196,7 +196,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var animation = new BehaviorSubject<double>(0.5);
@@ -221,7 +221,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         [Fact]
         public void GeometryClip_Should_Affect_Child_Layers()
         {
-            using (TestApplication())
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var clip = StreamGeometry.Parse("M100,0 L0,100 100,100");
                 Decorator decorator;
@@ -240,7 +240,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                     }
                 };
 
-                var layout = AvaloniaLocator.Current.GetService<ILayoutManager>();
+                var layout = tree.LayoutManager;
                 layout.ExecuteInitialLayoutPass(tree);
 
                 var animation = new BehaviorSubject<double>(0.5);

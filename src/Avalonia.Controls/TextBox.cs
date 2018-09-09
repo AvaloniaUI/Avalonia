@@ -30,9 +30,12 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
-        
+
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -65,6 +68,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
+        public static readonly DirectProperty<TextBox, string> NewLineProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
+                textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -85,8 +92,10 @@ namespace Avalonia.Controls
         private int _selectionEnd;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
-        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
+        private string _newLine = Environment.NewLine;
+        private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
         static TextBox()
         {
@@ -146,11 +155,17 @@ namespace Avalonia.Controls
                     _undoRedoHelper.UpdateLastState();
             }
         }
-        
+
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
             set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
@@ -198,7 +213,11 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
-                    SetAndRaise(TextProperty, ref _text, value);
+
+                    if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
+                    {
+                        _undoRedoHelper.Clear();
+                    }
                 }
             }
         }
@@ -227,14 +246,23 @@ namespace Avalonia.Controls
             set { SetValue(TextWrappingProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets which characters are inserted when Enter is pressed. Default: <see cref="Environment.NewLine"/>
+        /// </summary>
+        public string NewLine
+        {
+            get { return _newLine; }
+            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
+        }
+
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
 
-            if(IsFocused)
+            if (IsFocused)
             {
-                _presenter.ShowCaret();
+                DecideCaretVisibility();
             }
         }
 
@@ -254,10 +282,18 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter?.ShowCaret();
+                DecideCaretVisibility();
             }
 
             e.Handled = true;
+        }
+
+        private void DecideCaretVisibility()
+        {
+            if (!IsReadOnly)
+                _presenter?.ShowCaret();
+            else
+                _presenter?.HideCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -270,8 +306,11 @@ namespace Avalonia.Controls
 
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            HandleTextInput(e.Text);
-            e.Handled = true;
+            if (!e.Handled)
+            {
+                HandleTextInput(e.Text);
+                e.Handled = true;
+            }
         }
 
         private void HandleTextInput(string input)
@@ -341,7 +380,10 @@ namespace Avalonia.Controls
                 case Key.C:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                        }
                         handled = true;
                     }
                     break;
@@ -349,8 +391,11 @@ namespace Avalonia.Controls
                 case Key.X:
                     if (modifiers == InputModifiers.Control)
                     {
-                        Copy();
-                        DeleteSelection();
+                        if (!IsPasswordBox)
+                        {
+                            Copy();
+                            DeleteSelection();
+                        }
                         handled = true;
                     }
                     break;
@@ -367,14 +412,30 @@ namespace Avalonia.Controls
                 case Key.Z:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Undo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Undo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
                 case Key.Y:
                     if (modifiers == InputModifiers.Control)
                     {
-                        _undoRedoHelper.Redo();
+                        try
+                        {
+                            _isUndoingRedoing = true;
+                            _undoRedoHelper.Redo();
+                        }
+                        finally
+                        {
+                            _isUndoingRedoing = false;
+                        }
                         handled = true;
                     }
                     break;
@@ -459,7 +520,7 @@ namespace Avalonia.Controls
                 case Key.Enter:
                     if (AcceptsReturn)
                     {
-                        HandleTextInput("\r\n");
+                        HandleTextInput(NewLine);
                         handled = true;
                     }
 
@@ -504,7 +565,7 @@ namespace Avalonia.Controls
             var index = CaretIndex = _presenter.GetCaretIndex(point);
             var text = Text;
 
-            if (text != null)
+            if (text != null && e.MouseButton == MouseButton.Left)
             {
                 switch (e.ClickCount)
                 {
@@ -554,7 +615,7 @@ namespace Avalonia.Controls
                 DataValidationErrors.SetError(this, status.Error);
             }
         }
-        
+
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
@@ -791,7 +852,7 @@ namespace Avalonia.Controls
             int pos = 0;
             int i;
 
-            for (i = 0; i < lines.Count; ++i)
+            for (i = 0; i < lines.Count - 1; ++i)
             {
                 var line = lines[i];
                 pos += line.Length;
@@ -831,6 +892,8 @@ namespace Avalonia.Controls
             MoveHorizontal(1, modifiers);
             SelectionEnd = CaretIndex;
         }
+
+        private bool IsPasswordBox => PasswordChar != default(char);
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {

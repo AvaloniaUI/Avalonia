@@ -1,16 +1,16 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Carousel</TextBlock>
     <TextBlock Classes="h2">An items control that displays its items as pages that fill the control.</TextBlock>
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Gap="8">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 16 0 0" Spacing="8">
       <Button Name="left" VerticalAlignment="Center" Padding="20">
         <Path Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" Fill="Black"/>
       </Button>
       <Carousel Name="carousel">
-        <Carousel.Transition>
+        <Carousel.PageTransition>
           <PageSlide Duration="0.25" Orientation="Vertical" />
-        </Carousel.Transition>
+        </Carousel.PageTransition>
         <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg"/>
         <Image Source="resm:ControlCatalog.Assets.hirsch-899118_640.jpg"/>
         <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg"/>
@@ -20,7 +20,7 @@
       </Button>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" Gap="4">
+    <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock VerticalAlignment="Center">Transition</TextBlock>
       <DropDown Name="transition" SelectedIndex="1" VerticalAlignment="Center">
         <DropDownItem>None</DropDownItem>
@@ -29,7 +29,7 @@
       </DropDown>
     </StackPanel>
 
-    <StackPanel Orientation="Horizontal" Gap="4">
+    <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
       <DropDown Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
         <DropDownItem>Horizontal</DropDownItem>

@@ -1,3 +1,6 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Xml.Linq;
 
 public class Packages
@@ -9,12 +12,11 @@ public class Packages
     public string SkiaSharpVersion {get; private set; }
     public string SkiaSharpLinuxVersion {get; private set; }
     public Dictionary<string, IList<Tuple<string,string>>> PackageVersions{get; private set;}
-    
-       
-    
+
     class DependencyBuilder : List<NuSpecDependency>
     {
         Packages _parent;
+
         public DependencyBuilder(Packages parent)
         {
             _parent = parent;
@@ -24,8 +26,7 @@ public class Packages
         {
             return _parent.PackageVersions[name].First().Item1;
         }
-        
-        
+
         public DependencyBuilder Dep(string name, params string[] fws)
         {
             if(fws.Length == 0)
@@ -109,7 +110,6 @@ public class Packages
         var SerilogVersion = packageVersions["Serilog"].FirstOrDefault().Item1;
         var SerilogSinksDebugVersion = packageVersions["Serilog.Sinks.Debug"].FirstOrDefault().Item1;
         var SerilogSinksTraceVersion = packageVersions["Serilog.Sinks.Trace"].FirstOrDefault().Item1;
-        var SpracheVersion = packageVersions["Sprache"].FirstOrDefault().Item1;
         var SystemReactiveVersion = packageVersions["System.Reactive"].FirstOrDefault().Item1;
         var ReactiveUIVersion = packageVersions["reactiveui"].FirstOrDefault().Item1;
         var SystemValueTupleVersion = packageVersions["System.ValueTuple"].FirstOrDefault().Item1;
@@ -120,9 +120,9 @@ public class Packages
         var SharpDXDirect3D11Version = packageVersions["SharpDX.Direct3D11"].FirstOrDefault().Item1;
         var SharpDXDirect3D9Version = packageVersions["SharpDX.Direct3D9"].FirstOrDefault().Item1;
         var SharpDXDXGIVersion = packageVersions["SharpDX.DXGI"].FirstOrDefault().Item1;
+        var SystemMemoryVersion = packageVersions["System.Memory"].FirstOrDefault().Item1;
 
         context.Information("Package: Serilog, version: {0}", SerilogVersion);
-        context.Information("Package: Sprache, version: {0}", SpracheVersion);
         context.Information("Package: System.Reactive, version: {0}", SystemReactiveVersion);
         context.Information("Package: reactiveui, version: {0}", ReactiveUIVersion);
         context.Information("Package: System.ValueTuple, version: {0}", SystemValueTupleVersion);
@@ -133,6 +133,7 @@ public class Packages
         context.Information("Package: SharpDX.Direct3D11, version: {0}", SharpDXDirect3D11Version);
         context.Information("Package: SharpDX.Direct3D9, version: {0}", SharpDXDirect3D9Version);
         context.Information("Package: SharpDX.DXGI, version: {0}", SharpDXDXGIVersion);
+        context.Information("Package: System.Memory, version: {0}", SystemMemoryVersion);
 
         var nugetPackagesDir = System.Environment.GetEnvironmentVariable("NUGET_HOME")
             ?? System.IO.Path.Combine(System.Environment.GetEnvironmentVariable("USERPROFILE") ?? System.Environment.GetEnvironmentVariable("HOME"), ".nuget");
@@ -155,38 +156,28 @@ public class Packages
 
         var coreLibraries = new string[][]
         {
-            new [] { "./src/", "Avalonia.Animation", ".dll" },
-            new [] { "./src/", "Avalonia.Animation", ".xml" },
-            new [] { "./src/", "Avalonia.Base", ".dll" },
-            new [] { "./src/", "Avalonia.Base", ".xml" },
-            new [] { "./src/", "Avalonia.Controls", ".dll" },
-            new [] { "./src/", "Avalonia.Controls", ".xml" },
-            new [] { "./src/", "Avalonia.DesignerSupport", ".dll" },
-            new [] { "./src/", "Avalonia.DesignerSupport", ".xml" },
-            new [] { "./src/", "Avalonia.Diagnostics", ".dll" },
-            new [] { "./src/", "Avalonia.Diagnostics", ".xml" },
-            new [] { "./src/", "Avalonia.Input", ".dll" },
-            new [] { "./src/", "Avalonia.Input", ".xml" },
-            new [] { "./src/", "Avalonia.Interactivity", ".dll" },
-            new [] { "./src/", "Avalonia.Interactivity", ".xml" },
-            new [] { "./src/", "Avalonia.Layout", ".dll" },
-            new [] { "./src/", "Avalonia.Layout", ".xml" },
-            new [] { "./src/", "Avalonia.Logging.Serilog", ".dll" },
-            new [] { "./src/", "Avalonia.Logging.Serilog", ".xml" },
-            new [] { "./src/", "Avalonia.Visuals", ".dll" },
-            new [] { "./src/", "Avalonia.Visuals", ".xml" },
-            new [] { "./src/", "Avalonia.Styling", ".dll" },
-            new [] { "./src/", "Avalonia.Styling", ".xml" },
-            new [] { "./src/", "Avalonia.Themes.Default", ".dll" },
-            new [] { "./src/", "Avalonia.Themes.Default", ".xml" },
-            new [] { "./src/Markup/", "Avalonia.Markup", ".dll" },
-            new [] { "./src/Markup/", "Avalonia.Markup", ".xml" },
-            new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".dll" },
-            new [] { "./src/Markup/", "Avalonia.Markup.Xaml", ".xml" }
+            new [] { "./src/", "Avalonia.Animation"},
+            new [] { "./src/", "Avalonia.Base"},
+            new [] { "./src/", "Avalonia.Controls"},
+            new [] { "./src/", "Avalonia.DesignerSupport"},
+            new [] { "./src/", "Avalonia.Diagnostics"},
+            new [] { "./src/", "Avalonia.Input"},
+            new [] { "./src/", "Avalonia.Interactivity"},
+            new [] { "./src/", "Avalonia.Layout"},
+            new [] { "./src/", "Avalonia.Logging.Serilog"},
+            new [] { "./src/", "Avalonia.Visuals"},
+            new [] { "./src/", "Avalonia.Styling"},
+            new [] { "./src/", "Avalonia.Themes.Default"},
+            new [] { "./src/Markup/", "Avalonia.Markup"},
+            new [] { "./src/Markup/", "Avalonia.Markup.Xaml"},
         };
 
-        var coreLibrariesFiles = coreLibraries.Select((lib) => {
-            return (FilePath)context.File(lib[0] + lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard2.0/" + lib[1] + lib[2]);
+        var extensionsToPack = new [] {".dll", ".xml", ".pdb"};
+
+        var coreLibrariesFiles = coreLibraries
+            .SelectMany(lib => extensionsToPack.Select(ext => new {lib, ext}))
+            .Select((lib) => {
+                return (FilePath)context.File(lib.lib[0] + lib.lib[1] + "/bin/" + parameters.DirSuffix + "/netstandard2.0/" + lib.lib[1] + lib.ext);
         }).ToList();
 
         var coreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
@@ -195,9 +186,9 @@ public class Packages
             };
         });
 
-        var win32CoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
+        var netFrameworkCoreLibrariesNuSpecContent = coreLibrariesFiles.Select((file) => {
             return new NuSpecContent { 
-                Source = file.FullPath, Target = "lib/net45" 
+                Source = file.FullPath, Target = "lib/net461" 
             };
         });
 
@@ -207,32 +198,36 @@ public class Packages
             };
         });
 
-        var net45RuntimePlatformExtensions = new [] {".xml", ".dll"};
-        var net45RuntimePlatform = net45RuntimePlatformExtensions.Select(libSuffix => {
+        var netFrameworkRuntimePlatform = extensionsToPack.Select(libSuffix => {
             return new NuSpecContent {
                 Source = ((FilePath)context.File("./src/Avalonia.DotNetFrameworkRuntime/bin/" + parameters.DirSuffix + "/net461/Avalonia.DotNetFrameworkRuntime" + libSuffix)).FullPath, 
-                Target = "lib/net45" 
+                Target = "lib/net461" 
             };
         });
 
-        var netCoreRuntimePlatformExtensions = new [] {".xml", ".dll"};
-        var netCoreRuntimePlatform = netCoreRuntimePlatformExtensions.Select(libSuffix => {
+        var netCoreRuntimePlatform = extensionsToPack.Select(libSuffix => {
             return new NuSpecContent {
                 Source = ((FilePath)context.File("./src/Avalonia.DotNetCoreRuntime/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.DotNetCoreRuntime" + libSuffix)).FullPath, 
                 Target = "lib/netcoreapp2.0" 
             };
         });
 
-        var toolsContent = new[] {
-            new NuSpecContent{
-                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.Designer.HostApp.dll")).FullPath, 
-                Target = "tools/netcoreapp2.0/previewer"
-            },
-            new NuSpecContent{
-                Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/Avalonia.Designer.HostApp.exe")).FullPath, 
-                Target = "tools/net461/previewer"
-            }
+        var toolHostApp = new NuSpecContent{
+            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp/bin/" + parameters.DirSuffix + "/netcoreapp2.0/Avalonia.Designer.HostApp.dll")).FullPath, 
+            Target = "tools/netcoreapp2.0/previewer"
         };
+
+        var toolHostAppNetFx = new NuSpecContent{
+            Source = ((FilePath)context.File("./src/tools/Avalonia.Designer.HostApp.NetFx/bin/" + parameters.DirSuffix + "/net461/Avalonia.Designer.HostApp.exe")).FullPath, 
+            Target = "tools/net461/previewer"
+        };
+
+        var toolsContent = new[] { toolHostApp, toolHostAppNetFx };
+        var coreFiles = coreLibrariesNuSpecContent
+            .Concat(netFrameworkCoreLibrariesNuSpecContent).Concat(netFrameworkRuntimePlatform)
+            .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
+            .Concat(toolsContent)
+            .ToList();
 
         var nuspecNuGetSettingsCore = new []
         {
@@ -244,50 +239,19 @@ public class Packages
                 Id = "Avalonia",
                 Dependencies = new DependencyBuilder(this)
                 {
-                    new NuSpecDependency() { Id = "Serilog", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", Version = SerilogSinksDebugVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version },
-                    //.NET Core
-                    new NuSpecDependency() { Id = "System.Threading.ThreadPool", TargetFramework = "netcoreapp2.0", Version = "4.3.0" },
-                    new NuSpecDependency() { Id = "Microsoft.Extensions.DependencyModel", TargetFramework = "netcoreapp2.0", Version = "1.1.0" },
-                    new NuSpecDependency() { Id = "NETStandard.Library", TargetFramework = "netcoreapp2.0", Version = "1.6.0" },
-                    new NuSpecDependency() { Id = "Serilog", TargetFramework = "netcoreapp2.0", Version = SerilogVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Debug", TargetFramework = "netcoreapp2.0", Version = SerilogSinksDebugVersion },
-                    new NuSpecDependency() { Id = "Serilog.Sinks.Trace", TargetFramework = "netcoreapp2.0", Version = SerilogSinksTraceVersion },
-                    new NuSpecDependency() { Id = "Sprache", TargetFramework = "netcoreapp2.0", Version = SpracheVersion },
-                    new NuSpecDependency() { Id = "System.Reactive", TargetFramework = "netcoreapp2.0", Version = SystemReactiveVersion },
-                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", TargetFramework = "netcoreapp2.0", Version = parameters.Version },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netstandard2.0" },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="netcoreapp2.0" },
+                    new NuSpecDependency() { Id = "Avalonia.Remote.Protocol", Version = parameters.Version, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "System.ValueTuple", Version = SystemValueTupleVersion, TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "System.ComponentModel.TypeConverter", Version = "4.3.0", TargetFramework="net461" },
+                    new NuSpecDependency() { Id = "NETStandard.Library", Version = "2.0.0", TargetFramework="net461"}
                 }
-                .Deps(new string[]{null, "netcoreapp2.0"},
-                    "System.ValueTuple", "System.ComponentModel.TypeConverter", "System.ComponentModel.Primitives",
-                    "System.Runtime.Serialization.Primitives", "System.Xml.XmlDocument", "System.Xml.ReaderWriter")
+                .Deps(new string[]{"netstandard2.0", "netcoreapp2.0", "net461"},
+                    "Serilog", "Serilog.Sinks.Debug", "Serilog.Sinks.Trace",
+                    "System.Memory", "System.Reactive", "System.ComponentModel.Annotations")
                 .ToArray(),
-                Files = coreLibrariesNuSpecContent
-                    .Concat(win32CoreLibrariesNuSpecContent).Concat(net45RuntimePlatform)
-                    .Concat(netcoreappCoreLibrariesNuSpecContent).Concat(netCoreRuntimePlatform)
-                    .Concat(toolsContent)
-                    .ToList(),
+                Files = coreFiles,
                 BasePath = context.Directory("./"),
-                OutputDirectory = parameters.NugetRoot
-            },
-            ///////////////////////////////////////////////////////////////////////////////
-            // Avalonia.HtmlRenderer
-            ///////////////////////////////////////////////////////////////////////////////
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.HtmlRenderer",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.HtmlRenderer.dll", Target = "lib/netstandard2.0" }
-                },
-                BasePath = context.Directory("./src/Avalonia.HtmlRenderer/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -339,7 +303,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.Android.dll", Target = "lib/MonoAndroid10" }
                 },
-                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix),
+                BasePath = context.Directory("./src/Android/Avalonia.Android/bin/" + parameters.DirSuffix + "/monoandroid44/MonoAndroid44/"),
                 OutputDirectory = parameters.NugetRoot
             },
             ///////////////////////////////////////////////////////////////////////////////
@@ -357,7 +321,7 @@ public class Packages
                 {
                     new NuSpecContent { Source = "Avalonia.iOS.dll", Target = "lib/Xamarin.iOS10" }
                 },
-                BasePath = context.Directory("./src/iOS/Avalonia.iOS/bin/" + parameters.DirSuffixIOS),
+                BasePath = context.Directory("./src/iOS/Avalonia.iOS/bin/" + parameters.DirSuffix + "/xamarin.ios10/"),
                 OutputDirectory = parameters.NugetRoot
             }
         };
@@ -478,22 +442,6 @@ public class Packages
                 BasePath = context.Directory("./"),
                 OutputDirectory = parameters.NugetRoot
             },
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.Win32.Interoperability",
-                Dependencies = new []
-                {
-                    new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "SharpDX.Direct3D9", Version = SharpDXDirect3D9Version },
-                },
-                Files = new []
-                {
-                    new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/Avalonia.Win32.Interop.dll", Target = "lib/net45" }
-                },
-                BasePath = context.Directory("./src/Windows"),
-                OutputDirectory = parameters.NugetRoot
-            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.LinuxFramebuffer
             ///////////////////////////////////////////////////////////////////////////////
@@ -514,11 +462,32 @@ public class Packages
             }
         };
 
+        var nuspecNuGetSettingInterop = new NuGetPackSettings()
+        {
+            Id = "Avalonia.Win32.Interoperability",
+            Dependencies = new []
+            {
+                new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
+                new NuSpecDependency() { Id = "Avalonia.Direct2D1", Version = parameters.Version },
+                new NuSpecDependency() { Id = "SharpDX.Direct3D9", Version = SharpDXDirect3D9Version },
+            },
+            Files = new []
+            {
+                new NuSpecContent { Source = "Avalonia.Win32.Interop/bin/" + parameters.DirSuffix + "/net461/Avalonia.Win32.Interop.dll", Target = "lib/net461" }
+            },
+            BasePath = context.Directory("./src/Windows"),
+            OutputDirectory = parameters.NugetRoot
+        };
+
         NuspecNuGetSettings = new List<NuGetPackSettings>();
 
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsCore);
         NuspecNuGetSettings.AddRange(nuspecNuGetSettingsDesktop);
-        NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
+
+        if (parameters.IsRunningOnWindows) {
+            NuspecNuGetSettings.Add(nuspecNuGetSettingInterop);
+            NuspecNuGetSettings.AddRange(nuspecNuGetSettingsMobile);
+        }
 
         NuspecNuGetSettings.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
 

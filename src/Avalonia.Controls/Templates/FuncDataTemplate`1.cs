@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Templates
         }
 
         /// <summary>
-        /// Casts a stongly typed match function to a weakly typed one.
+        /// Casts a strongly typed match function to a weakly typed one.
         /// </summary>
         /// <param name="f">The strongly typed function.</param>
         /// <returns>The weakly typed function.</returns>
@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Templates
         }
 
         /// <summary>
-        /// Casts a stongly typed build function to a weakly typed one.
+        /// Casts a strongly typed build function to a weakly typed one.
         /// </summary>
         /// <typeparam name="TResult">The strong data type.</typeparam>
         /// <param name="f">The strongly typed function.</param>

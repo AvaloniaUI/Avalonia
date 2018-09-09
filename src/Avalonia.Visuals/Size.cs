@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
     /// Defines a size.
     /// </summary>
-    public struct Size
+    public readonly struct Size
     {
         /// <summary>
         /// A size representing infinity.
@@ -70,7 +70,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Checks for unequality between two <see cref="Size"/>s.
+        /// Checks for inequality between two <see cref="Size"/>s.
         /// </summary>
         /// <param name="left">The first size.</param>
         /// <param name="right">The second size.</param>
@@ -140,30 +140,23 @@ namespace Avalonia
             return new Size(size._width + toAdd._width, size._height + toAdd._height);
         }
 
-        public static Size operator -(Size size, Size toSubstract)
+        public static Size operator -(Size size, Size toSubtract)
         {
-            return new Size(size._width - toSubstract._width, size._height - toSubstract._height);
+            return new Size(size._width - toSubtract._width, size._height - toSubtract._height);
         }
 
         /// <summary>
         /// Parses a <see cref="Size"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Size"/>.</returns>
-        public static Size Parse(string s, CultureInfo culture)
+        public static Size Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            if (parts.Count == 2)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size"))
             {
-                return new Size(double.Parse(parts[0], culture), double.Parse(parts[1], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Size.");
+                return new Size(
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble());
             }
         }
 

@@ -1,90 +1,103 @@
-using System;
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Media;
 using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
+    /// <summary>
+    /// A Skia implementation of a <see cref="IStreamGeometryImpl"/>.
+    /// </summary>
+    public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
-        Rect _bounds;
-        SKPath _path;
+        private Rect _bounds;
+        private readonly SKPath _effectivePath;
 
-        public override SKPath EffectivePath => _path;
-
-        public override Rect GetRenderBounds(Pen pen)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
+        /// </summary>
+        /// <param name="path">An existing Skia <see cref="SKPath"/>.</param>
+        /// <param name="bounds">Precomputed path bounds.</param>
+        public StreamGeometryImpl(SKPath path, Rect bounds)
         {
-            return GetRenderBounds(pen?.Thickness ?? 0);
+            _effectivePath = path;
+            _bounds = bounds;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
+        /// </summary>
+        /// <param name="path">An existing Skia <see cref="SKPath"/>.</param>
+        public StreamGeometryImpl(SKPath path) : this(path, path.TightBounds.ToAvaloniaRect())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
+        /// </summary>
+        public StreamGeometryImpl() : this(CreateEmptyPath(), Rect.Empty)
+        {
+        }
+        
+        /// <inheritdoc />
+        public override SKPath EffectivePath => _effectivePath;
+
+        /// <inheritdoc />
         public override Rect Bounds => _bounds;
 
+        /// <inheritdoc />
         public IStreamGeometryImpl Clone()
         {
-            return new StreamGeometryImpl
-            {
-                _path = _path?.Clone(),
-                _bounds = Bounds
-            };
+            return new StreamGeometryImpl(_effectivePath?.Clone(), Bounds);
         }
 
+        /// <inheritdoc />
         public IStreamGeometryContextImpl Open()
         {
-            _path = new SKPath();
-            _path.FillType = SKPathFillType.EvenOdd;
-
             return new StreamContext(this);
         }
 
-        public override bool FillContains(Point point)
+        /// <summary>
+        /// Create new empty <see cref="SKPath"/>.
+        /// </summary>
+        /// <returns>Empty <see cref="SKPath"/></returns>
+        private static SKPath CreateEmptyPath()
         {
-            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
-            // return EffectivePath.Contains(point.X, point.Y);
-            return GetRenderBounds(0).Contains(point);
+            return new SKPath
+            {
+                FillType = SKPathFillType.EvenOdd
+            };
         }
 
-        public override bool StrokeContains(Pen pen, Point point)
-        {
-            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
-            // return EffectivePath.Contains(point.X, point.Y);
-            return GetRenderBounds(0).Contains(point);
-        }
-
-        public override IGeometryImpl Intersect(IGeometryImpl geometry)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ITransformedGeometryImpl WithTransform(Matrix transform)
-        {
-            return new TransformedGeometryImpl(this, transform);
-        }
-
-        private Rect GetRenderBounds(double strokeThickness)
-        {
-            // TODO: Calculate properly.
-            return Bounds.Inflate(strokeThickness);
-        }
-
-        class StreamContext : IStreamGeometryContextImpl
+        /// <summary>
+        /// A Skia implementation of a <see cref="IStreamGeometryContextImpl"/>.
+        /// </summary>
+        private class StreamContext : IStreamGeometryContextImpl
         {
             private readonly StreamGeometryImpl _geometryImpl;
-            private SKPath _path;
+            private readonly SKPath _path;
 
-            Point _currentPoint;
+            /// <summary>
+            /// Initializes a new instance of the <see cref="StreamContext"/> class.
+            /// <param name="geometryImpl">Geometry to operate on.</param>
+            /// </summary>
             public StreamContext(StreamGeometryImpl geometryImpl)
             {
                 _geometryImpl = geometryImpl;
-                _path = _geometryImpl._path;
+                _path = _geometryImpl._effectivePath;
             }
-
+            
+            /// <inheritdoc />
+            /// <remarks>Will update bounds of passed geometry.</remarks>
             public void Dispose()
             {
-                SKRect rc;
-                _path.GetBounds(out rc);
-                _geometryImpl._bounds = rc.ToAvaloniaRect();
+                _geometryImpl._bounds = _path.TightBounds.ToAvaloniaRect();
+                _geometryImpl.InvalidateCaches();
             }
 
+            /// <inheritdoc />
             public void ArcTo(Point point, Size size, double rotationAngle, bool isLargeArc, SweepDirection sweepDirection)
             {
                 _path.ArcTo(
@@ -95,33 +108,33 @@ namespace Avalonia.Skia
                     sweepDirection == SweepDirection.Clockwise ? SKPathDirection.Clockwise : SKPathDirection.CounterClockwise,
                     (float)point.X,
                     (float)point.Y);
-                _currentPoint = point;
             }
 
+            /// <inheritdoc />
             public void BeginFigure(Point startPoint, bool isFilled)
             {
                 _path.MoveTo((float)startPoint.X, (float)startPoint.Y);
-                _currentPoint = startPoint;
             }
 
+            /// <inheritdoc />
             public void CubicBezierTo(Point point1, Point point2, Point point3)
             {
                 _path.CubicTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y, (float)point3.X, (float)point3.Y);
-                _currentPoint = point3;
             }
 
+            /// <inheritdoc />
             public void QuadraticBezierTo(Point point1, Point point2)
             {
                 _path.QuadTo((float)point1.X, (float)point1.Y, (float)point2.X, (float)point2.Y);
-                _currentPoint = point2;
             }
 
+            /// <inheritdoc />
             public void LineTo(Point point)
             {
                 _path.LineTo((float)point.X, (float)point.Y);
-                _currentPoint = point;
             }
 
+            /// <inheritdoc />
             public void EndFigure(bool isClosed)
             {
                 if (isClosed)
@@ -130,6 +143,7 @@ namespace Avalonia.Skia
                 }
             }
 
+            /// <inheritdoc />
             public void SetFillRule(FillRule fillRule)
             {
                 _path.FillType = fillRule == FillRule.EvenOdd ? SKPathFillType.EvenOdd : SKPathFillType.Winding;

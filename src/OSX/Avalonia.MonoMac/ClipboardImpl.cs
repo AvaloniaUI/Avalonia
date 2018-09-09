@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using MonoMac.AppKit;
 
@@ -22,9 +19,10 @@ namespace Avalonia.MonoMac
             return Task.CompletedTask;
         }
 
-        public async Task ClearAsync()
+        public Task ClearAsync()
         {
             NSPasteboard.GeneralPasteboard.ClearContents();
+            return Task.CompletedTask;
         }
     }
 }

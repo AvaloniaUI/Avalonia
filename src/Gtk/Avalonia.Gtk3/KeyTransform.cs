@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Input;
+﻿using System.Collections.Generic;
 using Avalonia.Gtk3;
+using Avalonia.Input;
 
 namespace Avalonia.Gtk.Common
 {
@@ -33,17 +29,24 @@ namespace Avalonia.Gtk.Common
             { GdkKey.Prior, Key.Prior },
             //{ GdkKey.?, Key.PageDown }
             { GdkKey.End, Key.End },
+            { GdkKey.KP_End, Key.End },
             { GdkKey.Home, Key.Home },
+            { GdkKey.KP_Home, Key.Home },
             { GdkKey.Left, Key.Left },
+            { GdkKey.KP_Left, Key.Left },
             { GdkKey.Up, Key.Up },
+            { GdkKey.KP_Up, Key.Up },
             { GdkKey.Right, Key.Right },
+            { GdkKey.KP_Right, Key.Right },
             { GdkKey.Down, Key.Down },
+            { GdkKey.KP_Down, Key.Down },
             { GdkKey.Select, Key.Select },
             { GdkKey.Print, Key.Print },
             { GdkKey.Execute, Key.Execute },
             //{ GdkKey.?, Key.Snapshot }
             { GdkKey.Insert, Key.Insert },
             { GdkKey.Delete, Key.Delete },
+            { GdkKey.KP_Delete, Key.Delete },
             { GdkKey.Help, Key.Help },
             //{ GdkKey.?, Key.D0 }
             //{ GdkKey.?, Key.D1 }

@@ -21,10 +21,10 @@
   <Setter Property="ErrorTemplate">
     <DataTemplate>
       <Canvas Width="14" Height="14" Margin="4 0 1 0" 
-              Background="#00FFFFFF">
+              Background="Transparent">
         <Canvas.Styles>
           <Style Selector="ToolTip">
-            <Setter Property="Background" Value="{DynamicResource ErrorBrushLight}"/>
+            <Setter Property="Background" Value="{DynamicResource ErrorLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
           </Style>
         </Canvas.Styles>

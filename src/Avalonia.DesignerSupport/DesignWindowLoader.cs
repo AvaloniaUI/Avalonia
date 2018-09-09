@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -30,12 +31,12 @@ namespace Avalonia.DesignerSupport
                         new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(assemblyPath));
                 }
 
-                var loaded = loader.Load(stream, null, baseUri);
+                var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
+                var loaded = loader.Load(stream, localAsm, null, baseUri);
                 var styles = loaded as Styles;
                 if (styles != null)
                 {
-                    var substitute = Design.GetPreviewWith(styles) ??
-                                     styles.Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
+                    var substitute = styles.OfType<Style>().Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
                     if (substitute != null)
                     {
                         substitute.Styles.AddRange(styles);

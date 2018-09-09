@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
@@ -241,7 +239,7 @@ namespace Avalonia.Gtk3
             return true;
         }
 
-        void ConnectEvent(string name, Native.D.signal_onevent handler) 
+        protected void ConnectEvent(string name, Native.D.signal_onevent handler) 
             => Disposables.Add(Signal.Connect<Native.D.signal_onevent>(GtkWidget, name, handler));
         void Connect<T>(string name, T handler) => Disposables.Add(Signal.Connect(GtkWidget, name, handler));
 
@@ -341,6 +339,20 @@ namespace Avalonia.Gtk3
             }
         }
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+            if (GtkWidget.IsClosed)
+                return;
+
+            GdkGeometry geometry = new GdkGeometry();
+            geometry.min_width = minSize.Width > 0 ? (int)minSize.Width : -1;
+            geometry.min_height = minSize.Height > 0 ? (int)minSize.Height : -1;
+            geometry.max_width = !Double.IsInfinity(maxSize.Width) && maxSize.Width > 0 ? (int)maxSize.Width : 999999;
+            geometry.max_height = !Double.IsInfinity(maxSize.Height) && maxSize.Height > 0 ? (int)maxSize.Height : 999999;
+
+            Native.GtkWindowSetGeometryHints(GtkWidget, IntPtr.Zero, ref geometry, GdkWindowHints.GDK_HINT_MIN_SIZE | GdkWindowHints.GDK_HINT_MAX_SIZE);
+        } 
+
         public IMouseDevice MouseDevice => Gtk3Platform.Mouse;
 
         public double Scaling => LastKnownScaleFactor = (int) (Native.GtkWidgetGetScaleFactor?.Invoke(GtkWidget) ?? 1);
@@ -402,6 +414,8 @@ namespace Avalonia.Gtk3
 
         public void Hide() => Native.GtkWidgetHide(GtkWidget);
 
+        public void SetTopmost(bool value) => Native.GtkWindowSetKeepAbove(GtkWidget, value);
+
         void GetGlobalPointer(out int x, out int y)
         {
             int mask;
@@ -431,6 +445,7 @@ namespace Avalonia.Gtk3
         {
             if (GtkWidget.IsClosed)
                 return;
+         
             Native.GtkWindowResize(GtkWidget, (int)value.Width, (int)value.Height);
             if (OverrideRedirect)
             {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Collections
 {
@@ -116,8 +117,8 @@ namespace Avalonia.Collections
 
             _inner = new Dictionary<TKey, TValue>();
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[]"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(CommonPropertyNames.IndexerName));
             
 
             if (CollectionChanged != null)

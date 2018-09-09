@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Media
 {
@@ -19,7 +20,7 @@ namespace Avalonia.Media
             ? new Stack<TransformContainer>()
             : TransformStackPool.Pop();
 
-        struct TransformContainer
+        readonly struct TransformContainer
         {
             public readonly Matrix LocalTransform;
             public readonly Matrix ContainerTransform;
@@ -59,7 +60,7 @@ namespace Avalonia.Media
         //HACK: This is a temporary hack that is used in the render loop 
         //to update TransformedBounds property
         [Obsolete("HACK for render loop, don't use")]
-        internal Matrix CurrentContainerTransform => _currentContainerTransform;
+        public Matrix CurrentContainerTransform => _currentContainerTransform;
 
         /// <summary>
         /// Draws a bitmap image.
@@ -68,11 +69,12 @@ namespace Avalonia.Media
         /// <param name="opacity">The opacity to draw with.</param>
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect)
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect);
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode);
         }
 
         /// <summary>
@@ -147,7 +149,7 @@ namespace Avalonia.Media
             }
         }
 
-        public struct PushedState : IDisposable
+        public readonly struct PushedState : IDisposable
         {
             private readonly int _level;
             private readonly DrawingContext _context;
@@ -203,7 +205,7 @@ namespace Avalonia.Media
 
 
         /// <summary>
-        /// Pushes a clip rectange.
+        /// Pushes a clip rectangle.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         /// <returns>A disposable used to undo the clip rectangle.</returns>

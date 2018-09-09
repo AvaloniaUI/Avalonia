@@ -46,12 +46,15 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Margin="{TemplateBinding Padding}"
-                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}">
           <Grid ColumnDefinitions="*,Auto">
             <ContentPresenter Name="PART_ContentPresenter" Grid.Column="0"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"/>
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}"/>
             <Grid Grid.Column="1" RowDefinitions="*,*" IsVisible="{TemplateBinding ShowButtonSpinner}">
               <RepeatButton Grid.Row="0" Name="PART_IncreaseButton"/>
               <RepeatButton Grid.Row="1" Name="PART_DecreaseButton"/>
@@ -68,8 +71,8 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Margin="{TemplateBinding Padding}"
-                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}">
           <Grid ColumnDefinitions="Auto,*">
             <Grid Grid.Column="0" RowDefinitions="*,*" IsVisible="{TemplateBinding ShowButtonSpinner}">
               <RepeatButton Grid.Row="0" Name="PART_IncreaseButton"/>
@@ -77,7 +80,10 @@
             </Grid>
             <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Content="{TemplateBinding Content}"/>
+                              Content="{TemplateBinding Content}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}"/>
           </Grid>
         </Border>
       </ControlTemplate>

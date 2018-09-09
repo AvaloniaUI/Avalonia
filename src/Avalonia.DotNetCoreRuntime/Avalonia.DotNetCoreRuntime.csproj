@@ -1,17 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DefineConstants>$(DefineConstants);DOTNETCORE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup>
-    <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetCoreRuntime.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\Shared\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
@@ -19,8 +10,9 @@
     <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
     <ProjectReference Include="..\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj" />
     <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+    <ProjectReference Include="..\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
     <ProjectReference Include="..\Windows\Avalonia.Win32\Avalonia.Win32.csproj" />
-  </ItemGroup>
+  </ItemGroup>  
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
 </Project>

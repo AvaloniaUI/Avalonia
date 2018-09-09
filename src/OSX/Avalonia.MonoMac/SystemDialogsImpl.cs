@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
 using MonoMac.AppKit;
+using MonoMac.Foundation;
 
 namespace Avalonia.MonoMac
 {
@@ -24,9 +22,9 @@ namespace Avalonia.MonoMac
                 else
                 {
                     if (panel is NSOpenPanel openPanel)
-                        tcs.SetResult(openPanel.Filenames);
+                        tcs.SetResult(openPanel.Urls.Select(url => url.AbsoluteString.Replace("file://", "")).ToArray());
                     else
-                        tcs.SetResult(new[] { panel.Filename });
+                        tcs.SetResult(new[] { panel.Url.AbsoluteString.Replace("file://", "") });
                 }
                 panel.OrderOut(panel);
                 keyWindow?.MakeKeyAndOrderFront(keyWindow);
@@ -62,7 +60,7 @@ namespace Avalonia.MonoMac
                 panel = new NSSavePanel();
             panel.Title = panel.Title;
             if (dialog.InitialDirectory != null)
-                panel.Directory = dialog.InitialDirectory;
+                panel.DirectoryUrl = new NSUrl(dialog.InitialDirectory);
             if (dialog.InitialFileName != null)
                 panel.NameFieldStringValue = dialog.InitialFileName;
             if (dialog.Filters?.Count > 0)
@@ -84,7 +82,7 @@ namespace Avalonia.MonoMac
                 CanChooseFiles = false
             };
             if (dialog.DefaultDirectory != null)
-                panel.Directory = dialog.DefaultDirectory;
+                panel.DirectoryUrl = new NSUrl(dialog.DefaultDirectory);
             return (await RunPanel(panel, parent))?.FirstOrDefault();
         }
     }

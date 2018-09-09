@@ -1,5 +1,5 @@
 <UserControl xmlns="https://github.com/avaloniaui">
-  <StackPanel Orientation="Vertical" Gap="4">
+  <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Canvas</TextBlock>
     <TextBlock Classes="h2">A panel which lays out its children by explicit coordinates</TextBlock>
     <Canvas Background="Yellow" Width="300" Height="400">
@@ -11,7 +11,8 @@
               <GradientStop Offset="1" Color="Transparent"/>
             </LinearGradientBrush.GradientStops>
           </LinearGradientBrush>
-        </Rectangle.OpacityMask>      </Rectangle>
+        </Rectangle.OpacityMask>     
+      </Rectangle>
       <Ellipse Fill="Green" Width="58" Height="58" Canvas.Left="88" Canvas.Top="100"/>
       <Path Fill="Orange" Data="M 0,0 c 0,0 50,0 50,-50 c 0,0 50,0 50,50 h -50 v 50 l -50,-50 Z" Canvas.Left="30" Canvas.Top="250"/>
       <Path Fill="OrangeRed" Canvas.Left="180" Canvas.Top="250">

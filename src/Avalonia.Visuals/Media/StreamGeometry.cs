@@ -33,16 +33,17 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="s">The string.</param>
         /// <returns>A <see cref="StreamGeometry"/>.</returns>
-        public static StreamGeometry Parse(string s)
+        public static new StreamGeometry Parse(string s)
         {
-            StreamGeometry result = new StreamGeometry();
+            var streamGeometry = new StreamGeometry();
 
-            using (StreamGeometryContext ctx = result.Open())
-            {
-                PathMarkupParser parser = new PathMarkupParser(ctx);
+            using (var context = streamGeometry.Open())
+            using (var parser = new PathMarkupParser(context))
+            {               
                 parser.Parse(s);
-                return result;
             }
+
+            return streamGeometry;
         }
 
         /// <inheritdoc/>

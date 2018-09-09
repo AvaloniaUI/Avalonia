@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using System.Collections.Generic;
 using Avalonia.Metadata;
 
@@ -22,7 +21,7 @@ namespace Avalonia.Media
         /// Defines the <see cref="GradientStops"/> property.
         /// </summary>
         public static readonly StyledProperty<IList<GradientStop>> GradientStopsProperty =
-            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(Opacity));
+            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(GradientStops));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.

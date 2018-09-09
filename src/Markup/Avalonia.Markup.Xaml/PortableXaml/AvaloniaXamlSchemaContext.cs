@@ -1,6 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml.Context;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.Styling;
 using Portable.Xaml;
@@ -200,8 +200,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             var type = (getter ?? setter).DeclaringType;
 
-            var prop = AvaloniaPropertyRegistry.Instance.GetAttached(type)
-                    .FirstOrDefault(v => v.Name == attachablePropertyName);
+            var prop = AvaloniaPropertyRegistry.Instance.FindRegistered(type, attachablePropertyName);
 
             if (prop != null)
             {

@@ -143,10 +143,6 @@
       <Project>{3e10a5fa-e8da-48b1-ad44-6a5b6cb7750f}</Project>
       <Name>Avalonia.Themes.Default</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
-      <Project>{5fb2b005-0a7f-4dad-add4-3ed01444e63d}</Project>
-      <Name>Avalonia.HtmlRenderer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj">
       <Project>{7d2d3083-71dd-4cc9-8907-39a0d86fb322}</Project>
       <Name>Avalonia.Skia</Name>
@@ -154,6 +150,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\..\build\Serilog.props" />
-  <Import Project="..\..\..\build\Sprache.props" />
   <Import Project="..\..\..\build\Rx.props" />
+  <Import Project="..\..\..\build\System.Memory.props" />
+  <Import Project="..\..\..\build\AndroidWorkarounds.props" />
 </Project>

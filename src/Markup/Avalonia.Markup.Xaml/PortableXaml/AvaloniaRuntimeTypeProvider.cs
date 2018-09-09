@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Metadata;
@@ -31,11 +32,12 @@ namespace Avalonia.Markup.Xaml.Context
         private static readonly IEnumerable<Assembly> ForcedAssemblies = new[]
         {
             typeof(AvaloniaObject).GetTypeInfo().Assembly,
+            typeof(Animation.Animation).GetTypeInfo().Assembly,
             typeof(Control).GetTypeInfo().Assembly,
             typeof(Style).GetTypeInfo().Assembly,
             typeof(DataTemplate).GetTypeInfo().Assembly,
             typeof(SolidColorBrush).GetTypeInfo().Assembly,
-            typeof(IValueConverter).GetTypeInfo().Assembly,
+            typeof(Binding).GetTypeInfo().Assembly,
         };
 
         private Dictionary<string, HashSet<ClrNamespaceInfo>> _namespaces = new Dictionary<string, HashSet<ClrNamespaceInfo>>();

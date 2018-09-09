@@ -1,13 +1,13 @@
-﻿using System;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 using Moq;
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
-{
+{  
     public class DrawOperationTests
     {
         [Fact]
@@ -46,7 +46,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
         public void Image_Node_Releases_Reference_To_Bitmap_On_Dispose()
         {
             var bitmap = RefCountable.Create(Mock.Of<IBitmapImpl>());
-            var imageNode = new ImageNode(Matrix.Identity, bitmap, 1, new Rect(1,1,1,1), new Rect(1,1,1,1));
+            var imageNode = new ImageNode(
+                Matrix.Identity,
+                bitmap,
+                1,
+                new Rect(1, 1, 1, 1),
+                new Rect(1, 1, 1, 1),
+                BitmapInterpolationMode.Default);
 
             Assert.Equal(2, bitmap.RefCount);
 

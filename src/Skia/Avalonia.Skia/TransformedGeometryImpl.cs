@@ -1,59 +1,43 @@
-using System;
-using Avalonia.Media;
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
+    /// <summary>
+    /// A Skia implementation of a <see cref="ITransformedGeometryImpl"/>.
+    /// </summary>
+    public class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
     {
+        /// <summary>
+        ///  Initializes a new instance of the <see cref="TransformedGeometryImpl"/> class.
+        /// </summary>
+        /// <param name="source">Source geometry.</param>
+        /// <param name="transform">Transform of new geometry.</param>
         public TransformedGeometryImpl(GeometryImpl source, Matrix transform)
         {
             SourceGeometry = source;
             Transform = transform;
-            EffectivePath = source.EffectivePath.Clone();
-            EffectivePath.Transform(transform.ToSKMatrix());
+
+            var transformedPath = source.EffectivePath.Clone();
+            transformedPath.Transform(transform.ToSKMatrix());
+
+            EffectivePath = transformedPath;
+            Bounds = transformedPath.TightBounds.ToAvaloniaRect();
         }
 
+        /// <inheritdoc />
         public override SKPath EffectivePath { get; }
 
+        /// <inheritdoc />
         public IGeometryImpl SourceGeometry { get; }
 
+        /// <inheritdoc />
         public Matrix Transform { get; }
 
-        public override Rect Bounds => SourceGeometry.Bounds.TransformToAABB(Transform);
-
-        public override bool FillContains(Point point)
-        {
-            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
-            return GetRenderBounds(0).Contains(point);
-        }
-
-        public override Rect GetRenderBounds(Pen pen)
-        {
-            return GetRenderBounds(pen.Thickness);
-        }
-
-        public override IGeometryImpl Intersect(IGeometryImpl geometry)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool StrokeContains(Pen pen, Point point)
-        {
-            // TODO: Not supported by SkiaSharp yet, so use expanded Rect
-            return GetRenderBounds(0).Contains(point);
-        }
-
-        public override ITransformedGeometryImpl WithTransform(Matrix transform)
-        {
-            return new TransformedGeometryImpl(this, transform);
-        }
-
-        public Rect GetRenderBounds(double strokeThickness)
-        {
-            // TODO: Calculate properly.
-            return Bounds.Inflate(strokeThickness);
-        }
+        /// <inheritdoc />
+        public override Rect Bounds { get; }
     }
 }

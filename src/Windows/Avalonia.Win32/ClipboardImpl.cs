@@ -2,13 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input.Platform;
 using Avalonia.Win32.Interop;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32
 {
@@ -57,6 +54,9 @@ namespace Avalonia.Win32
             }
 
             await OpenClipboard();
+
+            UnmanagedMethods.EmptyClipboard();
+
             try
             {
                 var hGlobal = Marshal.StringToHGlobalUni(text);

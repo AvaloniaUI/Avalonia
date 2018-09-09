@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public struct Matrix
+    public readonly struct Matrix
     {
         private readonly double _m11;
         private readonly double _m12;
@@ -55,7 +55,7 @@ namespace Avalonia
         public bool IsIdentity => Equals(Identity);
 
         /// <summary>
-        /// HasInverse Property - returns true if this matrix is invertable, false otherwise.
+        /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
         public bool HasInverse => GetDeterminant() != 0;
 
@@ -206,7 +206,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Converts an ange in degrees to radians.
+        /// Converts an angle in degrees to radians.
         /// </summary>
         /// <param name="angle">The angle in degrees.</param>
         /// <returns>The angle in radians.</returns>
@@ -313,27 +313,19 @@ namespace Avalonia
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Matrix"/>.</returns>
-        public static Matrix Parse(string s, CultureInfo culture)
+        public static Matrix Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            if (parts.Length == 6)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
-                    double.Parse(parts[0], culture), 
-                    double.Parse(parts[1], culture), 
-                    double.Parse(parts[2], culture), 
-                    double.Parse(parts[3], culture), 
-                    double.Parse(parts[4], culture), 
-                    double.Parse(parts[5], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Matrix.");
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
             }
         }
     }

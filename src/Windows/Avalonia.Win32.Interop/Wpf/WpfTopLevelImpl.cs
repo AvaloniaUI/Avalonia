@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -49,7 +46,7 @@ namespace Avalonia.Win32.Interop.Wpf
             protected override void HandleResized(Size clientSize)
             {
                 ClientSize = clientSize;
-                LayoutManager.Instance.ExecuteLayoutPass();
+                LayoutManager.ExecuteLayoutPass();
                 Renderer?.Resized(clientSize);
             }
 

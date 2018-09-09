@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using MonoMac.AppKit;
 using MonoMac.CoreGraphics;
 
@@ -9,12 +10,35 @@ namespace Avalonia.MonoMac
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         public bool IsDecorated = true;
+        public bool IsResizable = true;
         public CGRect? UndecoratedLastUnmaximizedFrame;
+
+        private WindowState _lastWindowState;
 
         public WindowImpl()
         {
-            UpdateStyle();
+            // Post UpdateStyle to UIThread otherwise for as yet unknown reason.
+            // The window becomes transparent to mouse clicks except a 100x100 square
+            // at the top left. (danwalmsley)
+            Dispatcher.UIThread.Post(() =>
+            {
+                UpdateStyle();
+            });
+
             Window.SetCanBecomeKeyAndMain();
+        }
+
+        
+        protected override void OnResized()
+        {
+            var windowState = Window.IsMiniaturized ? WindowState.Minimized
+                : (IsZoomed ? WindowState.Maximized : WindowState.Normal);
+
+            if (windowState != _lastWindowState)
+            {
+                _lastWindowState = windowState;
+                WindowStateChanged?.Invoke(windowState);
+            }
         }
 
         public WindowState WindowState
@@ -48,6 +72,8 @@ namespace Avalonia.MonoMac
             }
         }
 
+        public Action<WindowState> WindowStateChanged { get; set; }
+
         bool IsZoomed => IsDecorated ? Window.IsZoomed : UndecoratedIsMaximized;
 
         public bool UndecoratedIsMaximized => Window.Frame == Window.Screen.VisibleFrame;
@@ -76,10 +102,15 @@ namespace Avalonia.MonoMac
 
         protected override NSWindowStyle GetStyle()
         {
+            var windowStyle = NSWindowStyle.Borderless;
+
             if (IsDecorated)
-                return NSWindowStyle.Closable | NSWindowStyle.Resizable | NSWindowStyle.Miniaturizable |
-                       NSWindowStyle.Titled;
-            return NSWindowStyle.Borderless;
+                windowStyle |= NSWindowStyle.Closable | NSWindowStyle.Miniaturizable | NSWindowStyle.Titled;
+
+            if (IsResizable)
+                windowStyle |= NSWindowStyle.Resizable;
+
+            return windowStyle;
         }
 
         public void SetSystemDecorations(bool enabled)
@@ -88,29 +119,58 @@ namespace Avalonia.MonoMac
             UpdateStyle();
         }
 
+        public void CanResize(bool value)
+        {
+            IsResizable = value;
+            UpdateStyle();
+        }
+
         public void SetTitle(string title) => Window.Title = title;
 
         class ModalDisposable : IDisposable
         {
             readonly WindowImpl _impl;
+            readonly IntPtr _modalSession;
+            bool disposed;
 
-            public ModalDisposable(WindowImpl impl)
+            public ModalDisposable(WindowImpl impl, IntPtr modalSession)
             {
                 _impl = impl;
+                _modalSession = modalSession;
+            }
+
+            public void Continue()
+            {
+                if (disposed)
+                    return;
+
+                var response = (NSRunResponse)NSApplication.SharedApplication.RunModalSession(_modalSession);
+                if (response == NSRunResponse.Continues)
+                {
+                    Dispatcher.UIThread.Post(Continue, DispatcherPriority.ContextIdle);
+                }
+                else
+                {
+                    Logging.Logger.Log(Logging.LogEventLevel.Debug, "MonoMac", this, "Modal session ended");
+                }
             }
 
             public void Dispose()
             {
+                Logging.Logger.Log(Logging.LogEventLevel.Debug, "MonoMac", this, "ModalDisposable disposed");
                 _impl.Window.OrderOut(_impl.Window);
+                NSApplication.SharedApplication.EndModalSession(_modalSession);
+                disposed = true;
             }
         }
 
         public IDisposable ShowDialog()
         {
-            //TODO: Investigate how to return immediately. 
-            // May be add some magic to our run loop or something
-            NSApplication.SharedApplication.RunModalForWindow(Window);
-            return new ModalDisposable(this);
+            var session = NSApplication.SharedApplication.BeginModalSession(Window);
+            var disposable = new ModalDisposable(this, session);
+            Dispatcher.UIThread.Post(disposable.Continue, DispatcherPriority.ContextIdle);
+
+            return disposable;
         }
     }
 }

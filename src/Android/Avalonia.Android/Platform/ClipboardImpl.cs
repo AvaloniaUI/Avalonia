@@ -1,9 +1,9 @@
+using System.Threading.Tasks;
 using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
-using System.Threading.Tasks;
 
 namespace Avalonia.Android.Platform
 {

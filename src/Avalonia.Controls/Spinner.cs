@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
@@ -54,7 +52,7 @@ namespace Avalonia.Controls
         public SpinDirection Direction { get; }
 
         /// <summary>
-        /// Get or set whheter the spin event originated from a mouse wheel event.
+        /// Get or set whether the spin event originated from a mouse wheel event.
         /// </summary>
         public bool UsingMouseWheel{ get; }
 

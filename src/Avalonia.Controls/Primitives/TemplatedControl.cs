@@ -32,13 +32,13 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
             Border.BorderThicknessProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly StyledProperty<string> FontFamilyProperty =
+        public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the thickness of the control's border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the font family used to draw the control's text.
         /// </summary>
-        public string FontFamily
+        public FontFamily FontFamily
         {
             get { return GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
@@ -207,7 +207,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="control">The control.</param>
         /// <returns>The property value.</returns>
         /// <see cref="SetIsTemplateFocusTarget(Control, bool)"/>
-        public bool GetIsTemplateFocusTarget(Control control)
+        public static bool GetIsTemplateFocusTarget(Control control)
         {
             return control.GetValue(IsTemplateFocusTargetProperty);
         }
@@ -223,7 +223,7 @@ namespace Avalonia.Controls.Primitives
         /// attached property is set to true on an element in the control template, then the focus
         /// adorner will be shown around that control instead.
         /// </remarks>
-        public void SetIsTemplateFocusTarget(Control control, bool value)
+        public static void SetIsTemplateFocusTarget(Control control, bool value)
         {
             control.SetValue(IsTemplateFocusTargetProperty, value);
         }
@@ -247,6 +247,7 @@ namespace Avalonia.Controls.Primitives
                     foreach (var child in this.GetTemplateChildren())
                     {
                         child.SetValue(TemplatedParentProperty, null);
+                        ((ISetLogicalParent)child).SetParent(null);
                     }
 
                     VisualChildren.Clear();

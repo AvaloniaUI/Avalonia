@@ -27,7 +27,7 @@
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
@@ -153,7 +153,7 @@
 
           <Rectangle Name="DisabledVisual"
                      Stretch="Fill"
-                     Fill="#FFFFFFFF"
+                     Fill="{DynamicResource ThemeControlLightBrush}"
                      Opacity="{DynamicResource ThemeDisabledOpacity}"
                      Margin="0,2,0,2" />
 

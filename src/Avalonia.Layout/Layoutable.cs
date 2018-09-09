@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Avalonia.Logging;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Layout
@@ -389,7 +388,7 @@ namespace Avalonia.Layout
 
                 if (((ILayoutable)this).IsAttachedToVisualTree)
                 {
-                    LayoutManager.Instance?.InvalidateMeasure(this);
+                    (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
                     InvalidateVisual();
                 }
                 OnMeasureInvalidated();
@@ -406,12 +405,8 @@ namespace Avalonia.Layout
                 Logger.Verbose(LogArea.Layout, this, "Invalidated arrange");
 
                 IsArrangeValid = false;
-
-                if (((ILayoutable)this).IsAttachedToVisualTree)
-                {
-                    LayoutManager.Instance?.InvalidateArrange(this);
-                    InvalidateVisual();
-                }
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.InvalidateArrange(this);
+                InvalidateVisual();
             }
         }
 
@@ -658,7 +653,7 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Tests whether any of a <see cref="Rect"/>'s properties incude nagative values,
+        /// Tests whether any of a <see cref="Rect"/>'s properties include negative values,
         /// a NaN or Infinity.
         /// </summary>
         /// <param name="rect">The rect.</param>
@@ -673,7 +668,7 @@ namespace Avalonia.Layout
         }
 
         /// <summary>
-        /// Tests whether any of a <see cref="Size"/>'s properties incude nagative values,
+        /// Tests whether any of a <see cref="Size"/>'s properties include negative values,
         /// a NaN or Infinity.
         /// </summary>
         /// <param name="size">The size.</param>

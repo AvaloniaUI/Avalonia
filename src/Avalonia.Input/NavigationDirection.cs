@@ -58,4 +58,74 @@ namespace Avalonia.Input
         /// </summary>
         PageDown,
     }
+
+    public static class NavigationDirectionExtensions
+    {
+        /// <summary>
+        /// Checks whether a <see cref="NavigationDirection"/> represents a tab movement.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
+        /// <returns>
+        /// True if the direction represents a tab movement (<see cref="NavigationDirection.Next"/>
+        /// or <see cref="NavigationDirection.Previous"/>); otherwise false.
+        /// </returns>
+        public static bool IsTab(this NavigationDirection direction)
+        {
+            return direction == NavigationDirection.Next ||
+                direction == NavigationDirection.Previous;
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="NavigationDirection"/> represents a directional movement.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
+        /// <returns>
+        /// True if the direction represents a directional movement (any value except 
+        /// <see cref="NavigationDirection.Next"/> and <see cref="NavigationDirection.Previous"/>);
+        /// otherwise false.
+        /// </returns>
+        public static bool IsDirectional(this NavigationDirection direction)
+        {
+            return direction > NavigationDirection.Previous ||
+                direction <= NavigationDirection.PageDown;
+        }
+
+        /// <summary>
+        /// Converts a keypress into a <see cref="NavigationDirection"/>.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="modifiers">The keyboard modifiers.</param>
+        /// <returns>
+        /// A <see cref="NavigationDirection"/> if the keypress represents a navigation keypress.
+        /// </returns>
+        public static NavigationDirection? ToNavigationDirection(
+            this Key key,
+            InputModifiers modifiers = InputModifiers.None)
+        {
+            switch (key)
+            {
+                case Key.Tab:
+                    return (modifiers & InputModifiers.Shift) != 0 ?
+                        NavigationDirection.Next : NavigationDirection.Previous;
+                case Key.Up:
+                    return NavigationDirection.Up;
+                case Key.Down:
+                    return NavigationDirection.Down;
+                case Key.Left:
+                    return NavigationDirection.Left;
+                case Key.Right:
+                    return NavigationDirection.Right;
+                case Key.Home:
+                    return NavigationDirection.First;
+                case Key.End:
+                    return NavigationDirection.Last;
+                case Key.PageUp:
+                    return NavigationDirection.PageUp;
+                case Key.PageDown:
+                    return NavigationDirection.PageDown;
+                default:
+                    return null;
+            }
+        }
+    }
 }

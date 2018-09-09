@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
-using System.Collections.Generic;
-using Avalonia.Media;
-using System.Linq;
 
 namespace Avalonia.Rendering
 {
@@ -54,6 +54,8 @@ namespace Avalonia.Rendering
             {
                 using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
                 {
+                    context.PlatformImpl.Clear(Colors.Transparent);
+
                     using (context.PushTransformContainer())
                     {
                         Render(context, _root, _root.Bounds);
@@ -133,6 +135,7 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Dispose()
         {
+            _renderTarget?.Dispose();
         }
 
         /// <inheritdoc/>

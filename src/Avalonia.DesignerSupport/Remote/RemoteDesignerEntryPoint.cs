@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
-using Avalonia.DesignerSupport;
 using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
@@ -125,7 +122,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         class NeverClose : ICloseable
         {
-            public event EventHandler Closed;
+            public event EventHandler Closed
+            {
+                add {}
+                remove {}
+            }
         }
         
         public static void Main(string[] cmdline)

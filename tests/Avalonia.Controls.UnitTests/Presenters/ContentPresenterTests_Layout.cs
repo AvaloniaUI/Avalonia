@@ -81,6 +81,31 @@ namespace Avalonia.Controls.UnitTests.Presenters
         }
 
         [Fact]
+        public void Should_Correctly_Align_Child_With_Fixed_Size()
+        {
+            Border content;
+            var target = new ContentPresenter
+            {
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
+                Content = content = new Border
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Width = 16,
+                    Height = 16,
+                },
+            };
+
+            target.UpdateChild();
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Check correct result for Issue #1447.
+            Assert.Equal(new Rect(0, 84, 16, 16), content.Bounds);
+        }
+
+        [Fact]
         public void Content_Can_Be_Stretched()
         {
             Border content;
@@ -184,6 +209,31 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(84, 0, 16, 16), content.Bounds);
+        }
+
+        [Fact]
+        public void Child_Arrange_With_Zero_Height_When_Padding_Height_Greater_Than_Child_Height()
+        {
+            Border content;
+            var target = new ContentPresenter
+            {
+                Padding = new Thickness(32),
+                MaxHeight = 32,
+                MaxWidth = 32,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Content = content = new Border
+                {
+                    Height = 0,
+                    Width = 0,
+                },
+            };
+
+            target.UpdateChild();
+
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            Assert.Equal(new Rect(32, 32, 0, 0), content.Bounds);
         }
     }
 }

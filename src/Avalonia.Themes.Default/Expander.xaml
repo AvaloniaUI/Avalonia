@@ -18,8 +18,9 @@
                               IsVisible="{TemplateBinding IsExpanded}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -36,8 +37,9 @@
                               IsVisible="{TemplateBinding IsExpanded}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -54,8 +56,9 @@
                               IsVisible="{TemplateBinding IsExpanded}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -72,8 +75,9 @@
                               IsVisible="{TemplateBinding IsExpanded}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               Content="{TemplateBinding Content}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Stretch" />
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}" />
           </Grid>
         </Border>
       </ControlTemplate>
@@ -94,14 +98,17 @@
                               Grid.Column="1" 
                               Background="Transparent" 
                               Content="{TemplateBinding Content}" 
-                              VerticalAlignment="Center" />
+                              VerticalAlignment="Center" 
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Padding="{TemplateBinding Padding}"/>
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
   </Style>
   <Style Selector="Expander /template/ ToggleButton#PART_toggle:pointerover /template/ Border">
-    <Setter Property="BorderBrush" Value="#ffaaaaaa" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
   </Style>
   <Style Selector="Expander:down:expanded /template/ ToggleButton#PART_toggle /template/ Path">
     <Setter Property="RenderTransform">

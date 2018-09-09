@@ -1,5 +1,10 @@
-﻿namespace Avalonia.Media
-{
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using Avalonia.Visuals.Media.Imaging;
+
+namespace Avalonia.Media
+{  
     /// <summary>
     /// A brush which displays a repeating image.
     /// </summary>
@@ -35,5 +40,13 @@
         /// Gets the brush's tile mode.
         /// </summary>
         TileMode TileMode { get; }
+
+        /// <summary>
+        /// Gets the bitmap interpolation mode.
+        /// </summary>
+        /// <value>
+        /// The bitmap interpolation mode.
+        /// </value>
+        BitmapInterpolationMode BitmapInterpolationMode { get; }
     }
 }

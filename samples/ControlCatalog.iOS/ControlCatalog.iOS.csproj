@@ -141,10 +141,6 @@
       <Project>{7062AE20-5DCC-4442-9645-8195BDECE63E}</Project>
       <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Avalonia.HtmlRenderer\Avalonia.HtmlRenderer.csproj">
-      <Project>{5FB2B005-0A7F-4DAD-ADD4-3ED01444E63D}</Project>
-      <Name>Avalonia.HtmlRenderer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024B2D-53EB-4638-B26B-85EEAA54866E}</Project>
       <Name>Avalonia.Input</Name>
@@ -178,6 +174,6 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\build\Sprache.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
+  <Import Project="..\..\build\iOSWorkarounds.props" />
 </Project>

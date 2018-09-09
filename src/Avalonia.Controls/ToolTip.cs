@@ -34,28 +34,28 @@ namespace Avalonia.Controls
         /// Defines the ToolTip.Placement property.
         /// </summary>
         public static readonly AttachedProperty<PlacementMode> PlacementProperty =
-            AvaloniaProperty.RegisterAttached<Popup, Control, PlacementMode>("Placement", defaultValue: PlacementMode.Pointer);
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, PlacementMode>("Placement", defaultValue: PlacementMode.Pointer);
 
         /// <summary>
         /// Defines the ToolTip.HorizontalOffset property.
         /// </summary>
         public static readonly AttachedProperty<double> HorizontalOffsetProperty =
-            AvaloniaProperty.RegisterAttached<Popup, Control, double>("HorizontalOffset");
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("HorizontalOffset");
 
         /// <summary>
         /// Defines the ToolTip.VerticalOffset property.
         /// </summary>
         public static readonly AttachedProperty<double> VerticalOffsetProperty =
-            AvaloniaProperty.RegisterAttached<Popup, Control, double>("VerticalOffset", 20);
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, double>("VerticalOffset", 20);
 
         /// <summary>
         /// Defines the ToolTip.ShowDelay property.
         /// </summary>
         public static readonly AttachedProperty<int> ShowDelayProperty =
-            AvaloniaProperty.RegisterAttached<Popup, Control, int>("ShowDelay", 400);
+            AvaloniaProperty.RegisterAttached<ToolTip, Control, int>("ShowDelay", 400);
 
         /// <summary>
-        /// Stores the curernt <see cref="ToolTip"/> instance in the control.
+        /// Stores the current <see cref="ToolTip"/> instance in the control.
         /// </summary>
         private static readonly AttachedProperty<ToolTip> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");
@@ -234,11 +234,12 @@ namespace Avalonia.Controls
         {
             Close();
 
-            _popup = new PopupRoot { Content = this };
+            _popup = new PopupRoot { Content = this,  };
             ((ISetLogicalParent)_popup).SetParent(control);
             _popup.Position = Popup.GetPosition(control, GetPlacement(control), _popup,
                 GetHorizontalOffset(control), GetVerticalOffset(control));
             _popup.Show();
+            _popup.SnapInsideScreenEdges();
         }
 
         private void Close()
