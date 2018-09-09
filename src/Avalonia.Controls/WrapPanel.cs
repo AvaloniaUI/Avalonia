@@ -30,7 +30,7 @@ namespace Avalonia.Controls
         /// </summary>
         static WrapPanel()
         {
-            AffectsMeasure(OrientationProperty);
+            AffectsMeasure<WrapPanel>(OrientationProperty);
         }
 
         /// <summary>
