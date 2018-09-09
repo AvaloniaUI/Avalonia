@@ -11,6 +11,8 @@ namespace Avalonia.Direct2D1.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
+        private readonly List<DrawingEffect> _drawingEffects;
+
         public FormattedTextImpl(
             string text,
             Typeface typeface,
@@ -20,6 +22,8 @@ namespace Avalonia.Direct2D1.Media
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text;
+
+            _drawingEffects = new List<DrawingEffect>(spans?.Count ?? 0);
 
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
@@ -94,15 +98,31 @@ namespace Avalonia.Direct2D1.Media
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
+        public void ApplyDrawingEffects(DrawingContextImpl drawingContextImpl)
+        {
+            foreach (var spanDrawingEffect in _drawingEffects)
+            {
+                spanDrawingEffect.BrushImpl = drawingContextImpl.CreateBrush(spanDrawingEffect.Brush, new Size());
+
+                TextLayout.SetDrawingEffect(spanDrawingEffect.BrushImpl.PlatformBrush.NativePointer, spanDrawingEffect.Range);
+            }
+        }
+
+        public void CleanUpDrawingEffects()
+        {
+            foreach (var drawingEffect in _drawingEffects)
+            {
+                drawingEffect.BrushImpl?.Dispose();
+            }
+        }
+
         private void ApplySpan(FormattedTextStyleSpan span)
         {
             if (span.Length > 0)
             {
                 if (span.ForegroundBrush != null)
                 {
-                    TextLayout.SetDrawingEffect(
-                        new BrushWrapper(span.ForegroundBrush.ToImmutable()),
-                        new DWrite.TextRange(span.StartIndex, span.Length));
+                    _drawingEffects.Add(new DrawingEffect { Brush = span.ForegroundBrush, Range = new DWrite.TextRange(span.StartIndex, span.Length) });
                 }
             }
         }
@@ -118,6 +138,15 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new Size(width, TextLayout.Metrics.Height);
+        }
+
+        private class DrawingEffect
+        {
+            public DWrite.TextRange Range { get; set; }
+
+            public IBrush Brush { get; set; }
+
+            public BrushImpl BrushImpl { get; set; }
         }
     }
 }
