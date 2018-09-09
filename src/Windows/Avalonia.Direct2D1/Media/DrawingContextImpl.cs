@@ -80,7 +80,10 @@ namespace Avalonia.Direct2D1.Media
         public void Dispose()
         {
             foreach (var layer in _layerPool)
+            {
                 layer.Dispose();
+            }
+
             try
             {
                 _renderTarget.EndDraw();
@@ -265,12 +268,13 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
+                impl.ApplyDrawingEffects(this);
+
                 using (var brush = CreateBrush(foreground, impl.Size))
-                using (var renderer = new AvaloniaTextRenderer(this, _renderTarget, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
                     {
-                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                        _renderTarget.DrawTextLayout(origin.ToSharpDX(), impl.TextLayout, brush.PlatformBrush, DrawTextOptions.EnableColorFont);
                     }
                 }
             }
@@ -369,7 +373,9 @@ namespace Avalonia.Direct2D1.Media
                 _layers.Push(layer);
             }
             else
+            {
                 _layers.Push(null);
+            }
         }
 
         public void PopOpacity()

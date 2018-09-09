@@ -11,6 +11,10 @@ namespace Avalonia.Direct2D1.Media
 {
     public class FormattedTextImpl : IFormattedTextImpl
     {
+        private readonly List<DrawingEffect> _drawingEffects;
+
+        private bool _drawingEffectsApplied;
+
         public FormattedTextImpl(
             string text,
             Typeface typeface,
@@ -19,29 +23,30 @@ namespace Avalonia.Direct2D1.Media
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            Text = text;
+            Text = text;          
 
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
-            var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
-
-            textFormat.WordWrapping =
-                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
-
-            TextLayout = new DWrite.TextLayout(
-                             factory,
-                             Text ?? string.Empty,
-                             textFormat,
-                             (float)constraint.Width,
-                             (float)constraint.Height)
+            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
             {
-                TextAlignment = textAlignment.ToDirect2D()
-            };
+                textFormat.WordWrapping =
+                    wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
-            textFormat.Dispose();
+                TextLayout = new DWrite.TextLayout(
+                                 factory,
+                                 Text ?? string.Empty,
+                                 textFormat,
+                                 (float)constraint.Width,
+                                 (float)constraint.Height)
+                             {
+                                 TextAlignment = textAlignment.ToDirect2D()
+                             };
+            }
 
             if (spans != null)
             {
+                _drawingEffects = new List<DrawingEffect>(spans.Count);
+
                 foreach (var span in spans)
                 {
                     ApplySpan(span);
@@ -94,15 +99,35 @@ namespace Avalonia.Direct2D1.Media
             return result.Select(x => new Rect(x.Left, x.Top, x.Width, x.Height));
         }
 
+        public void ApplyDrawingEffects(DrawingContextImpl drawingContextImpl)
+        {
+            if (_drawingEffects == null || _drawingEffectsApplied)
+            {
+                return;
+            }
+
+            foreach (var spanDrawingEffect in _drawingEffects)
+            {
+                spanDrawingEffect.BrushImpl = drawingContextImpl.CreateBrush(spanDrawingEffect.Brush, new Size());
+
+                TextLayout.SetDrawingEffect(spanDrawingEffect.BrushImpl.PlatformBrush.NativePointer, spanDrawingEffect.Range);
+            }
+
+            _drawingEffectsApplied = true;
+        }
+
         private void ApplySpan(FormattedTextStyleSpan span)
         {
             if (span.Length > 0)
             {
                 if (span.ForegroundBrush != null)
                 {
-                    TextLayout.SetDrawingEffect(
-                        new BrushWrapper(span.ForegroundBrush.ToImmutable()),
-                        new DWrite.TextRange(span.StartIndex, span.Length));
+                    _drawingEffects.Add(
+                        new DrawingEffect
+                        {
+                            Brush = span.ForegroundBrush.ToImmutable(),
+                            Range = new DWrite.TextRange(span.StartIndex, span.Length)
+                        });
                 }
             }
         }
@@ -118,6 +143,15 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new Size(width, TextLayout.Metrics.Height);
+        }
+
+        private class DrawingEffect
+        {
+            public DWrite.TextRange Range { get; set; }
+
+            public IBrush Brush { get; set; }
+
+            public BrushImpl BrushImpl { get; set; }
         }
     }
 }
