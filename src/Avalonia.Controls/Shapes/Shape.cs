@@ -30,11 +30,11 @@ namespace Avalonia.Controls.Shapes
         private Geometry _renderedGeometry;
         bool _calculateTransformOnArrange = false;
 
-
         static Shape()
         {
             AffectsMeasure(StretchProperty, StrokeThicknessProperty);
-            AffectsRender(FillProperty, StrokeProperty, StrokeDashArrayProperty);
+            AffectsRender(StrokeDashArrayProperty);
+            BrushAffectsRender<Shape>(FillProperty, StrokeProperty);
         }
 
         public Geometry DefiningGeometry

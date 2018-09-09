@@ -329,6 +329,44 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Indicates that a brush property change should cause <see cref="InvalidateVisual"/> to be
+        /// called.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// This method should be called in a control's static constructor with each property
+        /// on the control which when changed should cause a redraw. It not only triggers an
+        /// invalidation when the property itself changes, but also when the brush raises
+        /// the <see cref="IMutableBrush.Changed"/> event.
+        /// </remarks>
+        protected static void BrushAffectsRender<T>(params AvaloniaProperty<IBrush>[] properties)
+            where T : Visual
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    if (e.OldValue is IMutableBrush oldValue)
+                    {
+                        oldValue.Changed -= sender.BrushChanged;
+                    }
+
+                    if (e.NewValue is IMutableBrush newValue)
+                    {
+                        newValue.Changed += sender.BrushChanged;
+                    }
+
+                    sender.InvalidateVisual();
+                }
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
+            }
+        }
+
+        /// <summary>
         /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
         /// for this control and all of its visual descendants.
         /// </summary>
@@ -529,6 +567,8 @@ namespace Avalonia
 
             OnVisualParentChanged(old, value);
         }
+
+        private void BrushChanged(object sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.
