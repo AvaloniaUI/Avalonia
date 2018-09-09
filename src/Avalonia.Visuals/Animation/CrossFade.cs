@@ -38,11 +38,11 @@ namespace Avalonia.Animation
                     new Setter
                     {
                         Property = Visual.OpacityProperty,
-                        Value = 0.0
+                        Value = 0d
                     }
                 )
                 {
-                    Cue = new Cue(1.0)
+                    Cue = new Cue(1d)
                 }
             };
             _fadeInAnimation = new Animation
@@ -52,11 +52,11 @@ namespace Avalonia.Animation
                     new Setter
                     {
                         Property = Visual.OpacityProperty,
-                        Value = 0.0
+                        Value = 0d
                     }
                 )
                 {
-                    Cue = new Cue(0.0)
+                    Cue = new Cue(0d)
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;
