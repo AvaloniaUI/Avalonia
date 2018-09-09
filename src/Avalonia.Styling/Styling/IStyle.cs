@@ -18,5 +18,7 @@ namespace Avalonia.Styling
         /// The control that contains this style. May be null.
         /// </param>
         void Attach(IStyleable control, IStyleHost container);
+
+        void Detach();
     }
 }
