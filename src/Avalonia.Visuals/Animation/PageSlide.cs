@@ -119,7 +119,7 @@ namespace Avalonia.Animation
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = forward ? -distance : distance
+                            Value = forward ? distance : -distance
                         }
                     )
                     {
