@@ -37,12 +37,29 @@ namespace Avalonia.Animation
              if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return match
+            var matchStream = match
+                .DistinctUntilChanged()
+                .Publish()
+                .RefCount();
+
+            var activeInstance = matchStream
                 .Where(p => p)
-                .Subscribe(_ =>
-                {
-                    var timerObs = RunKeyFrames(animation, control, onComplete);
-                });
+                .Select(p => RunKeyFrames(animation, control, onComplete));
+
+            var negationStream = matchStream
+                .Where(p => !p);
+
+            return Observable
+                    .WithLatestFrom(
+                        negationStream,
+                        activeInstance,
+                        (isMatch, instance) =>
+                        {
+                            if (!isMatch && animation.RepeatCount.IsLoop)
+                                instance?.Dispose();
+                            return true;
+                        })
+                    .Subscribe();
         }
 
         /// <summary>
