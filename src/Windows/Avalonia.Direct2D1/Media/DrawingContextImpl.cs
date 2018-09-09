@@ -277,8 +277,6 @@ namespace Avalonia.Direct2D1.Media
                         _renderTarget.DrawTextLayout(origin.ToSharpDX(), impl.TextLayout, brush.PlatformBrush, DrawTextOptions.EnableColorFont);
                     }
                 }
-
-                impl.CleanUpDrawingEffects();
             }
         }
 

@@ -13,6 +13,8 @@ namespace Avalonia.Direct2D1.Media
     {
         private readonly List<DrawingEffect> _drawingEffects;
 
+        private bool _drawingEffectsApplied;
+
         public FormattedTextImpl(
             string text,
             Typeface typeface,
@@ -21,31 +23,30 @@ namespace Avalonia.Direct2D1.Media
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            Text = text;
-
-            _drawingEffects = new List<DrawingEffect>(spans?.Count ?? 0);
+            Text = text;          
 
             var factory = AvaloniaLocator.Current.GetService<DWrite.Factory>();
 
-            var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
-
-            textFormat.WordWrapping =
-                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
-
-            TextLayout = new DWrite.TextLayout(
-                             factory,
-                             Text ?? string.Empty,
-                             textFormat,
-                             (float)constraint.Width,
-                             (float)constraint.Height)
+            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
             {
-                TextAlignment = textAlignment.ToDirect2D()
-            };
+                textFormat.WordWrapping =
+                    wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
-            textFormat.Dispose();
+                TextLayout = new DWrite.TextLayout(
+                                 factory,
+                                 Text ?? string.Empty,
+                                 textFormat,
+                                 (float)constraint.Width,
+                                 (float)constraint.Height)
+                             {
+                                 TextAlignment = textAlignment.ToDirect2D()
+                             };
+            }
 
             if (spans != null)
             {
+                _drawingEffects = new List<DrawingEffect>(spans.Count);
+
                 foreach (var span in spans)
                 {
                     ApplySpan(span);
@@ -100,20 +101,19 @@ namespace Avalonia.Direct2D1.Media
 
         public void ApplyDrawingEffects(DrawingContextImpl drawingContextImpl)
         {
+            if (_drawingEffects == null || _drawingEffectsApplied)
+            {
+                return;
+            }
+
             foreach (var spanDrawingEffect in _drawingEffects)
             {
                 spanDrawingEffect.BrushImpl = drawingContextImpl.CreateBrush(spanDrawingEffect.Brush, new Size());
 
                 TextLayout.SetDrawingEffect(spanDrawingEffect.BrushImpl.PlatformBrush.NativePointer, spanDrawingEffect.Range);
             }
-        }
 
-        public void CleanUpDrawingEffects()
-        {
-            foreach (var drawingEffect in _drawingEffects)
-            {
-                drawingEffect.BrushImpl?.Dispose();
-            }
+            _drawingEffectsApplied = true;
         }
 
         private void ApplySpan(FormattedTextStyleSpan span)
