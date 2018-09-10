@@ -25,6 +25,7 @@ namespace Avalonia.Animation
             Cue = cue;
         }
 
+        internal bool isNeutral;
         public Type AnimatorType { get; }
         public Cue Cue { get; }
         public AvaloniaProperty Property { get; private set; }

@@ -1,14 +1,13 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.IO;
-using SharpDX.Direct2D1;
+using SharpDX.WIC;
+using Bitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
-    using SharpDX.WIC;
-
-    using Bitmap = SharpDX.Direct2D1.Bitmap;
-    using PixelFormat = SharpDX.Direct2D1.PixelFormat;
-
     /// <summary>
     /// A Direct2D Bitmap implementation that uses a GPU memory bitmap as its image.
     /// </summary>

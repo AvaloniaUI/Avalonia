@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Presenters
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
             ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
-            AffectsArrange(OffsetProperty);
+            AffectsArrange<ScrollContentPresenter>(OffsetProperty);
         }
 
         /// <summary>

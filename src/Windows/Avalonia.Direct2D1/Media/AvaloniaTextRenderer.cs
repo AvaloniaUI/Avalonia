@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
@@ -9,7 +8,7 @@ using SharpDX.Mathematics.Interop;
 
 namespace Avalonia.Direct2D1.Media
 {
-    internal class AvaloniaTextRenderer : TextRenderer
+    internal class AvaloniaTextRenderer : TextRendererBase
     {
         private readonly DrawingContextImpl _context;
 
@@ -27,18 +26,7 @@ namespace Avalonia.Direct2D1.Media
             _foreground = foreground;
         }
 
-        public IDisposable Shadow
-        {
-            get;
-            set;
-        }
-
-        public void Dispose()
-        {
-            Shadow?.Dispose();
-        }
-
-        public Result DrawGlyphRun(
+        public override Result DrawGlyphRun(
             object clientDrawingContext,
             float baselineOriginX,
             float baselineOriginY,
@@ -68,34 +56,14 @@ namespace Avalonia.Direct2D1.Media
             return Result.Ok;
         }
 
-        public Result DrawInlineObject(object clientDrawingContext, float originX, float originY, InlineObject inlineObject, bool isSideways, bool isRightToLeft, ComObject clientDrawingEffect)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Result DrawStrikethrough(object clientDrawingContext, float baselineOriginX, float baselineOriginY, ref Strikethrough strikethrough, ComObject clientDrawingEffect)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Result DrawUnderline(object clientDrawingContext, float baselineOriginX, float baselineOriginY, ref Underline underline, ComObject clientDrawingEffect)
-        {
-            throw new NotImplementedException();
-        }
-
-        public RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
+        public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
         {
             return _renderTarget.Transform;
         }
 
-        public float GetPixelsPerDip(object clientDrawingContext)
+        public override float GetPixelsPerDip(object clientDrawingContext)
         {
             return _renderTarget.DotsPerInch.Width / 96;
-        }
-
-        public bool IsPixelSnappingDisabled(object clientDrawingContext)
-        {
-            return false;
         }
     }
 }
