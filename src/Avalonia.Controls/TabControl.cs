@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
-            AffectsMeasure(TabStripPlacementProperty);
+            AffectsMeasure<TabControl>(TabStripPlacementProperty);
         }
 
         /// <summary>
