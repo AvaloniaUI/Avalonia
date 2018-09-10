@@ -33,7 +33,7 @@ namespace Avalonia.Direct2D1
 
         public static SharpDX.Direct2D1.Factory1 Direct2D1Factory { get; private set; }
 
-        public static SharpDX.Direct2D1.Device1 Direct2D1Device { get; private set; }
+        public static SharpDX.Direct2D1.Device Direct2D1Device { get; private set; }
 
         public static SharpDX.DirectWrite.Factory1 DirectWriteFactory { get; private set; }
 
@@ -97,10 +97,7 @@ namespace Avalonia.Direct2D1
 
                 DxgiDevice = Direct3D11Device.QueryInterface<SharpDX.DXGI.Device1>();
 
-                using (var device = new SharpDX.Direct2D1.Device(Direct2D1Factory, DxgiDevice))
-                {
-                    Direct2D1Device = device.QueryInterface<SharpDX.Direct2D1.Device1>();
-                }
+                Direct2D1Device = new SharpDX.Direct2D1.Device(Direct2D1Factory, DxgiDevice);
 
                 s_initialized = true;
             }
