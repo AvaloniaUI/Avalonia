@@ -9,8 +9,6 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    using System;
-
     public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
@@ -23,22 +21,21 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface);
-
-            textFormat.WordWrapping =
-                wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
-
-            TextLayout = new DWrite.TextLayout(
-                             Direct2D1Platform.DirectWriteFactory,
-                             Text ?? string.Empty,
-                             textFormat,
-                             (float)constraint.Width,
-                             (float)constraint.Height)
+            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
             {
-                TextAlignment = textAlignment.ToDirect2D()
-            };
+                textFormat.WordWrapping =
+                    wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
 
-            textFormat.Dispose();
+                TextLayout = new DWrite.TextLayout(
+                                 Direct2D1Platform.DirectWriteFactory,
+                                 Text ?? string.Empty,
+                                 textFormat,
+                                 (float)constraint.Width,
+                                 (float)constraint.Height)
+                             {
+                                 TextAlignment = textAlignment.ToDirect2D()
+                             };
+            }
 
             if (spans != null)
             {
@@ -109,17 +106,7 @@ namespace Avalonia.Direct2D1.Media
 
         private Size Measure()
         {
-            DWrite.TextMetrics metrics;
-
-            // SharpDX bug
-            try
-            {
-                metrics = TextLayout.Metrics;
-            }
-            catch (ObjectDisposedException)
-            {
-                metrics = TextLayout.Metrics;
-            }
+            var metrics = TextLayout.Metrics;
 
             var width = metrics.WidthIncludingTrailingWhitespace;
 
