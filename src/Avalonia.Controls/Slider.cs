@@ -42,6 +42,8 @@ namespace Avalonia.Controls
         static Slider()
         {
             OrientationProperty.OverrideDefaultValue(typeof(Slider), Orientation.Horizontal);
+            PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass<Slider, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);

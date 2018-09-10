@@ -8,8 +8,8 @@ namespace Avalonia.Controls
     {
         static DrawingPresenter()
         {
-            AffectsMeasure(DrawingProperty);
-            AffectsRender(DrawingProperty);
+            AffectsMeasure<DrawingPresenter>(DrawingProperty);
+            AffectsRender<DrawingPresenter>(DrawingProperty);
         }
 
         public static readonly StyledProperty<Drawing> DrawingProperty =

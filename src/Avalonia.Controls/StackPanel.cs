@@ -29,8 +29,8 @@ namespace Avalonia.Controls
         /// </summary>
         static StackPanel()
         {
-            AffectsMeasure(SpacingProperty);
-            AffectsMeasure(OrientationProperty);
+            AffectsMeasure<StackPanel>(SpacingProperty);
+            AffectsMeasure<StackPanel>(OrientationProperty);
         }
 
         /// <summary>
