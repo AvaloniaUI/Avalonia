@@ -140,7 +140,7 @@ namespace Avalonia.Layout
         /// </summary>
         static Layoutable()
         {
-            AffectsMeasure(
+            AffectsMeasure<Layoutable>(
                 IsVisibleProperty,
                 WidthProperty,
                 HeightProperty,
@@ -427,11 +427,32 @@ namespace Avalonia.Layout
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
         /// </remarks>
+        [Obsolete("Use AffectsMeasure<T> and specify the control type.")]
         protected static void AffectsMeasure(params AvaloniaProperty[] properties)
         {
+            AffectsMeasure<Layoutable>(properties);
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the control's measurement.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
+        /// </remarks>
+        protected static void AffectsMeasure<T>(params AvaloniaProperty[] properties)
+            where T : class, ILayoutable
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateMeasure();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsMeasureInvalidate);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -443,11 +464,32 @@ namespace Avalonia.Layout
         /// After a call to this method in a control's static constructor, any change to the
         /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
         /// </remarks>
+        [Obsolete("Use AffectsArrange<T> and specify the control type.")]
         protected static void AffectsArrange(params AvaloniaProperty[] properties)
         {
+            AffectsArrange<Layoutable>(properties);
+        }
+
+        /// <summary>
+        /// Marks a property as affecting the control's arrangement.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a control's static constructor, any change to the
+        /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
+        /// </remarks>
+        protected static void AffectsArrange<T>(params AvaloniaProperty[] properties)
+            where T : class, ILayoutable
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateArrange();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsArrangeInvalidate);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -630,26 +672,6 @@ namespace Avalonia.Layout
             }
 
             base.OnVisualParentChanged(oldParent, newParent);
-        }
-
-        /// <summary>
-        /// Calls <see cref="InvalidateMeasure"/> on the control on which a property changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsMeasureInvalidate(AvaloniaPropertyChangedEventArgs e)
-        {
-            ILayoutable control = e.Sender as ILayoutable;
-            control?.InvalidateMeasure();
-        }
-
-        /// <summary>
-        /// Calls <see cref="InvalidateArrange"/> on the control on which a property changed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsArrangeInvalidate(AvaloniaPropertyChangedEventArgs e)
-        {
-            ILayoutable control = e.Sender as ILayoutable;
-            control?.InvalidateArrange();
         }
 
         /// <summary>
