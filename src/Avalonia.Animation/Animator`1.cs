@@ -17,7 +17,7 @@ namespace Avalonia.Animation
         /// List of type-converted keyframes.
         /// </summary>
         private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
- 
+
         private bool _isVerifiedAndConverted;
 
         /// <summary>
@@ -28,38 +28,25 @@ namespace Avalonia.Animation
         public Animator()
         {
             // Invalidate keyframes when changed.
-             this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
+            this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
         }
 
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IObservable<bool> match, Action onComplete)
         {
-             if (!_isVerifiedAndConverted)
+            if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            var matchStream = match
-                .DistinctUntilChanged()
-                .Publish()
-                .RefCount();
-
-            var activeInstance = matchStream
-                .Where(p => p)
-                .Select(p => RunKeyFrames(animation, control, onComplete));
-
-            var negationStream = matchStream
-                .Where(p => !p);
-
-            return Observable
-                    .WithLatestFrom(
-                        negationStream,
-                        activeInstance,
-                        (isMatch, instance) =>
+            return match
+                     .DistinctUntilChanged()
+                     .Select(x => x ? RunKeyFrames(animation, control, onComplete) : null)
+                     .Buffer(2, 1)
+                     .Where(x => x.Count > 1)
+                     .Subscribe(x =>
                         {
-                            if (!isMatch && animation.RepeatCount.IsLoop)
-                                instance?.Dispose();
-                            return true;
-                        })
-                    .Subscribe();
+                            if (animation.RepeatCount.IsLoop)
+                                x[0]?.Dispose();
+                        });
         }
 
         /// <summary>
@@ -72,7 +59,7 @@ namespace Avalonia.Animation
         /// <param name="t">The time parameter, relative to the total animation time</param>
         protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double t)
         {
-            AnimatorKeyFrame firstCue, lastCue ;
+            AnimatorKeyFrame firstCue, lastCue;
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
