@@ -344,7 +344,7 @@ namespace Avalonia.Rendering
             foreach (var layer in scene.Layers)
             {
                 var bitmap = Layers[layer.LayerRoot].Bitmap;
-                var sourceRect = new Rect(0, 0, bitmap.Item.PixelWidth, bitmap.Item.PixelHeight);
+                var sourceRect = new Rect(0, 0, bitmap.Item.PixelSize.Width, bitmap.Item.PixelSize.Height);
 
                 if (layer.GeometryClip != null)
                 {
@@ -368,7 +368,7 @@ namespace Avalonia.Rendering
 
             if (_overlay != null)
             {
-                var sourceRect = new Rect(0, 0, _overlay.Item.PixelWidth, _overlay.Item.PixelHeight);
+                var sourceRect = new Rect(0, 0, _overlay.Item.PixelSize.Width, _overlay.Item.PixelSize.Height);
                 context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
             }
 
@@ -453,8 +453,8 @@ namespace Avalonia.Rendering
             var pixelSize = size * scaling;
 
             if (_overlay == null ||
-                _overlay.Item.PixelWidth != pixelSize.Width ||
-                _overlay.Item.PixelHeight != pixelSize.Height)
+                _overlay.Item.PixelSize.Width != pixelSize.Width ||
+                _overlay.Item.PixelSize.Height != pixelSize.Height)
             {
                 _overlay?.Dispose();
                 _overlay = RefCountable.Create(parentContext.CreateLayer(size));

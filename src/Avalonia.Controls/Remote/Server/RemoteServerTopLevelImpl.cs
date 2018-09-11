@@ -108,7 +108,7 @@ namespace Avalonia.Controls.Remote.Server
             var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             try
             {
-                _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), width, height, width * bpp, _dpi, (PixelFormat)fmt,
+                _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
                     null);
                 Paint?.Invoke(new Rect(0, 0, width, height));
             }

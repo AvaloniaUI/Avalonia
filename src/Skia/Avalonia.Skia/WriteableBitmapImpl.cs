@@ -20,13 +20,13 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create new writeable bitmap.
         /// </summary>
-        /// <param name="width">Width.</param>
-        /// <param name="height">Height.</param>
-        /// <param name="format">Format.</param>
-        public WriteableBitmapImpl(int width, int height, PixelFormat? format = null)
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
+        /// <param name="format">The pixel format.</param>
+        public WriteableBitmapImpl(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
-            PixelHeight = height;
-            PixelWidth = width;
+            PixelSize = size;
+            Dpi = dpi;
 
             var colorType = PixelFormatHelper.ResolveColorType(format);
             
@@ -36,24 +36,23 @@ namespace Avalonia.Skia
             {
                 _bitmap = new SKBitmap();
 
-                var nfo = new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+                var nfo = new SKImageInfo(size.Width, size.Height, colorType, SKAlphaType.Premul);
                 var blob = runtimePlatform.AllocBlob(nfo.BytesSize);
 
                 _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, s_releaseDelegate, blob);
             }
             else
             {
-                _bitmap = new SKBitmap(width, height, colorType, SKAlphaType.Premul);
+                _bitmap = new SKBitmap(size.Width, size.Height, colorType, SKAlphaType.Premul);
             }
 
             _bitmap.Erase(SKColor.Empty);
         }
 
-        /// <inheritdoc />
-        public int PixelWidth { get; }
+        public Vector Dpi { get; }
 
         /// <inheritdoc />
-        public int PixelHeight { get; }
+        public PixelSize PixelSize { get; }
 
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
@@ -133,10 +132,7 @@ namespace Avalonia.Skia
             public IntPtr Address => _bitmap.GetPixels();
 
             /// <inheritdoc />
-            public int Width => _bitmap.Width;
-
-            /// <inheritdoc />
-            public int Height => _bitmap.Height;
+            public PixelSize Size => new PixelSize(_bitmap.Width, _bitmap.Height);
 
             /// <inheritdoc />
             public int RowBytes => _bitmap.RowBytes;

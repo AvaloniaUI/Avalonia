@@ -42,10 +42,10 @@ namespace Avalonia.Direct2D1.Media
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
         /// </summary>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
         /// <param name="pixelFormat">Pixel format</param>
-        public WicBitmapImpl(int width, int height, APixelFormat? pixelFormat = null)
+        public WicBitmapImpl(PixelSize size, Vector dpi, APixelFormat? pixelFormat = null)
         {
             if (!pixelFormat.HasValue)
             {
@@ -55,19 +55,22 @@ namespace Avalonia.Direct2D1.Media
             PixelFormat = pixelFormat;
             WicImpl = new Bitmap(
                 Direct2D1Platform.ImagingFactory,
-                width,
-                height,
+                size.Width,
+                size.Height,
                 pixelFormat.Value.ToWic(),
                 BitmapCreateCacheOption.CacheOnLoad);
+            WicImpl.SetResolution(dpi.X, dpi.Y);
         }
 
-        public WicBitmapImpl(APixelFormat format, IntPtr data, int width, int height, int stride)
+        public WicBitmapImpl(APixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, width, height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, size.Width, size.Height, format.ToWic(), BitmapCreateCacheOption.CacheOnDemand);
+            WicImpl.SetResolution(dpi.X, dpi.Y);
+
             PixelFormat = format;
             using (var l = WicImpl.Lock(BitmapLockFlags.Write))
             {
-                for (var row = 0; row < height; row++)
+                for (var row = 0; row < size.Height; row++)
                 {
                     UnmanagedMethods.CopyMemory(
                         (l.Data.DataPointer + row * l.Stride),
@@ -77,17 +80,18 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
+        public override Vector Dpi
+        {
+            get
+            {
+                WicImpl.GetResolution(out double x, out double y);
+                return new Vector(x, y);
+            }
+        }
+
+        public override PixelSize PixelSize => WicImpl.Size.ToAvalonia();
+
         protected APixelFormat? PixelFormat { get; }
-
-        /// <summary>
-        /// Gets the width of the bitmap, in pixels.
-        /// </summary>
-        public override int PixelWidth => WicImpl.Size.Width;
-
-        /// <summary>
-        /// Gets the height of the bitmap, in pixels.
-        /// </summary>
-        public override int PixelHeight => WicImpl.Size.Height;
 
         public override void Dispose()
         {

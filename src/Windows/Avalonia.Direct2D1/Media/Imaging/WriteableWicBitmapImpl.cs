@@ -10,8 +10,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
 {
     class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
-        public WriteableWicBitmapImpl(int width, int height, PixelFormat? pixelFormat) 
-            : base(width, height, pixelFormat)
+        public WriteableWicBitmapImpl(PixelSize size, Vector dpi, PixelFormat? pixelFormat) 
+            : base(size, dpi, pixelFormat)
         {
         }
 
@@ -33,8 +33,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             }
 
             public IntPtr Address => _lock.Data.DataPointer;
-            public int Width => _lock.Size.Width;
-            public int Height => _lock.Size.Height;
+            public PixelSize Size => _lock.Size.ToAvalonia();
             public int RowBytes => _lock.Stride;
             public Vector Dpi { get; } = new Vector(96, 96);
             public PixelFormat Format => _format;

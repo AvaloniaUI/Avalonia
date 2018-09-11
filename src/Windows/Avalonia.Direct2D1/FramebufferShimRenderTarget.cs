@@ -40,7 +40,7 @@ namespace Avalonia.Direct2D1
             private readonly ILockedFramebuffer _target;
 
             public FramebufferShim(ILockedFramebuffer target) : 
-                base(target.Width, target.Height, target.Dpi.X, target.Dpi.Y, target.Format)
+                base(target.Size, target.Dpi, target.Format)
             {
                 _target = target;
             }
@@ -51,7 +51,7 @@ namespace Avalonia.Direct2D1
                 {
                     using (var l = WicImpl.Lock(BitmapLockFlags.Read))
                     {
-                        for (var y = 0; y < _target.Height; y++)
+                        for (var y = 0; y < _target.Size.Height; y++)
                         {
                             UnmanagedMethods.CopyMemory(
                                 (_target.Address + _target.RowBytes * y),

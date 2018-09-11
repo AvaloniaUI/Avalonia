@@ -24,12 +24,11 @@ namespace Avalonia.MonoMac
             _isDeferred = !Dispatcher.UIThread.CheckAccess();
             _logicalSize = _view.LogicalSize;
             var pixelSize = _view.PixelSize;
-            Width = (int)pixelSize.Width;
-            Height = (int)pixelSize.Height;
-            RowBytes = Width * 4;
+            Size = new PixelSize((int)pixelSize.Width, (int)pixelSize.Height);
+            RowBytes = Size.Width * 4;
             Dpi = new Vector(96 * pixelSize.Width / _logicalSize.Width, 96 * pixelSize.Height / _logicalSize.Height);
             Format = PixelFormat.Rgba8888;
-            var size = Height * RowBytes;
+            var size = Size.Height * RowBytes;
             _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(size);
             memset(Address, 0, new IntPtr(size));
         }
@@ -43,7 +42,7 @@ namespace Avalonia.MonoMac
             try
             {
                 using (var colorSpace = CGColorSpace.CreateDeviceRGB())
-                using (var bContext = new CGBitmapContext(Address, Width, Height, 8, Width * 4,
+                using (var bContext = new CGBitmapContext(Address, Size.Width, Size.Height, 8, Size.Width * 4,
                     colorSpace, (CGImageAlphaInfo)nfo))
                     image = bContext.ToImage();
                 lock (_view.SyncRoot)
@@ -79,8 +78,7 @@ namespace Avalonia.MonoMac
         }
 
         public IntPtr Address => _blob.Address;
-        public int Width { get; }
-        public int Height { get; }
+        public PixelSize Size { get; }
         public int RowBytes { get; }
         public Vector Dpi { get; }
         public PixelFormat Format { get; }
