@@ -100,7 +100,7 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender(
+            AffectsRender<Visual>(
                 BoundsProperty,
                 ClipProperty,
                 ClipToBoundsProperty,
@@ -320,11 +320,34 @@ namespace Avalonia
         /// on the control which when changed should cause a redraw. This is similar to WPF's
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
+        [Obsolete("Use AffectsRender<T> and specify the control type.")]
         protected static void AffectsRender(params AvaloniaProperty[] properties)
         {
+            AffectsRender<Visual>(properties);
+        }
+
+        /// <summary>
+        /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
+        /// called.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// This method should be called in a control's static constructor with each property
+        /// on the control which when changed should cause a redraw. This is similar to WPF's
+        /// FrameworkPropertyMetadata.AffectsRender flag.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : class, IVisual
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.InvalidateVisual();
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsRenderInvalidate);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -448,15 +471,6 @@ namespace Avalonia
         protected virtual void OnVisualParentChanged(IVisual oldParent, IVisual newParent)
         {
             RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
-        }
-
-        /// <summary>
-        /// Called when a property changes that should invalidate the visual.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsRenderInvalidate(AvaloniaPropertyChangedEventArgs e)
-        {
-            (e.Sender as Visual)?.InvalidateVisual();
         }
 
         /// <summary>

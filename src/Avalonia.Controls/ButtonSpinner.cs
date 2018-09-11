@@ -85,8 +85,8 @@ namespace Avalonia.Controls
         static ButtonSpinner()
         {
             AllowSpinProperty.Changed.Subscribe(AllowSpinChanged);
-            PseudoClass(ButtonSpinnerLocationProperty, location => location == Location.Left, ":left");
-            PseudoClass(ButtonSpinnerLocationProperty, location => location == Location.Right, ":right");
+            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Left, ":left");
+            PseudoClass<ButtonSpinner, Location>(ButtonSpinnerLocationProperty, location => location == Location.Right, ":right");
         }
 
         /// <summary>

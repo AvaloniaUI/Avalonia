@@ -100,9 +100,10 @@ namespace Avalonia.Controls
         static TextBlock()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-            AffectsRender(FontWeightProperty);
-            AffectsRender(FontSizeProperty);
-            AffectsRender(FontStyleProperty);
+            AffectsRender<TextBlock>(
+                FontWeightProperty,
+                FontSizeProperty,
+                FontStyleProperty);
             BrushAffectsRender<TextBlock>(BackgroundProperty, ForegroundProperty);
         }
 

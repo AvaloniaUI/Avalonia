@@ -7,16 +7,13 @@ namespace Avalonia.Direct2D1.Media
     internal static class Direct2D1FontCollectionCache
     {
         private static readonly ConcurrentDictionary<FontFamilyKey, SharpDX.DirectWrite.FontCollection> s_cachedCollections;
-        private static readonly SharpDX.DirectWrite.Factory s_factory;
         private static readonly SharpDX.DirectWrite.FontCollection s_installedFontCollection;
 
         static Direct2D1FontCollectionCache()
         {
             s_cachedCollections = new ConcurrentDictionary<FontFamilyKey, SharpDX.DirectWrite.FontCollection>();
 
-            s_factory = AvaloniaLocator.Current.GetService<SharpDX.DirectWrite.Factory>();
-
-            s_installedFontCollection = s_factory.GetSystemFontCollection(false);
+            s_installedFontCollection = Direct2D1Platform.DirectWriteFactory.GetSystemFontCollection(false);
         }
 
         public static SharpDX.DirectWrite.TextFormat GetTextFormat(Typeface typeface)
@@ -39,7 +36,7 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return new SharpDX.DirectWrite.TextFormat(
-                s_factory, 
+                Direct2D1Platform.DirectWriteFactory, 
                 fontFamilyName, 
                 fontCollection, 
                 (SharpDX.DirectWrite.FontWeight)typeface.Weight,
@@ -57,9 +54,9 @@ namespace Avalonia.Direct2D1.Media
         {
             var assets = FontFamilyLoader.LoadFontAssets(key);
 
-            var fontLoader = new DWriteResourceFontLoader(s_factory, assets);
+            var fontLoader = new DWriteResourceFontLoader(Direct2D1Platform.DirectWriteFactory, assets);
 
-            return new SharpDX.DirectWrite.FontCollection(s_factory, fontLoader, fontLoader.Key);
+            return new SharpDX.DirectWrite.FontCollection(Direct2D1Platform.DirectWriteFactory, fontLoader, fontLoader.Key);
         }
     }
 }
