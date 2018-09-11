@@ -80,18 +80,18 @@ namespace Avalonia.Media
                     brush._gradientStopsSubscription = newValue.TrackItemPropertyChanged(brush.GradientStopChanged);
                 }
 
-                brush.RaiseChanged(EventArgs.Empty);
+                brush.RaiseInvalidated(EventArgs.Empty);
             }
         }
 
         private void GradientStopsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            RaiseChanged(EventArgs.Empty);
+            RaiseInvalidated(EventArgs.Empty);
         }
 
         private void GradientStopChanged(Tuple<object, PropertyChangedEventArgs> e)
         {
-            RaiseChanged(EventArgs.Empty);
+            RaiseInvalidated(EventArgs.Empty);
         }
     }
 }

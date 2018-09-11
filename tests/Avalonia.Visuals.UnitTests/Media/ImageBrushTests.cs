@@ -11,14 +11,14 @@ namespace Avalonia.Visuals.UnitTests.Media
     public class ImageBrushTests
     {
         [Fact]
-        public void Changing_Source_Raises_Changed()
+        public void Changing_Source_Raises_Invalidated()
         {
             var bitmap1 = Mock.Of<IBitmap>();
             var bitmap2 = Mock.Of<IBitmap>();
             var target = new ImageBrush(bitmap1);
             var raised = false;
 
-            target.Changed += (s, e) => raised = true;
+            target.Invalidated += (s, e) => raised = true;
             target.Source = bitmap2;
 
             Assert.True(raised);

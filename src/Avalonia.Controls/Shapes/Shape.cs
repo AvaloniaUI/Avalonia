@@ -33,8 +33,7 @@ namespace Avalonia.Controls.Shapes
         static Shape()
         {
             AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty);
-            AffectsRender<Shape>(StrokeDashArrayProperty);
-            BrushAffectsRender<Shape>(FillProperty, StrokeProperty);
+            AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty);
         }
 
         public Geometry DefiningGeometry

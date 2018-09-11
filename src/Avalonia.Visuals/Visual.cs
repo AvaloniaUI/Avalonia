@@ -338,45 +338,20 @@ namespace Avalonia
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
-            where T : class, IVisual
-        {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as T)?.InvalidateVisual();
-            }
-
-            foreach (var property in properties)
-            {
-                property.Changed.Subscribe(Invalidate);
-            }
-        }
-
-        /// <summary>
-        /// Indicates that a brush property change should cause <see cref="InvalidateVisual"/> to be
-        /// called.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// This method should be called in a control's static constructor with each property
-        /// on the control which when changed should cause a redraw. It not only triggers an
-        /// invalidation when the property itself changes, but also when the brush raises
-        /// the <see cref="IMutableBrush.Changed"/> event.
-        /// </remarks>
-        protected static void BrushAffectsRender<T>(params AvaloniaProperty<IBrush>[] properties)
             where T : Visual
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
                 if (e.Sender is T sender)
                 {
-                    if (e.OldValue is IMutableBrush oldValue)
+                    if (e.OldValue is IAffectsRender oldValue)
                     {
-                        oldValue.Changed -= sender.BrushChanged;
+                        oldValue.Invalidated -= sender.AffectsRenderInvalidated;
                     }
 
-                    if (e.NewValue is IMutableBrush newValue)
+                    if (e.NewValue is IAffectsRender newValue)
                     {
-                        newValue.Changed += sender.BrushChanged;
+                        newValue.Invalidated += sender.AffectsRenderInvalidated;
                     }
 
                     sender.InvalidateVisual();
@@ -582,7 +557,7 @@ namespace Avalonia
             OnVisualParentChanged(old, value);
         }
 
-        private void BrushChanged(object sender, EventArgs e) => InvalidateVisual();
+        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.

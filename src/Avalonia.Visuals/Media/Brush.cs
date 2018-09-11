@@ -19,7 +19,7 @@ namespace Avalonia.Media
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
 
         /// <inheritdoc/>
-        public event EventHandler Changed;
+        public event EventHandler Invalidated;
 
         /// <summary>
         /// Gets or sets the opacity of the brush.
@@ -63,14 +63,14 @@ namespace Avalonia.Media
         /// <param name="properties">The properties.</param>
         /// <remarks>
         /// After a call to this method in a brush's static constructor, any change to the
-        /// property will cause the <see cref="Changed"/> event to be raised on the brush.
+        /// property will cause the <see cref="Invalidated"/> event to be raised on the brush.
         /// </remarks>
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Brush
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
-                (e.Sender as T)?.RaiseChanged(EventArgs.Empty);
+                (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
             }
 
             foreach (var property in properties)
@@ -80,9 +80,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Raises the <see cref="Changed"/> event.
+        /// Raises the <see cref="Invalidated"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected void RaiseChanged(EventArgs e) => Changed?.Invoke(this, e);
+        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
     }
 }

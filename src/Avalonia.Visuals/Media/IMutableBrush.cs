@@ -5,13 +5,8 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents a mutable brush which can return an immutable clone of itself.
     /// </summary>
-    public interface IMutableBrush : IBrush
+    public interface IMutableBrush : IBrush, IAffectsRender
     {
-        /// <summary>
-        /// Raised when the brush changes visually.
-        /// </summary>
-        event EventHandler Changed;
-
         /// <summary>
         /// Creates an immutable clone of the brush.
         /// </summary>
