@@ -14,7 +14,10 @@ namespace Avalonia.Controls.Platform
         public InternalPlatformThreadingInterface()
         {
             TlsCurrentThreadIsLoopThread = true;
-            StartTimer(DispatcherPriority.Render, new TimeSpan(0, 0, 0, 0, 66), () => Tick?.Invoke(Environment.TickCount));
+            StartTimer(
+                DispatcherPriority.Render,
+                new TimeSpan(0, 0, 0, 0, 66),
+                () => Tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount)));
         }
 
         private readonly AutoResetEvent _signaled = new AutoResetEvent(false);
@@ -105,7 +108,7 @@ namespace Avalonia.Controls.Platform
 
         public bool CurrentThreadIsLoopThread => TlsCurrentThreadIsLoopThread;
         public event Action<DispatcherPriority?> Signaled;
-        public event Action<long> Tick;
+        public event Action<TimeSpan> Tick;
 
     }
 }

@@ -6,20 +6,7 @@ namespace Avalonia.Rendering
     public interface IRenderLoopTask
     {
         bool NeedsUpdate { get; }
-        void Update(long tickCount);
+        void Update(TimeSpan time);
         void Render();
-    }
-
-    public class MockRenderLoopTask : IRenderLoopTask
-    {
-        public bool NeedsUpdate => true;
-
-        public void Render()
-        {
-        }
-
-        public void Update(long tickCount)
-        {
-        }
     }
 }

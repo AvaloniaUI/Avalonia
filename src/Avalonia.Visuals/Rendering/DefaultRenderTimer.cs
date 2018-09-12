@@ -19,7 +19,7 @@ namespace Avalonia.Rendering
     {
         private IRuntimePlatform _runtime;
         private int _subscriberCount;
-        private Action<long> _tick;
+        private Action<TimeSpan> _tick;
         private IDisposable _subscription;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Avalonia.Rendering
         public int FramesPerSecond { get; }
 
         /// <inheritdoc/>
-        public event Action<long> Tick
+        public event Action<TimeSpan> Tick
         {
             add
             {
@@ -78,14 +78,16 @@ namespace Avalonia.Rendering
         /// This can be overridden by platform implementations to use a specialized timer
         /// implementation.
         /// </remarks>
-        protected virtual IDisposable StartCore(Action<long> tick)
+        protected virtual IDisposable StartCore(Action<TimeSpan> tick)
         {
             if (_runtime == null)
             {
                 _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), () => tick(Environment.TickCount));
+            return _runtime.StartSystemTimer(
+                TimeSpan.FromSeconds(1.0 / FramesPerSecond),
+                () => tick(TimeSpan.FromMilliseconds(Environment.TickCount)));
         }
 
         /// <summary>
@@ -97,7 +99,7 @@ namespace Avalonia.Rendering
             _subscription = null;
         }
 
-        private void InternalTick(long tickCount)
+        private void InternalTick(TimeSpan tickCount)
         {
             _tick(tickCount);
         }

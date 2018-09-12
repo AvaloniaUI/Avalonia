@@ -84,7 +84,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        private async void TimerTick(long tickCount)
+        private async void TimerTick(TimeSpan time)
         {
             if (Interlocked.CompareExchange(ref inTick, 1, 0) == 0)
             {
@@ -96,7 +96,7 @@ namespace Avalonia.Rendering
                         {
                             foreach (var i in _items)
                             {
-                                i.Update(tickCount);
+                                i.Update(time);
                             }
                         }, DispatcherPriority.Render).ConfigureAwait(false);
                     }

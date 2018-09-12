@@ -5,7 +5,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Animation
 {
-    public class RenderLoopClock : ClockBase, IRenderLoopTask
+    public class RenderLoopClock : ClockBase, IRenderLoopTask, IGlobalClock
     {
         protected override void Stop()
         {
@@ -18,9 +18,9 @@ namespace Avalonia.Animation
         {
         }
 
-        void IRenderLoopTask.Update(long tickCount)
+        void IRenderLoopTask.Update(TimeSpan time)
         {
-            Pulse(TimeSpan.FromMilliseconds(tickCount));
+            Pulse(time);
         }
     }
 }

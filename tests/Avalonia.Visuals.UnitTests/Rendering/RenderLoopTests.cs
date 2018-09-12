@@ -35,14 +35,14 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var renderTask = new Mock<IRenderLoopTask>();
 
             renderTask.Setup(t => t.NeedsUpdate).Returns(true);
-            renderTask.Setup(t => t.Update(It.IsAny<long>()))
+            renderTask.Setup(t => t.Update(It.IsAny<TimeSpan>()))
                 .Callback((long _) => Assert.True(inDispatcher));
 
             loop.Add(renderTask.Object);
 
             timer.Raise(t => t.Tick += null, 0L);
 
-            renderTask.Verify(t => t.Update(It.IsAny<long>()), Times.Once());
+            renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Once());
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             loop.Add(renderTask.Object);
             timer.Raise(t => t.Tick += null, 0L);
             
-            renderTask.Verify(t => t.Update(It.IsAny<long>()), Times.Never());
+            renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Never());
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             loop.Add(renderTask.Object);
             timer.Raise(t => t.Tick += null, 0L);
 
-            renderTask.Verify(t => t.Update(It.IsAny<long>()), Times.Once());
+            renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Once());
         }
         
         [Fact]
@@ -110,10 +110,10 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             renderTask.Setup(t => t.NeedsUpdate).Returns(true);
 
             loop.Add(renderTask.Object);
-            var tickCount = 12345L;
-            timer.Raise(t => t.Tick += null, tickCount);
+            var time = new TimeSpan(123456789L);
+            timer.Raise(t => t.Tick += null, time);
 
-            renderTask.Verify(t => t.Update(tickCount), Times.Once());
+            renderTask.Verify(t => t.Update(time), Times.Once());
         }
     }
 }
