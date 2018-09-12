@@ -6,6 +6,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -65,7 +66,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<IBrush> ForegroundProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, IBrush>(
                 nameof(Foreground),
-                new SolidColorBrush(0xff000000),
+                Brushes.Black,
                 inherits: true);
 
         /// <summary>
@@ -100,6 +101,7 @@ namespace Avalonia.Controls
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
             AffectsRender<TextBlock>(
+                BackgroundProperty,
                 ForegroundProperty,
                 FontWeightProperty,
                 FontSizeProperty,
