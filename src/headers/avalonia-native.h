@@ -37,7 +37,8 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
 
 AVNCOM(IAvnWindow, 03) : virtual IAvnWindowBase
 {
-    
+    virtual HRESULT SetCanResize(bool value) = 0;
+    virtual HRESULT SetHasDecorations(bool value) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 04) : IUnknown

@@ -172,6 +172,10 @@ protected:
 
 class WindowImpl : public WindowBaseImpl, public IAvnWindow
 {
+private:
+    bool _canResize = true;
+    bool _hasDecorations = true;
+    
     BEGIN_INTERFACE_MAP()
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
@@ -184,10 +188,30 @@ class WindowImpl : public WindowBaseImpl, public IAvnWindow
         UpdateStyle();
     }
     
+    
+    virtual HRESULT SetCanResize(bool value)
+    {
+        _canResize = value;
+        UpdateStyle();
+        return S_OK;
+    }
+    
+    virtual HRESULT SetHasDecorations(bool value)
+    {
+        _hasDecorations = value;
+        UpdateStyle();
+        return S_OK;
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
-        return NSWindowStyleMaskBorderless | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
+        unsigned long s = NSWindowStyleMaskBorderless;
+        if(_hasDecorations)
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+        if(_canResize)
+            s = s | NSWindowStyleMaskResizable;
+        return s;
     }
 };
 

@@ -7,10 +7,11 @@ namespace Avalonia.Native
 {
     class WindowImpl : WindowBaseImpl, IWindowImpl
     {
+        IAvnWindow _native;
         public WindowImpl(IAvaloniaNativeFactory factory)
         {
             using (var e = new WindowEvents(this))
-                Init(factory.CreateWindow(e));
+                Init(_native = factory.CreateWindow(e));
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -31,10 +32,12 @@ namespace Avalonia.Native
 
         public void CanResize(bool value)
         {
-
+            _native.CanResize = value;
         }
+
         public void SetSystemDecorations(bool enabled)
         {
+            _native.HasDecorations = enabled;
         }
 
         public void SetTitle(string title)
