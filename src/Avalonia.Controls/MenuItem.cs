@@ -105,6 +105,7 @@ namespace Avalonia.Controls
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
+            PseudoClass<MenuItem, object>(HeaderProperty, x => x as string == "-", ":separator");
         }
 
         public MenuItem()
@@ -357,10 +358,21 @@ namespace Avalonia.Controls
         {
             base.OnTemplateApplied(e);
 
-            _popup = e.NameScope.Get<Popup>("PART_Popup");
-            _popup.DependencyResolver = DependencyResolver.Instance;
-            _popup.Opened += PopupOpened;
-            _popup.Closed += PopupClosed;
+            if (_popup != null)
+            {
+                _popup.Opened -= PopupOpened;
+                _popup.Closed -= PopupClosed;
+                _popup.DependencyResolver = null;
+            }
+
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+
+            if (_popup != null)
+            {
+                _popup.DependencyResolver = DependencyResolver.Instance;
+                _popup.Opened += PopupOpened;
+                _popup.Closed += PopupClosed;
+            }
         }
 
         /// <summary>
