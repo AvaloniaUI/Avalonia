@@ -338,11 +338,24 @@ namespace Avalonia
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
-            where T : class, IVisual
+            where T : Visual
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
-                (e.Sender as T)?.InvalidateVisual();
+                if (e.Sender is T sender)
+                {
+                    if (e.OldValue is IAffectsRender oldValue)
+                    {
+                        oldValue.Invalidated -= sender.AffectsRenderInvalidated;
+                    }
+
+                    if (e.NewValue is IAffectsRender newValue)
+                    {
+                        newValue.Invalidated += sender.AffectsRenderInvalidated;
+                    }
+
+                    sender.InvalidateVisual();
+                }
             }
 
             foreach (var property in properties)
@@ -543,6 +556,8 @@ namespace Avalonia
 
             OnVisualParentChanged(old, value);
         }
+
+        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.

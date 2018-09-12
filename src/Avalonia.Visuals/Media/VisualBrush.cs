@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
@@ -8,13 +9,18 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="IVisual"/>.
     /// </summary>
-    public class VisualBrush : TileBrush, IVisualBrush, IMutableBrush
+    public class VisualBrush : TileBrush, IVisualBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
         public static readonly StyledProperty<IVisual> VisualProperty =
             AvaloniaProperty.Register<VisualBrush, IVisual>(nameof(Visual));
+
+        static VisualBrush()
+        {
+            AffectsRender<VisualBrush>(VisualProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VisualBrush"/> class.
@@ -42,9 +48,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        IBrush IMutableBrush.ToImmutable()
+        public override IBrush ToImmutable()
         {
-            return new Immutable.ImmutableVisualBrush(this);
+            return new ImmutableVisualBrush(this);
         }
     }
 }
