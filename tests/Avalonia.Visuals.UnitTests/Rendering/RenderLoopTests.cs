@@ -40,7 +40,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             loop.Add(renderTask.Object);
 
-            timer.Raise(t => t.Tick += null, 0L);
+            timer.Raise(t => t.Tick += null, TimeSpan.Zero);
 
             renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Once());
         }
@@ -60,7 +60,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             renderTask.Setup(t => t.NeedsUpdate).Returns(false);
 
             loop.Add(renderTask.Object);
-            timer.Raise(t => t.Tick += null, 0L);
+            timer.Raise(t => t.Tick += null, TimeSpan.Zero);
             
             renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Never());
         }
@@ -90,7 +90,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 .Callback(() => Assert.False(inDispatcher));
 
             loop.Add(renderTask.Object);
-            timer.Raise(t => t.Tick += null, 0L);
+            timer.Raise(t => t.Tick += null, TimeSpan.Zero);
 
             renderTask.Verify(t => t.Update(It.IsAny<TimeSpan>()), Times.Once());
         }
