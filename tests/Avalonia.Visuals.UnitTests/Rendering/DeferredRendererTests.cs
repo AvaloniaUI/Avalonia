@@ -357,7 +357,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
         private void RunFrame(IRenderLoopTask task)
         {
-            task.Update(0);
+            task.Update(TimeSpan.Zero);
             task.Render();
         }
 

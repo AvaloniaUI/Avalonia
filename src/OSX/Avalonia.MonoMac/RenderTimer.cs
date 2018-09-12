@@ -12,7 +12,7 @@ namespace Avalonia.MonoMac
         {
         }
 
-        protected override IDisposable StartCore(Action<long> tick)
+        protected override IDisposable StartCore(Action<TimeSpan> tick)
         {
             return AvaloniaLocator.Current.GetService<IRuntimePlatform>().StartSystemTimer(
                 TimeSpan.FromSeconds(1.0 / FramesPerSecond),
@@ -20,7 +20,7 @@ namespace Avalonia.MonoMac
                 {
                     using (new NSAutoreleasePool())
                     {
-                        tick?.Invoke(Environment.TickCount);
+                        tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
                     }
                 });
         }

@@ -29,12 +29,12 @@ namespace Avalonia.Win32
         {
         }
 
-        protected override IDisposable StartCore(Action<long> tick)
+        protected override IDisposable StartCore(Action<TimeSpan> tick)
         {
             EnsureTimerQueueCreated();
             var msPerFrame = 1000 / FramesPerSecond;
 
-            timerDelegate = (_, __) => tick(Environment.TickCount);
+            timerDelegate = (_, __) => tick(TimeSpan.FromMilliseconds(Environment.TickCount));
 
             UnmanagedMethods.CreateTimerQueueTimer(
                 out var timer,

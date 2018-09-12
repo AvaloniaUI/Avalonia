@@ -7,7 +7,7 @@ namespace Avalonia.iOS
 {
     class DisplayLinkRenderTimer : IRenderTimer
     {
-        public event Action<long> Tick;
+        public event Action<TimeSpan> Tick;
         private CADisplayLink _link;
 
         public DisplayLinkRenderTimer()
@@ -21,7 +21,7 @@ namespace Avalonia.iOS
         {
             try
             {
-                Tick?.Invoke(Environment.TickCount);
+                Tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
             }
             catch (Exception)
             {
