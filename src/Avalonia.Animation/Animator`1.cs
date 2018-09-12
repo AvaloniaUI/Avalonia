@@ -37,16 +37,11 @@ namespace Avalonia.Animation
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return match
-                     .DistinctUntilChanged()
-                     .Select(x => x ? RunKeyFrames(animation, control, onComplete) : null)
-                     .Buffer(2, 1)
-                     .Where(x => x.Count > 1)
-                     .Subscribe(x =>
-                        {
-                            if (animation.RepeatCount.IsLoop)
-                                x[0]?.Dispose();
-                        });
+            return match.DistinctUntilChanged()
+                        .Select(x => x ? RunKeyFrames(animation, control, onComplete) : null)
+                        .Buffer(2, 1)
+                        .Where(x => x.Count > 1)
+                        .Subscribe(x => x[0]?.Dispose());
         }
 
         /// <summary>
