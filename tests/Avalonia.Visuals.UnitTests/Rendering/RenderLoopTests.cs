@@ -36,7 +36,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             renderTask.Setup(t => t.NeedsUpdate).Returns(true);
             renderTask.Setup(t => t.Update(It.IsAny<TimeSpan>()))
-                .Callback((long _) => Assert.True(inDispatcher));
+                .Callback((TimeSpan _) => Assert.True(inDispatcher));
 
             loop.Add(renderTask.Object);
 
