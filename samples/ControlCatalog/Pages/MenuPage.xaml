@@ -36,11 +36,13 @@
 
             <StackPanel>
                 <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
-                <Menu Items="{Binding}">
+                <Menu Items="{Binding MenuItems}">
                     <Menu.Styles>
                         <Style Selector="MenuItem">
                             <Setter Property="Header" Value="{Binding Header}"/>
                             <Setter Property="Items" Value="{Binding Items}"/>
+                            <Setter Property="Command" Value="{Binding Command}"/>
+                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
                         </Style>
                     </Menu.Styles>
                 </Menu>
