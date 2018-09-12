@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build6191-beta" />
+    <EmbeddedResource Include="**/*.xaml" />
+    <EmbeddedResource Include="**/*.png" />
+    <EmbeddedResource Include="**/*.jpg" />
+    <EmbeddedResource Include="**/*.ico" />
+
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Native\Avalonia.Native.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <CastXmlPath>/usr/local/bin/castxml</CastXmlPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SharpGenGeneratedCodeFolder>$(MSBuildThisFileDirectory)/Generated</SharpGenGeneratedCodeFolder>
+  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="SharpGenTools.Sdk" Version="1.1.2" PrivateAssets="all" />
+        <PackageReference Include="SharpGen.Runtime.Com" Version="1.1.0" />
+        <PackageReference Include="Avalonia" Version="0.6.2-build6191-beta" />
+        <SharpGenMapping Include="Mappings.xml" />
+    </ItemGroup>
+</Project>
