@@ -112,12 +112,16 @@ namespace Avalonia
 
             return Disposable.Create(() =>
             {
-                Bindings.Remove(node);
-                entry.Dispose();
-
-                if (entry.Index >= ActiveBindingIndex)
+                if (!entry.HasCompleted)
                 {
-                    ActivateFirstBinding();
+                    Bindings.Remove(node);
+
+                    entry.Dispose();
+
+                    if (entry.Index >= ActiveBindingIndex)
+                    {
+                        ActivateFirstBinding();
+                    }
                 }
             });
         }
