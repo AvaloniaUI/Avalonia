@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Reactive;
-
 
 namespace Avalonia.Animation
 {
@@ -41,8 +39,7 @@ namespace Avalonia.Animation
                 VerifyConvertKeyFrames();
 
             return match.DistinctUntilChanged()
-                        .ObserveOn(Avalonia.Threading.AvaloniaScheduler.Instance)
-                        .Select(x => x ? RunKeyFrames(animation, control, onComplete) : Disposable.Empty)
+                        .Select(x => x ? RunKeyFrames(animation, control, onComplete) : null)
                         .DisposeCurrentOnNext()
                         .Subscribe();
         }

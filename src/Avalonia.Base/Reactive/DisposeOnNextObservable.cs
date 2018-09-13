@@ -9,9 +9,9 @@ namespace Avalonia.Reactive
 
         private void ValueNext(T value)
         {
-            this.PublishNext(value);
             lastValue?.Dispose();
             lastValue = value;
+            this.PublishNext(value);
         }
 
         public void OnCompleted()
