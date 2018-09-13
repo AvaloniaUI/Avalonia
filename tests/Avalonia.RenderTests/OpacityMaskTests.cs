@@ -29,7 +29,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 {
                     StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                     EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                    GradientStops = new List<GradientStop>
+                    GradientStops =
                     {
                         new GradientStop(Color.FromUInt32(0xffffffff), 0),
                         new GradientStop(Color.FromUInt32(0x00ffffff), 1)
@@ -65,7 +65,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 {
                     StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
                     EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                    GradientStops = new List<GradientStop>
+                    GradientStops =
                     {
                         new GradientStop(Color.FromUInt32(0xffffffff), 0),
                         new GradientStop(Color.FromUInt32(0x00ffffff), 1)

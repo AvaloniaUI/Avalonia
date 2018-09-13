@@ -13,6 +13,7 @@ using System;
 using System.Linq;
 using Xunit;
 using Avalonia.Rendering;
+using Avalonia.Media;
 
 namespace Avalonia.Controls.UnitTests.Presenters
 {
@@ -203,5 +204,22 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.NotEqual(foo, logicalChildren.First());
         }
 
+
+        [Fact]
+        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
+        {
+            var target = new ContentPresenter()
+            {
+                Background = new SolidColorBrush(Colors.Red),
+            };
+
+            var root = new TestRoot(target);
+            var renderer = Mock.Get(root.Renderer);
+            renderer.ResetCalls();
+
+            ((SolidColorBrush)target.Background).Color = Colors.Green;
+
+            renderer.Verify(x => x.AddDirty(target), Times.Once);
+        }
     }
 }
