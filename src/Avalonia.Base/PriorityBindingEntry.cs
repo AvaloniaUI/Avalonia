@@ -51,6 +51,11 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets a value indicating whether the binding has completed.
+        /// </summary>
+        public bool HasCompleted { get; private set; }
+
+        /// <summary>
         /// The current value of the binding.
         /// </summary>
         public object Value
@@ -129,6 +134,8 @@ namespace Avalonia
 
         private void Completed()
         {
+            HasCompleted = true;
+
             if (Dispatcher.UIThread.CheckAccess())
             {
                 _owner.Completed(this);
