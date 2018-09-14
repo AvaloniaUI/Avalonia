@@ -53,7 +53,7 @@ namespace Avalonia.Animation
                 _lastInstance?.Dispose();
                 if (matchVal)
                 {
-                    _lastInstance = _animator.RunAnimation(_animation, _control, _onComplete);
+                    _lastInstance = _animator.Run(_animation, _control, _onComplete);
                 }
                 _lastMatch = matchVal;
             }
