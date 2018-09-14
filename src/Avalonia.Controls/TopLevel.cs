@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
-            AffectsMeasure(ClientSizeProperty);
+            AffectsMeasure<TopLevel>(ClientSizeProperty);
         }
 
         /// <summary>

@@ -19,6 +19,13 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
+            Renderer = Mock.Of<IRenderer>();
+        }
+
+        public TestRoot(IControl child)
+            : this()
+        {
+            Child = child;
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
