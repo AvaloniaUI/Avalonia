@@ -8,7 +8,7 @@ using Avalonia.Reactive;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Handles interpolatoin and time-related functions 
+    /// Handles interpolation and time-related functions 
     /// for keyframe animations.
     /// </summary>
     internal class AnimationInstance<T> : SingleSubscriberObservableBase<T>
@@ -19,7 +19,6 @@ namespace Avalonia.Animation
         private double _currentIteration;
         private bool _isLooping;
         private bool _gotFirstKFValue;
-        private bool _gotFirstFrameCount;
         private bool _iterationDelay;
         private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
@@ -29,15 +28,14 @@ namespace Avalonia.Animation
         private double _speedRatio;
         private TimeSpan _delay;
         private TimeSpan _duration;
-        private TimeSpan _firstFrameCount;
-        private TimeSpan _internalClock;
-        private TimeSpan? _previousClock;
         private Easings.Easing _easeFunc;
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
         private IDisposable _timerSubscription;
+        private readonly IClock _baseClock;
+        private IClock _clock;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, Action OnComplete, Func<double, T, T> Interpolator)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator)
         {
             if (animation.SpeedRatio <= 0)
                 throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
@@ -73,17 +71,19 @@ namespace Avalonia.Animation
             _fillMode = animation.FillMode;
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
+            _baseClock = baseClock;
         }
 
         protected override void Unsubscribed()
         {
             _timerSubscription?.Dispose();
+            _clock.PlayState = PlayState.Stop;
         }
 
         protected override void Subscribed()
         {
-            _timerSubscription = Timing.AnimationsTimer
-                                       .Subscribe(p => this.Step(p));
+            _clock = new Clock(_baseClock);
+            _timerSubscription = _clock.Subscribe(Step);
         }
 
         public void Step(TimeSpan frameTick)
@@ -116,46 +116,22 @@ namespace Avalonia.Animation
                     PublishNext(_lastInterpValue);
         }
 
-        private void DoPlayStatesAndTime(TimeSpan systemTime)
+        private void DoPlayStates()
         {
-            if (Animation.GlobalPlayState == PlayState.Stop || _targetControl.PlayState == PlayState.Stop)
+            if (_clock.PlayState == PlayState.Stop || _baseClock.PlayState == PlayState.Stop)
                 DoComplete();
-
-            if (!_previousClock.HasValue)
-            {
-                _previousClock = systemTime;
-                _internalClock = TimeSpan.Zero;
-            }
-            else
-            {
-                if (Animation.GlobalPlayState == PlayState.Pause || _targetControl.PlayState == PlayState.Pause)
-                {
-                    _previousClock = systemTime;
-                    return;
-                }
-                var delta = systemTime - _previousClock;
-                _internalClock += delta.Value;
-                _previousClock = systemTime;
-            }
 
             if (!_gotFirstKFValue)
             {
                 _firstKFValue = (T)_parent.First().Value;
                 _gotFirstKFValue = true;
             }
-
-            if (!_gotFirstFrameCount)
-            {
-                _firstFrameCount = _internalClock;
-                _gotFirstFrameCount = true;
-            }
         }
 
-        private void InternalStep(TimeSpan systemTime)
+        private void InternalStep(TimeSpan time)
         {
-            DoPlayStatesAndTime(systemTime);
- 
-            var time = _internalClock - _firstFrameCount;
+            DoPlayStates();
+
             var delayEndpoint = _delay;
             var iterationEndpoint = delayEndpoint + _duration;
 
@@ -176,15 +152,14 @@ namespace Avalonia.Animation
                 }
 
                 //Calculate the current iteration number
-                _currentIteration = (int)Math.Floor((double)time.Ticks / iterationEndpoint.Ticks) + 2;
+                _currentIteration = (int)Math.Floor((double)((double)time.Ticks / iterationEndpoint.Ticks)) + 2;
             }
             else
             {
-                _previousClock = systemTime;
                 return;
             }
 
-            time = TimeSpan.FromTicks(time.Ticks % iterationEndpoint.Ticks);
+            time = TimeSpan.FromTicks((long)(time.Ticks % iterationEndpoint.Ticks));
 
             if (!_isLooping)
             {

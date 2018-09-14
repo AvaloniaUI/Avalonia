@@ -272,10 +272,10 @@ namespace Avalonia.Controls
 
             s_setupWasAlreadyCalled = true;
 
-            Instance.RegisterServices();
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
+            Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
         }
