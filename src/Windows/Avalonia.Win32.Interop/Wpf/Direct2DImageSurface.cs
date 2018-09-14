@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using Avalonia.Direct2D1;
-using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
@@ -15,13 +10,10 @@ using SharpDX.DXGI;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using Device = SharpDX.Direct3D11.Device;
 using Format = SharpDX.DXGI.Format;
-using MapFlags = SharpDX.Direct3D11.MapFlags;
-using PresentParameters = SharpDX.DXGI.PresentParameters;
 using Query = SharpDX.Direct3D11.Query;
 using QueryType = SharpDX.Direct3D11.QueryType;
 using RenderTarget = SharpDX.Direct2D1.RenderTarget;
 using Surface = SharpDX.DXGI.Surface;
-using SwapEffect = SharpDX.DXGI.SwapEffect;
 using Usage = SharpDX.Direct3D9.Usage;
 
 namespace Avalonia.Win32.Interop.Wpf

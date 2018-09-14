@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Avalonia.Media.Immutable
 {
@@ -16,7 +14,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="spreadMethod">The spread method.</param>
         protected ImmutableGradientBrush(
-            IList<GradientStop> gradientStops,
+            IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity,
             GradientSpreadMethod spreadMethod)
         {
@@ -29,14 +27,14 @@ namespace Avalonia.Media.Immutable
         /// Initializes a new instance of the <see cref="ImmutableGradientBrush"/> class.
         /// </summary>
         /// <param name="source">The brush from which this brush's properties should be copied.</param>
-        protected ImmutableGradientBrush(IGradientBrush source)
-            : this(source.GradientStops.ToList(), source.Opacity, source.SpreadMethod)
+        protected ImmutableGradientBrush(GradientBrush source)
+            : this(source.GradientStops.ToImmutable(), source.Opacity, source.SpreadMethod)
         {
 
         }
 
         /// <inheritdoc/>
-        public IList<GradientStop> GradientStops { get; }
+        public IReadOnlyList<IGradientStop> GradientStops { get; }
 
         /// <inheritdoc/>
         public double Opacity { get; }

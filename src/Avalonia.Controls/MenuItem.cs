@@ -99,6 +99,7 @@ namespace Avalonia.Controls
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
             CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
+            HeaderProperty.Changed.AddClassHandler<MenuItem>(x => x.HeaderChanged);
             IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
             IsSelectedProperty.Changed.AddClassHandler<MenuItem>(x => x.IsSelectedChanged);
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
@@ -357,10 +358,21 @@ namespace Avalonia.Controls
         {
             base.OnTemplateApplied(e);
 
-            _popup = e.NameScope.Get<Popup>("PART_Popup");
-            _popup.DependencyResolver = DependencyResolver.Instance;
-            _popup.Opened += PopupOpened;
-            _popup.Closed += PopupClosed;
+            if (_popup != null)
+            {
+                _popup.Opened -= PopupOpened;
+                _popup.Closed -= PopupClosed;
+                _popup.DependencyResolver = null;
+            }
+
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+
+            if (_popup != null)
+            {
+                _popup.DependencyResolver = DependencyResolver.Instance;
+                _popup.Opened += PopupOpened;
+                _popup.Closed += PopupClosed;
+            }
         }
 
         /// <summary>
@@ -406,6 +418,24 @@ namespace Avalonia.Controls
             // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
             // use IsEnabledCore etc. but it will do for now.
             IsEnabled = Command == null || Command.CanExecute(CommandParameter);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Header"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is string newValue && newValue == "-")
+            {
+                PseudoClasses.Add(":separator");
+                Focusable = false;
+            }
+            else if (e.OldValue is string oldValue && oldValue == "-")
+            {
+                PseudoClasses.Remove(":separator");
+                Focusable = true;
+            }
         }
 
         /// <summary>

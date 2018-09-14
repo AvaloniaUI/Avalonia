@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -87,11 +86,11 @@ namespace Avalonia.Animation
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = 0
+                            Value = 0d
                         }
                     )
                     {
-                        Cue = new Cue(0.0)
+                        Cue = new Cue(0d)
                     },
                     new KeyFrame
                     (
@@ -102,7 +101,7 @@ namespace Avalonia.Animation
                         }
                     )
                     {
-                        Cue = new Cue(1.0)
+                        Cue = new Cue(1d)
                     }
                 };
                 animation.Duration = Duration;
@@ -120,22 +119,22 @@ namespace Avalonia.Animation
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = forward ? -distance : distance
+                            Value = forward ? distance : -distance
                         }
                     )
                     {
-                        Cue = new Cue(0.0)
+                        Cue = new Cue(0d)
                     },
                     new KeyFrame
                     (
                         new Setter
                         {
                             Property = translateProperty,
-                            Value = 0
+                            Value = 0d
                         }
                     )
                     {
-                        Cue = new Cue(1.0)
+                        Cue = new Cue(1d)
                     },
                 };
                 animation.Duration = Duration;

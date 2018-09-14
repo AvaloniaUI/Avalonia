@@ -1,8 +1,4 @@
 using System;
-using System.IO;
-using System.Linq;
-using Android.Content;
-using Android.Views;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;

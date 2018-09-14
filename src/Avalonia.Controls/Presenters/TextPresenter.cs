@@ -35,6 +35,11 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private IBrush _highlightBrush;
+        
+        static TextPresenter()
+        {
+            AffectsRender<TextPresenter>(PasswordCharProperty);
+        }
 
         public TextPresenter()
         {
@@ -49,6 +54,9 @@ namespace Avalonia.Controls.Presenters
 
             this.GetObservable(CaretIndexProperty)
                 .Subscribe(CaretIndexChanged);
+
+            this.GetObservable(PasswordCharProperty)
+                .Subscribe(_ => InvalidateFormattedText());
         }
 
         public int CaretIndex

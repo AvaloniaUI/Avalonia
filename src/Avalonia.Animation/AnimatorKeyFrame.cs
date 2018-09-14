@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.ComponentModel;
-using Avalonia.Metadata;
-using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
@@ -29,6 +25,7 @@ namespace Avalonia.Animation
             Cue = cue;
         }
 
+        internal bool isNeutral;
         public Type AnimatorType { get; }
         public Cue Cue { get; }
         public AvaloniaProperty Property { get; private set; }

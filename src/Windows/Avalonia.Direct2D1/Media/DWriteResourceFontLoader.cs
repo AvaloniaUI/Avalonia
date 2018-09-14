@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Avalonia.Media.Fonts;
 using Avalonia.Platform;
 using SharpDX;
 using SharpDX.DirectWrite;

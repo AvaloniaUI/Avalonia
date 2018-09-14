@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text;
 
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// A Cue object for <see cref="KeyFrame"/>. 
+    /// Determines the time index for a <see cref="KeyFrame"/>. 
     /// </summary>
     [TypeConverter(typeof(CueTypeConverter))]
     public readonly struct Cue : IEquatable<Cue>, IEquatable<double>
@@ -84,5 +82,4 @@ namespace Avalonia.Animation
             return Cue.Parse((string)value, culture);
         }
     }
-
 }

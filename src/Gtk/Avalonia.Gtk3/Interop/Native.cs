@@ -1,19 +1,14 @@
 ﻿#pragma warning disable 649
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls;
-using gint8 = System.Byte;
-using gint16 = System.Int16;
-using gint32 = System.Int32;
+using gdouble = System.Double;
 using gint = System.Int32;
+using gint16 = System.Int16;
+using gint8 = System.Byte;
+using guint = System.UInt32;
 using guint16 = System.UInt16;
 using guint32 = System.UInt32;
-using guint = System.UInt32;
-using gdouble = System.Double;
 
 namespace Avalonia.Gtk3.Interop
 {

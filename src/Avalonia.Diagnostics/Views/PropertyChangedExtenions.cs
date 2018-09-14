@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Avalonia.Diagnostics.Views
 {
-    internal static class PropertyChangedExtenions
+    internal static class PropertyChangedExtensions
     {
         public static IObservable<T> GetObservable<T>(this INotifyPropertyChanged source, string propertyName)
         {

@@ -19,7 +19,7 @@ namespace Avalonia.Interactivity
         private Dictionary<RoutedEvent, List<EventSubscription>> _eventHandlers;
 
         /// <summary>
-        /// Gets the interactive parent of the object for bubbling and tunnelling events.
+        /// Gets the interactive parent of the object for bubbling and tunneling events.
         /// </summary>
         IInteractive IInteractive.InteractiveParent => ((IVisual)this).VisualParent as IInteractive;
 

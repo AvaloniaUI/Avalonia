@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Input;
-using Avalonia.Interactivity;
+﻿using System.Threading.Tasks;
 
 namespace Avalonia.Input.Platform
 {

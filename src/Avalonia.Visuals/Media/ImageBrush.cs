@@ -2,19 +2,25 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Media.Imaging;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Paints an area with an <see cref="IBitmap"/>.
     /// </summary>
-    public class ImageBrush : TileBrush, IImageBrush, IMutableBrush
+    public class ImageBrush : TileBrush, IImageBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
         public static readonly StyledProperty<IBitmap> SourceProperty =
             AvaloniaProperty.Register<ImageBrush, IBitmap>(nameof(Source));
+
+        static ImageBrush()
+        {
+            AffectsRender<ImageBrush>(SourceProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.
@@ -42,9 +48,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        IBrush IMutableBrush.ToImmutable()
+        public override IBrush ToImmutable()
         {
-            return new Immutable.ImmutableImageBrush(this);
+            return new ImmutableImageBrush(this);
         }
     }
 }

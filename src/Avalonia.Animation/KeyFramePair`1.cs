@@ -1,14 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Collections;
-using System.ComponentModel;
-using Avalonia.Animation.Utils;
-using System.Reactive.Linq;
-using System.Linq;
-using Avalonia.Data;
-using System.Reactive.Disposables;
-
 namespace Avalonia.Animation
 {
     /// <summary>

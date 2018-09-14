@@ -154,5 +154,31 @@ namespace Avalonia.Controls.UnitTests
             GridAssert.ChildrenHeight(rowGrid, 200, 300, 300);
             GridAssert.ChildrenWidth(columnGrid, 200, 300, 300);
         }
+
+        [Fact]
+        public void Changing_Child_Column_Invalidates_Measure()
+        {
+            Border child;
+            var target = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("*,*"),
+                Children =
+                {
+                    (child = new Border
+                    {
+                        [Grid.ColumnProperty] = 0,
+                    }),
+                }
+            };
+
+            target.Measure(Size.Infinity);
+            target.Arrange(new Rect(target.DesiredSize));
+            Assert.True(target.IsMeasureValid);
+
+            Grid.SetColumn(child, 1);
+
+            Assert.False(target.IsMeasureValid);
+        }
+
     }
 }

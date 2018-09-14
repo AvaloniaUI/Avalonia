@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Avalonia.Platform
+﻿namespace Avalonia.Platform
 {
     /// <summary>
     /// Represents a geometry with a transform applied.

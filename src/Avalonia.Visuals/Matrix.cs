@@ -1,10 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Utilities;
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
@@ -56,7 +55,7 @@ namespace Avalonia
         public bool IsIdentity => Equals(Identity);
 
         /// <summary>
-        /// HasInverse Property - returns true if this matrix is invertable, false otherwise.
+        /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
         public bool HasInverse => GetDeterminant() != 0;
 
@@ -207,7 +206,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Converts an ange in degrees to radians.
+        /// Converts an angle in degrees to radians.
         /// </summary>
         /// <param name="angle">The angle in degrees.</param>
         /// <returns>The angle in radians.</returns>

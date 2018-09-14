@@ -1,12 +1,16 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
+        <Grid ColumnDefinitions="Auto,*">
           <Border Name="border"
+                  Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   Width="18"
@@ -31,14 +35,19 @@
             </Panel>
           </Border>
           <ContentPresenter Name="PART_ContentPresenter"
+                            TextBlock.Foreground="{TemplateBinding Foreground}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}"
                             Margin="4,0,0,0"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             Grid.Column="1"/>
         </Grid>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="CheckBox:invalid /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="CheckBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>

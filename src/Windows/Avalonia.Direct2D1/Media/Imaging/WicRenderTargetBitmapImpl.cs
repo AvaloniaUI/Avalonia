@@ -5,26 +5,20 @@ using System;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX.Direct2D1;
-using SharpDX.WIC;
-using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1.Media
 {
     public class WicRenderTargetBitmapImpl : WicBitmapImpl, IRenderTargetBitmapImpl
     {
-        private readonly DirectWriteFactory _dwriteFactory;
-        private readonly WicRenderTarget _target;
+        private readonly WicRenderTarget _renderTarget;
 
         public WicRenderTargetBitmapImpl(
-            ImagingFactory imagingFactory,
-            Factory d2dFactory,
-            DirectWriteFactory dwriteFactory,
             int width,
             int height,
             double dpiX,
             double dpiY,
             Platform.PixelFormat? pixelFormat = null)
-            : base(imagingFactory, width, height, pixelFormat)
+            : base(width, height, pixelFormat)
         {
             var props = new RenderTargetProperties
             {
@@ -32,17 +26,16 @@ namespace Avalonia.Direct2D1.Media
                 DpiY = (float)dpiY,
             };
 
-            _target = new WicRenderTarget(
-                d2dFactory,
+            _renderTarget = new WicRenderTarget(
+                Direct2D1Platform.Direct2D1Factory,
                 WicImpl,
                 props);
-
-            _dwriteFactory = dwriteFactory;
         }
 
         public override void Dispose()
         {
-            _target.Dispose();
+            _renderTarget.Dispose();
+
             base.Dispose();
         }
 
@@ -51,8 +44,7 @@ namespace Avalonia.Direct2D1.Media
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer, Action finishedCallback)
         {
-            return new DrawingContextImpl(visualBrushRenderer, null, _target, _dwriteFactory, WicImagingFactory,
-                finishedCallback: finishedCallback);
+            return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: finishedCallback);
         }
     }
 }
