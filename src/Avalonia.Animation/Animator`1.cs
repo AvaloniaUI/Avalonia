@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -38,10 +41,8 @@ namespace Avalonia.Animation
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return match.DistinctUntilChanged()
-                        .Select(x => x ? RunKeyFrames(animation, control, onComplete) : null)
-                        .DisposeCurrentOnNext()
-                        .Subscribe();
+            var subject = new DisposeAnimationInstanceObservable<T>(this, animation, control, onComplete);
+            return match.Subscribe(subject);
         }
 
         /// <summary>
@@ -96,11 +97,8 @@ namespace Avalonia.Animation
             var lastFrameData = (lastCue.GetTypedValue<T>(), lastCue.isNeutral);
             return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
         }
-
-        /// <summary>
-        /// Runs the KeyFrames Animation.
-        /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control, Action onComplete)
+ 
+        internal IDisposable Run(Animation animation, Animatable control, Action onComplete)
         {
             var instance = new AnimationInstance<T>(animation, control, this, onComplete, DoInterpolation);
             return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);

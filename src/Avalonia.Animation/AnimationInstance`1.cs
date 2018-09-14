@@ -154,7 +154,7 @@ namespace Avalonia.Animation
         private void InternalStep(TimeSpan systemTime)
         {
             DoPlayStatesAndTime(systemTime);
- 
+
             var time = _internalClock - _firstFrameCount;
             var delayEndpoint = _delay;
             var iterationEndpoint = delayEndpoint + _duration;
@@ -188,10 +188,7 @@ namespace Avalonia.Animation
 
             if (!_isLooping)
             {
-                if (_currentIteration > _repeatCount)
-                    DoComplete();
-
-                if (time > iterationEndpoint)
+                if ((_currentIteration > _repeatCount) | (time > iterationEndpoint))
                     DoComplete();
             }
 

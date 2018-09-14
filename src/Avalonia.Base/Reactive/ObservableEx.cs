@@ -21,21 +21,7 @@ namespace Avalonia.Reactive
         {
             return new SingleValueImpl<T>(value);
         }
-
-        /// <summary>
-        /// Disposes the current <see cref="IDisposable"/> and saves the next.
-        /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
-        /// <param name="observable">The source <see cref="IObservable{T}"/>.</param>
-        /// <returns>The observable.</returns>
-        public static IObservable<T> DisposeCurrentOnNext<T>(this IObservable<T> observable)
-            where T : IDisposable
-        {
-            var subject = new DisposeOnNextObservable<T>();
-            observable.Subscribe(subject);
-            return subject;
-        }
-
+ 
         private class SingleValueImpl<T> : IObservable<T>
         {
             private T _value;
