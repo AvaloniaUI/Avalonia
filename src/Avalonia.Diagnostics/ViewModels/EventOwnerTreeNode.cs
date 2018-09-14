@@ -11,16 +11,9 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class ControlTreeNode : EventTreeNode
+    internal class EventOwnerTreeNode : EventTreeNodeBase
     {
-        public ControlTreeNode(Type type, IEnumerable<RoutedEvent> events, EventsViewModel vm)
-            : base(null, type.Name)
-        {
-            this.Children = new AvaloniaList<EventTreeNode>(events.OrderBy(e => e.Name).Select(e => new EventEntryTreeNode(this, e, vm) { IsEnabled = IsDefault(e) }));
-            this.IsExpanded = true;
-        }
-
-        RoutedEvent[] defaultEvents = new RoutedEvent[]
+        private static readonly RoutedEvent[] s_defaultEvents = new RoutedEvent[]
         {
            Button.ClickEvent,
            InputElement.KeyDownEvent,
@@ -30,9 +23,12 @@ namespace Avalonia.Diagnostics.ViewModels
            InputElement.PointerPressedEvent,
         };
 
-        private bool IsDefault(RoutedEvent e)
+        public EventOwnerTreeNode(Type type, IEnumerable<RoutedEvent> events, EventsViewModel vm)
+            : base(null, type.Name)
         {
-            return defaultEvents.Contains(e);
+            this.Children = new AvaloniaList<EventTreeNodeBase>(events.OrderBy(e => e.Name)
+                .Select(e => new EventTreeNode(this, e, vm) { IsEnabled = s_defaultEvents.Contains(e) }));
+            this.IsExpanded = true;
         }
 
         public override bool? IsEnabled

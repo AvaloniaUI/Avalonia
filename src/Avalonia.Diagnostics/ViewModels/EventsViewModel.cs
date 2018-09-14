@@ -2,26 +2,22 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Windows.Input;
-using Avalonia.Collections;
+
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class EventsViewModel : ViewModelBase
     {
-        private IControl _root;
+        private readonly IControl _root;
         private FiredEvent _selectedEvent;
-        private ICommand ClearCommand { get; }
 
         public EventsViewModel(IControl root)
         {
@@ -29,27 +25,11 @@ namespace Avalonia.Diagnostics.ViewModels
             this.Nodes = RoutedEventRegistry.Instance.GetAllRegistered()
                 .GroupBy(e => e.OwnerType)
                 .OrderBy(e => e.Key.Name)
-                .Select(g => new ControlTreeNode(g.Key, g, this))
+                .Select(g => new EventOwnerTreeNode(g.Key, g, this))
                 .ToArray();
         }
 
-        private void ClearExecute()
-        {
-            Action action = delegate
-            {
-                RecordedEvents.Clear();
-            };
-            if (!Dispatcher.UIThread.CheckAccess())
-            {
-                Dispatcher.UIThread.Post(action);
-            }
-            else
-            {
-                action();
-            }
-        }
-
-        public EventTreeNode[] Nodes { get; }
+        public EventTreeNodeBase[] Nodes { get; }
 
         public ObservableCollection<FiredEvent> RecordedEvents { get; } = new ObservableCollection<FiredEvent>();
 
@@ -57,6 +37,11 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get => _selectedEvent;
             set => RaiseAndSetIfChanged(ref _selectedEvent, value);
+        }
+
+        private void Clear()
+        {
+            RecordedEvents.Clear();
         }
     }
 

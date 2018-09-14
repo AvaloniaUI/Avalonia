@@ -7,7 +7,7 @@
     <Grid ColumnDefinitions="*,4,3*">
         <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" Grid.RowSpan="2">
             <TreeView.DataTemplates>
-                <TreeDataTemplate DataType="vm:EventTreeNode"
+                <TreeDataTemplate DataType="vm:EventTreeNodeBase"
                                   ItemsSource="{Binding Children}">
                     <CheckBox Content="{Binding Text}" IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
                 </TreeDataTemplate>
@@ -46,7 +46,7 @@
                 </ListBox>
             </DockPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="3">
-                <Button Content="Clear" Margin="3" Command="{Binding ClearExecute}"  />
+                <Button Content="Clear" Margin="3" Command="{Binding Clear}"  />
             </StackPanel>
         </Grid>
     </Grid>

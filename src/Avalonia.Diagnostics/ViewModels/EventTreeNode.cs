@@ -1,80 +1,98 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Diagnostics;
-using Avalonia.Collections;
+using System;
+
+using Avalonia.Diagnostics.Models;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal abstract class EventTreeNode : ViewModelBase
+    internal class EventTreeNode : EventTreeNodeBase
     {
-        internal bool _updateChildren = true;
-        internal bool _updateParent = true;
-        private bool _isExpanded;
-        private bool? _isEnabled = false;
+        private RoutedEvent _event;
+        private EventsViewModel _parentViewModel;
+        private bool _isRegistered;
+        private FiredEvent _currentEvent;
 
-        public EventTreeNode(EventTreeNode parent, string text)
+        public EventTreeNode(EventOwnerTreeNode parent, RoutedEvent @event, EventsViewModel vm)
+            : base(parent, @event.Name)
         {
-            this.Parent = parent;
-            this.Text = text;
+            Contract.Requires<ArgumentNullException>(@event != null);
+            Contract.Requires<ArgumentNullException>(vm != null);
+
+            this._event = @event;
+            this._parentViewModel = vm;
         }
 
-        public IAvaloniaReadOnlyList<EventTreeNode> Children
+        public override bool? IsEnabled
         {
-            get;
-            protected set;
-        }
-
-        public bool IsExpanded
-        {
-            get { return _isExpanded; }
-            set { RaiseAndSetIfChanged(ref _isExpanded, value); }
-        }
-
-        public virtual bool? IsEnabled
-        {
-            get { return _isEnabled; }
-            set { RaiseAndSetIfChanged(ref _isEnabled, value); }
-        }
-
-        public EventTreeNode Parent
-        {
-            get;
-        }
-
-        public string Text
-        {
-            get;
-            private set;
-        }
-
-        internal void UpdateChecked()
-        {
-            IsEnabled = GetValue();
-
-            bool? GetValue()
+            get => base.IsEnabled;
+            set
             {
-                if (Children == null)
-                    return false;
-                bool? value = false;
-                for (int i = 0; i < Children.Count; i++)
+                if (base.IsEnabled != value)
                 {
-                    if (i == 0)
+                    base.IsEnabled = value;
+                    UpdateTracker();
+                    if (Parent != null && _updateParent)
                     {
-                        value = Children[i].IsEnabled;
-                        continue;
-                    }
-
-                    if (value != Children[i].IsEnabled)
-                    {
-                        value = null;
-                        break;
+                        try
+                        {
+                            Parent._updateChildren = false;
+                            Parent.UpdateChecked();
+                        }
+                        finally
+                        {
+                            Parent._updateChildren = true;
+                        }
                     }
                 }
-
-                return value;
             }
+        }
+
+        private void UpdateTracker()
+        {
+            if (IsEnabled.GetValueOrDefault() && !_isRegistered)
+            {
+                _event.AddClassHandler(typeof(object), HandleEvent, (RoutingStrategies)7, handledEventsToo: true);
+                _isRegistered = true;
+            }
+        }
+
+        private void HandleEvent(object sender, RoutedEventArgs e)
+        {
+            if (!_isRegistered || IsEnabled == false)
+                return;
+            if (sender is IVisual v && DevTools.BelongsToDevTool(v))
+                return;
+
+            var s = sender;
+            var handled = e.Handled;
+            var route = e.Route;
+
+            Action handler = delegate
+            {
+                if (_currentEvent == null || !_currentEvent.IsPartOfSameEventChain(e))
+                {
+                    _currentEvent = new FiredEvent(e, new EventChainLink(s, handled, route));
+
+                    _parentViewModel.RecordedEvents.Add(_currentEvent);
+
+                    while (_parentViewModel.RecordedEvents.Count > 100)
+                        _parentViewModel.RecordedEvents.RemoveAt(0);
+                }
+                else
+                {
+                    _currentEvent.AddToChain(new EventChainLink(s, handled, route));
+                }
+            };
+
+            if (!Dispatcher.UIThread.CheckAccess())
+                Dispatcher.UIThread.Post(handler);
+            else
+                handler();
         }
     }
 }

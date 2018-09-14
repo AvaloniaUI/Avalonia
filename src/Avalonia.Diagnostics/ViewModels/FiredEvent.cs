@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using Avalonia.Diagnostics.Models;
 using Avalonia.Interactivity;
 
@@ -11,17 +12,15 @@ namespace Avalonia.Diagnostics.ViewModels
     internal class FiredEvent : ViewModelBase
     {
         private RoutedEventArgs _eventArgs;
+        private EventChainLink _handledBy;
 
-        private ChainLink _handledBy;
-        private ChainLink _originator;
-
-        public FiredEvent(RoutedEventArgs eventArgs, ChainLink originator)
+        public FiredEvent(RoutedEventArgs eventArgs, EventChainLink originator)
         {
             Contract.Requires<ArgumentNullException>(eventArgs != null);
             Contract.Requires<ArgumentNullException>(originator != null);
 
             this._eventArgs = eventArgs;
-            this._originator = originator;
+            this.Originator = originator;
             AddToChain(originator);
         }
 
@@ -34,7 +33,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public bool IsHandled => HandledBy?.Handled == true;
 
-        public ObservableCollection<ChainLink> EventChain { get; } = new ObservableCollection<ChainLink>();
+        public ObservableCollection<EventChainLink> EventChain { get; } = new ObservableCollection<EventChainLink>();
 
         public string DisplayText
         {
@@ -49,21 +48,9 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public ChainLink Originator
-        {
-            get { return _originator; }
-            set
-            {
-                if (_originator != value)
-                {
-                    _originator = value;
-                    RaisePropertyChanged();
-                    RaisePropertyChanged(nameof(DisplayText));
-                }
-            }
-        }
+        public EventChainLink Originator { get; }
 
-        public ChainLink HandledBy
+        public EventChainLink HandledBy
         {
             get { return _handledBy; }
             set
@@ -80,10 +67,10 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void AddToChain(object handler, bool handled, RoutingStrategies route)
         {
-            AddToChain(new ChainLink(handler, handled, route));
+            AddToChain(new EventChainLink(handler, handled, route));
         }
 
-        public void AddToChain(ChainLink link)
+        public void AddToChain(EventChainLink link)
         {
             EventChain.Add(link);
             if (HandledBy == null && link.Handled)
