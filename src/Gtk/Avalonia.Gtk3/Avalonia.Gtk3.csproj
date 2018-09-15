@@ -11,5 +11,6 @@
     <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
     <ProjectReference Include="..\..\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\..\build\Avalonia.csproj" />
   </ItemGroup>
 </Project>

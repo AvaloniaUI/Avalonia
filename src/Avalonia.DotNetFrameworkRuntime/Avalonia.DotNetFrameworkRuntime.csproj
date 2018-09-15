@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net461</TargetFramework>
+        <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
         <DocumentationFile>bin\$(Configuration)\Avalonia.DotNetFrameworkRuntime.xml</DocumentationFile>
         <DefineConstants>$(DefineConstants);FULLDOTNET</DefineConstants>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
