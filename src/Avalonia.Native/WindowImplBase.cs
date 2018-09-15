@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
@@ -14,6 +14,13 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
+
+        private readonly IMouseDevice _mouse;
+
+        public WindowBaseImpl()
+        {
+            _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+        }
 
         protected void Init(IAvnWindowBase window)
         {
@@ -82,11 +89,17 @@ namespace Avalonia.Native
                     Height = pixelHeight,
                     Dpi = new Vector(pixelWidth / logicalSize.Width * 96, pixelHeight / logicalSize.Height * 96)
                 };
+
                 _parent.Paint?.Invoke(new Rect(0, 0, logicalSize.Width, logicalSize.Height));
+
             }
 
             void IAvnWindowBaseEvents.Resized(AvnSize size) => _parent.Resized?.Invoke(new Size(size.Width, size.Height));
 
+            public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            {
+                _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+            }
         }
 
 
@@ -95,6 +108,16 @@ namespace Avalonia.Native
         
         }
 
+        public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+        {
+            switch(type)
+            {
+                case AvnRawMouseEventType.Move:
+                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, new Point(point.X, point.Y), (InputModifiers)modifiers));
+                    break;
+            }
+        }
 
         public void Resize(Size clientSize)
         {
