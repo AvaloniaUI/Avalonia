@@ -10,5 +10,7 @@
     <EmbeddedResource Include="**\*.xaml" />
     <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
   </ItemGroup>
+  
+  <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
 </Project>

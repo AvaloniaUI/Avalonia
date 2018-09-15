@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="../Avalonia.Base/Avalonia.Base.csproj" />
+      <ProjectReference Include="../Avalonia.Visuals/Avalonia.Visuals.csproj" />
+      <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\NetCore.props" />
+  <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
+</Project>

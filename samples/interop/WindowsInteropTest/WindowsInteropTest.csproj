@@ -116,9 +116,9 @@
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
+    <ProjectReference Include="..\..\..\src\Avalonia.DesktopRuntime\Avalonia.DesktopRuntime.csproj">
       <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
+      <Name>Avalonia.DesktopRuntime</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>

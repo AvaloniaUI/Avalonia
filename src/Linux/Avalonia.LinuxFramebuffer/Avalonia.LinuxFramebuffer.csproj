@@ -4,6 +4,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\build\Avalonia.csproj" />
+    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>  
 </Project>

@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\build\Avalonia.csproj" />
+    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
   </ItemGroup>
   <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\..\build\Rx.props" />

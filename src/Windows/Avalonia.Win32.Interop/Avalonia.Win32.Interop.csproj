@@ -7,7 +7,7 @@
     <UseDirect3D9>true</UseDirect3D9>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\build\Avalonia.csproj" />
+    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
     <ProjectReference Include="..\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
   </ItemGroup>

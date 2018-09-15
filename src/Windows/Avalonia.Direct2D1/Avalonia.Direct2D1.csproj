@@ -8,7 +8,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\build\Avalonia.csproj" />
+    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\SharpDX.props" />

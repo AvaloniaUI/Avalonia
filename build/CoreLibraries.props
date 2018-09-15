@@ -14,7 +14,6 @@
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Default/Avalonia.Themes.Default.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DotNetFrameworkRuntime/Avalonia.DotNetFrameworkRuntime.csproj" Condition="'$(TargetFramework)' == 'net461'" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DotNetCoreRuntime/Avalonia.DotNetCoreRuntime.csproj" Condition="'$(TargetFramework)' == 'netcoreapp2.0'" />
+      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DesktopRuntime/Avalonia.DesktopRuntime.csproj" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
   </ItemGroup>
 </Project>

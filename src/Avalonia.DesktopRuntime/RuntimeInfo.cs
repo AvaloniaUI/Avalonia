@@ -21,9 +21,12 @@ namespace Avalonia.Shared.PlatformSupport
 
             return new RuntimePlatformInfo
             {
+#if NETCOREAPP2_0
                 IsCoreClr = true,
-                IsDesktop = true,
+#elif NET461
                 IsDotNetFramework = false,
+#endif
+                IsDesktop = true,
                 IsMono = false,
                 IsMobile = false,
                 IsUnix = os != OperatingSystemType.WinNT,

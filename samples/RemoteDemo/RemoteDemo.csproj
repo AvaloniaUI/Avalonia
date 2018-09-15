@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
+  <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
 
 </Project>

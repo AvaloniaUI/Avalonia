@@ -1,0 +1,13 @@
+<Project Sdk="AggregatePackage.NuGet.Sdk">
+  <PropertyGroup>
+      <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" EmbedReference="false" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\NetFX.props" />
+  <Import Project="..\..\build\CoreLibraries.props" />
+</Project>
