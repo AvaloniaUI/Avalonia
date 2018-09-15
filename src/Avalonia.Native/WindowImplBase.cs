@@ -18,9 +18,11 @@ namespace Avalonia.Native
 
         private bool _deferredRendering = false;
         private readonly IMouseDevice _mouse;
+        private readonly IKeyboardDevice _keyboard;
 
         public WindowBaseImpl()
         {
+            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
         }
 
@@ -103,12 +105,22 @@ namespace Avalonia.Native
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
+
+            public void RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            {
+                _parent.RawKeyEvent(type, timeStamp, modifiers, key);
+            }
         }
 
 
         public void Activate()
         {
         
+        }
+
+        public void RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+        {
+            Input?.Invoke(new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers));
         }
 
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)

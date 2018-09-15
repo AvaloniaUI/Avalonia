@@ -181,7 +181,6 @@ protected:
         }
     }
     
-    
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
@@ -273,7 +272,6 @@ protected:
     [super scrollWheel:event];
 }
 
-
 - (void)mouseEntered:(NSEvent *)event
 {
     _isMouseOver = true;
@@ -285,6 +283,35 @@ protected:
     _isMouseOver = false;
     [self mouseEvent:event withType:LeaveWindow];
     [super mouseExited:event];
+}
+
+- (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
+{
+    //
+    //auto code =
+    //var code = KeyTransform.TransformKeyCode(ev.KeyCode);
+    //if (!code.HasValue)
+      //  return;
+    //_tl.OnInput(new RawKeyEventArgs(_keyboard, GetTimeStamp(ev),
+      //                              type, code.Value, GetModifiers(ev.ModifierFlags)));
+    
+    
+    auto timestamp = [event timestamp] * 1000;
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+    
+    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, Delete);
+}
+
+- (void)keyDown:(NSEvent *)event
+{
+    [self keyboardEvent:event withType:KeyDown];
+    [super keyDown:event];
+}
+
+- (void)keyUp:(NSEvent *)event
+{
+    [self keyboardEvent:event withType:KeyUp];
+    [super keyUp:event];
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -308,6 +335,11 @@ protected:
         rv |= RightMouseButton;
     
     return (AvnInputModifiers)rv;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return true;
 }
 @end
 
