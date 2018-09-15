@@ -19,6 +19,6 @@ namespace Avalonia.Animation
         /// <summary>
         /// Applies the current KeyFrame group to the specified control.
         /// </summary>
-        IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete);
+        IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete);
     }
 }
