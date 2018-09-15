@@ -11,6 +11,10 @@
       <ProjectReference Include="../Avalonia.Controls/Avalonia.Controls.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" Condition="'$(TargetFramework)' == 'net461'" />
+  </ItemGroup>
+
   <Import Project="..\..\build\NetCore.props" />
   <Import Project="..\Shared\PlatformSupport\PlatformSupport.projitems" />
 </Project>

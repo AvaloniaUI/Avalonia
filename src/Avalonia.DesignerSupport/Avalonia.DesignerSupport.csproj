@@ -8,26 +8,6 @@
          need change when there are breaking changes to designer support api.
     -->
     <Version>0.7.0</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Avalonia.DesignerSupport.xml</DocumentationFile>
-    <NoWarn>CS1591;CS0067</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.DesignerSupport.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -43,6 +23,5 @@
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\Microsoft.CSharp.props" />
   <Import Project="..\..\build\Rx.props" />
 </Project>

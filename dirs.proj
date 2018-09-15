@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
-    <ProjectReference Include="build/**/*.*proj" />
     <ProjectReference Include="src/**/*.*proj" />
     <ProjectReference Include="samples/**/*.*proj" />
     <ProjectReference Include="tests/**/*.*proj" />
+    <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="**/*.pbxproj" />
