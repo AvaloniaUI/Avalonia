@@ -7,7 +7,6 @@ struct IAvnWindow;
 struct IAvnMacOptions;
 struct IAvnPlatformThreadingInterface;
 
-
 struct AvnSize
 {
     double Width, Height;
@@ -16,6 +15,42 @@ struct AvnSize
 struct AvnRect
 {
     double X, Y, Width, Height;
+};
+
+struct AvnVector
+{
+    double X, Y;
+};
+
+struct AvnPoint
+{
+    double X, Y;
+};
+
+enum AvnRawMouseEventType
+{
+    LeaveWindow,
+    LeftButtonDown,
+    LeftButtonUp,
+    RightButtonDown,
+    RightButtonUp,
+    MiddleButtonDown,
+    MiddleButtonUp,
+    Move,
+    Wheel,
+    NonClientLeftButtonDown
+};
+
+enum AvnInputModifiers
+{
+    None = 0,
+    Alt = 1,
+    Control = 2,
+    Shift = 4,
+    Windows = 8,
+    LeftMouseButton = 16,
+    RightMouseButton = 32,
+    MiddleMouseButton = 64
 };
 
 AVNCOM(IAvaloniaNativeFactory, 01) : virtual IUnknown
@@ -48,6 +83,11 @@ AVNCOM(IAvnWindowBaseEvents, 04) : IUnknown
     virtual void Activated() = 0;
     virtual void Deactivated() = 0;
     virtual void Resized(const AvnSize& size) = 0;
+    virtual void RawMouseEvent (AvnRawMouseEventType type,
+                                unsigned int timeStamp,
+                                AvnInputModifiers modifiers,
+                                AvnPoint point,
+                                AvnVector delta) = 0;
 };
 
 
