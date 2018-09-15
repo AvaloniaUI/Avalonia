@@ -77,7 +77,6 @@ protected:
     
 };
 
-
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
