@@ -32,6 +32,7 @@ public:
     
     virtual HRESULT Show()
     {
+        UpdateStyle();
         [Window makeKeyAndOrderFront:Window];
         return S_OK;
     }
@@ -370,7 +371,6 @@ private:
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
-        UpdateStyle();
     }
     
     
