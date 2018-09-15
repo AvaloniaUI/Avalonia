@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
@@ -7,6 +7,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
@@ -76,11 +77,12 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
 
-
             void IAvnWindowBaseEvents.Deactivated() => _parent.Deactivated?.Invoke();
 
             void IAvnWindowBaseEvents.SoftwareDraw(IntPtr ptr, int stride, int pixelWidth, int pixelHeight, AvnSize logicalSize)
             {
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+
                 _parent._framebuffer = new SavedFramebuffer
                 {
                     Address = ptr,
@@ -112,7 +114,11 @@ namespace Avalonia.Native
         {
             switch(type)
             {
-                case AvnRawMouseEventType.Move:
+                case AvnRawMouseEventType.LeaveWindow:
+                case AvnRawMouseEventType.Wheel:
+                    break;
+
+                default:
                     Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
                     Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, new Point(point.X, point.Y), (InputModifiers)modifiers));
                     break;
@@ -126,6 +132,7 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
+            //return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
             return new ImmediateRenderer(root);
         }
 

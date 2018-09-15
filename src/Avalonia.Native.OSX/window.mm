@@ -82,6 +82,8 @@ protected:
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
+    NSEvent* _lastMouseDownEvent;
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
@@ -161,7 +163,7 @@ protected:
     return result;
 }
 
-- (void)mouseMoved:(NSEvent *)event
+- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
@@ -172,8 +174,67 @@ protected:
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
     [self becomeFirstResponder];
-    _parent->BaseEvents->RawMouseEvent(Move, timestamp, modifiers, point, delta);
+    _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
     [super mouseMoved:event];
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+    _isLeftPressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:LeftButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super mouseDown:event];
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+    _isMiddlePressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:MiddleButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super otherMouseDown:event];
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+    _isRightPressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:RightButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super rightMouseDown:event];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+    _isLeftPressed = false;
+    [self mouseEvent:event withType:LeftButtonUp];
+    
+    [super mouseUp:event];
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
+    _isMiddlePressed = false;
+    [self mouseEvent:event withType:MiddleButtonUp];
+    
+    [super otherMouseUp:event];
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+    _isRightPressed = false;
+    [self mouseEvent:event withType:RightButtonUp];
+    
+    [super rightMouseUp:event];
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -189,12 +250,12 @@ protected:
     if (mod & NSEventModifierFlagCommand)
         rv |= Windows;
     
-    /*if (_isLeftPressed)
-        rv |= InputModifiers.LeftMouseButton;
+    if (_isLeftPressed)
+        rv |= LeftMouseButton;
     if (_isMiddlePressed)
-        rv |= InputModifiers.MiddleMouseButton;
+        rv |= MiddleMouseButton;
     if (_isRightPressed)
-        rv |= InputModifiers.RightMouseButton;*/
+        rv |= RightMouseButton;
     
     return (AvnInputModifiers)rv;
 }
