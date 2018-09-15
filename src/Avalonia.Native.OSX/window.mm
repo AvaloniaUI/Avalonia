@@ -170,6 +170,18 @@ protected:
     auto point = [self translateLocalPoint:avnPoint];
     AvnVector delta;
     
+    if(type == Wheel)
+    {
+        delta.X = [event scrollingDeltaX] / 50;
+        delta.Y = [event scrollingDeltaY] / 50;
+        
+        if(delta.X == 0 && delta.Y == 0)
+        {
+            return;
+        }
+    }
+    
+    
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
@@ -235,6 +247,44 @@ protected:
     [self mouseEvent:event withType:RightButtonUp];
     
     [super rightMouseUp:event];
+}
+
+- (void)mouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super mouseDragged:event];
+}
+
+- (void)otherMouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super otherMouseDragged:event];
+}
+
+- (void)rightMouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super rightMouseDragged:event];
+}
+
+- (void)scrollWheel:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Wheel];
+    [super scrollWheel:event];
+}
+
+
+- (void)mouseEntered:(NSEvent *)event
+{
+    _isMouseOver = true;
+    [super mouseEntered:event];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    _isMouseOver = false;
+    [self mouseEvent:event withType:LeaveWindow];
+    [super mouseExited:event];
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod

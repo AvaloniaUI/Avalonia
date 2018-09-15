@@ -16,6 +16,7 @@ namespace Avalonia.Native
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
 
+        private bool _deferredRendering = false;
         private readonly IMouseDevice _mouse;
 
         public WindowBaseImpl()
@@ -112,14 +113,15 @@ namespace Avalonia.Native
 
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
         {
-            switch(type)
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
+            switch (type)
             {
-                case AvnRawMouseEventType.LeaveWindow:
                 case AvnRawMouseEventType.Wheel:
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, new Point(point.X, point.Y), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
                     break;
 
                 default:
-                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
                     Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, new Point(point.X, point.Y), (InputModifiers)modifiers));
                     break;
             }
@@ -132,6 +134,7 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
+            //_deferredRendering = true;
             //return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
             return new ImmediateRenderer(root);
         }
