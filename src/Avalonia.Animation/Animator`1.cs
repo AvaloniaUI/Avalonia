@@ -41,7 +41,7 @@ namespace Avalonia.Animation
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, onComplete);
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
             return match.Subscribe(subject);
         }
 
@@ -55,7 +55,7 @@ namespace Avalonia.Animation
         /// <param name="animationTime">The time parameter, relative to the total animation time</param>
         protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double animationTime)
         {
-            AnimatorKeyFrame firstKeyframe, lastKeyframe ;
+            AnimatorKeyFrame firstKeyframe, lastKeyframe;
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
@@ -89,7 +89,7 @@ namespace Avalonia.Animation
             var lastFrameData = (lastKeyframe.GetTypedValue<T>(), lastKeyframe.isNeutral);
             return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
         }
-        
+
         private int FindClosestBeforeKeyFrame(double time)
         {
             int FindClosestBeforeKeyFrame(int startIndex, int length)

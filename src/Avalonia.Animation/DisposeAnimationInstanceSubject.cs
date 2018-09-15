@@ -23,14 +23,17 @@ namespace Avalonia.Animation
         private Animation _animation;
         private Animatable _control;
         private Action _onComplete;
+        private IClock _clock;
 
-        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, Action onComplete)
+        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, IClock clock, Action onComplete)
         {
             this._animator = animator;
             this._animation = animation;
             this._control = control;
             this._onComplete = onComplete;
+            this._clock = clock;
         }
+
 
         public void Dispose()
         {
@@ -53,7 +56,7 @@ namespace Avalonia.Animation
                 _lastInstance?.Dispose();
                 if (matchVal)
                 {
-                    _lastInstance = _animator.Run(_animation, _control, _onComplete);
+                    _lastInstance = _animator.Run(_animation, _control, _clock, _onComplete);
                 }
                 _lastMatch = matchVal;
             }
