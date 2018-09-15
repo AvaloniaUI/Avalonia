@@ -76,12 +76,14 @@ protected:
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
+    NSTrackingArea* _area;
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
     _parent = parent;
+    _area = nullptr;
     return self;
 }
 
@@ -93,6 +95,20 @@ protected:
 -(void)setFrameSize:(NSSize)newSize
 {
     [super setFrameSize:newSize];
+    
+    if(_area != nullptr)
+    {
+        [self removeTrackingArea:_area];
+        _area = nullptr;
+    }
+    
+    NSRect rect = NSZeroRect;
+    rect.size = newSize;
+    
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
+    [self addTrackingArea:_area];
+    
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
@@ -122,6 +138,60 @@ protected:
     
     [ctx restoreGraphicsState];
     free(ptr);
+}
+
+- (AvnPoint)translateLocalPoint:(AvnPoint)pt
+{
+    pt.Y = [self bounds].size.height - pt.Y;
+    return pt;
+}
+
+- (AvnPoint)toAvnPoint:(CGPoint)p
+{
+    AvnPoint result;
+    
+    result.X = p.x;
+    result.Y = p.y;
+    
+    return result;
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+    auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
+    auto avnPoint = [self toAvnPoint:localPoint];
+    auto point = [self translateLocalPoint:avnPoint];
+    AvnVector delta;
+    
+    auto timestamp = [event timestamp] * 1000;
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+    
+    [self becomeFirstResponder];
+    _parent->BaseEvents->RawMouseEvent(Move, timestamp, modifiers, point, delta);
+    [super mouseMoved:event];
+}
+
+- (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
+{
+    unsigned int rv = 0;
+    
+    if (mod & NSEventModifierFlagControl)
+        rv |= Control;
+    if (mod & NSEventModifierFlagShift)
+        rv |= Shift;
+    if (mod & NSEventModifierFlagOption)
+        rv |= Alt;
+    if (mod & NSEventModifierFlagCommand)
+        rv |= Windows;
+    
+    /*if (_isLeftPressed)
+        rv |= InputModifiers.LeftMouseButton;
+    if (_isMiddlePressed)
+        rv |= InputModifiers.MiddleMouseButton;
+    if (_isRightPressed)
+        rv |= InputModifiers.RightMouseButton;*/
+    
+    return (AvnInputModifiers)rv;
 }
 @end
 
