@@ -139,7 +139,7 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            //TODO;
+            _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)

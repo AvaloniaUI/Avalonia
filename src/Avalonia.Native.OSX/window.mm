@@ -58,6 +58,11 @@ public:
         return S_OK;
     }
     
+    virtual void Invalidate (AvnRect rect)
+    {
+        [View setNeedsDisplayInRect:[View frame]];
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
