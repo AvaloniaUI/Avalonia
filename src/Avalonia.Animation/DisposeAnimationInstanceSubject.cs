@@ -15,7 +15,7 @@ namespace Avalonia.Animation
     /// <summary>
     /// Manages the lifetime of animation instances as determined by its selector state.
     /// </summary>
-    internal class DisposeAnimationInstanceObservable<T> : IObserver<bool>, IDisposable
+    internal class DisposeAnimationInstanceSubject<T> : IObserver<bool>, IDisposable
     {
         private IDisposable _lastInstance;
         private bool _lastMatch;
@@ -24,7 +24,7 @@ namespace Avalonia.Animation
         private Animatable _control;
         private Action _onComplete;
 
-        public DisposeAnimationInstanceObservable(Animator<T> animator, Animation animation, Animatable control, Action onComplete)
+        public DisposeAnimationInstanceSubject(Animator<T> animator, Animation animation, Animatable control, Action onComplete)
         {
             this._animator = animator;
             this._animation = animation;

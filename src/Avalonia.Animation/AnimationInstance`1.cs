@@ -188,7 +188,7 @@ namespace Avalonia.Animation
 
             if (!_isLooping)
             {
-                if ((_currentIteration > _repeatCount) | (time > iterationEndpoint))
+                if ((_currentIteration > _repeatCount) || (time > iterationEndpoint))
                     DoComplete();
             }
 

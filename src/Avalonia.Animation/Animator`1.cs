@@ -41,7 +41,7 @@ namespace Avalonia.Animation
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            var subject = new DisposeAnimationInstanceObservable<T>(this, animation, control, onComplete);
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, onComplete);
             return match.Subscribe(subject);
         }
 
