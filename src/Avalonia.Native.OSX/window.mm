@@ -4,15 +4,13 @@ class WindowBaseImpl;
 
 @interface AvnView : NSView
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent;
+-(NSEvent*)  lastMouseDownEvent;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
 -(AvnWindow*) initWithParent: (WindowBaseImpl*) parent;
 -(void) setCanBecomeKeyAndMain;
 @end
-
-
-
 
 class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>
 {
@@ -64,6 +62,18 @@ public:
         [View setNeedsDisplayInRect:[View frame]];
     }
     
+    virtual void BeginMoveDrag ()
+    {
+        auto lastEvent = [View lastMouseDownEvent];
+        
+        if(lastEvent == nullptr)
+        {
+            return;
+        }
+        
+        [Window performWindowDragWithEvent:lastEvent];
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
@@ -74,8 +84,6 @@ protected:
     {
         [Window setStyleMask:GetStyle()];
     }
-    
-    
 };
 
 @implementation AvnView
@@ -84,6 +92,11 @@ protected:
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
+}
+
+- (NSEvent*) lastMouseDownEvent
+{
+    return _lastMouseDownEvent;
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
