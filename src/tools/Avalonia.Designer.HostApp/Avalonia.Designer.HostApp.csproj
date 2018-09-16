@@ -18,4 +18,6 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
   </ItemGroup>
+
+  <Import Project="..\..\..\build\NetFX.props" />
 </Project>

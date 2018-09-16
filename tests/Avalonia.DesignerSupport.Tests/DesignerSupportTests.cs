@@ -101,6 +101,7 @@ namespace Avalonia.DesignerSupport.Tests
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
+                    WorkingDirectory = outputDir,
                 },
                 EnableRaisingEvents = true
             })
@@ -117,7 +118,7 @@ namespace Avalonia.DesignerSupport.Tests
                     cancelled = true;
                 }
 
-                Assert.True(cancelled);
+                Assert.True(cancelled, $"Message Not Received.");
                 Assert.NotEqual(0, handle);
                 proc.Kill();
                 proc.WaitForExit();

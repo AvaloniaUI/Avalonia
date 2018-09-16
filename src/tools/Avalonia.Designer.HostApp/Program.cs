@@ -2,20 +2,19 @@
 using System.IO;
 using System.Reflection;
 
-namespace Avalonia.Designer.HostApp.NetFX
+namespace Avalonia.Designer.HostApp
 {
     class Program
     {
-#if NET461
         private static string s_appDir;
         
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             string assemblyPath = Path.Combine(s_appDir, new AssemblyName(args.Name).Name + ".dll");
             if (File.Exists(assemblyPath) == false) return null;
-            Assembly assembly = Assembly.LoadFrom(assemblyPath);
-            return assembly;
+            return Assembly.LoadFile(assemblyPath);
         }
+
         public static void Main(string[] args)
         {
             s_appDir = Directory.GetCurrentDirectory();
@@ -36,9 +35,6 @@ namespace Avalonia.Designer.HostApp.NetFX
         }
 
         static void Exec(string[] args)
-#elif NETCOREAPP2_0
-        public static void Main(string[] args)
-#endif
         {
             Avalonia.DesignerSupport.Remote.RemoteDesignerEntryPoint.Main(args);
         }
