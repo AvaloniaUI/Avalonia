@@ -200,7 +200,16 @@ namespace Avalonia.Rendering
 
             if (filter?.Invoke(visual) != false)
             {
-                bool containsPoint = visual.TransformedBounds?.Contains(p) == true;
+                bool containsPoint = false;
+
+                if (visual is ICustomSimpleHitTest custom)
+                {
+                    containsPoint = custom.HitTest(p);
+                }
+                else
+                {
+                    containsPoint = visual.TransformedBounds?.Contains(p) == true;
+                }
 
                 if ((containsPoint || !visual.ClipToBounds) && visual.VisualChildren.Count > 0)
                 {
