@@ -35,6 +35,15 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT Hide ()
+    {
+        if(Window != nullptr)
+        {
+            [Window orderOut:Window];
+        }
+        return S_OK;
+    }
+    
     virtual HRESULT Close()
     {
         [Window close];
@@ -368,6 +377,32 @@ protected:
 
 @end
 
+class PopupImpl : public WindowBaseImpl, public IAvnPopup
+{
+private:
+    BEGIN_INTERFACE_MAP()
+    INHERIT_INTERFACE_MAP(WindowBaseImpl)
+    INTERFACE_MAP_ENTRY(IAvnPopup, IID_IAvnPopup)
+    END_INTERFACE_MAP()
+    ComPtr<IAvnWindowEvents> WindowEvents;
+    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    {
+        WindowEvents = events;
+        [Window setLevel:NSPopUpMenuWindowLevel];
+    }
+    
+protected:
+    virtual NSWindowStyleMask GetStyle()
+    {
+        return NSWindowStyleMaskBorderless;
+    }
+};
+
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
+{
+    IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+    return ptr;
+}
 
 class WindowImpl : public WindowBaseImpl, public IAvnWindow
 {
@@ -412,7 +447,6 @@ protected:
         return s;
     }
 };
-
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {

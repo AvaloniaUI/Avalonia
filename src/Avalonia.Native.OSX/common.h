@@ -9,4 +9,5 @@
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
 #endif

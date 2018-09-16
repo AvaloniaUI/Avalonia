@@ -80,11 +80,20 @@ public:
         return S_OK;
     };
     
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv)
+    {
+        if(cb == nullptr || ppv == nullptr)
+            return E_POINTER;
+        
+        *ppv = CreateAvnPopup(cb);
+        return S_OK;
+    }
+    
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)
     {
         *ppv = CreatePlatformThreading();
         return S_OK;
-    };
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

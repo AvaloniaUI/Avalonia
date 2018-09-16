@@ -89,7 +89,7 @@ namespace Avalonia.Native
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl(_factory);
         }
     }
 

@@ -197,6 +197,7 @@ namespace Avalonia.Native
 
         public void Hide()
         {
+            _native.Hide();
         }
 
         public void BeginMoveDrag()
