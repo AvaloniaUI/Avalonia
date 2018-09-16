@@ -73,6 +73,8 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT Resize(double width, double height) = 0;
     virtual void Invalidate (AvnRect rect) = 0;
     virtual void BeginMoveDrag () = 0;
+    virtual AvnPoint GetPosition () = 0;
+    virtual void SetPosition (AvnPoint point) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase

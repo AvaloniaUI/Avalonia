@@ -118,11 +118,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, new Point(point.X, point.Y), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
                     break;
 
                 default:
-                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, new Point(point.X, point.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
                     break;
             }
         }
@@ -164,10 +164,16 @@ namespace Avalonia.Native
         }
 
 
+        public Point Position
+        {
+            get => _native.GetPosition().ToAvaloniaPoint();
+            set => _native.SetPosition(value.ToAvnPoint());
+        }
+
+
         #region Stubs
         public double Scaling => 1;
 
-        public Point Position { get; set; }
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }

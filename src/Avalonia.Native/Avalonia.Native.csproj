@@ -12,4 +12,12 @@
         <PackageReference Include="Avalonia" Version="0.6.2-build6248-beta" />
         <SharpGenMapping Include="Mappings.xml" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="Generated\LocalInterop.cs" />
+      <Compile Remove="Generated\Structures.cs" />
+      <Compile Remove="Generated\Functions.cs" />
+      <Compile Remove="Generated\Interfaces.cs" />
+      <Compile Remove="Generated\LocalInterop.cs" />
+      <Compile Remove="Generated\Structures.cs" />
+    </ItemGroup>
 </Project>

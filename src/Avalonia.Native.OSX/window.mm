@@ -83,6 +83,38 @@ public:
         [Window performWindowDragWithEvent:lastEvent];
     }
     
+    
+    virtual AvnPoint GetPosition ()
+    {
+        auto frame = [Window frame];
+        
+        AvnPoint bottomLeft;
+        bottomLeft.X = frame.origin.x;
+        bottomLeft.Y = frame.origin.y + frame.size.width;
+        
+        NSRect screen = [NSScreen.screens objectAtIndex:0].frame;
+        
+        auto t = MAX(screen.origin.y, screen.origin.y + screen.size.height);
+        
+        bottomLeft.Y = t - bottomLeft.Y;
+        
+        return bottomLeft;
+    }
+    
+    virtual void SetPosition (AvnPoint point)
+    {
+        NSPoint nspoint;
+        nspoint.x = point.X;
+        nspoint.y = point.Y;
+        
+        NSRect screen = [NSScreen.screens objectAtIndex:0].frame;
+        auto t = MAX(screen.origin.y, screen.origin.y + screen.size.height);
+        
+        nspoint.y = t - nspoint.y;
+        
+        [Window setFrameTopLeftPoint:nspoint];
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
