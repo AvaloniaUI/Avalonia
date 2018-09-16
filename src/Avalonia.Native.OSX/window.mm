@@ -5,6 +5,7 @@ class WindowBaseImpl;
 @interface AvnView : NSView
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent;
 -(NSEvent*)  lastMouseDownEvent;
+-(AvnPoint)translateLocalPoint:(AvnPoint)pt;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
@@ -84,35 +85,56 @@ public:
     }
     
     
-    virtual AvnPoint GetPosition ()
+    virtual HRESULT GetPosition (AvnPoint* ret)
     {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
         auto frame = [Window frame];
         
         AvnPoint bottomLeft;
         bottomLeft.X = frame.origin.x;
-        bottomLeft.Y = frame.origin.y + frame.size.width;
+        bottomLeft.Y = frame.origin.y + frame.size.height;
         
-        NSRect screen = [NSScreen.screens objectAtIndex:0].frame;
+        *ret = ConvertPointY(bottomLeft);
         
-        auto t = MAX(screen.origin.y, screen.origin.y + screen.size.height);
-        
-        bottomLeft.Y = t - bottomLeft.Y;
-        
-        return bottomLeft;
+        return S_OK;
     }
     
     virtual void SetPosition (AvnPoint point)
     {
-        NSPoint nspoint;
-        nspoint.x = point.X;
-        nspoint.y = point.Y;
+        [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+    }
+    
+    virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
         
-        NSRect screen = [NSScreen.screens objectAtIndex:0].frame;
-        auto t = MAX(screen.origin.y, screen.origin.y + screen.size.height);
+        point = ConvertPointY(point);
+        auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
         
-        nspoint.y = t - nspoint.y;
+        *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
         
-        [Window setFrameTopLeftPoint:nspoint];
+        return S_OK;
+    }
+    
+    virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
+        auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+        *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
+        
+        return S_OK;
     }
     
 protected:
@@ -234,7 +256,6 @@ protected:
             return;
         }
     }
-    
     
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];

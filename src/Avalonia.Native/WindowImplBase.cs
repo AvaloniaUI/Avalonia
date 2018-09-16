@@ -170,6 +170,25 @@ namespace Avalonia.Native
             set => _native.SetPosition(value.ToAvnPoint());
         }
 
+        public Point PointToClient(Point point)
+        {
+            return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
+        }
+
+        public Point PointToScreen(Point point)
+        {
+            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPoint();
+        }
+
+        public void Hide()
+        {
+            _native.Hide();
+        }
+
+        public void BeginMoveDrag()
+        {
+            _native.BeginMoveDrag();
+        }
 
         #region Stubs
         public double Scaling => 1;
@@ -201,28 +220,8 @@ namespace Avalonia.Native
         {
         }
 
-        public void Hide()
-        {
-            _native.Hide();
-        }
-
-        public void BeginMoveDrag()
-        {
-            _native.BeginMoveDrag();
-        }
-
         public void BeginResizeDrag(WindowEdge edge)
         {
-        }
-
-        public Point PointToClient(Point point)
-        {
-            return point;
-        }
-
-        public Point PointToScreen(Point point)
-        {
-            return point;
         }
 
         #endregion
