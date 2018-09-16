@@ -479,6 +479,18 @@ namespace Avalonia.Base.UnitTests
             Assert.False(source.SetterCalled);
         }
 
+        [Fact]
+        public void Disposing_Completed_Binding_Does_Not_Throw()
+        {
+            var target = new Class1();
+            var source = new Subject<string>();
+            var subscription = target.Bind(Class1.FooProperty, source);
+
+            source.OnCompleted();
+
+            subscription.Dispose();
+        }
+
         /// <summary>
         /// Returns an observable that returns a single value but does not complete.
         /// </summary>

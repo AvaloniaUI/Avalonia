@@ -1,6 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Media;
+using Avalonia.Rendering;
+using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -41,6 +45,23 @@ namespace Avalonia.Controls.UnitTests
             target.Arrange(new Rect(0, 0, 100, 100));
 
             Assert.Equal(new Rect(6, 6, 0, 0), content.Bounds);
+        }
+
+        [Fact]
+        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
+        {
+            var target = new Border()
+            {
+                Background = new SolidColorBrush(Colors.Red),
+            };
+
+            var root = new TestRoot(target);
+            var renderer = Mock.Get(root.Renderer);
+            renderer.ResetCalls();
+
+            ((SolidColorBrush)target.Background).Color = Colors.Green;
+
+            renderer.Verify(x => x.AddDirty(target), Times.Once);
         }
     }
 }
