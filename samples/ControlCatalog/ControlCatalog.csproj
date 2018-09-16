@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build6191-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.6.2-build6248-beta" />
     <EmbeddedResource Include="**/*.xaml" />
     <EmbeddedResource Include="**/*.png" />
     <EmbeddedResource Include="**/*.jpg" />

@@ -62,7 +62,6 @@ namespace Avalonia.Native
             configure?.Invoke(opts);
             _factory.Initialize();
 
-
             AvaloniaLocator.CurrentMutable
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
@@ -73,7 +72,8 @@ namespace Avalonia.Native
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
-                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()));
         }
 

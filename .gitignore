@@ -39,3 +39,7 @@ Thumbs.db
 
 # dotCover
 *.dotCover
+
+src/Avalonia\.Native\.OSX/Avalonia\.Native\.OSX\.xcodeproj/project\.xcworkspace/xcshareddata/IDEWorkspaceChecks\.plist
+
+src/Avalonia\.Native\.OSX/Avalonia\.Native\.OSX\.xcodeproj/project\.xcworkspace/xcshareddata/WorkspaceSettings\.xcsettings

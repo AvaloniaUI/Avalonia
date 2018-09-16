@@ -32,6 +32,7 @@ public:
     
     virtual HRESULT Show()
     {
+        UpdateStyle();
         [Window makeKeyAndOrderFront:Window];
         return S_OK;
     }
@@ -58,6 +59,11 @@ public:
         return S_OK;
     }
     
+    virtual void Invalidate (AvnRect rect)
+    {
+        [View setNeedsDisplayInRect:[View frame]];
+    }
+    
 protected:
     virtual NSWindowStyleMask GetStyle()
     {
@@ -72,16 +78,19 @@ protected:
     
 };
 
-
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
+    NSTrackingArea* _area;
+    bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
+    NSEvent* _lastMouseDownEvent;
 }
 
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
     _parent = parent;
+    _area = nullptr;
     return self;
 }
 
@@ -93,6 +102,20 @@ protected:
 -(void)setFrameSize:(NSSize)newSize
 {
     [super setFrameSize:newSize];
+    
+    if(_area != nullptr)
+    {
+        [self removeTrackingArea:_area];
+        _area = nullptr;
+    }
+    
+    NSRect rect = NSZeroRect;
+    rect.size = newSize;
+    
+    NSTrackingAreaOptions options = NSTrackingActiveAlways | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag;
+    _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
+    [self addTrackingArea:_area];
+    
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
@@ -122,6 +145,169 @@ protected:
     
     [ctx restoreGraphicsState];
     free(ptr);
+}
+
+- (AvnPoint)translateLocalPoint:(AvnPoint)pt
+{
+    pt.Y = [self bounds].size.height - pt.Y;
+    return pt;
+}
+
+- (AvnPoint)toAvnPoint:(CGPoint)p
+{
+    AvnPoint result;
+    
+    result.X = p.x;
+    result.Y = p.y;
+    
+    return result;
+}
+
+- (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
+{
+    auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
+    auto avnPoint = [self toAvnPoint:localPoint];
+    auto point = [self translateLocalPoint:avnPoint];
+    AvnVector delta;
+    
+    if(type == Wheel)
+    {
+        delta.X = [event scrollingDeltaX] / 50;
+        delta.Y = [event scrollingDeltaY] / 50;
+        
+        if(delta.X == 0 && delta.Y == 0)
+        {
+            return;
+        }
+    }
+    
+    
+    auto timestamp = [event timestamp] * 1000;
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+    
+    [self becomeFirstResponder];
+    _parent->BaseEvents->RawMouseEvent(type, timestamp, modifiers, point, delta);
+    [super mouseMoved:event];
+}
+
+- (void)mouseMoved:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+}
+
+- (void)mouseDown:(NSEvent *)event
+{
+    _isLeftPressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:LeftButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super mouseDown:event];
+}
+
+- (void)otherMouseDown:(NSEvent *)event
+{
+    _isMiddlePressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:MiddleButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super otherMouseDown:event];
+}
+
+- (void)rightMouseDown:(NSEvent *)event
+{
+    _isRightPressed = true;
+    _lastMouseDownEvent = event;
+    [self mouseEvent:event withType:RightButtonDown];
+    _lastMouseDownEvent = nullptr;
+    
+    [super rightMouseDown:event];
+}
+
+- (void)mouseUp:(NSEvent *)event
+{
+    _isLeftPressed = false;
+    [self mouseEvent:event withType:LeftButtonUp];
+    
+    [super mouseUp:event];
+}
+
+- (void)otherMouseUp:(NSEvent *)event
+{
+    _isMiddlePressed = false;
+    [self mouseEvent:event withType:MiddleButtonUp];
+    
+    [super otherMouseUp:event];
+}
+
+- (void)rightMouseUp:(NSEvent *)event
+{
+    _isRightPressed = false;
+    [self mouseEvent:event withType:RightButtonUp];
+    
+    [super rightMouseUp:event];
+}
+
+- (void)mouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super mouseDragged:event];
+}
+
+- (void)otherMouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super otherMouseDragged:event];
+}
+
+- (void)rightMouseDragged:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Move];
+    [super rightMouseDragged:event];
+}
+
+- (void)scrollWheel:(NSEvent *)event
+{
+    [self mouseEvent:event withType:Wheel];
+    [super scrollWheel:event];
+}
+
+
+- (void)mouseEntered:(NSEvent *)event
+{
+    _isMouseOver = true;
+    [super mouseEntered:event];
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    _isMouseOver = false;
+    [self mouseEvent:event withType:LeaveWindow];
+    [super mouseExited:event];
+}
+
+- (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
+{
+    unsigned int rv = 0;
+    
+    if (mod & NSEventModifierFlagControl)
+        rv |= Control;
+    if (mod & NSEventModifierFlagShift)
+        rv |= Shift;
+    if (mod & NSEventModifierFlagOption)
+        rv |= Alt;
+    if (mod & NSEventModifierFlagCommand)
+        rv |= Windows;
+    
+    if (_isLeftPressed)
+        rv |= LeftMouseButton;
+    if (_isMiddlePressed)
+        rv |= MiddleMouseButton;
+    if (_isRightPressed)
+        rv |= RightMouseButton;
+    
+    return (AvnInputModifiers)rv;
 }
 @end
 
@@ -185,7 +371,6 @@ private:
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
-        UpdateStyle();
     }
     
     
