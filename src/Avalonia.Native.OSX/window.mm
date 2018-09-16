@@ -92,6 +92,7 @@ protected:
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
+    bool _lastKeyHandled;
 }
 
 - (NSEvent*) lastMouseDownEvent
@@ -312,7 +313,12 @@ protected:
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
     
-    _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, Delete);
+    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, Delete);
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    return _lastKeyHandled;
 }
 
 - (void)keyDown:(NSEvent *)event

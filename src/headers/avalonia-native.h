@@ -98,7 +98,7 @@ AVNCOM(IAvnWindowBaseEvents, 04) : IUnknown
                                 AvnPoint point,
                                 AvnVector delta) = 0;
     
-    virtual void RawKeyEvent (AvnRawKeyEventType type, unsigned int timeStamp, AvnInputModifiers modifiers, unsigned int key) = 0;
+    virtual bool RawKeyEvent (AvnRawKeyEventType type, unsigned int timeStamp, AvnInputModifiers modifiers, unsigned int key) = 0;
 };
 
 
