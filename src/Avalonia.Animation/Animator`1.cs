@@ -1,10 +1,14 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia.Animation
 {
@@ -17,7 +21,7 @@ namespace Avalonia.Animation
         /// List of type-converted keyframes.
         /// </summary>
         private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
- 
+
         private bool _isVerifiedAndConverted;
 
         /// <summary>
@@ -28,21 +32,17 @@ namespace Avalonia.Animation
         public Animator()
         {
             // Invalidate keyframes when changed.
-             this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
+            this.CollectionChanged += delegate { _isVerifiedAndConverted = false; };
         }
 
         /// <inheritdoc/>
         public virtual IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
-             if (!_isVerifiedAndConverted)
+            if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            return match
-                .Where(p => p)
-                .Subscribe(_ =>
-                {
-                    var timerObs = RunKeyFrames(animation, control, clock, onComplete);
-                });
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
+            return match.Subscribe(subject);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Avalonia.Animation
         /// <param name="animationTime">The time parameter, relative to the total animation time</param>
         protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double animationTime)
         {
-            AnimatorKeyFrame firstKeyframe, lastKeyframe ;
+            AnimatorKeyFrame firstKeyframe, lastKeyframe;
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
@@ -121,7 +121,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        private IDisposable RunKeyFrames(Animation animation, Animatable control, IClock clock, Action onComplete)
+        internal IDisposable Run(Animation animation, Animatable control, IClock clock, Action onComplete)
         {
             var instance = new AnimationInstance<T>(
                 animation,
