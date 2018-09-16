@@ -194,8 +194,6 @@ namespace Avalonia.Native
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
-
-
         public void SetTopmost(bool value)
         {
         }
@@ -209,13 +207,13 @@ namespace Avalonia.Native
         {
         }
 
-
-
         public void Hide()
         {
         }
+
         public void BeginMoveDrag()
         {
+            _native.BeginMoveDrag();
         }
 
         public void BeginResizeDrag(WindowEdge edge)

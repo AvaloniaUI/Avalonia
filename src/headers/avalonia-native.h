@@ -76,6 +76,7 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
     virtual HRESULT Resize(double width, double height) = 0;
     virtual void Invalidate (AvnRect rect) = 0;
+    virtual void BeginMoveDrag () = 0;
 };
 
 AVNCOM(IAvnWindow, 03) : virtual IAvnWindowBase
