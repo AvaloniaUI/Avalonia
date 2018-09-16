@@ -111,17 +111,20 @@ namespace Avalonia.Styling
                 {
                     var subs = GetSubscriptions(control);
 
-                    foreach (var animation in Animations)
+                    if (control is Animatable animatable)
                     {
-                        IObservable<bool> obsMatch = match.ObservableResult;
-
-                        if (match.ImmediateResult == true)
+                        foreach (var animation in Animations)
                         {
-                            obsMatch = Observable.Return(true);
-                        } 
+                            IObservable<bool> obsMatch = match.ObservableResult;
 
-                        var sub = animation.Apply((Animatable)control, obsMatch);
-                        subs.Add(sub);
+                            if (match.ImmediateResult == true)
+                            {
+                                obsMatch = Observable.Return(true);
+                            }
+
+                            var sub = animation.Apply(animatable, null, obsMatch);
+                            subs.Add(sub);
+                        } 
                     }
 
                     foreach (var setter in Setters)

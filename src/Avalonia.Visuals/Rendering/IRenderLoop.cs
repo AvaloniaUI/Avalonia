@@ -1,19 +1,28 @@
-﻿using System;
-
-namespace Avalonia.Rendering
+﻿namespace Avalonia.Rendering
 {
     /// <summary>
-    /// Defines the interface implemented by an application render loop.
+    /// The application render loop.
     /// </summary>
+    /// <remarks>
+    /// The render loop is responsible for advancing the animation timer and updating the scene
+    /// graph for visible windows.
+    /// </remarks>
     public interface IRenderLoop
     {
         /// <summary>
-        /// Raised when the render loop ticks to signal a new frame should be drawn.
+        /// Adds an update task.
         /// </summary>
+        /// <param name="i">The update task.</param>
         /// <remarks>
-        /// This event can be raised on any thread; it is the responsibility of the subscriber to
-        /// switch execution to the right thread.
+        /// Registered update tasks will be polled on each tick of the render loop after the
+        /// animation timer has been pulsed.
         /// </remarks>
-        event EventHandler<EventArgs> Tick;
+        void Add(IRenderLoopTask i);
+
+        /// <summary>
+        /// Removes an update task.
+        /// </summary>
+        /// <param name="i">The update task.</param>
+        void Remove(IRenderLoopTask i);
     }
 }
