@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -28,6 +29,7 @@ namespace Avalonia.Diagnostics
 	public class DevTools : UserControl
     {
         private static Dictionary<TopLevel, Window> s_open = new Dictionary<TopLevel, Window>();
+        private static HashSet<IRenderRoot> s_visualTreeRoots = new HashSet<IRenderRoot>();
         private IDisposable _keySubscription;
 
         public DevTools(IControl root)
@@ -79,6 +81,7 @@ namespace Avalonia.Diagnostics
 
                     devToolsWindow.Closed += devTools.DevToolsClosed;
                     s_open.Add(control, devToolsWindow);
+                    MarkAsDevTool(devToolsWindow);
                     devToolsWindow.Show();
                 }
             }
@@ -89,6 +92,7 @@ namespace Avalonia.Diagnostics
             var devToolsWindow = (Window)sender;
             var devTools = (DevTools)devToolsWindow.Content;
             s_open.Remove((TopLevel)devTools.Root);
+            RemoveDevTool(devToolsWindow);
             _keySubscription.Dispose();
             devToolsWindow.Closed -= DevToolsClosed;
         }
@@ -115,6 +119,25 @@ namespace Avalonia.Diagnostics
                     vm.SelectControl((IControl)control);
                 }
             }
+        }
+
+        /// <summary>
+        /// Marks a visual as part of the DevTools, so it can be excluded from event tracking.
+        /// </summary>
+        /// <param name="visual">The visual whose root is to be marked.</param>
+        public static void MarkAsDevTool(IVisual visual)
+        {
+            s_visualTreeRoots.Add(visual.GetVisualRoot());
+        }
+
+        public static void RemoveDevTool(IVisual visual)
+        {
+            s_visualTreeRoots.Remove(visual.GetVisualRoot());
+        }
+
+        public static bool BelongsToDevTool(IVisual visual)
+        {
+            return s_visualTreeRoots.Contains(visual.GetVisualRoot());
         }
     }
 }

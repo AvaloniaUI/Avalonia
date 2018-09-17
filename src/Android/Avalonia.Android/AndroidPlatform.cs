@@ -52,7 +52,8 @@ namespace Avalonia.Android
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
-                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();

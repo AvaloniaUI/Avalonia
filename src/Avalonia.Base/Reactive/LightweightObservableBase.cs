@@ -82,18 +82,10 @@ namespace Avalonia.Reactive
                         if (observers.Count == 0)
                         {
                             observers.TrimExcess();
+                            Deinitialize();
                         }
-                        else
-                        {
-                            return;
-                        }
-                    } else
-                    {
-                        return;
                     }
                 }
-
-                Deinitialize();
             }
         }
 

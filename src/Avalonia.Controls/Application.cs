@@ -4,12 +4,14 @@
 using System;
 using System.Reactive.Concurrency;
 using System.Threading;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
@@ -335,6 +337,11 @@ namespace Avalonia
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
                 .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
+
+            var clock = new RenderLoopClock();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IGlobalClock>().ToConstant(clock)
+                .GetService<IRenderLoop>()?.Add(clock);
         }
     }
 }
