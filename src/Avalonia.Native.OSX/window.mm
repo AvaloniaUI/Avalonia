@@ -61,6 +61,21 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT GetScaling (double* ret)
+    {
+        if(ret == nullptr)
+            return E_POINTER;
+        
+        if(Window == nullptr)
+        {
+            *ret = 1;
+            return S_OK;
+        }
+        
+        *ret = [Window backingScaleFactor];
+        return S_OK;
+    }
+    
     virtual HRESULT Resize(double x, double y)
     {
         [Window setContentSize:NSSize{x, y}];

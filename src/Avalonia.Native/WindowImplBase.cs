@@ -191,7 +191,7 @@ namespace Avalonia.Native
         }
 
         #region Stubs
-        public double Scaling => 1;
+        public double Scaling => _native.GetScaling();
 
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
