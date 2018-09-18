@@ -93,15 +93,19 @@ namespace Avalonia.Controls.Utils
 
                 if (background != null)
                 {
-                    var innerRect = new Rect(new Point(borders.Left, borders.Top), new Point(size.Width - borders.Right, size.Height - borders.Bottom));
-                    context.DrawRectangle(new Pen(background, borderThickness), innerRect, cornerRadius);
+                    var topLeft = new Point(borders.Left, borders.Top);
+                    var bottomRight = new Point(size.Width - borders.Right, size.Height - borders.Bottom);
+                    var innerRect = new Rect(topLeft, bottomRight);
+                    context.DrawRectangle(new Pen(background), innerRect, cornerRadius);
                     context.FillRectangle(background, innerRect, cornerRadius);
                 }
 
                 if (borderBrush != null && borderThickness > 0)
                 {
                     var top = borderThickness * 0.5;
-                    var outerRect = new Rect(new Point(top, top), new Point(size.Width - top, size.Height - top));
+                    var topLeft = new Point(top, top);
+                    var bottomRight = new Point(size.Width - top, size.Height - top);
+                    var outerRect = new Rect(topLeft, bottomRight);
                     context.DrawRectangle(new Pen(borderBrush, borderThickness), outerRect, (float)radii.TopLeft);
                 }
             }
