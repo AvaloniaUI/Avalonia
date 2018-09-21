@@ -490,8 +490,7 @@ namespace Avalonia.Skia
             {
                 var bi = _foregroundBrushes.FindIndex(b =>
                                                         b.Key.StartIndex <= index &&
-                                                        b.Key.EndIndex > index
-                                                        );
+                                                        b.Key.EndIndex > index);
 
                 if (bi > -1)
                 {
@@ -531,6 +530,12 @@ namespace Avalonia.Skia
             }
 
             return _rects;
+        }
+
+        private class SKTextLayout
+        {
+            public SKTextMetric TextMetric { get; }
+            public IEnumerable<SKTextLine> TextLines { get; }
         }
 
         private void Rebuild()
