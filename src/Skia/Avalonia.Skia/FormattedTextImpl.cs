@@ -24,7 +24,7 @@ namespace Avalonia.Skia
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             Text = text ?? string.Empty;
-            
+
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
@@ -45,7 +45,10 @@ namespace Avalonia.Skia
                             familyName,
                             typeface.Style,
                             typeface.Weight);
-                        if (skiaTypeface != TypefaceCache.Default) break;
+                        if (skiaTypeface != TypefaceCache.Default)
+                        {
+                            break;
+                        }
                     }
                 }
                 else
@@ -83,6 +86,10 @@ namespace Avalonia.Skia
                     }
                 }
             }
+
+            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
+
+            var textBounds = textLayout.TextBounds;
 
             Rebuild();
         }
@@ -285,7 +292,11 @@ namespace Avalonia.Skia
                                 }
                                 else
                                 {
-                                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                                    if (!currentWrapper.Equals(foreground))
+                                    {
+                                        currentWrapper.Dispose();
+                                    }
+
                                     currentWrapper = foreground;
                                 }
 
@@ -305,7 +316,11 @@ namespace Avalonia.Skia
                 }
                 finally
                 {
-                    if (!currentWrapper.Equals(foreground)) currentWrapper.Dispose();
+                    if (!currentWrapper.Equals(foreground))
+                    {
+                        currentWrapper.Dispose();
+                    }
+
                     currd?.Dispose();
                 }
             }
@@ -330,7 +345,10 @@ namespace Avalonia.Skia
                                                 ref IDisposable curr, SKPaint paint, bool canUseLcdRendering)
         {
             if (current == wrapper.Paint)
+            {
                 return;
+            }
+
             curr?.Dispose();
             curr = wrapper.ApplyTo(paint);
             paint.LcdRenderText = canUseLcdRendering;
@@ -534,8 +552,165 @@ namespace Avalonia.Skia
 
         private class SKTextLayout
         {
-            public SKTextMetric TextMetric { get; }
-            public IEnumerable<SKTextLine> TextLines { get; }
+            private readonly string _text;
+
+            private readonly SKTypeface _typeface;
+
+            private readonly float _fontSize;
+
+            private readonly Brush _foreground;
+
+            private readonly TextWrapping _wrapping;
+
+            private readonly Size _constraint;
+
+            private readonly List<SKTextLine> _lines = new List<SKTextLine>();
+
+            public SKTextLayout(string text, SKTypeface typeface, float fontSize, TextWrapping wrapping, Size constraint)
+            {
+                _text = text;
+                _typeface = typeface;
+                _fontSize = fontSize;
+                _wrapping = wrapping;
+                _constraint = constraint;
+                BuildUp();
+            }
+
+            public Rect TextBounds { get; private set; }
+
+            private void BuildUp()
+            {
+                var text = _text.AsSpan();
+
+                var currentLine = new SKTextLine(0, text.Length);
+
+                _lines.Add(currentLine);
+
+                for (int index = 0; index < text.Length; index++)
+                {
+                    char c = text[index];
+
+                    if (c == '\r')
+                    {
+                        c = text[index++];
+
+                        if (c == '\n')
+                        {
+                            index++;
+                        }
+
+                        currentLine = currentLine.SliceAt(index);
+
+                        _lines.Add(currentLine);
+                    }
+                }
+
+                foreach (var textLines in _lines)
+                {
+                    textLines.ApplyTextRuns(this);
+                }
+            }
+
+            private class SKTextLine
+            {
+                private readonly List<SKTextRun> _textRuns = new List<SKTextRun>();
+
+                public SKTextLine(int startingIndex, int length)
+                {
+                    StartingIndex = startingIndex;
+
+                    Length = length;
+                }
+
+                public int StartingIndex { get; }
+
+                public int Length { get; private set; }
+
+                public IEnumerable<SKTextRun> TextRuns => _textRuns;
+
+                public void ApplyTextRuns(SKTextLayout textLayout)
+                {
+                    int currentPosition = 0;
+
+                    var text = textLayout._text.Substring(StartingIndex, Length);
+
+                    while (currentPosition < Length)
+                    {
+                        var glyphCount = textLayout._typeface.CountGlyphs(text);
+
+                        if (glyphCount == 0)
+                        {
+                            var fallback = SKFontManager.Default.MatchCharacter(text[currentPosition]);
+
+                            glyphCount = fallback.CountGlyphs(text);
+                        }
+
+                        if (currentPosition != Length)
+                        {
+                            text = text.Substring(currentPosition, glyphCount);
+                        }
+
+                        var currentRun = new SKTextRun(
+                            text,
+                            new SKTextFormat(textLayout._typeface, textLayout._fontSize));
+
+                        _textRuns.Add(currentRun);
+
+                        currentPosition += glyphCount;
+                    }
+                }
+
+                public SKTextLine SliceAt(int index)
+                {
+                    var length = Length - index;
+
+                    Length = Length - length;
+
+                    return new SKTextLine(index, length);
+                }              
+            }
+        }
+
+        private class SKTextFormat
+        {
+            public SKTextFormat(SKTypeface typeface, float fontSize)
+            {
+                Typeface = typeface;
+                FontSize = fontSize;
+            }
+
+            public SKTypeface Typeface { get; }
+
+            public float FontSize { get; }
+        }
+
+        private class SKTextRun
+        {
+            public SKTextRun(string text, SKTextFormat textFormat)
+            {
+                Text = text;
+
+                TextFormat = textFormat;               
+            }
+
+            public string Text { get; }
+
+            public SKTextFormat TextFormat { get; }
+
+            public Brush DrawingEffect { get; }
+
+            public SKFontMetrics FontMetrics { get; private set; }
+
+            public float Width { get; private set; }
+
+            public void BuildUp(SKPaint paint)
+            {
+                paint.Typeface = TextFormat.Typeface;
+
+                FontMetrics = paint.FontMetrics;
+
+                Width = paint.MeasureText(Text);
+            }
         }
 
         private void Rebuild()
@@ -569,20 +744,22 @@ namespace Avalonia.Skia
             float widthConstraint = double.IsPositiveInfinity(_constraint.Width)
                                         ? -1
                                         : (float)_constraint.Width;
-            
-            while(curOff < length)
+
+            while (curOff < length)
             {
                 float lineWidth = -1;
                 int measured;
                 int trailingnumber = 0;
-                
+
                 float constraint = -1;
 
                 if (_wrapping == TextWrapping.Wrap)
                 {
                     constraint = widthConstraint <= 0 ? MAX_LINE_WIDTH : widthConstraint;
                     if (constraint > MAX_LINE_WIDTH)
+                    {
                         constraint = MAX_LINE_WIDTH;
+                    }
                 }
 
                 measured = LineBreak(Text, curOff, length, _paint, constraint, out trailingnumber);
@@ -636,7 +813,9 @@ namespace Avalonia.Skia
             {
                 var w = _skiaLines[c].Width;
                 if (maxX < w)
+                {
                     maxX = w;
+                }
 
                 _lines.Add(new FormattedTextLine(_skiaLines[c].TextLength, _skiaLines[c].Height));
             }
@@ -669,8 +848,12 @@ namespace Avalonia.Skia
 
                 switch (align)
                 {
-                    case SKTextAlign.Center: x = originX + (float)(width - lineWidth) / 2; break;
-                    case SKTextAlign.Right: x = originX + (float)(width - lineWidth); break;
+                    case SKTextAlign.Center:
+                        x = originX + (float)(width - lineWidth) / 2;
+                        break;
+                    case SKTextAlign.Right:
+                        x = originX + (float)(width - lineWidth);
+                        break;
                 }
             }
 
