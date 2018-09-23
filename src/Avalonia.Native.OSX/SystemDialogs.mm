@@ -6,9 +6,75 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
                                      const char* title,
-                                     const char* initialPath)
+                                     const char* initialDirectory)
     {
-        
+        @autoreleasepool
+        {
+            auto panel = [NSOpenPanel openPanel];
+            
+            panel.canChooseDirectories = true;
+            panel.canCreateDirectories = true;
+            panel.canChooseFiles = false;
+            
+            if(title != nullptr)
+            {
+                panel.title = [NSString stringWithUTF8String:title];
+            }
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL fileURLWithPath:directoryString];
+            }
+            
+            auto handler = ^(NSModalResponse result) {
+                if(result == NSFileHandlingPanelOKButton)
+                {
+                    auto urls = [panel URLs];
+                    
+                    if(urls.count > 0)
+                    {
+                        void* strings[urls.count];
+                        
+                        for(int i = 0; i < urls.count; i++)
+                        {
+                            auto url = [urls objectAtIndex:i];
+                            
+                            auto string = [url absoluteString];
+                            string = [string substringFromIndex:7];
+                            
+                            strings[i] = (void*)[string UTF8String];
+                        }
+                        
+                        events->OnCompleted((int)urls.count, &strings[0]);
+                        
+                        [panel orderOut:panel];
+                        
+                        if(parentWindowHandle != nullptr)
+                        {
+                            auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                            [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                        }
+                        
+                        return;
+                    }
+                }
+                
+                events->OnCompleted(0, nullptr);
+                
+            };
+            
+            if(parentWindowHandle != nullptr)
+            {
+                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                
+                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+            }
+            else
+            {
+                [panel beginWithCompletionHandler: handler];
+            }
+        }
     }
     
     virtual void OpenFileDialog (IAvnWindow* parentWindowHandle,
@@ -16,36 +82,90 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
                                  bool allowMultiple,
                                  const char* title,
                                  const char* initialDirectory,
-                                 const char* intialFile,
+                                 const char* initialFile,
                                  const char* filters)
     {
-        auto panel = [NSOpenPanel openPanel];
-        
-        panel.allowsMultipleSelection = allowMultiple;
-        
-        if(parentWindowHandle != nullptr)
+        @autoreleasepool
         {
-            auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+            auto panel = [NSOpenPanel openPanel];
             
-            [panel beginSheetModalForWindow:windowBase->Window completionHandler:^(NSModalResponse result) {
+            panel.allowsMultipleSelection = allowMultiple;
+            
+            if(title != nullptr)
+            {
+                panel.title = [NSString stringWithUTF8String:title];
+            }
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL fileURLWithPath:directoryString];
+            }
+            
+            if(initialFile != nullptr)
+            {
+                panel.nameFieldStringValue = [NSString stringWithUTF8String:initialFile];
+            }
+            
+            if(filters != nullptr)
+            {
+                auto filtersString = [NSString stringWithUTF8String:filters];
+                
+                if(filtersString.length > 0)
+                {
+                    auto allowedTypes = [filtersString componentsSeparatedByString:@";"];
+                    
+                    panel.allowedFileTypes = allowedTypes;
+                }
+            }
+            
+            auto handler = ^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
                 {
+                    auto urls = [panel URLs];
                     
+                    if(urls.count > 0)
+                    {
+                        void* strings[urls.count];
+                        
+                        for(int i = 0; i < urls.count; i++)
+                        {
+                            auto url = [urls objectAtIndex:i];
+                            
+                            auto string = [url absoluteString];
+                            string = [string substringFromIndex:7];
+                            
+                            strings[i] = (void*)[string UTF8String];
+                        }
+                        
+                        events->OnCompleted((int)urls.count, &strings[0]);
+                        
+                        [panel orderOut:panel];
+                        
+                        if(parentWindowHandle != nullptr)
+                        {
+                            auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                            [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                        }
+                        
+                        return;
+                    }
                 }
                 
                 events->OnCompleted(0, nullptr);
-            }];
-        }
-        else
-        {
-            [panel beginWithCompletionHandler:^(NSModalResponse result) {
-                if(result == NSFileHandlingPanelOKButton)
-                {
-                    
-                }
                 
-                events->OnCompleted(0, nullptr);
-            }];
+            };
+            
+            if(parentWindowHandle != nullptr)
+            {
+                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                
+                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+            }
+            else
+            {
+                [panel beginWithCompletionHandler: handler];
+            }
         }
     }
     

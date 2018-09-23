@@ -163,14 +163,14 @@ AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
                                  bool allowMultiple,
                                  const char* title,
                                  const char* initialDirectory,
-                                 const char* intialFile,
+                                 const char* initialFile,
                                  const char* filters) = 0;
     
     virtual void SaveFileDialog (IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
                                  const char* title,
                                  const char* initialDirectory,
-                                 const char* intialFile,
+                                 const char* initialFile,
                                  const char* filters) = 0;
 };
 
