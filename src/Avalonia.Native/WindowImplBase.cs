@@ -118,11 +118,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, new Point(point.X, point.Y), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
                     break;
 
                 default:
-                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, new Point(point.X, point.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
                     break;
             }
         }
@@ -164,10 +164,35 @@ namespace Avalonia.Native
         }
 
 
-        #region Stubs
-        public double Scaling => 1;
+        public Point Position
+        {
+            get => _native.GetPosition().ToAvaloniaPoint();
+            set => _native.SetPosition(value.ToAvnPoint());
+        }
 
-        public Point Position { get; set; }
+        public Point PointToClient(Point point)
+        {
+            return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
+        }
+
+        public Point PointToScreen(Point point)
+        {
+            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPoint();
+        }
+
+        public void Hide()
+        {
+            _native.Hide();
+        }
+
+        public void BeginMoveDrag()
+        {
+            _native.BeginMoveDrag();
+        }
+
+        #region Stubs
+        public double Scaling => _native.GetScaling();
+
         public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -195,27 +220,8 @@ namespace Avalonia.Native
         {
         }
 
-        public void Hide()
-        {
-        }
-
-        public void BeginMoveDrag()
-        {
-            _native.BeginMoveDrag();
-        }
-
         public void BeginResizeDrag(WindowEdge edge)
         {
-        }
-
-        public Point PointToClient(Point point)
-        {
-            return point;
-        }
-
-        public Point PointToScreen(Point point)
-        {
-            return point;
         }
 
         #endregion

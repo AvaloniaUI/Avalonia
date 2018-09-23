@@ -80,14 +80,62 @@ public:
         return S_OK;
     };
     
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv)
+    {
+        if(cb == nullptr || ppv == nullptr)
+            return E_POINTER;
+        
+        *ppv = CreateAvnPopup(cb);
+        return S_OK;
+    }
+    
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)
     {
         *ppv = CreatePlatformThreading();
         return S_OK;
-    };
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
 {
     return new AvaloniaNative();
 };
+
+
+NSPoint ToNSPoint (AvnPoint p)
+{
+    @autoreleasepool
+    {
+        NSPoint result;
+        result.x = p.X;
+        result.y = p.Y;
+        
+        return result;
+    }
+}
+
+AvnPoint ToAvnPoint (NSPoint p)
+{
+    @autoreleasepool
+    {
+        AvnPoint result;
+        result.X = p.x;
+        result.Y = p.y;
+        
+        return result;
+    }
+}
+
+
+AvnPoint ConvertPointY (AvnPoint p)
+{
+    @autoreleasepool
+    {
+        auto sw = [NSScreen.screens objectAtIndex:0].frame;
+        
+        auto t = MAX(sw.origin.y, sw.origin.y + sw.size.height);
+        p.Y = t - p.Y;
+        
+        return p;
+    }
+}
