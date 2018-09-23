@@ -74,6 +74,7 @@ namespace Avalonia.Native
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()));
         }
 
@@ -89,7 +90,7 @@ namespace Avalonia.Native
 
         public IPopupImpl CreatePopup()
         {
-            throw new NotImplementedException();
+            return new PopupImpl(_factory);
         }
     }
 

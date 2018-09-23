@@ -1,90 +1,5 @@
 #include "common.h"
-
-class WindowBaseImpl;
-
-@interface AvnView : NSView
--(AvnView*)  initWithParent: (WindowBaseImpl*) parent;
--(NSEvent*)  lastMouseDownEvent;
-@end
-
-@interface AvnWindow : NSWindow <NSWindowDelegate>
--(AvnWindow*) initWithParent: (WindowBaseImpl*) parent;
--(void) setCanBecomeKeyAndMain;
-@end
-
-class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>
-{
-public:
-    AvnView* View;
-    AvnWindow* Window;
-    ComPtr<IAvnWindowBaseEvents> BaseEvents;
-    WindowBaseImpl(IAvnWindowBaseEvents* events)
-    {
-        BaseEvents = events;
-        View = [[AvnView alloc] initWithParent:this];
-        Window = [[AvnWindow alloc] initWithParent:this];
-        [Window setStyleMask:NSWindowStyleMaskBorderless];
-        [Window setBackingType:NSBackingStoreBuffered];
-        [Window setContentView: View];
-    }
-    
-    virtual HRESULT Show()
-    {
-        UpdateStyle();
-        [Window makeKeyAndOrderFront:Window];
-        return S_OK;
-    }
-    
-    virtual HRESULT Close()
-    {
-        [Window close];
-        return S_OK;
-    }
-    
-    virtual HRESULT GetClientSize(AvnSize* ret)
-    {
-        if(ret == nullptr)
-            return E_POINTER;
-        auto frame = [View frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
-        return S_OK;
-    }
-    
-    virtual HRESULT Resize(double x, double y)
-    {
-        [Window setContentSize:NSSize{x, y}];
-        return S_OK;
-    }
-    
-    virtual void Invalidate (AvnRect rect)
-    {
-        [View setNeedsDisplayInRect:[View frame]];
-    }
-    
-    virtual void BeginMoveDrag ()
-    {
-        auto lastEvent = [View lastMouseDownEvent];
-        
-        if(lastEvent == nullptr)
-        {
-            return;
-        }
-        
-        [Window performWindowDragWithEvent:lastEvent];
-    }
-    
-protected:
-    virtual NSWindowStyleMask GetStyle()
-    {
-        return NSWindowStyleMaskBorderless;
-    }
-    
-    void UpdateStyle()
-    {
-        [Window setStyleMask:GetStyle()];
-    }
-};
+#include "window.h"
 
 @implementation AvnView
 {
@@ -161,7 +76,7 @@ protected:
     free(ptr);
 }
 
-- (AvnPoint)translateLocalPoint:(AvnPoint)pt
+- (AvnPoint) translateLocalPoint:(AvnPoint)pt
 {
     pt.Y = [self bounds].size.height - pt.Y;
     return pt;
@@ -406,6 +321,32 @@ protected:
 
 @end
 
+class PopupImpl : public WindowBaseImpl, public IAvnPopup
+{
+private:
+    BEGIN_INTERFACE_MAP()
+    INHERIT_INTERFACE_MAP(WindowBaseImpl)
+    INTERFACE_MAP_ENTRY(IAvnPopup, IID_IAvnPopup)
+    END_INTERFACE_MAP()
+    ComPtr<IAvnWindowEvents> WindowEvents;
+    PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    {
+        WindowEvents = events;
+        [Window setLevel:NSPopUpMenuWindowLevel];
+    }
+    
+protected:
+    virtual NSWindowStyleMask GetStyle()
+    {
+        return NSWindowStyleMaskBorderless;
+    }
+};
+
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
+{
+    IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+    return ptr;
+}
 
 class WindowImpl : public WindowBaseImpl, public IAvnWindow
 {
@@ -450,7 +391,6 @@ protected:
         return s;
     }
 };
-
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {

@@ -5,8 +5,11 @@
 
 struct IAvnWindowEvents;
 struct IAvnWindow;
+struct IAvnPopup;
 struct IAvnMacOptions;
 struct IAvnPlatformThreadingInterface;
+struct IAvnSystemDialogEvents;
+struct IAvnSystemDialogs;
 
 struct AvnSize
 {
@@ -66,26 +69,39 @@ public:
     virtual HRESULT Initialize() = 0;
     virtual IAvnMacOptions* GetMacOptions() = 0;
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv) = 0;
+    virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnPopup** ppv) = 0;
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
+    virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
 {
     virtual HRESULT Show() = 0;
+    virtual HRESULT Hide () = 0;
     virtual HRESULT Close() = 0;
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
+    virtual HRESULT GetScaling(double*ret)=0;
     virtual HRESULT Resize(double width, double height) = 0;
     virtual void Invalidate (AvnRect rect) = 0;
     virtual void BeginMoveDrag () = 0;
+    virtual HRESULT GetPosition (AvnPoint*ret) = 0;
+    virtual void SetPosition (AvnPoint point) = 0;
+    virtual HRESULT PointToClient (AvnPoint point, AvnPoint*ret) = 0;
+    virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
 };
 
-AVNCOM(IAvnWindow, 03) : virtual IAvnWindowBase
+AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
+{
+    
+};
+
+AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
 };
 
-AVNCOM(IAvnWindowBaseEvents, 04) : IUnknown
+AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
 {
     virtual HRESULT SoftwareDraw(void* ptr, int stride, int pixelWidth, int pixelHeight, const AvnSize& logicalSize) = 0;
     virtual void Closed() = 0;
@@ -102,33 +118,33 @@ AVNCOM(IAvnWindowBaseEvents, 04) : IUnknown
 };
 
 
-AVNCOM(IAvnWindowEvents, 05) : IAvnWindowBaseEvents
+AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
 {
 
 };
 
-AVNCOM(IAvnMacOptions, 06) : virtual IUnknown
+AVNCOM(IAvnMacOptions, 07) : virtual IUnknown
 {
     virtual HRESULT SetShowInDock(int show) = 0;
 };
 
-AVNCOM(IAvnActionCallback, 07) : IUnknown
+AVNCOM(IAvnActionCallback, 08) : IUnknown
 {
     virtual void Run() = 0;
 };
 
-AVNCOM(IAvnSignaledCallback, 08) : IUnknown
+AVNCOM(IAvnSignaledCallback, 09) : IUnknown
 {
     virtual void Signaled(int priority, bool priorityContainsMeaningfulValue) = 0;
 };
 
 
-AVNCOM(IAvnLoopCancellation, 09) : virtual IUnknown
+AVNCOM(IAvnLoopCancellation, 0a) : virtual IUnknown
 {
     virtual void Cancel() = 0;
 };
 
-AVNCOM(IAvnPlatformThreadingInterface, 0a) : virtual IUnknown
+AVNCOM(IAvnPlatformThreadingInterface, 0b) : virtual IUnknown
 {
     virtual bool GetCurrentThreadIsLoopThread() = 0;
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) = 0;
@@ -137,6 +153,34 @@ AVNCOM(IAvnPlatformThreadingInterface, 0a) : virtual IUnknown
     // Can't pass int* to sharpgentools for some reason
     virtual void Signal(int priority) = 0;
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;
+};
+
+AVNCOM(IAvnSystemDialogEvents, 0c) : virtual IUnknown
+{
+    virtual void OnCompleted (int numResults, void* ptrFirstResult) = 0;
+};
+
+AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
+{
+    virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
+                                     IAvnSystemDialogEvents* events,
+                                     const char* title,
+                                     const char* initialPath) = 0;
+    
+    virtual void OpenFileDialog (IAvnWindow* parentWindowHandle,
+                                 IAvnSystemDialogEvents* events,
+                                 bool allowMultiple,
+                                 const char* title,
+                                 const char* initialDirectory,
+                                 const char* initialFile,
+                                 const char* filters) = 0;
+    
+    virtual void SaveFileDialog (IAvnWindow* parentWindowHandle,
+                                 IAvnSystemDialogEvents* events,
+                                 const char* title,
+                                 const char* initialDirectory,
+                                 const char* initialFile,
+                                 const char* filters) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

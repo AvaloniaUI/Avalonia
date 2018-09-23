@@ -24,6 +24,8 @@ namespace Avalonia.Native
             }
         }
 
+        public IAvnWindow Native => _native;
+
         public IDisposable ShowDialog()
         {
             return null;

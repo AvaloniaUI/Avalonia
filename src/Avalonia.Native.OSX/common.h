@@ -9,4 +9,10 @@
 
 extern IAvnPlatformThreadingInterface* CreatePlatformThreading();
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events);
+extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events);
+extern IAvnSystemDialogs* CreateSystemDialogs();
+
+extern NSPoint ToNSPoint (AvnPoint p);
+extern AvnPoint ToAvnPoint (NSPoint p);
+extern AvnPoint ConvertPointY (AvnPoint p);
 #endif
