@@ -3,9 +3,9 @@
 class WindowBaseImpl;
 
 @interface AvnView : NSView
--(AvnView*)  initWithParent: (WindowBaseImpl*) parent;
--(NSEvent*)  lastMouseDownEvent;
--(AvnPoint)translateLocalPoint:(AvnPoint)pt;
+-(AvnView*) initWithParent: (WindowBaseImpl*) parent;
+-(NSEvent*) lastMouseDownEvent;
+-(AvnPoint) translateLocalPoint:(AvnPoint)pt;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
