@@ -138,7 +138,7 @@ public:
         }
         
         point = ConvertPointY(point);
-        auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
+        auto viewPoint = [Window convertPointFromScreen:ToNSPoint(point)];
         
         *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
         
@@ -153,7 +153,7 @@ public:
         }
         
         auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
-        auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+        auto cocoaScreenPoint = [Window convertPointToScreen:cocoaViewPoint];
         *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
         
         return S_OK;
