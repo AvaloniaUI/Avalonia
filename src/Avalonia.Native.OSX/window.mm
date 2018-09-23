@@ -244,7 +244,7 @@ protected:
     free(ptr);
 }
 
-- (AvnPoint)translateLocalPoint:(AvnPoint)pt
+- (AvnPoint) translateLocalPoint:(AvnPoint)pt
 {
     pt.Y = [self bounds].size.height - pt.Y;
     return pt;
