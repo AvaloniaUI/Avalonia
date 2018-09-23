@@ -7,6 +7,8 @@ struct IAvnWindow;
 struct IAvnPopup;
 struct IAvnMacOptions;
 struct IAvnPlatformThreadingInterface;
+struct IAvnSystemDialogEvents;
+struct IAvnSystemDialogs;
 
 struct AvnSize
 {
@@ -62,6 +64,7 @@ public:
     virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv) = 0;
     virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnPopup** ppv) = 0;
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
+    virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -141,6 +144,31 @@ AVNCOM(IAvnPlatformThreadingInterface, 0b) : virtual IUnknown
     // Can't pass int* to sharpgentools for some reason
     virtual void Signal(int priority) = 0;
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;
+};
+
+AVNCOM(IAvnSystemDialogEvents, 0c) : virtual IUnknown
+{
+    virtual void OnCompleted (int numResults, void* ptrFirstResult) = 0;
+};
+
+AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
+{
+    virtual void SelectFolderDialog (IAvnSystemDialogEvents* events,
+                                   const char* title,
+                                   const char* initialPath) = 0;
+    
+    virtual void OpenFileDialog (IAvnSystemDialogEvents* events,
+                                 bool allowMultiple,
+                                 const char* title,
+                                 const char* initialDirectory,
+                                 const char* intialFile,
+                                 const char* filters) = 0;
+    
+    virtual void SaveFileDialog (IAvnSystemDialogEvents* events,
+                                 const char* title,
+                                 const char* initialDirectory,
+                                 const char* intialFile,
+                                 const char* filters) = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
