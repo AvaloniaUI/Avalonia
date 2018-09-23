@@ -115,11 +115,11 @@ public:
         
         auto frame = [Window frame];
         
-        AvnPoint bottomLeft;
-        bottomLeft.X = frame.origin.x;
-        bottomLeft.Y = frame.origin.y + frame.size.height;
+        AvnPoint topLeft;
+        topLeft.X = frame.origin.x;
+        topLeft.Y = frame.origin.y + frame.size.height;
         
-        *ret = ConvertPointY(bottomLeft);
+        *ret = ConvertPointY(topLeft);
         
         return S_OK;
     }
