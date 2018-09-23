@@ -27,7 +27,7 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
         {
             auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
             
-            [panel beginSheet:windowBase->Window completionHandler:^(NSModalResponse result) {
+            [panel beginSheetModalForWindow:windowBase->Window completionHandler:^(NSModalResponse result) {
                 if(result == NSFileHandlingPanelOKButton)
                 {
                     
