@@ -173,10 +173,80 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
                                  IAvnSystemDialogEvents* events,
                                  const char* title,
                                  const char* initialDirectory,
-                                 const char* intialFile,
+                                 const char* initialFile,
                                  const char* filters)
     {
-        
+        @autoreleasepool
+        {
+            auto panel = [NSSavePanel savePanel];
+            
+            if(title != nullptr)
+            {
+                panel.title = [NSString stringWithUTF8String:title];
+            }
+            
+            if(initialDirectory != nullptr)
+            {
+                auto directoryString = [NSString stringWithUTF8String:initialDirectory];
+                panel.directoryURL = [NSURL fileURLWithPath:directoryString];
+            }
+            
+            if(initialFile != nullptr)
+            {
+                panel.nameFieldStringValue = [NSString stringWithUTF8String:initialFile];
+            }
+            
+            if(filters != nullptr)
+            {
+                auto filtersString = [NSString stringWithUTF8String:filters];
+                
+                if(filtersString.length > 0)
+                {
+                    auto allowedTypes = [filtersString componentsSeparatedByString:@";"];
+                    
+                    panel.allowedFileTypes = allowedTypes;
+                }
+            }
+            
+            auto handler = ^(NSModalResponse result) {
+                if(result == NSFileHandlingPanelOKButton)
+                {
+                    void* strings[1];
+                    
+                    auto url = [panel URL];
+                    
+                    auto string = [url absoluteString];
+                    string = [string substringFromIndex:7];     
+                    strings[0] = (void*)[string UTF8String];
+               
+                    events->OnCompleted(1, &strings[0]);
+                    
+                    [panel orderOut:panel];
+                    
+                    if(parentWindowHandle != nullptr)
+                    {
+                        auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                        [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                    }
+                    
+                    return;
+                }
+                
+                events->OnCompleted(0, nullptr);
+                
+            };
+            
+            if(parentWindowHandle != nullptr)
+            {
+                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                
+                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+            }
+            else
+            {
+                [panel beginWithCompletionHandler: handler];
+            }
+        }
     }
 
 };
