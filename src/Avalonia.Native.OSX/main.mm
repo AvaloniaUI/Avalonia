@@ -94,6 +94,12 @@ public:
         *ppv = CreatePlatformThreading();
         return S_OK;
     }
+    
+    virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv)
+    {
+        *ppv = ::CreateSystemDialogs();
+        return  S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
