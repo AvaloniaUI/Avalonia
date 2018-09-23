@@ -269,6 +269,58 @@
 {
     return true;
 }
+
+- (BOOL)hasMarkedText
+{
+    return false;
+}
+
+- (NSRange)markedRange
+{
+    return NSMakeRange(NSNotFound, 0);
+}
+
+- (NSRange)selectedRange
+{
+    return NSMakeRange(NSNotFound, 0);
+}
+
+- (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
+{
+    
+}
+
+- (void)unmarkText
+{
+    
+}
+
+- (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText
+{
+    return [NSArray new];
+}
+
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
+{
+    return [NSAttributedString new];
+}
+
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange
+{
+    // todo input text to avalonia
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)point
+{
+    return 0;
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
+{
+    CGRect result;
+    
+    return result;
+}
 @end
 
 
