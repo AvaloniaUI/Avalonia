@@ -2,7 +2,8 @@
 #define keytransform_h
 #include "common.h"
 #include "key.h"
+#include <map>
 
-extern const NSDictionary* keyTransforms;
+extern std::map<int, AvnKey> s_KeyMap;
 
 #endif

@@ -1,5 +1,6 @@
 #include "common.h"
 #include "window.h"
+#include "KeyTransform.h"
 
 @implementation AvnView
 {
@@ -212,23 +213,16 @@
     _isMouseOver = false;
     [self mouseEvent:event withType:LeaveWindow];
     [super mouseExited:event];
-}
+} 
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
-{
-    //
-    //auto code =
-    //var code = KeyTransform.TransformKeyCode(ev.KeyCode);
-    //if (!code.HasValue)
-      //  return;
-    //_tl.OnInput(new RawKeyEventArgs(_keyboard, GetTimeStamp(ev),
-      //                              type, code.Value, GetModifiers(ev.ModifierFlags)));
-    
+{ 
+    auto key = s_KeyMap[[event keyCode]];
     
     auto timestamp = [event timestamp] * 1000;
     auto modifiers = [self getModifiers:[event modifierFlags]];
-    
-    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, Delete);
+     
+    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
