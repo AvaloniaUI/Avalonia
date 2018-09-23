@@ -19,11 +19,16 @@ public:
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    AvnPoint lastPositionSet;
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
         BaseEvents = events;
         View = [[AvnView alloc] initWithParent:this];
         Window = [[AvnWindow alloc] initWithParent:this];
+        
+        lastPositionSet.X = 100;
+        lastPositionSet.Y = 100;
+        
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
         [Window setContentView: View];
@@ -31,6 +36,7 @@ public:
     
     virtual HRESULT Show()
     {
+        SetPosition(lastPositionSet);
         UpdateStyle();
         [Window makeKeyAndOrderFront:Window];
         return S_OK;
@@ -120,6 +126,7 @@ public:
     
     virtual void SetPosition (AvnPoint point)
     {
+        lastPositionSet = point;
         [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
     }
     
