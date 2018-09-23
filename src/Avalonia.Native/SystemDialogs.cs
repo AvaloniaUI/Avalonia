@@ -20,37 +20,37 @@ namespace Avalonia.Native
 
         public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
         {
-            using (var events = new SystemDialogEvents())
-            {
-                if (dialog is OpenFileDialog ofd)
-                {
-                    _native.OpenFileDialog(events, ofd.AllowMultiple,
-                                            ofd.Title,
-                                            ofd.InitialDirectory,
-                                            ofd.InitialFileName,
-                                            string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
-                }
-                else
-                {
-                    _native.SaveFileDialog(events,
-                                            dialog.Title,
-                                            dialog.InitialDirectory,
-                                            dialog.InitialFileName,
-                                            string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
-                }
+            var events = new SystemDialogEvents();
 
-                return events.Task;
+            if (dialog is OpenFileDialog ofd)
+            {
+                _native.OpenFileDialog((parent as WindowImpl).Native,
+                                        events, ofd.AllowMultiple,
+                                        ofd.Title,
+                                        ofd.InitialDirectory,
+                                        ofd.InitialFileName,
+                                        string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
             }
+            else
+            {
+                _native.SaveFileDialog((parent as WindowImpl).Native,
+                                        events,
+                                        dialog.Title,
+                                        dialog.InitialDirectory,
+                                        dialog.InitialFileName,
+                                        string.Join(";", dialog.Filters.SelectMany(f => f.Extensions)));
+            }
+
+            return events.Task.ContinueWith(t => { events.Dispose(); return t.Result; });
         }
 
-        public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
         {
-            using (var events = new SystemDialogEvents())
-            {
-                _native.SelectFolderDialog(events, dialog.Title, dialog.InitialDirectory);
+            var events = new SystemDialogEvents();
 
-                return (await events.Task).FirstOrDefault();
-            }
+            _native.SelectFolderDialog((parent as WindowImpl).Native, events, dialog.Title, dialog.InitialDirectory);
+
+            return events.Task.ContinueWith(t => { events.Dispose(); return t.Result.FirstOrDefault(); });
         }
     }
 

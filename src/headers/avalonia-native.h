@@ -153,18 +153,21 @@ AVNCOM(IAvnSystemDialogEvents, 0c) : virtual IUnknown
 
 AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
 {
-    virtual void SelectFolderDialog (IAvnSystemDialogEvents* events,
-                                   const char* title,
-                                   const char* initialPath) = 0;
+    virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
+                                     IAvnSystemDialogEvents* events,
+                                     const char* title,
+                                     const char* initialPath) = 0;
     
-    virtual void OpenFileDialog (IAvnSystemDialogEvents* events,
+    virtual void OpenFileDialog (IAvnWindow* parentWindowHandle,
+                                 IAvnSystemDialogEvents* events,
                                  bool allowMultiple,
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* intialFile,
                                  const char* filters) = 0;
     
-    virtual void SaveFileDialog (IAvnSystemDialogEvents* events,
+    virtual void SaveFileDialog (IAvnWindow* parentWindowHandle,
+                                 IAvnSystemDialogEvents* events,
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* intialFile,
