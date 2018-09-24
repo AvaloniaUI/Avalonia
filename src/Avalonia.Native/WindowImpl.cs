@@ -11,7 +11,7 @@ namespace Avalonia.Native
         public WindowImpl(IAvaloniaNativeFactory factory)
         {
             using (var e = new WindowEvents(this))
-                Init(_native = factory.CreateWindow(e));
+                Init(_native = factory.CreateWindow(e), factory.CreateScreens());
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents

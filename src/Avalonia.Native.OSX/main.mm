@@ -100,6 +100,12 @@ public:
         *ppv = ::CreateSystemDialogs();
         return  S_OK;
     }
+    
+     virtual HRESULT CreateScreens (IAvnScreens** ppv)
+    {
+        *ppv = ::CreateScreens ();
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
