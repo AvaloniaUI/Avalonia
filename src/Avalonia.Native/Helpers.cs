@@ -19,5 +19,10 @@ namespace Avalonia.Native
         {
             return new Size(size.Width, size.Height);
         }
+
+        public static Rect ToAvaloniaRect (this AvnRect rect)
+        {
+            return new Rect(rect.X, rect.Y, rect.Width, rect.Height);
+        }
     }
 }

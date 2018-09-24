@@ -10,6 +10,7 @@ struct IAvnMacOptions;
 struct IAvnPlatformThreadingInterface;
 struct IAvnSystemDialogEvents;
 struct IAvnSystemDialogs;
+struct IAvnScreens;
 
 struct AvnSize
 {
@@ -29,6 +30,13 @@ struct AvnVector
 struct AvnPoint
 {
     double X, Y;
+};
+
+struct AvnScreen
+{
+    AvnRect Bounds;
+    AvnRect WorkingArea;
+    bool Primary;
 };
 
 enum AvnPixelFormat
@@ -89,6 +97,7 @@ public:
     virtual HRESULT CreatePopup (IAvnWindowEvents* cb, IAvnPopup** ppv) = 0;
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
+    virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -202,6 +211,13 @@ AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
                                  const char* initialDirectory,
                                  const char* initialFile,
                                  const char* filters) = 0;
+};
+
+AVNCOM(IAvnScreens, 0e) : virtual IUnknown
+{
+    virtual HRESULT GetScreenCount (int* ret) = 0;
+    virtual HRESULT GetScreen (int index, AvnScreen* ret) = 0;
+    
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
