@@ -52,8 +52,8 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
                         
                         if(parentWindowHandle != nullptr)
                         {
-                            auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
-                            [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                            auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
+                            [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
                         }
                         
                         return;
@@ -66,9 +66,9 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
             
             if(parentWindowHandle != nullptr)
             {
-                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                auto windowBase = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
                 
-                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+                [panel beginSheetModalForWindow:windowBase->GetNSWindow() completionHandler:handler];
             }
             else
             {
@@ -144,8 +144,8 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
                         
                         if(parentWindowHandle != nullptr)
                         {
-                            auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
-                            [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                            auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
+                            [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
                         }
                         
                         return;
@@ -158,9 +158,9 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
             
             if(parentWindowHandle != nullptr)
             {
-                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
                 
-                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+                [panel beginSheetModalForWindow:windowHolder->GetNSWindow() completionHandler:handler];
             }
             else
             {
@@ -225,8 +225,8 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
                     
                     if(parentWindowHandle != nullptr)
                     {
-                        auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
-                        [windowBase->Window makeKeyAndOrderFront:windowBase->Window];
+                        auto windowHolder = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
+                        [windowHolder->GetNSWindow() makeKeyAndOrderFront:windowHolder->GetNSWindow()];
                     }
                     
                     return;
@@ -238,9 +238,9 @@ class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemD
             
             if(parentWindowHandle != nullptr)
             {
-                auto windowBase = dynamic_cast<WindowBaseImpl*>(parentWindowHandle);
+                auto windowBase = dynamic_cast<INSWindowHolder*>(parentWindowHandle);
                 
-                [panel beginSheetModalForWindow:windowBase->Window completionHandler:handler];
+                [panel beginSheetModalForWindow:windowBase->GetNSWindow() completionHandler:handler];
             }
             else
             {
