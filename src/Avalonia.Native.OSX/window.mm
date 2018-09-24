@@ -488,11 +488,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     return (AvnInputModifiers)rv;
 }
-
-- (void)viewDidChangeBackingProperties
-{
-    _parent->BaseEvents->ScalingChanged();
-}
 @end
 
 
