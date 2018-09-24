@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Avalonia.Styling
+﻿namespace Avalonia.Styling
 {
     /// <summary>
     /// This is an interface for advanced scenarios to assist users in correct style development.

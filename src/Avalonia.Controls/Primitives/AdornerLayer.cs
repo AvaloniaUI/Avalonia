@@ -6,11 +6,12 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.VisualTree;
 using Avalonia.Media;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls.Primitives
 {
     // TODO: Need to track position of adorned elements and move the adorner if they move.
-    public class AdornerLayer : Panel
+    public class AdornerLayer : Panel, ICustomSimpleHitTest
     {
         public static AttachedProperty<Visual> AdornedElementProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
@@ -136,6 +137,11 @@ namespace Avalonia.Controls.Primitives
                     InvalidateArrange();
                 });
             }
+        }
+
+        public bool HitTest(Point point)
+        {
+            return Children.Any(ctrl => ctrl.TransformedBounds?.Contains(point) == true);
         }
 
         private class AdornedElementInfo

@@ -98,7 +98,7 @@ namespace Avalonia.Platform
         IRenderTargetBitmapImpl CreateLayer(Size size);
 
         /// <summary>
-        /// Pushes a clip rectange.
+        /// Pushes a clip rectangle.
         /// </summary>
         /// <param name="clip">The clip rectangle.</param>
         void PushClip(Rect clip);

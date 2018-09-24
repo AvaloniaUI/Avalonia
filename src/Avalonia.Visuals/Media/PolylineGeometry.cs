@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Avalonia.Platform;
-using Avalonia.Metadata;
 using Avalonia.Collections;
+using Avalonia.Metadata;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {

@@ -11,7 +11,7 @@ namespace Avalonia.Logging
     public static class Logger
     {
         /// <summary>
-        /// Gets or sets the application-defined sink that recieves the messages.
+        /// Gets or sets the application-defined sink that receives the messages.
         /// </summary>
         public static ILogSink Sink { get; set; }
 

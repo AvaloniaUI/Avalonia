@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Reactive.Linq;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
-using Avalonia.Animation;
-using System.Diagnostics;
 
 namespace Avalonia.Styling
 {
@@ -113,17 +111,20 @@ namespace Avalonia.Styling
                 {
                     var subs = GetSubscriptions(control);
 
-                    foreach (var animation in Animations)
+                    if (control is Animatable animatable)
                     {
-                        IObservable<bool> obsMatch = match.ObservableResult;
-
-                        if (match.ImmediateResult == true)
+                        foreach (var animation in Animations)
                         {
-                            obsMatch = Observable.Return(true);
-                        } 
+                            IObservable<bool> obsMatch = match.ObservableResult;
 
-                        var sub = animation.Apply((Animatable)control, obsMatch);
-                        subs.Add(sub);
+                            if (match.ImmediateResult == true)
+                            {
+                                obsMatch = Observable.Return(true);
+                            }
+
+                            var sub = animation.Apply(animatable, null, obsMatch);
+                            subs.Add(sub);
+                        } 
                     }
 
                     foreach (var setter in Setters)
@@ -200,7 +201,7 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
-        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signalled to remove
+        /// Called when a control's <see cref="IStyleable.StyleDetach"/> is signaled to remove
         /// all applied styles.
         /// </summary>
         /// <param name="control">The control.</param>

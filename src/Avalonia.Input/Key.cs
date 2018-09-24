@@ -77,7 +77,7 @@ namespace Avalonia.Input
         KanaMode = 9,
 
         /// <summary>
-        /// The IME Janja mode key.
+        /// The IME Junja mode key.
         /// </summary>
         JunjaMode = 10,
 

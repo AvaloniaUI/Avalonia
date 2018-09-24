@@ -63,7 +63,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the tranform's <see cref="Matrix"/>.
+        /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public override Matrix Value => Matrix.CreateTranslation(X, Y);
     }

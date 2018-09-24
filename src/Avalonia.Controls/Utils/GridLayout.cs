@@ -376,7 +376,7 @@ namespace Avalonia.Controls.Utils
             // 1. Determine all one-span column's desired widths or row's desired heights.
             // 2. Order the multi-span conventions by its last index
             //    (Notice that the sorted data is much smaller than the source.)
-            // 3. Determine each multi-span last index by calculating the maximun desired size.
+            // 3. Determine each multi-span last index by calculating the maximum desired size.
 
             // Before we determine the behavior of this method, we just aggregate the one-span * columns.
 

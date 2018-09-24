@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using Avalonia.Data;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -31,7 +30,7 @@ namespace Avalonia.Data.Core.Plugins
             return new Accessor(reference, name, inner);
         }
 
-        private class Accessor : DataValidatiorBase
+        private class Accessor : DataValidationBase
         {
             private ValidationContext _context;
 

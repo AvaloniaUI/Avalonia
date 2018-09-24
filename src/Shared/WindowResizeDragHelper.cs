@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 

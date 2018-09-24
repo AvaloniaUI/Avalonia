@@ -73,7 +73,17 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  
+
+  <Style Selector="MenuItem:separator">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Separator Background="{DynamicResource ThemeControlMidBrush}"
+                   Margin="29,1,0,1"
+                   Height="1"/>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
   <Style Selector="Menu > MenuItem">
     <Setter Property="Template">
       <ControlTemplate>

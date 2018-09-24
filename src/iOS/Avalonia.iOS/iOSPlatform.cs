@@ -1,13 +1,10 @@
-using System;
-using System.Reflection;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.iOS;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
-using UIKit;
-using Avalonia.Controls;
 using Avalonia.Rendering;
+using Avalonia.Shared.PlatformSupport;
 
 namespace Avalonia
 {
@@ -44,7 +41,8 @@ namespace Avalonia.iOS
                 .Bind<IPlatformThreadingInterface>().ToConstant(PlatformThreadingInterface.Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
                 .Bind<IWindowingPlatform>().ToSingleton<WindowingPlatformImpl>()
-                .Bind<IRenderLoop>().ToSingleton<DisplayLinkRenderLoop>();
+                .Bind<IRenderTimer>().ToSingleton<DisplayLinkRenderTimer>()
+                .Bind<IRenderLoop>().ToSingleton<RenderLoop>();
         }
     }
 }

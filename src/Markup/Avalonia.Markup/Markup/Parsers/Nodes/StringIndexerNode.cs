@@ -1,18 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Reactive.Linq;
+using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
@@ -51,7 +50,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
 
-                // Try special cases where we can validate indicies
+                // Try special cases where we can validate indices
                 if (typeInfo.IsArray)
                 {
                     return SetValueInArray((Array)Target.Target, intArgs, value);
@@ -114,11 +113,11 @@ namespace Avalonia.Markup.Parsers.Nodes
         }
 
 
-        private bool SetValueInArray(Array array, int[] indicies, object value)
+        private bool SetValueInArray(Array array, int[] indices, object value)
         {
-            if (ValidBounds(indicies, array))
+            if (ValidBounds(indices, array))
             {
-                array.SetValue(value, indicies);
+                array.SetValue(value, indices);
                 return true;
             }
             return false;
@@ -155,7 +154,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
                 var intArgs = convertedObjectArray.OfType<int>().ToArray();
 
-                // Try special cases where we can validate indicies
+                // Try special cases where we can validate indices
                 if (typeInfo.IsArray)
                 {
                     return GetValueFromArray((Array)target, intArgs);
@@ -210,11 +209,11 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object GetValueFromArray(Array array, int[] indicies)
+        private object GetValueFromArray(Array array, int[] indices)
         {
-            if (ValidBounds(indicies, array))
+            if (ValidBounds(indices, array))
             {
-                return array.GetValue(indicies);
+                return array.GetValue(indices);
             }
             return AvaloniaProperty.UnsetValue;
         }
@@ -262,13 +261,13 @@ namespace Avalonia.Markup.Parsers.Nodes
             return null;
         }
 
-        private bool ValidBounds(int[] indicies, Array array)
+        private bool ValidBounds(int[] indices, Array array)
         {
-            if (indicies.Length == array.Rank)
+            if (indices.Length == array.Rank)
             {
-                for (var i = 0; i < indicies.Length; ++i)
+                for (var i = 0; i < indices.Length; ++i)
                 {
-                    if (indicies[i] >= array.GetLength(i))
+                    if (indices[i] >= array.GetLength(i))
                     {
                         return false;
                     }

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Interactivity;
-using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -169,9 +168,9 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
             PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
 
-            PseudoClass(IsEnabledCoreProperty, x => !x, ":disabled");
-            PseudoClass(IsFocusedProperty, ":focus");
-            PseudoClass(IsPointerOverProperty, ":pointerover");
+            PseudoClass<InputElement, bool>(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass<InputElement>(IsFocusedProperty, ":focus");
+            PseudoClass<InputElement>(IsPointerOverProperty, ":pointerover");
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Avalonia.Platform;
 
 namespace Avalonia.Gtk3

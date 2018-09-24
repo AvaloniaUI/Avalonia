@@ -40,5 +40,23 @@ namespace Avalonia.Threading
         /// <param name="function">The method.</param>
         /// <param name="priority">The priority with which to invoke the method.</param>
         Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal);
+
+        /// <summary>
+        /// Queues the specified work to run on the dispatcher thread and returns a proxy for the
+        /// task returned by <paramref name="function"/>.
+        /// </summary>
+        /// <param name="function">The work to execute asynchronously.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <returns>A task that represents a proxy for the task returned by <paramref name="function"/>.</returns>
+        Task InvokeAsync(Func<Task> function, DispatcherPriority priority = DispatcherPriority.Normal);
+
+        /// <summary>
+        /// Queues the specified work to run on the dispatcher thread and returns a proxy for the
+        /// task returned by <paramref name="function"/>.
+        /// </summary>
+        /// <param name="function">The work to execute asynchronously.</param>
+        /// <param name="priority">The priority with which to invoke the method.</param>
+        /// <returns>A task that represents a proxy for the task returned by <paramref name="function"/>.</returns>
+        Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = DispatcherPriority.Normal);
     }
 }

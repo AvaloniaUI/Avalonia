@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         event EventHandler<NameScopeEventArgs> Unregistered;
 
         /// <summary>
-        /// Registers an element eith the name scope.
+        /// Registers an element in the name scope.
         /// </summary>
         /// <param name="name">The element name.</param>
         /// <param name="element">The element.</param>

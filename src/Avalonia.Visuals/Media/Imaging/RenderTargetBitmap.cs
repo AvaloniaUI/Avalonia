@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Runtime.CompilerServices;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -44,7 +43,7 @@ namespace Avalonia.Media.Imaging
         public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
 
         /// <summary>
-        /// Creates a platform-specific imlementation for a <see cref="RenderTargetBitmap"/>.
+        /// Creates a platform-specific implementation for a <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="width">The width of the bitmap.</param>
         /// <param name="height">The height of the bitmap.</param>

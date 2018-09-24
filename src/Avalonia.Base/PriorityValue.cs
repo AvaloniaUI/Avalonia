@@ -12,12 +12,12 @@ using Avalonia.Utilities;
 namespace Avalonia
 {
     /// <summary>
-    /// Maintains a list of prioritised bindings together with a current value.
+    /// Maintains a list of prioritized bindings together with a current value.
     /// </summary>
     /// <remarks>
     /// Bindings, in the form of <see cref="IObservable{Object}"/>s are added to the object using
     /// the <see cref="Add"/> method. With the observable is passed a priority, where lower values
-    /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
+    /// represent higher priorities. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="AvaloniaProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
     /// has a higher priority. Each time the value changes, the 
@@ -236,7 +236,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Updates the current <see cref="Value"/> and notifies all subscibers.
+        /// Updates the current <see cref="Value"/> and notifies all subscribers.
         /// </summary>
         /// <param name="value">The value to set.</param>
         /// <param name="priority">The priority level that the value came from.</param>

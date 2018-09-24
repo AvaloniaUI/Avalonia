@@ -352,8 +352,8 @@ namespace Avalonia.Controls
         private Func<string, CancellationToken, Task<IEnumerable<object>>> _asyncPopulator;
         private CancellationTokenSource _populationCancellationTokenSource;
 
-        private bool _itemTemplateIsFromValueMemeberBinding = true;
-        private bool _settingItemTemplateFromValueMemeberBinding;
+        private bool _itemTemplateIsFromValueMemberBinding = true;
+        private bool _settingItemTemplateFromValueMemberBinding;
 
         private object _selectedItem;
         private bool _isDropDownOpen;
@@ -788,12 +788,12 @@ namespace Avalonia.Controls
 
         private void OnItemTemplatePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!_settingItemTemplateFromValueMemeberBinding)
-                _itemTemplateIsFromValueMemeberBinding = false;
+            if (!_settingItemTemplateFromValueMemberBinding)
+                _itemTemplateIsFromValueMemberBinding = false;
         }
         private void OnValueMemberBindingChanged(IBinding value)
         {
-            if(_itemTemplateIsFromValueMemeberBinding)
+            if(_itemTemplateIsFromValueMemberBinding)
             {
                 var template =
                     new FuncDataTemplate(
@@ -805,9 +805,9 @@ namespace Avalonia.Controls
                             return control;
                         });
 
-                _settingItemTemplateFromValueMemeberBinding = true;
+                _settingItemTemplateFromValueMemberBinding = true;
                 ItemTemplate = template;
-                _settingItemTemplateFromValueMemeberBinding = false;
+                _settingItemTemplateFromValueMemberBinding = false;
             }
         }
 

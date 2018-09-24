@@ -6,7 +6,6 @@ using System.Reactive.Disposables;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Skia.Helpers;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -95,7 +94,7 @@ namespace Avalonia.Skia
 
             var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, framebuffer.RowBytes);
 
-            // If surface cannot be created - try to create a compatibilty shim first
+            // If surface cannot be created - try to create a compatibility shim first
             if (surface == null)
             {
                 _conversionShim = new PixelFormatConversionShim(desiredImageInfo, framebuffer.Address);

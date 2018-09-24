@@ -13,6 +13,6 @@ namespace Avalonia.Animation.Utils
         /// <summary>
         /// Half of <see cref="Math.PI"/>
         /// </summary>
-        internal static double HALFPI = Math.PI / 2d;
+        internal const double HALFPI = Math.PI / 2d;
     }
 }
