@@ -19,6 +19,7 @@ namespace Avalonia.Native
         private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
         private Size _savedLogicalSize;
+        private Size _lastRenderedLogicalSize;
         private double _savedScaling;
 
         public WindowBaseImpl()
@@ -60,6 +61,7 @@ namespace Avalonia.Native
                         if (_native == null)
                             return false;
                         cb(_native);
+                        _lastRenderedLogicalSize = _savedLogicalSize;
                         return true;
                     }
                 }, (int)w, (int)h, new Vector(dpi, dpi));
@@ -144,7 +146,8 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                if (_parent._deferredRendering)
+                if (_parent._deferredRendering 
+                    && _parent._lastRenderedLogicalSize != _parent.ClientSize)
                     // Hack to trigger Paint event on the renderer
                     _parent.Paint?.Invoke(new Rect());
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
