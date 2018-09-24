@@ -30,6 +30,23 @@ struct AvnPoint
     double X, Y;
 };
 
+enum AvnPixelFormat
+{
+    kAvnRgb565,
+    kAvnRgba8888,
+    kAvnBgra8888
+};
+
+struct AvnFramebuffer
+{
+    void* Data;
+    int Width;
+    int Height;
+    int Stride;
+    AvnVector Dpi;
+    AvnPixelFormat PixelFormat;
+};
+
 enum AvnRawMouseEventType
 {
     LeaveWindow,
@@ -82,8 +99,8 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual void SetPosition (AvnPoint point) = 0;
     virtual HRESULT PointToClient (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
+    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) = 0;
     virtual HRESULT SetTopMost (bool value) = 0;
-    
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -99,7 +116,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
 {
-    virtual HRESULT SoftwareDraw(void* ptr, int stride, int pixelWidth, int pixelHeight, const AvnSize& logicalSize) = 0;
+    virtual HRESULT SoftwareDraw(AvnFramebuffer* fb) = 0;
     virtual void Closed() = 0;
     virtual void Activated() = 0;
     virtual void Deactivated() = 0;
@@ -109,8 +126,8 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
                                 AvnVector delta) = 0;
-    
-    virtual void ScalingChanged () = 0;
+    virtual void ScalingChanged(double scaling) = 0;
+    virtual void RunRenderPriorityJobs() = 0;
 };
 
 
