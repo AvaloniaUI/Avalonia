@@ -15,6 +15,7 @@ class WindowBaseImpl;
 -(AvnView*) initWithParent: (WindowBaseImpl*) parent;
 -(NSEvent*) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
+-(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>

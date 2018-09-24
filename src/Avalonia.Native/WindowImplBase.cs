@@ -15,9 +15,11 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
-
-        private bool _deferredRendering = false;
+        private object _syncRoot = new object();
+        private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
+        private Size _savedLogicalSize;
+        private double _savedScaling;
 
         public WindowBaseImpl()
         {
@@ -27,7 +29,10 @@ namespace Avalonia.Native
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
+            
             Screen = new ScreenImpl(screens);
+            _savedLogicalSize = ClientSize;
+            _savedScaling = Scaling;
         }
 
         public Size ClientSize 
@@ -43,7 +48,28 @@ namespace Avalonia.Native
         public IEnumerable<object> Surfaces => new[] { this };
         public ILockedFramebuffer Lock()
         {
-            return _framebuffer;
+            if(_deferredRendering)
+            {
+                var w = _savedLogicalSize.Width * _savedScaling;
+                var h = _savedLogicalSize.Height * _savedScaling;
+                var dpi = _savedScaling * 96;
+                return new DeferredFramebuffer(cb =>
+                {
+                    lock (_syncRoot)
+                    {
+                        if (_native == null)
+                            return false;
+                        cb(_native);
+                        return true;
+                    }
+                }, (int)w, (int)h, new Vector(dpi, dpi));
+            }
+
+            var fb = _framebuffer;
+            _framebuffer = null;
+            if (fb == null)
+                throw new InvalidOperationException("Lock call without corresponding Paint event");
+            return fb;
         }
 
         public Action<Rect> Paint { get; set; }
@@ -81,33 +107,47 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Deactivated() => _parent.Deactivated?.Invoke();
 
-            void IAvnWindowBaseEvents.SoftwareDraw(IntPtr ptr, int stride, int pixelWidth, int pixelHeight, AvnSize logicalSize)
+            void IAvnWindowBaseEvents.SoftwareDraw(ref AvnFramebuffer fb)
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
 
                 _parent._framebuffer = new SavedFramebuffer
                 {
-                    Address = ptr,
-                    RowBytes = stride,
-                    Width = pixelWidth,
-                    Height = pixelHeight,
-                    Dpi = new Vector(pixelWidth / logicalSize.Width * 96, pixelHeight / logicalSize.Height * 96)
+                    Address = fb.Data,
+                    RowBytes = fb.Stride,
+                    Width = fb.Width,
+                    Height = fb.Height,
+                    Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y)
                 };
 
-                _parent.Paint?.Invoke(new Rect(0, 0, logicalSize.Width, logicalSize.Height));
+                _parent.Paint?.Invoke(new Rect(0, 0, fb.Width / (fb.Dpi.X / 96), fb.Height / (fb.Dpi.Y / 96)));
 
             }
 
-            void IAvnWindowBaseEvents.Resized(AvnSize size) => _parent.Resized?.Invoke(new Size(size.Width, size.Height));
+            void IAvnWindowBaseEvents.Resized(AvnSize size)
+            {
+                var s = new Size(size.Width, size.Height);
+                _parent._savedLogicalSize = s;
+                _parent.Resized?.Invoke(s);
+            }
 
             void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            void IAvnWindowBaseEvents.ScalingChanged()
+            void IAvnWindowBaseEvents.ScalingChanged(double scaling)
             {
-                _parent.ScalingChanged?.Invoke(_parent.Scaling);
+                _parent._savedScaling = scaling;
+                _parent.ScalingChanged?.Invoke(scaling);
+            }
+
+            void IAvnWindowBaseEvents.RunRenderPriorityJobs()
+            {
+                if (_parent._deferredRendering)
+                    // Hack to trigger Paint event on the renderer
+                    _parent.Paint?.Invoke(new Rect());
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
         }
 
@@ -140,8 +180,8 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            //_deferredRendering = true;
-            //return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            if(_deferredRendering)
+                return new DeferredRendererProxy(root);
             return new ImmediateRenderer(root);
         }
 
@@ -157,7 +197,8 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
+            if (!_deferredRendering)
+                _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
