@@ -48,8 +48,8 @@ namespace Avalonia.Native
         {
             if(_deferredRendering)
             {
-                var w = _savedLogicalSize.Width / _savedScaling;
-                var h = _savedLogicalSize.Height / _savedScaling;
+                var w = _savedLogicalSize.Width * _savedScaling;
+                var h = _savedLogicalSize.Height * _savedScaling;
                 var dpi = _savedScaling * 96;
                 return new DeferredFramebuffer(cb =>
                 {
