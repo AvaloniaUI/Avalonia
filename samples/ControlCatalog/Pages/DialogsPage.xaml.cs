@@ -9,17 +9,12 @@ namespace ControlCatalog.Pages
         public DialogsPage()
         {
             this.InitializeComponent();
-            this.FindControl<Button>("OpenFile").Click += async (sender, e)=>
+            this.FindControl<Button>("OpenFile").Click += delegate
             {
-                var result = await new OpenFileDialog()
+                new OpenFileDialog()
                 {
                     Title = "Open file"
                 }.ShowAsync(GetWindow());
-
-                if(result?.Length == 1)
-                {
-
-                }
             };
             this.FindControl<Button>("SaveFile").Click += delegate
             {
