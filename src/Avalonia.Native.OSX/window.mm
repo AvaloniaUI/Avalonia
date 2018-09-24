@@ -130,7 +130,7 @@ public:
         }
         
         point = ConvertPointY(point);
-        auto viewPoint = [Window convertPointFromScreen:ToNSPoint(point)];
+        auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
         
         *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
         
@@ -145,9 +145,15 @@ public:
         }
         
         auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
-        auto cocoaScreenPoint = [Window convertPointToScreen:cocoaViewPoint];
+        auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
         *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
         
+        return S_OK;
+    }
+    
+    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose)
+    {
+        [View setSwRenderedFrame: fb dispose: dispose];
         return S_OK;
     }
     
@@ -163,9 +169,14 @@ protected:
     }
 };
 
+NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
+
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
+    ComPtr<IUnknown> _swRenderedFrame;
+    AvnFramebuffer _swRenderedFrameBuffer;
+    bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
@@ -209,18 +220,10 @@ protected:
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
-- (void)drawRect:(NSRect)dirtyRect
+- (void) drawFb: (AvnFramebuffer*) fb
 {
-    auto logicalSize = [self frame].size;
-    auto pixelSize = [self convertSizeToBacking:logicalSize];
-    int w = pixelSize.width;
-    int h = pixelSize.height;
-    int stride = w * 4;
-    void*ptr = malloc(h * stride);
-    _parent->BaseEvents->SoftwareDraw(ptr, stride, w, h, AvnSize{logicalSize.width, logicalSize.height});
-    
     auto colorSpace = CGColorSpaceCreateDeviceRGB();
-    auto bctx = CGBitmapContextCreate(ptr, w, h, 8, stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
+    auto bctx = CGBitmapContextCreate(fb->Data, fb->Width, fb->Height, 8, fb->Stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
     auto image = CGBitmapContextCreateImage(bctx);
     CGContextRelease(bctx);
     CGColorSpaceRelease(colorSpace);
@@ -230,11 +233,72 @@ protected:
     [ctx saveGraphicsState];
     auto cgc = [ctx CGContext];
     
-    CGContextDrawImage(cgc, CGRect{0,0, logicalSize.width, logicalSize.height}, image);
+    CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
     CGImageRelease(image);
     
     [ctx restoreGraphicsState];
+
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+    _parent->BaseEvents->RunRenderPriorityJobs();
+    @synchronized (self) {
+        if(_swRenderedFrame != NULL)
+        {
+            [self drawFb: &_swRenderedFrameBuffer];
+            return;
+        }
+    }
+    
+    auto logicalSize = [self frame].size;
+    auto pixelSize = [self convertSizeToBacking:logicalSize];
+    int w = pixelSize.width;
+    int h = pixelSize.height;
+    int stride = w * 4;
+    void*ptr = malloc(h * stride);
+    AvnFramebuffer fb = {
+        .Data = ptr,
+        .Stride = stride,
+        .Width = w,
+        .Height = h,
+        .PixelFormat = kAvnRgba8888,
+        .Dpi = AvnVector { .X = w / logicalSize.width * 96, .Y = h / logicalSize.height * 96}
+    };
+    _parent->BaseEvents->SoftwareDraw(&fb);
+    [self drawFb: &fb];
     free(ptr);
+}
+
+-(void) redrawSelf
+{
+    @autoreleasepool
+    {
+        @synchronized(self)
+        {
+            if(!_queuedDisplayFromThread)
+                return;
+            _queuedDisplayFromThread = false;
+        }
+        [self setNeedsDisplayInRect:[self frame]];
+        [self display];
+        
+    }
+}
+
+-(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
+{
+    @autoreleasepool {
+        @synchronized (self) {
+            _swRenderedFrame = dispose;
+            _swRenderedFrameBuffer = *fb;
+            if(!_queuedDisplayFromThread)
+            {
+                _queuedDisplayFromThread = true;
+                [self performSelector:@selector(redrawSelf) onThread:[NSThread mainThread] withObject:NULL waitUntilDone:false modes: AllLoopModes];
+            }
+        }
+    }
 }
 
 - (AvnPoint) translateLocalPoint:(AvnPoint)pt
@@ -251,6 +315,12 @@ protected:
     result.Y = p.y;
     
     return result;
+}
+
+- (void) viewDidChangeBackingProperties
+{
+    _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    [super viewDidChangeBackingProperties];
 }
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
