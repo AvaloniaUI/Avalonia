@@ -24,9 +24,10 @@ namespace Avalonia.Native
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
         }
 
-        protected void Init(IAvnWindowBase window)
+        protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
+            Screen = new ScreenImpl(screens);
         }
 
         public Size ClientSize 
@@ -144,11 +145,13 @@ namespace Avalonia.Native
             return new ImmediateRenderer(root);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _native.Close();
             _native.Dispose();
             _native = null;
+
+            (Screen as ScreenImpl)?.Dispose();
         }
 
 
@@ -217,7 +220,7 @@ namespace Avalonia.Native
         public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
 
 
-        public IScreenImpl Screen => new ScreenImpl();
+        public IScreenImpl Screen { get; private set; }
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
 
