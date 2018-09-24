@@ -2,9 +2,202 @@
 #include "window.h"
 #include "KeyTransform.h"
 
+class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
+{
+public:
+    AvnView* View;
+    AvnWindow* Window;
+    ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    AvnPoint lastPositionSet;
+    WindowBaseImpl(IAvnWindowBaseEvents* events)
+    {
+        BaseEvents = events;
+        View = [[AvnView alloc] initWithParent:this];
+        Window = [[AvnWindow alloc] initWithParent:this];
+        
+        lastPositionSet.X = 100;
+        lastPositionSet.Y = 100;
+        
+        [Window setStyleMask:NSWindowStyleMaskBorderless];
+        [Window setBackingType:NSBackingStoreBuffered];
+        [Window setContentView: View];
+    }
+    
+    virtual AvnWindow* GetNSWindow()
+    {
+        return Window;
+    }
+    
+    virtual HRESULT Show()
+    {
+        SetPosition(lastPositionSet);
+        UpdateStyle();
+        [Window makeKeyAndOrderFront:Window];
+        return S_OK;
+    }
+    
+    virtual HRESULT Hide ()
+    {
+        if(Window != nullptr)
+        {
+            [Window orderOut:Window];
+        }
+        return S_OK;
+    }
+    
+    virtual HRESULT SetTopMost (bool value)
+    {
+        [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT Close()
+    {
+        [Window close];
+        return S_OK;
+    }
+    
+    virtual HRESULT GetClientSize(AvnSize* ret)
+    {
+        if(ret == nullptr)
+            return E_POINTER;
+        auto frame = [View frame];
+        ret->Width = frame.size.width;
+        ret->Height = frame.size.height;
+        return S_OK;
+    }
+    
+    virtual HRESULT GetMaxClientSize(AvnSize* ret)
+    {
+        if(ret == nullptr)
+            return E_POINTER;
+        
+        auto size = [NSScreen.screens objectAtIndex:0].frame.size;
+        
+        ret->Height = size.height;
+        ret->Width = size.width;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetScaling (double* ret)
+    {
+        if(ret == nullptr)
+            return E_POINTER;
+        
+        if(Window == nullptr)
+        {
+            *ret = 1;
+            return S_OK;
+        }
+        
+        *ret = [Window backingScaleFactor];
+        return S_OK;
+    }
+    
+    virtual HRESULT Resize(double x, double y)
+    {
+        [Window setContentSize:NSSize{x, y}];
+        return S_OK;
+    }
+    
+    virtual void Invalidate (AvnRect rect)
+    {
+        [View setNeedsDisplayInRect:[View frame]];
+    }
+    
+    virtual void BeginMoveDrag ()
+    {
+        auto lastEvent = [View lastMouseDownEvent];
+        
+        if(lastEvent == nullptr)
+        {
+            return;
+        }
+        
+        [Window performWindowDragWithEvent:lastEvent];
+    }
+    
+    
+    virtual HRESULT GetPosition (AvnPoint* ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        auto frame = [Window frame];
+        
+        ret->X = frame.origin.x;
+        ret->Y = frame.origin.y + frame.size.height;
+        
+        *ret = ConvertPointY(*ret);
+        
+        return S_OK;
+    }
+    
+    virtual void SetPosition (AvnPoint point)
+    {
+        lastPositionSet = point;
+        [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+    }
+    
+    virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        point = ConvertPointY(point);
+        auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
+        
+        *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
+        auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+        *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose)
+    {
+        [View setSwRenderedFrame: fb dispose: dispose];
+        return S_OK;
+    }
+    
+protected:
+    virtual NSWindowStyleMask GetStyle()
+    {
+        return NSWindowStyleMaskBorderless;
+    }
+    
+    void UpdateStyle()
+    {
+        [Window setStyleMask:GetStyle()];
+    }
+};
+
+NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
+
 @implementation AvnView
 {
     ComPtr<WindowBaseImpl> _parent;
+    ComPtr<IUnknown> _swRenderedFrame;
+    AvnFramebuffer _swRenderedFrameBuffer;
+    bool _queuedDisplayFromThread;
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
@@ -49,18 +242,10 @@
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 
-- (void)drawRect:(NSRect)dirtyRect
+- (void) drawFb: (AvnFramebuffer*) fb
 {
-    auto logicalSize = [self frame].size;
-    auto pixelSize = [self convertSizeToBacking:logicalSize];
-    int w = pixelSize.width;
-    int h = pixelSize.height;
-    int stride = w * 4;
-    void*ptr = malloc(h * stride);
-    _parent->BaseEvents->SoftwareDraw(ptr, stride, w, h, AvnSize{logicalSize.width, logicalSize.height});
-    
     auto colorSpace = CGColorSpaceCreateDeviceRGB();
-    auto bctx = CGBitmapContextCreate(ptr, w, h, 8, stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
+    auto bctx = CGBitmapContextCreate(fb->Data, fb->Width, fb->Height, 8, fb->Stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
     auto image = CGBitmapContextCreateImage(bctx);
     CGContextRelease(bctx);
     CGColorSpaceRelease(colorSpace);
@@ -70,11 +255,72 @@
     [ctx saveGraphicsState];
     auto cgc = [ctx CGContext];
     
-    CGContextDrawImage(cgc, CGRect{0,0, logicalSize.width, logicalSize.height}, image);
+    CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
     CGImageRelease(image);
     
     [ctx restoreGraphicsState];
+
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+    _parent->BaseEvents->RunRenderPriorityJobs();
+    @synchronized (self) {
+        if(_swRenderedFrame != NULL)
+        {
+            [self drawFb: &_swRenderedFrameBuffer];
+            return;
+        }
+    }
+    
+    auto logicalSize = [self frame].size;
+    auto pixelSize = [self convertSizeToBacking:logicalSize];
+    int w = pixelSize.width;
+    int h = pixelSize.height;
+    int stride = w * 4;
+    void*ptr = malloc(h * stride);
+    AvnFramebuffer fb = {
+        .Data = ptr,
+        .Stride = stride,
+        .Width = w,
+        .Height = h,
+        .PixelFormat = kAvnRgba8888,
+        .Dpi = AvnVector { .X = w / logicalSize.width * 96, .Y = h / logicalSize.height * 96}
+    };
+    _parent->BaseEvents->SoftwareDraw(&fb);
+    [self drawFb: &fb];
     free(ptr);
+}
+
+-(void) redrawSelf
+{
+    @autoreleasepool
+    {
+        @synchronized(self)
+        {
+            if(!_queuedDisplayFromThread)
+                return;
+            _queuedDisplayFromThread = false;
+        }
+        [self setNeedsDisplayInRect:[self frame]];
+        [self display];
+        
+    }
+}
+
+-(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose
+{
+    @autoreleasepool {
+        @synchronized (self) {
+            _swRenderedFrame = dispose;
+            _swRenderedFrameBuffer = *fb;
+            if(!_queuedDisplayFromThread)
+            {
+                _queuedDisplayFromThread = true;
+                [self performSelector:@selector(redrawSelf) onThread:[NSThread mainThread] withObject:NULL waitUntilDone:false modes: AllLoopModes];
+            }
+        }
+    }
 }
 
 - (AvnPoint) translateLocalPoint:(AvnPoint)pt
@@ -91,6 +337,12 @@
     result.Y = p.y;
     
     return result;
+}
+
+- (void) viewDidChangeBackingProperties
+{
+    _parent->BaseEvents->ScalingChanged([_parent->Window backingScaleFactor]);
+    [super viewDidChangeBackingProperties];
 }
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type

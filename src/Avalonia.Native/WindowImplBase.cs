@@ -15,10 +15,12 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
-
-        private bool _deferredRendering = false;
+        private object _syncRoot = new object();
+        private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
+        private Size _savedLogicalSize;
+        private double _savedScaling;
 
         public WindowBaseImpl()
         {
@@ -29,6 +31,8 @@ namespace Avalonia.Native
         protected void Init(IAvnWindowBase window)
         {
             _native = window;
+            _savedLogicalSize = ClientSize;
+            _savedScaling = Scaling;
         }
 
         public Size ClientSize 
@@ -44,7 +48,28 @@ namespace Avalonia.Native
         public IEnumerable<object> Surfaces => new[] { this };
         public ILockedFramebuffer Lock()
         {
-            return _framebuffer;
+            if(_deferredRendering)
+            {
+                var w = _savedLogicalSize.Width * _savedScaling;
+                var h = _savedLogicalSize.Height * _savedScaling;
+                var dpi = _savedScaling * 96;
+                return new DeferredFramebuffer(cb =>
+                {
+                    lock (_syncRoot)
+                    {
+                        if (_native == null)
+                            return false;
+                        cb(_native);
+                        return true;
+                    }
+                }, (int)w, (int)h, new Vector(dpi, dpi));
+            }
+
+            var fb = _framebuffer;
+            _framebuffer = null;
+            if (fb == null)
+                throw new InvalidOperationException("Lock call without corresponding Paint event");
+            return fb;
         }
 
         public Action<Rect> Paint { get; set; }
@@ -82,26 +107,31 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Deactivated() => _parent.Deactivated?.Invoke();
 
-            void IAvnWindowBaseEvents.SoftwareDraw(IntPtr ptr, int stride, int pixelWidth, int pixelHeight, AvnSize logicalSize)
+            void IAvnWindowBaseEvents.SoftwareDraw(ref AvnFramebuffer fb)
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
 
                 _parent._framebuffer = new SavedFramebuffer
                 {
-                    Address = ptr,
-                    RowBytes = stride,
-                    Width = pixelWidth,
-                    Height = pixelHeight,
-                    Dpi = new Vector(pixelWidth / logicalSize.Width * 96, pixelHeight / logicalSize.Height * 96)
+                    Address = fb.Data,
+                    RowBytes = fb.Stride,
+                    Width = fb.Width,
+                    Height = fb.Height,
+                    Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y)
                 };
 
-                _parent.Paint?.Invoke(new Rect(0, 0, logicalSize.Width, logicalSize.Height));
+                _parent.Paint?.Invoke(new Rect(0, 0, fb.Width / (fb.Dpi.X / 96), fb.Height / (fb.Dpi.Y / 96)));
 
             }
 
-            void IAvnWindowBaseEvents.Resized(AvnSize size) => _parent.Resized?.Invoke(new Size(size.Width, size.Height));
+            void IAvnWindowBaseEvents.Resized(AvnSize size)
+            {
+                var s = new Size(size.Width, size.Height);
+                _parent._savedLogicalSize = s;
+                _parent.Resized?.Invoke(s);
+            }
 
-            public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
@@ -110,8 +140,21 @@ namespace Avalonia.Native
             {
                 return _parent.RawKeyEvent(type, timeStamp, modifiers, key);
             }
-        }
+            
+            void IAvnWindowBaseEvents.ScalingChanged(double scaling)
+            {
+                _parent._savedScaling = scaling;
+                _parent.ScalingChanged?.Invoke(scaling);
+            }
 
+            void IAvnWindowBaseEvents.RunRenderPriorityJobs()
+            {
+                if (_parent._deferredRendering)
+                    // Hack to trigger Paint event on the renderer
+                    _parent.Paint?.Invoke(new Rect());
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
+            }
+        }
 
         public void Activate()
         {
@@ -150,8 +193,8 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            //_deferredRendering = true;
-            //return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            if(_deferredRendering)
+                return new DeferredRendererProxy(root);
             return new ImmediateRenderer(root);
         }
 
@@ -165,7 +208,8 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
+            if (!_deferredRendering)
+                _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -206,26 +250,31 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
-        #region Stubs
+        public Size MaxClientSize => _native.GetMaxClientSize().ToAvaloniaSize();
+
+        public void SetTopmost(bool value)
+        {
+            _native.SetTopMost(value);
+        }
+
         public double Scaling => _native.GetScaling();
 
-        public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+
+        #region Stubs
+
+        public Action<Point> PositionChanged { get; set; }
+
         public Action<RawInputEventArgs> Input { get; set; }
 
         Action<double> ScalingChanged { get; set; }
         public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
 
-        public Size MaxClientSize => new Size(1600, 900);
 
         public IScreenImpl Screen => new ScreenImpl();
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
-
-        public void SetTopmost(bool value)
-        {
-        }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
