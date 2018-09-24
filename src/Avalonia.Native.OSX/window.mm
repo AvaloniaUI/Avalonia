@@ -243,10 +243,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void) drawFb: (AvnFramebuffer*) fb
 {
     auto colorSpace = CGColorSpaceCreateDeviceRGB();
-    auto bctx = CGBitmapContextCreate(fb->Data, fb->Width, fb->Height, 8, fb->Stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
-    auto image = CGBitmapContextCreateImage(bctx);
-    CGContextRelease(bctx);
-    CGColorSpaceRelease(colorSpace);
+    auto dataProvider = CGDataProviderCreateWithData(NULL, fb->Data, fb->Height*fb->Stride, NULL);
+
+    
+    auto image = CGImageCreate(fb->Width, fb->Height, 8, 32, fb->Stride, colorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
+                               dataProvider, nullptr, false, kCGRenderingIntentDefault);
     
     auto ctx = [NSGraphicsContext currentContext];
     
@@ -255,6 +256,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
     CGImageRelease(image);
+    CGColorSpaceRelease(colorSpace);
+    CGDataProviderRelease(dataProvider);
     
     [ctx restoreGraphicsState];
 
