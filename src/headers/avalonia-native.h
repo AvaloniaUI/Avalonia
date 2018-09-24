@@ -191,7 +191,7 @@ AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
 AVNCOM(IAvnScreens, 0e) : virtual IUnknown
 {
     virtual HRESULT GetScreenCount (int* ret) = 0;
-    virtual HRESULT GetScreen (int index, AvnScreen** ret) = 0;
+    virtual HRESULT GetScreen (int index, AvnScreen* ret) = 0;
     
 };
 
