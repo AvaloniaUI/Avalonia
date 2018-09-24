@@ -44,6 +44,13 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT SetTopMost (bool value)
+    {
+        [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+        
+        return S_OK;
+    }
+    
     virtual HRESULT Close()
     {
         [Window close];
@@ -57,6 +64,19 @@ public:
         auto frame = [View frame];
         ret->Width = frame.size.width;
         ret->Height = frame.size.height;
+        return S_OK;
+    }
+    
+    virtual HRESULT GetMaxClientSize(AvnSize* ret)
+    {
+        if(ret == nullptr)
+            return E_POINTER;
+        
+        auto size = [NSScreen.screens objectAtIndex:0].frame.size;
+        
+        ret->Height = size.height;
+        ret->Width = size.width;
+        
         return S_OK;
     }
     
@@ -467,6 +487,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= RightMouseButton;
     
     return (AvnInputModifiers)rv;
+}
+
+- (void)viewDidChangeBackingProperties
+{
+    _parent->BaseEvents->ScalingChanged();
 }
 @end
 
