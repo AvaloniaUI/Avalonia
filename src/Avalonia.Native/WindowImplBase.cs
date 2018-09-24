@@ -129,7 +129,7 @@ namespace Avalonia.Native
                 _parent.Resized?.Invoke(s);
             }
 
-            public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
@@ -235,26 +235,31 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
-        #region Stubs
+        public Size MaxClientSize => _native.GetMaxClientSize().ToAvaloniaSize();
+
+        public void SetTopmost(bool value)
+        {
+            _native.SetTopMost(value);
+        }
+
         public double Scaling => _native.GetScaling();
 
-        public Action<Point> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
+
+        #region Stubs
+
+        public Action<Point> PositionChanged { get; set; }
+
         public Action<RawInputEventArgs> Input { get; set; }
 
         Action<double> ScalingChanged { get; set; }
         public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
 
-        public Size MaxClientSize => new Size(1600, 900);
 
         public IScreenImpl Screen => new ScreenImpl();
 
         Action<double> ITopLevelImpl.ScalingChanged { get; set; }
-
-        public void SetTopmost(bool value)
-        {
-        }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {

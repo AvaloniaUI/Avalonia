@@ -14,5 +14,10 @@ namespace Avalonia.Native
         {
             return new AvnPoint { X = pt.X, Y = pt.Y };
         }
+
+        public static Size ToAvaloniaSize (this AvnSize size)
+        {
+            return new Size(size.Width, size.Height);
+        }
     }
 }
