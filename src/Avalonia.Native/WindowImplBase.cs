@@ -99,9 +99,14 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Resized(AvnSize size) => _parent.Resized?.Invoke(new Size(size.Width, size.Height));
 
-            public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
+            void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
+            }
+
+            void IAvnWindowBaseEvents.ScalingChanged()
+            {
+                _parent.ScalingChanged?.Invoke(_parent.Scaling);
             }
         }
 
@@ -199,11 +204,13 @@ namespace Avalonia.Native
 
         public double Scaling => _native.GetScaling();
 
+        public Action Deactivated { get; set; }
+        public Action Activated { get; set; }
+
         #region Stubs
 
         public Action<Point> PositionChanged { get; set; }
-        public Action Deactivated { get; set; }
-        public Action Activated { get; set; }
+
         public Action<RawInputEventArgs> Input { get; set; }
 
         Action<double> ScalingChanged { get; set; }

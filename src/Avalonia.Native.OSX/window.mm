@@ -418,6 +418,11 @@ protected:
     
     return (AvnInputModifiers)rv;
 }
+
+- (void)viewDidChangeBackingProperties
+{
+    _parent->BaseEvents->ScalingChanged();
+}
 @end
 
 
