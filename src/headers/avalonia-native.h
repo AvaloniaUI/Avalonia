@@ -73,6 +73,7 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT Hide () = 0;
     virtual HRESULT Close() = 0;
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
+    virtual HRESULT GetMaxClientSize(AvnSize* ret) = 0;
     virtual HRESULT GetScaling(double*ret)=0;
     virtual HRESULT Resize(double width, double height) = 0;
     virtual void Invalidate (AvnRect rect) = 0;
@@ -81,6 +82,8 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual void SetPosition (AvnPoint point) = 0;
     virtual HRESULT PointToClient (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
+    virtual HRESULT SetTopMost (bool value) = 0;
+    
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
