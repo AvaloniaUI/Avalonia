@@ -109,6 +109,8 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
                                 AvnVector delta) = 0;
+    
+    virtual void ScalingChanged () = 0;
 };
 
 
