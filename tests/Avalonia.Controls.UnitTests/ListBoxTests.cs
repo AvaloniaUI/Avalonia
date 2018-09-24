@@ -1,16 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
-using Avalonia.Collections;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -168,6 +169,109 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(20, 20), target.Scroll.Extent);
             Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
+        }
+
+        [Theory]
+        [InlineData(ItemVirtualizationMode.Simple)]
+        [InlineData(ItemVirtualizationMode.None)]
+        public void When_Added_Removed_AfterItems_Reset_Should_Work(ItemVirtualizationMode virtMode)
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new ObservableCollection<string>();
+
+                Action create = () =>
+                {
+                    foreach (var i in Enumerable.Range(1, 7))
+                    {
+                        items.Add(i.ToString());
+                    }
+                };
+
+                create();
+
+                var wnd = new Window() { SizeToContent = SizeToContent.WidthAndHeight };
+
+                wnd.IsVisible = true;
+
+                var target = new ListBox() { VirtualizationMode = virtMode };
+
+                wnd.Content = target;
+
+                var lm = wnd.LayoutManager;
+
+                target.Height = 110;//working fine when <=106 or >=119
+                target.Width = 50;
+
+                target.ItemTemplate = new FuncDataTemplate<object>(c =>
+                {
+                    var tb = new TextBlock() { Height = 10, Width = 30 };
+                    tb.Bind(TextBlock.TextProperty, new Binding());
+                    return tb;
+                }, true);
+
+                target.DataContext = items;
+
+                lm.ExecuteInitialLayoutPass(wnd);
+
+                target.Bind(ItemsControl.ItemsProperty, new Binding());
+
+                lm.ExecuteLayoutPass();
+
+                var panel = target.Presenter.Panel;
+
+                Func<string> itemsToString = () =>
+                     string.Join(",", panel.Children.OfType<ListBoxItem>().Select(l => l.Content.ToString()).ToArray());
+
+                Action<string, string> addafter = (item, newitem) =>
+                 {
+                     items.Insert(items.IndexOf(item) + 1, newitem);
+
+                     lm.ExecuteLayoutPass();
+                 };
+
+                Action<string> remove = item =>
+                {
+                    items.Remove(item);
+                    lm.ExecuteLayoutPass();
+                };
+
+                addafter("1", "1+");//expected 1,1+,2,3,4,5,6,7
+
+                addafter("2", "2+");//expected 1,1+,2,2+,3,4,5,6
+
+                remove("2+");//expected 1,1+,2,3,4,5,6,7
+
+                //Reset items
+                items.Clear();
+                create();
+
+                addafter("1", "1+");//expected 1,1+,2,3,4,5,6,7
+
+                addafter("2", "2+");//expected 1,1+,2,2+,3,4,5,6
+
+                remove("2+");//expected 1,1+,2,3,4,5,6,7
+
+                var sti = itemsToString();
+
+                var lbItems = panel.Children.OfType<ListBoxItem>().ToArray();
+
+                Assert.Equal("1", lbItems[0].Content);
+                Assert.Equal("1+", lbItems[1].Content);
+                Assert.Equal("2", lbItems[2].Content);
+                Assert.Equal("3", lbItems[3].Content); //bug it's 2+ instead
+                Assert.Equal("4", lbItems[4].Content);
+
+                int lbi = 0;
+
+                //ensure all items are fine
+                foreach (var lb in lbItems)
+                {
+                    Assert.Equal(items[lbi++], lb.Content);
+                }
+
+                //Assert.Equal("1,1+,2,3,4,5,6,7", sti);
+            }
         }
 
         private FuncControlTemplate ListBoxTemplate()
