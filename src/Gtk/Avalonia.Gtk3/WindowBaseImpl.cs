@@ -8,6 +8,7 @@ using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
