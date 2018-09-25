@@ -871,8 +871,8 @@ namespace Avalonia.Controls.Primitives
                         RaisePropertyChanged(SelectedItemProperty, oldItem, item, BindingPriority.LocalValue);
                     }
 
-                    added = e.OldItems;
-                    removed = e.NewItems;
+                    added = e.NewItems;
+                    removed = e.OldItems;
                     break;
             }
 
