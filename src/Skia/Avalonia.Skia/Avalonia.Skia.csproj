@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    <ProjectReference Include="..\..\Avalonia.Gpu\Avalonia.Gpu.csproj" />
   </ItemGroup>
   
   <Import Project="..\..\..\build\SkiaSharp.props" />
