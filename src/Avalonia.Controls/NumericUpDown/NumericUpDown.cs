@@ -526,7 +526,7 @@ namespace Avalonia.Controls
                 return result;
             }
 
-            // Since the conversion from Value to text using a FormartString may not be parsable,
+            // Since the conversion from Value to text using a FormatString may not be parsable,
             // we verify that the already existing text is not the exact same value.
             var currentValueText = ConvertValueToText();
             if (Equals(currentValueText, text))
@@ -571,7 +571,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called by OnSpin when the spin direction is SpinDirection.Descrease.
+        /// Called by OnSpin when the spin direction is SpinDirection.Decrease.
         /// </summary>
         private void OnDecrement()
         {
@@ -890,7 +890,7 @@ namespace Avalonia.Controls
                 if (_isTextChangedFromUI && !parsedTextIsValid)
                 {
                     // Text input was made from the user and the text
-                    // repesents an invalid value. Disable the spinner in this case.
+                    // represents an invalid value. Disable the spinner in this case.
                     if (Spinner != null)
                     {
                         Spinner.ValidSpinDirection = ValidSpinDirections.None;

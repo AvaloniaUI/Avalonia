@@ -1,35 +1,28 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using SharpDX;
 using SharpDX.Direct2D1;
-using SharpDX.WIC;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
-using DirectWriteFactory = SharpDX.DirectWrite.Factory;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
     public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IRenderTargetBitmapImpl, ILayerFactory
     {
-        private readonly DirectWriteFactory _dwriteFactory;
-        private readonly BitmapRenderTarget _target;
+        private readonly BitmapRenderTarget _renderTarget;
 
-        public D2DRenderTargetBitmapImpl(
-            ImagingFactory imagingFactory,
-            DirectWriteFactory dwriteFactory,
-            BitmapRenderTarget target)
-            : base(imagingFactory, target.Bitmap)
+        public D2DRenderTargetBitmapImpl(BitmapRenderTarget renderTarget)
+            : base(renderTarget.Bitmap)
         {
-            _dwriteFactory = dwriteFactory;
-            _target = target;
+            _renderTarget = renderTarget;
         }
 
-        public override int PixelWidth => _target.PixelSize.Width;
-        public override int PixelHeight => _target.PixelSize.Height;
+        public override int PixelWidth => _renderTarget.PixelSize.Width;
+        public override int PixelHeight => _renderTarget.PixelSize.Height;
 
         public static D2DRenderTargetBitmapImpl CreateCompatible(
-            ImagingFactory imagingFactory,
-            DirectWriteFactory dwriteFactory,
             SharpDX.Direct2D1.RenderTarget renderTarget,
             Size size)
         {
@@ -37,32 +30,27 @@ namespace Avalonia.Direct2D1.Media.Imaging
                 renderTarget,
                 CompatibleRenderTargetOptions.None,
                 new Size2F((float)size.Width, (float)size.Height));
-            return new D2DRenderTargetBitmapImpl(imagingFactory, dwriteFactory, bitmapRenderTarget);
+            return new D2DRenderTargetBitmapImpl(bitmapRenderTarget);
         }
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(
-                visualBrushRenderer,
-                this,
-                _target,
-                _dwriteFactory,
-                WicImagingFactory);
+            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
         }
 
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
-            return CreateCompatible(WicImagingFactory, _dwriteFactory, _target, size);
+            return CreateCompatible(_renderTarget, size);
         }
 
         public override void Dispose()
         {
-            _target.Dispose();
+            _renderTarget.Dispose();
         }
 
         public override OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target)
         {
-            return new OptionalDispose<D2DBitmap>(_target.Bitmap, false);
+            return new OptionalDispose<D2DBitmap>(_renderTarget.Bitmap, false);
         }
     }
 }

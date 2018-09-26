@@ -6,7 +6,8 @@
 -->
 
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib">
   <Style Selector="DatePicker">
 
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
@@ -28,7 +29,7 @@
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Margin="0"
-                        Background="#FFFFFFFF"
+                        Background="{DynamicResource ThemeControlLightBrush}"
                         ColumnDefinitions="*,*,*,*"
                         RowDefinitions="23*,19*,19*,19*"
                         ClipToBounds="False">
@@ -54,19 +55,21 @@
                                Stroke="{DynamicResource ThemeBorderDarkBrush}"
                                Fill="{DynamicResource ThemeAccentBrush}">
                     </Rectangle>
-                    <Path HorizontalAlignment="Center"
-                          Margin="4,3,4,3"
-                          VerticalAlignment="Center"
-                          RenderTransformOrigin="0.5,0.5"
-                          Grid.Column="0"
-                          Grid.Row="1"
-                          Grid.ColumnSpan="4"
-                          Grid.RowSpan="3"
-                          Fill="{DynamicResource ThemeBorderDarkBrush}"
-                          Stretch="Fill"
-                          Data="M11.426758,8.4305077 L11.749023,8.4305077 L11.749023,16.331387 L10.674805,16.331387 L10.674805,10.299648 L9.0742188,11.298672 L9.0742188,10.294277 C9.4788408,10.090176 9.9094238,9.8090878 10.365967,9.4510155 C10.82251,9.0929432 11.176106,8.7527733 11.426758,8.4305077 z M14.65086,8.4305077 L18.566387,8.4305077 L18.566387,9.3435936 L15.671368,9.3435936 L15.671368,11.255703 C15.936341,11.058764 16.27293,10.960293 16.681133,10.960293 C17.411602,10.960293 17.969301,11.178717 18.354229,11.615566 C18.739157,12.052416 18.931622,12.673672 18.931622,13.479336 C18.931622,15.452317 18.052553,16.438808 16.294415,16.438808 C15.560365,16.438808 14.951641,16.234707 14.468243,15.826504 L14.881817,14.929531 C15.368796,15.326992 15.837872,15.525723 16.289043,15.525723 C17.298809,15.525723 17.803692,14.895514 17.803692,13.635098 C17.803692,12.460618 17.305971,11.873379 16.310528,11.873379 C15.83071,11.873379 15.399232,12.079271 15.016094,12.491055 L14.65086,12.238613 z" />
+                    <TextBlock Margin="0,-1,0,0"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Grid.Column="0"
+                               Grid.Row="1"
+                               Grid.ColumnSpan="4"
+                               Grid.RowSpan="3"
+                               FontSize="{DynamicResource FontSizeSmall}"
+                               Foreground="{DynamicResource ThemeBorderDarkBrush}">
+                               <TextBlock.Text>
+                                 <Binding Source="{x:Static sys:DateTime.Today}" Path="Day"/>
+                               </TextBlock.Text>
+                    </TextBlock>
 
-                    <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="#FFFFFFFF" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
+                    <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ThemeControlLightBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
                   </Grid>
                 </ControlTemplate>
               </Setter>
@@ -100,7 +103,7 @@
                   Width="20"
                   Classes="CalendarDropDown"
                   Foreground="{TemplateBinding Foreground}"
-                  Background="#00FFFFFF"
+                  Background="Transparent"
                   BorderThickness="0"
                   Margin="2,0,2,0"
                   Padding="0"

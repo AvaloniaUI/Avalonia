@@ -8,8 +8,8 @@ namespace Avalonia.Controls
     {
         static DrawingPresenter()
         {
-            AffectsMeasure(DrawingProperty);
-            AffectsRender(DrawingProperty);
+            AffectsMeasure<DrawingPresenter>(DrawingProperty);
+            AffectsRender<DrawingPresenter>(DrawingProperty);
         }
 
         public static readonly StyledProperty<Drawing> DrawingProperty =
@@ -49,7 +49,7 @@ namespace Avalonia.Controls
             if (Drawing != null)
             {
                 using (context.PushPreTransform(_transform))
-                using (context.PushClip(Bounds))
+                using (context.PushClip(new Rect(Bounds.Size)))
                 {
                     Drawing.Draw(context);
                 }

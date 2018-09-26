@@ -365,7 +365,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Caled when the <see cref="Items"/> property changes.
+        /// Called when the <see cref="Items"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void ItemsChanged(AvaloniaPropertyChangedEventArgs e)

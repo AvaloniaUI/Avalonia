@@ -7,7 +7,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -73,7 +72,7 @@ namespace Avalonia.Controls.Presenters
         {
             ClipToBoundsProperty.OverrideDefaultValue(typeof(ScrollContentPresenter), true);
             ChildProperty.Changed.AddClassHandler<ScrollContentPresenter>(x => x.ChildChanged);
-            AffectsArrange(OffsetProperty);
+            AffectsArrange<ScrollContentPresenter>(OffsetProperty);
         }
 
         /// <summary>

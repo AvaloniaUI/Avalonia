@@ -30,6 +30,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Panel()
         {
+            AffectsRender<Panel>(BackgroundProperty);
             ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
         }
 
@@ -70,6 +71,32 @@ namespace Avalonia.Controls
             }
 
             base.Render(context);
+        }
+
+        /// <summary>
+        /// Marks a property on a child as affecting the parent panel's arrangement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentArrange<TPanel>(params AvaloniaProperty[] properties)
+            where TPanel : class, IPanel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsParentArrangeInvalidate<TPanel>);
+            }
+        }
+
+        /// <summary>
+        /// Marks a property on a child as affecting the parent panel's measurement.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        protected static void AffectsParentMeasure<TPanel>(params AvaloniaProperty[] properties)
+            where TPanel : class, IPanel
+        {
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(AffectsParentMeasureInvalidate<TPanel>);
+            }
         }
 
         /// <summary>
@@ -115,6 +142,22 @@ namespace Avalonia.Controls
             }
 
             InvalidateMeasure();
+        }
+
+        private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
+            where TPanel : class, IPanel
+        {
+            var control = e.Sender as IControl;
+            var panel = control?.VisualParent as TPanel;
+            panel?.InvalidateArrange();
+        }
+
+        private static void AffectsParentMeasureInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)
+            where TPanel : class, IPanel
+        {
+            var control = e.Sender as IControl;
+            var panel = control?.VisualParent as TPanel;
+            panel?.InvalidateMeasure();
         }
     }
 }

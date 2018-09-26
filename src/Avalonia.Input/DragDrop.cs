@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Avalonia.Interactivity;
 using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Input
 {

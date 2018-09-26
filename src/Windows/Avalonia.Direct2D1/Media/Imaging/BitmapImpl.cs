@@ -1,19 +1,12 @@
 ﻿using System;
 using System.IO;
 using Avalonia.Platform;
-using SharpDX.WIC;
 using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media
 {
     public abstract class BitmapImpl : IBitmapImpl, IDisposable
     {
-        public BitmapImpl(ImagingFactory imagingFactory)
-        {
-            WicImagingFactory = imagingFactory;
-        }
-
-        public ImagingFactory WicImagingFactory { get; }
         public abstract int PixelWidth { get; }
         public abstract int PixelHeight { get; }
 

@@ -6,27 +6,15 @@ namespace RenderDemo.ViewModels
 {
     public class AnimationsPageViewModel : ReactiveObject
     {
-        private string _playStateText = "Pause all animations";
+        private bool _isPlaying = true;
 
-        public AnimationsPageViewModel()
+        private string _playStateText = "Pause animations on this page";
+
+        public void TogglePlayState()
         {
-            ToggleGlobalPlayState = ReactiveCommand.Create(()=>TogglePlayState());
-        }
-
-        void TogglePlayState()
-        {
-            switch (Timing.GetGlobalPlayState())
-            {
-                case PlayState.Run:
-                    PlayStateText = "Resume all animations";
-                    Timing.SetGlobalPlayState(PlayState.Pause);
-                    break;
-
-                case PlayState.Pause:
-                    PlayStateText = "Pause all animations";
-                    Timing.SetGlobalPlayState(PlayState.Run);
-                    break;
-            }
+            PlayStateText = _isPlaying
+                ? "Resume animations on this page" : "Pause animations on this page";
+            _isPlaying = !_isPlaying;
         }
 
         public string PlayStateText
@@ -34,7 +22,5 @@ namespace RenderDemo.ViewModels
             get { return _playStateText; }
             set { this.RaiseAndSetIfChanged(ref _playStateText, value); }
         }
-
-        public ReactiveCommand ToggleGlobalPlayState { get; }
-     }
+    }
 }

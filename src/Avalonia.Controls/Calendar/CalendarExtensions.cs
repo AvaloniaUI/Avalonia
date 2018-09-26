@@ -3,10 +3,7 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using System;
-using System.Collections.Generic;
 using Avalonia.Input;
-using System.Diagnostics;
 
 namespace Avalonia.Controls.Primitives
 {

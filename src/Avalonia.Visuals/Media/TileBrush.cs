@@ -79,6 +79,13 @@ namespace Avalonia.Media
 
         static TileBrush()
         {
+            AffectsRender<TileBrush>(
+                AlignmentXProperty,
+                AlignmentYProperty,
+                DestinationRectProperty,
+                SourceRectProperty,
+                StretchProperty,
+                TileModeProperty);
             RenderOptions.BitmapInterpolationModeProperty.OverrideDefaultValue<TileBrush>(BitmapInterpolationMode.Default);
         }
 

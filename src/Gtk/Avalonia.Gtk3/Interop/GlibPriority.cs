@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Threading;
 
 namespace Avalonia.Gtk3.Interop

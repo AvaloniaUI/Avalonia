@@ -1,10 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Metadata;
 using System;
 using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
+using Avalonia.Animation.Utils;
 
 namespace Avalonia.Animation
 {
@@ -14,7 +14,6 @@ namespace Avalonia.Animation
     public abstract class Transition<T> : AvaloniaObject, ITransition
     {
         private AvaloniaProperty _prop;
-        private Easing _easing;
 
         /// <summary>
         /// Gets the duration of the animation.
@@ -24,17 +23,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets the easing class to be used.
         /// </summary>
-        public Easing Easing
-        {
-            get
-            {
-                return _easing ?? (_easing = new LinearEasing());
-            }
-            set
-            {
-                _easing = value;
-            }
-        }
+        public Easing Easing { get; set; } = new LinearEasing();
 
         /// <inheritdocs/>
         public AvaloniaProperty Property
@@ -59,10 +48,10 @@ namespace Avalonia.Animation
         public abstract IObservable<T> DoTransition(IObservable<double> progress, T oldValue, T newValue);
 
         /// <inheritdocs/>
-        public virtual IDisposable Apply(Animatable control, object oldValue, object newValue)
+        public virtual IDisposable Apply(Animatable control, IClock clock, object oldValue, object newValue)
         {
-            var transition = DoTransition(Timing.GetTransitionsTimer(control, Duration, TimeSpan.Zero), (T)oldValue, (T)newValue).Select(p => (object)p);
-            return control.Bind(Property, transition, Data.BindingPriority.Animation);
+            var transition = DoTransition(new TransitionInstance(clock, Duration), (T)oldValue, (T)newValue);
+            return control.Bind<T>((AvaloniaProperty<T>)Property, transition, Data.BindingPriority.Animation);
         }
     }
 }

@@ -119,7 +119,7 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     throw new ArgumentException(
                         "No default assembly, entry assembly or explicit assembly specified; " +
-                        "don't know where to look up for the resource, try specifiyng assembly explicitly.");
+                        "don't know where to look up for the resource, try specifying assembly explicitly.");
                 }
 
                 IAssetDescriptor rv;

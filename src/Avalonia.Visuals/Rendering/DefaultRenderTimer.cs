@@ -2,31 +2,33 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
-    /// Defines a default render loop that uses a standard timer.
+    /// Defines a default render timer that uses a standard timer.
     /// </summary>
     /// <remarks>
     /// This class may be overridden by platform implementations to use a specialized timer
     /// implementation.
     /// </remarks>
-    public class DefaultRenderLoop : IRenderLoop
+    public class DefaultRenderTimer : IRenderTimer
     {
         private IRuntimePlatform _runtime;
         private int _subscriberCount;
-        private EventHandler<EventArgs> _tick;
+        private Action<TimeSpan> _tick;
         private IDisposable _subscription;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultRenderLoop"/> class.
+        /// Initializes a new instance of the <see cref="DefaultRenderTimer"/> class.
         /// </summary>
         /// <param name="framesPerSecond">
         /// The number of frames per second at which the loop should run.
         /// </param>
-        public DefaultRenderLoop(int framesPerSecond)
+        public DefaultRenderTimer(int framesPerSecond)
         {
             FramesPerSecond = framesPerSecond;
         }
@@ -37,7 +39,7 @@ namespace Avalonia.Rendering
         public int FramesPerSecond { get; }
 
         /// <inheritdoc/>
-        public event EventHandler<EventArgs> Tick
+        public event Action<TimeSpan> Tick
         {
             add
             {
@@ -76,14 +78,16 @@ namespace Avalonia.Rendering
         /// This can be overridden by platform implementations to use a specialized timer
         /// implementation.
         /// </remarks>
-        protected virtual IDisposable StartCore(Action tick)
+        protected virtual IDisposable StartCore(Action<TimeSpan> tick)
         {
             if (_runtime == null)
             {
                 _runtime = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
-            return _runtime.StartSystemTimer(TimeSpan.FromSeconds(1.0 / FramesPerSecond), tick);
+            return _runtime.StartSystemTimer(
+                TimeSpan.FromSeconds(1.0 / FramesPerSecond),
+                () => tick(TimeSpan.FromMilliseconds(Environment.TickCount)));
         }
 
         /// <summary>
@@ -95,9 +99,9 @@ namespace Avalonia.Rendering
             _subscription = null;
         }
 
-        private void InternalTick()
+        private void InternalTick(TimeSpan tickCount)
         {
-            _tick(this, EventArgs.Empty);
+            _tick(tickCount);
         }
     }
 }

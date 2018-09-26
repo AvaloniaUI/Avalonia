@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Avalonia.Data;
-using Avalonia.Logging;
 
 namespace Avalonia
 {
@@ -113,12 +112,16 @@ namespace Avalonia
 
             return Disposable.Create(() =>
             {
-                Bindings.Remove(node);
-                entry.Dispose();
-
-                if (entry.Index >= ActiveBindingIndex)
+                if (!entry.HasCompleted)
                 {
-                    ActivateFirstBinding();
+                    Bindings.Remove(node);
+
+                    entry.Dispose();
+
+                    if (entry.Index >= ActiveBindingIndex)
+                    {
+                        ActivateFirstBinding();
+                    }
                 }
             });
         }

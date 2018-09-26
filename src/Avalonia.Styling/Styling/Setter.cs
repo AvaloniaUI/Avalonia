@@ -3,7 +3,6 @@
 
 using System;
 using System.Reactive.Disposables;
-using System.Reactive.Subjects;
 using System.Reflection;
 using Avalonia.Animation;
 using Avalonia.Controls;

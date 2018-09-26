@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Controls.Platform;
+﻿using Avalonia.Controls.Platform;
 
 namespace Avalonia.Controls
 {

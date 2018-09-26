@@ -80,6 +80,7 @@
   </Style>
   <Style Selector="Slider /template/ RepeatButton.repeattrack">
     <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLightBrush}"/>
     <Setter Property="Template">
         <ControlTemplate>
             <Border Background="{TemplateBinding Background}" />

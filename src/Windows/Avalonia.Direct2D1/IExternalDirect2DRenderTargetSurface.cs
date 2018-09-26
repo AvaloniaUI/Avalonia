@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Avalonia.Direct2D1
+﻿namespace Avalonia.Direct2D1
 {
     public interface IExternalDirect2DRenderTargetSurface
     {

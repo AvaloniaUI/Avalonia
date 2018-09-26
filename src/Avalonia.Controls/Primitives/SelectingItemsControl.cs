@@ -11,7 +11,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Metadata;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -872,8 +871,8 @@ namespace Avalonia.Controls.Primitives
                         RaisePropertyChanged(SelectedItemProperty, oldItem, item, BindingPriority.LocalValue);
                     }
 
-                    added = e.OldItems;
-                    removed = e.NewItems;
+                    added = e.NewItems;
+                    removed = e.OldItems;
                     break;
             }
 

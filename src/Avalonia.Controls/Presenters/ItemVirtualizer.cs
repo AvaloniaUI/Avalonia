@@ -8,7 +8,6 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -280,6 +279,6 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Invalidates the current scroll.
         /// </summary>
-        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll();
+        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll?.Invoke();
     }
 }

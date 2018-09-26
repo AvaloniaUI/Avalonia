@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using PixelFormat = Avalonia.Platform.PixelFormat;

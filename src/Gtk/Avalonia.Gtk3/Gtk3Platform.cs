@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Gtk3;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Gtk3;
 using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
@@ -56,7 +52,8 @@ namespace Avalonia.Gtk3
                 .Bind<IPlatformSettings>().ToConstant(Instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Instance)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
-                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
 
         }

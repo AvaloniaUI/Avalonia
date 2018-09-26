@@ -1,88 +1,46 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Linq;
-using Avalonia.Data;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
-using Avalonia.Animation;
-using System.Collections.Generic;
-using System.Threading;
-using System.Collections.Concurrent;
+using Avalonia.Data;
 
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Base class for control which can have property transitions.
+    /// Base class for all animatable objects.
     /// </summary>
     public class Animatable : AvaloniaObject
     {
-        /// <summary>
-        /// Initializes this <see cref="Animatable"/> object.
-        /// </summary>
-        public Animatable()
+        public static readonly StyledProperty<IClock> ClockProperty =
+            AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
+
+        public IClock Clock
         {
-            Transitions = new Transitions();
-            AnimatableTimer = Timing.AnimationStateTimer
-                                .Select(p =>
-                                {
-                                    if (this._playState == PlayState.Pause)
-                                    {
-                                        return PlayState.Pause;
-                                    }
-                                    else return p;
-                                })
-                                .Publish()
-                                .RefCount();
+            get => GetValue(ClockProperty);
+            set => SetValue(ClockProperty, value);
         }
-
-        /// <summary>
-        /// The specific animations timer for this control.
-        /// </summary>
-        /// <returns></returns>
-        public IObservable<PlayState> AnimatableTimer;
-
-        /// <summary>
-        /// Defines the <see cref="PlayState"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Animatable, PlayState> PlayStateProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, PlayState>(
-                nameof(PlayState),
-                o => o.PlayState,
-                (o, v) => o.PlayState = v);
-
-        private PlayState _playState = PlayState.Run;
-
-        /// <summary>
-        /// Gets or sets the state of the animation for this
-        /// control.
-        /// </summary>
-        public PlayState PlayState
-        {
-            get { return _playState; }
-            set { SetAndRaise(PlayStateProperty, ref _playState, value); }
-
-        }
-
 
         /// <summary>
         /// Defines the <see cref="Transitions"/> property.
         /// </summary>
-        public static readonly DirectProperty<Animatable, IEnumerable<ITransition>> TransitionsProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, IEnumerable<ITransition>>(
+        public static readonly DirectProperty<Animatable, Transitions> TransitionsProperty =
+            AvaloniaProperty.RegisterDirect<Animatable, Transitions>(
                 nameof(Transitions),
                 o => o.Transitions,
                 (o, v) => o.Transitions = v);
 
-        private IEnumerable<ITransition> _transitions = new AvaloniaList<ITransition>();
+        private Transitions _transitions;
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
-        public IEnumerable<ITransition> Transitions
+        public Transitions Transitions
         {
-            get { return _transitions; }
+            get { return _transitions ?? (_transitions = new Transitions()); }
             set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
         }
 
@@ -99,10 +57,9 @@ namespace Avalonia.Animation
 
                 if (match != null)
                 {
-                    match.Apply(this, e.OldValue, e.NewValue);
+                    match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
                 }
             }
         }
-
     }
 }

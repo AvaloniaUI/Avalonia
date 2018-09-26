@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Avalonia.Collections;
-using System.ComponentModel;
-using Avalonia.Animation.Utils;
-using System.Reactive.Linq;
-using System.Linq;
-using Avalonia.Data;
-using System.Reactive.Disposables;
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Avalonia.Animation
 {
