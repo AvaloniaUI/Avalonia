@@ -26,6 +26,7 @@ namespace Avalonia.Controls
         static Image()
         {
             AffectsRender<Image>(SourceProperty, StretchProperty);
+            AffectsMeasure<Image>(SourceProperty, StretchProperty);
         }
 
         /// <summary>
