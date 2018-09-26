@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia formatted text implementation.
     /// </summary>
-    public class FormattedTextImpl : IFormattedTextImpl
+    public partial class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,
@@ -87,7 +87,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
+            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint, new SKPaint());
 
             var textBounds = textLayout.TextBounds;
 
@@ -548,169 +548,6 @@ namespace Avalonia.Skia
             }
 
             return _rects;
-        }
-
-        private class SKTextLayout
-        {
-            private readonly string _text;
-
-            private readonly SKTypeface _typeface;
-
-            private readonly float _fontSize;
-
-            private readonly Brush _foreground;
-
-            private readonly TextWrapping _wrapping;
-
-            private readonly Size _constraint;
-
-            private readonly List<SKTextLine> _lines = new List<SKTextLine>();
-
-            public SKTextLayout(string text, SKTypeface typeface, float fontSize, TextWrapping wrapping, Size constraint)
-            {
-                _text = text;
-                _typeface = typeface;
-                _fontSize = fontSize;
-                _wrapping = wrapping;
-                _constraint = constraint;
-                BuildUp();
-            }
-
-            public Rect TextBounds { get; private set; }
-
-            private void BuildUp()
-            {
-                var text = _text.AsSpan();
-
-                var currentLine = new SKTextLine(0, text.Length);
-
-                _lines.Add(currentLine);
-
-                for (int index = 0; index < text.Length; index++)
-                {
-                    char c = text[index];
-
-                    if (c == '\r')
-                    {
-                        c = text[index++];
-
-                        if (c == '\n')
-                        {
-                            index++;
-                        }
-
-                        currentLine = currentLine.SliceAt(index);
-
-                        _lines.Add(currentLine);
-                    }
-                }
-
-                foreach (var textLines in _lines)
-                {
-                    textLines.ApplyTextRuns(this);
-                }
-            }
-
-            private class SKTextLine
-            {
-                private readonly List<SKTextRun> _textRuns = new List<SKTextRun>();
-
-                public SKTextLine(int startingIndex, int length)
-                {
-                    StartingIndex = startingIndex;
-
-                    Length = length;
-                }
-
-                public int StartingIndex { get; }
-
-                public int Length { get; private set; }
-
-                public IEnumerable<SKTextRun> TextRuns => _textRuns;
-
-                public void ApplyTextRuns(SKTextLayout textLayout)
-                {
-                    int currentPosition = 0;
-
-                    var text = textLayout._text.Substring(StartingIndex, Length);
-
-                    while (currentPosition < Length)
-                    {
-                        var glyphCount = textLayout._typeface.CountGlyphs(text);
-
-                        if (glyphCount == 0)
-                        {
-                            var fallback = SKFontManager.Default.MatchCharacter(text[currentPosition]);
-
-                            glyphCount = fallback.CountGlyphs(text);
-                        }
-
-                        if (currentPosition != Length)
-                        {
-                            text = text.Substring(currentPosition, glyphCount);
-                        }
-
-                        var currentRun = new SKTextRun(
-                            text,
-                            new SKTextFormat(textLayout._typeface, textLayout._fontSize));
-
-                        _textRuns.Add(currentRun);
-
-                        currentPosition += glyphCount;
-                    }
-                }
-
-                public SKTextLine SliceAt(int index)
-                {
-                    var length = Length - index;
-
-                    Length = Length - length;
-
-                    return new SKTextLine(index, length);
-                }              
-            }
-        }
-
-        private class SKTextFormat
-        {
-            public SKTextFormat(SKTypeface typeface, float fontSize)
-            {
-                Typeface = typeface;
-                FontSize = fontSize;
-            }
-
-            public SKTypeface Typeface { get; }
-
-            public float FontSize { get; }
-        }
-
-        private class SKTextRun
-        {
-            public SKTextRun(string text, SKTextFormat textFormat)
-            {
-                Text = text;
-
-                TextFormat = textFormat;               
-            }
-
-            public string Text { get; }
-
-            public SKTextFormat TextFormat { get; }
-
-            public Brush DrawingEffect { get; }
-
-            public SKFontMetrics FontMetrics { get; private set; }
-
-            public float Width { get; private set; }
-
-            public void BuildUp(SKPaint paint)
-            {
-                paint.Typeface = TextFormat.Typeface;
-
-                FontMetrics = paint.FontMetrics;
-
-                Width = paint.MeasureText(Text);
-            }
         }
 
         private void Rebuild()
