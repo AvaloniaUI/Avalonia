@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia formatted text implementation.
     /// </summary>
-    public partial class FormattedTextImpl : IFormattedTextImpl
+    public class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,
@@ -87,9 +87,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint, new SKPaint());
-
-            var textBounds = textLayout.TextBounds;
+            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
 
             Rebuild();
         }
