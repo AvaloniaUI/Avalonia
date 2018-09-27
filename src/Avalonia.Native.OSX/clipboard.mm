@@ -24,7 +24,9 @@ public:
 
     virtual HRESULT Clear()
     {
-        [[NSPasteboard generalPasteboard] clearContents];
+        @autoreleasepool {
+            [[NSPasteboard generalPasteboard] clearContents];
+        }
         return S_OK;
     }
 };
