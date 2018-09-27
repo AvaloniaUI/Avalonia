@@ -217,6 +217,7 @@ AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
 {
     virtual HRESULT GetText (void** retOut) = 0;
     virtual HRESULT SetText (char* text) = 0;
+    virtual HRESULT Clear() = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

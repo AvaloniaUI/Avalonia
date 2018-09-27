@@ -21,17 +21,26 @@ namespace Avalonia.Native
 
         public Task ClearAsync()
         {
+            _native.Clear();
             return Task.CompletedTask;
         }
 
         public Task<string> GetTextAsync()
         {
             var outPtr = _native.GetText();
+<<<<<<< Updated upstream
             return Task.FromResult(Marshal.PtrToStringAnsi(outPtr));
+=======
+            var text = Marshal.PtrToStringAnsi(outPtr);
+            return Task.FromResult(text);
+>>>>>>> Stashed changes
         }
 
         public Task SetTextAsync(string text)
         {
+            _native.Clear();
+            if(text != null)
+                _native.SetText(text);
             return Task.CompletedTask;
         }
     }
