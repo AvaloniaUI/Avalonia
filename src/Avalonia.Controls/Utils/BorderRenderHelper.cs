@@ -88,24 +88,82 @@ namespace Avalonia.Controls.Utils
             }
             else
             {
-                var borderThickness = borders.Left;
-                var cornerRadius = (float)radii.TopLeft;
-                var rect = new Rect(size);
+                var borderThickness = borders.Top;
+                var top = borderThickness * 0.5;
+                var cornerRadius = (float)Math.Max(0, radii.TopLeft - borderThickness - top);
 
                 if (background != null)
                 {
-                    context.FillRectangle(background, rect.Deflate(borders), cornerRadius);
+                    var topLeft = new Point(borders.Left, borders.Top);
+                    var bottomRight = new Point(size.Width - borders.Right, size.Height - borders.Bottom);
+                    var innerRect = new Rect(topLeft, bottomRight);
+                    context.FillRectangle(background, innerRect, cornerRadius);
                 }
 
                 if (borderBrush != null && borderThickness > 0)
                 {
-                    context.DrawRectangle(new Pen(borderBrush, borderThickness), rect.Deflate(borderThickness), cornerRadius);
+                    var topLeft = new Point(top, top);
+                    var bottomRight = new Point(size.Width - top, size.Height - top);
+                    var outerRect = new Rect(topLeft, bottomRight);
+                    context.DrawRectangle(new Pen(borderBrush, borderThickness), outerRect, (float)radii.TopLeft);
                 }
             }
+        }    
+
+        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
+        {
+            context.BeginFigure(keypoints.TopLeft, true);
+
+            // Top
+            context.LineTo(keypoints.TopRight);
+
+            // TopRight corner
+            var radiusX = boundRect.TopRight.X - keypoints.TopRight.X;
+            var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            // Right
+            context.LineTo(keypoints.RightBottom);
+
+            // BottomRight corner
+            radiusX = boundRect.BottomRight.X - keypoints.BottomRight.X;
+            radiusY = boundRect.BottomRight.Y - keypoints.RightBottom.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.BottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            // Bottom
+            context.LineTo(keypoints.BottomLeft);
+
+            // BottomLeft corner
+            radiusX = keypoints.BottomLeft.X - boundRect.BottomLeft.X;
+            radiusY = boundRect.BottomLeft.Y - keypoints.LeftBottom.Y;
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.LeftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            // Left
+            context.LineTo(keypoints.LeftTop);
+
+            // TopLeft corner
+            radiusX = keypoints.TopLeft.X - boundRect.TopLeft.X;
+            radiusY = keypoints.LeftTop.Y - boundRect.TopLeft.Y;
+
+            if (radiusX != 0 || radiusY != 0)
+            {
+                context.ArcTo(keypoints.TopLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
+            }
+
+            context.EndFigure(true);
         }
 
         private class BorderGeometryKeypoints
-        {           
+        {
             internal BorderGeometryKeypoints(Rect boundRect, Thickness borderThickness, CornerRadius cornerRadius, bool inner)
             {
                 var left = 0.5 * borderThickness.Left;
@@ -135,25 +193,24 @@ namespace Avalonia.Controls.Utils
                 }
                 else
                 {
-                   
                     leftTopY = cornerRadius.TopLeft + top + boundRect.TopLeft.Y;
-                    topLeftX = cornerRadius.TopLeft + left + boundRect.TopLeft.X;                   
+                    topLeftX = cornerRadius.TopLeft + left + boundRect.TopLeft.X;
                     topRightX = boundRect.Width - (cornerRadius.TopRight + right) + boundRect.TopLeft.X;
-                    rightTopY = cornerRadius.TopRight + top + boundRect.TopLeft.Y;                                   
+                    rightTopY = cornerRadius.TopRight + top + boundRect.TopLeft.Y;
                     rightBottomY = boundRect.Height - (cornerRadius.BottomRight + bottom) + boundRect.TopLeft.Y;
-                    bottomRightX = boundRect.Width - (cornerRadius.BottomRight + right) + boundRect.TopLeft.X;                
-                    bottomLeftX = cornerRadius.BottomLeft + left + boundRect.TopLeft.X;               
+                    bottomRightX = boundRect.Width - (cornerRadius.BottomRight + right) + boundRect.TopLeft.X;
+                    bottomLeftX = cornerRadius.BottomLeft + left + boundRect.TopLeft.X;
                     leftBottomY = boundRect.Height - (cornerRadius.BottomLeft + bottom) + boundRect.TopLeft.Y;
-                }              
+                }
 
-                var leftTopX = boundRect.TopLeft.X;               
-                var topLeftY = boundRect.TopLeft.Y;              
+                var leftTopX = boundRect.TopLeft.X;
+                var topLeftY = boundRect.TopLeft.Y;
                 var topRightY = boundRect.TopLeft.Y;
-                var rightTopX = boundRect.Width + boundRect.TopLeft.X;              
-                var rightBottomX = boundRect.Width + boundRect.TopLeft.X;                             
-                var bottomRightY = boundRect.Height + boundRect.TopLeft.Y;            
+                var rightTopX = boundRect.Width + boundRect.TopLeft.X;
+                var rightBottomX = boundRect.Width + boundRect.TopLeft.X;
+                var bottomRightY = boundRect.Height + boundRect.TopLeft.Y;
                 var bottomLeftY = boundRect.Height + boundRect.TopLeft.Y;
-                var leftBottomX = boundRect.TopLeft.X;           
+                var leftBottomX = boundRect.TopLeft.X;
 
                 LeftTop = new Point(leftTopX, leftTopY);
                 TopLeft = new Point(topLeftX, topLeftY);
@@ -164,7 +221,7 @@ namespace Avalonia.Controls.Utils
                 BottomLeft = new Point(bottomLeftX, bottomLeftY);
                 LeftBottom = new Point(leftBottomX, leftBottomY);
 
-                //Fix overlap
+                // Fix overlap
                 if (TopLeft.X > TopRight.X)
                 {
                     var scaledX = topLeftX / (topLeftX + topRightX) * boundRect.Width;
@@ -194,66 +251,21 @@ namespace Avalonia.Controls.Utils
                 }
             }
 
-            internal Point LeftTop { get; private set; }
-            internal Point TopLeft { get; private set; }
-            internal Point TopRight { get; private set; }
-            internal Point RightTop { get; private set; }
-            internal Point RightBottom { get; private set; }
-            internal Point BottomRight { get; private set; }
-            internal Point BottomLeft { get; private set; }
-            internal Point LeftBottom { get; private set; }
-        }
+            internal Point LeftTop { get; }
 
-        private static void CreateGeometry(StreamGeometryContext context, Rect boundRect, BorderGeometryKeypoints keypoints)
-        {
-            context.BeginFigure(keypoints.TopLeft, true);
+            internal Point TopLeft { get; }
 
-            //Top
-            context.LineTo(keypoints.TopRight);
+            internal Point TopRight { get; }
 
-            //TopRight corner
-            var radiusX = boundRect.TopRight.X - keypoints.TopRight.X;
-            var radiusY = keypoints.RightTop.Y - boundRect.TopRight.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(keypoints.RightTop, new Size(radiusY, radiusY), 0, false, SweepDirection.Clockwise);
-            }
+            internal Point RightTop { get; }
 
-            //Right
-            context.LineTo(keypoints.RightBottom);
+            internal Point RightBottom { get; }
 
-            //BottomRight corner
-            radiusX = boundRect.BottomRight.X - keypoints.BottomRight.X;
-            radiusY = boundRect.BottomRight.Y - keypoints.RightBottom.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(keypoints.BottomRight, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
+            internal Point BottomRight { get; }
 
-            //Bottom
-            context.LineTo(keypoints.BottomLeft);
+            internal Point BottomLeft { get; }
 
-            //BottomLeft corner
-            radiusX = keypoints.BottomLeft.X - boundRect.BottomLeft.X;
-            radiusY = boundRect.BottomLeft.Y - keypoints.LeftBottom.Y;
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(keypoints.LeftBottom, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            //Left
-            context.LineTo(keypoints.LeftTop);
-
-            //TopLeft corner
-            radiusX = keypoints.TopLeft.X - boundRect.TopLeft.X;
-            radiusY = keypoints.LeftTop.Y - boundRect.TopLeft.Y;
-
-            if (radiusX != 0 || radiusY != 0)
-            {
-                context.ArcTo(keypoints.TopLeft, new Size(radiusX, radiusY), 0, false, SweepDirection.Clockwise);
-            }
-
-            context.EndFigure(true);
+            internal Point LeftBottom { get; }
         }
     }
 }
