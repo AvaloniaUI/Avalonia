@@ -10,6 +10,7 @@ struct IAvnPlatformThreadingInterface;
 struct IAvnSystemDialogEvents;
 struct IAvnSystemDialogs;
 struct IAvnScreens;
+struct IAvnClipboard;
 
 struct AvnSize
 {
@@ -91,6 +92,7 @@ public:
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
+    virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -209,7 +211,13 @@ AVNCOM(IAvnScreens, 0e) : virtual IUnknown
 {
     virtual HRESULT GetScreenCount (int* ret) = 0;
     virtual HRESULT GetScreen (int index, AvnScreen* ret) = 0;
-    
+};
+
+AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
+{
+    virtual HRESULT GetText (void** retOut) = 0;
+    virtual HRESULT SetText (char* text) = 0;
+    virtual HRESULT Clear() = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
