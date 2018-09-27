@@ -15,6 +15,8 @@ namespace Avalonia.Direct2D1.Media
     /// </summary>
     public class WicBitmapImpl : BitmapImpl
     {
+        private BitmapDecoder _decoder;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WicBitmapImpl"/> class.
         /// </summary>
@@ -33,10 +35,10 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="stream">The stream to read the bitmap from.</param>
         public WicBitmapImpl(Stream stream)
         {
-            using (BitmapDecoder decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad))
-            {
-                WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
-            }
+            // https://stackoverflow.com/questions/48982749/decoding-image-from-stream-using-wic/48982889#48982889
+            _decoder = new BitmapDecoder(Direct2D1Platform.ImagingFactory, stream, DecodeOptions.CacheOnLoad);
+
+            WicImpl = new Bitmap(Direct2D1Platform.ImagingFactory, _decoder.GetFrame(0), BitmapCreateCacheOption.CacheOnLoad);
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace Avalonia.Direct2D1.Media
                     UnmanagedMethods.CopyMemory(
                         (l.Data.DataPointer + row * l.Stride),
                         (data + row * stride),
-                        (UIntPtr) l.Data.Pitch);
+                        (UIntPtr)l.Data.Pitch);
                 }
             }
         }
@@ -92,6 +94,7 @@ namespace Avalonia.Direct2D1.Media
         public override void Dispose()
         {
             WicImpl.Dispose();
+            _decoder?.Dispose();
         }
 
         /// <summary>
