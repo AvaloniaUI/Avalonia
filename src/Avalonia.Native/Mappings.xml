@@ -23,5 +23,6 @@
         <map interface="*.Callback" callback="true" autogen-shadow="true"/>
         <map param=".*::.*::ppv" return="true"/>
         <map param=".*::.*::ret" return="true"/>
+        <map param=".*::.*::retOut" attribute="out" return="true"/>
     </mapping>
 </config>
