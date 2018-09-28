@@ -96,13 +96,15 @@ namespace Avalonia.Rendering
                     {
                         _dispatcher.Post(() =>
                         {
-                            foreach (var i in _items)
+                            for (var i = 0; i < _items.Count; ++i)
                             {
-                                if (i.NeedsUpdate)
+                                var item = _items[i];
+
+                                if (item.NeedsUpdate)
                                 {
                                     try
                                     {
-                                        i.Update(time);
+                                        item.Update(time);
                                     }
                                     catch (Exception ex)
                                     {
