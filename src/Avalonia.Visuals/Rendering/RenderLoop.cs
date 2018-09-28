@@ -19,7 +19,8 @@ namespace Avalonia.Rendering
         private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private IRenderTimer _timer;
-        private int inTick;
+        private int _inTick;
+        private int _inUpdate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderLoop"/> class.
@@ -84,21 +85,35 @@ namespace Avalonia.Rendering
             }
         }
 
-        private async void TimerTick(TimeSpan time)
+        private void TimerTick(TimeSpan time)
         {
-            if (Interlocked.CompareExchange(ref inTick, 1, 0) == 0)
+            if (Interlocked.CompareExchange(ref _inTick, 1, 0) == 0)
             {
                 try
                 {
-                    if (_items.Any(item => item.NeedsUpdate))
+                    if (_items.Any(item => item.NeedsUpdate) &&
+                        Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
                     {
-                        await _dispatcher.InvokeAsync(() =>
+                        System.Diagnostics.Debug.WriteLine("Posted update");
+                        _dispatcher.Post(() =>
                         {
                             foreach (var i in _items)
                             {
-                                i.Update(time);
+                                if (i.NeedsUpdate)
+                                {
+                                    try
+                                    {
+                                        i.Update(time);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.Error(LogArea.Visual, this, "Exception in render update: {Error}", ex);
+                                    }
+                                }
                             }
-                        }, DispatcherPriority.Render).ConfigureAwait(false);
+
+                            Interlocked.Exchange(ref _inUpdate, 0);
+                        }, DispatcherPriority.Render);
                     }
 
                     foreach (var i in _items)
@@ -112,7 +127,7 @@ namespace Avalonia.Rendering
                 }
                 finally
                 {
-                    Interlocked.Exchange(ref inTick, 0);
+                    Interlocked.Exchange(ref _inTick, 0);
                 }
             }
         }
