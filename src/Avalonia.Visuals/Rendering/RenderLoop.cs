@@ -94,7 +94,6 @@ namespace Avalonia.Rendering
                     if (_items.Any(item => item.NeedsUpdate) &&
                         Interlocked.CompareExchange(ref _inUpdate, 1, 0) == 0)
                     {
-                        System.Diagnostics.Debug.WriteLine("Posted update");
                         _dispatcher.Post(() =>
                         {
                             foreach (var i in _items)
