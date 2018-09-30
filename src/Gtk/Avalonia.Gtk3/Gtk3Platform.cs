@@ -7,6 +7,7 @@ using Avalonia.Gtk3;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using Avalonia.Rendering;
@@ -56,7 +57,7 @@ namespace Avalonia.Gtk3
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
-
+            EglGlPlatformFeature.TryInitialize();
         }
 
         public IWindowImpl CreateWindow() => new WindowImpl();
