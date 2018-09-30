@@ -49,7 +49,7 @@ namespace Avalonia
         /// Instructs the <see cref="AppBuilder"/> to use the best settings for the platform.
         /// </summary>
         /// <returns>An <see cref="AppBuilder"/> instance.</returns>
-        public AppBuilder UsePlatformDetect()
+        public AppBuilder UseSubsystemsFromStartupDirectory()
         {
             var os = RuntimePlatform.GetRuntimeInfo().OperatingSystem;
 

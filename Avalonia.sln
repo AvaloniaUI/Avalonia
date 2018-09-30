@@ -193,7 +193,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packages", "Packages", "{E8
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia", "packages\Avalonia\Avalonia.csproj", "{D49233F8-F29C-47DD-9975-C4C9E4502720}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Desktop", "packages\Avalonia.Desktop\Avalonia.Desktop.csproj", "{3C471044-3640-45E3-B1B2-16D2FF8399EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Desktop", "src\Avalonia.Desktop\Avalonia.Desktop.csproj", "{3C471044-3640-45E3-B1B2-16D2FF8399EE}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

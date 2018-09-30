@@ -6,6 +6,7 @@ namespace Avalonia.Designer.HostApp
 {
     class Program
     {
+#if NET461
         private static string s_appDir;
         
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -35,6 +36,9 @@ namespace Avalonia.Designer.HostApp
         }
 
         static void Exec(string[] args)
+#else
+        public static void Main(string[] args)
+#endif
         {
             Avalonia.DesignerSupport.Remote.RemoteDesignerEntryPoint.Main(args);
         }

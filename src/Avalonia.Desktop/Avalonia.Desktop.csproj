@@ -9,5 +9,6 @@
       <ProjectReference Include="../../src/Skia/Avalonia.Skia/Avalonia.Skia.csproj" />
       <ProjectReference Include="../../src/Gtk/Avalonia.Gtk3/Avalonia.Gtk3.csproj" />
       <ProjectReference Include="../../src/OSX/Avalonia.MonoMac/Avalonia.MonoMac.csproj" />
+      <ProjectReference Include="../../packages/Avalonia/Avalonia.csproj" />
   </ItemGroup>
 </Project>
