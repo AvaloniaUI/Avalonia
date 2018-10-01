@@ -31,6 +31,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => TemplateContent.Load(Content);
+        public IControl Build(object data) => Content.Load();
     }
 }
