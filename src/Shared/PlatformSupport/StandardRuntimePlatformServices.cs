@@ -17,7 +17,7 @@ namespace Avalonia.Shared.PlatformSupport
 #if __IOS__
                     new IOSLoader()
 #else
-                    standardPlatform.GetRuntimeInfo().OperatingSystem == OperatingSystemType.WinNT
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                         ? (IDynamicLibraryLoader)new Win32Loader()
                         : new UnixLoader()
 #endif
