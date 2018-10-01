@@ -12,20 +12,28 @@ namespace Avalonia.OpenGL
 
         public static void TryInitialize()
         {
+            var feature = TryCreate();
+            if (feature != null)
+                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(feature);
+        }
+        
+        public static EglGlPlatformFeature TryCreate()
+        {
             try
             {
                 var disp = new EglDisplay();
                 var ctx = disp.CreateContext(null);
-                AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(new EglGlPlatformFeature
+                return new EglGlPlatformFeature
                 {
                     Display = disp,
                     ImmediateContext = ctx,
                     DeferredContext = disp.CreateContext(ctx)
-                });
+                };
             }
             catch(Exception e)
             {
                 Logger.Error("OpenGL", null, "Unable to initialize EGL-based rendering: {0}", e);
+                return null;
             }
         }
     }

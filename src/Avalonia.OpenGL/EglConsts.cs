@@ -174,5 +174,23 @@ namespace Avalonia.OpenGL
         public const int EGL_NO_IMAGE = 0;
 
 
+        public const int EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE = 0x3207;
+        public const int EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE = 0x3208;
+        
+        //EGL_ANGLE_platform_angle
+        public const int EGL_PLATFORM_ANGLE_ANGLE = 0x3202;
+        public const int EGL_PLATFORM_ANGLE_TYPE_ANGLE = 0x3203;
+        public const int EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE = 0x3204;
+        public const int EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE = 0x3205;
+        public const int EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED = 0x3451;
+        public const int EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE = 0x3206;
+        public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE = 0x320A;
+        public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE = 0x345E;
+        
+        //EGL_ANGLE_platform_angle_d3d
+        public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE = 0x3209;
+        public const int EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE = 0x320F;
+        public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE = 0x320B;
+        public const int EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE = 0x320C;
     }
 }

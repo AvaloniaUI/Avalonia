@@ -16,21 +16,21 @@ namespace Avalonia.OpenGL
         {
         }
 
-        static Func<string, IntPtr> Load()
+        static Func<string, bool, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
             if(os == OperatingSystemType.Linux || os == OperatingSystemType.Android)
                 return Load("libEGL.so.1");
             if (os == OperatingSystemType.WinNT)
-                return Load("libEGL.dll");
+                return Load(@"libegl.dll");
             throw new PlatformNotSupportedException();
         }
 
-        static Func<string, IntPtr> Load(string library)
+        static Func<string, bool, IntPtr> Load(string library)
         {
             var dyn = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
             var lib = dyn.LoadLibrary(library);
-            return s => dyn.GetProcAddress(lib, s, false);
+            return (s, o) => dyn.GetProcAddress(lib, s, o);
         }
         
         
@@ -38,6 +38,10 @@ namespace Avalonia.OpenGL
         public delegate IntPtr EglGetDisplay(IntPtr nativeDisplay);
         [EntryPoint("eglGetDisplay")]
         public EglGetDisplay GetDisplay { get; }
+        
+        public delegate IntPtr EglGetPlatformDisplayEXT(int platform, IntPtr nativeDisplay, int[] attrs);
+        [EntryPoint("eglGetPlatformDisplayEXT", true)]
+        public EglGetPlatformDisplayEXT GetPlatformDisplayEXT { get; }
 
         public delegate bool EglInitialize(IntPtr display, out int major, out int minor);
         [EntryPoint("eglInitialize")]

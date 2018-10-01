@@ -6,7 +6,7 @@ namespace Avalonia.OpenGL
 {
     public class GlInterfaceBase
     {
-        public GlInterfaceBase(Func<string, IntPtr> getProcAddress)
+        public GlInterfaceBase(Func<string, bool, IntPtr> getProcAddress)
         {
             foreach (var prop in this.GetType().GetProperties())
             {
@@ -18,8 +18,9 @@ namespace Avalonia.OpenGL
                         BindingFlags.Instance | BindingFlags.NonPublic);
                     if (field == null)
                         throw new InvalidProgramException($"Expected property {prop.Name} to have {fieldName}");
-                    field.SetValue(this,
-                        Marshal.GetDelegateForFunctionPointer(getProcAddress(a.EntryPoint), prop.PropertyType));
+                    var proc = getProcAddress(a.EntryPoint, a.Optional);
+                    if (proc != IntPtr.Zero)
+                        field.SetValue(this, Marshal.GetDelegateForFunctionPointer(proc, prop.PropertyType));
                 }
             }
         }

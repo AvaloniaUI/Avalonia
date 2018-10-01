@@ -7,15 +7,15 @@ namespace Avalonia.OpenGL
     
     public class GlInterface : GlInterfaceBase
     {
-        private readonly Func<string, IntPtr> _getProcAddress;
+        private readonly Func<string, bool, IntPtr> _getProcAddress;
 
 
-        public GlInterface(Func<string, IntPtr> getProcAddress) : base(getProcAddress)
+        public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
         {
             _getProcAddress = getProcAddress;
         }
 
-        public IntPtr GetProcAddress(string proc) => _getProcAddress(proc);
+        public IntPtr GetProcAddress(string proc) => _getProcAddress(proc, true);
 
         public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
 

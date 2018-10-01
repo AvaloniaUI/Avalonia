@@ -108,7 +108,7 @@ namespace Avalonia.Skia
         {
             foreach (var surface in surfaces)
             {
-                if (surface is IGlPlatformSurface glSurface)
+                if (surface is IGlPlatformSurface glSurface && GrContext != null)
                 {
                     return new GlRenderTarget(GrContext, glSurface);
                 }

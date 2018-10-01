@@ -14,10 +14,27 @@ namespace Avalonia.OpenGL
         
         public EglDisplay(EglInterface egl)
         {
-            _egl = egl;
-            _display = _egl.GetDisplay(IntPtr.Zero);
+            _egl = egl;  
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && _egl.GetPlatformDisplayEXT != null)
+            {
+                foreach (var dapi in new[] {EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE})
+                {
+                    _display = _egl.GetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero, new[]
+                    {
+                        EGL_PLATFORM_ANGLE_TYPE_ANGLE, dapi, EGL_NONE
+                    });
+                    if(_display != IntPtr.Zero)
+                        break;
+                }
+            }
+
+            if (_display == IntPtr.Zero)
+                _display = _egl.GetDisplay(IntPtr.Zero);
+            
             if(_display == IntPtr.Zero)
                 throw new OpenGlException("eglGetDisplay failed");
+            
             if (!_egl.Initialize(_display, out var major, out var minor))
                 throw new OpenGlException("eglInitialize failed");
 
@@ -67,10 +84,16 @@ namespace Avalonia.OpenGL
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
             
-            GlInterface = new GlInterface(proc =>
+            GlInterface = new GlInterface((proc, optional) =>
             {
+
                 using (var u = new Utf8Buffer(proc))
-                    return _egl.GetProcAddress(u);
+                {
+                    var rv = _egl.GetProcAddress(u);
+                    if (rv == IntPtr.Zero && !optional)
+                        throw new OpenGlException("Missing function " + proc);
+                    return rv;
+                }
             });
         }
 
