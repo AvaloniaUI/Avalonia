@@ -133,6 +133,11 @@ namespace Avalonia.Native
                 _parent.Resized?.Invoke(s);
             }
 
+            void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
+            {
+                _parent.PositionChanged?.Invoke(position.ToAvaloniaPoint());
+            }
+
             void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
             {
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
