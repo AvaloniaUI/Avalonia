@@ -40,6 +40,29 @@ namespace Avalonia.Skia
 
         public Rect LayoutBounds { get; }
 
+
+        // ToDo: Use DrawingContextImpl.PaintWrapper
+        public void Draw(SKCanvas canvas, SKPoint origin)
+        {
+            var currentX = origin.X;
+            var currentY = origin.Y;
+
+            foreach (var textLine in TextLines)
+            {
+                var lineX = currentX;
+                var lineY = currentY + textLine.LineMetrics.BaselineOrigin.Y;
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    InitializePaintForTextRun(textRun);
+                    canvas.DrawText(textRun.Text, lineX, lineY, _paint);
+                    lineX += textRun.Width;
+                }
+
+                currentY += textLine.LineMetrics.Size.Height;
+            }
+        }
+
         private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
         {
             return new SKPaint
@@ -68,7 +91,7 @@ namespace Avalonia.Skia
 
             var height = descent - ascent + leading;
 
-            return new SKTextLineMetrics(width, height, new Point(0, -ascent));
+            return new SKTextLineMetrics(width, height, new SKPoint(0, -ascent));
         }
 
         private List<SKTextLine> CreateTextLines()
@@ -168,11 +191,13 @@ namespace Avalonia.Skia
             {
                 var glyphCount = _typeface.CountGlyphs(runText);
 
+                var typeface = _typeface;
+
                 if (glyphCount == 0)
                 {
-                    var fallback = SKFontManager.Default.MatchCharacter(runText[currentPosition]);
+                    typeface = SKFontManager.Default.MatchCharacter(runText[currentPosition]);
 
-                    glyphCount = fallback.CountGlyphs(runText);
+                    glyphCount = typeface.CountGlyphs(runText);
                 }
 
                 if (glyphCount != length)
@@ -182,7 +207,7 @@ namespace Avalonia.Skia
 
                 var currentRun = CreateTextRun(
                     runText,
-                    new SKTextFormat(_typeface, _fontSize));
+                    new SKTextFormat(typeface, _fontSize));
 
                 textRuns.Add(currentRun);
 
@@ -204,5 +229,12 @@ namespace Avalonia.Skia
 
             return new SKTextRun(text, textFormat, fontMetrics, width);
         }
+
+        private void InitializePaintForTextRun(SKTextRun textRun)
+        {
+            _paint.Typeface = textRun.TextFormat.Typeface;
+
+            _paint.TextSize = textRun.TextFormat.FontSize;
+        }       
     }
 }

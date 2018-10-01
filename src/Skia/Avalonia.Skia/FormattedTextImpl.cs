@@ -87,7 +87,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            var textLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
 
             Rebuild();
         }
@@ -95,6 +95,8 @@ namespace Avalonia.Skia
         public Size Constraint => _constraint;
 
         public Size Size => _size;
+
+        public SKTextLayout TextLayout { get; }
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
