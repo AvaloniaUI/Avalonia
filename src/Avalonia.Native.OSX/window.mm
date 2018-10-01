@@ -535,6 +535,12 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super resignKeyWindow];
 }
 
+- (void)windowDidMove:(NSNotification *)notification
+{
+    AvnPoint position;
+    _parent->GetPosition(&position);
+    _parent->BaseEvents->PositionChanged(position);
+}
 @end
 
 class PopupImpl : public WindowBaseImpl, public IAvnPopup

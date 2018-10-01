@@ -132,6 +132,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual void Activated() = 0;
     virtual void Deactivated() = 0;
     virtual void Resized(const AvnSize& size) = 0;
+    virtual void PositionChanged (AvnPoint position) = 0;
     virtual void RawMouseEvent (AvnRawMouseEventType type,
                                 unsigned int timeStamp,
                                 AvnInputModifiers modifiers,
