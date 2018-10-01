@@ -21,10 +21,15 @@ namespace Avalonia.Skia
 
         public SKTextFormat TextFormat { get; }
 
-        public IBrush DrawingEffect { get; }
+        public IBrush DrawingEffect { get; private set; }
 
         public SKFontMetrics FontMetrics { get; }
 
         public float Width { get; }
+
+        public void SetDrawingEffect(IBrush drawingEffect)
+        {
+            DrawingEffect = drawingEffect;
+        }
     }
 }

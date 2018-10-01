@@ -212,7 +212,7 @@ namespace Avalonia.Skia
             {
                 var textImpl = (FormattedTextImpl)text;
                 //textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
-                textImpl.TextLayout.Draw(Canvas, origin.ToSKPoint());
+                textImpl.TextLayout.Draw(this, foreground, Canvas, origin.ToSKPoint());
             }
         }
 

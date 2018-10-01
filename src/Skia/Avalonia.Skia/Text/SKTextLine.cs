@@ -7,11 +7,13 @@ namespace Avalonia.Skia
 {
     public class SKTextLine
     {
-        public SKTextLine(int startingIndex, int length, IReadOnlyList<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
+        private readonly List<SKTextRun> _textRuns;
+
+        public SKTextLine(int startingIndex, int length, List<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
         {
             StartingIndex = startingIndex;
             Length = length;
-            TextRuns = textRuns;
+            _textRuns = textRuns;
             LineMetrics = lineMetrics;
         }
 
@@ -19,8 +21,18 @@ namespace Avalonia.Skia
 
         public int Length { get; }
 
-        public IReadOnlyList<SKTextRun> TextRuns { get; }
+        public IReadOnlyList<SKTextRun> TextRuns => _textRuns;
 
         public SKTextLineMetrics LineMetrics { get; }
+
+        public void RemoveTextRun(int index)
+        {
+            _textRuns.RemoveAt(index);
+        }
+
+        public void InsertTextRun(int index, SKTextRun textRun)
+        {
+            _textRuns.Insert(index, textRun);
+        }
     }
 }

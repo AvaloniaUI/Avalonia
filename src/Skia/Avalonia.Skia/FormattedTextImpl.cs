@@ -76,18 +76,20 @@ namespace Avalonia.Skia
             _wrapping = wrapping;
             _constraint = constraint;
 
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
+
             if (spans != null)
             {
                 foreach (var span in spans)
                 {
-                    if (span.ForegroundBrush != null)
-                    {
-                        SetForegroundBrush(span.ForegroundBrush, span.StartIndex, span.Length);
-                    }
+                    TextLayout.ApplyTextSpan(span);
+
+                    //if (span.ForegroundBrush != null)
+                    //{
+                    //    SetForegroundBrush(span.ForegroundBrush, span.StartIndex, span.Length);
+                    //}
                 }
             }
-
-            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
 
             Rebuild();
         }
