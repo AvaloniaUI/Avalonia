@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Reflection;
-using System.Windows.Markup;
+
+#if SYSTEM_XAML
 using System.Xaml;
+using System.Windows.Markup;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.Context
 {

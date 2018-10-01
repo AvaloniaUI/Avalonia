@@ -1,10 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Windows.Markup;
-using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Context;
+using NameScope = Avalonia.Controls.NameScope;
+
+#if SYSTEM_XAML
+using System.Xaml;
+using System.Windows.Markup;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.Templates
 {

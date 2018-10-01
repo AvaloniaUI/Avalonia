@@ -3,13 +3,17 @@
 
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Windows.Markup;
-using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
+
+#if SYSTEM_XAML
+using System.Xaml;
+using System.Windows.Markup;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {

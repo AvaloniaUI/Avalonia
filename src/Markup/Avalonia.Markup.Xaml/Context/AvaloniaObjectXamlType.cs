@@ -1,7 +1,11 @@
 ﻿using System;
-using System.Xaml;
 using Avalonia.Controls;
-using Avalonia.Styling;
+
+#if SYSTEM_XAML
+using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml.Context
 {

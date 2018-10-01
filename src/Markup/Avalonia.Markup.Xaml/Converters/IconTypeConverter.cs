@@ -4,10 +4,15 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+
+#if SYSTEM_XAML
+using System.Windows.Markup;
+#else
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.Converters
 {

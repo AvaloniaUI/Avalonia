@@ -1,9 +1,14 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
+
+#if SYSTEM_XAML
+using IXamlNameScope = System.Windows.Markup.INameScope;
+#else
+using IXamlNameScope = Portable.Xaml.Markup.INameScope;
+#endif
 
 namespace Avalonia.Markup.Xaml.Context
 {
-    internal class NameScopeAdapter : System.Windows.Markup.INameScope
+    internal class NameScopeAdapter : IXamlNameScope
     {
         public NameScopeAdapter() : this(null) { }
         public NameScopeAdapter(INameScope inner) => Inner = inner ?? new NameScope();

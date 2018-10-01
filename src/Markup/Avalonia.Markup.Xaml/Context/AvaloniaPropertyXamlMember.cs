@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Reflection;
-using System.Xaml;
-using System.Xaml.Schema;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
+
+#if SYSTEM_XAML
+using System.Xaml;
+using System.Xaml.Schema;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Schema;
+#endif
 
 namespace Avalonia.Markup.Xaml.Context
 {

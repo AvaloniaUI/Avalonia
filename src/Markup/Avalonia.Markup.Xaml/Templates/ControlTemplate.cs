@@ -7,9 +7,15 @@ using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 
+#if SYSTEM_XAML
+using AmbientAttribute = System.Windows.Markup.AmbientAttribute;
+#else
+using AmbientAttribute = Portable.Xaml.Markup.AmbientAttribute;
+#endif
+
 namespace Avalonia.Markup.Xaml.Templates
 {
-    [System.Windows.Markup.Ambient]
+    [Ambient]
     public class ControlTemplate : IControlTemplate
     {
         [Content]

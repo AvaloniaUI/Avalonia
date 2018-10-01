@@ -4,14 +4,18 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Logging;
-using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.Utilities;
+
+#if SYSTEM_XAML
+using System.Windows.Markup;
+#else
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.Converters
 {

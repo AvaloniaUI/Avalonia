@@ -2,7 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+#if SYSTEM_XAML
 using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml
 {

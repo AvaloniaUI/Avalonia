@@ -3,7 +3,12 @@
 
 using System;
 using System.ComponentModel;
+
+#if SYSTEM_XAML
 using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml.Templates
 {

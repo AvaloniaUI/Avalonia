@@ -2,8 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Windows.Markup;
 using Avalonia.Data;
+
+#if SYSTEM_XAML
+using System.Windows.Markup;
+#else
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {

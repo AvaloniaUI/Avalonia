@@ -2,11 +2,17 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Xaml;
-using System.Xaml.Schema;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Metadata;
 using Avalonia.Styling;
+
+#if SYSTEM_XAML
+using System.Xaml;
+using System.Xaml.Schema;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Schema;
+#endif
 
 namespace Avalonia.Markup.Xaml.Context
 {

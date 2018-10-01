@@ -1,7 +1,12 @@
 ﻿using System;
-using System.Windows.Markup;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+
+#if SYSTEM_XAML
+using System.Windows.Markup;
+#else
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {

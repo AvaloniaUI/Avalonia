@@ -7,11 +7,16 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Text;
-using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Context;
 using Avalonia.Platform;
+
+#if SYSTEM_XAML
+using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml
 {

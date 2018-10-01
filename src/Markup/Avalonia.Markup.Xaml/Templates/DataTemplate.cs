@@ -3,10 +3,15 @@
 
 using System;
 using System.Reflection;
-using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+
+#if SYSTEM_XAML
+using System.Windows.Markup;
+#else
+using Portable.Xaml.Markup;
+#endif
 
 namespace Avalonia.Markup.Xaml.Templates
 {
