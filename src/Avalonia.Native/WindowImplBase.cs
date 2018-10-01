@@ -162,7 +162,7 @@ namespace Avalonia.Native
 
         public void Activate()
         {
-        
+            _native.Activate();
         }
 
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
