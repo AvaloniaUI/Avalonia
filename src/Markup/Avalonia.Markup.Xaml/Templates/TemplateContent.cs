@@ -1,11 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Context;
-using System.Collections;
 using System.Windows.Markup;
 using System.Xaml;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Context;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
@@ -20,6 +19,7 @@ namespace Avalonia.Markup.Xaml.Templates
             var settings = factory.GetParentSettings();
             settings.ExternalNameScope = _namescope;
             settings.RegisterNamesOnExternalNamescope = true;
+            settings.RootObjectInstance = null;
 
             _writer = factory.GetXamlObjectWriter(settings);
             List = new XamlNodeList(reader.SchemaContext);
@@ -34,7 +34,13 @@ namespace Avalonia.Markup.Xaml.Templates
             var reader = List.GetReader();
 
             _writer.Clear();
-            XamlServices.Transform(reader, _writer, false);
+
+            while (reader.Read())
+            {
+                _writer.WriteNode(reader);
+            }
+
+            //XamlServices.Transform(reader, _writer, false);
 
             var nameScope = _namescope.Extract();
 
@@ -44,11 +50,6 @@ namespace Avalonia.Markup.Xaml.Templates
             }
 
             return (IControl)_writer.Result;
-        }
-
-        public static IControl Load(object templateContent)
-        {
-            return ((TemplateContent)templateContent).Load();
         }
     }
 }
