@@ -34,13 +34,7 @@ namespace Avalonia.Markup.Xaml.Templates
             var reader = List.GetReader();
 
             _writer.Clear();
-
-            while (reader.Read())
-            {
-                _writer.WriteNode(reader);
-            }
-
-            //XamlServices.Transform(reader, _writer, false);
+            XamlServices.Transform(reader, _writer, false);
 
             var nameScope = _namescope.Extract();
 
