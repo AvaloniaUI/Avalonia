@@ -197,13 +197,6 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            _dataTemplate = null;
-        }
-
         /// <summary>
         /// Updates the <see cref="Child"/> control based on the control's <see cref="Content"/>.
         /// </summary>
@@ -268,6 +261,7 @@ namespace Avalonia.Controls.Presenters
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
+            _dataTemplate = null;
             _createdChild = false;
             InvalidateMeasure();
         }
