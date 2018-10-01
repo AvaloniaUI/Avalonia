@@ -510,10 +510,16 @@ namespace Avalonia.Gtk3
                 : new ImmediateRenderer(root);
         }
 
-
-        int IEglWindowGlPlatformSurfaceInfo.PixelWidth => (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Width);
-        int IEglWindowGlPlatformSurfaceInfo.PixelHeight => (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Height);
-        Vector IEglWindowGlPlatformSurfaceInfo.Dpi => new Vector(96*LastKnownScaleFactor, 96 * LastKnownScaleFactor);
+        System.Drawing.Size IEglWindowGlPlatformSurfaceInfo.PixelSize
+        {
+            get
+            {
+                var cs = ClientSize;
+                return new System.Drawing.Size((int)Math.Max(1, LastKnownScaleFactor * cs.Width),
+                    (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Height));
+            }
+        }
+        double IEglWindowGlPlatformSurfaceInfo.Scaling => LastKnownScaleFactor;
         IntPtr IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
     }
 }

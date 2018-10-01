@@ -26,10 +26,12 @@ namespace Avalonia.Skia
             var disp = session.Display;
             var gl = disp.GlInterface;
             gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
+            var size = session.PixelSize;
+            var scaling = session.Scaling;
             GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc
             {
-                Width = session.PixelWidth,
-                Height = session.PixelHeight,
+                Width = size.Width,
+                Height = size.Height,
                 SampleCount = disp.SampleCount,
                 StencilBits = disp.StencilSize,
                 Config = GRPixelConfig.Rgba8888,
@@ -46,7 +48,7 @@ namespace Avalonia.Skia
             {
                 GrContext = _grContext,
                 Canvas = surface.Canvas,
-                Dpi = session.Dpi,
+                Dpi = SkiaPlatform.DefaultDpi * scaling,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
             };

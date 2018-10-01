@@ -5,9 +5,9 @@ namespace Avalonia.OpenGL
     public interface IEglWindowGlPlatformSurfaceInfo
     {
         IntPtr Handle { get; }
-        int PixelWidth { get; }
-        int PixelHeight { get; }
-        Vector Dpi { get; }
+        // TODO: Change to PixelSize struct once https://github.com/AvaloniaUI/Avalonia/pull/1889 is merged
+        System.Drawing.Size PixelSize { get; }
+        double Scaling { get; }
         
     }
     
@@ -73,9 +73,8 @@ namespace Avalonia.OpenGL
                 }
 
                 public IGlDisplay Display => _context.Display;
-                public int PixelWidth => _info.PixelWidth;
-                public int PixelHeight => _info.PixelHeight;
-                public Vector Dpi => _info.Dpi;
+                public System.Drawing.Size PixelSize => _info.PixelSize;
+                public double Scaling => _info.Scaling;
             }
         }
     }
