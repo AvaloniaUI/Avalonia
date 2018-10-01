@@ -4,7 +4,6 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
-using System.Xaml;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -18,6 +17,12 @@ using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
+
+#if SYSTEM_XAML
+using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {

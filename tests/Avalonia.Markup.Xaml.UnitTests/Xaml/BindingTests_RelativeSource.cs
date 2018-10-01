@@ -2,10 +2,15 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
 using Xunit;
+
+#if SYSTEM_XAML
+using System.Xaml;
+#else
+using Portable.Xaml;
+#endif
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {

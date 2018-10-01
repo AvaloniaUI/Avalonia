@@ -3,13 +3,20 @@
 
 using System;
 using System.ComponentModel;
-using System.Windows.Markup;
-using System.Xaml;
 using Avalonia.Collections;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
 using Moq;
 using Xunit;
+
+#if SYSTEM_XAML
+using System.Xaml;
+using System.Windows.Markup;
+#else
+using Portable.Xaml;
+using Portable.Xaml.Markup;
+#endif
+
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
