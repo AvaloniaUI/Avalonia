@@ -104,6 +104,7 @@ namespace Avalonia.Controls
         /// Gets or sets the items to display.
         /// </summary>
         [Content]
+        [RuntimeList]
         public IEnumerable Items
         {
             get { return _items; }

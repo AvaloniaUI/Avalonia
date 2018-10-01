@@ -1,16 +1,16 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.ComponentModel;
+using System.Globalization;
+using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using System;
-using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
 
     public class IconTypeConverter : TypeConverter
     {
@@ -48,7 +48,8 @@ namespace Avalonia.Markup.Xaml.Converters
 
                 default:
                     var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
+                    var uriContext = context.GetService<IUriContext>();
+                    return new WindowIcon(assets.Open(uri, uriContext.BaseUri));
             }
         }
     }

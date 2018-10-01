@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Embedding.Offscreen

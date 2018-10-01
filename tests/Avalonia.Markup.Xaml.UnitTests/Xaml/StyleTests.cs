@@ -1,13 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Xaml;
 using Avalonia.Controls;
-using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Portable.Xaml;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml

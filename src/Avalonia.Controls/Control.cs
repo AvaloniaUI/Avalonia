@@ -1,10 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -19,6 +21,7 @@ namespace Avalonia.Controls
     ///
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// </remarks>
+    [Ambient]
     public class Control : InputElement, IControl, INamed, ISupportInitialize, IVisualBrushInitialize, IRequiresTemplateInSetter
     {
         /// <summary>

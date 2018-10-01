@@ -1,9 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.UnitTests;
-using System;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -94,7 +95,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     </Border>
 </Window>";
                 var loader = new AvaloniaXamlLoader();
-                Assert.Throws<InvalidOperationException>( () => loader.Load(xaml));
+                var ex = Assert.Throws<XamlObjectWriterException>( () => loader.Load(xaml));
+                Assert.IsType<InvalidOperationException>(ex.InnerException);
             }
         }
 

@@ -2,37 +2,48 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
-using System.Collections.Generic;
+using Avalonia.Markup.Xaml.Context;
+using System.Collections;
+using System.Windows.Markup;
+using System.Xaml;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    using Portable.Xaml;
-
+    [XamlDeferLoad(typeof(TemplateLoader), typeof(IControl))]
     public class TemplateContent
     {
-        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader,
-            IAmbientProvider ambientProvider)
-        {
-            ParentAmbientProvider = ambientProvider;
-            List = new XamlNodeList(reader.SchemaContext);
+        private NameScopeAdapter _namescope = new NameScopeAdapter();
+        private XamlObjectWriter _writer;
 
-            //we need to rpeserve all namespace and prefixes to writer
-            //otherwise they are lost. a bug in Portable.xaml or by design ??
-            foreach (var ns in namespaces)
-            {
-                List.Writer.WriteNamespace(ns);
-            }
+        public TemplateContent(XamlReader reader, IXamlObjectWriterFactory factory)
+        {
+            var settings = factory.GetParentSettings();
+            settings.ExternalNameScope = _namescope;
+            settings.RegisterNamesOnExternalNamescope = true;
+
+            _writer = factory.GetXamlObjectWriter(settings);
+            List = new XamlNodeList(reader.SchemaContext);
 
             XamlServices.Transform(reader, List.Writer);
         }
 
         public XamlNodeList List { get; }
 
-        private IAmbientProvider ParentAmbientProvider { get; }
-
         public IControl Load()
         {
-            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader(), parentAmbientProvider: ParentAmbientProvider);
+            var reader = List.GetReader();
+
+            _writer.Clear();
+            XamlServices.Transform(reader, _writer, false);
+
+            var nameScope = _namescope.Extract();
+
+            if (_writer.Result is StyledElement s)
+            {
+                NameScope.SetNameScope(s, nameScope);
+            }
+
+            return (IControl)_writer.Result;
         }
 
         public static IControl Load(object templateContent)

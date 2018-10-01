@@ -1,8 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Windows.Markup;
 using Avalonia.Controls;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -56,7 +55,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
             var tdc = (ITypeDescriptorContext)serviceProvider;
-            _baseUri = tdc?.GetBaseUri();
+            ////_baseUri = tdc?.GetBaseUri();
             return this;
         }
     }

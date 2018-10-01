@@ -18,7 +18,6 @@ namespace Avalonia.DesignerSupport
             Control control;
             using (PlatformManager.DesignerMode())
             {
-                var loader = new AvaloniaXamlLoader();
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
 
 
@@ -32,7 +31,7 @@ namespace Avalonia.DesignerSupport
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
-                var loaded = loader.Load(stream, localAsm, null, baseUri);
+                var loaded = AvaloniaXamlLoader.Load(stream, localAsm, null, baseUri);
                 var styles = loaded as Styles;
                 if (styles != null)
                 {

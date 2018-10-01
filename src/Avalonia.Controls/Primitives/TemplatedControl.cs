@@ -258,10 +258,20 @@ namespace Avalonia.Controls.Primitives
                     Logger.Verbose(LogArea.Control, this, "Creating control template");
 
                     var child = template.Build(this);
-                    var nameScope = new NameScope();
-                    NameScope.SetNameScope((Control)child, nameScope);
-                    child.SetValue(TemplatedParentProperty, this);
-                    RegisterNames(child, nameScope);
+                    var nameScope = NameScope.GetNameScope((Control)child);
+
+                    if (nameScope == null)
+                    {
+                        nameScope = new NameScope();
+                        NameScope.SetNameScope((Control)child, nameScope);
+                        child.SetValue(TemplatedParentProperty, this);
+                        RegisterNames(child, nameScope);
+                    }
+                    else
+                    {
+                        child.SetValue(TemplatedParentProperty, this);
+                    }
+
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
 

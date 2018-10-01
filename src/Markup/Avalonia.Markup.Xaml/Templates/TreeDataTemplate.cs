@@ -6,8 +6,6 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Data.Core;
-using Avalonia.Markup.Data;
 using Avalonia.Markup.Parsers;
 using Avalonia.Metadata;
 
@@ -18,8 +16,7 @@ namespace Avalonia.Markup.Xaml.Templates
         public Type DataType { get; set; }
 
         [Content]
-        [TemplateContent]
-        public object Content { get; set; }
+        public TemplateContent Content { get; set; }
 
         [AssignBinding]
         public Binding ItemsSource { get; set; }

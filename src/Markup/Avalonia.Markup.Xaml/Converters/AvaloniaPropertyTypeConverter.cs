@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Markup.Parsers;
@@ -11,7 +12,6 @@ using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
@@ -59,11 +59,12 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             if (owner != null)
             {
-                var result = context.ResolveType(ns, owner);
+                var name = string.IsNullOrEmpty(ns) ? owner : $"{ns}:{owner}";
+                var resolver = context.GetService<IXamlTypeResolver>();
+                var result = resolver.Resolve(name);
 
                 if (result == null)
                 {
-                    var name = string.IsNullOrEmpty(ns) ? owner : $"{ns}:{owner}";
                     throw new XamlLoadException($"Could not find type '{name}'.");
                 }
 

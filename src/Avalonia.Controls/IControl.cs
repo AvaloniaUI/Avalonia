@@ -4,6 +4,7 @@
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls

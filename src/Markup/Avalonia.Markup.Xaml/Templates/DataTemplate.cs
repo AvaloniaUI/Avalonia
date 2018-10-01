@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Windows.Markup;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
@@ -13,10 +14,8 @@ namespace Avalonia.Markup.Xaml.Templates
     {
         public Type DataType { get; set; }
 
-        //we need content to be object otherwise portable.xaml is crashing
         [Content]
-        [TemplateContent]
-        public object Content { get; set; }
+        public TemplateContent Content { get; set; }
 
         public bool SupportsRecycling { get; set; } = true;
 

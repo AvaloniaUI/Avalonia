@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Windows.Markup;
+using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -31,28 +31,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             var context = (ITypeDescriptorContext)serviceProvider;
             var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
-            var resourceProviderType = schemaContext.GetXamlType(typeof(IResourceNode));
-            var ambientValues = ambientProvider.GetAllAmbientValues(resourceProviderType);
+            var ambientValues = ambientProvider.GetAllAmbientValues(
+                schemaContext.GetXamlType(typeof(Style)),
+                schemaContext.GetXamlType(typeof(Styles)),
+                schemaContext.GetXamlType(typeof(StyledElement)));
 
             // Look upwards though the ambient context for IResourceProviders which might be able
             // to give us the resource.
-            foreach (var ambientValue in ambientValues)
+            foreach (IResourceNode node in ambientValues)
             {
-                // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
-                // from GetAllAmbientValues aren't necessarily of the correct type.
-                if (ambientValue is IResourceNode resourceProvider)
+                if (node.TryFindResource(ResourceKey, out var value))
                 {
-                    if (resourceProvider is IControl control && control.StylingParent != null)
-                    {
-                        // If we've got to a control that has a StylingParent then it's probably
-                        // a top level control and its StylingParent is pointing to the global
-                        // styles. If this is case just do a FindResource on it.
-                        return control.FindResource(ResourceKey);
-                    }
-                    else if (resourceProvider.TryGetResource(ResourceKey, out var value))
-                    {
-                        return value;
-                    }
+                    return value;
                 }
             }
 

@@ -1,6 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections;
+using System.ComponentModel;
+using System.Linq;
+using System.Xaml;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -13,10 +17,6 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Portable.Xaml;
-using System.Collections;
-using System.ComponentModel;
-using System.Linq;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -366,7 +366,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Named_x_Control_Is_Added_To_NameScope_Simple()
+        public void x_Named_Control_Is_Added_To_NameScope_Simple()
         {
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -381,7 +381,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Standart_TypeConverter_Is_Used()
+        public void Standard_TypeConverter_Is_Used()
         {
             var xaml = @"<UserControl xmlns='https://github.com/avaloniaui' Width='200.5' />";
 
@@ -584,7 +584,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        [Fact]
+        [Fact(Skip = "I don't think we need to delay bindings any more")]
         public void Xaml_Binding_Is_Delayed()
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
@@ -688,7 +688,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Window.Template>
         <ControlTemplate TargetType='Window'>
             <ContentPresenter Name='PART_ContentPresenter'
-                        Content='{TemplateBinding Content}'/>
+                              Content='{TemplateBinding Content}'/>
         </ControlTemplate>
     </Window.Template>
 </Window>";
@@ -717,8 +717,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <Setter Property='Template'>
      <ControlTemplate>
         <ContentPresenter Name='PART_ContentPresenter'
-                       Content='{TemplateBinding Content}'
-                       ContentTemplate='{TemplateBinding ContentTemplate}' />
+                          Content='{TemplateBinding Content}'
+                          ContentTemplate='{TemplateBinding ContentTemplate}' />
       </ControlTemplate>
   </Setter>
 </Style> ";
@@ -761,10 +761,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
 
-        [Fact(Skip =
-@"Doesn't work with Portable.xaml, it's working in different creation order -
-Handled in test 'Control_Is_Added_To_Parent_Before_Final_EndInit'
-do we need it?")]
+        [Fact]
         public void Control_Is_Added_To_Parent_Before_Properties_Are_Set()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -824,7 +821,6 @@ do we need it?")]
     <local:InitializationOrderTracker Width='100' Height='100'
         Tag='{Binding Height, RelativeSource={RelativeSource Self}}' />
 </Window>";
-
 
                 var window = AvaloniaXamlLoader.Parse<Window>(xaml);
                 var tracker = (InitializationOrderTracker)window.Content;

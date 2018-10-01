@@ -19,6 +19,13 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <summary>
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
+        public StyleInclude()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StyleInclude"/> class.
+        /// </summary>
         /// <param name="baseUri"></param>
         public StyleInclude(Uri baseUri)
         {

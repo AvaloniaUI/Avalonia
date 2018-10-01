@@ -2,14 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
+using System.Windows.Markup;
 using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Portable.Xaml.ComponentModel;
-    using System.ComponentModel;
-
     public class SelectorTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -19,8 +18,16 @@ namespace Avalonia.Markup.Xaml.Converters
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            var parser = new SelectorParser(context.ResolveType);
+            var resolver = context.GetService<IXamlTypeResolver>();
 
+            Type Resolve(string ns, string name)
+            {
+                return string.IsNullOrWhiteSpace(ns) ?
+                    resolver.Resolve(name) :
+                    resolver.Resolve(ns + ':' + name);
+            }
+
+            var parser = new SelectorParser(Resolve);
             return parser.Parse((string)value);
         }
     }

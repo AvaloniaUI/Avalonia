@@ -2,15 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Moq;
+using System.ComponentModel;
+using System.Windows.Markup;
+using System.Xaml;
 using Avalonia.Collections;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Styling;
+using Moq;
 using Xunit;
-using System.ComponentModel;
-using Portable.Xaml;
-using Portable.Xaml.Markup;
-using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Converters
 {
@@ -95,9 +94,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
         {
             var tdMock = new Mock<ITypeDescriptorContext>();
             var xsc = new Mock<IXamlSchemaContextProvider>();
-            var sc = Mock.Of<XamlSchemaContext>();
+            var sc = new Mock<XamlSchemaContext>();
             var amb = new Mock<IAmbientProvider>();
             var tr = new Mock<IXamlTypeResolver>();
+            var st = new XamlType(typeof(Style), sc.Object);
 
             tdMock.Setup(d => d.GetService(typeof(IAmbientProvider)))
                 .Returns(amb.Object);
@@ -106,12 +106,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             tdMock.Setup(d => d.GetService(typeof(IXamlTypeResolver)))
                 .Returns(tr.Object);
 
+            sc.Setup(x => x.GetXamlType(typeof(Style)))
+                .Returns(st);
             xsc.SetupGet(v => v.SchemaContext)
-                .Returns(sc);
-            amb.Setup(v => v.GetFirstAmbientValue(It.IsAny<Portable.Xaml.XamlType>()))
+                .Returns(sc.Object);
+            amb.Setup(v => v.GetFirstAmbientValue(st))
                 .Returns(style);
-            amb.Setup(v => v.GetAllAmbientValues(It.IsAny<Portable.Xaml.XamlType>()))
-                .Returns(new object[] { style });
             tr.Setup(v => v.Resolve(nameof(Class1)))
                 .Returns(typeof(Class1));
             tr.Setup(v => v.Resolve(nameof(AttachedOwner)))

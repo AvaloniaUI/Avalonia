@@ -9,11 +9,11 @@ using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
+    [System.Windows.Markup.Ambient]
     public class ControlTemplate : IControlTemplate
     {
         [Content]
-        [TemplateContent]
-        public object Content { get; set; }
+        public TemplateContent Content { get; set; }
 
         public Type TargetType { get; set; }
 

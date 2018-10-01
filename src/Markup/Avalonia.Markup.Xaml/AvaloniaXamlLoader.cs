@@ -1,16 +1,17 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.PortableXaml;
-using Avalonia.Platform;
-using Portable.Xaml;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Xaml;
+using Avalonia.Controls;
+using Avalonia.Markup.Data;
+using Avalonia.Markup.Xaml.Context;
+using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -19,30 +20,8 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public class AvaloniaXamlLoader
     {
-        private readonly AvaloniaXamlSchemaContext _context = GetContext();
-
-        private static AvaloniaXamlSchemaContext GetContext()
-        {
-            var result = AvaloniaLocator.Current.GetService<AvaloniaXamlSchemaContext>();
-
-            if (result == null)
-            {
-                result = AvaloniaXamlSchemaContext.Create();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<AvaloniaXamlSchemaContext>()
-                    .ToConstant(result);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
-        /// </summary>
-        public AvaloniaXamlLoader()
-        {
-        }
+        private static readonly RuntimeTypeProvider s_typeProvider = new RuntimeTypeProvider();
+        private static readonly AvaloniaXamlSchemaContext s_context = new AvaloniaXamlSchemaContext(s_typeProvider);
 
         /// <summary>
         /// Loads the XAML into a Avalonia component.
@@ -52,8 +31,7 @@ namespace Avalonia.Markup.Xaml
         {
             Contract.Requires<ArgumentNullException>(obj != null);
 
-            var loader = new AvaloniaXamlLoader();
-            loader.Load(obj.GetType(), obj);
+            Load(obj.GetType(), obj);
         }
 
         /// <summary>
@@ -64,7 +42,7 @@ namespace Avalonia.Markup.Xaml
         /// The optional instance into which the XAML should be loaded.
         /// </param>
         /// <returns>The loaded object.</returns>
-        public object Load(Type type, object rootInstance = null)
+        public static object Load(Type type, object rootInstance = null)
         {
             Contract.Requires<ArgumentNullException>(type != null);
 
@@ -173,7 +151,7 @@ namespace Avalonia.Markup.Xaml
         /// </param>
         /// <param name="uri">The URI of the XAML</param>
         /// <returns>The loaded object.</returns>
-        public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
+        public static object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
         {
             var readerSettings = new XamlXmlReaderSettings()
             {
@@ -181,39 +159,32 @@ namespace Avalonia.Markup.Xaml
                 LocalAssembly = localAssembly
             };
 
-            var reader = new XamlXmlReader(stream, _context, readerSettings);
+            var namescope = new NameScopeAdapter(rootInstance as INameScope);
+            var settings = new XamlObjectWriterSettings
+            {
+                RootObjectInstance = rootInstance,
+                ExternalNameScope = namescope,
+                RegisterNamesOnExternalNamescope = true,
+            };
 
-            object result = LoadFromReader(
-                reader,
-                AvaloniaXamlContext.For(readerSettings, rootInstance));
+            var reader = new XamlXmlReader(stream, s_context, readerSettings);
+            var writer = new XamlObjectWriter(s_context, settings);
 
-            var topLevel = result as TopLevel;
+            XamlServices.Transform(reader, writer);
+            namescope.Apply(writer.Result);
 
-            if (topLevel != null)
+            if (writer.Result is TopLevel topLevel)
             {
                 DelayedBinding.ApplyBindings(topLevel);
             }
 
-            return result;
-        }
-
-        internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null, IAmbientProvider parentAmbientProvider = null)
-        {
-            var writer = AvaloniaXamlObjectWriter.Create(
-                                    reader.SchemaContext,
-                                    context,
-                                    parentAmbientProvider);
-
-            XamlServices.Transform(reader, writer);
-            writer.ApplyAllDelayedProperties();
             return writer.Result;
         }
 
-        internal static object LoadFromReader(XamlReader reader)
-        {
-            //return XamlServices.Load(reader);
-            return LoadFromReader(reader, null);
-        }
+        public static object Parse(string xaml, Assembly localAssembly = null) =>
+            new AvaloniaXamlLoader().Load(xaml, localAssembly);
+
+        public static T Parse<T>(string xaml, Assembly localAssembly = null) => (T)Parse(xaml, localAssembly);
 
         /// <summary>
         /// Gets the URI for a type.
@@ -227,11 +198,5 @@ namespace Avalonia.Markup.Xaml
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
         }
-        
-        public static object Parse(string xaml, Assembly localAssembly = null)
-            => new AvaloniaXamlLoader().Load(xaml, localAssembly);
-
-        public static T Parse<T>(string xaml, Assembly localAssembly = null)
-            => (T)Parse(xaml, localAssembly);
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Implements a name scope.
     /// </summary>
-    public class NameScope : INameScope
+    public class NameScope : INameScope, IReadOnlyDictionary<string, object>
     {
         /// <summary>
         /// Defines the NameScope attached property.
@@ -136,5 +137,14 @@ namespace Avalonia.Controls
                 Unregistered?.Invoke(this, new NameScopeEventArgs(name, element));
             }
         }
+
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => _inner.Keys;
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => _inner.Values;
+        int IReadOnlyCollection<KeyValuePair<string, object>>.Count => _inner.Count;
+        object IReadOnlyDictionary<string, object>.this[string key] => _inner[key];
+        bool IReadOnlyDictionary<string, object>.ContainsKey(string key) => _inner.ContainsKey(key);
+        bool IReadOnlyDictionary<string, object>.TryGetValue(string key, out object value) => _inner.TryGetValue(key, out value);
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator() => _inner.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
     }
 }

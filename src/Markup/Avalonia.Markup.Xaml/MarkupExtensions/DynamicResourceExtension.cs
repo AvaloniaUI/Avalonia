@@ -5,11 +5,11 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Windows.Markup;
+using System.Xaml;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
+using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (!(provideTarget.TargetObject is IResourceNode))
             {
-                _anchor = GetAnchor<IResourceNode>(context);
+                _anchor = GetAnchor(context);
             }
 
             return this;
@@ -57,15 +57,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return null;
         }
 
-        private T GetAnchor<T>(ITypeDescriptorContext context) where T : class
+        private IResourceNode GetAnchor(ITypeDescriptorContext context)
         {
             var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
             var ambientProvider = context.GetService<IAmbientProvider>();
-            var xamlType = schemaContext.GetXamlType(typeof(T));
 
-            // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
-            // from GetAllAmbientValues aren't necessarily of the correct type.
-            return ambientProvider.GetAllAmbientValues(xamlType).OfType<T>().FirstOrDefault();
+            return (IResourceNode)ambientProvider.GetFirstAmbientValue(
+                schemaContext.GetXamlType(typeof(StyledElement)),
+                schemaContext.GetXamlType(typeof(Style)));
         }
     }
 }
