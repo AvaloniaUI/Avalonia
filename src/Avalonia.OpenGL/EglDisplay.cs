@@ -71,6 +71,8 @@ namespace Avalonia.OpenGL
                     EGL_GREEN_SIZE, 8,
                     EGL_BLUE_SIZE, 8,
                     EGL_ALPHA_SIZE, 8,
+                    EGL_STENCIL_SIZE, 8,
+                    EGL_DEPTH_SIZE, 8,
                     EGL_NONE
                 };
                 if (!_egl.ChooseConfig(_display, attribs, out _config, 1, out int numConfigs))
