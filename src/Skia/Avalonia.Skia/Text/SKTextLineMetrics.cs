@@ -5,13 +5,22 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {   
-    public class SKTextLineMetrics
+    public struct SKTextLineMetrics
     {
-        public SKTextLineMetrics(float width, float height, SKPoint baselineOrigin)
+        public SKTextLineMetrics(float width, float ascent, float descent, float leading)
         {
-            Size = new SKSize(width, height);
-            BaselineOrigin = baselineOrigin;
+            Ascent = ascent;
+            Descent = descent;
+            Leading = leading;
+            Size = new SKSize(width, descent - ascent + leading);            
+            BaselineOrigin = new SKPoint(0, -ascent);
         }
+
+        public float Ascent { get; }
+
+        public float Descent { get; }
+
+        public float Leading { get; }
 
         public SKSize Size { get; }
 
