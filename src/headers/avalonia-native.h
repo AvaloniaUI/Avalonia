@@ -1,4 +1,5 @@
 #include "com.h"
+#include "key.h"
 
 #define AVNCOM(name, id) COMINTERFACE(name, 2e2cda0a, 9ae5, 4f1b, 8e, 20, 08, 1a, 04, 27, 9f, id)
 
@@ -70,9 +71,15 @@ enum AvnRawMouseEventType
     NonClientLeftButtonDown
 };
 
+enum AvnRawKeyEventType
+{
+    KeyDown,
+    KeyUp
+};
+
 enum AvnInputModifiers
 {
-    None = 0,
+    AvnInputModifiersNone = 0,
     Alt = 1,
     Control = 2,
     Shift = 4,
@@ -148,6 +155,8 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
                                 AvnInputModifiers modifiers,
                                 AvnPoint point,
                                 AvnVector delta) = 0;
+    virtual bool RawKeyEvent (AvnRawKeyEventType type, unsigned int timeStamp, AvnInputModifiers modifiers, unsigned int key) = 0;
+    virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
 };

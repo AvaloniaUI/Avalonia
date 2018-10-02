@@ -11,7 +11,7 @@
 
 class WindowBaseImpl;
 
-@interface AvnView : NSView
+@interface AvnView : NSView<NSTextInputClient>
 -(AvnView*) initWithParent: (WindowBaseImpl*) parent;
 -(NSEvent*) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;

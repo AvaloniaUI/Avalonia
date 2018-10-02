@@ -1,5 +1,6 @@
 #include "common.h"
 #include "window.h"
+#include "KeyTransform.h"
 
 class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
@@ -215,6 +216,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     NSTrackingArea* _area;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
+    bool _lastKeyHandled;
 }
 
 - (NSEvent*) lastMouseDownEvent
@@ -231,6 +233,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 }
 
 - (BOOL)isOpaque
+{
+    return false;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return true;
+}
+
+- (BOOL)canBecomeKeyView
 {
     return true;
 }
@@ -363,6 +375,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
+    [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -481,6 +494,34 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isMouseOver = false;
     [self mouseEvent:event withType:LeaveWindow];
     [super mouseExited:event];
+} 
+
+- (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
+{ 
+    auto key = s_KeyMap[[event keyCode]];
+    
+    auto timestamp = [event timestamp] * 1000;
+    auto modifiers = [self getModifiers:[event modifierFlags]];
+     
+    _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event
+{
+    return _lastKeyHandled;
+}
+
+- (void)keyDown:(NSEvent *)event
+{
+    [self keyboardEvent:event withType:KeyDown];
+    [[self inputContext] handleEvent:event];
+    [super keyDown:event];
+}
+
+- (void)keyUp:(NSEvent *)event
+{
+    [self keyboardEvent:event withType:KeyUp];
+    [super keyUp:event];
 }
 
 - (AvnInputModifiers)getModifiers:(NSEventModifierFlags)mod
@@ -504,6 +545,61 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= RightMouseButton;
     
     return (AvnInputModifiers)rv;
+}
+
+- (BOOL)hasMarkedText
+{
+    return _lastKeyHandled;
+}
+
+- (NSRange)markedRange
+{
+    return NSMakeRange(NSNotFound, 0);
+}
+
+- (NSRange)selectedRange
+{
+    return NSMakeRange(NSNotFound, 0);
+}
+
+- (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
+{
+    
+}
+
+- (void)unmarkText
+{
+    
+}
+
+- (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText
+{
+    return [NSArray new];
+}
+
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)range actualRange:(NSRangePointer)actualRange
+{
+    return [NSAttributedString new];
+}
+
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange
+{
+    if(!_lastKeyHandled)
+    {
+        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    }
+}
+
+- (NSUInteger)characterIndexForPoint:(NSPoint)point
+{
+    return 0;
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
+{
+    CGRect result;
+    
+    return result;
 }
 @end
 
@@ -539,8 +635,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
-    [super becomeKeyWindow];
     _parent->BaseEvents->Activated();
+    [super becomeKeyWindow];
+}
+
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+{
+    return true;
 }
 
 -(void)resignKeyWindow

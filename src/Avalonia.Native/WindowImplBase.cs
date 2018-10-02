@@ -18,12 +18,14 @@ namespace Avalonia.Native
         private object _syncRoot = new object();
         private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
+        private readonly IKeyboardDevice _keyboard;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
 
         public WindowBaseImpl()
         {
+            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
         }
 
@@ -143,6 +145,17 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
+            bool IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            {
+                return _parent.RawKeyEvent(type, timeStamp, modifiers, key);
+            }
+
+            bool IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
+            {
+                return _parent.RawTextInputEvent(timeStamp, text);
+            }
+
+
             void IAvnWindowBaseEvents.ScalingChanged(double scaling)
             {
                 _parent._savedScaling = scaling;
@@ -159,10 +172,27 @@ namespace Avalonia.Native
             }
         }
 
-
         public void Activate()
         {
             _native.Activate();
+        }
+
+        public bool RawTextInputEvent(uint timeStamp, string text)
+        {
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+
+            Input?.Invoke(args);
+
+            return args.Handled;
+        }
+
+        public bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+        {
+            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers);
+
+            Input?.Invoke(args);
+
+            return args.Handled;
         }
 
         public void RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
