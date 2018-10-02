@@ -3,7 +3,6 @@ using Avalonia.Logging;
 
 namespace Avalonia.OpenGL
 {
-   
     public class EglGlPlatformFeature : IWindowingPlatformGlFeature
     {
         public IGlDisplay Display { get; set; }

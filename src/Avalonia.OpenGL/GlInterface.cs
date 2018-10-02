@@ -9,7 +9,6 @@ namespace Avalonia.OpenGL
     {
         private readonly Func<string, bool, IntPtr> _getProcAddress;
 
-
         public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
         {
             _getProcAddress = getProcAddress;
@@ -43,7 +42,6 @@ namespace Avalonia.OpenGL
         public delegate void GlGetIntegerv(int name, out int rv);
         [EntryPoint("glGetIntegerv")]
         public GlGetIntegerv GetIntegerv { get; }
-
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }

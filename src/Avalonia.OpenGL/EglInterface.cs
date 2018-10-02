@@ -33,7 +33,6 @@ namespace Avalonia.OpenGL
             return (s, o) => dyn.GetProcAddress(lib, s, o);
         }
         
-        
         // ReSharper disable UnassignedGetOnlyAutoProperty
         public delegate IntPtr EglGetDisplay(IntPtr nativeDisplay);
         [EntryPoint("eglGetDisplay")]
@@ -90,6 +89,5 @@ namespace Avalonia.OpenGL
         public EglGetConfigAttrib GetConfigAttrib { get; }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
-
     }
 }

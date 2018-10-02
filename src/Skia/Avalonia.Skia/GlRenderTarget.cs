@@ -5,6 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
+
 namespace Avalonia.Skia
 {
     public class GlRenderTarget : IRenderTarget
@@ -26,8 +27,10 @@ namespace Avalonia.Skia
             var disp = session.Display;
             var gl = disp.GlInterface;
             gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
+
             var size = session.PixelSize;
             var scaling = session.Scaling;
+
             GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc
             {
                 Width = size.Width,
@@ -38,10 +41,12 @@ namespace Avalonia.Skia
                 Origin=GRSurfaceOrigin.BottomLeft,
                 RenderTargetHandle = new IntPtr(fb)
             };
+
             gl.Viewport(0, 0, desc.Width, desc.Height);
             gl.ClearStencil(0);
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             var surface = SKSurface.Create(_grContext, desc);
 
             var nfo = new DrawingContextImpl.CreateInfo
@@ -52,13 +57,13 @@ namespace Avalonia.Skia
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true
             };
+
             return new DrawingContextImpl(nfo, Disposable.Create(() =>
             {
                 surface.Canvas.Flush();
                 surface.Dispose();
                 session.Dispose();
             }));
-
         }
     }
 }

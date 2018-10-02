@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 using static Avalonia.OpenGL.EglConsts;
+
 namespace Avalonia.OpenGL
 {
     public class EglDisplay : IGlDisplay
@@ -201,6 +202,4 @@ namespace Avalonia.OpenGL
             }
         }
     }
-
-    
 }

@@ -7,7 +7,8 @@ namespace Avalonia.Win32
         /// <summary>This property is initialized if drawing platform requests OpenGL support</summary>
         public static EglGlPlatformFeature EglFeature { get; private set; }
 
-        private static bool s_attemptedToInitialize; 
+        private static bool s_attemptedToInitialize;
+
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToFunc(() =>

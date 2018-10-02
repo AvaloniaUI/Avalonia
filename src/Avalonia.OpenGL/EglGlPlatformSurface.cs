@@ -10,13 +10,11 @@ namespace Avalonia.OpenGL
             // TODO: Change to PixelSize struct once https://github.com/AvaloniaUI/Avalonia/pull/1889 is merged
             System.Drawing.Size PixelSize { get; }
             double Scaling { get; }
-        
         }
 
         private readonly EglDisplay _display;
         private readonly IGlContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
-
         
         public EglGlPlatformSurface(EglDisplay display, IGlContext context, IEglWindowGlPlatformSurfaceInfo info)
         {
@@ -79,3 +77,4 @@ namespace Avalonia.OpenGL
         }
     }
 }
+
