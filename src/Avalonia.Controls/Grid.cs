@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
+using Avalonia.VisualTree;
 using JetBrains.Annotations;
 
 namespace Avalonia.Controls
@@ -44,6 +46,189 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> RowSpanProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
+        public static readonly AttachedProperty<bool> IsSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
+
+        private sealed class SharedSizeScopeHost : IDisposable
+        {
+            private class GridMeasureCache
+            {
+                public Grid Grid { get; }
+                public DefinitionBase Definition { get; }
+                public double CachedLength { get; set; }
+            }
+
+            private readonly AvaloniaList<Grid> _participatingGrids;
+
+            private Dictionary<string, double> _cachedSize = new Dictionary<string, double>();
+
+            private Dictionary<string, List<Grid>> _gridsInScopes = new Dictionary<string, List<Grid>>(); 
+
+            private Dictionary<string, List<GridMeasureCache>> _scopeCache;
+            private int _leftToMeasure;
+
+            public SharedSizeScopeHost(Control scope)
+            {
+                _participatingGrids = GetParticipatingGrids(scope);
+                
+                foreach (var grid in _participatingGrids)
+                {
+                    grid.InvalidateMeasure();
+                    AddGridToScopes(grid);
+                }
+            }
+
+            private bool _invalidating = false;
+
+            internal void InvalidateMeasure(Grid grid)
+            {
+                if (_invalidating)
+                    return;
+                _invalidating = true;
+
+                List<Grid> candidates = new List<Grid> {grid};
+                while (candidates.Any())
+                {
+                    var scopes = candidates.SelectMany(c => c.RowDefinitions.Select(rd => rd.SharedSizeGroup))
+                         .Concat(candidates.SelectMany(c => c.ColumnDefinitions.Select(rd => rd.SharedSizeGroup))).Distinct();
+                    
+                    candidates = scopes.SelectMany(r => _scopeCache[r].Select(gmc => gmc.Grid))
+                                 .Distinct().Where(c => c.IsMeasureValid).ToList();
+                    candidates.ForEach(c => c.InvalidateMeasure());
+                }
+
+                _invalidating = false;
+            }
+
+            private void AddGridToScopes(Grid grid)
+            {
+                var scopeNames = grid.ColumnDefinitions.Select(g => g.SharedSizeGroup)
+                                 .Concat(grid.RowDefinitions.Select(g => g.SharedSizeGroup)).Distinct();
+                foreach (var scopeName in scopeNames)
+                {
+                    if (!_gridsInScopes.TryGetValue(scopeName, out var list))
+                        _gridsInScopes.Add(scopeName, list = new List<Grid>() );
+                    list.Add(grid);
+                }
+            }
+
+            private void RemoveGridFromScopes(Grid grid)
+            {
+                var scopeNames = grid.ColumnDefinitions.Select(g => g.SharedSizeGroup)
+                    .Concat(grid.RowDefinitions.Select(g => g.SharedSizeGroup)).Distinct();
+                foreach (var scopeName in scopeNames)
+                {
+                    Debug.Assert(_gridsInScopes.TryGetValue(scopeName, out var list));
+                    list.Remove(grid);
+                    if (!list.Any())
+                        _gridsInScopes.Remove(scopeName);
+                }
+            }
+
+            internal void UpdateMeasureResult(GridLayout.MeasureResult result, ColumnDefinitions columnDefinitions)
+            {
+                for (var i = 0; i < columnDefinitions.Count; i++)
+                {
+                    if (string.IsNullOrEmpty(columnDefinitions[i].SharedSizeGroup))
+                        continue;
+                    // if any in this group is Absolute we don't care about measured values.
+                    
+                }
+            }
+
+            internal void UpdateMeasureResult(GridLayout.MeasureResult result, RowDefinitions rowDefinitions)
+            {
+
+            }
+
+            internal double GetExistingLimit(DefinitionBase definition)
+            {
+                List<GridMeasureCache> cache = _scopeCache[definition.SharedSizeGroup];
+
+                return cache.Where(gmc => gmc.Grid.IsMeasureValid)
+                    .Aggregate(double.NaN, (a, gmc) => Math.Max(a, gmc.CachedLength));
+            }
+
+            internal void UpdateExistingLimit(DefinitionBase definition, double limit)
+            {
+                List<GridMeasureCache> cache = _scopeCache[definition.SharedSizeGroup];
+
+                cache.Single(gmc => ReferenceEquals(gmc.Definition, definition)).CachedLength = limit;
+                // if any other are lower - invalidate the grid.
+            }
+
+            internal void BeginMeasurePass()
+            {
+                if (_leftToMeasure == 0)
+                {
+                    _leftToMeasure = _participatingGrids.Count(g => !g.IsMeasureValid);
+                }
+            }
+
+            private static AvaloniaList<Grid> GetParticipatingGrids(Control scope)
+            {
+                var result = scope.GetVisualDescendants().OfType<Grid>();
+
+                return new AvaloniaList<Grid>(result.Where(g => g.HasSharedSizeGroups()));
+            }
+
+            public void Dispose()
+            {
+                foreach (var grid in _participatingGrids)
+                {
+                    grid.SharedScopeChanged();
+                }
+            }
+
+            internal void RegisterGrid(Grid toAdd)
+            {
+                Debug.Assert(!_participatingGrids.Contains(toAdd));
+                _participatingGrids.Add(toAdd);
+                AddGridToScopes(toAdd);
+            }
+
+            internal void UnegisterGrid(Grid toRemove)
+            {
+                Debug.Assert(_participatingGrids.Contains(toRemove));
+                _participatingGrids.Remove(toRemove);
+                RemoveGridFromScopes(toRemove);
+            }
+        }
+
+        protected override void OnMeasureInvalidated()
+        {
+            base.OnMeasureInvalidated();
+            _sharedSizeHost?.InvalidateMeasure(this);
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            var scope = this.GetVisualAncestors().OfType<Control>()
+                .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
+
+            Debug.Assert(_sharedSizeHost == null);
+
+            if (scope != null)
+            {
+                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
+                _sharedSizeHost.RegisterGrid(this);
+            }
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            _sharedSizeHost?.UnegisterGrid(this);
+            _sharedSizeHost = null;
+        }
+
+        private SharedSizeScopeHost _sharedSizeHost;
+
+        private static readonly AttachedProperty<SharedSizeScopeHost> s_sharedSizeScopeHostProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScopeHost>("&&SharedSizeScopeHost", null);
+
         private ColumnDefinitions _columnDefinitions;
 
         private RowDefinitions _rowDefinitions;
@@ -51,6 +236,23 @@ namespace Avalonia.Controls
         static Grid()
         {
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(IsSharedSizeScopeChanged);
+        }
+
+        private static void IsSharedSizeScopeChanged(Control source, AvaloniaPropertyChangedEventArgs arg2) 
+        {
+            if ((bool)arg2.NewValue)
+            {
+                Debug.Assert(source.GetValue(s_sharedSizeScopeHostProperty) == null);
+                source.SetValue(IsSharedSizeScopeProperty, new SharedSizeScopeHost(source));
+            }
+            else
+            {
+                var host = source.GetValue(s_sharedSizeScopeHostProperty) as SharedSizeScopeHost;
+                Debug.Assert(host != null);
+                host.Dispose();
+                source.SetValue(IsSharedSizeScopeProperty, null);
+            }
         }
 
         /// <summary>
@@ -425,6 +627,27 @@ namespace Avalonia.Controls
             }
 
             return value;
+        }
+
+        internal bool HasSharedSizeGroups()
+        {
+            return ColumnDefinitions.Any(cd => !string.IsNullOrEmpty(cd.SharedSizeGroup)) ||
+                   RowDefinitions.Any(rd => !string.IsNullOrEmpty(rd.SharedSizeGroup));
+        }
+
+        internal void SharedScopeChanged()
+        {
+            _sharedSizeHost = null;
+            var scope = this.GetVisualAncestors().OfType<Control>()
+                .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
+
+            if (scope != null)
+            {
+                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
+                _sharedSizeHost.RegisterGrid(this);
+            }
+
+            InvalidateMeasure();
         }
     }
 }
