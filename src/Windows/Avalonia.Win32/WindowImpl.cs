@@ -19,7 +19,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl, IEglWindowGlPlatformSurfaceInfo
+    public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -928,7 +928,7 @@ namespace Avalonia.Win32
             _topmost = value;
         }
         
-        System.Drawing.Size IEglWindowGlPlatformSurfaceInfo.PixelSize
+        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
         {
             get
             {
@@ -939,6 +939,6 @@ namespace Avalonia.Win32
                     Math.Max(1, rect.bottom - rect.top));
             }
         }
-        IntPtr IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
     }
 }

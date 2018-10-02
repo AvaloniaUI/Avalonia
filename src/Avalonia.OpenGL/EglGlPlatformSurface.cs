@@ -2,17 +2,17 @@ using System;
 
 namespace Avalonia.OpenGL
 {
-    public interface IEglWindowGlPlatformSurfaceInfo
-    {
-        IntPtr Handle { get; }
-        // TODO: Change to PixelSize struct once https://github.com/AvaloniaUI/Avalonia/pull/1889 is merged
-        System.Drawing.Size PixelSize { get; }
-        double Scaling { get; }
-        
-    }
-    
     public class EglGlPlatformSurface : IGlPlatformSurface
     {
+        public interface IEglWindowGlPlatformSurfaceInfo
+        {
+            IntPtr Handle { get; }
+            // TODO: Change to PixelSize struct once https://github.com/AvaloniaUI/Avalonia/pull/1889 is merged
+            System.Drawing.Size PixelSize { get; }
+            double Scaling { get; }
+        
+        }
+
         private readonly EglDisplay _display;
         private readonly IGlContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;

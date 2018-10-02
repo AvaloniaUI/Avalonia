@@ -15,7 +15,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
-    abstract class WindowBaseImpl : IWindowBaseImpl, IPlatformHandle, IEglWindowGlPlatformSurfaceInfo
+    abstract class WindowBaseImpl : IWindowBaseImpl, IPlatformHandle, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         public readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
@@ -510,7 +510,7 @@ namespace Avalonia.Gtk3
                 : new ImmediateRenderer(root);
         }
 
-        System.Drawing.Size IEglWindowGlPlatformSurfaceInfo.PixelSize
+        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
         {
             get
             {
@@ -519,7 +519,7 @@ namespace Avalonia.Gtk3
                     (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Height));
             }
         }
-        double IEglWindowGlPlatformSurfaceInfo.Scaling => LastKnownScaleFactor;
-        IntPtr IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => LastKnownScaleFactor;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
     }
 }
