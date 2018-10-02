@@ -156,6 +156,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
                                 AvnPoint point,
                                 AvnVector delta) = 0;
     virtual bool RawKeyEvent (AvnRawKeyEventType type, unsigned int timeStamp, AvnInputModifiers modifiers, unsigned int key) = 0;
+    virtual bool RawTextInputEvent (unsigned int timeStamp, const char* text) = 0;
     virtual void ScalingChanged(double scaling) = 0;
     virtual void RunRenderPriorityJobs() = 0;
 };

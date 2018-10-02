@@ -234,6 +234,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)isOpaque
 {
+    return false;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return true;
+}
+
+- (BOOL)canBecomeKeyView
+{
     return true;
 }
 
@@ -365,6 +375,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
+    [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
     auto point = [self translateLocalPoint:avnPoint];
@@ -493,6 +504,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto modifiers = [self getModifiers:[event modifierFlags]];
      
     _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+    
+    if (modifiers != 0)
+    {
+        _lastKeyHandled = true;
+    }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
@@ -503,6 +519,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)keyDown:(NSEvent *)event
 {
     [self keyboardEvent:event withType:KeyDown];
+    [[self inputContext] handleEvent:event];
     [super keyDown:event];
 }
 
@@ -533,11 +550,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         rv |= RightMouseButton;
     
     return (AvnInputModifiers)rv;
-}
-
-- (BOOL)acceptsFirstResponder
-{
-    return true;
 }
 
 - (BOOL)hasMarkedText
@@ -577,7 +589,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    // todo input text to avalonia
+    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
@@ -625,8 +637,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)becomeKeyWindow
 {
-    [super becomeKeyWindow];
     _parent->BaseEvents->Activated();
+    [super becomeKeyWindow];
+}
+
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+{
+    return true;
 }
 
 -(void)resignKeyWindow

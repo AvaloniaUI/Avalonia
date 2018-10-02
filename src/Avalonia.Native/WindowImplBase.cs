@@ -145,11 +145,17 @@ namespace Avalonia.Native
                 _parent.RawMouseEvent(type, timeStamp, modifiers, point, delta);
             }
 
-            public bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
+            bool IAvnWindowBaseEvents.RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
             {
                 return _parent.RawKeyEvent(type, timeStamp, modifiers, key);
             }
-            
+
+            bool IAvnWindowBaseEvents.RawTextInputEvent(uint timeStamp, string text)
+            {
+                return _parent.RawTextInputEvent(timeStamp, text);
+            }
+
+
             void IAvnWindowBaseEvents.ScalingChanged(double scaling)
             {
                 _parent._savedScaling = scaling;
@@ -169,6 +175,15 @@ namespace Avalonia.Native
         public void Activate()
         {
             _native.Activate();
+        }
+
+        public bool RawTextInputEvent(uint timeStamp, string text)
+        {
+            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+
+            Input?.Invoke(args);
+
+            return args.Handled;
         }
 
         public bool RawKeyEvent(AvnRawKeyEventType type, uint timeStamp, AvnInputModifiers modifiers, uint key)
