@@ -28,6 +28,10 @@ namespace Avalonia.Native
             {
                 _parent = parent;
             }
+
+            void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
+            {
+            }
         }
     }
 }

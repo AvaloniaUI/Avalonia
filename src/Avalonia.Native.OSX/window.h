@@ -28,4 +28,9 @@ struct INSWindowHolder
     virtual AvnWindow* GetNSWindow () = 0;
 };
 
+struct IWindowStateChanged
+{
+    virtual void WindowStateChanged () = 0;
+};
+
 #endif /* window_h */

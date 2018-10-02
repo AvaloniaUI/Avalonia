@@ -11,6 +11,7 @@ struct IAvnPlatformThreadingInterface;
 struct IAvnSystemDialogEvents;
 struct IAvnSystemDialogs;
 struct IAvnScreens;
+struct IAvnClipboard;
 
 struct AvnSize
 {
@@ -88,6 +89,13 @@ enum AvnInputModifiers
     MiddleMouseButton = 64
 };
 
+enum AvnWindowState
+{
+    Normal,
+    Minimized,
+    Maximized,
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : virtual IUnknown
 {
 public:
@@ -98,6 +106,7 @@ public:
     virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv) = 0;
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
+    virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -105,6 +114,7 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT Show() = 0;
     virtual HRESULT Hide () = 0;
     virtual HRESULT Close() = 0;
+    virtual HRESULT Activate () = 0;
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
     virtual HRESULT GetMaxClientSize(AvnSize* ret) = 0;
     virtual HRESULT GetScaling(double*ret)=0;
@@ -128,6 +138,8 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
+    virtual HRESULT SetWindowState(AvnWindowState state) = 0;
+    virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
 };
 
 AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
@@ -137,6 +149,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
     virtual void Activated() = 0;
     virtual void Deactivated() = 0;
     virtual void Resized(const AvnSize& size) = 0;
+    virtual void PositionChanged (AvnPoint position) = 0;
     virtual void RawMouseEvent (AvnRawMouseEventType type,
                                 unsigned int timeStamp,
                                 AvnInputModifiers modifiers,
@@ -150,7 +163,7 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
 
 AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
 {
-
+    virtual void WindowStateChanged (AvnWindowState state) = 0;
 };
 
 AVNCOM(IAvnMacOptions, 07) : virtual IUnknown
@@ -217,7 +230,13 @@ AVNCOM(IAvnScreens, 0e) : virtual IUnknown
 {
     virtual HRESULT GetScreenCount (int* ret) = 0;
     virtual HRESULT GetScreen (int index, AvnScreen* ret) = 0;
-    
+};
+
+AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
+{
+    virtual HRESULT GetText (void** retOut) = 0;
+    virtual HRESULT SetText (char* text) = 0;
+    virtual HRESULT Clear() = 0;
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

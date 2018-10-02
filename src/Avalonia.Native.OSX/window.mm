@@ -45,6 +45,16 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT Activate ()
+    {
+        if(Window != nullptr)
+        {
+            [Window makeKeyWindow];
+        }
+        
+        return S_OK;
+    }
+    
     virtual HRESULT SetTopMost (bool value)
     {
         [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
@@ -188,6 +198,11 @@ protected:
     {
         [Window setStyleMask:GetStyle()];
     }
+    
+    virtual void OnResized ()
+    {
+        
+    }
 };
 
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
@@ -245,10 +260,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void) drawFb: (AvnFramebuffer*) fb
 {
     auto colorSpace = CGColorSpaceCreateDeviceRGB();
-    auto bctx = CGBitmapContextCreate(fb->Data, fb->Width, fb->Height, 8, fb->Stride, colorSpace, kCGBitmapByteOrder32Big | kCGImageAlphaPremultipliedLast);
-    auto image = CGBitmapContextCreateImage(bctx);
-    CGContextRelease(bctx);
-    CGColorSpaceRelease(colorSpace);
+    auto dataProvider = CGDataProviderCreateWithData(NULL, fb->Data, fb->Height*fb->Stride, NULL);
+
+    
+    auto image = CGImageCreate(fb->Width, fb->Height, 8, 32, fb->Stride, colorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
+                               dataProvider, nullptr, false, kCGRenderingIntentDefault);
     
     auto ctx = [NSGraphicsContext currentContext];
     
@@ -257,6 +273,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
     CGContextDrawImage(cgc, CGRect{0,0, fb->Width/(fb->Dpi.X/96), fb->Height/(fb->Dpi.Y/96)}, image);
     CGImageRelease(image);
+    CGColorSpaceRelease(colorSpace);
+    CGDataProviderRelease(dataProvider);
     
     [ctx restoreGraphicsState];
 
@@ -617,6 +635,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super resignKeyWindow];
 }
 
+- (void)windowDidMove:(NSNotification *)notification
+{
+    AvnPoint position;
+    _parent->GetPosition(&position);
+    _parent->BaseEvents->PositionChanged(position);
+}
+
+// TODO this breaks resizing.
+/*- (void)windowDidResize:(NSNotification *)notification
+{
+    
+    auto parent = dynamic_cast<IWindowStateChanged*>(_parent.operator->());
+    
+    if(parent != nullptr)
+    {
+        parent->WindowStateChanged();
+    }
+}*/
 @end
 
 class PopupImpl : public WindowBaseImpl, public IAvnPopup
@@ -646,11 +682,13 @@ extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
     return ptr;
 }
 
-class WindowImpl : public WindowBaseImpl, public IAvnWindow
+class WindowImpl : public WindowBaseImpl, public IAvnWindow, public IWindowStateChanged
 {
 private:
     bool _canResize = true;
     bool _hasDecorations = true;
+    CGRect _lastUndecoratedFrame;
+    AvnWindowState _lastWindowState;
     
     BEGIN_INTERFACE_MAP()
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
@@ -663,6 +701,39 @@ private:
         [Window setCanBecomeKeyAndMain];
     }
     
+    void WindowStateChanged ()
+    {
+        AvnWindowState state;
+        GetWindowState(&state);
+        WindowEvents->WindowStateChanged(state);
+    }
+    
+    bool UndecoratedIsMaximized ()
+    {
+        return CGRectEqualToRect([Window frame], [Window screen].visibleFrame);
+    }
+    
+    bool IsZoomed ()
+    {
+        return _hasDecorations ? [Window isZoomed] : UndecoratedIsMaximized();
+    }
+    
+    void DoZoom()
+    {
+        if (_hasDecorations)
+        {
+            [Window performZoom:Window];
+        }
+        else
+        {
+            if (!UndecoratedIsMaximized())
+            {
+                _lastUndecoratedFrame = [Window frame];
+            }
+            
+            [Window zoom:Window];
+        }
+    }
     
     virtual HRESULT SetCanResize(bool value)
     {
@@ -678,7 +749,79 @@ private:
         return S_OK;
     }
     
+    virtual HRESULT GetWindowState (AvnWindowState*ret)
+    {
+        if(ret == nullptr)
+        {
+            return E_POINTER;
+        }
+        
+        if([Window isMiniaturized])
+        {
+            *ret = Minimized;
+            return S_OK;
+        }
+        
+        if([Window isZoomed])
+        {
+            *ret = Maximized;
+            return S_OK;
+        }
+        
+        *ret = Normal;
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT SetWindowState (AvnWindowState state)
+    {
+        switch (state) {
+            case Maximized:
+                if([Window isMiniaturized])
+                {
+                    [Window deminiaturize:Window];
+                }
+                
+                if(!IsZoomed())
+                {
+                    DoZoom();
+                }
+                break;
+                
+            case Minimized:
+                [Window miniaturize:Window];
+                break;
+                
+            default:
+                if([Window isMiniaturized])
+                {
+                    [Window deminiaturize:Window];
+                }
+                
+                if(IsZoomed())
+                {
+                    DoZoom();
+                }
+                break;
+        }
+        
+        return S_OK;
+    }
+    
 protected:
+    virtual void OnResized ()
+    {
+        auto windowState = [Window isMiniaturized] ? Minimized
+        : (IsZoomed() ? Maximized : Normal);
+        
+        if (windowState != _lastWindowState)
+        {
+            _lastWindowState = windowState;
+            
+            WindowEvents->WindowStateChanged(windowState);
+        }
+    }
+    
     virtual NSWindowStyleMask GetStyle()
     {
         unsigned long s = NSWindowStyleMaskBorderless;

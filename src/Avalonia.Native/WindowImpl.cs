@@ -22,6 +22,11 @@ namespace Avalonia.Native
             {
                 _parent = parent;
             }
+
+            void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
+            {
+                _parent.WindowStateChanged?.Invoke((WindowState)state);
+            }
         }
 
         public IAvnWindow Native => _native;
@@ -46,7 +51,18 @@ namespace Avalonia.Native
         {
         }
 
-        public WindowState WindowState { get; set; } = WindowState.Normal;
+        public WindowState WindowState
+        {
+            get
+            {
+                return (WindowState)_native.GetWindowState();
+            }
+            set
+            {
+                _native.SetWindowState((AvnWindowState)value);
+            }
+        }
+
         public Action<WindowState> WindowStateChanged { get; set; }
 
         public void ShowTaskbarIcon(bool value)
