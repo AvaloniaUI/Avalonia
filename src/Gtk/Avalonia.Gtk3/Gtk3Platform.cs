@@ -24,8 +24,33 @@ namespace Avalonia.Gtk3
         internal static string DisplayClassName;
         public static bool UseDeferredRendering = true;
         private static bool s_gtkInitialized;
-        public static void Initialize()
+
+        static bool EnvOption(string option, bool def, bool? specified)
         {
+            bool? Parse(string env)
+            {
+                var v = Environment.GetEnvironmentVariable("AVALONIA_GTK3_" + env);
+                if (v == null)
+                    return null;
+                if (v.ToLowerInvariant() == "false" || v == "0")
+                    return false;
+                return true;
+            }
+
+            var overridden = Parse(option + "_OVERRIDE");
+            if (overridden.HasValue)
+                return overridden.Value;
+            if (specified.HasValue)
+                return specified.Value;
+            var envValue = Parse(option);
+            return envValue ?? def;
+        }
+        
+        public static void Initialize(Gtk3PlatformOptions options)
+        {
+            Resolver.Custom = options.CustomResolver;
+            UseDeferredRendering = EnvOption("USE_DEFERRED_RENDERING", true, options.UseDeferredRendering);
+            var useGpu = EnvOption("USE_GPU", false, options.UseGpuAcceleration);
             if (!s_gtkInitialized)
             {
                 try
@@ -57,7 +82,8 @@ namespace Avalonia.Gtk3
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
-            EglGlPlatformFeature.TryInitialize();
+            if (useGpu)
+                EglGlPlatformFeature.TryInitialize();
         }
 
         public IWindowImpl CreateWindow() => new WindowImpl();
@@ -118,18 +144,24 @@ namespace Avalonia.Gtk3
 
         public bool CurrentThreadIsLoopThread => s_tlsMarker;
     }
+
+    public class Gtk3PlatformOptions
+    {
+        public bool? UseDeferredRendering { get; set; }
+        public bool? UseGpuAcceleration { get; set; }
+        public ICustomGtk3NativeLibraryResolver CustomResolver { get; set; }
+    }
 }
 
 namespace Avalonia
 {
     public static class Gtk3AppBuilderExtensions
     {
-        public static T UseGtk3<T>(this AppBuilderBase<T> builder, bool deferredRendering = true, ICustomGtk3NativeLibraryResolver resolver = null) 
+        public static T UseGtk3<T>(this AppBuilderBase<T> builder, Gtk3PlatformOptions options = null) 
             where T : AppBuilderBase<T>, new()
         {
-            Resolver.Custom = resolver;
-            Gtk3Platform.UseDeferredRendering = deferredRendering;
-            return builder.UseWindowingSubsystem(Gtk3Platform.Initialize, "GTK3");
+            return builder.UseWindowingSubsystem(() => Gtk3Platform.Initialize(options ?? new Gtk3PlatformOptions()),
+                "GTK3");
         }
     }
 }
