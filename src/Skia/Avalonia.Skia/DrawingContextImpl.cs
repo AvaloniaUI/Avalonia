@@ -380,7 +380,6 @@ namespace Avalonia.Skia
         /// <param name="targetSize">Target size.</param>
         /// <param name="tileBrush">Tile brush to use.</param>
         /// <param name="tileBrushImage">Tile brush image.</param>
-        /// <param name="interpolationMode">The bitmap interpolation mode.</param>
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
             var calc = new TileBrushCalculator(tileBrush,

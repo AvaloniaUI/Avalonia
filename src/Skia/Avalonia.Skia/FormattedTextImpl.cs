@@ -19,7 +19,7 @@ namespace Avalonia.Skia
             string text,
             Typeface typeface,
             TextAlignment textAlignment,
-            TextWrapping wrapping,
+            TextWrapping textWrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -73,10 +73,10 @@ namespace Avalonia.Skia
             _paint.TextSize = (float)typeface.FontSize;
             _paint.TextAlign = textAlignment.ToSKTextAlign();
 
-            _wrapping = wrapping;
+            _textWrapping = textWrapping;
             _constraint = constraint;
 
-            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, wrapping, constraint);
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize,textAlignment, textWrapping, constraint);
 
             if (spans != null)
             {
@@ -336,7 +336,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _paint;
         private readonly List<Rect> _rects = new List<Rect>();
         public string Text { get; }
-        private readonly TextWrapping _wrapping;
+        private readonly TextWrapping _textWrapping;
         private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
         private float _lineHeight = 0;
         private float _lineOffset = 0;
@@ -592,7 +592,7 @@ namespace Avalonia.Skia
 
                 float constraint = -1;
 
-                if (_wrapping == TextWrapping.Wrap)
+                if (_textWrapping == TextWrapping.Wrap)
                 {
                     constraint = widthConstraint <= 0 ? MAX_LINE_WIDTH : widthConstraint;
                     if (constraint > MAX_LINE_WIDTH)
