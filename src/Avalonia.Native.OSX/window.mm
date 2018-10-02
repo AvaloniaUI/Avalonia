@@ -504,11 +504,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     auto modifiers = [self getModifiers:[event modifierFlags]];
      
     _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
-    
-    if (modifiers != 0)
-    {
-        _lastKeyHandled = true;
-    }
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
@@ -554,7 +549,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)hasMarkedText
 {
-    return false;
+    return _lastKeyHandled;
 }
 
 - (NSRange)markedRange
@@ -589,7 +584,10 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)insertText:(id)string replacementRange:(NSRange)replacementRange
 {
-    _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    if(!_lastKeyHandled)
+    {
+        _lastKeyHandled = _parent->BaseEvents->RawTextInputEvent(0, [string UTF8String]);
+    }
 }
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
