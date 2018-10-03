@@ -101,7 +101,7 @@ Task("Pack")
 });
 
 Task("Push")
-    .WithCriteria<Parameters>((context, parameters) => parameters.PushNuGet)
+    //.WithCriteria<Parameters>((context, parameters) => parameters.PushNuGet)
     .Does<Parameters>(parameters => 
 {
     var apiKey = EnvironmentVariable(parameters.IsNugetRelease ? "NUGET_API_KEY" : "MYGET_API_KEY");
