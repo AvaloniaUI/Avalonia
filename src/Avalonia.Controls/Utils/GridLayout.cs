@@ -147,10 +147,10 @@ namespace Avalonia.Controls.Utils
         /// The measured result that containing the desired size and all the column/row lengths.
         /// </returns>
         [NotNull, Pure]
-        internal MeasureResult Measure(double containerLength)
+        internal MeasureResult Measure(double containerLength, IReadOnlyList<LengthConvention> conventions = null)
         {
             // Prepare all the variables that this method needs to use.
-            var conventions = _conventions.Select(x => x.Clone()).ToList();
+            conventions = conventions ?? _conventions.Select(x => x.Clone()).ToList();
             var starCount = conventions.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
             var aggregatedLength = 0.0;
             double starUnitLength;
@@ -306,7 +306,7 @@ namespace Avalonia.Controls.Utils
             if (finalLength - measure.ContainerLength > LayoutTolerance)
             {
                 // If the final length is larger, we will rerun the whole measure.
-                measure = Measure(finalLength);
+                measure = Measure(finalLength, measure.LeanLengthList);
             }
             else if (finalLength - measure.ContainerLength < -LayoutTolerance)
             {
