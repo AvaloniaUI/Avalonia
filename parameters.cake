@@ -21,7 +21,7 @@ public class Parameters
         VersionSuffix = context.Argument("suffix", default(string));
         if (VersionSuffix == null)
         {
-            var build = context.EnvironmentVariable("APPVEYOR_BUILD_VERSION");
+            var build = context.EnvironmentVariable("AZURE_BUILD_VERSION");
             VersionSuffix = build != null ? $"-build{build}" : "";
         }
 
