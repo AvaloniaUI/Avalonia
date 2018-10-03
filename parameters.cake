@@ -4,6 +4,7 @@ public class Parameters
     public string Configuration { get; private set; }
     public string Artifacts { get; private set; }
     public string VersionSuffix { get; private set; }
+    public string Version { get; private set; } = "0.7.0";
     public string NuGetPushBranch { get; private set; }
     public string NuGetPushRepoName { get; private set; }
     public bool PushNuGet { get; private set; }
@@ -21,7 +22,7 @@ public class Parameters
         VersionSuffix = context.Argument("suffix", default(string));
         if (VersionSuffix == null)
         {
-            var build = context.EnvironmentVariable("Build.BuildNumber");
+            var build = context.EnvironmentVariable("BUILD_BUILDNUMBER");
             VersionSuffix = build != null ? $"-build{build}" : "";
         }
 

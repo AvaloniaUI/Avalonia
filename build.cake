@@ -91,13 +91,17 @@ Task("Pack")
         DotNetCorePack($"{path}/{name}/{name}.csproj", new DotNetCorePackSettings {
             Configuration = parameters.Configuration,
             VersionSuffix = parameters.VersionSuffix,
-            OutputDirectory = $"{parameters.Artifacts}/nuget"
+            OutputDirectory = $"{parameters.Artifacts}/nuget",
+            EnvironmentVariables = new Dictionary<string, string>
+            {
+                { "VERSION", parameters.Version }
+            }
         });
     }
 });
 
 Task("Push")
-    //.WithCriteria<Parameters>((context, parameters) => parameters.PushNuGet)
+    .WithCriteria<Parameters>((context, parameters) => parameters.PushNuGet)
     .Does<Parameters>(parameters => 
 {
     var apiKey = EnvironmentVariable(parameters.IsNugetRelease ? "NUGET_API_KEY" : "MYGET_API_KEY");
