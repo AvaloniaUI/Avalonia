@@ -1,0 +1,13 @@
+
+pool:
+  vmImage: 'macOS 10.13'
+
+steps:
+- task: Xcode@5
+  inputs:
+    actions: 'build'
+    scheme: ''
+    sdk: 'macosx10.12'
+    configuration: 'Release'
+    xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
+    xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
