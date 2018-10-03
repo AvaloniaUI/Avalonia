@@ -60,6 +60,7 @@ namespace Avalonia.Controls
 
             private class MeasurementCache
             {
+
                 public MeasurementCache(Grid grid)
                 {
                     Grid = grid;
@@ -67,19 +68,20 @@ namespace Avalonia.Controls
                                  .Concat(grid.ColumnDefinitions)
                                  .Select(d => new MeasurementResult(d))
                                  .ToList();
+
+                    grid.RowDefinitions.
+
                 }
 
                 public void UpdateMeasureResult(GridLayout.MeasureResult rowResult, GridLayout.MeasureResult columnResult)
                 {
-                    RowResult = rowResult;
-                    ColumnResult = columnResult;
                     MeasurementState = MeasurementState.Cached;
-                    for (int i = 0; i < rowResult.LengthList.Count; i++)
+                    for (int i = 0; i < Grid.RowDefinitions.Count; i++)
                     {
                         Results[i].MeasuredResult = rowResult.LengthList[i];
                     }
 
-                    for (int i = 0; i < columnResult.LengthList.Count; i++)
+                    for (int i = 0; i < Grid.ColumnDefinitions.Count; i++)
                     {
                         Results[i + rowResult.LengthList.Count].MeasuredResult = columnResult.LengthList[i];
                     }
@@ -92,8 +94,6 @@ namespace Avalonia.Controls
                 }
 
                 public Grid Grid { get; }
-                public GridLayout.MeasureResult RowResult { get; private set; }
-                public GridLayout.MeasureResult ColumnResult { get; private set; }
                 public MeasurementState MeasurementState { get; private set; }
 
                 public List<MeasurementResult> Results { get; }
@@ -103,9 +103,9 @@ namespace Avalonia.Controls
 
             private class MeasurementResult
             {
-                public MeasurementResult(DefinitionBase @base)
+                public MeasurementResult(DefinitionBase definition)
                 {
-                    Definition = @base;
+                    Definition = definition;
                     MeasuredResult = double.NaN;
                 }
 
@@ -113,22 +113,16 @@ namespace Avalonia.Controls
                 public double MeasuredResult { get; set; }
             }
 
-            private enum ScopeType
-            {
-                Auto,
-                Fixed
-            }
-
             private class Group
             {
                 public bool IsFixed { get; set; }
 
-                public List<MeasurementResult> Results { get; }
+                public List<MeasurementResult> Results { get; } = new List<MeasurementResult>();
 
                 public double CalculatedLength { get; }
             }
 
-            private Dictionary<string, Group> _groups = new Dictionary<string, Group>();
+            private readonly Dictionary<string, Group> _groups = new Dictionary<string, Group>();
 
 
             public SharedSizeScopeHost(Control scope)
@@ -158,56 +152,78 @@ namespace Avalonia.Controls
                 cache.UpdateMeasureResult(rowResult, columnResult);
             }
 
+            private double Gather(IEnumerable<MeasurementResult> measurements)
+            {
+                var result = 0.0d;
+
+                bool onlyFixed = false;
+
+                foreach (var measurement in measurements)
+                {
+                    if (measurement.Definition is ColumnDefinition column)
+                    {
+                        if (!onlyFixed && column.Width.IsAbsolute)
+                        {
+                            onlyFixed = true;
+                            result = measurement.MeasuredResult;
+                        }
+                        else if (onlyFixed == column.Width.IsAbsolute)
+                            result = Math.Max(result, measurement.MeasuredResult);
+
+                        result = Math.Max(result, column.MinWidth);
+                    }
+                    if (measurement.Definition is RowDefinition row)
+                    {
+                        if (!onlyFixed && row.Height.IsAbsolute)
+                        {
+                            onlyFixed = true;
+                            result = measurement.MeasuredResult;
+                        }
+                        else if (onlyFixed == row.Height.IsAbsolute)
+                            result = Math.Max(result, measurement.MeasuredResult);
+
+                        result = Math.Max(result, row.MinHeight);
+                    }
+                }
+
+                return result;
+            }
+
+
+            (List<GridLayout.LengthConvention>, List<double>, double) Arrange(IReadOnlyList<DefinitionBase> definitions, GridLayout.MeasureResult measureResult)
+            {
+                var conventions = measureResult.LeanLengthList.ToList();
+                var lengths = measureResult.LengthList.ToList();
+                var desiredLength = 0.0;
+                for (int i = 0; i < definitions.Count; i++)
+                {
+                    var definition = definitions[i];
+                    if (string.IsNullOrEmpty(definition.SharedSizeGroup))
+                    {
+                        desiredLength += measureResult.LengthList[i];
+                        continue;
+                    }
+
+                    var group = _groups[definition.SharedSizeGroup];
+
+                    var length = Gather(group.Results);
+
+                    conventions[i] = new GridLayout.LengthConvention(
+                        new GridLength(length),
+                        measureResult.LeanLengthList[i].MinLength,
+                        measureResult.LeanLengthList[i].MaxLength
+                    );
+                    lengths[i] = length;
+                    desiredLength += length;
+                }
+
+                return (conventions, lengths, desiredLength);
+            }
+
             internal (GridLayout.MeasureResult, GridLayout.MeasureResult) HandleArrange(Grid grid, GridLayout.MeasureResult rowResult, GridLayout.MeasureResult columnResult)
             {
-                var rowConventions = rowResult.LeanLengthList.ToList();
-                var rowLengths = rowResult.LengthList.ToList();
-                var rowDesiredLength = 0.0;
-                for (int i = 0; i < grid.RowDefinitions.Count; i++)
-                {
-                    var definition = grid.RowDefinitions[i];
-                    if (string.IsNullOrEmpty(definition.SharedSizeGroup))
-                    {
-                        rowDesiredLength += rowResult.LengthList[i];
-                        continue;
-                    }
-
-                    var group = _groups[definition.SharedSizeGroup];
-
-                    var length = group.Results.Max(g => g.MeasuredResult);
-                    rowConventions[i] = new GridLayout.LengthConvention(
-                        new GridLength(length),
-                        rowResult.LeanLengthList[i].MinLength,
-                        rowResult.LeanLengthList[i].MaxLength
-                        );
-                    rowLengths[i] = length;
-                    rowDesiredLength += length;
-
-                }
-
-                var columnConventions = columnResult.LeanLengthList.ToList();
-                var columnLengths = columnResult.LengthList.ToList();
-                var columnDesiredLength = 0.0;
-                for (int i = 0; i < grid.ColumnDefinitions.Count; i++)
-                {
-                    var definition = grid.ColumnDefinitions[i];
-                    if (string.IsNullOrEmpty(definition.SharedSizeGroup))
-                    {
-                        columnDesiredLength += rowResult.LengthList[i];
-                        continue;
-                    }
-
-                    var group = _groups[definition.SharedSizeGroup];
-
-                    var length = group.Results.Max(g => g.MeasuredResult);
-                    columnConventions[i] = new GridLayout.LengthConvention(
-                        new GridLength(length),
-                        columnResult.LeanLengthList[i].MinLength,
-                        columnResult.LeanLengthList[i].MaxLength
-                        );
-                    columnLengths[i] = length;
-                    columnDesiredLength += length;
-                }
+                var (rowConventions, rowLengths, rowDesiredLength) = Arrange(grid.RowDefinitions, rowResult);
+                var (columnConventions, columnLengths, columnDesiredLength) = Arrange(grid.ColumnDefinitions, columnResult);
 
                 return (
                     new GridLayout.MeasureResult(
@@ -231,6 +247,8 @@ namespace Avalonia.Controls
                 foreach (var result in cache.Results)
                 {
                     var scopeName = result.Definition.SharedSizeGroup;
+                    if (string.IsNullOrEmpty(scopeName))
+                        continue;
                     if (!_groups.TryGetValue(scopeName, out var group))
                         _groups.Add(scopeName, group = new Group());
 
@@ -250,6 +268,8 @@ namespace Avalonia.Controls
                 foreach (var result in cache.Results)
                 {
                     var scopeName = result.Definition.SharedSizeGroup;
+                    if (string.IsNullOrEmpty(scopeName))
+                        continue;
                     Debug.Assert(_groups.TryGetValue(scopeName, out var group));
 
                     group.Results.Remove(result);
@@ -346,14 +366,14 @@ namespace Avalonia.Controls
             if ((bool)arg2.NewValue)
             {
                 Debug.Assert(source.GetValue(s_sharedSizeScopeHostProperty) == null);
-                source.SetValue(IsSharedSizeScopeProperty, new SharedSizeScopeHost(source));
+                source.SetValue(s_sharedSizeScopeHostProperty, new SharedSizeScopeHost(source));
             }
             else
             {
                 var host = source.GetValue(s_sharedSizeScopeHostProperty) as SharedSizeScopeHost;
                 Debug.Assert(host != null);
                 host.Dispose();
-                source.SetValue(IsSharedSizeScopeProperty, null);
+                source.SetValue(s_sharedSizeScopeHostProperty, null);
             }
         }
 
@@ -626,11 +646,19 @@ namespace Avalonia.Controls
             var columnLayout = _columnLayoutCache;
             var rowLayout = _rowLayoutCache;
 
-            var (rowCache, columnCache) = _sharedSizeHost?.HandleArrange(this, _rowMeasureCache, _columnMeasureCache) ?? (_rowMeasureCache, _columnMeasureCache);
+            var (rowCache, columnCache) =
+                _sharedSizeHost?.HandleArrange(this, _rowMeasureCache, _columnMeasureCache) ??
+                (_rowMeasureCache, _columnMeasureCache);
+
+            if (_sharedSizeHost != null)
+            {
+                rowCache = rowLayout.Measure(finalSize.Width, rowCache.LeanLengthList);
+                columnCache = columnLayout.Measure(finalSize.Width, columnCache.LeanLengthList);
+            }
 
             // Calculate for arrange result.
-            var columnResult = columnLayout.Arrange(finalSize.Width, rowCache);
-            var rowResult = rowLayout.Arrange(finalSize.Height, columnCache);
+            var columnResult = columnLayout.Arrange(finalSize.Width, columnCache);
+            var rowResult = rowLayout.Arrange(finalSize.Height, rowCache);
             // Arrange the children.
             foreach (var child in Children.OfType<Control>())
             {
