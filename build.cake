@@ -90,7 +90,7 @@ Task("Pack")
         Information($"Pack: {name}");
         DotNetCorePack($"{path}/{name}/{name}.csproj", new DotNetCorePackSettings {
             Configuration = parameters.Configuration,
-            VersionSuffix = parameters.VersionSuffix,
+            VersionSuffix = "parameters.VersionSuffix",
             OutputDirectory = $"{parameters.Artifacts}/nuget",
             EnvironmentVariables = new Dictionary<string, string>
             {
