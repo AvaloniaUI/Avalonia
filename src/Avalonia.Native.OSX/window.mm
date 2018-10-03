@@ -572,7 +572,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     
 }
 
-- (NSArray<NSAttributedStringKey> *)validAttributesForMarkedText
+- (NSArray<NSString *> *)validAttributesForMarkedText
 {
     return [NSArray new];
 }
