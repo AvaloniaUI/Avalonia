@@ -23,4 +23,4 @@ steps:
     dotnet --info
     dotnet tool install -g Cake.Tool --version 0.30.0
     export PATH="$PATH:$HOME/.dotnet/tools"
-    dotnet cake build.cake -Target="Azure-Linux" -Platform="Any CPU" -Configuration="Release"
+    dotnet cake build.cake -Target="Azure" -Platform="Any CPU" -Configuration="Release"
