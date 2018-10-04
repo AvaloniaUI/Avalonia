@@ -37,6 +37,8 @@ public class Parameters
         var repoTagName = context.EnvironmentVariable("APPVEYOR_REPO_TAG_NAME");
         var pullRequestTitle = context.EnvironmentVariable("SYSTEM_PULLREQUEST_SOURCEBRANCH");
 
+        Information($"RepoName: {repoName}, RepoBranch: {repoBranch}, PR Title: {pullRequestTitle}");
+
         if (pullRequestTitle == null 
             && string.Compare(repoName, NuGetPushRepoName, StringComparison.OrdinalIgnoreCase) == 0
             && string.Compare(repoBranch, NuGetPushBranch, StringComparison.OrdinalIgnoreCase) == 0)
