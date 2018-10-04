@@ -3,8 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
@@ -58,8 +63,13 @@ namespace Avalonia.Controls
                 Cached
             }
 
-            private class MeasurementCache
+            private sealed class MeasurementCache : IDisposable
             {
+                CompositeDisposable _subscriptions;
+
+                Subject<(string, string, MeasurementResult)> _groupChanged = new Subject<(string, string, MeasurementResult)>();
+
+                public ISubject<(string oldName, string newName, MeasurementResult result)> GroupChanged => _groupChanged;
 
                 public MeasurementCache(Grid grid)
                 {
@@ -69,8 +79,96 @@ namespace Avalonia.Controls
                                  .Select(d => new MeasurementResult(d))
                                  .ToList();
 
-                    grid.RowDefinitions.
+                    grid.RowDefinitions.CollectionChanged += DefinitionsCollectionChanged;
+                    grid.ColumnDefinitions.CollectionChanged += DefinitionsCollectionChanged;
 
+                    _subscriptions = new CompositeDisposable(
+                        Disposable.Create(() => grid.RowDefinitions.CollectionChanged -= DefinitionsCollectionChanged),
+                        Disposable.Create(() => grid.ColumnDefinitions.CollectionChanged -= DefinitionsCollectionChanged),
+                        grid.RowDefinitions.TrackItemPropertyChanged(DefinitionPropertyChanged),
+                        grid.ColumnDefinitions.TrackItemPropertyChanged(DefinitionPropertyChanged));
+
+                }
+
+                private void DefinitionPropertyChanged(Tuple<object, PropertyChangedEventArgs> propertyChanged)
+                {
+                    if (propertyChanged.Item2.PropertyName == nameof(DefinitionBase.SharedSizeGroup))
+                    {
+                        var oldName = string.Empty;
+                        var newName = (propertyChanged.Item1 as DefinitionBase).SharedSizeGroup;
+                        var result = Results.Single(mr => ReferenceEquals(mr.Definition, propertyChanged.Item2));
+                        _groupChanged.OnNext((oldName, newName, result));
+                    }
+                }
+
+                private void DefinitionsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                {
+                    int offset = 0;
+                    if (sender is ColumnDefinitions)
+                        offset = Grid.RowDefinitions.Count;
+
+                    var newItems = e.NewItems?.OfType<DefinitionBase>().Select(db => new MeasurementResult(db)).ToList() ?? new List<MeasurementResult>();
+                    var oldItems = Results.GetRange(e.OldStartingIndex + offset, e.OldItems?.Count ?? 0);
+
+                    void NotifyNewItems()
+                    {
+                        foreach (var item in newItems)
+                        {
+                            if (string.IsNullOrEmpty(item.Definition.SharedSizeGroup))
+                                continue;
+
+                            _groupChanged.OnNext((null, item.Definition.SharedSizeGroup, item));
+                        }
+                    }
+
+                    void NotifyOldItems()
+                    {
+                        foreach (var item in oldItems)
+                        {
+                            if (string.IsNullOrEmpty(item.Definition.SharedSizeGroup))
+                                continue;
+
+                            _groupChanged.OnNext((item.Definition.SharedSizeGroup, null, item));
+                        }
+                    }
+
+                    switch (e.Action)
+                    {
+                        case NotifyCollectionChangedAction.Add:
+                            Results.InsertRange(e.NewStartingIndex + offset, newItems);
+                            NotifyNewItems();
+                            break;
+
+                        case NotifyCollectionChangedAction.Remove:
+                            Results.RemoveRange(e.OldStartingIndex + offset, oldItems.Count);
+                            NotifyOldItems();
+                            break;
+
+                        case NotifyCollectionChangedAction.Move:
+                            Results.RemoveRange(e.OldStartingIndex + offset, oldItems.Count);
+                            Results.InsertRange(e.NewStartingIndex + offset, oldItems);
+                            break;
+
+                        case NotifyCollectionChangedAction.Replace:
+                            Results.RemoveRange(e.OldStartingIndex + offset, oldItems.Count);
+                            Results.InsertRange(e.NewStartingIndex + offset, newItems);
+
+                            NotifyOldItems();
+                            NotifyNewItems();
+                            
+                            break;
+                           
+                        case NotifyCollectionChangedAction.Reset:
+                            oldItems = Results;
+                            newItems = Results = Grid.RowDefinitions.Cast<DefinitionBase>()
+                                                     .Concat(Grid.ColumnDefinitions)
+                                                     .Select(d => new MeasurementResult(d))
+                                                     .ToList();
+                            NotifyOldItems();
+                            NotifyNewItems();
+
+                            break;
+                    }
                 }
 
                 public void UpdateMeasureResult(GridLayout.MeasureResult rowResult, GridLayout.MeasureResult columnResult)
@@ -93,10 +191,16 @@ namespace Avalonia.Controls
                     Results.ForEach(r => r.MeasuredResult = double.NaN);
                 }
 
+                public void Dispose()
+                {
+                    _subscriptions.Dispose();
+                    _groupChanged.OnCompleted();
+                }
+
                 public Grid Grid { get; }
                 public MeasurementState MeasurementState { get; private set; }
 
-                public List<MeasurementResult> Results { get; }
+                public List<MeasurementResult> Results { get; private set; }
             }
 
             private readonly AvaloniaList<MeasurementCache> _measurementCaches;
@@ -133,7 +237,15 @@ namespace Avalonia.Controls
                 {
                     cache.Grid.InvalidateMeasure();
                     AddGridToScopes(cache);
+
+                    cache.GroupChanged.Subscribe(SharedGroupChanged);
                 }
+            }
+
+            void SharedGroupChanged((string oldName, string newName, MeasurementResult result) change)
+            {
+                RemoveFromGroup(change.oldName, change.result);
+                AddToGroup(change.newName, change.result);
             }
 
             internal void InvalidateMeasure(Grid grid)
@@ -247,15 +359,21 @@ namespace Avalonia.Controls
                 foreach (var result in cache.Results)
                 {
                     var scopeName = result.Definition.SharedSizeGroup;
-                    if (string.IsNullOrEmpty(scopeName))
-                        continue;
-                    if (!_groups.TryGetValue(scopeName, out var group))
-                        _groups.Add(scopeName, group = new Group());
-
-                    group.IsFixed |= IsFixed(result.Definition);
-
-                    group.Results.Add(result);
+                    AddToGroup(scopeName, result);
                 }
+            }
+
+            private void AddToGroup(string scopeName, MeasurementResult result)
+            {
+                if (string.IsNullOrEmpty(scopeName))
+                    return;
+
+                if (!_groups.TryGetValue(scopeName, out var group))
+                    _groups.Add(scopeName, group = new Group());
+
+                group.IsFixed |= IsFixed(result.Definition);
+
+                group.Results.Add(result);
             }
 
             private bool IsFixed(DefinitionBase definition)
@@ -268,17 +386,23 @@ namespace Avalonia.Controls
                 foreach (var result in cache.Results)
                 {
                     var scopeName = result.Definition.SharedSizeGroup;
-                    if (string.IsNullOrEmpty(scopeName))
-                        continue;
-                    Debug.Assert(_groups.TryGetValue(scopeName, out var group));
+                    RemoveFromGroup(scopeName, result);
+                }
+            }
 
-                    group.Results.Remove(result);
-                    if (!group.Results.Any())
-                        _groups.Remove(scopeName);
-                    else
-                    {
-                        group.IsFixed = group.Results.Select(r => r.Definition).Any(IsFixed);
-                    }
+            private void RemoveFromGroup(string scopeName, MeasurementResult result)
+            {
+                if (string.IsNullOrEmpty(scopeName))
+                    return;
+
+                Debug.Assert(_groups.TryGetValue(scopeName, out var group));
+
+                group.Results.Remove(result);
+                if (!group.Results.Any())
+                    _groups.Remove(scopeName);
+                else
+                {
+                    group.IsFixed = group.Results.Select(r => r.Definition).Any(IsFixed);
                 }
             }
 
