@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\Avalonia.Native.OSX\build\Avalonia.Native.OSX\Build\Products\Release\libAvalonia.Native.OSX.dylib">
+      <Content Include="libAvalonia.Native.OSX.dylib">
         <PackagePath>runtimes/osx-x64/libAvalonia.Native.OSX.dylib</PackagePath>
         <Pack>true</Pack>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
