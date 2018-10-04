@@ -21,7 +21,7 @@
       <Compile Remove="Generated\Structures.cs" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
       <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
         <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
         <Pack>true</Pack>
