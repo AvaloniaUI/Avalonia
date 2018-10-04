@@ -136,6 +136,7 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
+    virtual HRESULT ShowDialog (IUnknown**ppv) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
@@ -181,7 +182,6 @@ AVNCOM(IAvnSignaledCallback, 09) : IUnknown
 {
     virtual void Signaled(int priority, bool priorityContainsMeaningfulValue) = 0;
 };
-
 
 AVNCOM(IAvnLoopCancellation, 0a) : virtual IUnknown
 {

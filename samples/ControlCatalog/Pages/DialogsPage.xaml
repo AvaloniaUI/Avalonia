@@ -8,5 +8,6 @@
           <TextBlock>Modal to window</TextBlock>
       </StackPanel>
       <Button Name="DecoratedWindow">Decorated window</Button>
+      <Button Name="ChildWindow">Child window</Button>
   </StackPanel>
 </UserControl>

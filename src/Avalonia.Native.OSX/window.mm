@@ -610,6 +610,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _canBecomeKeyAndMain;
 }
 
+- (void)pollModalSession:(nonnull NSModalSession)session
+{
+    auto response = [NSApp runModalSession:session];
+    
+    if(response == NSModalResponseContinue)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self pollModalSession:session];
+        });
+    }
+    else
+    {
+        [self orderOut:self];
+        [NSApp endModalSession:session];
+    }
+}
+
 -(void) setCanBecomeKeyAndMain
 {
     _canBecomeKeyAndMain = true;
@@ -697,6 +714,30 @@ extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
     return ptr;
 }
 
+class ModalDisposable : public ComUnknownObject
+{
+    NSModalSession _session;
+    AvnWindow* _window;
+    
+    void Dispose ()
+    {
+        [_window orderOut:_window];
+        [NSApp endModalSession:_session];
+    }
+    
+public:
+    ModalDisposable(AvnWindow* window, NSModalSession session)
+    {
+        _session = session;
+        _window = window;
+    }
+    
+    virtual ~ModalDisposable()
+    {
+        Dispose();
+    }
+};
+
 class WindowImpl : public WindowBaseImpl, public IAvnWindow, public IWindowStateChanged
 {
 private:
@@ -714,6 +755,28 @@ private:
     {
         WindowEvents = events;
         [Window setCanBecomeKeyAndMain];
+    }
+    
+    virtual HRESULT ShowDialog (IUnknown**ppv)
+    {
+        @autoreleasepool
+        {
+            if(ppv == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            auto session = [NSApp beginModalSessionForWindow:Window];
+            auto disposable = new ModalDisposable(Window, session);
+            *ppv = disposable;
+            
+            SetPosition(lastPositionSet);
+            UpdateStyle();
+            
+            [Window pollModalSession:session];
+            
+            return S_OK;
+        }
     }
     
     void WindowStateChanged ()

@@ -33,7 +33,7 @@ namespace Avalonia.Native
 
         public IDisposable ShowDialog()
         {
-            return null;
+            return _native.ShowDialog();
         }
 
 
