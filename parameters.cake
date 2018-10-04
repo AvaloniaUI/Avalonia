@@ -29,13 +29,13 @@ public class Parameters
         Version += "-build" + context.EnvironmentVariable("BUILD_BUILDNUMBER").Replace(".","");
 
         NuGetPushBranch = "master";
-        NuGetPushRepoName = "AvaloniaUI/Avalonia.Native";
+        NuGetPushRepoName = "https://github.com/AvaloniaUI/Avalonia.Native";
 
-        var repoName = context.EnvironmentVariable("APPVEYOR_REPO_NAME");
-        var repoBranch = context.EnvironmentVariable("APPVEYOR_REPO_BRANCH");
+        var repoName = context.EnvironmentVariable("BUILD_REPOSITORY_URI");
+        var repoBranch = context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME");
         var repoTag = context.EnvironmentVariable("APPVEYOR_REPO_TAG");
         var repoTagName = context.EnvironmentVariable("APPVEYOR_REPO_TAG_NAME");
-        var pullRequestTitle = context.EnvironmentVariable("APPVEYOR_PULL_REQUEST_TITLE");
+        var pullRequestTitle = context.EnvironmentVariable("SYSTEM_PULLREQUEST_SOURCEBRANCH");
 
         if (pullRequestTitle == null 
             && string.Compare(repoName, NuGetPushRepoName, StringComparison.OrdinalIgnoreCase) == 0
