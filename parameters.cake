@@ -26,7 +26,7 @@ public class Parameters
             VersionSuffix = build != null ? $"-build{build}" : "";
         }
 
-        Version += "-build" + context.EnvironmentVariable("BUILD_BUILDNUMBER").Replace(".","");
+        Version += "-build" + int.Parse(context.EnvironmentVariable("BUILD_BUILDNUMBER").Replace(".","").SubString(4)).ToString("D5");
 
         NuGetPushBranch = "master";
         NuGetPushRepoName = "https://github.com/AvaloniaUI/Avalonia.Native";
