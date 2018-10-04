@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -23,7 +23,7 @@
 
     <ItemGroup>
       <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
-        <PackagePath>runtimes/osx-x64/libAvalonia.Native.OSX.dylib</PackagePath>
+        <PackagePath>runtimes/osx/native/libAvalonia.Native.OSX.dylib</PackagePath>
         <Pack>true</Pack>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
