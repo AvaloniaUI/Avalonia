@@ -112,6 +112,12 @@ public:
         *ppv = ::CreateClipboard ();
         return S_OK;
     }
+
+    virtual HRESULT CreateCursor(IAvnCursor** ppv)
+    {
+        *ppv = ::CreateCursor();
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

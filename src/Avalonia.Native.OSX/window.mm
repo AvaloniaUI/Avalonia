@@ -9,6 +9,8 @@ public:
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     AvnPoint lastPositionSet;
+    NSCursor* cursor;
+    
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
         BaseEvents = events;
@@ -188,6 +190,26 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT SetCursor(void* ptr)
+    {
+        cursor = (__bridge NSCursor*)ptr;
+        UpdateCursor();
+        return S_OK;
+    }
+
+    virtual HRESULT UpdateCursor()
+    {
+        [View resetCursorRects];
+        if (cursor != NULL)
+        {
+             auto rect = [Window frame];
+             [View addCursorRect:rect cursor:cursor];
+//           if ([View isMouseOver])
+                 [cursor set];
+        }
+        return S_OK;
+    }
+
 protected:
     virtual NSWindowStyleMask GetStyle()
     {

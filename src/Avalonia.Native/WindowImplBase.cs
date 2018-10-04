@@ -19,6 +19,7 @@ namespace Avalonia.Native
         private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
+        private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
@@ -27,6 +28,7 @@ namespace Avalonia.Native
         {
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
+            _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
@@ -310,6 +312,7 @@ namespace Avalonia.Native
 
         public void SetCursor(IPlatformHandle cursor)
         {
+            _native.Cursor = (cursor ?? _cursorFactory.GetCursor(StandardCursorType.Arrow)).Handle;
         }
 
         public void BeginResizeDrag(WindowEdge edge)

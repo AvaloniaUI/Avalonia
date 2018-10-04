@@ -63,9 +63,8 @@ namespace Avalonia.Native
             _factory.Initialize();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursor()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
-
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
