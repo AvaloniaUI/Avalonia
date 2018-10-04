@@ -63,7 +63,8 @@ namespace Avalonia.Native
             _factory.Initialize();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursor()))
+                .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
+                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IMouseDevice>().ToConstant(MouseDevice)
@@ -72,8 +73,8 @@ namespace Avalonia.Native
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<IPlatformThreadingInterface>().ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()));
+                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()));
+                
         }
 
         public IWindowImpl CreateWindow()
