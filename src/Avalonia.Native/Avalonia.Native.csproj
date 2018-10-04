@@ -23,13 +23,9 @@
 
     <ItemGroup>
       <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
-        <PackagePath>runtimes/osx-x64/native/libAvalonia.Native.OSX.dylib</PackagePath>
+        <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
         <Pack>true</Pack>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="Avalonia.Native.targets">
-        <PackagePath>build/netstandard2.0</PackagePath>
-        <Pack>true</Pack>
       </Content>
   </ItemGroup>
 </Project>
