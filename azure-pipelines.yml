@@ -12,12 +12,12 @@ steps:
     configuration: 'Release'
     xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
     xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
-    outputPath: 'src/Avalonia.Native/bin/Release/netstandard2.0/'
+    exportPath: 'src/Avalonia.Native/bin/Release/netstandard2.0'
 - task: DotNetCoreInstaller@0
   inputs:
     version: '2.1.401'
 - script: |
-    ls src/Avalonia.Native/bin/Release/netstandard2.0/
+    ls src/Avalonia.Native/bin/Release/netstandard2.0
     brew install castxml
     export COREHOST_TRACE=0
     export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
