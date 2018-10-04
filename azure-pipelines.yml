@@ -19,6 +19,9 @@ steps:
 - script: |
     ls src/Avalonia.Native.OSX
     ls src/Avalonia.Native.OSX/Avalonia.Native.OSX.xcodeproj
+    ls ./
+    ls src/
+    ls
     #brew install castxml
     #export COREHOST_TRACE=0
     #export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
