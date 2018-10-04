@@ -3,11 +3,25 @@ pool:
   vmImage: 'macOS 10.13'
 
 steps:
+- bash: 'xcodebuild -showsdks'
 - task: Xcode@5
   inputs:
     actions: 'build'
     scheme: ''
-    sdk: 'macosx10.12'
+    sdk: 'macosx10.13'
     configuration: 'Release'
     xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
     xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.1.401'
+- script: |
+    brew install castxml
+    export COREHOST_TRACE=0
+    export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+    export DOTNET_CLI_TELEMETRY_OPTOUT=1
+    which dotnet
+    dotnet --info
+    dotnet tool install -g Cake.Tool --version 0.30.0
+    export PATH="$PATH:$HOME/.dotnet/tools"
+    dotnet cake build.cake -Target="Azure" -Platform="Any CPU" -Configuration="Release"
