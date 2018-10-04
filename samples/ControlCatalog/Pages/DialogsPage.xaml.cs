@@ -34,6 +34,19 @@ namespace ControlCatalog.Pages
             {
                 new DecoratedWindow().Show();
             };
+            this.FindControl<Button>("ChildWindow").Click += delegate
+            {
+
+                var window = new Window
+                {
+                    Height = 200,
+                    Width = 200,
+                    Content = new Button{ Content = "Test"}
+                };
+
+                window.ShowDialog();
+
+            };
         }
 
         Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked.Value ? (Window)this.VisualRoot : null;

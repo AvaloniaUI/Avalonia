@@ -21,6 +21,7 @@ class WindowBaseImpl;
 @interface AvnWindow : NSWindow <NSWindowDelegate>
 -(AvnWindow*) initWithParent: (WindowBaseImpl*) parent;
 -(void) setCanBecomeKeyAndMain;
+-(void) pollModalSession: (nonnull NSModalSession) session;
 @end
 
 struct INSWindowHolder
