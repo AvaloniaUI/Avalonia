@@ -20,4 +20,12 @@
       <Compile Remove="Generated\LocalInterop.cs" />
       <Compile Remove="Generated\Structures.cs" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\Avalonia.Native.OSX\build\Avalonia.Native.OSX\Build\Products\Debug\libAvalonia.Native.OSX.dylib">
+        <PackagePath>runtimes/osx-x64/libAvalonia.Native.OSX.dylib</PackagePath>
+        <Pack>true</Pack>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
 </Project>
