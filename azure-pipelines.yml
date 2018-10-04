@@ -6,13 +6,13 @@ steps:
 - bash: 'xcodebuild -showsdks'
 - task: Xcode@5
   inputs:
-    actions: 'build'
+    actions: 'archive'
     scheme: ''
     sdk: 'macosx10.13'
     configuration: 'Release'
     xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
     xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
-    exportPath: '../output/$(SDK)/$(Configuration)'
+    archivePath: '../output/$(SDK)/$(Configuration)'
 - task: DotNetCoreInstaller@0
   inputs:
     version: '2.1.401'
