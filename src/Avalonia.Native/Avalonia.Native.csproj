@@ -27,5 +27,10 @@
         <Pack>true</Pack>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <Content Include="Avalonia.Native.targets.pkg">
+        <PackagePath>build/netstandard2.0/Avalonia.Native.targets</PackagePath>
+        <Pack>true</Pack>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
   </ItemGroup>
 </Project>
