@@ -9,6 +9,8 @@ namespace Avalonia.Visuals.UnitTests.Media
 {
     using System.Globalization;
     using System.IO;
+    using Avalonia.Platform;
+    using Moq;
 
     public class PathMarkupParserTests
     {
@@ -18,7 +20,7 @@ namespace Avalonia.Visuals.UnitTests.Media
             var pathGeometry = new PathGeometry();
             using (var context = new PathGeometryContext(pathGeometry))
             using (var parser = new PathMarkupParser(context))
-            {               
+            {
                 parser.Parse("M10 10");
 
                 var figure = pathGeometry.Figures[0];
@@ -200,6 +202,25 @@ namespace Avalonia.Visuals.UnitTests.Media
 
                 Assert.True(true);
             }
+        }
+
+        [Theory]
+        [InlineData("M0 0L10 10")]
+        [InlineData("M0 0L10 10z")]
+        [InlineData("M0 0L10 10 \n ")]
+        [InlineData("M0 0L10 10z \n ")]
+        [InlineData("M0 0L10 10 ")]
+        [InlineData("M0 0L10 10z ")]
+        public void Should_AlwaysEndFigure(string pathData)
+        {
+            var context = new Mock<IGeometryContext>();
+
+            using (var parser = new PathMarkupParser(context.Object))
+            {
+                parser.Parse(pathData);
+            }
+
+            context.Verify(v => v.EndFigure(It.IsAny<bool>()), Times.AtLeastOnce());
         }
 
         [Theory]

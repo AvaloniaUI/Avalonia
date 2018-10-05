@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3
 {

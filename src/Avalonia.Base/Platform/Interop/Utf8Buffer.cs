@@ -2,9 +2,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Avalonia.Gtk3.Interop
+namespace Avalonia.Platform.Interop
 {
-    class Utf8Buffer : SafeHandle
+    public class Utf8Buffer : SafeHandle
     {
         private GCHandle _gchandle;
         private byte[] _data;

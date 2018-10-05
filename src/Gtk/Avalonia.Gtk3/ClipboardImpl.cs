@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3
 {
