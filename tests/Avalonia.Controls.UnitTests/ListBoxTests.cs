@@ -180,13 +180,13 @@ namespace Avalonia.Controls.UnitTests
             {
                 var items = new ObservableCollection<string>();
 
-                Action create = () =>
+                void create()
                 {
                     foreach (var i in Enumerable.Range(1, 7))
                     {
                         items.Add(i.ToString());
                     }
-                };
+                }
 
                 create();
 
@@ -220,21 +220,20 @@ namespace Avalonia.Controls.UnitTests
 
                 var panel = target.Presenter.Panel;
 
-                Func<string> itemsToString = () =>
-                     string.Join(",", panel.Children.OfType<ListBoxItem>().Select(l => l.Content.ToString()).ToArray());
+                string itemsToString() =>
+                      string.Join(",", panel.Children.OfType<ListBoxItem>().Select(l => l.Content.ToString()).ToArray());
 
-                Action<string, string> addafter = (item, newitem) =>
-                 {
-                     items.Insert(items.IndexOf(item) + 1, newitem);
+                void addafter(string item, string newitem)
+                {
+                    items.Insert(items.IndexOf(item) + 1, newitem);
+                    lm.ExecuteLayoutPass();
+                }
 
-                     lm.ExecuteLayoutPass();
-                 };
-
-                Action<string> remove = item =>
+                void remove(string item)
                 {
                     items.Remove(item);
                     lm.ExecuteLayoutPass();
-                };
+                }
 
                 addafter("1", "1+");//expected 1,1+,2,3,4,5,6,7
 
@@ -276,7 +275,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxTemplate()
         {
-            return new FuncControlTemplate<ListBox>(parent => 
+            return new FuncControlTemplate<ListBox>(parent =>
                 new ScrollViewer
                 {
                     Name = "PART_ScrollViewer",
@@ -293,7 +292,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxItemTemplate()
         {
-            return new FuncControlTemplate<ListBoxItem>(parent => 
+            return new FuncControlTemplate<ListBoxItem>(parent =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
