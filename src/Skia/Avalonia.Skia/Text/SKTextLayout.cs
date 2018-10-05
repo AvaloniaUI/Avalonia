@@ -45,62 +45,95 @@ namespace Avalonia.Skia
 
         public void ApplyTextSpan(FormattedTextStyleSpan span)
         {
-            var effectedStartingIndex = 0;
-            var availableLength = span.Length;
+            var currentLength = 0;
+            var remainingLength = span.Length;
+            var hasSplitInPreviousLine = false;
 
             for (var i = 0; i < TextLines.Count; i++)
             {
                 var textLine = TextLines[i];
 
-                if (textLine.StartingIndex < span.StartIndex)
+                if (textLine.StartingIndex + textLine.Length < span.StartIndex)
                 {
+                    currentLength += textLine.Length;
+
                     continue;
                 }
 
-                effectedStartingIndex = i;
-
-                break;
-            }
-
-            for (var lineIndex = effectedStartingIndex; lineIndex < TextLines.Count; lineIndex++)
-            {
-                var textLine = TextLines[lineIndex];
-
-                if (availableLength >= textLine.Length)
+                for (int runIndex = 0; runIndex < textLine.TextRuns.Count; runIndex++)
                 {
-                    availableLength -= textLine.Length;
+                    var textRun = textLine.TextRuns[runIndex];
 
-                    foreach (var textRun in textLine.TextRuns)
+                    if (currentLength + textRun.Text.Length < span.StartIndex)
                     {
-                        ApplyTextSpan(span, textRun);
+                        currentLength += textRun.Text.Length;
+
+                        continue;
                     }
-                }
-                else
-                {
-                    for (var runIndex = 0; runIndex < textLine.TextRuns.Count; runIndex++)
-                    {
-                        var textRun = textLine.TextRuns[runIndex];
 
-                        if (availableLength < textRun.Text.Length)
+                    var splitLength = Math.Min(textRun.Text.Length, remainingLength);
+
+                    var start = SplitTextRun(textRun, 0, splitLength);
+
+                    if (start.secondTextRun.Text.Length <= remainingLength)
+                    {
+                        ApplyTextSpan(span, start.secondTextRun);
+
+                        textLine.RemoveTextRun(runIndex);
+
+                        textLine.InsertTextRun(runIndex, start.firstTextRun);
+
+                        runIndex++;
+
+                        textLine.InsertTextRun(runIndex, start.secondTextRun);
+
+                        remainingLength -= start.secondTextRun.Text.Length;
+
+                        hasSplitInPreviousLine = true;
+                    }
+                    else
+                    {
+                        if (hasSplitInPreviousLine)
                         {
+                            ApplyTextSpan(span, start.firstTextRun);
+
                             textLine.RemoveTextRun(runIndex);
 
-                            var (firstTextRun, secondTextRun) = SplitTextRun(textRun, 0, availableLength);
+                            textLine.InsertTextRun(runIndex, start.firstTextRun);
 
-                            ApplyTextSpan(span, firstTextRun);
+                            runIndex++;
 
-                            textLine.InsertTextRun(runIndex, firstTextRun);
+                            textLine.InsertTextRun(runIndex, start.secondTextRun);
+                        }
+                        else
+                        {
+                            var end = SplitTextRun(start.secondTextRun, 0, remainingLength);
 
-                            textLine.InsertTextRun(runIndex + 1, secondTextRun);
+                            ApplyTextSpan(span, end.firstTextRun);
 
-                            break;
+                            textLine.RemoveTextRun(runIndex);
+
+                            textLine.InsertTextRun(runIndex, start.firstTextRun);
+
+                            runIndex++;
+
+                            textLine.InsertTextRun(runIndex, end.firstTextRun);
+
+                            runIndex++;
+
+                            textLine.InsertTextRun(runIndex, end.secondTextRun);                          
                         }
 
-                        availableLength -= textRun.Text.Length;
-
-                        ApplyTextSpan(span, textRun);
+                        remainingLength = 0;
                     }
-                }
+
+                    if (remainingLength <= 0)
+                    {
+                        return;
+                    }
+
+                    currentLength += textRun.Text.Length;
+                }               
             }
         }
 
