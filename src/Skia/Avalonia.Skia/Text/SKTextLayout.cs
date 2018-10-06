@@ -49,6 +49,11 @@ namespace Avalonia.Skia
 
             foreach (var textLine in TextLines)
             {
+                if (textLine.Length == 0)
+                {
+                    continue;
+                }
+
                 if (textLine.StartingIndex + textLine.Length < span.StartIndex)
                 {
                     currentLength += textLine.Length;
