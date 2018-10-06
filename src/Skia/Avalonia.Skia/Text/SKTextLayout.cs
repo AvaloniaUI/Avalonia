@@ -150,7 +150,7 @@ namespace Avalonia.Skia
 
                     foreach (var textRun in textLine.TextRuns)
                     {
-                        InitializePaintForTextRun(context, textLine, textRun, foregroundWrapper);
+                        InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
                         canvas.DrawText(textRun.Text, lineX, lineY, _paint);
                         lineX += textRun.Width;
                     }
@@ -186,7 +186,7 @@ namespace Avalonia.Skia
             return new SKPaint
             {
                 IsAntialias = true,
-                LcdRenderText = true,
+                /*Bug: Transparency issue with LcdRenderText = true,*/
                 IsStroke = false,
                 TextEncoding = SKTextEncoding.Utf32,
                 Typeface = typeface,
@@ -224,6 +224,32 @@ namespace Avalonia.Skia
             return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
+        private static void InitializePaintForTextRun(
+            SKPaint paint,
+            DrawingContextImpl context,
+            SKTextLine textLine,
+            SKTextRun textRun,
+            DrawingContextImpl.PaintWrapper foregroundWrapper)
+        {
+            paint.Typeface = textRun.TextFormat.Typeface;
+
+            paint.TextSize = textRun.TextFormat.FontSize;
+
+            if (textRun.DrawingEffect == null)
+            {
+                foregroundWrapper.ApplyTo(paint);
+            }
+            else
+            {
+                using (var effectWrapper = context.CreatePaint(
+                    textRun.DrawingEffect,
+                    new Size(textRun.Width, textLine.LineMetrics.Size.Height)))
+                {
+                    effectWrapper.ApplyTo(paint);
+                }
+            }
+        }
+
         private SplitTextRunResult SplitTextRun(
             SKTextRun textRun,
             int startingIndex,
@@ -239,32 +265,7 @@ namespace Avalonia.Skia
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
-
-        private void InitializePaintForTextRun(
-            DrawingContextImpl context,
-            SKTextLine textLine,
-            SKTextRun textRun,
-            DrawingContextImpl.PaintWrapper foregroundWrapper)
-        {
-            _paint.Typeface = textRun.TextFormat.Typeface;
-
-            _paint.TextSize = textRun.TextFormat.FontSize;
-
-            if (textRun.DrawingEffect == null)
-            {
-                foregroundWrapper.ApplyTo(_paint);
-            }
-            else
-            {
-                using (var effectWrapper = context.CreatePaint(
-                    textRun.DrawingEffect,
-                    new Size(textRun.Width, textLine.LineMetrics.Size.Height)))
-                {
-                    effectWrapper.ApplyTo(_paint);
-                }
-            }
-        }
-
+     
         private SKTextRun CreateTextRun(string text, SKTextFormat textFormat)
         {
             _paint.Typeface = textFormat.Typeface;
