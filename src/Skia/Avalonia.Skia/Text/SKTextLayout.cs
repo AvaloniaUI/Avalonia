@@ -47,7 +47,7 @@ namespace Avalonia.Skia
         {
             var currentLength = 0;
             var remainingLength = span.Length;
-            var hasSplitInPreviousLine = false;
+            var hasSplit = false;
 
             for (var i = 0; i < TextLines.Count; i++)
             {
@@ -75,56 +75,58 @@ namespace Avalonia.Skia
 
                     var start = SplitTextRun(textRun, 0, splitLength);
 
-                    if (start.secondTextRun.Text.Length <= remainingLength)
+                    if (hasSplit)
                     {
-                        ApplyTextSpan(span, start.secondTextRun);
+                        ApplyTextSpan(span, start.FirstTextRun);
 
                         textLine.RemoveTextRun(runIndex);
 
-                        textLine.InsertTextRun(runIndex, start.firstTextRun);
+                        textLine.InsertTextRun(runIndex, start.FirstTextRun);
+
+                        remainingLength -= start.FirstTextRun.Text.Length;
 
                         runIndex++;
 
-                        textLine.InsertTextRun(runIndex, start.secondTextRun);
-
-                        remainingLength -= start.secondTextRun.Text.Length;
-
-                        hasSplitInPreviousLine = true;
+                        textLine.InsertTextRun(runIndex, start.SecondTextRun);
                     }
                     else
                     {
-                        if (hasSplitInPreviousLine)
+                        if (start.SecondTextRun.Text.Length <= remainingLength)
                         {
-                            ApplyTextSpan(span, start.firstTextRun);
+                            ApplyTextSpan(span, start.SecondTextRun);
 
                             textLine.RemoveTextRun(runIndex);
 
-                            textLine.InsertTextRun(runIndex, start.firstTextRun);
+                            textLine.InsertTextRun(runIndex, start.FirstTextRun);
 
                             runIndex++;
 
-                            textLine.InsertTextRun(runIndex, start.secondTextRun);
+                            textLine.InsertTextRun(runIndex, start.SecondTextRun);
+
+                            remainingLength -= start.SecondTextRun.Text.Length;
+
+                            hasSplit = true;
                         }
                         else
                         {
-                            var end = SplitTextRun(start.secondTextRun, 0, remainingLength);
+                            var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
 
-                            ApplyTextSpan(span, end.firstTextRun);
+                            ApplyTextSpan(span, end.FirstTextRun);
 
                             textLine.RemoveTextRun(runIndex);
 
-                            textLine.InsertTextRun(runIndex, start.firstTextRun);
+                            textLine.InsertTextRun(runIndex, start.FirstTextRun);
 
                             runIndex++;
 
-                            textLine.InsertTextRun(runIndex, end.firstTextRun);
+                            textLine.InsertTextRun(runIndex, end.FirstTextRun);
 
                             runIndex++;
 
-                            textLine.InsertTextRun(runIndex, end.secondTextRun);                          
+                            textLine.InsertTextRun(runIndex, end.SecondTextRun);
+
+                            remainingLength = 0;
                         }
-
-                        remainingLength = 0;
                     }
 
                     if (remainingLength <= 0)
@@ -133,7 +135,7 @@ namespace Avalonia.Skia
                     }
 
                     currentLength += textRun.Text.Length;
-                }               
+                }
             }
         }
 
@@ -225,7 +227,21 @@ namespace Avalonia.Skia
             return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
-        private (SKTextRun firstTextRun, SKTextRun secondTextRun) SplitTextRun(
+        private class SplitTextRunResult
+        {
+            public SplitTextRunResult(SKTextRun firstTextRun, SKTextRun secondTextRun)
+            {
+                FirstTextRun = firstTextRun;
+
+                SecondTextRun = secondTextRun;
+            }
+
+            public SKTextRun FirstTextRun { get; }
+
+            public SKTextRun SecondTextRun { get; }
+        }
+
+        private SplitTextRunResult SplitTextRun(
             SKTextRun textRun,
             int startingIndex,
             int length)
@@ -238,7 +254,7 @@ namespace Avalonia.Skia
                 textRun.Text.Substring(length, textRun.Text.Length - length),
                 textRun.TextFormat);
 
-            return (firstTextRun, secondTextRun);
+            return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
 
         private void InitializePaintForTextRun(
@@ -365,24 +381,24 @@ namespace Avalonia.Skia
                             }
                         }
 
-                        var (firstTextRun, secondTextRun) = SplitTextRun(
+                        var splitResult = SplitTextRun(
                             textLine.TextRuns[runIndex],
                             0,
                             measuredLength);
 
                         textLine.RemoveTextRun(runIndex);
 
-                        textLine.InsertTextRun(runIndex, firstTextRun);
+                        textLine.InsertTextRun(runIndex, splitResult.FirstTextRun);
 
                         textLines.Add(textLine);
 
-                        remainingTextRuns.Add(secondTextRun);
+                        remainingTextRuns.Add(splitResult.SecondTextRun);
 
                         var textLineMetrics = new SKTextLineMetrics(
-                            secondTextRun.Width,
-                            secondTextRun.FontMetrics.Ascent,
-                            secondTextRun.FontMetrics.Descent,
-                            secondTextRun.FontMetrics.Leading);
+                            splitResult.SecondTextRun.Width,
+                            splitResult.SecondTextRun.FontMetrics.Ascent,
+                            splitResult.SecondTextRun.FontMetrics.Descent,
+                            splitResult.SecondTextRun.FontMetrics.Leading);
 
                         for (var i = runIndex + 1; i < textLine.TextRuns.Count; i++)
                         {
