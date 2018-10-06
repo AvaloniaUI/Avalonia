@@ -265,7 +265,7 @@ namespace Avalonia.Skia
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
-     
+
         private SKTextRun CreateTextRun(string text, SKTextFormat textFormat)
         {
             _paint.Typeface = textFormat.Typeface;
@@ -294,14 +294,28 @@ namespace Avalonia.Skia
 
                 if (c == '\r')
                 {
+                    var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
+
+                    textLines.AddRange(breakLines);
+
                     if (_text[index + 1] == '\n')
                     {
                         index++;
                     }
 
-                    var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition + 1);
+                    currentPosition = index + 1;
+                }
+
+                if (c == '\n')
+                {
+                    var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
 
                     textLines.AddRange(breakLines);
+
+                    if (_text[index + 1] == '\r')
+                    {
+                        index++;
+                    }
 
                     currentPosition = index + 1;
                 }

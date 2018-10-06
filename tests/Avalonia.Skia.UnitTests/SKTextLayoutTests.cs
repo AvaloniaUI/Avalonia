@@ -13,7 +13,7 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToTextRun()
         {
-            var text = "012345\r012345";
+            var text = "012345\r\r012345";
 
             var layout = new SKTextLayout(text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
@@ -21,7 +21,7 @@
 
             layout.ApplyTextSpan(new FormattedTextStyleSpan(4, 4, effectBrush));
 
-            Assert.Equal(layout.TextLines.Count, 2);
+            Assert.Equal(layout.TextLines.Count, 3);
 
             var textLine = layout.TextLines.First();
 
@@ -29,7 +29,7 @@
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(textRun.Text.Length, 3);
+            Assert.Equal(textRun.Text.Length, 2);
 
             Assert.Equal(textRun.DrawingEffect, effectBrush);
         }
