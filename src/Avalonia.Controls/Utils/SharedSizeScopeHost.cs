@@ -8,6 +8,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -33,7 +34,7 @@ namespace Avalonia.Controls
                 Grid = grid;
                 Results = grid.RowDefinitions.Cast<DefinitionBase>()
                     .Concat(grid.ColumnDefinitions)
-                    .Select(d => new MeasurementResult(d))
+                    .Select(d => new MeasurementResult(grid, d))
                     .ToList();
 
                 grid.RowDefinitions.CollectionChanged += DefinitionsCollectionChanged;
@@ -51,9 +52,9 @@ namespace Avalonia.Controls
             {
                 if (propertyChanged.Item2.PropertyName == nameof(DefinitionBase.SharedSizeGroup))
                 {
-                    var oldName = string.Empty; // TODO: find how to determine the old name
-                    var newName = (propertyChanged.Item1 as DefinitionBase).SharedSizeGroup;
                     var result = Results.Single(mr => ReferenceEquals(mr.Definition, propertyChanged.Item1));
+                    var oldName = result.SizeGroup?.Name;
+                    var newName = (propertyChanged.Item1 as DefinitionBase).SharedSizeGroup;
                     _groupChanged.OnNext((oldName, newName, result));
                 }
             }
@@ -64,7 +65,7 @@ namespace Avalonia.Controls
                 if (sender is ColumnDefinitions)
                     offset = Grid.RowDefinitions.Count;
 
-                var newItems = e.NewItems?.OfType<DefinitionBase>().Select(db => new MeasurementResult(db)).ToList() ?? new List<MeasurementResult>();
+                var newItems = e.NewItems?.OfType<DefinitionBase>().Select(db => new MeasurementResult(Grid, db)).ToList() ?? new List<MeasurementResult>();
                 var oldItems = Results.GetRange(e.OldStartingIndex + offset, e.OldItems?.Count ?? 0);
 
                 void NotifyNewItems()
@@ -119,7 +120,7 @@ namespace Avalonia.Controls
                         oldItems = Results;
                         newItems = Results = Grid.RowDefinitions.Cast<DefinitionBase>()
                             .Concat(Grid.ColumnDefinitions)
-                            .Select(d => new MeasurementResult(d))
+                            .Select(d => new MeasurementResult(Grid, d))
                             .ToList();
                         NotifyOldItems();
                         NotifyNewItems();
@@ -145,7 +146,11 @@ namespace Avalonia.Controls
             public void InvalidateMeasure()
             {
                 MeasurementState = MeasurementState.Invalidated;
-                Results.ForEach(r => r.MeasuredResult = double.NaN);
+                Results.ForEach(r =>
+                {
+                    r.MeasuredResult = double.NaN;
+                    r.SizeGroup?.Reset();
+                });
             }
 
             public void Dispose()
@@ -160,31 +165,107 @@ namespace Avalonia.Controls
             public List<MeasurementResult> Results { get; private set; }
         }
 
-        private readonly AvaloniaList<MeasurementCache> _measurementCaches;
-
         private class MeasurementResult
         {
-            public MeasurementResult(DefinitionBase definition)
+            public MeasurementResult(Grid owningGrid, DefinitionBase definition)
             {
+                OwningGrid = owningGrid;
                 Definition = definition;
                 MeasuredResult = double.NaN;
             }
 
             public DefinitionBase Definition { get; }
             public double MeasuredResult { get; set; }
+            public Group SizeGroup { get; set; }
+            public Grid OwningGrid { get; }
         }
+
 
         private class Group
         {
+            private double? cachedResult;
+            private List<MeasurementResult> _results = new List<MeasurementResult>(); 
+
+            public string Name { get; }
+
+            public Group(string name)
+            {
+                Name = name;
+            }
+
             public bool IsFixed { get; set; }
 
-            public List<MeasurementResult> Results { get; } = new List<MeasurementResult>();
+            public IReadOnlyList<MeasurementResult> Results => _results;
 
-            public double CalculatedLength { get; }
+            public double CalculatedLength => (cachedResult ?? (cachedResult = Gather())).Value;
+
+            public void Reset()
+            {
+                cachedResult = null;
+            }
+
+            public void Add(MeasurementResult result)
+            {
+                if (!_results.Contains(result))
+                    throw new AvaloniaInternalException(
+                        $"Invalid call to Group.Add - The SharedSizeGroup {Name} already contains the passed result");
+
+                result.SizeGroup = this;
+                _results.Add(result);
+            }
+
+            public void Remove(MeasurementResult result)
+            {
+                if (!_results.Contains(result))
+                    throw new AvaloniaInternalException(
+                        $"Invalid call to Group.Remove - The SharedSizeGroup {Name} does not contain the passed result");
+                result.SizeGroup = null;
+                _results.Remove(result);
+            }
+
+
+            private double Gather()
+            {
+                var result = 0.0d;
+
+                bool onlyFixed = false;
+
+                foreach (var measurement in Results)
+                {
+                    if (measurement.Definition is ColumnDefinition column)
+                    {
+                        if (!onlyFixed && column.Width.IsAbsolute)
+                        {
+                            onlyFixed = true;
+                            result = measurement.MeasuredResult;
+                        }
+                        else if (onlyFixed == column.Width.IsAbsolute)
+                            result = Math.Max(result, measurement.MeasuredResult);
+
+                        result = Math.Max(result, column.MinWidth);
+                    }
+                    if (measurement.Definition is RowDefinition row)
+                    {
+                        if (!onlyFixed && row.Height.IsAbsolute)
+                        {
+                            onlyFixed = true;
+                            result = measurement.MeasuredResult;
+                        }
+                        else if (onlyFixed == row.Height.IsAbsolute)
+                            result = Math.Max(result, measurement.MeasuredResult);
+
+                        result = Math.Max(result, row.MinHeight);
+                    }
+                }
+
+                return result;
+            }
+
         }
 
-        private readonly Dictionary<string, Group> _groups = new Dictionary<string, Group>();
+        private readonly AvaloniaList<MeasurementCache> _measurementCaches;
 
+        private readonly Dictionary<string, Group> _groups = new Dictionary<string, Group>();
 
         public SharedSizeScopeHost(Control scope)
         {
@@ -205,12 +286,53 @@ namespace Avalonia.Controls
             AddToGroup(change.newName, change.result);
         }
 
+        private bool _invalidating;
+
         internal void InvalidateMeasure(Grid grid)
         {
+            // prevent stack overflow
+            if (_invalidating)
+                return;
+            _invalidating = true;
+
+            InvalidateMeasureImpl(grid);
+
+            _invalidating = false;
+        }
+
+        private void InvalidateMeasureImpl(Grid grid)
+        {
             var cache = _measurementCaches.FirstOrDefault(mc => ReferenceEquals(mc.Grid, grid));
-            Debug.Assert(cache != null);
+
+            if (cache == null)
+                throw new AvaloniaInternalException(
+                    $"InvalidateMeasureImpl - called with a grid not present in the internal cache");
+
+            // already invalidated the cache, early out.
+            if (cache.MeasurementState == MeasurementState.Invalidated)
+                return;
 
             cache.InvalidateMeasure();
+
+            // maybe there is a condition to only call arrange on some of the calls?
+            grid.InvalidateMeasure();
+
+            // find all the scopes within the invalidated grid
+            var scopeNames = cache.Results
+                                  .Where(mr => mr.SizeGroup != null)
+                                  .Select(mr => mr.SizeGroup.Name)
+                                  .Distinct();
+            // find all grids related to those scopes
+            var otherGrids = scopeNames.SelectMany(sn => _groups[sn].Results)
+                                       .Select(r => r.OwningGrid)
+                                       .Where(g => g.IsMeasureValid)
+                                       .Distinct();
+
+            // invalidate them as well
+            foreach (var otherGrid in otherGrids)
+            {
+                InvalidateMeasureImpl(otherGrid);
+            }
         }
 
         internal void UpdateMeasureStatus(Grid grid, GridLayout.MeasureResult rowResult, GridLayout.MeasureResult columnResult)
@@ -220,44 +342,6 @@ namespace Avalonia.Controls
 
             cache.UpdateMeasureResult(rowResult, columnResult);
         }
-
-        private double Gather(IEnumerable<MeasurementResult> measurements)
-        {
-            var result = 0.0d;
-
-            bool onlyFixed = false;
-
-            foreach (var measurement in measurements)
-            {
-                if (measurement.Definition is ColumnDefinition column)
-                {
-                    if (!onlyFixed && column.Width.IsAbsolute)
-                    {
-                        onlyFixed = true;
-                        result = measurement.MeasuredResult;
-                    }
-                    else if (onlyFixed == column.Width.IsAbsolute)
-                        result = Math.Max(result, measurement.MeasuredResult);
-
-                    result = Math.Max(result, column.MinWidth);
-                }
-                if (measurement.Definition is RowDefinition row)
-                {
-                    if (!onlyFixed && row.Height.IsAbsolute)
-                    {
-                        onlyFixed = true;
-                        result = measurement.MeasuredResult;
-                    }
-                    else if (onlyFixed == row.Height.IsAbsolute)
-                        result = Math.Max(result, measurement.MeasuredResult);
-
-                    result = Math.Max(result, row.MinHeight);
-                }
-            }
-
-            return result;
-        }
-
 
         (List<GridLayout.LengthConvention>, List<double>, double) Arrange(IReadOnlyList<DefinitionBase> definitions, GridLayout.MeasureResult measureResult)
         {
@@ -275,7 +359,7 @@ namespace Avalonia.Controls
 
                 var group = _groups[definition.SharedSizeGroup];
 
-                var length = Gather(group.Results);
+                var length = group.CalculatedLength;
 
                 conventions[i] = new GridLayout.LengthConvention(
                     new GridLength(length),
@@ -326,11 +410,11 @@ namespace Avalonia.Controls
                 return;
 
             if (!_groups.TryGetValue(scopeName, out var group))
-                _groups.Add(scopeName, group = new Group());
+                _groups.Add(scopeName, group = new Group(scopeName));
 
             group.IsFixed |= IsFixed(result.Definition);
 
-            group.Results.Add(result);
+            group.Add(result);
         }
 
         private bool IsFixed(DefinitionBase definition)
@@ -354,7 +438,7 @@ namespace Avalonia.Controls
 
             Debug.Assert(_groups.TryGetValue(scopeName, out var group));
 
-            group.Results.Remove(result);
+            group.Remove(result);
             if (!group.Results.Any())
                 _groups.Remove(scopeName);
             else
@@ -377,6 +461,7 @@ namespace Avalonia.Controls
             foreach (var cache in _measurementCaches)
             {
                 cache.Grid.SharedScopeChanged();
+                cache.Dispose();
             }
         }
 
@@ -395,6 +480,7 @@ namespace Avalonia.Controls
             Debug.Assert(cache != null);
             _measurementCaches.Remove(cache);
             RemoveGridFromScopes(cache);
+            cache.Dispose();
         }
     }
 }
