@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 
 using Avalonia.Media;
@@ -9,8 +10,6 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    using System;
-
     public class SKTextLayout
     {
         private readonly string _text;
@@ -47,12 +46,9 @@ namespace Avalonia.Skia
         {
             var currentLength = 0;
             var remainingLength = span.Length;
-            var hasSplit = false;
 
-            for (var i = 0; i < TextLines.Count; i++)
+            foreach (var textLine in TextLines)
             {
-                var textLine = TextLines[i];
-
                 if (textLine.StartingIndex + textLine.Length < span.StartIndex)
                 {
                     currentLength += textLine.Length;
@@ -60,7 +56,7 @@ namespace Avalonia.Skia
                     continue;
                 }
 
-                for (int runIndex = 0; runIndex < textLine.TextRuns.Count; runIndex++)
+                for (var runIndex = 0; runIndex < textLine.TextRuns.Count; runIndex++)
                 {
                     var textRun = textLine.TextRuns[runIndex];
 
@@ -75,24 +71,11 @@ namespace Avalonia.Skia
 
                     var start = SplitTextRun(textRun, 0, splitLength);
 
-                    if (hasSplit)
+                    if (currentLength != span.StartIndex)
                     {
-                        ApplyTextSpan(span, start.FirstTextRun);
-
-                        textLine.RemoveTextRun(runIndex);
-
-                        textLine.InsertTextRun(runIndex, start.FirstTextRun);
-
-                        remainingLength -= start.FirstTextRun.Text.Length;
-
-                        runIndex++;
-
-                        textLine.InsertTextRun(runIndex, start.SecondTextRun);
-                    }
-                    else
-                    {
-                        if (start.SecondTextRun.Text.Length <= remainingLength)
+                        if (Math.Max(0, textRun.Text.Length - splitLength) + remainingLength == textRun.Text.Length)
                         {
+                            // Apply at the end of the run
                             ApplyTextSpan(span, start.SecondTextRun);
 
                             textLine.RemoveTextRun(runIndex);
@@ -104,11 +87,10 @@ namespace Avalonia.Skia
                             textLine.InsertTextRun(runIndex, start.SecondTextRun);
 
                             remainingLength -= start.SecondTextRun.Text.Length;
-
-                            hasSplit = true;
                         }
                         else
                         {
+                            // Apply in between the run
                             var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
 
                             ApplyTextSpan(span, end.FirstTextRun);
@@ -128,8 +110,23 @@ namespace Avalonia.Skia
                             remainingLength = 0;
                         }
                     }
+                    else
+                    {
+                        // Apply at start of the run
+                        ApplyTextSpan(span, start.FirstTextRun);
 
-                    if (remainingLength <= 0)
+                        textLine.RemoveTextRun(runIndex);
+
+                        textLine.InsertTextRun(runIndex, start.FirstTextRun);
+
+                        remainingLength -= start.FirstTextRun.Text.Length;
+
+                        runIndex++;
+
+                        textLine.InsertTextRun(runIndex, start.SecondTextRun);
+                    }
+
+                    if (remainingLength == 0)
                     {
                         return;
                     }
@@ -225,20 +222,6 @@ namespace Avalonia.Skia
             }
 
             return new SKTextLineMetrics(width, ascent, descent, leading);
-        }
-
-        private class SplitTextRunResult
-        {
-            public SplitTextRunResult(SKTextRun firstTextRun, SKTextRun secondTextRun)
-            {
-                FirstTextRun = firstTextRun;
-
-                SecondTextRun = secondTextRun;
-            }
-
-            public SKTextRun FirstTextRun { get; }
-
-            public SKTextRun SecondTextRun { get; }
         }
 
         private SplitTextRunResult SplitTextRun(
@@ -374,7 +357,7 @@ namespace Avalonia.Skia
                         {
                             var c = textRun.Text[i];
 
-                            if (char.IsWhiteSpace(c) || c == '.')
+                            if (char.IsWhiteSpace(c) || c == '\u200B')
                             {
                                 measuredLength = ++i;
                                 break;
@@ -482,6 +465,20 @@ namespace Avalonia.Skia
             }
 
             return textRuns;
+        }
+
+        private class SplitTextRunResult
+        {
+            public SplitTextRunResult(SKTextRun firstTextRun, SKTextRun secondTextRun)
+            {
+                FirstTextRun = firstTextRun;
+
+                SecondTextRun = secondTextRun;
+            }
+
+            public SKTextRun FirstTextRun { get; }
+
+            public SKTextRun SecondTextRun { get; }
         }
     }
 }
