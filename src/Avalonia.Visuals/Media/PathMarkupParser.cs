@@ -107,7 +107,7 @@ namespace Avalonia.Media
             {
                 if(!ReadCommand(ref span, out var command, out var relative))
                 {
-                    return;
+                    break;
                 }
 
                 bool initialCommand = true;
