@@ -194,7 +194,7 @@ namespace Avalonia.Skia
             };
         }
 
-        private static SKTextLineMetrics UpdateTextLineMetrics(SKTextLineMetrics lineMetrics, SKTextRun textRun)
+        private static void UpdateTextLineMetrics(ref SKTextLineMetrics lineMetrics, SKTextRun textRun)
         {
             var width = lineMetrics.Size.Width;
 
@@ -221,7 +221,7 @@ namespace Avalonia.Skia
                 leading = textRun.FontMetrics.Leading;
             }
 
-            return new SKTextLineMetrics(width, ascent, descent, leading);
+            lineMetrics = new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
         private static void InitializePaintForTextRun(
@@ -292,32 +292,37 @@ namespace Avalonia.Skia
             {
                 var c = _text[index];
 
-                if (c == '\r')
+                switch (c)
                 {
-                    var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
-
-                    textLines.AddRange(breakLines);
-
-                    if (_text[index + 1] == '\n')
+                    case '\r':
                     {
-                        index++;
+                        var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
+
+                        textLines.AddRange(breakLines);
+
+                        if (_text[index + 1] == '\n')
+                        {
+                            index++;
+                        }
+
+                        currentPosition = index + 1;
+                        break;
                     }
 
-                    currentPosition = index + 1;
-                }
-
-                if (c == '\n')
-                {
-                    var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
-
-                    textLines.AddRange(breakLines);
-
-                    if (_text[index + 1] == '\r')
+                    case '\n':
                     {
-                        index++;
-                    }
+                        var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
 
-                    currentPosition = index + 1;
+                        textLines.AddRange(breakLines);
+
+                        if (_text[index + 1] == '\r')
+                        {
+                            index++;
+                        }
+
+                        currentPosition = index + 1;
+                        break;
+                    }
                 }
             }
 
@@ -353,7 +358,6 @@ namespace Avalonia.Skia
             {
                 var availableLength = (float)_constraint.Width;
                 var currentWidth = 0.0f;
-
                 var runIndex = 0;
 
                 while (runIndex < textLine.TextRuns.Count)
@@ -402,7 +406,7 @@ namespace Avalonia.Skia
                         {
                             var currentRun = textLine.TextRuns[i];
 
-                            textLineMetrics = UpdateTextLineMetrics(textLineMetrics, currentRun);
+                            UpdateTextLineMetrics(ref textLineMetrics, currentRun);
 
                             remainingTextRuns.Add(currentRun);
                         }
@@ -435,6 +439,21 @@ namespace Avalonia.Skia
 
         private SKTextLine CreateTextLine(string text, int startingIndex, int length)
         {
+            if (length == 0)
+            {
+                var textLineMetrics = new SKTextLineMetrics();
+
+                _paint.Typeface = _typeface;
+
+                _paint.TextSize = _fontSize;
+
+                var emptyTextRun = new SKTextRun(string.Empty, new SKTextFormat(_typeface, _fontSize), _paint.FontMetrics, 0.0f);
+
+                UpdateTextLineMetrics(ref textLineMetrics, emptyTextRun);
+
+                return new SKTextLine(startingIndex, 0, new List<SKTextRun> { emptyTextRun }, textLineMetrics);
+            }
+
             var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
 
             return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
@@ -443,7 +462,6 @@ namespace Avalonia.Skia
         private List<SKTextRun> CreateTextRuns(string text, int startingIndex, int length, out SKTextLineMetrics textLineMetrics)
         {
             var textRuns = new List<SKTextRun>();
-
             var currentPosition = 0;
 
             var runText = text.Substring(startingIndex, length);
@@ -472,7 +490,7 @@ namespace Avalonia.Skia
                     runText,
                     new SKTextFormat(typeface, _fontSize));
 
-                textLineMetrics = UpdateTextLineMetrics(textLineMetrics, currentRun);
+                UpdateTextLineMetrics(ref textLineMetrics, currentRun);
 
                 textRuns.Add(currentRun);
 
