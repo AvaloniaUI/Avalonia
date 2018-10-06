@@ -167,6 +167,7 @@ public class Packages
             new [] { "./src/", "Avalonia.Logging.Serilog"},
             new [] { "./src/", "Avalonia.Visuals"},
             new [] { "./src/", "Avalonia.Styling"},
+            new [] { "./src/", "Avalonia.OpenGL"},
             new [] { "./src/", "Avalonia.Themes.Default"},
             new [] { "./src/Markup/", "Avalonia.Markup"},
             new [] { "./src/Markup/", "Avalonia.Markup.Xaml"},

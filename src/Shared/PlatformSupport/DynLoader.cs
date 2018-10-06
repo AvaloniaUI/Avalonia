@@ -1,22 +1,12 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
+using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
-/*
- * Source code imported from https://github.com/kekekeks/evhttp-sharp
- * Source is provided under MIT license for Avalonia project and derived works
- */
-
-
-namespace Avalonia.Gtk3.Interop
+namespace Avalonia.Shared.PlatformSupport
 {
-    internal interface IDynLoader
-    {
-        IntPtr LoadLibrary(string dll);
-        IntPtr GetProcAddress(IntPtr dll, string proc, bool optional);
-
-    }
-
-    class UnixLoader : IDynLoader
+#if !__IOS__
+    class UnixLoader : IDynamicLibraryLoader
     {
         // ReSharper disable InconsistentNaming
         static class LinuxImports
@@ -37,6 +27,7 @@ namespace Avalonia.Gtk3.Interop
                 DlError = dlerror;
             }
         }
+        
         static class OsXImports
         {
             
@@ -86,7 +77,7 @@ namespace Avalonia.Gtk3.Interop
         {
             var handle = DlOpen(dll, 1);
             if (handle == IntPtr.Zero)
-                throw new NativeException(DlErrorString());
+                throw new DynamicLibraryLoaderException(DlErrorString());
             return handle;
         }
 
@@ -94,12 +85,12 @@ namespace Avalonia.Gtk3.Interop
         {
             var ptr = DlSym(dll, proc);
             if (ptr == IntPtr.Zero && !optional)
-                throw new NativeException(DlErrorString());
+                throw new DynamicLibraryLoaderException(DlErrorString());
             return ptr;
         }
     }
 
-    internal class Win32Loader : IDynLoader
+    internal class Win32Loader : IDynamicLibraryLoader
     {
         [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
@@ -107,22 +98,37 @@ namespace Avalonia.Gtk3.Interop
         [DllImport("kernel32", EntryPoint = "LoadLibraryW", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern IntPtr LoadLibrary(string lpszLib);
 
-        IntPtr IDynLoader.LoadLibrary(string dll)
+        IntPtr IDynamicLibraryLoader.LoadLibrary(string dll)
         {
             var handle = LoadLibrary(dll);
             if (handle != IntPtr.Zero)
                 return handle;
             var err = Marshal.GetLastWin32Error();
 
-            throw new NativeException("Error loading " + dll + " error " + err);
+            throw new DynamicLibraryLoaderException("Error loading " + dll + " error " + err);
         }
 
-        IntPtr IDynLoader.GetProcAddress(IntPtr dll, string proc, bool optional)
+        IntPtr IDynamicLibraryLoader.GetProcAddress(IntPtr dll, string proc, bool optional)
         {
             var ptr = GetProcAddress(dll, proc);
             if (ptr == IntPtr.Zero && !optional)
-                throw new NativeException("Error " + Marshal.GetLastWin32Error());
+                throw new DynamicLibraryLoaderException("Error " + Marshal.GetLastWin32Error());
             return ptr;
         }
     }
+    
+#else
+    internal class IOSLoader : IDynamicLibraryLoader
+    {
+        IntPtr IDynamicLibraryLoader.LoadLibrary(string dll)
+        {
+            throw new PlatformNotSupportedException();
+        }
+
+        IntPtr IDynamicLibraryLoader.GetProcAddress(IntPtr dll, string proc, bool optional)
+        {
+            throw new PlatformNotSupportedException();
+        }
+    }
+#endif
 }
