@@ -139,7 +139,7 @@ namespace Avalonia.Controls
 
                 for (int i = 0; i < Grid.ColumnDefinitions.Count; i++)
                 {
-                    Results[i + rowResult.LengthList.Count].MeasuredResult = columnResult.LengthList[i];
+                    Results[i + Grid.RowDefinitions.Count].MeasuredResult = columnResult.LengthList[i];
                 }
             }
 
@@ -206,7 +206,7 @@ namespace Avalonia.Controls
 
             public void Add(MeasurementResult result)
             {
-                if (!_results.Contains(result))
+                if (_results.Contains(result))
                     throw new AvaloniaInternalException(
                         $"Invalid call to Group.Add - The SharedSizeGroup {Name} already contains the passed result");
 
@@ -232,6 +232,9 @@ namespace Avalonia.Controls
 
                 foreach (var measurement in Results)
                 {
+                    if (Double.IsInfinity(measurement.MeasuredResult))
+                        continue;
+
                     if (measurement.Definition is ColumnDefinition column)
                     {
                         if (!onlyFixed && column.Width.IsAbsolute)
@@ -276,7 +279,6 @@ namespace Avalonia.Controls
                 cache.Grid.InvalidateMeasure();
                 AddGridToScopes(cache);
 
-                cache.GroupChanged.Subscribe(SharedGroupChanged);
             }
         }
 
@@ -397,6 +399,8 @@ namespace Avalonia.Controls
 
         private void AddGridToScopes(MeasurementCache cache)
         {
+            cache.GroupChanged.Subscribe(SharedGroupChanged);
+
             foreach (var result in cache.Results)
             {
                 var scopeName = result.Definition.SharedSizeGroup;
