@@ -24,15 +24,5 @@ namespace Avalonia.Skia
         public IReadOnlyList<SKTextRun> TextRuns => _textRuns;
 
         public SKTextLineMetrics LineMetrics { get; }
-
-        public void RemoveTextRun(int index)
-        {
-            _textRuns.RemoveAt(index);
-        }
-
-        public void InsertTextRun(int index, SKTextRun textRun)
-        {
-            _textRuns.Insert(index, textRun);
-        }
     }
 }

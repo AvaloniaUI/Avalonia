@@ -26,6 +26,8 @@ namespace Avalonia.Skia
 
         private readonly SKPaint _paint;
 
+        private readonly List<SKTextLine> _textLines;
+
         public SKTextLayout(string text, SKTypeface typeface, float fontSize, TextAlignment textAlignment, TextWrapping textWrapping, Size constraint)
         {
             _text = text;
@@ -35,10 +37,10 @@ namespace Avalonia.Skia
             _textWrapping = textWrapping;
             _constraint = constraint;
             _paint = CreatePaint(_typeface, _fontSize);
-            TextLines = CreateTextLines();
+            _textLines = CreateTextLines();
         }
 
-        public IReadOnlyList<SKTextLine> TextLines { get; }
+        public IReadOnlyList<SKTextLine> TextLines => _textLines;
 
         public Size Size { get; private set; }
 
@@ -47,96 +49,114 @@ namespace Avalonia.Skia
             var currentLength = 0;
             var remainingLength = span.Length;
 
-            foreach (var textLine in TextLines)
+            for (var lineIndex = 0; lineIndex < _textLines.Count; lineIndex++)
             {
-                if (textLine.Length == 0)
+                var currentTextLine = _textLines[lineIndex];
+
+                if (currentTextLine.Length == 0)
                 {
                     continue;
                 }
 
-                if (textLine.StartingIndex + textLine.Length < span.StartIndex)
+                if (currentTextLine.StartingIndex + currentTextLine.Length < span.StartIndex)
                 {
-                    currentLength += textLine.Length;
+                    currentLength += currentTextLine.Length;
 
                     continue;
                 }
 
-                for (var runIndex = 0; runIndex < textLine.TextRuns.Count; runIndex++)
+                for (var runIndex = 0; runIndex < currentTextLine.TextRuns.Count; runIndex++)
                 {
-                    var textRun = textLine.TextRuns[runIndex];
+                    var needsUpdate = false;
+                    var currentTextRun = currentTextLine.TextRuns[runIndex];
 
-                    if (currentLength + textRun.Text.Length < span.StartIndex)
+                    if (currentLength + currentTextRun.Text.Length < span.StartIndex)
                     {
-                        currentLength += textRun.Text.Length;
+                        currentLength += currentTextRun.Text.Length;
 
                         continue;
                     }
 
-                    var splitLength = Math.Min(textRun.Text.Length, remainingLength);
+                    var splitLength = Math.Min(currentTextRun.Text.Length, remainingLength);
 
-                    var start = SplitTextRun(textRun, 0, splitLength);
+                    var start = SplitTextRun(currentTextRun, 0, splitLength);
+
+                    var textRuns = new List<SKTextRun>(currentTextLine.TextRuns);
 
                     if (currentLength != span.StartIndex)
                     {
-                        if (Math.Max(0, textRun.Text.Length - splitLength) + remainingLength == textRun.Text.Length)
+                        if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength == currentTextRun.Text.Length)
                         {
-                            // Apply at the end of the run
-                            ApplyTextSpan(span, start.SecondTextRun);
+                            // Apply at the end of the run                         
+                            textRuns.RemoveAt(runIndex);
 
-                            textLine.RemoveTextRun(runIndex);
-
-                            textLine.InsertTextRun(runIndex, start.FirstTextRun);
+                            textRuns.Insert(runIndex, start.FirstTextRun);
 
                             runIndex++;
 
-                            textLine.InsertTextRun(runIndex, start.SecondTextRun);
+                            var updatedTextRun = ApplyTextSpan(span, start.SecondTextRun, out needsUpdate);
 
-                            remainingLength -= start.SecondTextRun.Text.Length;
+                            textRuns.Insert(runIndex, updatedTextRun);
+
+                            remainingLength -= start.SecondTextRun.Text.Length;                        
                         }
                         else
                         {
                             // Apply in between the run
                             var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
 
-                            ApplyTextSpan(span, end.FirstTextRun);
+                            textRuns.RemoveAt(runIndex);
 
-                            textLine.RemoveTextRun(runIndex);
+                            var updatedTextRun = ApplyTextSpan(span, end.FirstTextRun, out needsUpdate);
 
-                            textLine.InsertTextRun(runIndex, start.FirstTextRun);
-
-                            runIndex++;
-
-                            textLine.InsertTextRun(runIndex, end.FirstTextRun);
+                            textRuns.Insert(runIndex, updatedTextRun);
 
                             runIndex++;
 
-                            textLine.InsertTextRun(runIndex, end.SecondTextRun);
+                            textRuns.Insert(runIndex, end.FirstTextRun);
+
+                            runIndex++;
+
+                            textRuns.Insert(runIndex, end.SecondTextRun);
 
                             remainingLength = 0;
                         }
                     }
                     else
                     {
-                        // Apply at start of the run
-                        ApplyTextSpan(span, start.FirstTextRun);
+                        // Apply at start of the run                        
+                        textRuns.RemoveAt(runIndex);
 
-                        textLine.RemoveTextRun(runIndex);
+                        var updatedTextRun = ApplyTextSpan(span, start.FirstTextRun, out needsUpdate);
 
-                        textLine.InsertTextRun(runIndex, start.FirstTextRun);
+                        textRuns.Insert(runIndex, updatedTextRun);
 
                         remainingLength -= start.FirstTextRun.Text.Length;
 
                         runIndex++;
 
-                        textLine.InsertTextRun(runIndex, start.SecondTextRun);
+                        textRuns.Insert(runIndex, start.SecondTextRun);
                     }
+
+                    _textLines.RemoveAt(lineIndex);
+
+                    if (needsUpdate)
+                    {
+                        // ToDo: We need to update the length etc if we apply a different TextFormat to a run of the line
+                    }
+                    else
+                    {
+                        currentTextLine = new SKTextLine(currentTextLine.StartingIndex, currentTextLine.Length, textRuns, currentTextLine.LineMetrics);
+
+                        _textLines.Insert(lineIndex, currentTextLine);
+                    }                                    
 
                     if (remainingLength == 0)
                     {
                         return;
                     }
 
-                    currentLength += textRun.Text.Length;
+                    currentLength += currentTextRun.Text.Length;
                 }
             }
         }
@@ -181,11 +201,6 @@ namespace Avalonia.Skia
             }
         }
 
-        private static void ApplyTextSpan(FormattedTextStyleSpan span, SKTextRun textRun)
-        {
-            textRun.SetDrawingEffect(span.ForegroundBrush);
-        }
-
         private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
         {
             return new SKPaint
@@ -197,36 +212,6 @@ namespace Avalonia.Skia
                 Typeface = typeface,
                 TextSize = fontSize
             };
-        }
-
-        private static void UpdateTextLineMetrics(ref SKTextLineMetrics lineMetrics, SKTextRun textRun)
-        {
-            var width = lineMetrics.Size.Width;
-
-            var ascent = lineMetrics.Ascent;
-
-            var descent = lineMetrics.Descent;
-
-            var leading = lineMetrics.Leading;
-
-            width += textRun.Width;
-
-            if (ascent > textRun.FontMetrics.Ascent)
-            {
-                ascent = textRun.FontMetrics.Ascent;
-            }
-
-            if (descent < textRun.FontMetrics.Descent)
-            {
-                descent = textRun.FontMetrics.Descent;
-            }
-
-            if (leading < textRun.FontMetrics.Leading)
-            {
-                leading = textRun.FontMetrics.Leading;
-            }
-
-            lineMetrics = new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
         private static void InitializePaintForTextRun(
@@ -253,6 +238,47 @@ namespace Avalonia.Skia
                     effectWrapper.ApplyTo(paint);
                 }
             }
+        }
+      
+        private static SKTextRun ApplyTextSpan(FormattedTextStyleSpan span, SKTextRun textRun, out bool needsUpdate)
+        {
+            // We need to make sure to update all measurements if the TextFormat etc changes.
+            needsUpdate = false;
+
+            return new SKTextRun(textRun.Text, textRun.TextFormat, textRun.FontMetrics, textRun.Width, span.ForegroundBrush);
+        }
+
+        private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns)
+        {
+            var width = 0.0f;
+
+            var ascent = 0.0f;
+
+            var descent = 0.0f;
+
+            var leading = 0.0f;
+
+            foreach (var textRun in textRuns)
+            {
+                width += textRun.Width;
+
+                if (ascent > textRun.FontMetrics.Ascent)
+                {
+                    ascent = textRun.FontMetrics.Ascent;
+                }
+
+                if (descent < textRun.FontMetrics.Descent)
+                {
+                    descent = textRun.FontMetrics.Descent;
+                }
+
+                if (leading < textRun.FontMetrics.Leading)
+                {
+                    leading = textRun.FontMetrics.Leading;
+                }
+            }
+
+            return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
         private SplitTextRunResult SplitTextRun(
@@ -300,34 +326,34 @@ namespace Avalonia.Skia
                 switch (c)
                 {
                     case '\r':
-                    {
-                        var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
-
-                        textLines.AddRange(breakLines);
-
-                        if (_text[index + 1] == '\n')
                         {
-                            index++;
-                        }
+                            var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
 
-                        currentPosition = index + 1;
-                        break;
-                    }
+                            textLines.AddRange(breakLines);
+
+                            if (_text[index + 1] == '\n')
+                            {
+                                index++;
+                            }
+
+                            currentPosition = index + 1;
+                            break;
+                        }
 
                     case '\n':
-                    {
-                        var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
-
-                        textLines.AddRange(breakLines);
-
-                        if (_text[index + 1] == '\r')
                         {
-                            index++;
-                        }
+                            var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
 
-                        currentPosition = index + 1;
-                        break;
-                    }
+                            textLines.AddRange(breakLines);
+
+                            if (_text[index + 1] == '\r')
+                            {
+                                index++;
+                            }
+
+                            currentPosition = index + 1;
+                            break;
+                        }
                 }
             }
 
@@ -393,28 +419,28 @@ namespace Avalonia.Skia
                             0,
                             measuredLength);
 
-                        textLine.RemoveTextRun(runIndex);
+                        var textRuns = new List<SKTextRun>(textLine.TextRuns);
 
-                        textLine.InsertTextRun(runIndex, splitResult.FirstTextRun);
+                        textRuns.RemoveAt(runIndex);
+
+                        textRuns.Insert(runIndex, splitResult.FirstTextRun);
+
+                        var textLineMetrics = CreateTextLineMetrics(textRuns);
+
+                        textLine = new SKTextLine(textLine.StartingIndex, measuredLength, textRuns, textLineMetrics);
 
                         textLines.Add(textLine);
 
                         remainingTextRuns.Add(splitResult.SecondTextRun);
 
-                        var textLineMetrics = new SKTextLineMetrics(
-                            splitResult.SecondTextRun.Width,
-                            splitResult.SecondTextRun.FontMetrics.Ascent,
-                            splitResult.SecondTextRun.FontMetrics.Descent,
-                            splitResult.SecondTextRun.FontMetrics.Leading);
-
                         for (var i = runIndex + 1; i < textLine.TextRuns.Count; i++)
                         {
                             var currentRun = textLine.TextRuns[i];
 
-                            UpdateTextLineMetrics(ref textLineMetrics, currentRun);
-
                             remainingTextRuns.Add(currentRun);
                         }
+
+                        textLineMetrics = CreateTextLineMetrics(remainingTextRuns);
 
                         textLine = new SKTextLine(textLine.StartingIndex + measuredLength, textLine.Length - measuredLength, remainingTextRuns, textLineMetrics);
 
@@ -446,22 +472,29 @@ namespace Avalonia.Skia
         {
             if (length == 0)
             {
-                var textLineMetrics = new SKTextLineMetrics();
-
                 _paint.Typeface = _typeface;
 
                 _paint.TextSize = _fontSize;
 
-                var emptyTextRun = new SKTextRun(string.Empty, new SKTextFormat(_typeface, _fontSize), _paint.FontMetrics, 0.0f);
+                var textRuns = new List<SKTextRun>
+                               {
+                                   new SKTextRun(
+                                       string.Empty,
+                                       new SKTextFormat(_typeface, _fontSize),
+                                       _paint.FontMetrics,
+                                       0.0f)
+                               };
 
-                UpdateTextLineMetrics(ref textLineMetrics, emptyTextRun);
+                var textLineMetrics = CreateTextLineMetrics(textRuns);
 
-                return new SKTextLine(startingIndex, 0, new List<SKTextRun> { emptyTextRun }, textLineMetrics);
+                return new SKTextLine(startingIndex, 0, textRuns, textLineMetrics);
             }
+            else
+            {
+                var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
 
-            var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
-
-            return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
+                return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
+            }
         }
 
         private List<SKTextRun> CreateTextRuns(string text, int startingIndex, int length, out SKTextLineMetrics textLineMetrics)
@@ -470,8 +503,6 @@ namespace Avalonia.Skia
             var currentPosition = 0;
 
             var runText = text.Substring(startingIndex, length);
-
-            textLineMetrics = new SKTextLineMetrics();
 
             while (currentPosition < length)
             {
@@ -495,12 +526,12 @@ namespace Avalonia.Skia
                     runText,
                     new SKTextFormat(typeface, _fontSize));
 
-                UpdateTextLineMetrics(ref textLineMetrics, currentRun);
-
                 textRuns.Add(currentRun);
 
                 currentPosition += glyphCount;
             }
+
+            textLineMetrics = CreateTextLineMetrics(textRuns);
 
             return textRuns;
         }
