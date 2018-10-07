@@ -49,7 +49,7 @@ namespace Avalonia
         }
 
         [Fact]
-        public void VisualElementIsActivatedAndDeactivated()
+        public void Visual_Element_Is_Activated_And_Deactivated()
         {
             var userControl = new TestUserControl();
             var activationForViewFetcher = new AvaloniaActivationForViewFetcher();
@@ -72,7 +72,7 @@ namespace Avalonia
         }
 
         [Fact]
-        public void GetAffinityForViewShouldReturnNonZeroForVisualElements() 
+        public void Get_Affinity_For_View_Should_Return_Non_Zero_For_Visual_Elements() 
         {
             var userControl = new TestUserControl();
             var activationForViewFetcher = new AvaloniaActivationForViewFetcher();
@@ -85,7 +85,7 @@ namespace Avalonia
         }
 
         [Fact]
-        public void ActivationForViewFetcherShouldSupportWhenActivated()
+        public void Activation_For_View_Fetcher_Should_Support_When_Activated()
         {
             Locator.CurrentMutable.RegisterConstant(
                 new AvaloniaActivationForViewFetcher(), 
