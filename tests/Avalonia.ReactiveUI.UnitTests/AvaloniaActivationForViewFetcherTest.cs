@@ -1,0 +1,95 @@
+using System;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using Avalonia.Controls;
+using Avalonia.Rendering;
+using Avalonia.Platform;
+using Avalonia;
+using ReactiveUI;
+using DynamicData;
+using Xunit;
+using Splat;
+
+namespace Avalonia 
+{
+    public class AvaloniaActivationForViewFetcherTest
+    {
+        public class TestUserControl : UserControl, IActivatable { }
+
+        public class FakeRenderDecorator : Decorator, IRenderRoot
+        {
+            public Size ClientSize => new Size(100, 100);
+
+            public IRenderer Renderer { get; }
+
+            public double RenderScaling => 1;
+
+            public IRenderTarget CreateRenderTarget() => null;
+
+            public void Invalidate(Rect rect) { }
+
+            public Point PointToClient(Point point) => point;
+
+            public Point PointToScreen(Point point) => point;
+        }
+
+        public class TestUserControlWithWhenActivated : UserControl, IActivatable
+        {
+            public bool Active { get; private set; }
+
+            public TestUserControlWithWhenActivated()
+            {
+                this.WhenActivated(disposables => {
+                    Active = true;
+                    Disposable
+                        .Create(() => Active = false)
+                        .DisposeWith(disposables);
+                });
+            }
+        }
+
+        [Fact]
+        public void VisualElementIsActivatedAndDeactivated()
+        {
+            var userControl = new TestUserControl();
+            var activationForViewFetcher = new AvaloniaActivationForViewFetcher();
+
+            activationForViewFetcher
+                .GetActivationForView(userControl)
+                .ToObservableChangeSet(scheduler: ImmediateScheduler.Instance)
+                .Bind(out var activated)
+                .Subscribe();
+
+            var fakeRenderedDecorator = new FakeRenderDecorator();
+            fakeRenderedDecorator.Child = userControl;
+            Assert.True(activated[0]);
+            Assert.Equal(1, activated.Count);
+
+            fakeRenderedDecorator.Child = null;
+            Assert.True(activated[0]);
+            Assert.False(activated[1]);
+            Assert.Equal(2, activated.Count);
+        }
+
+        [Fact]
+        public void ActivationForViewFetcherShouldSupportWhenActivated()
+        {
+            var locator = new ModernDependencyResolver();
+            locator.InitializeSplat();
+            locator.InitializeReactiveUI();
+            locator.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
+            using (locator.WithResolver()) 
+            {
+                var userControl = new TestUserControlWithWhenActivated();
+                Assert.False(userControl.Active);
+
+                var fakeRenderedDecorator = new FakeRenderDecorator();
+                fakeRenderedDecorator.Child = userControl;
+                Assert.True(userControl.Active);
+
+                fakeRenderedDecorator.Child = null;
+                Assert.False(userControl.Active);
+            }
+        }
+    }
+}
