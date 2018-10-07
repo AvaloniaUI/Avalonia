@@ -143,7 +143,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseColon(ref CharacterReader r)
         {
-            var identifier = r.ParseIdentifier();
+            var identifier = IdentifierParser.ParseIdentifier(ref r);
 
             if (identifier.IsEmpty)
             {
@@ -196,7 +196,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseClass(ref CharacterReader r)
         {
-            var @class = r.ParseIdentifier();
+            var @class = IdentifierParser.ParseIdentifier(ref r);
             if (@class.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected a class name after '.'.");
@@ -207,7 +207,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseTemplate(ref CharacterReader r)
         {
-            var template = r.ParseIdentifier();
+            var template = IdentifierParser.ParseIdentifier(ref r);
             const string TemplateKeyword = "template";
             if (!template.SequenceEqual(TemplateKeyword.AsSpan()))
             {
@@ -222,7 +222,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseName(ref CharacterReader r)
         {
-            var name = r.ParseIdentifier();
+            var name = IdentifierParser.ParseIdentifier(ref r);
             if (name.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, $"Expected a name after '#'.");
@@ -237,7 +237,7 @@ namespace Avalonia.Markup.Parsers
 
         private static (State, ISyntax) ParseProperty(ref CharacterReader r)
         {
-            var property = r.ParseIdentifier();
+            var property = IdentifierParser.ParseIdentifier(ref r);
 
             if (!r.TakeIf('='))
             {
@@ -256,7 +256,7 @@ namespace Avalonia.Markup.Parsers
         {
             ReadOnlySpan<char> ns = null;
             ReadOnlySpan<char> type;
-            var namespaceOrTypeName = r.ParseIdentifier();
+            var namespaceOrTypeName = IdentifierParser.ParseIdentifier(ref r);
 
             if (namespaceOrTypeName.IsEmpty)
             {
@@ -270,7 +270,7 @@ namespace Avalonia.Markup.Parsers
                 {
                     throw new ExpressionParseException(r.Position, $"Unexpected end of selector.");
                 }
-                type = r.ParseIdentifier();
+                type = IdentifierParser.ParseIdentifier(ref r);
             }
             else
             {

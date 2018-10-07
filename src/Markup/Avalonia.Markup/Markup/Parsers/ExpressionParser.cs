@@ -108,7 +108,7 @@ namespace Avalonia.Markup.Parsers
             }
             else
             {
-                var identifier = r.ParseIdentifier();
+                var identifier = IdentifierParser.ParseIdentifier(ref r);
 
                 if (!identifier.IsEmpty)
                 {
@@ -147,7 +147,7 @@ namespace Avalonia.Markup.Parsers
             }
             else
             {
-                var identifier = r.ParseIdentifier();
+                var identifier = IdentifierParser.ParseIdentifier(ref r);
 
                 if (!identifier.IsEmpty)
                 {
@@ -168,7 +168,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Invalid attached property name.");
             }
 
-            var name = r.ParseIdentifier();
+            var name = IdentifierParser.ParseIdentifier(ref r);
 
             if (r.End || !r.TakeIf(')'))
             {
@@ -188,7 +188,7 @@ namespace Avalonia.Markup.Parsers
 
         private State ParseIndexer(ref CharacterReader r, List<ExpressionNode> nodes)
         {
-            var args = r.ParseArguments('[', ']');
+            var args = ArgumentListParser.ParseArguments(ref r, '[', ']');
 
             if (args.Count == 0)
             {
@@ -201,7 +201,7 @@ namespace Avalonia.Markup.Parsers
 
         private State ParseElementName(ref CharacterReader r, List<ExpressionNode> nodes)
         {
-            var name = r.ParseIdentifier();
+            var name = IdentifierParser.ParseIdentifier(ref r);
 
             if (name == null)
             {
@@ -214,7 +214,7 @@ namespace Avalonia.Markup.Parsers
 
         private State ParseRelativeSource(ref CharacterReader r, List<ExpressionNode> nodes)
         {
-            var mode = r.ParseIdentifier();
+            var mode = IdentifierParser.ParseIdentifier(ref r);
 
             if (mode.Equals("self".AsSpan(), StringComparison.InvariantCulture))
             {
@@ -226,7 +226,7 @@ namespace Avalonia.Markup.Parsers
                 var ancestorLevel = 0;
                 if (PeekOpenBracket(ref r))
                 {
-                    var args = r.ParseArguments('[', ']', ';');
+                    var args = ArgumentListParser.ParseArguments(ref r,'[', ']', ';');
                     if (args.Count > 2 || args.Count == 0)
                     {
                         throw new ExpressionParseException(r.Position, "Too many arguments in RelativeSource syntax sugar");
@@ -267,12 +267,12 @@ namespace Avalonia.Markup.Parsers
         {
             ReadOnlySpan<char> ns, typeName;
             ns = ReadOnlySpan<char>.Empty;
-            var typeNameOrNamespace = r.ParseIdentifier();
+            var typeNameOrNamespace = IdentifierParser.ParseIdentifier(ref r);
 
             if (!r.End && r.TakeIf(':'))
             {
                 ns = typeNameOrNamespace;
-                typeName = r.ParseIdentifier();
+                typeName = IdentifierParser.ParseIdentifier(ref r);
             }
             else
             {

@@ -9,7 +9,7 @@ namespace Avalonia.Markup.Parsers
 {
     internal static class ArgumentListParser
     {
-        public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
+        public static IList<string> ParseArguments(ref CharacterReader r, char open, char close, char delimiter = ',')
         {
             if (r.Peek == open)
             {
