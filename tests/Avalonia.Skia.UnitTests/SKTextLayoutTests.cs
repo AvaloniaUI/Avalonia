@@ -29,7 +29,7 @@
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(textRun.Text.Length, 2);
+            Assert.Equal(textRun.Text.Length, 3);
 
             Assert.Equal(textRun.DrawingEffect, effectBrush);
         }

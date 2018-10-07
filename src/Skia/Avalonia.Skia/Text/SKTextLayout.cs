@@ -85,66 +85,79 @@ namespace Avalonia.Skia
                         continue;
                     }
 
+                    var textRuns = new List<SKTextRun>(currentTextLine.TextRuns);
+
                     var splitLength = Math.Min(currentTextRun.Text.Length, remainingLength);
 
                     var start = SplitTextRun(currentTextRun, 0, splitLength);
 
-                    var textRuns = new List<SKTextRun>(currentTextLine.TextRuns);
-
-                    if (currentLength != span.StartIndex)
+                    if (currentTextRun.Text.Length == 1)
                     {
-                        if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength
-                            == currentTextRun.Text.Length)
-                        {
-                            // Apply at the end of the run                         
-                            textRuns.RemoveAt(runIndex);
-
-                            textRuns.Insert(runIndex, start.FirstTextRun);
-
-                            runIndex++;
-
-                            var updatedTextRun = ApplyTextSpan(span, start.SecondTextRun, out needsUpdate);
-
-                            textRuns.Insert(runIndex, updatedTextRun);
-
-                            remainingLength -= start.SecondTextRun.Text.Length;
-                        }
-                        else
-                        {
-                            // Apply in between the run
-                            var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
-
-                            textRuns.RemoveAt(runIndex);
-
-                            var updatedTextRun = ApplyTextSpan(span, end.FirstTextRun, out needsUpdate);
-
-                            textRuns.Insert(runIndex, updatedTextRun);
-
-                            runIndex++;
-
-                            textRuns.Insert(runIndex, end.FirstTextRun);
-
-                            runIndex++;
-
-                            textRuns.Insert(runIndex, end.SecondTextRun);
-
-                            remainingLength = 0;
-                        }
-                    }
-                    else
-                    {
-                        // Apply at start of the run                        
                         textRuns.RemoveAt(runIndex);
 
-                        var updatedTextRun = ApplyTextSpan(span, start.FirstTextRun, out needsUpdate);
+                        var updatedTextRun = ApplyTextSpan(span, currentTextRun, out needsUpdate);
 
                         textRuns.Insert(runIndex, updatedTextRun);
 
-                        remainingLength -= start.FirstTextRun.Text.Length;
+                        remainingLength--;
+                    }
+                    else
+                    {
+                        if (currentLength != span.StartIndex)
+                        {
+                            if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength
+                                == currentTextRun.Text.Length)
+                            {
+                                // Apply at the end of the run                         
+                                textRuns.RemoveAt(runIndex);
 
-                        runIndex++;
+                                textRuns.Insert(runIndex, start.FirstTextRun);
 
-                        textRuns.Insert(runIndex, start.SecondTextRun);
+                                runIndex++;
+
+                                var updatedTextRun = ApplyTextSpan(span, start.SecondTextRun, out needsUpdate);
+
+                                textRuns.Insert(runIndex, updatedTextRun);
+
+                                remainingLength -= start.SecondTextRun.Text.Length;
+                            }
+                            else
+                            {
+                                // Apply in between the run
+                                var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
+
+                                textRuns.RemoveAt(runIndex);
+
+                                var updatedTextRun = ApplyTextSpan(span, end.FirstTextRun, out needsUpdate);
+
+                                textRuns.Insert(runIndex, updatedTextRun);
+
+                                runIndex++;
+
+                                textRuns.Insert(runIndex, end.FirstTextRun);
+
+                                runIndex++;
+
+                                textRuns.Insert(runIndex, end.SecondTextRun);
+
+                                remainingLength = 0;
+                            }
+                        }
+                        else
+                        {
+                            // Apply at start of the run                        
+                            textRuns.RemoveAt(runIndex);
+
+                            var updatedTextRun = ApplyTextSpan(span, start.FirstTextRun, out needsUpdate);
+
+                            textRuns.Insert(runIndex, updatedTextRun);
+
+                            remainingLength -= start.FirstTextRun.Text.Length;
+
+                            runIndex++;
+
+                            textRuns.Insert(runIndex, start.SecondTextRun);
+                        }
                     }
 
                     _textLines.RemoveAt(lineIndex);
