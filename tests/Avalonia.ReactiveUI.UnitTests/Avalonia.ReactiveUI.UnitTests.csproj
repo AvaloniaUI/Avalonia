@@ -8,6 +8,7 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <ItemGroup>
-    <ProjectReference Include="../../src/Avalonia.ReactiveUI/Avalonia.ReactiveUI.csproj"/>
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj"/>
   </ItemGroup>
 </Project>

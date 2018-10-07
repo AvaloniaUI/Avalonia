@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Platform;
+using Avalonia.UnitTests;
 using Avalonia;
 using ReactiveUI;
 using DynamicData;
@@ -15,23 +16,6 @@ namespace Avalonia
     public class AvaloniaActivationForViewFetcherTest
     {
         public class TestUserControl : UserControl, IActivatable { }
-
-        public class FakeRenderDecorator : Decorator, IRenderRoot
-        {
-            public Size ClientSize => new Size(100, 100);
-
-            public IRenderer Renderer { get; }
-
-            public double RenderScaling => 1;
-
-            public IRenderTarget CreateRenderTarget() => null;
-
-            public void Invalidate(Rect rect) { }
-
-            public Point PointToClient(Point point) => point;
-
-            public Point PointToScreen(Point point) => point;
-        }
 
         public class TestUserControlWithWhenActivated : UserControl, IActivatable
         {
@@ -60,7 +44,7 @@ namespace Avalonia
                 .Bind(out var activated)
                 .Subscribe();
 
-            var fakeRenderedDecorator = new FakeRenderDecorator();
+            var fakeRenderedDecorator = new TestRoot();
             fakeRenderedDecorator.Child = userControl;
             Assert.True(activated[0]);
             Assert.Equal(1, activated.Count);
@@ -94,7 +78,7 @@ namespace Avalonia
             var userControl = new TestUserControlWithWhenActivated();
             Assert.False(userControl.Active);
 
-            var fakeRenderedDecorator = new FakeRenderDecorator();
+            var fakeRenderedDecorator = new TestRoot();
             fakeRenderedDecorator.Child = userControl;
             Assert.True(userControl.Active);
 
