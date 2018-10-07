@@ -10,6 +10,8 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    using System.Linq;
+
     public class SKTextLayout
     {
         private readonly string _text;
@@ -28,7 +30,13 @@ namespace Avalonia.Skia
 
         private readonly List<SKTextLine> _textLines;
 
-        public SKTextLayout(string text, SKTypeface typeface, float fontSize, TextAlignment textAlignment, TextWrapping textWrapping, Size constraint)
+        public SKTextLayout(
+            string text,
+            SKTypeface typeface,
+            float fontSize,
+            TextAlignment textAlignment,
+            TextWrapping textWrapping,
+            Size constraint)
         {
             _text = text;
             _typeface = typeface;
@@ -85,7 +93,8 @@ namespace Avalonia.Skia
 
                     if (currentLength != span.StartIndex)
                     {
-                        if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength == currentTextRun.Text.Length)
+                        if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength
+                            == currentTextRun.Text.Length)
                         {
                             // Apply at the end of the run                         
                             textRuns.RemoveAt(runIndex);
@@ -146,7 +155,11 @@ namespace Avalonia.Skia
                     }
                     else
                     {
-                        currentTextLine = new SKTextLine(currentTextLine.StartingIndex, currentTextLine.Length, textRuns, currentTextLine.LineMetrics);
+                        currentTextLine = new SKTextLine(
+                            currentTextLine.StartingIndex,
+                            currentTextLine.Length,
+                            textRuns,
+                            currentTextLine.LineMetrics);
 
                         _textLines.Insert(lineIndex, currentTextLine);
                     }
@@ -188,96 +201,17 @@ namespace Avalonia.Skia
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            //float y = (float)point.Y;
-            //var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
-
-            //if (!line.Equals(default(AvaloniaFormattedTextLine)))
-            //{
-            //    for (int c = line.Start; c < line.Start + line.TextLength; c++)
-            //    {
-            //        var rc = rects[c];
-            //        if (rc.Contains(point))
-            //        {
-            //            return new TextHitTestResult
-            //            {
-            //                IsInside = !(line.TextLength > line.Length),
-            //                TextPosition = c,
-            //                IsTrailing = (point.X - rc.X) > rc.Width / 2
-            //            };
-            //        }
-            //    }
-
-            //    int offset = 0;
-
-            //    if (point.X >= (rects[line.Start].X + line.Width) / 2 && line.Length > 0)
-            //    {
-            //        offset = line.TextLength > line.Length ?
-            //                        line.Length : (line.Length - 1);
-            //    }
-
-            //    return new TextHitTestResult
-            //    {
-            //        IsInside = false,
-            //        TextPosition = line.Start + offset,
-            //        IsTrailing = _text.Length == (line.Start + offset + 1)
-            //    };
-            //}
-
-            //bool end = point.X > Size.Width || point.Y > Size.Height;
-
-            //return new TextHitTestResult()
-            //{
-            //    IsInside = false,
-            //    IsTrailing = end,
-            //    TextPosition = end ? _text.Length - 1 : 0
-            //};
-
             return new TextHitTestResult();
         }
 
         public Rect HitTestTextPosition(int index)
         {
-            //if (index < 0 || index >= rects.Count)
-            //{
-            //    var r = rects.LastOrDefault();
-            //    return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
-            //}
-
-            //if (rects.Count == 0)
-            //{
-            //    return new Rect(0, 0, 1, _lineHeight);
-            //}
-
-            //if (index == rects.Count)
-            //{
-            //    var lr = rects[rects.Count - 1];
-            //    return new Rect(new Point(lr.X + lr.Width, lr.Y), rects[index - 1].Size);
-            //}
-
-            //return rects[index];
-
             return new Rect();
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            List<Rect> result = new List<Rect>();
-
-            //int lastIndex = index + length - 1;
-
-            //foreach (var line in _skiaLines.Where(l =>
-            //                                        (l.Start + l.Length) > index &&
-            //                                        lastIndex >= l.Start))
-            //{
-            //    int lineEndIndex = line.Start + (line.Length > 0 ? line.Length - 1 : 0);
-
-            //    double left = rects[line.Start > index ? line.Start : index].X;
-            //    double right = rects[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
-
-            //    result.Add(new Rect(left, line.Top, right - left, line.Height));
-            //}
-
-            return result;
+            return Enumerable.Empty<Rect>();
         }
 
         private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
@@ -285,6 +219,7 @@ namespace Avalonia.Skia
             return new SKPaint
             {
                 IsAntialias = true,
+
                 /*Bug: Transparency issue with LcdRenderText = true,*/
                 IsStroke = false,
                 TextEncoding = SKTextEncoding.Utf32,
@@ -321,10 +256,15 @@ namespace Avalonia.Skia
 
         private static SKTextRun ApplyTextSpan(FormattedTextStyleSpan span, SKTextRun textRun, out bool needsUpdate)
         {
-            // We need to make sure to update all measurements if the TextFormat etc changes.
+            // ToDo: We need to make sure to update all measurements if the TextFormat etc changes.
             needsUpdate = false;
 
-            return new SKTextRun(textRun.Text, textRun.TextFormat, textRun.FontMetrics, textRun.Width, span.ForegroundBrush);
+            return new SKTextRun(
+                textRun.Text,
+                textRun.TextFormat,
+                textRun.FontMetrics,
+                textRun.Width,
+                span.ForegroundBrush);
         }
 
         private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns)
@@ -392,14 +332,9 @@ namespace Avalonia.Skia
             }
         }
 
-        private SplitTextRunResult SplitTextRun(
-            SKTextRun textRun,
-            int startingIndex,
-            int length)
+        private SplitTextRunResult SplitTextRun(SKTextRun textRun, int startingIndex, int length)
         {
-            var firstTextRun = CreateTextRun(
-                textRun.Text.Substring(startingIndex, length),
-                textRun.TextFormat);
+            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat);
 
             var secondTextRun = CreateTextRun(
                 textRun.Text.Substring(length, textRun.Text.Length - length),
@@ -532,10 +467,7 @@ namespace Avalonia.Skia
                             }
                         }
 
-                        var splitResult = SplitTextRun(
-                            textLine.TextRuns[runIndex],
-                            0,
-                            measuredLength);
+                        var splitResult = SplitTextRun(textLine.TextRuns[runIndex], 0, measuredLength);
 
                         var textRuns = new List<SKTextRun>(textLine.TextRuns);
 
@@ -560,7 +492,11 @@ namespace Avalonia.Skia
 
                         textLineMetrics = CreateTextLineMetrics(remainingTextRuns);
 
-                        textLine = new SKTextLine(textLine.StartingIndex + measuredLength, textLine.Length - measuredLength, remainingTextRuns, textLineMetrics);
+                        textLine = new SKTextLine(
+                            textLine.StartingIndex + measuredLength,
+                            textLine.Length - measuredLength,
+                            remainingTextRuns,
+                            textLineMetrics);
 
                         availableLength = (float)_constraint.Width;
 
@@ -615,7 +551,11 @@ namespace Avalonia.Skia
             }
         }
 
-        private List<SKTextRun> CreateTextRuns(string text, int startingIndex, int length, out SKTextLineMetrics textLineMetrics)
+        private List<SKTextRun> CreateTextRuns(
+            string text,
+            int startingIndex,
+            int length,
+            out SKTextLineMetrics textLineMetrics)
         {
             var textRuns = new List<SKTextRun>();
             var currentPosition = 0;
@@ -648,9 +588,7 @@ namespace Avalonia.Skia
                     runText = runText.Substring(currentPosition, glyphCount);
                 }
 
-                var currentRun = CreateTextRun(
-                    runText,
-                    new SKTextFormat(typeface, _fontSize));
+                var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));
 
                 textRuns.Add(currentRun);
 
