@@ -12,7 +12,6 @@
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="ReactiveUI" Version="*" />
-  </ItemGroup>
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ReactiveUI.props" />
 </Project>
