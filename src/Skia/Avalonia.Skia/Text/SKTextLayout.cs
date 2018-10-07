@@ -98,7 +98,7 @@ namespace Avalonia.Skia
 
                             textRuns.Insert(runIndex, updatedTextRun);
 
-                            remainingLength -= start.SecondTextRun.Text.Length;                        
+                            remainingLength -= start.SecondTextRun.Text.Length;
                         }
                         else
                         {
@@ -149,7 +149,7 @@ namespace Avalonia.Skia
                         currentTextLine = new SKTextLine(currentTextLine.StartingIndex, currentTextLine.Length, textRuns, currentTextLine.LineMetrics);
 
                         _textLines.Insert(lineIndex, currentTextLine);
-                    }                                    
+                    }
 
                     if (remainingLength == 0)
                     {
@@ -170,7 +170,8 @@ namespace Avalonia.Skia
 
                 foreach (var textLine in TextLines)
                 {
-                    var lineX = currentX;
+                    var offsetX = (float)GetTextAlignmentOffset(_textAlignment, textLine.LineMetrics.Size.Width, _constraint.Width);
+                    var lineX = currentX + offsetX;
                     var lineY = currentY + textLine.LineMetrics.BaselineOrigin.Y;
 
                     foreach (var textRun in textLine.TextRuns)
@@ -185,15 +186,19 @@ namespace Avalonia.Skia
             }
         }
 
-        // ToDo: Need to figure out how to calculate the text position properly.
-        private static float GetTextAlignmentOffset(TextAlignment textAlignment, float width, float availableWidth)
+        private static double GetTextAlignmentOffset(TextAlignment textAlignment, double width, double availableWidth)
         {
+            if (double.IsInfinity(availableWidth))
+            {
+                return 0.0d;
+            }
+
             switch (textAlignment)
             {
                 case TextAlignment.Left:
-                    return 0.0f;
+                    return 0.0d;
                 case TextAlignment.Center:
-                    return availableWidth - (width / 2);
+                    return (availableWidth / 2) - (width / 2);
                 case TextAlignment.Right:
                     return availableWidth - width;
                 default:
@@ -239,7 +244,7 @@ namespace Avalonia.Skia
                 }
             }
         }
-      
+
         private static SKTextRun ApplyTextSpan(FormattedTextStyleSpan span, SKTextRun textRun, out bool needsUpdate)
         {
             // We need to make sure to update all measurements if the TextFormat etc changes.
