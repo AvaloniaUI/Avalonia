@@ -113,9 +113,9 @@ public:
         return S_OK;
     }
 
-    virtual HRESULT CreateCursor(IAvnCursor** ppv)
+    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv)
     {
-        *ppv = ::CreateCursor();
+        *ppv = ::CreateCursorFactory();
         return S_OK;
     }
 };

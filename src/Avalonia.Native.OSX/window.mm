@@ -1,15 +1,18 @@
 #include "common.h"
 #include "window.h"
 #include "KeyTransform.h"
+#include "cursor.h"
 
 class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
+private:
+    NSCursor* cursor;
+
 public:
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     AvnPoint lastPositionSet;
-    NSCursor* cursor;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
@@ -190,24 +193,23 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT SetCursor(void* ptr)
+    virtual HRESULT SetCursor(IAvnCursor* cursor)
     {
-        cursor = (__bridge NSCursor*)ptr;
+        Cursor* avnCursor = dynamic_cast<Cursor*>(cursor);
+        this->cursor = avnCursor->GetNative();
         UpdateCursor();
         return S_OK;
     }
 
-    virtual HRESULT UpdateCursor()
+    virtual void UpdateCursor()
     {
         [View resetCursorRects];
-        if (cursor != NULL)
+        if (cursor != nil)
         {
              auto rect = [Window frame];
              [View addCursorRect:rect cursor:cursor];
-//           if ([View isMouseOver])
-                 [cursor set];
+             [cursor set];
         }
-        return S_OK;
     }
 
 protected:
@@ -286,6 +288,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _area = [[NSTrackingArea alloc] initWithRect:rect options:options owner:self userInfo:nullptr];
     [self addTrackingArea:_area];
     
+    _parent->UpdateCursor();
+
     _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height});
 }
 

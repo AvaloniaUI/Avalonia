@@ -5,31 +5,38 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    class Cursor : IPlatformHandle
+    class AvaloniaNativeCursor : IPlatformHandle, IDisposable
     {
-        public IntPtr Handle { get; }
+        public IAvnCursor Cursor { get; private set; }
+        public IntPtr Handle => IntPtr.Zero;
 
-        public string HandleDescriptor => "NSCursor";
+        public string HandleDescriptor => "<none>";
 
-        public Cursor(IntPtr handle)
+        public AvaloniaNativeCursor(IAvnCursor cursor)
         {
-            Handle = handle;
+            Cursor = cursor;
+        }
+
+        public void Dispose()
+        {
+            Cursor.Dispose();
+            Cursor = null;
         }
     }
 
     class CursorFactory : IStandardCursorFactory
     {
-        IAvnCursor _native;
+        IAvnCursorFactory _native;
 
-        public CursorFactory(IAvnCursor native)
+        public CursorFactory(IAvnCursorFactory native)
         {
             _native = native;
         }
 
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
-            var handle = _native.GetCursor((AvnStandardCursorType)cursorType);
-            return new Cursor( handle );
+            var cursor = _native.GetCursor((AvnStandardCursorType)cursorType);
+            return new AvaloniaNativeCursor( cursor );
         }
     }
 }

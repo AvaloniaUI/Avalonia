@@ -312,7 +312,9 @@ namespace Avalonia.Native
 
         public void SetCursor(IPlatformHandle cursor)
         {
-            _native.Cursor = (cursor ?? _cursorFactory.GetCursor(StandardCursorType.Arrow)).Handle;
+            var newCursor = cursor as AvaloniaNativeCursor;
+            newCursor = newCursor ?? (_cursorFactory.GetCursor(StandardCursorType.Arrow) as AvaloniaNativeCursor);
+            _native.Cursor = newCursor.Cursor;
         }
 
         public void BeginResizeDrag(WindowEdge edge)

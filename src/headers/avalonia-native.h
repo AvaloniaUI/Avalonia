@@ -1,6 +1,7 @@
 #include "com.h"
 #include "key.h"
 
+
 #define AVNCOM(name, id) COMINTERFACE(name, 2e2cda0a, 9ae5, 4f1b, 8e, 20, 08, 1a, 04, 27, 9f, id)
 
 struct IAvnWindowEvents;
@@ -13,6 +14,7 @@ struct IAvnSystemDialogs;
 struct IAvnScreens;
 struct IAvnClipboard;
 struct IAvnCursor;
+struct IAvnCursorFactory;
 
 struct AvnSize
 {
@@ -135,7 +137,7 @@ public:
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
-    virtual HRESULT CreateCursor(IAvnCursor** ppv) = 0;
+    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -156,7 +158,7 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) = 0;
     virtual HRESULT SetTopMost (bool value) = 0;
-    virtual HRESULT SetCursor(void* ptr) = 0;
+    virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -272,7 +274,12 @@ AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
 
 AVNCOM(IAvnCursor, 10) : virtual IUnknown
 {
-    virtual HRESULT GetCursor (AvnStandardCursorType cursorType, void** retOut) = 0;
 };
+
+AVNCOM(IAvnCursorFactory, 11) : virtual IUnknown
+{
+    virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) = 0;
+};
+
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();
