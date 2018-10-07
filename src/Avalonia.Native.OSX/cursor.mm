@@ -46,6 +46,7 @@ public:
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut)
     {
         *retOut = s_cursorMap[cursorType];
+        (*retOut)->AddRef();
         return S_OK;
     }
 };
