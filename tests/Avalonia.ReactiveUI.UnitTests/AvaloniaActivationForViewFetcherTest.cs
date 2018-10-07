@@ -72,24 +72,34 @@ namespace Avalonia
         }
 
         [Fact]
+        public void GetAffinityForViewShouldReturnNonZeroForVisualElements() 
+        {
+            var userControl = new TestUserControl();
+            var activationForViewFetcher = new AvaloniaActivationForViewFetcher();
+
+            var forUserControl = activationForViewFetcher.GetAffinityForView(userControl.GetType());
+            var forNonUserControl = activationForViewFetcher.GetAffinityForView(typeof(object));
+
+            Assert.NotEqual(0, forUserControl);
+            Assert.Equal(0, forNonUserControl);
+        }
+
+        [Fact]
         public void ActivationForViewFetcherShouldSupportWhenActivated()
         {
-            var locator = new ModernDependencyResolver();
-            locator.InitializeSplat();
-            locator.InitializeReactiveUI();
-            locator.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
-            using (locator.WithResolver()) 
-            {
-                var userControl = new TestUserControlWithWhenActivated();
-                Assert.False(userControl.Active);
+            Locator.CurrentMutable.RegisterConstant(
+                new AvaloniaActivationForViewFetcher(), 
+                typeof(IActivationForViewFetcher));
 
-                var fakeRenderedDecorator = new FakeRenderDecorator();
-                fakeRenderedDecorator.Child = userControl;
-                Assert.True(userControl.Active);
+            var userControl = new TestUserControlWithWhenActivated();
+            Assert.False(userControl.Active);
 
-                fakeRenderedDecorator.Child = null;
-                Assert.False(userControl.Active);
-            }
+            var fakeRenderedDecorator = new FakeRenderDecorator();
+            fakeRenderedDecorator.Child = userControl;
+            Assert.True(userControl.Active);
+
+            fakeRenderedDecorator.Child = null;
+            Assert.False(userControl.Active);
         }
     }
 }
