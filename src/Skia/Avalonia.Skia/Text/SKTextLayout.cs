@@ -170,7 +170,7 @@ namespace Avalonia.Skia
 
                 foreach (var textLine in TextLines)
                 {
-                    var offsetX = (float)GetTextAlignmentOffset(_textAlignment, textLine.LineMetrics.Size.Width, _constraint.Width);
+                    var offsetX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
                     var lineX = currentX + offsetX;
                     var lineY = currentY + textLine.LineMetrics.BaselineOrigin.Y;
 
@@ -186,24 +186,98 @@ namespace Avalonia.Skia
             }
         }
 
-        private static double GetTextAlignmentOffset(TextAlignment textAlignment, double width, double availableWidth)
+        public TextHitTestResult HitTestPoint(Point point)
         {
-            if (double.IsInfinity(availableWidth))
-            {
-                return 0.0d;
-            }
+            //float y = (float)point.Y;
+            //var line = _skiaLines.Find(l => l.Top <= y && (l.Top + l.Height) > y);
 
-            switch (textAlignment)
-            {
-                case TextAlignment.Left:
-                    return 0.0d;
-                case TextAlignment.Center:
-                    return (availableWidth / 2) - (width / 2);
-                case TextAlignment.Right:
-                    return availableWidth - width;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(textAlignment), textAlignment, null);
-            }
+            //if (!line.Equals(default(AvaloniaFormattedTextLine)))
+            //{
+            //    for (int c = line.Start; c < line.Start + line.TextLength; c++)
+            //    {
+            //        var rc = rects[c];
+            //        if (rc.Contains(point))
+            //        {
+            //            return new TextHitTestResult
+            //            {
+            //                IsInside = !(line.TextLength > line.Length),
+            //                TextPosition = c,
+            //                IsTrailing = (point.X - rc.X) > rc.Width / 2
+            //            };
+            //        }
+            //    }
+
+            //    int offset = 0;
+
+            //    if (point.X >= (rects[line.Start].X + line.Width) / 2 && line.Length > 0)
+            //    {
+            //        offset = line.TextLength > line.Length ?
+            //                        line.Length : (line.Length - 1);
+            //    }
+
+            //    return new TextHitTestResult
+            //    {
+            //        IsInside = false,
+            //        TextPosition = line.Start + offset,
+            //        IsTrailing = _text.Length == (line.Start + offset + 1)
+            //    };
+            //}
+
+            //bool end = point.X > Size.Width || point.Y > Size.Height;
+
+            //return new TextHitTestResult()
+            //{
+            //    IsInside = false,
+            //    IsTrailing = end,
+            //    TextPosition = end ? _text.Length - 1 : 0
+            //};
+
+            return new TextHitTestResult();
+        }
+
+        public Rect HitTestTextPosition(int index)
+        {
+            //if (index < 0 || index >= rects.Count)
+            //{
+            //    var r = rects.LastOrDefault();
+            //    return new Rect(r.X + r.Width, r.Y, 0, _lineHeight);
+            //}
+
+            //if (rects.Count == 0)
+            //{
+            //    return new Rect(0, 0, 1, _lineHeight);
+            //}
+
+            //if (index == rects.Count)
+            //{
+            //    var lr = rects[rects.Count - 1];
+            //    return new Rect(new Point(lr.X + lr.Width, lr.Y), rects[index - 1].Size);
+            //}
+
+            //return rects[index];
+
+            return new Rect();
+        }
+
+        public IEnumerable<Rect> HitTestTextRange(int index, int length)
+        {
+            List<Rect> result = new List<Rect>();
+
+            //int lastIndex = index + length - 1;
+
+            //foreach (var line in _skiaLines.Where(l =>
+            //                                        (l.Start + l.Length) > index &&
+            //                                        lastIndex >= l.Start))
+            //{
+            //    int lineEndIndex = line.Start + (line.Length > 0 ? line.Length - 1 : 0);
+
+            //    double left = rects[line.Start > index ? line.Start : index].X;
+            //    double right = rects[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
+
+            //    result.Add(new Rect(left, line.Top, right - left, line.Height));
+            //}
+
+            return result;
         }
 
         private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
@@ -286,6 +360,38 @@ namespace Avalonia.Skia
             return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
+        private static bool IsBreakChar(char c)
+        {
+            switch (c)
+            {
+                case '\r':
+                    return true;
+                case '\n':
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private double GetTextLineOffsetX(TextAlignment textAlignment, double width)
+        {
+            var availableWidth = _constraint.Width > 0 && !double.IsPositiveInfinity(_constraint.Width)
+                                     ? _constraint.Width
+                                     : Size.Width;
+
+            switch (textAlignment)
+            {
+                case TextAlignment.Left:
+                    return 0.0d;
+                case TextAlignment.Center:
+                    return (availableWidth - width) / 2;
+                case TextAlignment.Right:
+                    return availableWidth - width;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(textAlignment), textAlignment, null);
+            }
+        }
+
         private SplitTextRunResult SplitTextRun(
             SKTextRun textRun,
             int startingIndex,
@@ -324,42 +430,49 @@ namespace Avalonia.Skia
 
             var currentPosition = 0;
 
-            for (var index = 0; index < _text.Length; index++)
+            if (_text.Length != 0)
             {
-                var c = _text[index];
-
-                switch (c)
+                for (var index = 0; index < _text.Length; index++)
                 {
-                    case '\r':
-                        {
-                            var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
+                    var c = _text[index];
 
-                            textLines.AddRange(breakLines);
-
-                            if (_text[index + 1] == '\n')
+                    switch (c)
+                    {
+                        case '\r':
                             {
-                                index++;
+                                if (_text[index + 1] == '\n')
+                                {
+                                    index++;
+                                }
+
+                                var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition + 1);
+
+                                textLines.AddRange(breakLines);
+
+                                currentPosition = index + 1;
+                                break;
                             }
 
-                            currentPosition = index + 1;
-                            break;
-                        }
-
-                    case '\n':
-                        {
-                            var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition);
-
-                            textLines.AddRange(breakLines);
-
-                            if (_text[index + 1] == '\r')
+                        case '\n':
                             {
-                                index++;
-                            }
+                                if (_text[index + 1] == '\r')
+                                {
+                                    index++;
+                                }
 
-                            currentPosition = index + 1;
-                            break;
-                        }
+                                var breakLines = PerformLineBreak(_text, currentPosition, index - currentPosition + 1);
+
+                                textLines.AddRange(breakLines);
+
+                                currentPosition = index + 1;
+                                break;
+                            }
+                    }
                 }
+            }
+            else
+            {
+                textLines.Add(CreateTextLine(string.Empty, 0, 0));
             }
 
             if (currentPosition < _text.Length)
@@ -376,7 +489,7 @@ namespace Avalonia.Skia
                     sizeX = textLine.LineMetrics.Size.Width;
                 }
 
-                sizeY += textLine.LineMetrics.Size.Width;
+                sizeY += textLine.LineMetrics.Size.Height;
             }
 
             Size = new Size(sizeX, sizeY);
@@ -512,6 +625,14 @@ namespace Avalonia.Skia
             while (currentPosition < length)
             {
                 var glyphCount = _typeface.CountGlyphs(runText);
+
+                while (glyphCount < runText.Length)
+                {
+                    if (IsBreakChar(runText[glyphCount]))
+                    {
+                        glyphCount++;
+                    }
+                }
 
                 var typeface = _typeface;
 
