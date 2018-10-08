@@ -289,12 +289,12 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         public override void EndInit()
         {
-            base.EndInit();
-
             if (--_updateCount == 0)
             {
                 UpdateFinished();
             }
+
+            base.EndInit();
         }
 
         /// <summary>
