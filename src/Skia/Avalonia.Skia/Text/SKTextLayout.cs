@@ -29,7 +29,7 @@ namespace Avalonia.Skia
 
         private readonly List<SKTextLine> _textLines;
 
-        private List<Rect> _rectangles = new List<Rect>();
+        private List<Rect> _rectangles;
 
         public SKTextLayout(
             string text,
@@ -290,11 +290,6 @@ namespace Avalonia.Skia
                 return new Rect(r.X + r.Width, r.Y, 0, r.Height);
             }
 
-            if (rectangles.Count == 0)
-            {
-                return new Rect(0, 0, 1, _fontSize * 1.1);
-            }
-
             if (index == rectangles.Count)
             {
                 var lr = rectangles[rectangles.Count - 1];
@@ -435,7 +430,7 @@ namespace Avalonia.Skia
 
         private List<Rect> GetRectangles()
         {
-            if (_rectangles.Count != _text.Length)
+            if (_rectangles == null || _rectangles.Count != _text.Length)
             {
                 _rectangles = CreateRectangles();
             }
@@ -455,6 +450,13 @@ namespace Avalonia.Skia
 
                 foreach (var textRun in currentLine.TextRuns)
                 {
+                    if (textRun.Text.Length == 0)
+                    {
+                        rectangles.Add(new Rect(currentX, currentY, 0, currentLine.LineMetrics.Size.Height));
+
+                        continue;
+                    }
+
                     foreach (var c in textRun.Text)
                     {
                         var width = _paint.MeasureText(c.ToString());
