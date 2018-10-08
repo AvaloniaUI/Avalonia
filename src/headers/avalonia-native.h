@@ -1,6 +1,7 @@
 #include "com.h"
 #include "key.h"
 
+
 #define AVNCOM(name, id) COMINTERFACE(name, 2e2cda0a, 9ae5, 4f1b, 8e, 20, 08, 1a, 04, 27, 9f, id)
 
 struct IAvnWindowEvents;
@@ -12,6 +13,8 @@ struct IAvnSystemDialogEvents;
 struct IAvnSystemDialogs;
 struct IAvnScreens;
 struct IAvnClipboard;
+struct IAvnCursor;
+struct IAvnCursorFactory;
 
 struct AvnSize
 {
@@ -96,6 +99,33 @@ enum AvnWindowState
     Maximized,
 };
 
+enum AvnStandardCursorType
+{
+    CursorArrow,
+    CursorIbeam,
+    CursorWait,
+    CursorCross,
+    CursorUpArrow,
+    CursorSizeWestEast,
+    CursorSizeNorthSouth,
+    CursorSizeAll,
+    CursorNo,
+    CursorHand,
+    CursorAppStarting,
+    CursorHelp,
+    CursorTopSide,
+    CursorBottomSize,
+    CursorLeftSide,
+    CursorRightSide,
+    CursorTopLeftCorner,
+    CursorTopRightCorner,
+    CursorBottomLeftCorner,
+    CursorBottomRightCorner,
+    CursorDragMove,
+    CursorDragCopy,
+    CursorDragLink,
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : virtual IUnknown
 {
 public:
@@ -107,6 +137,7 @@ public:
     virtual HRESULT CreateSystemDialogs (IAvnSystemDialogs** ppv) = 0;
     virtual HRESULT CreateScreens (IAvnScreens** ppv) = 0;
     virtual HRESULT CreateClipboard(IAvnClipboard** ppv) = 0;
+    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
@@ -127,6 +158,7 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) = 0;
     virtual HRESULT SetTopMost (bool value) = 0;
+    virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
@@ -239,5 +271,15 @@ AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
     virtual HRESULT SetText (char* text) = 0;
     virtual HRESULT Clear() = 0;
 };
+
+AVNCOM(IAvnCursor, 10) : virtual IUnknown
+{
+};
+
+AVNCOM(IAvnCursorFactory, 11) : virtual IUnknown
+{
+    virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) = 0;
+};
+
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative();

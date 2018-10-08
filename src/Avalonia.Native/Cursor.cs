@@ -1,21 +1,42 @@
 ﻿using System;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    class Cursor : IPlatformHandle
+    class AvaloniaNativeCursor : IPlatformHandle, IDisposable
     {
+        public IAvnCursor Cursor { get; private set; }
         public IntPtr Handle => IntPtr.Zero;
 
-        public string HandleDescriptor => "STUB";
+        public string HandleDescriptor => "<none>";
+
+        public AvaloniaNativeCursor(IAvnCursor cursor)
+        {
+            Cursor = cursor;
+        }
+
+        public void Dispose()
+        {
+            Cursor.Dispose();
+            Cursor = null;
+        }
     }
 
-    class CursorFactoryStub : IStandardCursorFactory
+    class CursorFactory : IStandardCursorFactory
     {
+        IAvnCursorFactory _native;
+
+        public CursorFactory(IAvnCursorFactory native)
+        {
+            _native = native;
+        }
+
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
-            return new Cursor();
+            var cursor = _native.GetCursor((AvnStandardCursorType)cursorType);
+            return new AvaloniaNativeCursor( cursor );
         }
     }
 }
