@@ -1055,12 +1055,17 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal class MONITORINFO
+        internal struct MONITORINFO
         {
-            public int cbSize = Marshal.SizeOf<MONITORINFO>();
-            public RECT rcMonitor = new RECT();
-            public RECT rcWork = new RECT();
-            public int dwFlags = 0;
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public int dwFlags;
+
+            public static MONITORINFO NewMONITORINFO()
+            {
+                return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            }
 
             public enum MonitorOptions : uint
             {
