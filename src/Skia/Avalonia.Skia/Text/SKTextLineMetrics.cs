@@ -4,7 +4,7 @@
 using SkiaSharp;
 
 namespace Avalonia.Skia
-{   
+{
     public struct SKTextLineMetrics
     {
         public SKTextLineMetrics(float width, float ascent, float descent, float leading)
@@ -12,7 +12,7 @@ namespace Avalonia.Skia
             Ascent = ascent;
             Descent = descent;
             Leading = leading;
-            Size = new SKSize(width, descent - ascent + leading);            
+            Size = new SKSize(width, descent - ascent + leading);
             BaselineOrigin = new SKPoint(0, -ascent);
         }
 

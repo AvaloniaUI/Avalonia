@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Avalonia.Media;
 
@@ -10,8 +11,6 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    using System.Linq;
-
     public class SKTextLayout
     {
         private readonly string _text;
@@ -29,6 +28,8 @@ namespace Avalonia.Skia
         private readonly SKPaint _paint;
 
         private readonly List<SKTextLine> _textLines;
+
+        private List<Rect> _rectangles = new List<Rect>();
 
         public SKTextLayout(
             string text,
@@ -89,24 +90,43 @@ namespace Avalonia.Skia
 
                     var splitLength = Math.Min(currentTextRun.Text.Length, remainingLength);
 
-                    var start = SplitTextRun(currentTextRun, 0, splitLength);
-
-                    if (currentTextRun.Text.Length == 1)
+                    if (splitLength == currentTextRun.Text.Length)
                     {
+                        // Apply to the whole run 
                         textRuns.RemoveAt(runIndex);
 
                         var updatedTextRun = ApplyTextSpan(span, currentTextRun, out needsUpdate);
 
                         textRuns.Insert(runIndex, updatedTextRun);
 
-                        remainingLength--;
+                        remainingLength -= currentTextRun.Text.Length;
                     }
                     else
                     {
-                        if (currentLength != span.StartIndex)
+                        if (currentLength == span.StartIndex)
                         {
-                            if (Math.Max(0, currentTextRun.Text.Length - splitLength) + remainingLength
-                                == currentTextRun.Text.Length)
+                            // Apply at start of the run 
+                            var start = SplitTextRun(currentTextRun, 0, splitLength);
+
+                            textRuns.RemoveAt(runIndex);
+
+                            var updatedTextRun = ApplyTextSpan(span, start.FirstTextRun, out needsUpdate);
+
+                            textRuns.Insert(runIndex, updatedTextRun);
+
+                            remainingLength -= start.FirstTextRun.Text.Length;
+
+                            runIndex++;
+
+                            textRuns.Insert(runIndex, start.SecondTextRun);
+                        }
+                        else
+                        {
+                            splitLength = Math.Max(0, span.StartIndex - currentLength);
+
+                            var start = SplitTextRun(currentTextRun, 0, splitLength);
+
+                            if (splitLength + remainingLength == currentTextRun.Text.Length)
                             {
                                 // Apply at the end of the run                         
                                 textRuns.RemoveAt(runIndex);
@@ -128,13 +148,13 @@ namespace Avalonia.Skia
 
                                 textRuns.RemoveAt(runIndex);
 
-                                var updatedTextRun = ApplyTextSpan(span, end.FirstTextRun, out needsUpdate);
-
-                                textRuns.Insert(runIndex, updatedTextRun);
+                                textRuns.Insert(runIndex, start.FirstTextRun);
 
                                 runIndex++;
 
-                                textRuns.Insert(runIndex, end.FirstTextRun);
+                                var updatedTextRun = ApplyTextSpan(span, end.FirstTextRun, out needsUpdate);
+
+                                textRuns.Insert(runIndex, updatedTextRun);
 
                                 runIndex++;
 
@@ -142,21 +162,6 @@ namespace Avalonia.Skia
 
                                 remainingLength = 0;
                             }
-                        }
-                        else
-                        {
-                            // Apply at start of the run                        
-                            textRuns.RemoveAt(runIndex);
-
-                            var updatedTextRun = ApplyTextSpan(span, start.FirstTextRun, out needsUpdate);
-
-                            textRuns.Insert(runIndex, updatedTextRun);
-
-                            remainingLength -= start.FirstTextRun.Text.Length;
-
-                            runIndex++;
-
-                            textRuns.Insert(runIndex, start.SecondTextRun);
                         }
                     }
 
@@ -214,17 +219,119 @@ namespace Avalonia.Skia
 
         public TextHitTestResult HitTestPoint(Point point)
         {
-            return new TextHitTestResult();
+            var rectangles = GetRectangles();
+
+            var pointX = (float)point.X;
+            var pointY = (float)point.Y;
+
+            var currentY = 0.0f;
+
+            foreach (var textLine in TextLines)
+            {
+                if (pointY <= currentY + textLine.LineMetrics.Size.Height)
+                {
+                    if (rectangles[textLine.StartingIndex].X > pointX)
+                    {
+                        return new TextHitTestResult
+                        {
+                            IsInside = false,
+                            IsTrailing = true,
+                            TextPosition = textLine.StartingIndex
+                        };
+                    }
+
+                    if (rectangles[textLine.StartingIndex + textLine.Length - 1].Right < pointX)
+                    {
+                        return new TextHitTestResult
+                        {
+                            IsInside = false,
+                            IsTrailing = true,
+                            TextPosition = textLine.StartingIndex + textLine.Length - 1
+                        };
+                    }
+
+                    for (var glyphIndex = textLine.StartingIndex; glyphIndex < _text.Length; glyphIndex++)
+                    {
+                        var glyphRectangle = rectangles[glyphIndex];
+
+                        if (pointX >= glyphRectangle.X && pointX < glyphRectangle.Right)
+                        {
+                            return new TextHitTestResult
+                            {
+                                IsInside = true,
+                                IsTrailing = false,
+                                TextPosition = glyphIndex
+                            };
+                        }
+                    }
+                }
+
+                currentY += textLine.LineMetrics.Size.Height;
+            }
+
+            var isTrailing = point.X > Size.Width || point.Y > Size.Height;
+
+            return new TextHitTestResult
+            {
+                IsInside = false,
+                IsTrailing = isTrailing,
+                TextPosition = isTrailing ? _text.Length - 1 : 0
+            };
         }
 
         public Rect HitTestTextPosition(int index)
         {
-            return new Rect();
+            var rectangles = GetRectangles();
+
+            if (index < 0 || index >= rectangles.Count)
+            {
+                var r = rectangles.LastOrDefault();
+
+                return new Rect(r.X + r.Width, r.Y, 0, r.Height);
+            }
+
+            if (rectangles.Count == 0)
+            {
+                return new Rect(0, 0, 1, _fontSize * 1.1);
+            }
+
+            if (index == rectangles.Count)
+            {
+                var lr = rectangles[rectangles.Count - 1];
+
+                return new Rect(new Point(lr.X + lr.Width, lr.Y), rectangles[index - 1].Size);
+            }
+
+            return rectangles[index];
         }
 
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
-            return Enumerable.Empty<Rect>();
+            var result = new List<Rect>();
+
+            var rectangles = GetRectangles();
+
+            var lastIndex = index + length - 1;
+
+            var currentY = 0.0f;
+
+            foreach (var textLine in TextLines)
+            {
+                if (textLine.StartingIndex + textLine.Length > index && lastIndex >= textLine.StartingIndex)
+                {
+                    var lineEndIndex = textLine.StartingIndex + (textLine.Length > 0 ? textLine.Length - 1 : 0);
+
+                    var left = rectangles[textLine.StartingIndex > index ? textLine.StartingIndex : index].X;
+
+                    var right = rectangles[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
+
+                    result.Add(new Rect(left, currentY, right - left, textLine.LineMetrics.Size.Height));
+                }
+
+                currentY += textLine.LineMetrics.Size.Height;
+            }
+
+            return result;
         }
 
         private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
@@ -324,6 +431,48 @@ namespace Avalonia.Skia
                 default:
                     return false;
             }
+        }
+
+        private List<Rect> GetRectangles()
+        {
+            if (_rectangles.Count != _text.Length)
+            {
+                _rectangles = CreateRectangles();
+            }
+
+            return _rectangles;
+        }
+
+        private List<Rect> CreateRectangles()
+        {
+            var rectangles = new List<Rect>();
+
+            var currentY = 0.0f;
+
+            foreach (var currentLine in _textLines)
+            {
+                var currentX = GetTextLineOffsetX(_textAlignment, currentLine.LineMetrics.Size.Width);
+
+                foreach (var textRun in currentLine.TextRuns)
+                {
+                    foreach (var c in textRun.Text)
+                    {
+                        var width = _paint.MeasureText(c.ToString());
+
+                        rectangles.Add(new Rect(
+                            currentX,
+                            currentY,
+                            width,
+                            currentLine.LineMetrics.Size.Height));
+
+                        currentX += width;
+                    }
+                }
+
+                currentY += currentLine.LineMetrics.Size.Height;
+            }
+
+            return rectangles;
         }
 
         private double GetTextLineOffsetX(TextAlignment textAlignment, double width)
@@ -496,9 +645,13 @@ namespace Avalonia.Skia
 
                         remainingTextRuns.Add(splitResult.SecondTextRun);
 
+                        var remainingLength = splitResult.SecondTextRun.Text.Length;
+
                         for (var i = runIndex + 1; i < textLine.TextRuns.Count; i++)
                         {
                             var currentRun = textLine.TextRuns[i];
+
+                            remainingLength += currentRun.Text.Length;
 
                             remainingTextRuns.Add(currentRun);
                         }
@@ -507,7 +660,7 @@ namespace Avalonia.Skia
 
                         textLine = new SKTextLine(
                             textLine.StartingIndex + measuredLength,
-                            textLine.Length - measuredLength,
+                            remainingLength,
                             remainingTextRuns,
                             textLineMetrics);
 
