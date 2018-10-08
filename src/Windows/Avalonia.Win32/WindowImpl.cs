@@ -839,7 +839,7 @@ namespace Avalonia.Win32
             {
                 MONITORINFO monitorInfo = MONITORINFO.NewMONITORINFO();
 
-                if (GetMonitorInfo(monitor, monitorInfo))
+                if (GetMonitorInfo(monitor,ref monitorInfo))
                 {
                     RECT rcMonitorArea = monitorInfo.rcMonitor;
 

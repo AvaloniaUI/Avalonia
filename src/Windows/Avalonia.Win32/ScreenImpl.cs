@@ -27,7 +27,7 @@ namespace Avalonia.Win32
                         (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
                         {
                             MONITORINFO monitorInfo = MONITORINFO.NewMONITORINFO();
-                            if (GetMonitorInfo(monitor, monitorInfo))
+                            if (GetMonitorInfo(monitor,ref monitorInfo))
                             {
                                 RECT bounds = monitorInfo.rcMonitor;
                                 RECT workingArea = monitorInfo.rcWork;
