@@ -707,6 +707,26 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.True(target.SelectedIndex == 1);
         }
 
+        [Fact]
+        public void Binding_With_DelayedBinding_And_Initialization_Where_DataContext_Is_Root_Works()
+        {
+            // Test for #1932.
+            var root = new RootWithItems();
+
+            root.BeginInit();
+            root.DataContext = root;
+
+            var target = new ListBox();
+            target.BeginInit();
+            root.Child = target;
+
+            DelayedBinding.Add(target, ItemsControl.ItemsProperty, new Binding(nameof(RootWithItems.Items)));
+            DelayedBinding.Add(target, ListBox.SelectedItemProperty, new Binding(nameof(RootWithItems.Selected)));
+            target.EndInit();
+            root.EndInit();
+
+            Assert.Equal("b", target.SelectedItem);
+        }
 
         private FuncControlTemplate Template()
         {
@@ -744,6 +764,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public IList<Item> Items { get; set; }
             public Item SelectedItem { get; set; }
+        }
+
+        private class RootWithItems : TestRoot
+        {
+            public List<string> Items { get; set; } = new List<string>() { "a", "b", "c", "d", "e" };
+            public string Selected { get; set; } = "b";
         }
     }
 }
