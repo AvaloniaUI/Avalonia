@@ -156,6 +156,7 @@ public:
         @autoreleasepool
         {
             [Window setContentSize:NSSize{x, y}];
+            
             return S_OK;
         }
     }
@@ -802,6 +803,17 @@ protected:
     virtual NSWindowStyleMask GetStyle()
     {
         return NSWindowStyleMaskBorderless;
+    }
+    
+    virtual HRESULT Resize(double x, double y)
+    {
+        @autoreleasepool
+        {
+            [Window setContentSize:NSSize{x, y}];
+            
+            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(lastPositionSet))];
+            return S_OK;
+        }
     }
 };
 
