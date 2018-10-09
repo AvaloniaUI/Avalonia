@@ -963,6 +963,9 @@ private:
         {
             switch (state) {
                 case Maximized:
+                    lastPositionSet.X = 0;
+                    lastPositionSet.Y = 0;
+                    
                     if([Window isMiniaturized])
                     {
                         [Window deminiaturize:Window];
