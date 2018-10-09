@@ -26,7 +26,7 @@ namespace Avalonia.Win32
                     EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
                         (IntPtr monitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr data) =>
                         {
-                            MONITORINFO monitorInfo = MONITORINFO.NewMONITORINFO();
+                            MONITORINFO monitorInfo = MONITORINFO.CreateMONITORINFO();
                             if (GetMonitorInfo(monitor,ref monitorInfo))
                             {
                                 RECT bounds = monitorInfo.rcMonitor;
