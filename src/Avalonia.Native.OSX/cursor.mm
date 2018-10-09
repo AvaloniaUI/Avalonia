@@ -7,18 +7,20 @@
 
 class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorFactory>
 {
-    Cursor * arrowCursor = new Cursor([NSCursor arrowCursor]);
-    Cursor * crossCursor = new Cursor([NSCursor crosshairCursor]);
-    Cursor * resizeUpCursor = new Cursor([NSCursor resizeUpCursor]);
-    Cursor * resizeDownCursor = new Cursor([NSCursor resizeDownCursor]);
-    Cursor * dragCopyCursor = new Cursor([NSCursor dragCopyCursor]);
-    Cursor * dragLinkCursor = new Cursor([NSCursor dragLinkCursor]);
-    Cursor * pointingHandCursor = new Cursor([NSCursor pointingHandCursor]);
-    Cursor * contextualMenuCursor = new Cursor([NSCursor contextualMenuCursor]);
-    Cursor * IBeamCursor = new Cursor([NSCursor IBeamCursor]);
-    Cursor * resizeLeftCursor = new Cursor([NSCursor resizeLeftCursor]);
-    Cursor * resizeRightCursor = new Cursor([NSCursor resizeRightCursor]);
-    Cursor * operationNotAllowedCursor = new Cursor([NSCursor operationNotAllowedCursor]);
+    Cursor* arrowCursor = new Cursor([NSCursor arrowCursor]);
+    Cursor* crossCursor = new Cursor([NSCursor crosshairCursor]);
+    Cursor* resizeUpCursor = new Cursor([NSCursor resizeUpCursor]);
+    Cursor* resizeDownCursor = new Cursor([NSCursor resizeDownCursor]);
+    Cursor* resizeUpDownCursor = new Cursor([NSCursor resizeUpDownCursor]);
+    Cursor* dragCopyCursor = new Cursor([NSCursor dragCopyCursor]);
+    Cursor* dragLinkCursor = new Cursor([NSCursor dragLinkCursor]);
+    Cursor* pointingHandCursor = new Cursor([NSCursor pointingHandCursor]);
+    Cursor* contextualMenuCursor = new Cursor([NSCursor contextualMenuCursor]);
+    Cursor* IBeamCursor = new Cursor([NSCursor IBeamCursor]);
+    Cursor* resizeLeftCursor = new Cursor([NSCursor resizeLeftCursor]);
+    Cursor* resizeRightCursor = new Cursor([NSCursor resizeRightCursor]);
+    Cursor* resizeWestEastCursor = new Cursor([NSCursor resizeLeftRightCursor]);
+    Cursor* operationNotAllowedCursor = new Cursor([NSCursor operationNotAllowedCursor]);
 
     std::map<AvnStandardCursorType, Cursor*> s_cursorMap =
     {
@@ -31,6 +33,8 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
         { CursorBottomRightCorner, crossCursor },
         { CursorCross, crossCursor },
         { CursorSizeAll, crossCursor },
+        { CursorSizeNorthSouth, resizeUpDownCursor},
+        { CursorSizeWestEast, resizeWestEastCursor},
         { CursorTopSide, resizeUpCursor },
         { CursorUpArrow, resizeUpCursor },
         { CursorBottomSize, resizeDownCursor },
@@ -49,7 +53,12 @@ public:
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut)
     {
         *retOut = s_cursorMap[cursorType];
-        (*retOut)->AddRef();
+        
+        if(*retOut != nullptr)
+        {
+            (*retOut)->AddRef();
+        }
+            
         return S_OK;
     }
 };
