@@ -510,7 +510,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
-    _lastMouseDownEvent = nullptr;
     
     [super mouseDown:event];
 }
@@ -520,7 +519,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isMiddlePressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:MiddleButtonDown];
-    _lastMouseDownEvent = nullptr;
     
     [super otherMouseDown:event];
 }
@@ -530,7 +528,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isRightPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:RightButtonDown];
-    _lastMouseDownEvent = nullptr;
     
     [super rightMouseDown:event];
 }
