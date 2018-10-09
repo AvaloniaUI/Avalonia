@@ -1,11 +1,13 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Runtime.InteropServices;
 
 /*
  * Source code imported from https://github.com/kekekeks/evhttp-sharp
  * Source is provided under MIT license for Avalonia project and derived works
  */
-
 
 namespace Avalonia.Native
 {
@@ -37,10 +39,9 @@ namespace Avalonia.Native
                 DlError = dlerror;
             }
         }
+
         static class OsXImports
         {
-
-
             [DllImport("/usr/lib/libSystem.dylib")]
             private static extern IntPtr dlopen(string path, int flags);
 
@@ -58,7 +59,6 @@ namespace Avalonia.Native
             }
 
         }
-
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);

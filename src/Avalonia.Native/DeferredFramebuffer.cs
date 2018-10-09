@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Runtime.InteropServices;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -9,6 +12,7 @@ namespace Avalonia.Native
     public class DeferredFramebuffer : ILockedFramebuffer
     {
         private readonly Func<Action<IAvnWindowBase>, bool> _lockWindow;
+
         public DeferredFramebuffer(Func<Action<IAvnWindowBase>, bool> lockWindow,
                                    int width, int height, Vector dpi)
         {
@@ -27,7 +31,6 @@ namespace Avalonia.Native
         public int RowBytes { get; set; }
         public Vector Dpi { get; set; }
         public PixelFormat Format { get; set; }
-
 
         class Disposer : CallbackBase
         {
@@ -52,6 +55,7 @@ namespace Avalonia.Native
         {
             if (Address == IntPtr.Zero)
                 return;
+
             if (!_lockWindow(win =>
             {
                 var fb = new AvnFramebuffer
@@ -67,10 +71,16 @@ namespace Avalonia.Native
                     PixelFormat = (AvnPixelFormat)Format,
                     Stride = RowBytes
                 };
+
                 using (var d = new Disposer(Address))
+                {
                     win.ThreadSafeSetSwRenderedFrame(ref fb, d);
+                }
             }))
+            {
                 Marshal.FreeHGlobal(Address);
+            }
+
             Address = IntPtr.Zero;
         }
     }

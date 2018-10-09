@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using Avalonia.Controls;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
@@ -11,7 +14,9 @@ namespace Avalonia.Native
         public WindowImpl(IAvaloniaNativeFactory factory)
         {
             using (var e = new WindowEvents(this))
+            {
                 Init(_native = factory.CreateWindow(e), factory.CreateScreens());
+            }
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -35,7 +40,6 @@ namespace Avalonia.Native
         {
             return _native.ShowDialog();
         }
-
 
         public void CanResize(bool value)
         {
@@ -67,10 +71,14 @@ namespace Avalonia.Native
 
         public void ShowTaskbarIcon(bool value)
         {
+            // NO OP On OSX
         }
+
         public void SetIcon(IWindowIconImpl icon)
         {
+            // NO OP on OSX
         }
+
         public Func<bool> Closing { get; set; }
     }
 }

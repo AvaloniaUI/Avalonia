@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
@@ -13,6 +15,11 @@ namespace Avalonia.Native
         public static AvnPoint ToAvnPoint (this Point pt)
         {
             return new AvnPoint { X = pt.X, Y = pt.Y };
+        }
+
+        public static AvnSize ToAvnSize (this Size size)
+        {
+            return new AvnSize { Height = size.Height, Width = size.Width };
         }
 
         public static Size ToAvaloniaSize (this AvnSize size)

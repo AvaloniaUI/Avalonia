@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 #include "KeyTransform.h"
 
 const int kVK_ANSI_A = 0x00;
@@ -23,7 +26,7 @@ const int kVK_ANSI_3 = 0x14;
 const int kVK_ANSI_4 = 0x15;
 const int kVK_ANSI_6 = 0x16;
 const int kVK_ANSI_5 = 0x17;
-const int kVK_ANSI_Equal = 0x18;
+//const int kVK_ANSI_Equal = 0x18;
 const int kVK_ANSI_9 = 0x19;
 const int kVK_ANSI_7 = 0x1A;
 const int kVK_ANSI_Minus = 0x1B;
@@ -42,11 +45,11 @@ const int kVK_ANSI_K = 0x28;
 const int kVK_ANSI_Semicolon = 0x29;
 const int kVK_ANSI_Backslash = 0x2A;
 const int kVK_ANSI_Comma = 0x2B;
-const int kVK_ANSI_Slash = 0x2C;
+//const int kVK_ANSI_Slash = 0x2C;
 const int kVK_ANSI_N = 0x2D;
 const int kVK_ANSI_M = 0x2E;
 const int kVK_ANSI_Period = 0x2F;
-const int kVK_ANSI_Grave = 0x32;
+//const int kVK_ANSI_Grave = 0x32;
 const int kVK_ANSI_KeypadDecimal = 0x41;
 const int kVK_ANSI_KeypadMultiply = 0x43;
 const int kVK_ANSI_KeypadPlus = 0x45;
@@ -54,7 +57,7 @@ const int kVK_ANSI_KeypadClear = 0x47;
 const int kVK_ANSI_KeypadDivide = 0x4B;
 const int kVK_ANSI_KeypadEnter = 0x4C;
 const int kVK_ANSI_KeypadMinus = 0x4E;
-const int kVK_ANSI_KeypadEquals = 0x51;
+//const int kVK_ANSI_KeypadEquals = 0x51;
 const int kVK_ANSI_Keypad0 = 0x52;
 const int kVK_ANSI_Keypad1 = 0x53;
 const int kVK_ANSI_Keypad2 = 0x54;
@@ -79,7 +82,7 @@ const int kVK_RightCommand = 0x36;
 const int kVK_RightShift = 0x3C;
 const int kVK_RightOption = 0x3D;
 const int kVK_RightControl = 0x3E;
-const int kVK_Function = 0x3F;
+//const int kVK_Function = 0x3F;
 const int kVK_F17 = 0x40;
 const int kVK_VolumeUp = 0x48;
 const int kVK_VolumeDown = 0x49;
@@ -113,17 +116,17 @@ const int kVK_LeftArrow = 0x7B;
 const int kVK_RightArrow = 0x7C;
 const int kVK_DownArrow = 0x7D;
 const int kVK_UpArrow = 0x7E;
-const int kVK_ISO_Section = 0x0A;
-const int kVK_JIS_Yen = 0x5D;
-const int kVK_JIS_Underscore = 0x5E;
-const int kVK_JIS_KeypadComma = 0x5F;
-const int kVK_JIS_Eisu = 0x66;
-const int kVK_JIS_Kana = 0x68;
+//const int kVK_ISO_Section = 0x0A;
+//const int kVK_JIS_Yen = 0x5D;
+//const int kVK_JIS_Underscore = 0x5E;
+//const int kVK_JIS_KeypadComma = 0x5F;
+//const int kVK_JIS_Eisu = 0x66;
+//const int kVK_JIS_Kana = 0x68;
 
  std::map<int, AvnKey> s_KeyMap =
  {
-    {0, A},
-    {1, S},
+    {kVK_ANSI_A, A},
+    {kVK_ANSI_S, S},
     {kVK_ANSI_D, D},
     {kVK_ANSI_F, F},
     {kVK_ANSI_H, H},

@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
-using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -19,9 +21,9 @@ namespace Avalonia.Native
             AvaloniaLocator.Current.GetService<IRenderLoop>().Remove(this);
         }
 
+        private DeferredRenderer _renderer;
+        private IRenderLoopTask _rendererTask;
 
-        DeferredRenderer _renderer;
-        IRenderLoopTask _rendererTask;
         public DeferredRendererProxy(IRenderRoot root)
         {
             _renderer = new DeferredRenderer(root, this);
@@ -52,7 +54,10 @@ namespace Avalonia.Native
         public void Paint(Rect rect)
         {
             if (NeedsUpdate)
+            {
                 Update(TimeSpan.FromMilliseconds(Environment.TickCount));
+            }
+
             Render();
         }
 

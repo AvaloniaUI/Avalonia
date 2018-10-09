@@ -1,11 +1,12 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
-using Avalonia.Native;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -73,8 +74,7 @@ namespace Avalonia.Native
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()));
-                
+                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()));       
         }
 
         public IWindowImpl CreateWindow()
@@ -124,24 +124,5 @@ namespace Avalonia.Native
                 MacOptions = new AvaloniaNativeMacOptions(mac);
         }
 
-    }
-}
-
-namespace Avalonia
-{
-
-    public static class AvaloniaNativePlatformExtensions
-    {
-        public static T UseAvaloniaNative<T>(this T builder,
-                                             string libraryPath = null,
-                                             Action<AvaloniaNativeOptions> configure = null)
-                                             where T : AppBuilderBase<T>, new()
-        {
-            if (libraryPath == null)
-                builder.UseWindowingSubsystem(() => AvaloniaNativePlatform.Initialize(configure));
-            else
-                builder.UseWindowingSubsystem(() => AvaloniaNativePlatform.Initialize(libraryPath, configure));
-            return builder;
-        }
     }
 }

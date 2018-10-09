@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 #include "common.h"
 #include "window.h"
 #include "KeyTransform.h"
@@ -35,26 +38,37 @@ public:
     
     virtual HRESULT Show()
     {
-        SetPosition(lastPositionSet);
-        UpdateStyle();
-        [Window makeKeyAndOrderFront:Window];
-        return S_OK;
+        @autoreleasepool
+        {
+            SetPosition(lastPositionSet);
+            UpdateStyle();
+            [Window makeKeyAndOrderFront:Window];
+        
+            return S_OK;
+        }
     }
     
     virtual HRESULT Hide ()
     {
-        if(Window != nullptr)
+        @autoreleasepool
         {
-            [Window orderOut:Window];
+            if(Window != nullptr)
+            {
+                [Window orderOut:Window];
+            }
+            
+            return S_OK;
         }
-        return S_OK;
     }
     
     virtual HRESULT Activate ()
     {
-        if(Window != nullptr)
+        @autoreleasepool
         {
-            [Window makeKeyWindow];
+            if(Window != nullptr)
+            {
+                [Window makeKeyWindow];
+            }
         }
         
         return S_OK;
@@ -62,129 +76,186 @@ public:
     
     virtual HRESULT SetTopMost (bool value)
     {
-        [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
-        
-        return S_OK;
+        @autoreleasepool
+        {
+            [Window setLevel: value ? NSFloatingWindowLevel : NSNormalWindowLevel];
+            
+            return S_OK;
+        }
     }
     
     virtual HRESULT Close()
     {
-        [Window close];
-        return S_OK;
+        @autoreleasepool
+        {
+            [Window close];
+            return S_OK;
+        }
     }
     
     virtual HRESULT GetClientSize(AvnSize* ret)
     {
-        if(ret == nullptr)
-            return E_POINTER;
-        auto frame = [View frame];
-        ret->Width = frame.size.width;
-        ret->Height = frame.size.height;
-        return S_OK;
+        @autoreleasepool
+        {
+            if(ret == nullptr)
+                return E_POINTER;
+            auto frame = [View frame];
+            ret->Width = frame.size.width;
+            ret->Height = frame.size.height;
+            return S_OK;
+        }
     }
     
     virtual HRESULT GetMaxClientSize(AvnSize* ret)
     {
-        if(ret == nullptr)
-            return E_POINTER;
-        
-        auto size = [NSScreen.screens objectAtIndex:0].frame.size;
-        
-        ret->Height = size.height;
-        ret->Width = size.width;
-        
-        return S_OK;
+        @autoreleasepool
+        {
+            if(ret == nullptr)
+                return E_POINTER;
+            
+            auto size = [NSScreen.screens objectAtIndex:0].frame.size;
+            
+            ret->Height = size.height;
+            ret->Width = size.width;
+            
+            return S_OK;
+        }
     }
     
     virtual HRESULT GetScaling (double* ret)
     {
-        if(ret == nullptr)
-            return E_POINTER;
-        
-        if(Window == nullptr)
+        @autoreleasepool
         {
-            *ret = 1;
+            if(ret == nullptr)
+                return E_POINTER;
+            
+            if(Window == nullptr)
+            {
+                *ret = 1;
+                return S_OK;
+            }
+            
+            *ret = [Window backingScaleFactor];
             return S_OK;
         }
+    }
+    
+    virtual HRESULT SetMinMaxSize (AvnSize minSize, AvnSize maxSize)
+    {
+        @autoreleasepool
+        {
+            [Window setMinSize: ToNSSize(minSize)];
+            [Window setMaxSize: ToNSSize(maxSize)];
         
-        *ret = [Window backingScaleFactor];
-        return S_OK;
+            return S_OK;
+        }
     }
     
     virtual HRESULT Resize(double x, double y)
     {
-        [Window setContentSize:NSSize{x, y}];
+        @autoreleasepool
+        {
+            [Window setContentSize:NSSize{x, y}];
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT Invalidate (AvnRect rect)
+    {
+        @autoreleasepool
+        {
+            [View setNeedsDisplayInRect:[View frame]];
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT BeginMoveDrag ()
+    {
+        @autoreleasepool
+        {
+            auto lastEvent = [View lastMouseDownEvent];
+            
+            if(lastEvent == nullptr)
+            {
+                return S_OK;
+            }
+            
+            [Window performWindowDragWithEvent:lastEvent];
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT BeginResizeDrag (AvnWindowEdge edge)
+    {
         return S_OK;
     }
-    
-    virtual void Invalidate (AvnRect rect)
-    {
-        [View setNeedsDisplayInRect:[View frame]];
-    }
-    
-    virtual void BeginMoveDrag ()
-    {
-        auto lastEvent = [View lastMouseDownEvent];
-        
-        if(lastEvent == nullptr)
-        {
-            return;
-        }
-        
-        [Window performWindowDragWithEvent:lastEvent];
-    }
-    
     
     virtual HRESULT GetPosition (AvnPoint* ret)
     {
-        if(ret == nullptr)
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            auto frame = [Window frame];
+            
+            ret->X = frame.origin.x;
+            ret->Y = frame.origin.y + frame.size.height;
+            
+            *ret = ConvertPointY(*ret);
+            
+            return S_OK;
         }
-        
-        auto frame = [Window frame];
-        
-        ret->X = frame.origin.x;
-        ret->Y = frame.origin.y + frame.size.height;
-        
-        *ret = ConvertPointY(*ret);
-        
-        return S_OK;
     }
     
-    virtual void SetPosition (AvnPoint point)
+    virtual HRESULT SetPosition (AvnPoint point)
     {
-        lastPositionSet = point;
-        [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+        @autoreleasepool
+        {
+            lastPositionSet = point;
+            [Window setFrameTopLeftPoint:ToNSPoint(ConvertPointY(point))];
+            
+            return S_OK;
+        }
     }
     
     virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret)
     {
-        if(ret == nullptr)
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            point = ConvertPointY(point);
+            auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
+            
+            *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
+            
+            return S_OK;
         }
-        
-        point = ConvertPointY(point);
-        auto viewPoint = [Window convertScreenToBase:ToNSPoint(point)];
-        
-        *ret = [View translateLocalPoint:ToAvnPoint(viewPoint)];
-        
-        return S_OK;
     }
     
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret)
     {
-        if(ret == nullptr)
+        @autoreleasepool
         {
-            return E_POINTER;
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
+            auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
+            *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
+            
+            return S_OK;
         }
-        
-        auto cocoaViewPoint =  ToNSPoint([View translateLocalPoint:point]);
-        auto cocoaScreenPoint = [Window convertBaseToScreen:cocoaViewPoint];
-        *ret = ConvertPointY(ToAvnPoint(cocoaScreenPoint));
-        
-        return S_OK;
     }
     
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose)
@@ -195,10 +266,13 @@ public:
     
     virtual HRESULT SetCursor(IAvnCursor* cursor)
     {
-        Cursor* avnCursor = dynamic_cast<Cursor*>(cursor);
-        this->cursor = avnCursor->GetNative();
-        UpdateCursor();
-        return S_OK;
+        @autoreleasepool
+        {
+            Cursor* avnCursor = dynamic_cast<Cursor*>(cursor);
+            this->cursor = avnCursor->GetNative();
+            UpdateCursor();
+            return S_OK;
+        }
     }
 
     virtual void UpdateCursor()
@@ -841,75 +915,87 @@ private:
     
     virtual HRESULT SetCanResize(bool value)
     {
-        _canResize = value;
-        UpdateStyle();
-        return S_OK;
+        @autoreleasepool
+        {
+            _canResize = value;
+            UpdateStyle();
+            return S_OK;
+        }
     }
     
     virtual HRESULT SetHasDecorations(bool value)
     {
-        _hasDecorations = value;
-        UpdateStyle();
-        return S_OK;
+        @autoreleasepool
+        {
+            _hasDecorations = value;
+            UpdateStyle();
+            return S_OK;
+        }
     }
     
     virtual HRESULT GetWindowState (AvnWindowState*ret)
     {
-        if(ret == nullptr)
+        @autoreleasepool
         {
-            return E_POINTER;
-        }
-        
-        if([Window isMiniaturized])
-        {
-            *ret = Minimized;
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            if([Window isMiniaturized])
+            {
+                *ret = Minimized;
+                return S_OK;
+            }
+            
+            if([Window isZoomed])
+            {
+                *ret = Maximized;
+                return S_OK;
+            }
+            
+            *ret = Normal;
+            
             return S_OK;
         }
-        
-        if([Window isZoomed])
-        {
-            *ret = Maximized;
-            return S_OK;
-        }
-        
-        *ret = Normal;
-        
-        return S_OK;
     }
     
     virtual HRESULT SetWindowState (AvnWindowState state)
     {
-        switch (state) {
-            case Maximized:
-                if([Window isMiniaturized])
-                {
-                    [Window deminiaturize:Window];
-                }
-                
-                if(!IsZoomed())
-                {
-                    DoZoom();
-                }
-                break;
-                
-            case Minimized:
-                [Window miniaturize:Window];
-                break;
-                
-            default:
-                if([Window isMiniaturized])
-                {
-                    [Window deminiaturize:Window];
-                }
-                
-                if(IsZoomed())
-                {
-                    DoZoom();
-                }
-                break;
+        @autoreleasepool
+        {
+            switch (state) {
+                case Maximized:
+                    if([Window isMiniaturized])
+                    {
+                        [Window deminiaturize:Window];
+                    }
+                    
+                    if(!IsZoomed())
+                    {
+                        DoZoom();
+                    }
+                    break;
+                    
+                case Minimized:
+                    [Window miniaturize:Window];
+                    break;
+                    
+                default:
+                    if([Window isMiniaturized])
+                    {
+                        [Window deminiaturize:Window];
+                    }
+                    
+                    if(IsZoomed())
+                    {
+                        DoZoom();
+                    }
+                    break;
+            }
+            
+            return S_OK;
         }
-        
-        return S_OK;
     }
     
 protected:
@@ -939,6 +1025,9 @@ protected:
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {
-    IAvnWindow* ptr = dynamic_cast<IAvnWindow*>(new WindowImpl(events));
-    return ptr;
+    @autoreleasepool
+    {
+        IAvnWindow* ptr = dynamic_cast<IAvnWindow*>(new WindowImpl(events));
+        return ptr;
+    }
 }

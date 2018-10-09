@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 //This file will contain actual IID structures
 #define COM_GUIDS_MATERIALIZE
 #include "common.h"
@@ -125,40 +128,39 @@ extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
     return new AvaloniaNative();
 };
 
+NSSize ToNSSize (AvnSize s)
+{
+    NSSize result;
+    result.width = s.Width;
+    result.height = s.Height;
+    
+    return result;
+}
+
 NSPoint ToNSPoint (AvnPoint p)
 {
-    @autoreleasepool
-    {
-        NSPoint result;
-        result.x = p.X;
-        result.y = p.Y;
-        
-        return result;
-    }
+    NSPoint result;
+    result.x = p.X;
+    result.y = p.Y;
+    
+    return result;
 }
 
 AvnPoint ToAvnPoint (NSPoint p)
 {
-    @autoreleasepool
-    {
-        AvnPoint result;
-        result.X = p.x;
-        result.Y = p.y;
-        
-        return result;
-    }
+    AvnPoint result;
+    result.X = p.x;
+    result.Y = p.y;
+    
+    return result;
 }
-
 
 AvnPoint ConvertPointY (AvnPoint p)
 {
-    @autoreleasepool
-    {
-        auto sw = [NSScreen.screens objectAtIndex:0].frame;
-        
-        auto t = MAX(sw.origin.y, sw.origin.y + sw.size.height);
-        p.Y = t - p.Y;
-        
-        return p;
-    }
+    auto sw = [NSScreen.screens objectAtIndex:0].frame;
+    
+    auto t = MAX(sw.origin.y, sw.origin.y + sw.size.height);
+    p.Y = t - p.Y;
+    
+    return p;
 }

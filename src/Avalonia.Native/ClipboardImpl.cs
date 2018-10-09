@@ -1,18 +1,16 @@
-﻿using System;
-using System.IO;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
 using Avalonia.Input.Platform;
-using Avalonia.Platform;
 using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
-{ 
+{
     class ClipboardImpl : IClipboard
     {
-        IAvnClipboard _native;
+        private IAvnClipboard _native;
 
         public ClipboardImpl(IAvnClipboard native)
         {
@@ -22,6 +20,7 @@ namespace Avalonia.Native
         public Task ClearAsync()
         {
             _native.Clear();
+
             return Task.CompletedTask;
         }
 
@@ -29,14 +28,19 @@ namespace Avalonia.Native
         {
             var outPtr = _native.GetText();
             var text = Marshal.PtrToStringAnsi(outPtr);
+
             return Task.FromResult(text);
         }
 
         public Task SetTextAsync(string text)
         {
             _native.Clear();
-            if(text != null)
+
+            if (text != null)
+            {
                 _native.SetText(text);
+            }
+
             return Task.CompletedTask;
         }
     }

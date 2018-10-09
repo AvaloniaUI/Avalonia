@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 #ifndef common_h
 #define common_h
 #include "com.h"
@@ -18,4 +21,5 @@ extern IAvnCursorFactory* CreateCursorFactory();
 extern NSPoint ToNSPoint (AvnPoint p);
 extern AvnPoint ToAvnPoint (NSPoint p);
 extern AvnPoint ConvertPointY (AvnPoint p);
+extern NSSize ToNSSize (AvnSize s);
 #endif

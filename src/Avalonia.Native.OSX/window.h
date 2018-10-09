@@ -1,10 +1,5 @@
-//
-//  window.h
-//  Avalonia.Native.OSX
-//
-//  Created by Dan Walmsley on 23/09/2018.
-//  Copyright © 2018 Avalonia. All rights reserved.
-//
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 #ifndef window_h
 #define window_h
@@ -12,21 +7,21 @@
 class WindowBaseImpl;
 
 @interface AvnView : NSView<NSTextInputClient>
--(AvnView*) initWithParent: (WindowBaseImpl*) parent;
--(NSEvent*) lastMouseDownEvent;
+-(AvnView* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
+-(NSEvent* _Nonnull) lastMouseDownEvent;
 -(AvnPoint) translateLocalPoint:(AvnPoint)pt;
--(void) setSwRenderedFrame: (AvnFramebuffer*) fb dispose: (IUnknown*) dispose;
+-(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 @end
 
 @interface AvnWindow : NSWindow <NSWindowDelegate>
--(AvnWindow*) initWithParent: (WindowBaseImpl*) parent;
+-(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;
--(void) pollModalSession: (nonnull NSModalSession) session;
+-(void) pollModalSession: (NSModalSession _Nonnull) session;
 @end
 
 struct INSWindowHolder
 {
-    virtual AvnWindow* GetNSWindow () = 0;
+    virtual AvnWindow* _Nonnull GetNSWindow () = 0;
 };
 
 struct IWindowStateChanged

@@ -1,6 +1,8 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 #include "com.h"
 #include "key.h"
-
 
 #define AVNCOM(name, id) COMINTERFACE(name, 2e2cda0a, 9ae5, 4f1b, 8e, 20, 08, 1a, 04, 27, 9f, id)
 
@@ -126,6 +128,18 @@ enum AvnStandardCursorType
     CursorDragLink,
 };
 
+enum AvnWindowEdge
+{
+    WindowEdgeNorthWest,
+    WindowEdgeNorth,
+    WindowEdgeNorthEast,
+    WindowEdgeWest,
+    WindowEdgeEast,
+    WindowEdgeSouthWest,
+    WindowEdgeSouth,
+    WindowEdgeSouthEast
+};
+
 AVNCOM(IAvaloniaNativeFactory, 01) : virtual IUnknown
 {
 public:
@@ -149,11 +163,13 @@ AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
     virtual HRESULT GetClientSize(AvnSize*ret) = 0;
     virtual HRESULT GetMaxClientSize(AvnSize* ret) = 0;
     virtual HRESULT GetScaling(double*ret)=0;
+    virtual HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize) = 0;
     virtual HRESULT Resize(double width, double height) = 0;
-    virtual void Invalidate (AvnRect rect) = 0;
-    virtual void BeginMoveDrag () = 0;
+    virtual HRESULT Invalidate (AvnRect rect) = 0;
+    virtual HRESULT BeginMoveDrag () = 0;
+    virtual HRESULT BeginResizeDrag (AvnWindowEdge edge) = 0;
     virtual HRESULT GetPosition (AvnPoint*ret) = 0;
-    virtual void SetPosition (AvnPoint point) = 0;
+    virtual HRESULT SetPosition (AvnPoint point) = 0;
     virtual HRESULT PointToClient (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT PointToScreen (AvnPoint point, AvnPoint*ret) = 0;
     virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) = 0;

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
@@ -291,25 +294,6 @@ namespace Avalonia.Native
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
 
-        #region Stubs
-
-        public Action<Point> PositionChanged { get; set; }
-
-        public Action<RawInputEventArgs> Input { get; set; }
-
-        Action<double> ScalingChanged { get; set; }
-        public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
-
-
-        public IScreenImpl Screen { get; private set; }
-
-        Action<double> ITopLevelImpl.ScalingChanged { get; set; }
-
-        public void SetMinMaxSize(Size minSize, Size maxSize)
-        {
-        }
-
-
         public void SetCursor(IPlatformHandle cursor)
         {
             var newCursor = cursor as AvaloniaNativeCursor;
@@ -317,10 +301,28 @@ namespace Avalonia.Native
             _native.Cursor = newCursor.Cursor;
         }
 
-        public void BeginResizeDrag(WindowEdge edge)
+        public Action<Point> PositionChanged { get; set; }
+
+        public Action<RawInputEventArgs> Input { get; set; }
+
+        Action<double> ScalingChanged { get; set; }
+
+        Action<double> ITopLevelImpl.ScalingChanged { get; set; }
+
+        public IScreenImpl Screen { get; private set; }
+
+        // TODO
+
+        public void SetMinMaxSize(Size minSize, Size maxSize)
         {
+            _native.SetMinMaxSize(minSize.ToAvnSize(), maxSize.ToAvnSize());
         }
 
-        #endregion
+        public void BeginResizeDrag(WindowEdge edge)
+        {
+
+        }
+
+        public IPlatformHandle Handle => new PlatformHandle(IntPtr.Zero, "NOT SUPPORTED");
     }
 }
