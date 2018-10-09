@@ -837,7 +837,7 @@ namespace Avalonia.Win32
 
             if (monitor != IntPtr.Zero)
             {
-                MONITORINFO monitorInfo = MONITORINFO.CreateMONITORINFO();
+                MONITORINFO monitorInfo = MONITORINFO.Create();
 
                 if (GetMonitorInfo(monitor,ref monitorInfo))
                 {

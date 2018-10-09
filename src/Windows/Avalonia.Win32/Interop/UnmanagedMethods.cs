@@ -1062,7 +1062,7 @@ namespace Avalonia.Win32.Interop
             public RECT rcWork;
             public int dwFlags;
 
-            public static MONITORINFO CreateMONITORINFO()
+            public static MONITORINFO Create()
             {
                 return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
             }
