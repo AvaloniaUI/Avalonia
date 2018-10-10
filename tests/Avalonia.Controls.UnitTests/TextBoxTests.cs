@@ -322,7 +322,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void SelectionEnd_Dont_Cause_Exception()
+        public void SelectionEnd_Doesnt_Cause_Exception()
         {
             using (UnitTestApplication.Start(Services))
             {
@@ -344,7 +344,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void SelectionStart_Dont_Cause_Exception()
+        public void SelectionStart_Doesnt_Cause_Exception()
         {
             using (UnitTestApplication.Start(Services))
             {
