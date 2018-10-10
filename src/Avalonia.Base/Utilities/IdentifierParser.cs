@@ -8,7 +8,7 @@ namespace Avalonia.Utilities
 {
     public static class IdentifierParser
     {
-        public static ReadOnlySpan<char> ParseIdentifier(this ref CharacterReader r)
+        public static ReadOnlySpan<char> ParseIdentifier(ref CharacterReader r)
         {
             if (IsValidIdentifierStart(r.Peek))
             {
