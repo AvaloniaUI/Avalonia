@@ -976,6 +976,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shcore.dll")]
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDPIAware();
+
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
