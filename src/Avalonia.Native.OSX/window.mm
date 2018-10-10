@@ -6,16 +6,19 @@
 #include "KeyTransform.h"
 #include "cursor.h"
 
-class WindowBaseImpl : public ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
+class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
 private:
     NSCursor* cursor;
 
 public:
+    FORWARD_IUNKNOWN()
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     AvnPoint lastPositionSet;
+    
+
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
@@ -785,7 +788,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 }*/
 @end
 
-class PopupImpl : public WindowBaseImpl, public IAvnPopup
+class PopupImpl : public virtual WindowBaseImpl, public IAvnPopup
 {
 private:
     BEGIN_INTERFACE_MAP()
@@ -847,7 +850,7 @@ public:
     }
 };
 
-class WindowImpl : public WindowBaseImpl, public IAvnWindow, public IWindowStateChanged
+class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
 private:
     bool _canResize = true;
@@ -859,6 +862,12 @@ private:
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
+    
+    virtual uint Release()
+    {
+        return ComObject::Release();
+    }
+    
     ComPtr<IAvnWindowEvents> WindowEvents;
     WindowImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
     {
@@ -1035,11 +1044,21 @@ protected:
     }
 };
 
+typedef void (*pfnvoid)();
+
+struct vtable
+{
+    pfnvoid entries[30];
+};
+
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {
     @autoreleasepool
     {
-        IAvnWindow* ptr = dynamic_cast<IAvnWindow*>(new WindowImpl(events));
+        IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
+        auto vt = *(vtable**)(void*)ptr;
+        
+        
         return ptr;
     }
 }

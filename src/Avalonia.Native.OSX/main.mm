@@ -15,6 +15,7 @@ static void SetActivationPolicy()
 class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 {
 public:
+    FORWARD_IUNKNOWN()
     virtual HRESULT SetShowInDock(int show)
     {
         ShowInDock = show;
@@ -62,6 +63,7 @@ class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAval
 {
     
 public:
+    FORWARD_IUNKNOWN()
     virtual HRESULT Initialize()
     {
         @autoreleasepool{

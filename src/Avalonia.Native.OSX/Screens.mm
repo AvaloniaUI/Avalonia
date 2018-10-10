@@ -6,6 +6,7 @@
 class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
 {
     public:
+    FORWARD_IUNKNOWN()
     virtual HRESULT GetScreenCount (int* ret)
     {
         @autoreleasepool

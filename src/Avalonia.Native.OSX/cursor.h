@@ -13,6 +13,7 @@ private:
     NSCursor * _native;
 
 public:
+    FORWARD_IUNKNOWN()
     Cursor(NSCursor * cursor)
     {
         _native = cursor;

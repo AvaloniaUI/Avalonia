@@ -6,6 +6,7 @@
 class Clipboard : public ComSingleObject<IAvnClipboard, &IID_IAvnClipboard>
 {
 public:
+    FORWARD_IUNKNOWN()
     virtual HRESULT GetText (void** retOut)
     {
         @autoreleasepool

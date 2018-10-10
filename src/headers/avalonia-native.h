@@ -140,7 +140,7 @@ enum AvnWindowEdge
     WindowEdgeSouthEast
 };
 
-AVNCOM(IAvaloniaNativeFactory, 01) : virtual IUnknown
+AVNCOM(IAvaloniaNativeFactory, 01) : IUnknown
 {
 public:
     virtual HRESULT Initialize() = 0;
@@ -154,7 +154,7 @@ public:
     virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) = 0;
 };
 
-AVNCOM(IAvnWindowBase, 02) : virtual IUnknown
+AVNCOM(IAvnWindowBase, 02) : IUnknown
 {
     virtual HRESULT Show() = 0;
     virtual HRESULT Hide () = 0;
@@ -216,7 +216,7 @@ AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
     virtual void WindowStateChanged (AvnWindowState state) = 0;
 };
 
-AVNCOM(IAvnMacOptions, 07) : virtual IUnknown
+AVNCOM(IAvnMacOptions, 07) : IUnknown
 {
     virtual HRESULT SetShowInDock(int show) = 0;
 };
@@ -231,12 +231,12 @@ AVNCOM(IAvnSignaledCallback, 09) : IUnknown
     virtual void Signaled(int priority, bool priorityContainsMeaningfulValue) = 0;
 };
 
-AVNCOM(IAvnLoopCancellation, 0a) : virtual IUnknown
+AVNCOM(IAvnLoopCancellation, 0a) : IUnknown
 {
     virtual void Cancel() = 0;
 };
 
-AVNCOM(IAvnPlatformThreadingInterface, 0b) : virtual IUnknown
+AVNCOM(IAvnPlatformThreadingInterface, 0b) : IUnknown
 {
     virtual bool GetCurrentThreadIsLoopThread() = 0;
     virtual void SetSignaledCallback(IAvnSignaledCallback* cb) = 0;
@@ -247,12 +247,12 @@ AVNCOM(IAvnPlatformThreadingInterface, 0b) : virtual IUnknown
     virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) = 0;
 };
 
-AVNCOM(IAvnSystemDialogEvents, 0c) : virtual IUnknown
+AVNCOM(IAvnSystemDialogEvents, 0c) : IUnknown
 {
     virtual void OnCompleted (int numResults, void* ptrFirstResult) = 0;
 };
 
-AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
+AVNCOM(IAvnSystemDialogs, 0d) : IUnknown
 {
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
@@ -275,24 +275,24 @@ AVNCOM(IAvnSystemDialogs, 0d) : virtual IUnknown
                                  const char* filters) = 0;
 };
 
-AVNCOM(IAvnScreens, 0e) : virtual IUnknown
+AVNCOM(IAvnScreens, 0e) : IUnknown
 {
     virtual HRESULT GetScreenCount (int* ret) = 0;
     virtual HRESULT GetScreen (int index, AvnScreen* ret) = 0;
 };
 
-AVNCOM(IAvnClipboard, 0f) : virtual IUnknown
+AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
     virtual HRESULT GetText (void** retOut) = 0;
     virtual HRESULT SetText (char* text) = 0;
     virtual HRESULT Clear() = 0;
 };
 
-AVNCOM(IAvnCursor, 10) : virtual IUnknown
+AVNCOM(IAvnCursor, 10) : IUnknown
 {
 };
 
-AVNCOM(IAvnCursorFactory, 11) : virtual IUnknown
+AVNCOM(IAvnCursorFactory, 11) : IUnknown
 {
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut) = 0;
 };

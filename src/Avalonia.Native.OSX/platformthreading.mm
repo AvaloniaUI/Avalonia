@@ -61,6 +61,7 @@ private:
     class LoopCancellation : public ComSingleObject<IAvnLoopCancellation, &IID_IAvnLoopCancellation>
     {
     public:
+        FORWARD_IUNKNOWN()
         bool Cancelled = 0;
         virtual void Cancel()
         {
@@ -69,6 +70,7 @@ private:
     };
     
 public:
+    FORWARD_IUNKNOWN()
     ComPtr<IAvnSignaledCallback> SignaledCallback;
 
     PlatformThreadingInterface()

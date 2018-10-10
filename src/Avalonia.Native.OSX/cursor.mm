@@ -50,6 +50,7 @@ class CursorFactory : public ComSingleObject<IAvnCursorFactory, &IID_IAvnCursorF
     };
 
 public:
+    FORWARD_IUNKNOWN()
     virtual HRESULT GetCursor (AvnStandardCursorType cursorType, IAvnCursor** retOut)
     {
         *retOut = s_cursorMap[cursorType];

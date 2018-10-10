@@ -107,13 +107,30 @@ public:
 };
 
 
+#define FORWARD_IUNKNOWN() \
+virtual ULONG Release(){ \
+return ComObject::Release(); \
+} \
+virtual ULONG AddRef() \
+{ \
+    return ComObject::AddRef(); \
+} \
+virtual HRESULT QueryInterface(REFIID riid, void **ppvObject) \
+{ \
+    return ComObject::QueryInterface(riid, ppvObject); \
+}
+
 #define BEGIN_INTERFACE_MAP() public: virtual HRESULT STDMETHODCALLTYPE QueryInterfaceImpl(REFIID riid, void **ppvObject){
 #define INTERFACE_MAP_ENTRY(TInterface, IID) if(0 == memcmp(riid, &IID, sizeof(GUID))) { TInterface* casted = this; *ppvObject = casted; return S_OK; }
 #define END_INTERFACE_MAP() return E_NOINTERFACE; }
 #define INHERIT_INTERFACE_MAP(TBase) if(TBase::QueryInterfaceImpl(riid, ppvObject) == S_OK) return S_OK;
 
+
+
 class ComUnknownObject : public ComObject
 {
+public:
+    FORWARD_IUNKNOWN()
     virtual ::HRESULT STDMETHODCALLTYPE QueryInterfaceImpl(REFIID riid, void **ppvObject) override
     {
         return E_NOINTERFACE;

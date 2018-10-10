@@ -6,6 +6,8 @@
 
 class SystemDialogs : public ComSingleObject<IAvnSystemDialogs, &IID_IAvnSystemDialogs>
 {
+public:
+    FORWARD_IUNKNOWN()
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
                                      const char* title,
