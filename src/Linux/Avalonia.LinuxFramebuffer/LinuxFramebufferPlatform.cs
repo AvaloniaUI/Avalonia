@@ -35,7 +35,8 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
-                .Bind<IRenderLoop>().ToConstant(Threading);
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(Threading);
         }
 
         internal static TopLevel Initialize<T>(T builder, string fbdev = null) where T : AppBuilderBase<T>, new()

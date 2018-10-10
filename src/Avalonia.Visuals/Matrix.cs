@@ -47,7 +47,7 @@ namespace Avalonia
         /// <summary>
         /// Returns the multiplicative identity matrix.
         /// </summary>
-        public static Matrix Identity => new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        public static Matrix Identity { get; } = new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
         /// <summary>
         /// Returns whether the matrix is the identity matrix.

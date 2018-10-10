@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3.Interop
 {

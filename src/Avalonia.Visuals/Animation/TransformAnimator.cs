@@ -9,10 +9,10 @@ namespace Avalonia.Animation
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        DoubleAnimator childKeyFrames;
+        DoubleAnimator childAnimator;
 
         /// <inheritdoc/>
-        public override IDisposable Apply(Animation animation, Animatable control, IObservable<bool> obsMatch, Action onComplete)
+        public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
         {
             var ctrl = (Visual)control;
 
@@ -36,15 +36,15 @@ namespace Avalonia.Animation
 
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
-                if (childKeyFrames == null)
+                if (childAnimator == null)
                 {
-                    InitializeChildKeyFrames();
+                    InitializeChildAnimator();
                 }
 
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childKeyFrames.Apply(animation, ctrl.RenderTransform, obsMatch, onComplete);
+                    return childAnimator.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -53,7 +53,7 @@ namespace Avalonia.Animation
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childKeyFrames.Apply(animation, transform, obsMatch, onComplete);
+                            return childAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
                         }
                     }
                 }
@@ -73,16 +73,16 @@ namespace Avalonia.Animation
             return null;
         }
 
-        void InitializeChildKeyFrames()
+        void InitializeChildAnimator()
         {
-            childKeyFrames = new DoubleAnimator();
+            childAnimator = new DoubleAnimator();
 
             foreach (AnimatorKeyFrame keyframe in this)
             {
-                childKeyFrames.Add(keyframe);
+                childAnimator.Add(keyframe);
             }
 
-            childKeyFrames.Property = Property;
+            childAnimator.Property = Property;
         }
 
         /// <inheritdocs/>

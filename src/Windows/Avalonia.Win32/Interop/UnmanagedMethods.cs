@@ -26,6 +26,9 @@ namespace Avalonia.Win32.Interop
 
         public delegate void TimeCallback(uint uTimerID, uint uMsg, UIntPtr dwUser, UIntPtr dw1, UIntPtr dw2);
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate void WaitOrTimerCallback(IntPtr lpParameter, bool timerOrWaitFired);
+
         public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
         public enum Cursor
@@ -848,11 +851,25 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, ShowWindowCommand nCmdShow);
 
-        [DllImport("Winmm.dll")]
-        public static extern uint timeKillEvent(uint uTimerID);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateTimerQueue();
 
-        [DllImport("Winmm.dll")]
-        public static extern uint timeSetEvent(uint uDelay, uint uResolution, TimeCallback lpTimeProc, UIntPtr dwUser, uint fuEvent);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeleteTimerQueueEx(IntPtr TimerQueue, IntPtr CompletionEvent);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateTimerQueueTimer(
+            out IntPtr phNewTimer,
+            IntPtr TimerQueue,
+            WaitOrTimerCallback Callback,
+            IntPtr Parameter,
+            uint DueTime,
+            uint Period,
+            uint Flags);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool DeleteTimerQueueTimer(IntPtr TimerQueue, IntPtr Timer, IntPtr CompletionEvent);
 
         [DllImport("user32.dll")]
         public static extern int ToUnicode(
@@ -959,6 +976,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shcore.dll")]
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDPIAware();
+
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
@@ -970,7 +990,7 @@ namespace Avalonia.Win32.Interop
         
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFO lpmi);
+        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
@@ -1038,12 +1058,17 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal class MONITORINFO
+        internal struct MONITORINFO
         {
-            public int cbSize = Marshal.SizeOf<MONITORINFO>();
-            public RECT rcMonitor = new RECT();
-            public RECT rcWork = new RECT();
-            public int dwFlags = 0;
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public int dwFlags;
+
+            public static MONITORINFO Create()
+            {
+                return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            }
 
             public enum MonitorOptions : uint
             {

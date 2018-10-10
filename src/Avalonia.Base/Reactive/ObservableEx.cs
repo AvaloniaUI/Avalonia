@@ -21,7 +21,7 @@ namespace Avalonia.Reactive
         {
             return new SingleValueImpl<T>(value);
         }
-
+ 
         private class SingleValueImpl<T> : IObservable<T>
         {
             private T _value;
@@ -30,7 +30,6 @@ namespace Avalonia.Reactive
             {
                 _value = value;
             }
-
             public IDisposable Subscribe(IObserver<T> observer)
             {
                 observer.OnNext(_value);
