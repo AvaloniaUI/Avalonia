@@ -4,6 +4,7 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
+using Splat;
 
 namespace Avalonia
 {
@@ -15,6 +16,9 @@ namespace Avalonia
             return builder.AfterSetup(_ =>
             {
                 RxApp.MainThreadScheduler = AvaloniaScheduler.Instance;
+                Locator.CurrentMutable.Register(
+                    () => new AvaloniaActivationForViewFetcher(), 
+                    typeof(IActivationForViewFetcher));
             });
         }
     }
