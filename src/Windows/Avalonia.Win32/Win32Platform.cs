@@ -77,6 +77,8 @@ namespace Avalonia.Win32
 
         public static void Initialize(bool deferredRendering = true)
         {
+            UnmanagedMethods.SetProcessDPIAware();
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)

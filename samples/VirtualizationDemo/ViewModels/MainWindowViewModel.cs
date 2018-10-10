@@ -7,6 +7,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using ReactiveUI.Legacy;
 using ReactiveUI;
 
 namespace VirtualizationDemo.ViewModels
