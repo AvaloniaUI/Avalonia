@@ -221,55 +221,53 @@ namespace Avalonia.Skia
         {
             var rectangles = GetRectangles();
 
-            var pointX = (float)point.X;
             var pointY = (float)point.Y;
 
             var currentY = 0.0f;
+
+            var isTrailing = point.X > Size.Width || point.Y > Size.Height;
 
             foreach (var textLine in TextLines)
             {
                 if (pointY <= currentY + textLine.LineMetrics.Size.Height)
                 {
-                    if (rectangles[textLine.StartingIndex].X > pointX)
-                    {
-                        return new TextHitTestResult
-                        {
-                            IsInside = false,
-                            IsTrailing = true,
-                            TextPosition = textLine.StartingIndex
-                        };
-                    }
-
-                    if (rectangles[textLine.StartingIndex + textLine.Length - 1].Right < pointX)
-                    {
-                        return new TextHitTestResult
-                        {
-                            IsInside = false,
-                            IsTrailing = true,
-                            TextPosition = textLine.StartingIndex + textLine.Length - 1
-                        };
-                    }
-
-                    for (var glyphIndex = textLine.StartingIndex; glyphIndex < _text.Length; glyphIndex++)
+                    for (var glyphIndex = textLine.StartingIndex; glyphIndex < rectangles.Count; glyphIndex++)
                     {
                         var glyphRectangle = rectangles[glyphIndex];
 
-                        if (pointX >= glyphRectangle.X && pointX < glyphRectangle.Right)
+                        if (glyphRectangle.Contains(point))
                         {
                             return new TextHitTestResult
                             {
                                 IsInside = true,
-                                IsTrailing = false,
-                                TextPosition = glyphIndex
+                                TextPosition = glyphIndex,
+                                IsTrailing = point.X - glyphRectangle.X > glyphRectangle.Width / 2
                             };
                         }
                     }
+
+                    var offset = 0;
+
+                    if (point.X >= (rectangles[textLine.StartingIndex].X + textLine.LineMetrics.Size.Width) / 2 && textLine.Length > 0)
+                    {
+                        offset = textLine.Length - 1;
+                    }
+
+                    if (offset > 2 && IsBreakChar(_text[offset - 1]))
+                    {
+                        offset--;
+                    }
+
+                    return new TextHitTestResult
+                    {
+                        IsInside = false,
+                        TextPosition = textLine.StartingIndex + offset,
+                        IsTrailing = _text.Length == textLine.StartingIndex + offset + 1
+                    };
                 }
 
                 currentY += textLine.LineMetrics.Size.Height;
             }
-
-            var isTrailing = point.X > Size.Width || point.Y > Size.Height;
 
             return new TextHitTestResult
             {
@@ -334,7 +332,6 @@ namespace Avalonia.Skia
             return new SKPaint
             {
                 IsAntialias = true,
-
                 /*Bug: Transparency issue with LcdRenderText = true,*/
                 IsStroke = false,
                 TextEncoding = SKTextEncoding.Utf32,
@@ -459,15 +456,26 @@ namespace Avalonia.Skia
 
                     foreach (var c in textRun.Text)
                     {
-                        var width = _paint.MeasureText(c.ToString());
+                        if (IsBreakChar(c))
+                        {
+                            rectangles.Add(new Rect(
+                                currentX,
+                                currentY,
+                                0.0f,
+                                currentLine.LineMetrics.Size.Height));
+                        }
+                        else
+                        {
+                            var width = _paint.MeasureText(c.ToString());
 
-                        rectangles.Add(new Rect(
-                            currentX,
-                            currentY,
-                            width,
-                            currentLine.LineMetrics.Size.Height));
+                            rectangles.Add(new Rect(
+                                currentX,
+                                currentY,
+                                width,
+                                currentLine.LineMetrics.Size.Height));
 
-                        currentX += width;
+                            currentX += width;
+                        }
                     }
                 }
 
