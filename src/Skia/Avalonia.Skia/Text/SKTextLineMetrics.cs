@@ -16,14 +16,44 @@ namespace Avalonia.Skia
             BaselineOrigin = new SKPoint(0, -ascent);
         }
 
+        /// <summary>
+        /// Gets the ascent.
+        /// </summary>
+        /// <value>
+        /// The ascent.
+        /// </value>
         public float Ascent { get; }
 
+        /// <summary>
+        /// Gets the descent.
+        /// </summary>
+        /// <value>
+        /// The descent.
+        /// </value>
         public float Descent { get; }
 
+        /// <summary>
+        /// Gets the leading.
+        /// </summary>
+        /// <value>
+        /// The leading.
+        /// </value>
         public float Leading { get; }
 
+        /// <summary>
+        /// Gets the size.
+        /// </summary>
+        /// <value>
+        /// The size.
+        /// </value>
         public SKSize Size { get; }
 
+        /// <summary>
+        /// Gets the baseline origin.
+        /// </summary>
+        /// <value>
+        /// The baseline origin.
+        /// </value>
         public SKPoint BaselineOrigin { get; }
     }
 }

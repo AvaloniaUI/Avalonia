@@ -13,8 +13,20 @@ namespace Avalonia.Skia
             FontSize = fontSize;
         }
 
+        /// <summary>
+        /// Gets the typeface.
+        /// </summary>
+        /// <value>
+        /// The typeface.
+        /// </value>
         public SKTypeface Typeface { get; }
 
+        /// <summary>
+        /// Gets the font size.
+        /// </summary>
+        /// <value>
+        /// The size of the font.
+        /// </value>
         public float FontSize { get; }
     }
 }

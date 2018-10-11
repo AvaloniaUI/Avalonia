@@ -51,8 +51,18 @@ namespace Avalonia.Skia
 
         public IReadOnlyList<SKTextLine> TextLines => _textLines;
 
+        /// <summary>
+        /// Gets the size of the layout box.
+        /// </summary>
+        /// <value>
+        /// The size.
+        /// </value>
         public Size Size { get; private set; }
 
+        /// <summary>
+        /// Applies a text span to the layout.
+        /// </summary>
+        /// <param name="span">The span.</param>
         public void ApplyTextSpan(FormattedTextStyleSpan span)
         {
             var currentLength = 0;
@@ -76,7 +86,7 @@ namespace Avalonia.Skia
 
                 for (var runIndex = 0; runIndex < currentTextLine.TextRuns.Count; runIndex++)
                 {
-                    var needsUpdate = false;
+                    bool needsUpdate;
                     var currentTextRun = currentTextLine.TextRuns[runIndex];
 
                     if (currentLength + currentTextRun.Text.Length < span.StartIndex)
@@ -192,6 +202,13 @@ namespace Avalonia.Skia
             }
         }
 
+        /// <summary>
+        /// Draws the layout.
+        /// </summary>
+        /// <param name="context">The drawing context.</param>
+        /// <param name="foreground">The default foreground.</param>
+        /// <param name="canvas">The canvas.</param>
+        /// <param name="origin">The origin.</param>
         public void Draw(DrawingContextImpl context, IBrush foreground, SKCanvas canvas, SKPoint origin)
         {
             using (var foregroundWrapper = context.CreatePaint(foreground, Size))
@@ -217,6 +234,11 @@ namespace Avalonia.Skia
             }
         }
 
+        /// <summary>
+        /// Hit tests the specified point.
+        /// </summary>
+        /// <param name="point">The point to hit test against.</param>
+        /// <returns></returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
             var rectangles = GetRectangles();
@@ -277,44 +299,55 @@ namespace Avalonia.Skia
             };
         }
 
-        public Rect HitTestTextPosition(int index)
+        /// <summary>
+        /// Get the pixel location relative to the top-left of the layout box given the text position.
+        /// </summary>
+        /// <param name="textPosition">The text position.</param>
+        /// <returns></returns>
+        public Rect HitTestTextPosition(int textPosition)
         {
             var rectangles = GetRectangles();
 
-            if (index < 0 || index >= rectangles.Count)
+            if (textPosition < 0 || textPosition >= rectangles.Count)
             {
                 var r = rectangles.LastOrDefault();
 
                 return new Rect(r.X + r.Width, r.Y, 0, r.Height);
             }
 
-            if (index == rectangles.Count)
+            if (textPosition == rectangles.Count)
             {
                 var lr = rectangles[rectangles.Count - 1];
 
-                return new Rect(new Point(lr.X + lr.Width, lr.Y), rectangles[index - 1].Size);
+                return new Rect(new Point(lr.X + lr.Width, lr.Y), rectangles[textPosition - 1].Size);
             }
 
-            return rectangles[index];
+            return rectangles[textPosition];
         }
 
-        public IEnumerable<Rect> HitTestTextRange(int index, int length)
+        /// <summary>
+        /// Get a set of hit-test rectangles corresponding to a range of text positions.
+        /// </summary>
+        /// <param name="textPosition">The starting text position.</param>
+        /// <param name="textLength">The text length.</param>
+        /// <returns></returns>
+        public IEnumerable<Rect> HitTestTextRange(int textPosition, int textLength)
         {
             var result = new List<Rect>();
 
             var rectangles = GetRectangles();
 
-            var lastIndex = index + length - 1;
+            var lastIndex = textPosition + textLength - 1;
 
             var currentY = 0.0f;
 
             foreach (var textLine in TextLines)
             {
-                if (textLine.StartingIndex + textLine.Length > index && lastIndex >= textLine.StartingIndex)
+                if (textLine.StartingIndex + textLine.Length > textPosition && lastIndex >= textLine.StartingIndex)
                 {
                     var lineEndIndex = textLine.StartingIndex + (textLine.Length > 0 ? textLine.Length - 1 : 0);
 
-                    var left = rectangles[textLine.StartingIndex > index ? textLine.StartingIndex : index].X;
+                    var left = rectangles[textLine.StartingIndex > textPosition ? textLine.StartingIndex : textPosition].X;
 
                     var right = rectangles[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
 
@@ -327,45 +360,13 @@ namespace Avalonia.Skia
             return result;
         }
 
-        private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
-        {
-            return new SKPaint
-            {
-                IsAntialias = true,
-                /*Bug: Transparency issue with LcdRenderText = true,*/
-                IsStroke = false,
-                TextEncoding = SKTextEncoding.Utf32,
-                Typeface = typeface,
-                TextSize = fontSize
-            };
-        }
-
-        private static void InitializePaintForTextRun(
-            SKPaint paint,
-            DrawingContextImpl context,
-            SKTextLine textLine,
-            SKTextRun textRun,
-            DrawingContextImpl.PaintWrapper foregroundWrapper)
-        {
-            paint.Typeface = textRun.TextFormat.Typeface;
-
-            paint.TextSize = textRun.TextFormat.FontSize;
-
-            if (textRun.DrawingEffect == null)
-            {
-                foregroundWrapper.ApplyTo(paint);
-            }
-            else
-            {
-                using (var effectWrapper = context.CreatePaint(
-                    textRun.DrawingEffect,
-                    new Size(textRun.Width, textLine.LineMetrics.Size.Height)))
-                {
-                    effectWrapper.ApplyTo(paint);
-                }
-            }
-        }
-
+        /// <summary>
+        /// Applies the text span to a text run.
+        /// </summary>
+        /// <param name="span">The text span.</param>
+        /// <param name="textRun">The text run.</param>
+        /// <param name="needsUpdate">If set to <c>true</c> an update to text metrics is needed.</param>
+        /// <returns></returns>
         private static SKTextRun ApplyTextSpan(FormattedTextStyleSpan span, SKTextRun textRun, out bool needsUpdate)
         {
             // ToDo: We need to make sure to update all measurements if the TextFormat etc changes.
@@ -379,6 +380,30 @@ namespace Avalonia.Skia
                 span.ForegroundBrush);
         }
 
+        /// <summary>
+        /// Creates the paint.
+        /// </summary>
+        /// <param name="typeface">The default typeface.</param>
+        /// <param name="fontSize">The default font size.</param>
+        /// <returns></returns>
+        private static SKPaint CreatePaint(SKTypeface typeface, float fontSize)
+        {
+            return new SKPaint
+            {
+                IsAntialias = true,
+                /*Bug: Transparency issue with LcdRenderText = true,*/
+                IsStroke = false,
+                TextEncoding = SKTextEncoding.Utf32,
+                Typeface = typeface,
+                TextSize = fontSize
+            };
+        }
+
+        /// <summary>
+        /// Creates the text line metrics.
+        /// </summary>
+        /// <param name="textRuns">The text runs.</param>
+        /// <returns></returns>
         private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns)
         {
             var width = 0.0f;
@@ -412,6 +437,47 @@ namespace Avalonia.Skia
             return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
+        /// <summary>
+        /// Initializes the paint for text run.
+        /// </summary>
+        /// <param name="paint">The paint.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="textLine">The text line.</param>
+        /// <param name="textRun">The text run.</param>
+        /// <param name="foregroundWrapper">The foreground wrapper.</param>
+        private static void InitializePaintForTextRun(
+            SKPaint paint,
+            DrawingContextImpl context,
+            SKTextLine textLine,
+            SKTextRun textRun,
+            DrawingContextImpl.PaintWrapper foregroundWrapper)
+        {
+            paint.Typeface = textRun.TextFormat.Typeface;
+
+            paint.TextSize = textRun.TextFormat.FontSize;
+
+            if (textRun.DrawingEffect == null)
+            {
+                foregroundWrapper.ApplyTo(paint);
+            }
+            else
+            {
+                using (var effectWrapper = context.CreatePaint(
+                    textRun.DrawingEffect,
+                    new Size(textRun.Width, textLine.LineMetrics.Size.Height)))
+                {
+                    effectWrapper.ApplyTo(paint);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [c] is a break char.
+        /// </summary>
+        /// <param name="c">The c.</param>
+        /// <returns>
+        ///   <c>true</c> if [is break character] [the specified c]; otherwise, <c>false</c>.
+        /// </returns>
         private static bool IsBreakChar(char c)
         {
             switch (c)
@@ -425,6 +491,10 @@ namespace Avalonia.Skia
             }
         }
 
+        /// <summary>
+        /// Gets the rectangles to hit test against. Each index maps to a text position.
+        /// </summary>
+        /// <returns></returns>
         private List<Rect> GetRectangles()
         {
             if (_rectangles == null || _rectangles.Count != _text.Length)
@@ -435,57 +505,14 @@ namespace Avalonia.Skia
             return _rectangles;
         }
 
-        private List<Rect> CreateRectangles()
-        {
-            var rectangles = new List<Rect>();
-
-            var currentY = 0.0f;
-
-            foreach (var currentLine in _textLines)
-            {
-                var currentX = GetTextLineOffsetX(_textAlignment, currentLine.LineMetrics.Size.Width);
-
-                foreach (var textRun in currentLine.TextRuns)
-                {
-                    if (textRun.Text.Length == 0)
-                    {
-                        rectangles.Add(new Rect(currentX, currentY, 0, currentLine.LineMetrics.Size.Height));
-
-                        continue;
-                    }
-
-                    foreach (var c in textRun.Text)
-                    {
-                        if (IsBreakChar(c))
-                        {
-                            rectangles.Add(new Rect(
-                                currentX,
-                                currentY,
-                                0.0f,
-                                currentLine.LineMetrics.Size.Height));
-                        }
-                        else
-                        {
-                            var width = _paint.MeasureText(c.ToString());
-
-                            rectangles.Add(new Rect(
-                                currentX,
-                                currentY,
-                                width,
-                                currentLine.LineMetrics.Size.Height));
-
-                            currentX += width;
-                        }
-                    }
-                }
-
-                currentY += currentLine.LineMetrics.Size.Height;
-            }
-
-            return rectangles;
-        }
-
-        private double GetTextLineOffsetX(TextAlignment textAlignment, double width)
+        /// <summary>
+        /// Gets the text line offset x.
+        /// </summary>
+        /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="lineWidth">The line width.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException">textAlignment - null</exception>
+        private double GetTextLineOffsetX(TextAlignment textAlignment, double lineWidth)
         {
             var availableWidth = _constraint.Width > 0 && !double.IsPositiveInfinity(_constraint.Width)
                                      ? _constraint.Width
@@ -496,38 +523,18 @@ namespace Avalonia.Skia
                 case TextAlignment.Left:
                     return 0.0d;
                 case TextAlignment.Center:
-                    return (availableWidth - width) / 2;
+                    return (availableWidth - lineWidth) / 2;
                 case TextAlignment.Right:
-                    return availableWidth - width;
+                    return availableWidth - lineWidth;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(textAlignment), textAlignment, null);
             }
         }
 
-        private SplitTextRunResult SplitTextRun(SKTextRun textRun, int startingIndex, int length)
-        {
-            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat);
-
-            var secondTextRun = CreateTextRun(
-                textRun.Text.Substring(length, textRun.Text.Length - length),
-                textRun.TextFormat);
-
-            return new SplitTextRunResult(firstTextRun, secondTextRun);
-        }
-
-        private SKTextRun CreateTextRun(string text, SKTextFormat textFormat)
-        {
-            _paint.Typeface = textFormat.Typeface;
-
-            _paint.TextSize = textFormat.FontSize;
-
-            var fontMetrics = _paint.FontMetrics;
-
-            var width = _paint.MeasureText(text);
-
-            return new SKTextRun(text, textFormat, fontMetrics, width);
-        }
-
+        /// <summary>
+        /// Creates the initial text lines.
+        /// </summary>
+        /// <returns></returns>
         private List<SKTextLine> CreateTextLines()
         {
             var sizeX = 0.0f;
@@ -604,6 +611,179 @@ namespace Avalonia.Skia
             return textLines;
         }
 
+        /// <summary>
+        /// Creates a new text line of a specified text range.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="startingIndex">Text starting index.</param>
+        /// <param name="length">The text length.</param>
+        /// <returns></returns>
+        private SKTextLine CreateTextLine(string text, int startingIndex, int length)
+        {
+            if (length == 0)
+            {
+                _paint.Typeface = _typeface;
+
+                _paint.TextSize = _fontSize;
+
+                var textRuns = new List<SKTextRun>
+                               {
+                                   new SKTextRun(
+                                       string.Empty,
+                                       new SKTextFormat(_typeface, _fontSize),
+                                       _paint.FontMetrics,
+                                       0.0f)
+                               };
+
+                var textLineMetrics = CreateTextLineMetrics(textRuns);
+
+                return new SKTextLine(startingIndex, 0, textRuns, textLineMetrics);
+            }
+            else
+            {
+                var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
+
+                return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
+            }
+        }
+
+        /// <summary>
+        /// Creates text run with a specific text format.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="textFormat">The text format.</param>
+        /// <returns></returns>
+        private SKTextRun CreateTextRun(string text, SKTextFormat textFormat)
+        {
+            _paint.Typeface = textFormat.Typeface;
+
+            _paint.TextSize = textFormat.FontSize;
+
+            var fontMetrics = _paint.FontMetrics;
+
+            var width = _paint.MeasureText(text);
+
+            return new SKTextRun(text, textFormat, fontMetrics, width);
+        }
+
+        /// <summary>
+        /// Creates a list of text runs. Each text run only consists of one combination of text properties.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="startingIndex">Index of the starting.</param>
+        /// <param name="length">The length.</param>
+        /// <param name="textLineMetrics">The text line metrics.</param>
+        /// <returns></returns>
+        private List<SKTextRun> CreateTextRuns(
+            string text,
+            int startingIndex,
+            int length,
+            out SKTextLineMetrics textLineMetrics)
+        {
+            var textRuns = new List<SKTextRun>();
+            var currentPosition = 0;
+
+            var runText = text.Substring(startingIndex, length);
+
+            while (currentPosition < length)
+            {
+                var glyphCount = _typeface.CountGlyphs(runText);
+
+                while (glyphCount < runText.Length)
+                {
+                    if (IsBreakChar(runText[glyphCount]))
+                    {
+                        glyphCount++;
+                    }
+                }
+
+                var typeface = _typeface;
+
+                if (glyphCount == 0)
+                {
+                    typeface = SKFontManager.Default.MatchCharacter(runText[currentPosition]);
+
+                    glyphCount = typeface.CountGlyphs(runText);
+                }
+
+                if (glyphCount != length)
+                {
+                    runText = runText.Substring(currentPosition, glyphCount);
+                }
+
+                var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));
+
+                textRuns.Add(currentRun);
+
+                currentPosition += glyphCount;
+            }
+
+            textLineMetrics = CreateTextLineMetrics(textRuns);
+
+            return textRuns;
+        }
+
+        /// <summary>
+        /// Creates a list of rectangles to hit test against. Each index maps to a text position.
+        /// </summary>
+        /// <returns></returns>
+        private List<Rect> CreateRectangles()
+        {
+            var rectangles = new List<Rect>();
+
+            var currentY = 0.0f;
+
+            foreach (var currentLine in _textLines)
+            {
+                var currentX = GetTextLineOffsetX(_textAlignment, currentLine.LineMetrics.Size.Width);
+
+                foreach (var textRun in currentLine.TextRuns)
+                {
+                    if (textRun.Text.Length == 0)
+                    {
+                        rectangles.Add(new Rect(currentX, currentY, 0, currentLine.LineMetrics.Size.Height));
+
+                        continue;
+                    }
+
+                    foreach (var c in textRun.Text)
+                    {
+                        if (IsBreakChar(c))
+                        {
+                            rectangles.Add(new Rect(
+                                currentX,
+                                currentY,
+                                0.0f,
+                                currentLine.LineMetrics.Size.Height));
+                        }
+                        else
+                        {
+                            var width = _paint.MeasureText(c.ToString());
+
+                            rectangles.Add(new Rect(
+                                currentX,
+                                currentY,
+                                width,
+                                currentLine.LineMetrics.Size.Height));
+
+                            currentX += width;
+                        }
+                    }
+                }
+
+                currentY += currentLine.LineMetrics.Size.Height;
+            }
+
+            return rectangles;
+        }
+
+        /// <summary>
+        /// Performs line breaks if needed and returns a list of text lines.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="startingIndex">Text starting index.</param>
+        /// <param name="length">The text length.</param>
+        /// <returns></returns>
         private IEnumerable<SKTextLine> PerformLineBreak(string text, int startingIndex, int length)
         {
             var textLines = new List<SKTextLine>();
@@ -698,82 +878,22 @@ namespace Avalonia.Skia
             return textLines;
         }
 
-        private SKTextLine CreateTextLine(string text, int startingIndex, int length)
+        /// <summary>
+        /// Splits a text run at a specified position and retains all text properties.
+        /// </summary>
+        /// <param name="textRun">The text run.</param>
+        /// <param name="startingIndex">Index of the starting.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        private SplitTextRunResult SplitTextRun(SKTextRun textRun, int startingIndex, int length)
         {
-            if (length == 0)
-            {
-                _paint.Typeface = _typeface;
+            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat);
 
-                _paint.TextSize = _fontSize;
+            var secondTextRun = CreateTextRun(
+                textRun.Text.Substring(length, textRun.Text.Length - length),
+                textRun.TextFormat);
 
-                var textRuns = new List<SKTextRun>
-                               {
-                                   new SKTextRun(
-                                       string.Empty,
-                                       new SKTextFormat(_typeface, _fontSize),
-                                       _paint.FontMetrics,
-                                       0.0f)
-                               };
-
-                var textLineMetrics = CreateTextLineMetrics(textRuns);
-
-                return new SKTextLine(startingIndex, 0, textRuns, textLineMetrics);
-            }
-            else
-            {
-                var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
-
-                return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
-            }
-        }
-
-        private List<SKTextRun> CreateTextRuns(
-            string text,
-            int startingIndex,
-            int length,
-            out SKTextLineMetrics textLineMetrics)
-        {
-            var textRuns = new List<SKTextRun>();
-            var currentPosition = 0;
-
-            var runText = text.Substring(startingIndex, length);
-
-            while (currentPosition < length)
-            {
-                var glyphCount = _typeface.CountGlyphs(runText);
-
-                while (glyphCount < runText.Length)
-                {
-                    if (IsBreakChar(runText[glyphCount]))
-                    {
-                        glyphCount++;
-                    }
-                }
-
-                var typeface = _typeface;
-
-                if (glyphCount == 0)
-                {
-                    typeface = SKFontManager.Default.MatchCharacter(runText[currentPosition]);
-
-                    glyphCount = typeface.CountGlyphs(runText);
-                }
-
-                if (glyphCount != length)
-                {
-                    runText = runText.Substring(currentPosition, glyphCount);
-                }
-
-                var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));
-
-                textRuns.Add(currentRun);
-
-                currentPosition += glyphCount;
-            }
-
-            textLineMetrics = CreateTextLineMetrics(textRuns);
-
-            return textRuns;
+            return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
 
         private class SplitTextRunResult
@@ -785,8 +905,20 @@ namespace Avalonia.Skia
                 SecondTextRun = secondTextRun;
             }
 
+            /// <summary>
+            /// Gets the first text run.
+            /// </summary>
+            /// <value>
+            /// The first text run.
+            /// </value>
             public SKTextRun FirstTextRun { get; }
 
+            /// <summary>
+            /// Gets the second text run.
+            /// </summary>
+            /// <value>
+            /// The second text run.
+            /// </value>
             public SKTextRun SecondTextRun { get; }
         }
     }

@@ -18,14 +18,44 @@ namespace Avalonia.Skia
             DrawingEffect = drawingEffect;
         }
 
+        /// <summary>
+        /// Gets the text.
+        /// </summary>
+        /// <value>
+        /// The text.
+        /// </value>
         public string Text { get; }
 
+        /// <summary>
+        /// Gets the text format.
+        /// </summary>
+        /// <value>
+        /// The text format.
+        /// </value>
         public SKTextFormat TextFormat { get; }
 
+        /// <summary>
+        /// Gets the font metrics.
+        /// </summary>
+        /// <value>
+        /// The font metrics.
+        /// </value>
         public SKFontMetrics FontMetrics { get; }
 
+        /// <summary>
+        /// Gets the width.
+        /// </summary>
+        /// <value>
+        /// The width.
+        /// </value>
         public float Width { get; }
 
+        /// <summary>
+        /// Gets the drawing effect.
+        /// </summary>
+        /// <value>
+        /// The drawing effect.
+        /// </value>
         public IBrush DrawingEffect { get; }
     }
 }

@@ -17,12 +17,36 @@ namespace Avalonia.Skia
             LineMetrics = lineMetrics;
         }
 
+        /// <summary>
+        /// Gets the starting index.
+        /// </summary>
+        /// <value>
+        /// The starting index.
+        /// </value>
         public int StartingIndex { get; }
 
+        /// <summary>
+        /// Gets the text line length.
+        /// </summary>
+        /// <value>
+        /// The text line length.
+        /// </value>
         public int Length { get; }
 
+        /// <summary>
+        /// Gets the text runs.
+        /// </summary>
+        /// <value>
+        /// The text runs.
+        /// </value>
         public IReadOnlyList<SKTextRun> TextRuns => _textRuns;
 
+        /// <summary>
+        /// Gets the line metrics.
+        /// </summary>
+        /// <value>
+        /// The line metrics.
+        /// </value>
         public SKTextLineMetrics LineMetrics { get; }
     }
 }
