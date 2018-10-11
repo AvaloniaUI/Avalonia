@@ -976,6 +976,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("shcore.dll")]
         public static extern void GetScaleFactorForMonitor(IntPtr hMon, out uint pScale);
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDPIAware();
+
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromPoint(POINT pt, MONITOR dwFlags);
 
@@ -987,7 +990,7 @@ namespace Avalonia.Win32.Interop
         
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, [Out] MONITORINFO lpmi);
+        public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
@@ -1055,12 +1058,17 @@ namespace Avalonia.Win32.Interop
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        internal class MONITORINFO
+        internal struct MONITORINFO
         {
-            public int cbSize = Marshal.SizeOf<MONITORINFO>();
-            public RECT rcMonitor = new RECT();
-            public RECT rcWork = new RECT();
-            public int dwFlags = 0;
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public int dwFlags;
+
+            public static MONITORINFO Create()
+            {
+                return new MONITORINFO() { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            }
 
             public enum MonitorOptions : uint
             {

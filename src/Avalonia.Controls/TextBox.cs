@@ -212,7 +212,10 @@ namespace Avalonia.Controls
             {
                 if (!_ignoreTextChanges)
                 {
-                    CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
+                    var caretIndex = CaretIndex;
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
                     {

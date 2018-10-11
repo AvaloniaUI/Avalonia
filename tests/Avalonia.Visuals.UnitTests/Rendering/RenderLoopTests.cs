@@ -19,14 +19,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             bool inDispatcher = false;
 
             dispatcher.Setup(
-                d => d.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
+                d => d.Post(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback((Action a, DispatcherPriority _) =>
                 {
                     inDispatcher = true;
                     a();
                     inDispatcher = false;
-                })
-                .Returns(Task.CompletedTask);
+                });
 
             var timer = new Mock<IRenderTimer>();
 
@@ -71,14 +70,13 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var dispatcher = new Mock<IDispatcher>();
             bool inDispatcher = false;
             dispatcher.Setup(
-                d => d.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
+                d => d.Post(It.IsAny<Action>(), DispatcherPriority.Render))
                 .Callback((Action a, DispatcherPriority _) =>
                 {
                     inDispatcher = true;
                     a();
                     inDispatcher = false;
-                })
-                .Returns(Task.CompletedTask);
+                });
 
             var timer = new Mock<IRenderTimer>();
             var loop = new RenderLoop(timer.Object, dispatcher.Object);
@@ -100,9 +98,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         {
             var dispatcher = new Mock<IDispatcher>();
             dispatcher.Setup(
-                d => d.InvokeAsync(It.IsAny<Action>(), DispatcherPriority.Render))
-                .Callback((Action a, DispatcherPriority _) => a())
-                .Returns(Task.CompletedTask);
+                d => d.Post(It.IsAny<Action>(), DispatcherPriority.Render))
+                .Callback((Action a, DispatcherPriority _) => a());
 
             var timer = new Mock<IRenderTimer>();
             var loop = new RenderLoop(timer.Object, dispatcher.Object);
