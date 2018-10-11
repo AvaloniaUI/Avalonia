@@ -981,6 +981,17 @@ private:
             
             auto nscolor = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
             
+            // Based on the titlebar color we have to choose either light or dark
+            // OSX doesnt let you set a foreground color for titlebar.
+            if ((r*0.299 + g*0.587 + b*0.114) > 186.0f / 255.0f)
+            {
+                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantLight]];
+            }
+            else
+            {
+                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
+            }
+            
             [Window setTitlebarAppearsTransparent:true];
             [Window setBackgroundColor:nscolor];
         }
