@@ -62,6 +62,14 @@ struct AvnFramebuffer
     AvnPixelFormat PixelFormat;
 };
 
+struct AvnColor
+{
+    unsigned char Alpha;
+    unsigned char Red;
+    unsigned char Green;
+    unsigned char Blue;
+};
+
 enum AvnRawMouseEventType
 {
     LeaveWindow,
@@ -187,6 +195,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT ShowDialog (IUnknown**ppv) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
+    virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
 };

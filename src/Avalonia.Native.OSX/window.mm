@@ -951,6 +951,19 @@ private:
         }
     }
     
+    virtual HRESULT SetTitleBarColor(AvnColor color)
+    {
+        @autoreleasepool
+        {
+            auto nscolor = [NSColor colorWithSRGBRed:color.Red green:color.Green blue:color.Blue alpha:color.Alpha];
+            
+            [Window setTitlebarAppearsTransparent:true];
+            [Window setBackgroundColor:nscolor];
+        }
+        
+        return S_OK;
+    }
+    
     virtual HRESULT GetWindowState (AvnWindowState*ret)
     {
         @autoreleasepool
