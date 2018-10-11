@@ -974,10 +974,10 @@ private:
     {
         @autoreleasepool
         {
-            float a = 255.0f / color.Alpha;
-            float r = 255.0f / color.Red;
-            float g = 255.0f / color.Green;
-            float b = 255.0f / color.Blue;
+            float a = (float)color.Alpha / 255.0f;
+            float r = (float)color.Red / 255.0f;
+            float g = (float)color.Green / 255.0f;
+            float b = (float)color.Blue / 255.0f;
             
             auto nscolor = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
             
