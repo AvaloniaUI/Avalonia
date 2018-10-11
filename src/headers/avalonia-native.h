@@ -223,6 +223,13 @@ AVNCOM(IAvnWindowBaseEvents, 05) : IUnknown
 
 AVNCOM(IAvnWindowEvents, 06) : IAvnWindowBaseEvents
 {
+    /**
+     * Closing Event
+     * Called when the user presses the OS window close button.
+     * return true to allow the close, return false to prevent close.
+     */
+    virtual bool Closing () = 0;
+    
     virtual void WindowStateChanged (AvnWindowState state) = 0;
 };
 

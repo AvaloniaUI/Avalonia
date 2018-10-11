@@ -28,6 +28,16 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
+            bool IAvnWindowEvents.Closing()
+            {
+                if(_parent.Closing != null)
+                {
+                    return _parent.Closing();
+                }
+
+                return true;
+            }
+
             void IAvnWindowEvents.WindowStateChanged(AvnWindowState state)
             {
                 _parent.WindowStateChanged?.Invoke((WindowState)state);

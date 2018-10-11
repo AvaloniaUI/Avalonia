@@ -310,6 +310,269 @@ protected:
     }
 };
 
+class ModalDisposable : public ComUnknownObject
+{
+    NSModalSession _session;
+    AvnWindow* _window;
+    
+    void Dispose ()
+    {
+        [_window orderOut:_window];
+        [NSApp endModalSession:_session];
+    }
+    
+public:
+    ModalDisposable(AvnWindow* window, NSModalSession session)
+    {
+        _session = session;
+        _window = window;
+    }
+    
+    virtual ~ModalDisposable()
+    {
+        Dispose();
+    }
+};
+
+class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
+{
+private:
+    bool _canResize = true;
+    bool _hasDecorations = true;
+    CGRect _lastUndecoratedFrame;
+    AvnWindowState _lastWindowState;
+    
+    BEGIN_INTERFACE_MAP()
+    INHERIT_INTERFACE_MAP(WindowBaseImpl)
+    INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
+    END_INTERFACE_MAP()
+    
+    virtual uint Release()
+    {
+        return ComObject::Release();
+    }
+    
+    ComPtr<IAvnWindowEvents> WindowEvents;
+    WindowImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
+    {
+        WindowEvents = events;
+        [Window setCanBecomeKeyAndMain];
+    }
+    
+    virtual HRESULT ShowDialog (IUnknown**ppv)
+    {
+        @autoreleasepool
+        {
+            if(ppv == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            auto session = [NSApp beginModalSessionForWindow:Window];
+            auto disposable = new ModalDisposable(Window, session);
+            *ppv = disposable;
+            
+            SetPosition(lastPositionSet);
+            UpdateStyle();
+            
+            [Window setTitle:_lastTitle];
+            [Window setTitleVisibility:NSWindowTitleVisible];
+            
+            [Window pollModalSession:session];
+            
+            return S_OK;
+        }
+    }
+    
+    void WindowStateChanged ()
+    {
+        AvnWindowState state;
+        GetWindowState(&state);
+        WindowEvents->WindowStateChanged(state);
+    }
+    
+    bool UndecoratedIsMaximized ()
+    {
+        return CGRectEqualToRect([Window frame], [Window screen].visibleFrame);
+    }
+    
+    bool IsZoomed ()
+    {
+        return _hasDecorations ? [Window isZoomed] : UndecoratedIsMaximized();
+    }
+    
+    void DoZoom()
+    {
+        if (_hasDecorations)
+        {
+            [Window performZoom:Window];
+        }
+        else
+        {
+            if (!UndecoratedIsMaximized())
+            {
+                _lastUndecoratedFrame = [Window frame];
+            }
+            
+            [Window zoom:Window];
+        }
+    }
+    
+    virtual HRESULT SetCanResize(bool value)
+    {
+        @autoreleasepool
+        {
+            _canResize = value;
+            UpdateStyle();
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetHasDecorations(bool value)
+    {
+        @autoreleasepool
+        {
+            _hasDecorations = value;
+            UpdateStyle();
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetTitle (const char* title)
+    {
+        @autoreleasepool
+        {
+            _lastTitle = [NSString stringWithUTF8String:title];
+            [Window setTitle:_lastTitle];
+            [Window setTitleVisibility:NSWindowTitleVisible];
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetTitleBarColor(AvnColor color)
+    {
+        @autoreleasepool
+        {
+            float a = (float)color.Alpha / 255.0f;
+            float r = (float)color.Red / 255.0f;
+            float g = (float)color.Green / 255.0f;
+            float b = (float)color.Blue / 255.0f;
+            
+            auto nscolor = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
+            
+            // Based on the titlebar color we have to choose either light or dark
+            // OSX doesnt let you set a foreground color for titlebar.
+            if ((r*0.299 + g*0.587 + b*0.114) > 186.0f / 255.0f)
+            {
+                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantLight]];
+            }
+            else
+            {
+                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
+            }
+            
+            [Window setTitlebarAppearsTransparent:true];
+            [Window setBackgroundColor:nscolor];
+        }
+        
+        return S_OK;
+    }
+    
+    virtual HRESULT GetWindowState (AvnWindowState*ret)
+    {
+        @autoreleasepool
+        {
+            if(ret == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            if([Window isMiniaturized])
+            {
+                *ret = Minimized;
+                return S_OK;
+            }
+            
+            if([Window isZoomed])
+            {
+                *ret = Maximized;
+                return S_OK;
+            }
+            
+            *ret = Normal;
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetWindowState (AvnWindowState state)
+    {
+        @autoreleasepool
+        {
+            switch (state) {
+                case Maximized:
+                    lastPositionSet.X = 0;
+                    lastPositionSet.Y = 0;
+                    
+                    if([Window isMiniaturized])
+                    {
+                        [Window deminiaturize:Window];
+                    }
+                    
+                    if(!IsZoomed())
+                    {
+                        DoZoom();
+                    }
+                    break;
+                    
+                case Minimized:
+                    [Window miniaturize:Window];
+                    break;
+                    
+                default:
+                    if([Window isMiniaturized])
+                    {
+                        [Window deminiaturize:Window];
+                    }
+                    
+                    if(IsZoomed())
+                    {
+                        DoZoom();
+                    }
+                    break;
+            }
+            
+            return S_OK;
+        }
+    }
+    
+protected:
+    virtual void OnResized ()
+    {
+        auto windowState = [Window isMiniaturized] ? Minimized
+        : (IsZoomed() ? Maximized : Normal);
+        
+        if (windowState != _lastWindowState)
+        {
+            _lastWindowState = windowState;
+            
+            WindowEvents->WindowStateChanged(windowState);
+        }
+    }
+    
+    virtual NSWindowStyleMask GetStyle()
+    {
+        unsigned long s = NSWindowStyleMaskBorderless;
+        if(_hasDecorations)
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+        if(_canResize)
+            s = s | NSWindowStyleMaskResizable;
+        return s;
+    }
+};
+
 NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEventTrackingRunLoopMode, NSModalPanelRunLoopMode, NSRunLoopCommonModes, NSConnectionReplyMode, nil];
 
 @implementation AvnView
@@ -737,6 +1000,23 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return self;
 }
 
+- (BOOL)windowShouldClose:(NSWindow *)sender
+{
+    auto window = dynamic_cast<WindowImpl*>(_parent.operator->());
+    
+    if(window != nullptr)
+    {
+        return !window->WindowEvents->Closing();
+    }
+    
+    return true;
+}
+
+- (void)windowWillClose:(NSNotification *)notification
+{
+    _parent->BaseEvents->Closed();
+}
+
 -(BOOL)canBecomeKeyWindow
 {
     return _canBecomeKeyAndMain;
@@ -821,269 +1101,6 @@ extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
     IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
     return ptr;
 }
-
-class ModalDisposable : public ComUnknownObject
-{
-    NSModalSession _session;
-    AvnWindow* _window;
-    
-    void Dispose ()
-    {
-        [_window orderOut:_window];
-        [NSApp endModalSession:_session];
-    }
-    
-public:
-    ModalDisposable(AvnWindow* window, NSModalSession session)
-    {
-        _session = session;
-        _window = window;
-    }
-    
-    virtual ~ModalDisposable()
-    {
-        Dispose();
-    }
-};
-
-class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
-{
-private:
-    bool _canResize = true;
-    bool _hasDecorations = true;
-    CGRect _lastUndecoratedFrame;
-    AvnWindowState _lastWindowState;
-    
-    BEGIN_INTERFACE_MAP()
-    INHERIT_INTERFACE_MAP(WindowBaseImpl)
-    INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
-    END_INTERFACE_MAP()
-    
-    virtual uint Release()
-    {
-        return ComObject::Release();
-    }
-    
-    ComPtr<IAvnWindowEvents> WindowEvents;
-    WindowImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
-    {
-        WindowEvents = events;
-        [Window setCanBecomeKeyAndMain];
-    }
-    
-    virtual HRESULT ShowDialog (IUnknown**ppv)
-    {
-        @autoreleasepool
-        {
-            if(ppv == nullptr)
-            {
-                return E_POINTER;
-            }
-            
-            auto session = [NSApp beginModalSessionForWindow:Window];
-            auto disposable = new ModalDisposable(Window, session);
-            *ppv = disposable;
-            
-            SetPosition(lastPositionSet);
-            UpdateStyle();
-            
-            [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
-            
-            [Window pollModalSession:session];
-            
-            return S_OK;
-        }
-    }
-    
-    void WindowStateChanged ()
-    {
-        AvnWindowState state;
-        GetWindowState(&state);
-        WindowEvents->WindowStateChanged(state);
-    }
-    
-    bool UndecoratedIsMaximized ()
-    {
-        return CGRectEqualToRect([Window frame], [Window screen].visibleFrame);
-    }
-    
-    bool IsZoomed ()
-    {
-        return _hasDecorations ? [Window isZoomed] : UndecoratedIsMaximized();
-    }
-    
-    void DoZoom()
-    {
-        if (_hasDecorations)
-        {
-            [Window performZoom:Window];
-        }
-        else
-        {
-            if (!UndecoratedIsMaximized())
-            {
-                _lastUndecoratedFrame = [Window frame];
-            }
-            
-            [Window zoom:Window];
-        }
-    }
-    
-    virtual HRESULT SetCanResize(bool value)
-    {
-        @autoreleasepool
-        {
-            _canResize = value;
-            UpdateStyle();
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetHasDecorations(bool value)
-    {
-        @autoreleasepool
-        {
-            _hasDecorations = value;
-            UpdateStyle();
-            
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetTitle (const char* title)
-    {
-        @autoreleasepool
-        {
-            _lastTitle = [NSString stringWithUTF8String:title];
-            [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
-            
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetTitleBarColor(AvnColor color)
-    {
-        @autoreleasepool
-        {
-            float a = (float)color.Alpha / 255.0f;
-            float r = (float)color.Red / 255.0f;
-            float g = (float)color.Green / 255.0f;
-            float b = (float)color.Blue / 255.0f;
-            
-            auto nscolor = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
-            
-            // Based on the titlebar color we have to choose either light or dark
-            // OSX doesnt let you set a foreground color for titlebar.
-            if ((r*0.299 + g*0.587 + b*0.114) > 186.0f / 255.0f)
-            {
-                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantLight]];
-            }
-            else
-            {
-                [Window setAppearance:[NSAppearance appearanceNamed:NSAppearanceNameVibrantDark]];
-            }
-            
-            [Window setTitlebarAppearsTransparent:true];
-            [Window setBackgroundColor:nscolor];
-        }
-        
-        return S_OK;
-    }
-    
-    virtual HRESULT GetWindowState (AvnWindowState*ret)
-    {
-        @autoreleasepool
-        {
-            if(ret == nullptr)
-            {
-                return E_POINTER;
-            }
-            
-            if([Window isMiniaturized])
-            {
-                *ret = Minimized;
-                return S_OK;
-            }
-            
-            if([Window isZoomed])
-            {
-                *ret = Maximized;
-                return S_OK;
-            }
-            
-            *ret = Normal;
-            
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetWindowState (AvnWindowState state)
-    {
-        @autoreleasepool
-        {
-            switch (state) {
-                case Maximized:
-                    lastPositionSet.X = 0;
-                    lastPositionSet.Y = 0;
-                    
-                    if([Window isMiniaturized])
-                    {
-                        [Window deminiaturize:Window];
-                    }
-                    
-                    if(!IsZoomed())
-                    {
-                        DoZoom();
-                    }
-                    break;
-                    
-                case Minimized:
-                    [Window miniaturize:Window];
-                    break;
-                    
-                default:
-                    if([Window isMiniaturized])
-                    {
-                        [Window deminiaturize:Window];
-                    }
-                    
-                    if(IsZoomed())
-                    {
-                        DoZoom();
-                    }
-                    break;
-            }
-            
-            return S_OK;
-        }
-    }
-    
-protected:
-    virtual void OnResized ()
-    {
-        auto windowState = [Window isMiniaturized] ? Minimized
-        : (IsZoomed() ? Maximized : Normal);
-        
-        if (windowState != _lastWindowState)
-        {
-            _lastWindowState = windowState;
-            
-            WindowEvents->WindowStateChanged(windowState);
-        }
-    }
-    
-    virtual NSWindowStyleMask GetStyle()
-    {
-        unsigned long s = NSWindowStyleMaskBorderless;
-        if(_hasDecorations)
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
-        if(_canResize)
-            s = s | NSWindowStyleMaskResizable;
-        return s;
-    }
-};
 
 typedef void (*pfnvoid)();
 
