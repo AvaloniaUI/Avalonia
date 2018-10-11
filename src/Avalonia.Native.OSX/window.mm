@@ -968,6 +968,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 {
     ComPtr<WindowBaseImpl> _parent;
     bool _canBecomeKeyAndMain;
+    bool _closed;
 }
 
 - (void)pollModalSession:(nonnull NSModalSession)session
@@ -980,7 +981,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
             [self pollModalSession:session];
         });
     }
-    else
+    else if (!_closed)
     {
         [self orderOut:self];
         [NSApp endModalSession:session];
@@ -1014,6 +1015,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (void)windowWillClose:(NSNotification *)notification
 {
+    _closed = true;
     _parent->BaseEvents->Closed();
 }
 
