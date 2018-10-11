@@ -17,8 +17,7 @@ public:
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
     AvnPoint lastPositionSet;
-    
-
+    NSString* _lastTitle;
     
     WindowBaseImpl(IAvnWindowBaseEvents* events)
     {
@@ -28,6 +27,7 @@ public:
         
         lastPositionSet.X = 100;
         lastPositionSet.Y = 100;
+        _lastTitle = @"";
         
         [Window setStyleMask:NSWindowStyleMaskBorderless];
         [Window setBackingType:NSBackingStoreBuffered];
@@ -46,6 +46,9 @@ public:
             SetPosition(lastPositionSet);
             UpdateStyle();
             [Window makeKeyAndOrderFront:Window];
+            
+            [Window setTitle:_lastTitle];
+            [Window setTitleVisibility:NSWindowTitleVisible];
         
             return S_OK;
         }
@@ -891,6 +894,9 @@ private:
             SetPosition(lastPositionSet);
             UpdateStyle();
             
+            [Window setTitle:_lastTitle];
+            [Window setTitleVisibility:NSWindowTitleVisible];
+            
             [Window pollModalSession:session];
             
             return S_OK;
@@ -947,6 +953,19 @@ private:
         {
             _hasDecorations = value;
             UpdateStyle();
+            
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetTitle (const char* title)
+    {
+        @autoreleasepool
+        {
+            _lastTitle = [NSString stringWithUTF8String:title];
+            [Window setTitle:_lastTitle];
+            [Window setTitleVisibility:NSWindowTitleVisible];
+            
             return S_OK;
         }
     }

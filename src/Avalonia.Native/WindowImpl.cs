@@ -58,6 +58,7 @@ namespace Avalonia.Native
 
         public void SetTitle(string title)
         {
+            _native.SetTitle(title);
         }
 
         public WindowState WindowState

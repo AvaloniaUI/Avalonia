@@ -195,6 +195,7 @@ AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
     virtual HRESULT ShowDialog (IUnknown**ppv) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
+    virtual HRESULT SetTitle (const char* title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
