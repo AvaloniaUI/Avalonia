@@ -170,6 +170,7 @@ Task("Run-Unit-Tests-Impl")
     RunCoreTest("./tests/Avalonia.Styling.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Visuals.UnitTests", data.Parameters, false);
     RunCoreTest("./tests/Avalonia.Skia.UnitTests", data.Parameters, false);
+    RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests", data.Parameters, false);
     if (data.Parameters.IsRunningOnWindows)
     {
         RunCoreTest("./tests/Avalonia.Direct2D1.UnitTests", data.Parameters, false);
