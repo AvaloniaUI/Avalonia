@@ -955,7 +955,12 @@ private:
     {
         @autoreleasepool
         {
-            auto nscolor = [NSColor colorWithSRGBRed:color.Red green:color.Green blue:color.Blue alpha:color.Alpha];
+            float a = 255.0f / color.Alpha;
+            float r = 255.0f / color.Red;
+            float g = 255.0f / color.Green;
+            float b = 255.0f / color.Blue;
+            
+            auto nscolor = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
             
             [Window setTitlebarAppearsTransparent:true];
             [Window setBackgroundColor:nscolor];
