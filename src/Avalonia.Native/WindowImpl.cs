@@ -8,7 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    class WindowImpl : WindowBaseImpl, IWindowImpl
+    public class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         IAvnWindow _native;
         public WindowImpl(IAvaloniaNativeFactory factory)
