@@ -347,6 +347,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return true;
 }
 
+- (BOOL)acceptsFirstMouse:(NSEvent *)event
+{
+    return true;
+}
+
 - (BOOL)canBecomeKeyView
 {
     return true;
@@ -517,8 +522,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
-    
-    [super mouseDown:event];
 }
 
 - (void)otherMouseDown:(NSEvent *)event
@@ -526,8 +529,6 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isMiddlePressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:MiddleButtonDown];
-    
-    [super otherMouseDown:event];
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -535,32 +536,24 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     _isRightPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:RightButtonDown];
-    
-    [super rightMouseDown:event];
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     _isLeftPressed = false;
     [self mouseEvent:event withType:LeftButtonUp];
-    
-    [super mouseUp:event];
 }
 
 - (void)otherMouseUp:(NSEvent *)event
 {
     _isMiddlePressed = false;
     [self mouseEvent:event withType:MiddleButtonUp];
-    
-    [super otherMouseUp:event];
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
     _isRightPressed = false;
     [self mouseEvent:event withType:RightButtonUp];
-    
-    [super rightMouseUp:event];
 }
 
 - (void)mouseDragged:(NSEvent *)event
