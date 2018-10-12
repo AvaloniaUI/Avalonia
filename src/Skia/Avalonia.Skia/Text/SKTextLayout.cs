@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using Avalonia.Media;
 
@@ -11,7 +12,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    using System.Text;
+    using System.Globalization;
 
     public class SKTextLayout
     {
@@ -155,6 +156,11 @@ namespace Avalonia.Skia
                             }
                             else
                             {
+                                if (start.SecondTextRun.Text.Length == 0)
+                                {
+                                    continue;
+                                }
+
                                 // Apply in between the run
                                 var end = SplitTextRun(start.SecondTextRun, 0, remainingLength);
 
@@ -381,7 +387,6 @@ namespace Avalonia.Skia
 
             return new SKTextRun(
                 textRun.Text,
-                GetCharacterCodePoints(textRun.Text),
                 textRun.TextFormat,
                 textRun.FontMetrics,
                 textRun.Width,
@@ -401,7 +406,7 @@ namespace Avalonia.Skia
                 IsAntialias = true,
                 /*Bug: Transparency issue with LcdRenderText = true,*/
                 IsStroke = false,
-                TextEncoding = SKTextEncoding.Utf32,
+                TextEncoding = SKTextEncoding.Utf16,
                 Typeface = typeface,
                 TextSize = fontSize
             };
@@ -443,6 +448,11 @@ namespace Avalonia.Skia
             }
 
             return new SKTextLineMetrics(width, ascent, descent, leading);
+        }
+
+        private static byte[] CreateCharacterCodePoints(string s)
+        {
+            return Encoding.Unicode.GetBytes(s);
         }
 
         /// <summary>
@@ -497,13 +507,6 @@ namespace Avalonia.Skia
                 default:
                     return false;
             }
-        }
-
-        private static byte[] GetCharacterCodePoints(string s)
-        {
-            var utf32Encoding = new UTF32Encoding(!BitConverter.IsLittleEndian, false, true);
-
-            return utf32Encoding.GetBytes(s);            
         }
 
         /// <summary>
@@ -645,7 +648,6 @@ namespace Avalonia.Skia
                                {
                                    new SKTextRun(
                                        string.Empty,
-                                       GetCharacterCodePoints(string.Empty),
                                        new SKTextFormat(_typeface, _fontSize),
                                        _paint.FontMetrics,
                                        0.0f)
@@ -679,9 +681,7 @@ namespace Avalonia.Skia
 
             var width = _paint.MeasureText(text);
 
-            var characterCodePoints = GetCharacterCodePoints(text);
-
-            return new SKTextRun(text, characterCodePoints, textFormat, fontMetrics, width);
+            return new SKTextRun(text, textFormat, fontMetrics, width);
         }
 
         /// <summary>
@@ -711,21 +711,22 @@ namespace Avalonia.Skia
 
                 if (glyphCount == 0)
                 {
-                    var encoding = new UTF32Encoding();
-
-                    var bytes = encoding.GetBytes(runText);
-
-                    var c = BitConverter.ToInt32(bytes, 0);
+                    var c = char.ConvertToUtf32(runText, 0);
 
                     typeface = SKFontManager.Default.MatchCharacter(c);
 
-                    if (typeface != null)
+                    // Check if we have a pair of UTF-16 values
+                    if (char.IsHighSurrogate(runText[0]))
                     {
-                        glyphCount = typeface.CountGlyphs(runText);
+                        glyphCount = glyphCount + 2;
                     }
+                    else
+                    {
+                        glyphCount++;
+                    }                 
                 }
 
-                if (glyphCount < length && glyphCount != runText.Length)
+                if (currentPosition + glyphCount < length)
                 {
                     runText = text.Substring(startingIndex + currentPosition, glyphCount);
                 }
@@ -782,6 +783,7 @@ namespace Avalonia.Skia
                         }
                         else
                         {
+                            // ToDo: Need to check if we have a pair of UTF-16 values
                             var width = _paint.MeasureText(c.ToString());
 
                             rectangles.Add(new Rect(
@@ -830,17 +832,23 @@ namespace Avalonia.Skia
                     {
                         var remainingTextRuns = new List<SKTextRun>();
 
-                        var measuredLength = (int)(_paint.BreakText(textRun.CharacterCodePoints, availableLength) / sizeof(int));
+                        var bytes = CreateCharacterCodePoints(textRun.Text);
 
-                        for (var i = measuredLength; i > 0; i--)
+                        // returns number of bytes
+                        var measuredLength = (int)(_paint.BreakText(bytes, availableLength) / 2);
+
+                        if (measuredLength < textRun.Text.Length)
                         {
-                            var c = textRun.Text[i];
-
-                            if (char.IsWhiteSpace(c) || c == '\u200B')
+                            for (var i = measuredLength; i > 0; i--)
                             {
-                                measuredLength = ++i;
+                                var c = textRun.Text[i];
 
-                                break;
+                                if (char.IsWhiteSpace(c) || c == '\u200B')
+                                {
+                                    measuredLength = ++i;
+
+                                    break;
+                                }
                             }
                         }
 

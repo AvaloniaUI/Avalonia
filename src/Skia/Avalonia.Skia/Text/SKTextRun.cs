@@ -9,13 +9,12 @@ namespace Avalonia.Skia
 {
     public class SKTextRun
     {
-        public SKTextRun(string text, byte[] characterCodePoints, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
+        public SKTextRun(string text, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
         {
             Text = text;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
             Width = width;
-            CharacterCodePoints = characterCodePoints;
             DrawingEffect = drawingEffect;
         }
 
@@ -26,14 +25,6 @@ namespace Avalonia.Skia
         /// The text.
         /// </value>
         public string Text { get; }
-
-        /// <summary>
-        /// Gets the character code points.
-        /// </summary>
-        /// <value>
-        /// The character code points.
-        /// </value>
-        public byte[] CharacterCodePoints { get; }
 
         /// <summary>
         /// Gets the text format.
