@@ -106,9 +106,11 @@ public:
             [[NSApplication sharedApplication] activateIgnoringOtherApps:true];
             while(true)
             {
+                if(can != NULL && can->Cancelled)
+                    return;
                 NSEvent* ev = [[NSApplication sharedApplication]
                                nextEventMatchingMask:NSEventMaskAny
-                               untilDate: [NSDate distantFuture]
+                               untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
                                inMode:NSDefaultRunLoopMode
                                dequeue:true];
                 if(can != NULL && can->Cancelled)
