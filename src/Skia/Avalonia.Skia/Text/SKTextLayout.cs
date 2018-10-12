@@ -224,8 +224,12 @@ namespace Avalonia.Skia
 
                     foreach (var textRun in textLine.TextRuns)
                     {
-                        InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
-                        canvas.DrawText(textRun.Text, lineX, lineY, _paint);
+                        if (textRun.TextFormat.Typeface != null)
+                        {
+                            InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
+                            canvas.DrawText(textRun.Text, lineX, lineY, _paint);
+                        }
+                        
                         lineX += textRun.Width;
                     }
 
@@ -689,26 +693,32 @@ namespace Avalonia.Skia
             {
                 var glyphCount = _typeface.CountGlyphs(runText);
 
-                while (glyphCount < runText.Length)
-                {
-                    if (IsBreakChar(runText[glyphCount]))
-                    {
-                        glyphCount++;
-                    }
-                }
-
                 var typeface = _typeface;
 
                 if (glyphCount == 0)
                 {
-                    typeface = SKFontManager.Default.MatchCharacter(runText[currentPosition]);
+                    typeface = SKFontManager.Default.MatchCharacter(runText[0]);
 
-                    glyphCount = typeface.CountGlyphs(runText);
+                    if (typeface == null)
+                    {
+                        glyphCount++;
+
+                        while (glyphCount < runText.Length && typeface == null)
+                        {
+                            typeface = SKFontManager.Default.MatchCharacter(runText[glyphCount]);
+
+                            glyphCount++;
+                        }
+                    }
+                    else
+                    {
+                        glyphCount = typeface.CountGlyphs(runText);
+                    }
                 }
 
-                if (glyphCount != length)
+                if (glyphCount < length && glyphCount != runText.Length)
                 {
-                    runText = runText.Substring(currentPosition, glyphCount);
+                    runText = text.Substring(startingIndex + currentPosition, glyphCount);
                 }
 
                 var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));
@@ -716,6 +726,11 @@ namespace Avalonia.Skia
                 textRuns.Add(currentRun);
 
                 currentPosition += glyphCount;
+
+                if (currentPosition != length)
+                {
+                    runText = text.Substring(startingIndex + currentPosition, length - glyphCount);
+                }
             }
 
             textLineMetrics = CreateTextLineMetrics(textRuns);
