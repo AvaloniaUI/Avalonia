@@ -13,7 +13,12 @@ private:
 
 public:
     FORWARD_IUNKNOWN()
-    virtual ~WindowBaseImpl(){}
+    virtual ~WindowBaseImpl()
+    {
+        NSDebugLog(@"~WindowBaseImpl()");
+        View = NULL;
+        Window = NULL;
+    }
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -351,7 +356,7 @@ private:
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
     virtual ~WindowImpl(){
-        NSLog(@"~WindowImpl");
+        NSDebugLog(@"~WindowImpl");
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
@@ -599,6 +604,17 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isMouseOver;
     NSEvent* _lastMouseDownEvent;
     bool _lastKeyHandled;
+}
+
+- (void)dealloc
+{
+    NSDebugLog(@"AvnView dealloc");
+}
+
+
+- (void)onClosed
+{
+    _parent = NULL;
 }
 
 - (NSEvent*) lastMouseDownEvent
@@ -985,6 +1001,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     bool _closed;
 }
 
+- (void)dealloc
+{
+    NSDebugLog(@"AvnWindow dealloc");
+}
+
 - (void)pollModalSession:(nonnull NSModalSession)session
 {
     auto response = [NSApp runModalSession:session];
@@ -1031,8 +1052,16 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 - (void)windowWillClose:(NSNotification *)notification
 {
     _closed = true;
-    _parent->BaseEvents->Closed();
+    if(_parent)
+    {
+        ComPtr<WindowBaseImpl> parent = _parent;
+        _parent = NULL;
+        parent->BaseEvents->Closed();
+        [parent->View onClosed];
+        [self setContentView: nil];
+    }
 }
+
 
 -(BOOL)canBecomeKeyWindow
 {
@@ -1057,7 +1086,8 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 -(void)resignKeyWindow
 {
-    _parent->BaseEvents->Deactivated();
+    if(_parent)
+        _parent->BaseEvents->Deactivated();
     [super resignKeyWindow];
 }
 

@@ -106,18 +106,22 @@ public:
             [[NSApplication sharedApplication] activateIgnoringOtherApps:true];
             while(true)
             {
-                if(can != NULL && can->Cancelled)
-                    return;
-                NSEvent* ev = [[NSApplication sharedApplication]
-                               nextEventMatchingMask:NSEventMaskAny
-                               untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
-                               inMode:NSDefaultRunLoopMode
-                               dequeue:true];
-                if(can != NULL && can->Cancelled)
-                    return;
-                if(ev != NULL)
-                    [[NSApplication sharedApplication] sendEvent:ev];
+                @autoreleasepool
+                {
+                    if(can != NULL && can->Cancelled)
+                        return;
+                    NSEvent* ev = [[NSApplication sharedApplication]
+                                   nextEventMatchingMask:NSEventMaskAny
+                                   untilDate: [NSDate dateWithTimeIntervalSinceNow:1]
+                                   inMode:NSDefaultRunLoopMode
+                                   dequeue:true];
+                    if(can != NULL && can->Cancelled)
+                        return;
+                    if(ev != NULL)
+                        [[NSApplication sharedApplication] sendEvent:ev];
+                }
             }
+            NSDebugLog(@"RunLoop exited");
         }
     }
     
