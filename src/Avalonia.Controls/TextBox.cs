@@ -14,7 +14,6 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
-using System.Runtime.InteropServices;
 
 namespace Avalonia.Controls
 {
@@ -372,24 +371,17 @@ namespace Avalonia.Controls
             bool handled = false;
             var modifiers = e.Modifiers;
 
-            var commandModifier = InputModifiers.Control;
-
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                commandModifier = InputModifiers.Windows;
-            }
-
             switch (e.Key)
             {
                 case Key.A:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         SelectAll();
                         handled = true;
                     }
                     break;
                 case Key.C:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         if (!IsPasswordBox)
                         {
@@ -400,7 +392,7 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.X:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         if (!IsPasswordBox)
                         {
@@ -412,7 +404,7 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.V:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         Paste();
                         handled = true;
@@ -421,7 +413,7 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Z:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         try
                         {
@@ -434,24 +426,9 @@ namespace Avalonia.Controls
                         }
                         handled = true;
                     }
-                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && 
-                                modifiers.HasFlag(commandModifier) && 
-                                modifiers.HasFlag(InputModifiers.Shift))
-                    {
-                        try
-                        {
-                            _isUndoingRedoing = true;
-                            _undoRedoHelper.Redo();
-                        }
-                        finally
-                        {
-                            _isUndoingRedoing = false;
-                        }
-                        handled = true;
-                    }
                     break;
                 case Key.Y:
-                    if (modifiers == commandModifier)
+                    if (modifiers == InputModifiers.Control)
                     {
                         try
                         {
