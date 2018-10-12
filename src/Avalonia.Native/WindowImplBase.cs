@@ -18,6 +18,7 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
+        bool _isClosed;
         private object _syncRoot = new object();
         private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
