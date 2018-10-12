@@ -11,6 +11,8 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
+    using System.Text;
+
     public class SKTextLayout
     {
         private readonly string _text;
@@ -227,9 +229,10 @@ namespace Avalonia.Skia
                         if (textRun.TextFormat.Typeface != null)
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
+
                             canvas.DrawText(textRun.Text, lineX, lineY, _paint);
                         }
-                        
+
                         lineX += textRun.Width;
                     }
 
@@ -378,6 +381,7 @@ namespace Avalonia.Skia
 
             return new SKTextRun(
                 textRun.Text,
+                GetCharacterCodePoints(textRun.Text),
                 textRun.TextFormat,
                 textRun.FontMetrics,
                 textRun.Width,
@@ -493,6 +497,13 @@ namespace Avalonia.Skia
                 default:
                     return false;
             }
+        }
+
+        private static byte[] GetCharacterCodePoints(string s)
+        {
+            var utf32Encoding = new UTF32Encoding(!BitConverter.IsLittleEndian, false, true);
+
+            return utf32Encoding.GetBytes(s);            
         }
 
         /// <summary>
@@ -634,6 +645,7 @@ namespace Avalonia.Skia
                                {
                                    new SKTextRun(
                                        string.Empty,
+                                       GetCharacterCodePoints(string.Empty),
                                        new SKTextFormat(_typeface, _fontSize),
                                        _paint.FontMetrics,
                                        0.0f)
@@ -667,7 +679,9 @@ namespace Avalonia.Skia
 
             var width = _paint.MeasureText(text);
 
-            return new SKTextRun(text, textFormat, fontMetrics, width);
+            var characterCodePoints = GetCharacterCodePoints(text);
+
+            return new SKTextRun(text, characterCodePoints, textFormat, fontMetrics, width);
         }
 
         /// <summary>
@@ -697,20 +711,15 @@ namespace Avalonia.Skia
 
                 if (glyphCount == 0)
                 {
-                    typeface = SKFontManager.Default.MatchCharacter(runText[0]);
+                    var encoding = new UTF32Encoding();
 
-                    if (typeface == null)
-                    {
-                        glyphCount++;
+                    var bytes = encoding.GetBytes(runText);
 
-                        while (glyphCount < runText.Length && typeface == null)
-                        {
-                            typeface = SKFontManager.Default.MatchCharacter(runText[glyphCount]);
+                    var c = BitConverter.ToInt32(bytes, 0);
 
-                            glyphCount++;
-                        }
-                    }
-                    else
+                    typeface = SKFontManager.Default.MatchCharacter(c);
+
+                    if (typeface != null)
                     {
                         glyphCount = typeface.CountGlyphs(runText);
                     }
@@ -729,7 +738,7 @@ namespace Avalonia.Skia
 
                 if (currentPosition != length)
                 {
-                    runText = text.Substring(startingIndex + currentPosition, length - glyphCount);
+                    runText = text.Substring(startingIndex + currentPosition, length - currentPosition);
                 }
             }
 
@@ -821,7 +830,7 @@ namespace Avalonia.Skia
                     {
                         var remainingTextRuns = new List<SKTextRun>();
 
-                        var measuredLength = (int)_paint.BreakText(textRun.Text, availableLength);
+                        var measuredLength = (int)(_paint.BreakText(textRun.CharacterCodePoints, availableLength) / sizeof(int));
 
                         for (var i = measuredLength; i > 0; i--)
                         {
@@ -830,6 +839,7 @@ namespace Avalonia.Skia
                             if (char.IsWhiteSpace(c) || c == '\u200B')
                             {
                                 measuredLength = ++i;
+
                                 break;
                             }
                         }
