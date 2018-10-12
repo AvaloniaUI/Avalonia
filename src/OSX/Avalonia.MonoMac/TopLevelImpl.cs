@@ -224,7 +224,7 @@ namespace Avalonia.MonoMac
             {
                 var rv = new InputModifiers();
                 if (mod.HasFlag(NSEventModifierMask.ControlKeyMask))
-                   {rv |= InputModifiers.Control;
+                   rv |= InputModifiers.Control;
                 if (mod.HasFlag(NSEventModifierMask.ShiftKeyMask))
                     rv |= InputModifiers.Shift;
                 if (mod.HasFlag(NSEventModifierMask.AlternateKeyMask))
