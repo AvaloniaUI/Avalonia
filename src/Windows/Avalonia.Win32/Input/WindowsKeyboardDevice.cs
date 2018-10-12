@@ -29,6 +29,7 @@ namespace Avalonia.Win32.Input
                 if (IsDown(Key.LeftCtrl) || IsDown(Key.RightCtrl))
                 {
                     result |= InputModifiers.Control;
+                    result |= InputModifiers.Command;
                 }
 
                 if (IsDown(Key.LeftShift) || IsDown(Key.RightShift))
