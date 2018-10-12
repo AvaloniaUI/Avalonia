@@ -59,7 +59,10 @@ namespace Avalonia.Win32
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_SHIFT))
                 modifiers |= InputModifiers.Shift;
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_CONTROL))
+            {
                 modifiers |= InputModifiers.Control;
+                modifiers |= InputModifiers.Command;
+            }
             if (state.HasFlag(UnmanagedMethods.ModifierKeys.MK_ALT))
                 modifiers |= InputModifiers.Alt;
             return modifiers;

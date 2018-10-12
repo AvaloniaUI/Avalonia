@@ -14,9 +14,10 @@ namespace Avalonia.Input
         Control = 2,
         Shift = 4,
         Windows = 8,
-        LeftMouseButton = 16,
-        RightMouseButton = 32,
-        MiddleMouseButton = 64
+        Command = 16, // Special case CMD on OSX, CTRL on other platforms.
+        LeftMouseButton = 32,
+        RightMouseButton = 64,
+        MiddleMouseButton = 128
     }
 
     [Flags]

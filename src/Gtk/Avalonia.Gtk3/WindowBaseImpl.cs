@@ -122,7 +122,10 @@ namespace Avalonia.Gtk3
         {
             var rv = InputModifiers.None;
             if (state.HasFlag(GdkModifierType.ControlMask))
+            {
                 rv |= InputModifiers.Control;
+                rv |= InputModifiers.Command;
+            }
             if (state.HasFlag(GdkModifierType.ShiftMask))
                 rv |= InputModifiers.Shift;
             if (state.HasFlag(GdkModifierType.Mod1Mask))

@@ -224,13 +224,16 @@ namespace Avalonia.MonoMac
             {
                 var rv = new InputModifiers();
                 if (mod.HasFlag(NSEventModifierMask.ControlKeyMask))
-                    rv |= InputModifiers.Control;
+                   rv |= InputModifiers.Control;
                 if (mod.HasFlag(NSEventModifierMask.ShiftKeyMask))
                     rv |= InputModifiers.Shift;
                 if (mod.HasFlag(NSEventModifierMask.AlternateKeyMask))
                     rv |= InputModifiers.Alt;
                 if (mod.HasFlag(NSEventModifierMask.CommandKeyMask))
+                {
                     rv |= InputModifiers.Windows;
+                    rv |= InputModifiers.Command;
+                }
 
                 if (_isLeftPressed)
                     rv |= InputModifiers.LeftMouseButton;

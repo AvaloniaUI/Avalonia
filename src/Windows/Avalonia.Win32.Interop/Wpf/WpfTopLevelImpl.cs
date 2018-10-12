@@ -151,7 +151,10 @@ namespace Avalonia.Win32.Interop.Wpf
             if (state.HasFlag(ModifierKeys.Alt))
                 rv |= InputModifiers.Alt;
             if (state.HasFlag(ModifierKeys.Control))
+            {
                 rv |= InputModifiers.Control;
+                rv |= InputModifiers.Command;
+            }
             if (state.HasFlag(ModifierKeys.Shift))
                 rv |= InputModifiers.Shift;
             //TODO: mouse modifiers
