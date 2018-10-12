@@ -3,7 +3,7 @@
 
 #ifndef common_h
 #define common_h
-#include "com.h"
+#include "comimpl.h"
 #include "avalonia-native.h"
 #include <stdio.h>
 #import <Foundation/Foundation.h>
