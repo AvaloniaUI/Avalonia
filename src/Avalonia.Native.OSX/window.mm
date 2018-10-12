@@ -45,6 +45,7 @@ public:
         {
             SetPosition(lastPositionSet);
             UpdateStyle();
+            
             [Window makeKeyAndOrderFront:Window];
             
             [Window setTitle:_lastTitle];
@@ -359,6 +360,16 @@ private:
         [Window setCanBecomeKeyAndMain];
     }
     
+    virtual HRESULT Show ()
+    {
+        @autoreleasepool
+        {
+            WindowBaseImpl::Show();
+            
+            return SetWindowState(_lastWindowState);
+        }
+    }
+    
     virtual HRESULT ShowDialog (IUnknown**ppv)
     {
         @autoreleasepool
@@ -511,6 +522,8 @@ private:
     {
         @autoreleasepool
         {
+            _lastWindowState = state;
+            
             switch (state) {
                 case Maximized:
                     lastPositionSet.X = 0;
