@@ -1009,6 +1009,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 -(AvnWindow*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
+    [self setReleasedWhenClosed:false];
     _parent = parent;
     [self setDelegate:self];
     return self;
