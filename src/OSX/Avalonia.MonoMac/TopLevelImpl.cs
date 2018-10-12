@@ -232,7 +232,7 @@ namespace Avalonia.MonoMac
                 if (mod.HasFlag(NSEventModifierMask.CommandKeyMask))
                 {
                     rv |= InputModifiers.Windows;
-                    rv = InputModifiers.Command;
+                    rv |= InputModifiers.Command;
                 }
 
                 if (_isLeftPressed)
