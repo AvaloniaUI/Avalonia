@@ -13,6 +13,7 @@ private:
 
 public:
     FORWARD_IUNKNOWN()
+    virtual ~WindowBaseImpl(){}
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
@@ -23,6 +24,7 @@ public:
     {
         BaseEvents = events;
         View = [[AvnView alloc] initWithParent:this];
+
         Window = [[AvnWindow alloc] initWithParent:this];
         
         lastPositionSet.X = 100;
@@ -343,14 +345,13 @@ private:
     CGRect _lastUndecoratedFrame;
     AvnWindowState _lastWindowState;
     
+    FORWARD_IUNKNOWN()
     BEGIN_INTERFACE_MAP()
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnWindow, IID_IAvnWindow)
     END_INTERFACE_MAP()
-    
-    virtual uint Release()
-    {
-        return ComObject::Release();
+    virtual ~WindowImpl(){
+        NSLog(@"~WindowImpl");
     }
     
     ComPtr<IAvnWindowEvents> WindowEvents;
@@ -1017,7 +1018,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)windowShouldClose:(NSWindow *)sender
 {
-    auto window = dynamic_cast<WindowImpl*>(_parent.operator->());
+    auto window = dynamic_cast<WindowImpl*>(_parent.getRaw());
     
     if(window != nullptr)
     {
@@ -1087,6 +1088,7 @@ private:
     INHERIT_INTERFACE_MAP(WindowBaseImpl)
     INTERFACE_MAP_ENTRY(IAvnPopup, IID_IAvnPopup)
     END_INTERFACE_MAP()
+    virtual ~PopupImpl(){}
     ComPtr<IAvnWindowEvents> WindowEvents;
     PopupImpl(IAvnWindowEvents* events) : WindowBaseImpl(events)
     {

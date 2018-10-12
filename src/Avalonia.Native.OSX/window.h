@@ -3,7 +3,7 @@
 
 #ifndef window_h
 #define window_h
-
+#import "ArcTraceWindow.h"
 class WindowBaseImpl;
 
 @interface AvnView : NSView<NSTextInputClient>
@@ -13,7 +13,7 @@ class WindowBaseImpl;
 -(void) setSwRenderedFrame: (AvnFramebuffer* _Nonnull) fb dispose: (IUnknown* _Nonnull) dispose;
 @end
 
-@interface AvnWindow : NSWindow <NSWindowDelegate>
+@interface AvnWindow : ArcTraceWindow <NSWindowDelegate>
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;

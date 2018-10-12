@@ -90,6 +90,7 @@ public:
     {
         return E_NOINTERFACE;
     };
+    virtual ~ComUnknownObject(){}
 };
 
 template<class TInterface, GUID const* TIID> class ComSingleObject : public ComObject, public virtual TInterface
@@ -97,6 +98,9 @@ template<class TInterface, GUID const* TIID> class ComSingleObject : public ComO
     BEGIN_INTERFACE_MAP()
     INTERFACE_MAP_ENTRY(TInterface, *TIID)
     END_INTERFACE_MAP()
+    
+public:
+    virtual ~ComSingleObject(){}
 };
 
 template<class TInterface>
@@ -151,8 +155,12 @@ public:
             _obj = 0;
         }
     }
-
-public:
+    
+    TInterface* getRaw()
+    {
+        return _obj;
+    }
+    
     operator TInterface*() const
     {
         return _obj;
