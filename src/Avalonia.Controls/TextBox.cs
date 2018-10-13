@@ -495,34 +495,36 @@ namespace Avalonia.Controls
                 handled = true;
             }
             else
+            {
+                bool hasWholeWordModifiers = modifiers.HasFlag(keymap.WholeWordTextActionModifiers);
                 switch (e.Key)
                 {
                     case Key.Left:
-                        MoveHorizontal(-1, modifiers);
+                        MoveHorizontal(-1, hasWholeWordModifiers);
                         movement = true;
                         selection = DetectSelection();
                         break;
 
                     case Key.Right:
-                        MoveHorizontal(1, modifiers);
+                        MoveHorizontal(1, hasWholeWordModifiers);
                         movement = true;
                         selection = DetectSelection();
                         break;
 
                     case Key.Up:
-                        movement = MoveVertical(-1, modifiers);
+                        movement = MoveVertical(-1);
                         selection = DetectSelection();
                         break;
 
                     case Key.Down:
-                        movement = MoveVertical(1, modifiers);
+                        movement = MoveVertical(1);
                         selection = DetectSelection();
                         break;
 
                     case Key.Back:
-                        if (modifiers == keymap.CommandModifiers && SelectionStart == SelectionEnd)
+                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
-                            SetSelectionForControlBackspace(modifiers);
+                            SetSelectionForControlBackspace();
                         }
 
                         if (!DeleteSelection() && CaretIndex > 0)
@@ -548,9 +550,9 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Delete:
-                        if (modifiers == keymap.CommandModifiers && SelectionStart == SelectionEnd)
+                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
-                            SetSelectionForControlDelete(modifiers);
+                            SetSelectionForControlDelete();
                         }
 
                         if (!DeleteSelection() && caretIndex < text.Length)
@@ -599,6 +601,7 @@ namespace Avalonia.Controls
                         handled = false;
                         break;
                 }
+            }
 
             if (movement && selection)
             {
@@ -719,12 +722,12 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void MoveHorizontal(int direction, InputModifiers modifiers)
+        private void MoveHorizontal(int direction, bool wholeWord)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) == 0)
+            if (!wholeWord)
             {
                 var index = caretIndex + direction;
 
@@ -762,7 +765,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool MoveVertical(int count, InputModifiers modifiers)
+        private bool MoveVertical(int count)
         {
             var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
@@ -935,17 +938,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetSelectionForControlBackspace(InputModifiers modifiers)
+        private void SetSelectionForControlBackspace()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(-1, modifiers);
+            MoveHorizontal(-1, true);
             SelectionEnd = CaretIndex;
         }
 
-        private void SetSelectionForControlDelete(InputModifiers modifiers)
+        private void SetSelectionForControlDelete()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(1, modifiers);
+            MoveHorizontal(1, true);
             SelectionEnd = CaretIndex;
         }
 
