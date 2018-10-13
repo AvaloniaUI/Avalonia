@@ -711,7 +711,7 @@ namespace Avalonia.Skia
                 {
                     if (runText.Length > 1 && char.IsHighSurrogate(runText[0]) && char.IsLowSurrogate(runText[1]))
                     {
-                        var c = char.ConvertToUtf32(runText, 0);
+                        var c = char.ConvertToUtf32(runText, glyphCount);
 
                         typeface = SKFontManager.Default.MatchCharacter(c);
 
@@ -722,6 +722,36 @@ namespace Avalonia.Skia
                         typeface = SKFontManager.Default.MatchCharacter(runText[0]);
 
                         glyphCount++;
+                    }
+
+                    if (typeface != null)
+                    {
+                        // Make sure we only use the fallback for missing glyphs in the default typeface.
+                        var fallbackGlyphCount = typeface.CountGlyphs(runText);
+
+                        for (; glyphCount < fallbackGlyphCount; glyphCount++)
+                        {
+                            var c = runText[glyphCount - 1];
+
+                            if (fallbackGlyphCount >= 2 && char.IsHighSurrogate(c) && char.IsLowSurrogate(runText[glyphCount]))
+                            {
+                                if (_typeface.CountGlyphs(string.Empty + c + runText[glyphCount]) != 0)
+                                {
+                                    break;
+                                }
+
+                                glyphCount = glyphCount + 2;
+                            }
+                            else
+                            {
+                                if (_typeface.CountGlyphs(c.ToString()) != 0)
+                                {
+                                    break;
+                                }
+
+                                glyphCount++;
+                            }                          
+                        }
                     }
                 }
 
