@@ -32,6 +32,21 @@ namespace Avalonia
             }
         }
 
+        public class TestWindowWithWhenActivated : Window, IActivatable
+        {
+            public bool Active { get; private set; }
+
+            public TestWindowWithWhenActivated()
+            {
+                this.WhenActivated(disposables => {
+                    Active = true;
+                    Disposable
+                        .Create(() => Active = false)
+                        .DisposeWith(disposables);
+                });
+            }
+        }
+
         [Fact]
         public void Visual_Element_Is_Activated_And_Deactivated()
         {
@@ -84,6 +99,26 @@ namespace Avalonia
 
             fakeRenderedDecorator.Child = null;
             Assert.False(userControl.Active);
+        }
+
+        [Fact]
+        public void Activation_For_View_Fetcher_Should_Support_Windows() 
+        {
+            Locator.CurrentMutable.RegisterConstant(
+                new AvaloniaActivationForViewFetcher(), 
+                typeof(IActivationForViewFetcher));
+
+            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            {
+                var window = new TestWindowWithWhenActivated();
+                Assert.False(window.Active);
+
+                window.Show();
+                Assert.True(window.Active);
+
+                window.Close();
+                Assert.False(window.Active);
+            }
         }
     }
 }
