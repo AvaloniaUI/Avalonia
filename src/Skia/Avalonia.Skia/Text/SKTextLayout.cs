@@ -709,33 +709,30 @@ namespace Avalonia.Skia
 
                 if (glyphCount == 0)
                 {
-                    if (runText.Length > 1 && char.IsHighSurrogate(runText[0]) && char.IsLowSurrogate(runText[1]))
+                    var c = char.ConvertToUtf32(runText, 0);
+
+                    typeface = SKFontManager.Default.MatchCharacter(c);
+
+                    if (c > sizeof(short))
                     {
-                        var c = char.ConvertToUtf32(runText, glyphCount);
-
-                        typeface = SKFontManager.Default.MatchCharacter(c);
-
                         glyphCount = glyphCount + 2;
                     }
                     else
                     {
-                        typeface = SKFontManager.Default.MatchCharacter(runText[0]);
-
                         glyphCount++;
                     }
 
                     if (typeface != null)
                     {
-                        // Make sure we only use the fallback for missing glyphs in the default typeface.
                         var fallbackGlyphCount = typeface.CountGlyphs(runText);
 
-                        for (; glyphCount < fallbackGlyphCount; glyphCount++)
+                        for (; glyphCount < fallbackGlyphCount;)
                         {
-                            var c = runText[glyphCount - 1];
-
-                            if (fallbackGlyphCount >= 2 && char.IsHighSurrogate(c) && char.IsLowSurrogate(runText[glyphCount]))
+                            if (runText.Length - glyphCount > 1 && char.IsHighSurrogate(runText[glyphCount]))
                             {
-                                if (_typeface.CountGlyphs(string.Empty + c + runText[glyphCount]) != 0)
+                                var symbol = (runText[glyphCount] + runText[glyphCount + 1]).ToString();
+
+                                if (_typeface.CountGlyphs(symbol) != 0)
                                 {
                                     break;
                                 }
@@ -744,13 +741,13 @@ namespace Avalonia.Skia
                             }
                             else
                             {
-                                if (_typeface.CountGlyphs(c.ToString()) != 0)
+                                if (_typeface.CountGlyphs(runText[glyphCount].ToString()) != 0)
                                 {
                                     break;
                                 }
 
                                 glyphCount++;
-                            }                          
+                            }
                         }
                     }
                 }
@@ -816,16 +813,16 @@ namespace Avalonia.Skia
                         {
                             byte[] bytes;
 
-                            if (textRun.Text.Length > 1 && char.IsHighSurrogate(c) && char.IsLowSurrogate(textRun.Text[index + 1]))
+                            if (index + 1 < textRun.Text.Length && char.IsHighSurrogate(c) && char.IsLowSurrogate(textRun.Text[++index]))
                             {
-                                bytes = Encoding.Unicode.GetBytes(new[] { c, textRun.Text[++index] });                                
+                                bytes = Encoding.Unicode.GetBytes(new[] { c, textRun.Text[index] });
                             }
                             else
                             {
-                                bytes = Encoding.Unicode.GetBytes(new[] { c });                               
+                                bytes = Encoding.Unicode.GetBytes(new[] { c });
                             }
 
-                            var width = this._paint.MeasureText(bytes);
+                            var width = _paint.MeasureText(bytes);
 
                             rectangles.Add(
                                 new Rect(currentX, currentY, width, currentLine.LineMetrics.Size.Height));
