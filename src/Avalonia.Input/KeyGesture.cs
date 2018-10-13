@@ -6,6 +6,17 @@ namespace Avalonia.Input
 {
     public sealed class KeyGesture : IEquatable<KeyGesture>
     {
+        public KeyGesture()
+        {
+            
+        }
+
+        public KeyGesture(Key key, InputModifiers modifiers = InputModifiers.None)
+        {
+            Key = key;
+            Modifiers = modifiers;
+        }
+        
         public bool Equals(KeyGesture other)
         {
             if (ReferenceEquals(null, other)) return false;
