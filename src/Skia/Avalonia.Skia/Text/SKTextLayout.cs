@@ -12,8 +12,6 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    using System.Globalization;
-
     public class SKTextLayout
     {
         private readonly string _text;
@@ -711,19 +709,20 @@ namespace Avalonia.Skia
 
                 if (glyphCount == 0)
                 {
-                    var c = char.ConvertToUtf32(runText, 0);
-
-                    typeface = SKFontManager.Default.MatchCharacter(c);
-
-                    // Check if we have a pair of UTF-16 values
-                    if (char.IsHighSurrogate(runText[0]))
+                    if (runText.Length > 1 && char.IsHighSurrogate(runText[0]) && char.IsLowSurrogate(runText[1]))
                     {
+                        var c = char.ConvertToUtf32(runText, 0);
+
+                        typeface = SKFontManager.Default.MatchCharacter(c);
+
                         glyphCount = glyphCount + 2;
                     }
                     else
                     {
+                        typeface = SKFontManager.Default.MatchCharacter(runText[0]);
+
                         glyphCount++;
-                    }                 
+                    }
                 }
 
                 if (currentPosition + glyphCount < length)
@@ -771,26 +770,35 @@ namespace Avalonia.Skia
                         continue;
                     }
 
-                    foreach (var c in textRun.Text)
+                    for (var index = 0; index < textRun.Text.Length; index++)
                     {
+                        var c = textRun.Text[index];
+
+                        _paint.Typeface = textRun.TextFormat.Typeface;
+
+                        _paint.TextSize = textRun.TextFormat.FontSize;
+
                         if (IsBreakChar(c))
                         {
-                            rectangles.Add(new Rect(
-                                currentX,
-                                currentY,
-                                0.0f,
-                                currentLine.LineMetrics.Size.Height));
+                            rectangles.Add(new Rect(currentX, currentY, 0.0f, currentLine.LineMetrics.Size.Height));
                         }
                         else
                         {
-                            // ToDo: Need to check if we have a pair of UTF-16 values
-                            var width = _paint.MeasureText(c.ToString());
+                            byte[] bytes;
 
-                            rectangles.Add(new Rect(
-                                currentX,
-                                currentY,
-                                width,
-                                currentLine.LineMetrics.Size.Height));
+                            if (textRun.Text.Length > 1 && char.IsHighSurrogate(c) && char.IsLowSurrogate(textRun.Text[index + 1]))
+                            {
+                                bytes = Encoding.Unicode.GetBytes(new[] { c, textRun.Text[++index] });                                
+                            }
+                            else
+                            {
+                                bytes = Encoding.Unicode.GetBytes(new[] { c });                               
+                            }
+
+                            var width = this._paint.MeasureText(bytes);
+
+                            rectangles.Add(
+                                new Rect(currentX, currentY, width, currentLine.LineMetrics.Size.Height));
 
                             currentX += width;
                         }
