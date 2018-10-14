@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +8,12 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -152,7 +152,9 @@ namespace Avalonia.Controls
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
                 UndoRedoState state;
                 if (_undoRedoHelper.TryGetLastState(out state) && state.Text == Text)
+                {
                     _undoRedoHelper.UpdateLastState();
+                }
             }
         }
 
@@ -294,9 +296,13 @@ namespace Avalonia.Controls
         private void DecideCaretVisibility()
         {
             if (!IsReadOnly)
+            {
                 _presenter?.ShowCaret();
+            }
             else
+            {
                 _presenter?.HideCaret();
+            }
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -489,10 +495,16 @@ namespace Avalonia.Controls
                             removedCharacters = 2;
                         }
 
+                        if (caretIndex >= 2 && char.IsSurrogatePair(text[caretIndex - 2], text[caretIndex - 1]))
+                        {
+                            removedCharacters = 2;
+                        }
+
                         SetTextInternal(text.Substring(0, caretIndex - removedCharacters) + text.Substring(caretIndex));
                         CaretIndex -= removedCharacters;
                         SelectionStart = SelectionEnd = CaretIndex;
                     }
+
                     handled = true;
                     break;
 
@@ -511,6 +523,11 @@ namespace Avalonia.Controls
                         if (CaretIndex < text.Length - 1 &&
                             text[caretIndex + 1] == '\n' &&
                             text[caretIndex] == '\r')
+                        {
+                            removedCharacters = 2;
+                        }
+
+                        if (caretIndex + 1 < text.Length && char.IsSurrogatePair(text[caretIndex], text[caretIndex + 1]))
                         {
                             removedCharacters = 2;
                         }
@@ -689,11 +706,25 @@ namespace Avalonia.Controls
 
                 if (direction > 0)
                 {
-                    CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
+                    if (char.IsHighSurrogate(text[caretIndex]))
+                    {
+                        CaretIndex += 2;
+                    }
+                    else
+                    {
+                        CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
+                    }                   
                 }
                 else
                 {
-                    CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
+                    if (char.IsLowSurrogate(c))
+                    {
+                        CaretIndex -= 2;
+                    }
+                    else
+                    {
+                        CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
+                    }                   
                 }
             }
             else
@@ -838,7 +869,10 @@ namespace Avalonia.Controls
         {
             var text = Text;
             if (string.IsNullOrEmpty(text))
+            {
                 return "";
+            }
+
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);

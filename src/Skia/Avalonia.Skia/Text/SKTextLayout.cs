@@ -703,19 +703,19 @@ namespace Avalonia.Skia
 
             while (currentPosition < length)
             {
-                var glyphCount = _typeface.CountGlyphs(runText);
+                var glyphCount = Math.Min(runText.Length, _typeface.CountGlyphs(runText));
 
                 var typeface = _typeface;
 
                 if (glyphCount == 0)
                 {
-                    var c = char.ConvertToUtf32(runText, 0);
+                    var codePoint = char.ConvertToUtf32(runText, 0);
 
-                    typeface = SKFontManager.Default.MatchCharacter(c);
+                    typeface = SKFontManager.Default.MatchCharacter(codePoint);
 
-                    if (c > sizeof(short))
+                    if (codePoint > sizeof(short))
                     {
-                        glyphCount = glyphCount + 2;
+                        glyphCount = 2;
                     }
                     else
                     {
@@ -724,24 +724,47 @@ namespace Avalonia.Skia
 
                     if (typeface != null)
                     {
-                        var fallbackGlyphCount = typeface.CountGlyphs(runText);
-
-                        for (; glyphCount < fallbackGlyphCount;)
+                        while (glyphCount < runText.Length)
                         {
-                            if (runText.Length - glyphCount > 1 && char.IsHighSurrogate(runText[glyphCount]))
+                            var c = runText[glyphCount];
+
+                            if (c == 0x200D)
                             {
-                                var symbol = (runText[glyphCount] + runText[glyphCount + 1]).ToString();
+                                glyphCount++;
+
+                                continue;
+                            }
+
+                            if (char.IsHighSurrogate(c))
+                            {
+                                var lowSurrogate = runText[glyphCount + 1];
+
+                                var bytes = Encoding.Unicode.GetBytes(new[] { c, lowSurrogate });
+
+                                var symbol = Encoding.Unicode.GetString(bytes);
+
+                                if (typeface.CountGlyphs(symbol) == 0)
+                                {
+                                    break;
+                                }
 
                                 if (_typeface.CountGlyphs(symbol) != 0)
                                 {
                                     break;
                                 }
 
-                                glyphCount = glyphCount + 2;
+                                glyphCount += 2;
                             }
                             else
                             {
-                                if (_typeface.CountGlyphs(runText[glyphCount].ToString()) != 0)
+                                var symbol = c.ToString();
+
+                                if (typeface.CountGlyphs(symbol) == 0)
+                                {
+                                    break;
+                                }
+
+                                if (_typeface.CountGlyphs(symbol) != 0)
                                 {
                                     break;
                                 }
@@ -813,9 +836,16 @@ namespace Avalonia.Skia
                         {
                             byte[] bytes;
 
-                            if (index + 1 < textRun.Text.Length && char.IsHighSurrogate(c) && char.IsLowSurrogate(textRun.Text[++index]))
+                            if (char.IsHighSurrogate(c))
                             {
-                                bytes = Encoding.Unicode.GetBytes(new[] { c, textRun.Text[index] });
+                                index++;
+
+                                var lowSurrogate = textRun.Text[index];
+
+                                bytes = Encoding.Unicode.GetBytes(new[] { c, lowSurrogate });
+
+                                rectangles.Add(
+                                    new Rect(currentX, currentY, 0.0f, currentLine.LineMetrics.Size.Height));
                             }
                             else
                             {
