@@ -418,17 +418,7 @@ namespace Avalonia.Controls.Presenters
             var selector = Owner.MemberSelector;
 
             //validate delta it should never overflow last index or generate index < 0 
-            if (delta > 0)
-            {
-                if ((FirstIndex + delta + panel.Children.Count) > ItemCount)
-                {
-                    delta = ItemCount - FirstIndex - panel.Children.Count;
-                }
-            }
-            else if ((FirstIndex + delta) < 0)
-            {
-                delta = -FirstIndex;
-            }
+            delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
 
             var sign = delta < 0 ? -1 : 1;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
