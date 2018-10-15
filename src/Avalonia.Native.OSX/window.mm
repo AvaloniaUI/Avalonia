@@ -1116,25 +1116,18 @@ protected:
 
 extern IAvnPopup* CreateAvnPopup(IAvnWindowEvents*events)
 {
-    IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
-    return ptr;
+    @autoreleasepool
+    {
+        IAvnPopup* ptr = dynamic_cast<IAvnPopup*>(new PopupImpl(events));
+        return ptr;
+    }
 }
-
-typedef void (*pfnvoid)();
-
-struct vtable
-{
-    pfnvoid entries[30];
-};
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events)
 {
     @autoreleasepool
     {
         IAvnWindow* ptr = (IAvnWindow*)new WindowImpl(events);
-        auto vt = *(vtable**)(void*)ptr;
-        
-        
         return ptr;
     }
 }
