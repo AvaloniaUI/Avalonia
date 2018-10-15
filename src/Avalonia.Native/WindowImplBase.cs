@@ -18,6 +18,7 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
+        bool _isClosed;
         private object _syncRoot = new object();
         private bool _deferredRendering = true;
         private readonly IMouseDevice _mouse;
@@ -110,7 +111,11 @@ namespace Avalonia.Native
                 _parent = parent;
             }
 
-            void IAvnWindowBaseEvents.Closed() => _parent.Closed?.Invoke();
+            void IAvnWindowBaseEvents.Closed()
+            {
+                _parent._isClosed = true;
+                _parent.Closed?.Invoke();
+            }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
 
@@ -234,7 +239,11 @@ namespace Avalonia.Native
 
         public virtual void Dispose()
         {
-            _native.Close();
+            if (!_isClosed)
+            {
+                _native.Close();
+            }
+
             _native.Dispose();
             _native = null;
 
