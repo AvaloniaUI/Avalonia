@@ -54,6 +54,7 @@ namespace Avalonia.Android
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();
