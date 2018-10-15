@@ -126,7 +126,7 @@ namespace Avalonia.Gtk3
             if (state.HasFlag(GdkModifierType.ShiftMask))
                 rv |= InputModifiers.Shift;
             if (state.HasFlag(GdkModifierType.Mod1Mask))
-                rv |= InputModifiers.Control;
+                rv |= InputModifiers.Alt;
             if (state.HasFlag(GdkModifierType.Button1Mask))
                 rv |= InputModifiers.LeftMouseButton;
             if (state.HasFlag(GdkModifierType.Button2Mask))
