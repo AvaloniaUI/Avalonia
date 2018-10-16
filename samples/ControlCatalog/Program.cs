@@ -58,7 +58,11 @@ namespace ControlCatalog.NetCore
             var libraryPath = Path.Combine(Directory.GetCurrentDirectory(),
                                            "../../src/Avalonia.Native.OSX/build/Avalonia.Native.OSX/Build/Products/Debug/libAvalonia.Native.OSX.dylib");
 
-            return AppBuilder.Configure<App>().UseAvaloniaNative(libraryPath).UseSkia();
+            return AppBuilder.Configure<App>().UseAvaloniaNative(libraryPath, opts =>
+            {
+                opts.UseGpu = true;
+                opts.UseDeferredRendering = true;
+            }).UseSkia();
         }
 
     }

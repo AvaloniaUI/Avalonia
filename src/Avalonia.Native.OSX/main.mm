@@ -123,6 +123,16 @@ public:
         *ppv = ::CreateCursorFactory();
         return S_OK;
     }
+    
+    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv)
+    {
+        auto rv = ::GetGlFeature();
+        if(rv == NULL)
+            return E_FAIL;
+        rv->AddRef();
+        *ppv = rv;
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

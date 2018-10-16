@@ -8,6 +8,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 
@@ -74,7 +75,11 @@ namespace Avalonia.Native
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()));       
+                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
+                .Bind<AvaloniaNativeOptions>().ToConstant(opts);
+            if (opts.UseGpu)
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
         }
 
         public IWindowImpl CreateWindow()
@@ -117,6 +122,8 @@ namespace Avalonia.Native
     public class AvaloniaNativeOptions
     {
         public AvaloniaNativeMacOptions MacOptions { get; set; }
+        public bool UseDeferredRendering { get; set; } = true;
+        public bool UseGpu { get; set; } = false;
         internal AvaloniaNativeOptions(IAvaloniaNativeFactory factory)
         {
             var mac = factory.GetMacOptions();

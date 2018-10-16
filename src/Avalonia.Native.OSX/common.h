@@ -17,6 +17,8 @@ extern IAvnSystemDialogs* CreateSystemDialogs();
 extern IAvnScreens* CreateScreens();
 extern IAvnClipboard* CreateClipboard();
 extern IAvnCursorFactory* CreateCursorFactory();
+extern IAvnGlFeature* GetGlFeature();
+extern IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(NSWindow* window, NSView* view);
 
 extern NSPoint ToNSPoint (AvnPoint p);
 extern AvnPoint ToAvnPoint (NSPoint p);

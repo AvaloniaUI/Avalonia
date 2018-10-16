@@ -8,28 +8,42 @@ using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
-    public class WindowBaseImpl : IWindowBaseImpl, IFramebufferPlatformSurface
+    public class WindowBaseImpl : IWindowBaseImpl,
+        IFramebufferPlatformSurface
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
         bool _isClosed;
         private object _syncRoot = new object();
-        private bool _deferredRendering = true;
+        private bool _deferredRendering = false;
+        private bool _gpu = false;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
         private double _savedScaling;
+        private GlPlatformSurface _glSurface;
 
         public WindowBaseImpl()
         {
+            var opts = AvaloniaLocator.Current.GetService<AvaloniaNativeOptions>();
+
+            // GPU is currently not compatible with DeferredRenderer
+            if (opts.UseGpu)
+            {
+                _gpu = true;
+            }
+            else
+                _deferredRendering = opts.UseDeferredRendering;
+
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
@@ -38,7 +52,7 @@ namespace Avalonia.Native
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
-            
+            _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
             _savedLogicalSize = ClientSize;
             _savedScaling = Scaling;
@@ -52,9 +66,12 @@ namespace Avalonia.Native
                 return new Size(s.Width, s.Height);
             }
         }
-        SavedFramebuffer _framebuffer;
 
-        public IEnumerable<object> Surfaces => new[] { this };
+        public IEnumerable<object> Surfaces => new[] {
+            (_gpu ? _glSurface : (object)null),
+            this 
+        };
+
         public ILockedFramebuffer Lock()
         {
             if(_deferredRendering)
@@ -73,13 +90,9 @@ namespace Avalonia.Native
                         return true;
                     }
                 }, (int)w, (int)h, new Vector(dpi, dpi));
-            }
+           }
 
-            var fb = _framebuffer;
-            _framebuffer = null;
-            if (fb == null)
-                throw new InvalidOperationException("Lock call without corresponding Paint event");
-            return fb;
+            return new FramebufferWrapper(_native.GetSoftwareFramebuffer());
         }
 
         public Action<Rect> Paint { get; set; }
@@ -88,14 +101,23 @@ namespace Avalonia.Native
         public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
 
 
-        class SavedFramebuffer : ILockedFramebuffer
+        class FramebufferWrapper : ILockedFramebuffer
         {
+            public FramebufferWrapper(AvnFramebuffer fb)
+            {
+                Address = fb.Data;
+                Width = fb.Width;
+                Height = fb.Height;
+                RowBytes = fb.Stride;
+                Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y);
+                Format = (PixelFormat)fb.PixelFormat;
+            }
             public IntPtr Address { get; set; }
             public int Width { get; set; }
             public int Height { get; set; }
             public int RowBytes {get;set;}
             public Vector Dpi { get; set; }
-            public PixelFormat Format => PixelFormat.Rgba8888;
+            public PixelFormat Format { get; }
             public void Dispose()
             {
                 // Do nothing
@@ -129,21 +151,11 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Deactivated() => _parent.Deactivated?.Invoke();
 
-            void IAvnWindowBaseEvents.SoftwareDraw(ref AvnFramebuffer fb)
+            void IAvnWindowBaseEvents.Paint()
             {
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
-
-                _parent._framebuffer = new SavedFramebuffer
-                {
-                    Address = fb.Data,
-                    RowBytes = fb.Stride,
-                    Width = fb.Width,
-                    Height = fb.Height,
-                    Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y)
-                };
-
-                _parent.Paint?.Invoke(new Rect(0, 0, fb.Width / (fb.Dpi.X / 96), fb.Height / (fb.Dpi.Y / 96)));
-
+                var s = _parent.ClientSize;
+                _parent.Paint?.Invoke(new Rect(0, 0, s.Width, s.Height));
             }
 
             void IAvnWindowBaseEvents.Resized(AvnSize size)
@@ -257,7 +269,7 @@ namespace Avalonia.Native
 
         public void Invalidate(Rect rect)
         {
-            if (!_deferredRendering)
+            if (!_deferredRendering && _native != null)
                 _native.Invalidate(new AvnRect { Height = rect.Height, Width = rect.Width, X = rect.X, Y = rect.Y });
         }
 
