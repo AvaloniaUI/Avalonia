@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
@@ -254,11 +254,15 @@ namespace Avalonia.Native
 
         public virtual void Dispose()
         {
-            _native?.Close();
-            _native?.Dispose();
-            _native = null;
+            if (!_isClosed)
+            {
+                _isClosed = true;
+                _native?.Close();
+                _native?.Dispose();
+                _native = null;
 
-            (Screen as ScreenImpl)?.Dispose();
+                (Screen as ScreenImpl)?.Dispose();
+            }
         }
 
 
