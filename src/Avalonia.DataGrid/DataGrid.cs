@@ -3130,7 +3130,7 @@ namespace Avalonia.Controls
             if (EditingRow != null && EditingColumnIndex != -1 && !_executingLostFocusActions)
             {
                 DataGridColumn editingColumn = ColumnsItemsInternal[EditingColumnIndex];
-                Control editingElement = editingColumn.GetCellContent(EditingRow);
+                IControl editingElement = editingColumn.GetCellContent(EditingRow);
                 if (editingElement != null && editingElement.ContainsChild(_focusedObject))
                 {
                     Debug.Assert(_lostFocusActions != null);
@@ -4564,7 +4564,7 @@ namespace Avalonia.Controls
             Debug.Assert(dataGridRow != null);
             Debug.Assert(dataGridCell != null);
 
-            Control element = null;
+            IControl element = null;
             DataGridBoundColumn dataGridBoundColumn = dataGridColumn as DataGridBoundColumn;
             if (isCellEdited)
             {
