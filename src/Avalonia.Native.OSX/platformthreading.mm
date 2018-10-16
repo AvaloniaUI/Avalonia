@@ -157,6 +157,7 @@ NSArray<NSString*>* _modes;
 -(void) perform
 {
     @synchronized (self) {
+        _signaled  = false;
         if(_parent != NULL && _parent->SignaledCallback != NULL)
             _parent->SignaledCallback->Signaled(0, false);
     }
