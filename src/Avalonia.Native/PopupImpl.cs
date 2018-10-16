@@ -9,20 +9,12 @@ namespace Avalonia.Native
 {
     public class PopupImpl : WindowBaseImpl, IPopupImpl
     {
-        IAvnPopup _native;
-
         public PopupImpl(IAvaloniaNativeFactory factory)
         {
             using (var e = new PopupEvents(this))
             {
-                Init(_native = factory.CreatePopup(e), factory.CreateScreens());
+                Init(factory.CreatePopup(e), factory.CreateScreens());
             }
-        }
-
-        public override void Dispose()
-        {
-            _native.Dispose();
-            base.Dispose();
         }
 
         class PopupEvents : WindowBaseEvents, IAvnWindowEvents

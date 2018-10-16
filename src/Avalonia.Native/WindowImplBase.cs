@@ -1,4 +1,4 @@
-﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
@@ -20,7 +20,6 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
-        bool _isClosed;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
