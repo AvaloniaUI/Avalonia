@@ -5,6 +5,45 @@
 #include "window.h"
 #include "KeyTransform.h"
 #include "cursor.h"
+#include <OpenGL/gl.h>
+
+class SoftwareDrawingOperation
+{
+public:
+    void* Data = 0;
+    AvnFramebuffer Desc;
+    void Alloc(NSView* view)
+    {
+        auto logicalSize = [view frame].size;
+        auto pixelSize = [view convertSizeToBacking:logicalSize];
+        int w = pixelSize.width;
+        int h = pixelSize.height;
+        int stride = w * 4;
+        Data = malloc(h * stride);
+        Desc = {
+            .Data = Data,
+            .Stride = stride,
+            .Width = w,
+            .Height = h,
+            .PixelFormat = kAvnRgba8888,
+            .Dpi = AvnVector { .X = w / logicalSize.width * 96, .Y = h / logicalSize.height * 96}
+        };
+    }
+    
+    void Dealloc()
+    {
+        if(Data != NULL)
+        {
+            free(Data);
+            Data = NULL;
+        }
+    }
+    
+    ~SoftwareDrawingOperation()
+    {
+        Dealloc();
+    }
+};
 
 class WindowBaseImpl : public virtual ComSingleObject<IAvnWindowBase, &IID_IAvnWindowBase>, public INSWindowHolder
 {
@@ -22,6 +61,7 @@ public:
     AvnView* View;
     AvnWindow* Window;
     ComPtr<IAvnWindowBaseEvents> BaseEvents;
+    SoftwareDrawingOperation CurrentSwDrawingOperation;
     AvnPoint lastPositionSet;
     NSString* _lastTitle;
     
@@ -279,6 +319,16 @@ public:
         return S_OK;
     }
     
+    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret)
+    {
+        if(![[NSThread currentThread] isMainThread])
+            return E_FAIL;
+        if(CurrentSwDrawingOperation.Data == NULL)
+            CurrentSwDrawingOperation.Alloc(View);
+        *ret = CurrentSwDrawingOperation.Desc;
+        return S_OK;
+    }
+    
     virtual HRESULT SetCursor(IAvnCursor* cursor)
     {
         @autoreleasepool
@@ -299,6 +349,14 @@ public:
              [View addCursorRect:rect cursor:cursor];
              [cursor set];
         }
+    }
+    
+    virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ppv)
+    {
+        if(View == NULL)
+            return E_FAIL;
+        *ppv = ::CreateGlRenderTarget(Window, View);
+        return S_OK;
     }
 
 protected:
@@ -625,6 +683,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 -(AvnView*)  initWithParent: (WindowBaseImpl*) parent
 {
     self = [super init];
+    [self setWantsBestResolutionOpenGLSurface:true];
     _parent = parent;
     _area = nullptr;
     return self;
@@ -632,7 +691,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)isOpaque
 {
-    return false;
+    return YES;
 }
 
 - (BOOL)acceptsFirstResponder
@@ -706,23 +765,13 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
         }
     }
     
-    auto logicalSize = [self frame].size;
-    auto pixelSize = [self convertSizeToBacking:logicalSize];
-    int w = pixelSize.width;
-    int h = pixelSize.height;
-    int stride = w * 4;
-    void*ptr = malloc(h * stride);
-    AvnFramebuffer fb = {
-        .Data = ptr,
-        .Stride = stride,
-        .Width = w,
-        .Height = h,
-        .PixelFormat = kAvnRgba8888,
-        .Dpi = AvnVector { .X = w / logicalSize.width * 96, .Y = h / logicalSize.height * 96}
-    };
-    _parent->BaseEvents->SoftwareDraw(&fb);
-    [self drawFb: &fb];
-    free(ptr);
+    auto swOp = &_parent->CurrentSwDrawingOperation;
+        _parent->BaseEvents->Paint();
+    if(swOp->Data != NULL)
+        [self drawFb: &swOp->Desc];
+    
+    swOp->Dealloc();
+    return;
 }
 
 -(void) redrawSelf
