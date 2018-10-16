@@ -36,13 +36,8 @@ namespace Avalonia.Native
         {
             var opts = AvaloniaLocator.Current.GetService<AvaloniaNativeOptions>();
 
-            // GPU is currently not compatible with DeferredRenderer
-            if (opts.UseGpu)
-            {
-                _gpu = true;
-            }
-            else
-                _deferredRendering = opts.UseDeferredRendering;
+            _gpu = opts.UseGpu;
+            _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
@@ -194,7 +189,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                if (_parent._deferredRendering 
+                if (_parent._deferredRendering && !_parent._gpu
                     && _parent._lastRenderedLogicalSize != _parent.ClientSize)
                     // Hack to trigger Paint event on the renderer
                     _parent.Paint?.Invoke(new Rect());
