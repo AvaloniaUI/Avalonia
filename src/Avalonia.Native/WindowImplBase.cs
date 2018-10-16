@@ -113,8 +113,16 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.Closed()
             {
-                _parent._isClosed = true;
-                _parent.Closed?.Invoke();
+                var n = _parent._native;
+                _parent._native = null;
+                try
+                {
+                    _parent?.Closed?.Invoke();
+                }
+                finally
+                {
+                    n?.Dispose();
+                }
             }
 
             void IAvnWindowBaseEvents.Activated() => _parent.Activated?.Invoke();
@@ -239,12 +247,8 @@ namespace Avalonia.Native
 
         public virtual void Dispose()
         {
-            if (!_isClosed)
-            {
-                _native.Close();
-            }
-
-            _native.Dispose();
+            _native?.Close();
+            _native?.Dispose();
             _native = null;
 
             (Screen as ScreenImpl)?.Dispose();
