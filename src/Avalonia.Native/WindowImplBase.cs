@@ -188,7 +188,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                if (_parent._deferredRendering && !_parent._gpu
+                if (_parent._deferredRendering
                     && _parent._lastRenderedLogicalSize != _parent.ClientSize)
                     // Hack to trigger Paint event on the renderer
                     _parent.Paint?.Invoke(new Rect());

@@ -782,7 +782,7 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     }
     
     auto swOp = &_parent->CurrentSwDrawingOperation;
-        _parent->BaseEvents->Paint();
+    _parent->BaseEvents->Paint();
     if(swOp->Data != NULL)
         [self drawFb: &swOp->Desc];
     

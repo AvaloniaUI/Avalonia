@@ -103,6 +103,7 @@ class GlFeature : public virtual ComSingleObject<IAvnGlFeature, &IID_IAvnGlFeatu
 {
     IAvnGlDisplay* _display;
     AvnGlContext *_immediate;
+    NSOpenGLContext* _shared;
 public:
     FORWARD_IUNKNOWN()
     NSOpenGLPixelFormat* _format;
@@ -111,11 +112,13 @@ public:
         _display = display;
         _immediate = immediate;
         _format = format;
+        _shared = [[NSOpenGLContext alloc] initWithFormat:_format shareContext:_immediate->GlContext];
     }
     
     NSOpenGLContext* CreateContext()
     {
-        return [[NSOpenGLContext alloc] initWithFormat:_format shareContext:nil];
+        return _shared;
+        //return [[NSOpenGLContext alloc] initWithFormat:_format shareContext:nil];
     }
     
     virtual HRESULT ObtainDisplay(IAvnGlDisplay**retOut)
@@ -208,6 +211,7 @@ public:
         glFlush();
         [_context flushBuffer];
         [_context setView:nil];
+        CGLUnlockContext([_context CGLContextObj]);
         [_view unlockFocus];
     }
 };
@@ -235,6 +239,7 @@ public:
             return E_ABORT;
         
         auto gl = _context;
+        CGLLockContext([_context CGLContextObj]);
         [gl setView: _view];
         [gl makeCurrentContext];
         auto frame = [_view frame];
