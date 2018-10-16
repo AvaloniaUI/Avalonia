@@ -20,7 +20,6 @@ namespace Avalonia.Native
     {
         IInputRoot _inputRoot;
         IAvnWindowBase _native;
-        bool _isClosed;
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
@@ -254,15 +253,11 @@ namespace Avalonia.Native
 
         public virtual void Dispose()
         {
-            if (!_isClosed)
-            {
-                _isClosed = true;
-                _native?.Close();
-                _native?.Dispose();
-                _native = null;
+            _native?.Close();
+            _native?.Dispose();
+            _native = null;
 
-                (Screen as ScreenImpl)?.Dispose();
-            }
+            (Screen as ScreenImpl)?.Dispose();
         }
 
 
