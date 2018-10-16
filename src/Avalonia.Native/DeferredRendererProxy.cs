@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Native.Interop;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -10,7 +11,18 @@ namespace Avalonia.Native
 {
     public class DeferredRendererProxy : IRenderer, IRenderLoopTask, IRenderLoop
     {
-        object _lock = new object();
+        public DeferredRendererProxy(IRenderRoot root, IAvnWindowBase window)
+        {
+            if (window != null)
+            {
+                _useLock = true;
+                window.AddRef();
+_window = new IAvnWindowBase(window.NativePointer);
+            }
+            _renderer = new DeferredRenderer(root, this);
+            _rendererTask = (IRenderLoopTask)_renderer;
+        }
+
         void IRenderLoop.Add(IRenderLoopTask i)
         {
             AvaloniaLocator.Current.GetService<IRenderLoop>().Add(this);
@@ -23,12 +35,8 @@ namespace Avalonia.Native
 
         private DeferredRenderer _renderer;
         private IRenderLoopTask _rendererTask;
-
-        public DeferredRendererProxy(IRenderRoot root)
-        {
-            _renderer = new DeferredRenderer(root, this);
-            _rendererTask = (IRenderLoopTask)_renderer;
-        }
+        private IAvnWindowBase _window;
+        private bool _useLock;
 
         public bool DrawFps{
             get => _renderer.DrawFps;
@@ -44,8 +52,12 @@ namespace Avalonia.Native
 
         public void AddDirty(IVisual visual) => _renderer.AddDirty(visual);
 
-        public void Dispose() => _renderer.Dispose();
-
+        public void Dispose()
+        {
+            _renderer.Dispose();
+            _window?.Dispose();
+            _window = null;
+        }
         public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter)
         {
             return _renderer.HitTest(p, root, filter);
@@ -74,9 +86,22 @@ namespace Avalonia.Native
 
         public void Render()
         {
-            lock(_lock)
+            if(_useLock)
             {
                 _rendererTask.Render();
+                return;
+            }
+            if (_window == null)
+                return;
+            if (!_window.TryLock())
+                return;
+            try
+            {
+                _rendererTask.Render();
+            }
+            finally
+            {
+                _window.Unlock();
             }
         }
     }

@@ -225,6 +225,22 @@ public:
         }
     }
     
+    virtual bool TryLock()
+    {
+        @autoreleasepool
+        {
+            return [View lockFocusIfCanDraw] == YES;
+        }
+    }
+    
+    virtual void Unlock()
+    {
+        @autoreleasepool
+        {
+            [View unlockFocus];
+        }
+    }
+    
     virtual HRESULT BeginMoveDrag ()
     {
         @autoreleasepool

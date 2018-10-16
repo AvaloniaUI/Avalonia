@@ -196,6 +196,8 @@ AVNCOM(IAvnWindowBase, 02) : IUnknown
     virtual HRESULT SetCursor(IAvnCursor* cursor) = 0;
     virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ret) = 0;
     virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) = 0;
+    virtual bool TryLock() = 0;
+    virtual void Unlock() = 0;
 };
 
 AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase

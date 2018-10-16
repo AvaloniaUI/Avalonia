@@ -102,17 +102,21 @@ public:
 class GlFeature : public virtual ComSingleObject<IAvnGlFeature, &IID_IAvnGlFeature>
 {
     IAvnGlDisplay* _display;
-    IAvnGlContext *_immediate;
+    AvnGlContext *_immediate;
 public:
     FORWARD_IUNKNOWN()
-    AvnGlContext* ViewContext;
-    GlFeature(IAvnGlDisplay* display, IAvnGlContext* immediate, AvnGlContext* viewContext)
+    NSOpenGLPixelFormat* _format;
+    GlFeature(IAvnGlDisplay* display, AvnGlContext* immediate, NSOpenGLPixelFormat* format)
     {
         _display = display;
         _immediate = immediate;
-        ViewContext = viewContext;
+        _format = format;
     }
     
+    NSOpenGLContext* CreateContext()
+    {
+        return [[NSOpenGLContext alloc] initWithFormat:_format shareContext:nil];
+    }
     
     virtual HRESULT ObtainDisplay(IAvnGlDisplay**retOut)
     {
@@ -146,12 +150,7 @@ GlFeature* CreateGlFeature()
         NSLog(@"Unable to create NSOpenGLContext");
         return NULL;
     }
-    NSOpenGLContext* viewContext = [[NSOpenGLContext alloc] initWithFormat: format shareContext: immediateContext];
-    if(viewContext == nil)
-    {
-        NSLog(@"Unable to create shared NSOpenGLContext");
-        return NULL;
-    }
+
     int stencilBits = 0, sampleCount = 0;
     
     auto fmt = CGLGetPixelFormat([immediateContext CGLContextObj]);
@@ -159,10 +158,9 @@ GlFeature* CreateGlFeature()
     CGLDescribePixelFormat(fmt, 0, kCGLPFAStencilSize, &stencilBits);
     
     auto offscreen = new AvnGlContext(immediateContext, true);
-    auto view = new AvnGlContext(viewContext, false);
     auto display = new AvnGlDisplay(sampleCount, stencilBits);
     
-    return new GlFeature(display, offscreen, view);
+    return new GlFeature(display, offscreen, format);
 }
 
 
@@ -218,12 +216,14 @@ class AvnGlRenderTarget : public ComSingleObject<IAvnGlSurfaceRenderTarget, &IID
 {
     NSView* _view;
     NSWindow* _window;
+    NSOpenGLContext* _context;
 public:
     FORWARD_IUNKNOWN()
     AvnGlRenderTarget(NSWindow* window, NSView*view)
     {
         _window = window;
         _view = view;
+        _context = GetFeature()->CreateContext();
     }
     
     virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)
@@ -234,8 +234,7 @@ public:
         if(![_view lockFocusIfCanDraw])
             return E_ABORT;
         
-        
-        auto gl = f->ViewContext->GlContext;
+        auto gl = _context;
         [gl setView: _view];
         [gl makeCurrentContext];
         auto frame = [_view frame];

@@ -77,9 +77,6 @@ namespace Avalonia.Native
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<AvaloniaNativeOptions>().ToConstant(opts);
-            if (opts.UseGpu)
-                AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()));
         }
 
         public IWindowImpl CreateWindow()
