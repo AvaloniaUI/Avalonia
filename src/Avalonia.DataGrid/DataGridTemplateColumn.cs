@@ -65,5 +65,15 @@ namespace Avalonia.Controls
         {
             return null;
         }
+
+        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        {
+            if(propertyName == nameof(CellTemplate) && element.Parent is DataGridCell cell)
+            {
+                cell.Content = GenerateElement(cell, cell.DataContext);
+            }
+
+            base.RefreshCellContent(element, propertyName);
+        }
     }
 }
