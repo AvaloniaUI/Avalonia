@@ -4,13 +4,27 @@ using Portable.Xaml.ComponentModel;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Avalonia.Controls;
+using Portable.Xaml.Schema;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
-    public class AvaloniaXamlObjectWriter : XamlObjectWriter
+    class AvaloniaXamlObjectWriter : XamlObjectWriter
     {
+        private static Dictionary<XamlDirective, string> DesignDirectives = new Dictionary<string, string>
+            {
+                ["DataContext"] = "DataContext",
+                ["DesignWidth"] = "Width", ["DesignHeight"] = "Height", ["PreviewWith"] = "PreviewWith"
+            }
+            .ToDictionary(p => new XamlDirective(
+                new[] {"http://schemas.microsoft.com/expression/blend/2008"}, p.Key,
+                XamlLanguage.Object, null, AllowedMemberLocations.Attribute), p => p.Value);
+
+        private readonly AvaloniaXamlSchemaContext _schemaContext;
+        
         public static AvaloniaXamlObjectWriter Create(
-            XamlSchemaContext schemaContext,
+            AvaloniaXamlSchemaContext schemaContext,
             AvaloniaXamlContext context,
             IAmbientProvider parentAmbientProvider = null)
         {
@@ -34,13 +48,14 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         private AvaloniaNameScope _nameScope;
 
         private AvaloniaXamlObjectWriter(
-            XamlSchemaContext schemaContext,
+            AvaloniaXamlSchemaContext schemaContext,
             XamlObjectWriterSettings settings,
             AvaloniaNameScope nameScope,
             IAmbientProvider parentAmbientProvider)
             : base(schemaContext, settings, parentAmbientProvider)
         {
             _nameScope = nameScope;
+            _schemaContext = schemaContext;
         }
 
         protected override void Dispose(bool disposing)
@@ -120,6 +135,20 @@ namespace Avalonia.Markup.Xaml.PortableXaml
         private void HandleEndEdit(object value)
         {
             (value as Avalonia.ISupportInitialize)?.EndInit();
+        }
+
+        public override void WriteStartMember(XamlMember property)
+        {
+            foreach(var d in DesignDirectives)
+                if (property == d.Key && _schemaContext.IsDesignMode)
+                {
+                    base.WriteStartMember(new XamlMember(d.Value,
+                        typeof(Design).GetMethod("Get" + d.Value, BindingFlags.Static | BindingFlags.Public),
+                        typeof(Design).GetMethod("Set" + d.Value, BindingFlags.Static | BindingFlags.Public),
+                        SchemaContext));
+                    return;
+                }
+            base.WriteStartMember(property);
         }
 
         private class DelayedValuesHelper

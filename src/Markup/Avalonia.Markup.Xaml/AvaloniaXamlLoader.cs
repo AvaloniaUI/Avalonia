@@ -21,6 +21,12 @@ namespace Avalonia.Markup.Xaml
     {
         private readonly AvaloniaXamlSchemaContext _context = GetContext();
 
+        public bool IsDesignMode
+        {
+            get => _context.IsDesignMode;
+            set => _context.IsDesignMode = value;
+        }
+
         private static AvaloniaXamlSchemaContext GetContext()
         {
             var result = AvaloniaLocator.Current.GetService<AvaloniaXamlSchemaContext>();
@@ -200,7 +206,7 @@ namespace Avalonia.Markup.Xaml
         internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null, IAmbientProvider parentAmbientProvider = null)
         {
             var writer = AvaloniaXamlObjectWriter.Create(
-                                    reader.SchemaContext,
+                                    (AvaloniaXamlSchemaContext)reader.SchemaContext,
                                     context,
                                     parentAmbientProvider);
 
