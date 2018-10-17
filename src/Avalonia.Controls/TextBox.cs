@@ -616,7 +616,10 @@ namespace Avalonia.Controls
             if (_presenter != null && e.Device.Captured == _presenter)
             {
                 var point = e.GetPosition(_presenter);
-                CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
+
+                var caretIndex = _presenter.GetCaretIndex(point);
+
+                CaretIndex = SelectionEnd = caretIndex;
             }
         }
 

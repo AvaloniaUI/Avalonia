@@ -104,6 +104,30 @@
         }
 
         [Fact]
+        public void ShouldApplyTextSpanToUnicodeStringInBetween()
+        {
+            const string Text = "😀😀😀😀";
+
+            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            var effectBrush = new SolidColorBrush(Colors.Red);
+
+            layout.ApplyTextSpan(new FormattedTextStyleSpan(4, 1, effectBrush));
+
+            var textLine = layout.TextLines[0];
+
+            Assert.Equal(3, textLine.TextRuns.Count);
+
+            var textRun = textLine.TextRuns[1];
+
+            Assert.Equal(2, textRun.Text.Length);
+
+            Assert.Equal("😀", textRun.Text);
+
+            Assert.Equal(effectBrush, textRun.DrawingEffect);
+        }
+
+        [Fact]
         public void TextLengthShouldBeEqualToTextLineLengthSum()
         {
             var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
