@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Controls.Remote.Server;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -70,7 +69,6 @@ namespace Avalonia.DesignerSupport
                 if (!window.IsSet(Window.SizeToContentProperty))
                     window.SizeToContent = SizeToContent.WidthAndHeight;
             }
-
             window.Show();
             Design.ApplyDesignModeProperties(window, control);
             return window;
