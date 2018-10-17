@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Controls.Remote.Server;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -12,7 +13,7 @@ namespace Avalonia.DesignerSupport
 {
     public class DesignWindowLoader
     {
-        public static Window LoadDesignerWindow(string xaml, string assemblyPath)
+        public static Window LoadDesignerWindow(string xaml, string assemblyPath, Vector dpi)
         {
             Window window;
             Control control;
@@ -69,6 +70,9 @@ namespace Avalonia.DesignerSupport
                 if (!window.IsSet(Window.SizeToContentProperty))
                     window.SizeToContent = SizeToContent.WidthAndHeight;
             }
+            
+            (window.PlatformImpl as RemoteServerTopLevelImpl).SetDpi(dpi);
+
             window.Show();
             Design.ApplyDesignModeProperties(window, control);
             return window;

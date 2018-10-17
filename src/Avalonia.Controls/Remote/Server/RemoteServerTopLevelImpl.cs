@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
-        protected void SetDpi(Vector dpi)
+        public void SetDpi(Vector dpi)
         {
             _dpi = dpi;
             RenderIfNeeded();

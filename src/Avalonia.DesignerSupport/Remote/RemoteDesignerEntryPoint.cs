@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
@@ -191,7 +191,8 @@ namespace Avalonia.DesignerSupport.Remote
                 s_currentWindow = null;
                 try
                 {
-                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath);
+                    var dpi = s_viewportAllocatedMessage != null ? new Vector(s_viewportAllocatedMessage.DpiX, s_viewportAllocatedMessage.DpiY) : new Vector(96, 96);
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, dpi);
                     s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)
