@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
@@ -15,6 +15,8 @@ namespace Avalonia.DesignerSupport.Remote
     {
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
         private static ClientViewportAllocatedMessage s_viewportAllocatedMessage;
+        private static ClientRenderInfoMessage s_renderInfoMessage;
+
         private static IAvaloniaRemoteTransportConnection s_transport;
         class CommandLineArgs
         {
@@ -161,7 +163,8 @@ namespace Avalonia.DesignerSupport.Remote
             PreviewerWindowingPlatform.PreFlightMessages = new List<object>
             {
                 s_supportedPixelFormats,
-                s_viewportAllocatedMessage
+                s_viewportAllocatedMessage,
+                s_renderInfoMessage
             };
         }
 
@@ -171,6 +174,11 @@ namespace Avalonia.DesignerSupport.Remote
             if (obj is ClientSupportedPixelFormatsMessage formats)
             {
                 s_supportedPixelFormats = formats;
+                RebuildPreFlight();
+            }
+            if (obj is ClientRenderInfoMessage renderInfo)
+            {
+                s_renderInfoMessage = renderInfo;
                 RebuildPreFlight();
             }
             if (obj is ClientViewportAllocatedMessage viewport)
@@ -191,8 +199,7 @@ namespace Avalonia.DesignerSupport.Remote
                 s_currentWindow = null;
                 try
                 {
-                    var dpi = s_viewportAllocatedMessage != null ? new Vector(s_viewportAllocatedMessage.DpiX, s_viewportAllocatedMessage.DpiY) : new Vector(96, 96);
-                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, dpi);
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath);
                     s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)

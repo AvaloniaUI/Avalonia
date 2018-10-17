@@ -13,7 +13,7 @@ namespace Avalonia.DesignerSupport
 {
     public class DesignWindowLoader
     {
-        public static Window LoadDesignerWindow(string xaml, string assemblyPath, Vector dpi)
+        public static Window LoadDesignerWindow(string xaml, string assemblyPath)
         {
             Window window;
             Control control;
@@ -70,8 +70,6 @@ namespace Avalonia.DesignerSupport
                 if (!window.IsSet(Window.SizeToContentProperty))
                     window.SizeToContent = SizeToContent.WidthAndHeight;
             }
-            
-            (window.PlatformImpl as RemoteServerTopLevelImpl).SetDpi(dpi);
 
             window.Show();
             Design.ApplyDesignModeProperties(window, control);

@@ -45,6 +45,13 @@ namespace Avalonia.Controls.Remote.Server
                     }
                     Dispatcher.UIThread.Post(RenderIfNeeded);
                 }
+                if(obj is ClientRenderInfoMessage renderInfo)
+                {
+                    lock(_lock)
+                    {
+                        _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
+                    }
+                }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
                 {
                     lock (_lock)
@@ -74,7 +81,6 @@ namespace Avalonia.Controls.Remote.Server
                                     allocation = _pendingAllocation;
                                     _pendingAllocation = null;
                                 }
-                                _dpi = new Vector(allocation.DpiX, allocation.DpiY);
                                 ClientSize = new Size(allocation.Width, allocation.Height);
                                 RenderIfNeeded();
                             });
