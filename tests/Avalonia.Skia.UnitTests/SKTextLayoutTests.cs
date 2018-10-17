@@ -10,6 +10,9 @@
 
     public class SKTextLayoutTests
     {
+        private static string SingleLineText = "0123456789";
+        private static string MultiLineText = "123456789\r123456789\r123456789\r123456789\r";
+
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
         {
@@ -37,9 +40,7 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtStart()
         {
-            const string Text = "012345";
-
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(SingleLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -61,13 +62,11 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtEnd()
         {
-            const string Text = "012345";
-
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(SingleLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
-            layout.ApplyTextSpan(new FormattedTextStyleSpan(4, 2, effectBrush));
+            layout.ApplyTextSpan(new FormattedTextStyleSpan(8, 2, effectBrush));
 
             var textLine = layout.TextLines[0];
 
@@ -77,7 +76,7 @@
 
             Assert.Equal(2, textRun.Text.Length);
 
-            Assert.Equal("45", textRun.Text);
+            Assert.Equal("89", textRun.Text);
 
             Assert.Equal(effectBrush, textRun.DrawingEffect);
         }
@@ -85,9 +84,7 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToSingleCharacter()
         {
-            const string Text = "0";
-
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout("0", SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -109,43 +106,33 @@
         [Fact]
         public void TextLengthShouldBeEqualToTextLineLengthSum()
         {
-            const string Text = "Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
-
-            Assert.Equal(Text.Length, layout.TextLines.Sum(x => x.Length));
+            Assert.Equal(MultiLineText.Length, layout.TextLines.Sum(x => x.Length));
         }
 
         [Fact]
         public void TextLengthShouldBeEqualToTextRunTextLengthSum()
         {
-            const string Text = "Multiline TextBox with TextWrapping.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             Assert.Equal(
-                Text.Length,
+                MultiLineText.Length,
                 layout.TextLines.Select(textLine => textLine.TextRuns.Sum(textRun => textRun.Text.Length)).Sum());
         }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToMultiLine()
         {
-            const string Text = "Multiline TextBox with TextWrapping.\r\rLorem ipsum dolor sit amet, consectetur adipiscing elit.";
-
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.Wrap, new Size(200, 125));
+            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(200, 125));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
-            layout.ApplyTextSpan(new FormattedTextStyleSpan(0, Text.Length, effectBrush));
+            layout.ApplyTextSpan(new FormattedTextStyleSpan(5, 20, effectBrush));
 
-            foreach (var textLine in layout.TextLines)
-            {
-                foreach (var textRun in textLine.TextRuns)
-                {
-                    Assert.Equal(effectBrush, textRun.DrawingEffect);
-                }
-            }           
+            Assert.Equal(effectBrush, layout.TextLines[0].TextRuns[1].DrawingEffect);
+            Assert.Equal(effectBrush, layout.TextLines[1].TextRuns[0].DrawingEffect);
+            Assert.Equal(effectBrush, layout.TextLines[2].TextRuns[0].DrawingEffect);
         }
     }
 }
