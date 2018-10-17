@@ -81,6 +81,7 @@ namespace Avalonia.Controls.Remote.Server
                                     allocation = _pendingAllocation;
                                     _pendingAllocation = null;
                                 }
+                                _dpi = new Vector(allocation.DpiX, allocation.DpiY);
                                 ClientSize = new Size(allocation.Width, allocation.Height);
                                 RenderIfNeeded();
                             });
