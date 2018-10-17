@@ -28,6 +28,8 @@ namespace Avalonia.Controls.Remote
             });
         }
 
+        public bool PreviewerMode { get; set; }
+
         private void OnMessage(object msg)
         {
             if (msg is FrameMessage frame)
@@ -44,13 +46,17 @@ namespace Avalonia.Controls.Remote
 
         protected override void ArrangeCore(Rect finalRect)
         {
-            _connection.Send(new ClientViewportAllocatedMessage
+            if (!PreviewerMode)
             {
-                Width = finalRect.Width,
-                Height = finalRect.Height,
-                DpiX = 96,
-                DpiY = 96 //TODO: Somehow detect the actual DPI
-            });
+                _connection.Send(new ClientViewportAllocatedMessage
+                {
+                    Width = finalRect.Width,
+                    Height = finalRect.Height,
+                    DpiX = 10 * 96,
+                    DpiY = 10 * 96 //TODO: Somehow detect the actual DPI
+                });
+            }
+
             base.ArrangeCore(finalRect);
         }
 
