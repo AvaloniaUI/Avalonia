@@ -35,6 +35,8 @@ namespace Avalonia.Controls.Remote.Server
         {
             _transport = transport;
             _transport.OnMessage += OnMessage;
+
+            KeyboardDevice = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
         }
 
         private static RawMouseEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
@@ -209,6 +211,8 @@ namespace Avalonia.Controls.Remote.Server
                 }
                 if(obj is KeyEventMessage key)
                 {
+                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
                     Dispatcher.UIThread.Post(() =>
                     {
                         Input?.Invoke(new RawKeyEventArgs(
@@ -221,6 +225,8 @@ namespace Avalonia.Controls.Remote.Server
                 }
                 if(obj is TextInputEventMessage text)
                 {
+                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
                     Dispatcher.UIThread.Post(() =>
                     {
                         Input?.Invoke(new RawTextInputEventArgs(
@@ -323,6 +329,6 @@ namespace Avalonia.Controls.Remote.Server
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
 
-        public IKeyboardDevice KeyboardDevice { get; } = new KeyboardDevice();
+        public IKeyboardDevice KeyboardDevice { get; }
     }
 }
