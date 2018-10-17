@@ -42,6 +42,7 @@ namespace Avalonia.iOS
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
                 .Bind<IWindowingPlatform>().ToSingleton<WindowingPlatformImpl>()
                 .Bind<IRenderTimer>().ToSingleton<DisplayLinkRenderTimer>()
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IRenderLoop>().ToSingleton<RenderLoop>();
         }
     }

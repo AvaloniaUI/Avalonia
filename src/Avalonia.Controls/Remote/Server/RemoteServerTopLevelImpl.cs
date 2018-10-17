@@ -102,6 +102,12 @@ namespace Avalonia.Controls.Remote.Server
         
         FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
         {
+            var scalingX = _dpi.X / 96.0;
+            var scalingY = _dpi.Y / 96.0;
+
+            width = (int)(width * scalingX);
+            height = (int)(height * scalingY);
+
             var fmt = format ?? ProtocolPixelFormat.Rgba8888;
             var bpp = fmt == ProtocolPixelFormat.Rgb565 ? 2 : 4;
             var data = new byte[width * height * bpp];
