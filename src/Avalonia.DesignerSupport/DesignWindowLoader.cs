@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport
             Control control;
             using (PlatformManager.DesignerMode())
             {
-                var loader = new AvaloniaXamlLoader();
+                var loader = new AvaloniaXamlLoader() {IsDesignMode = true};
                 var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml));
 
 
