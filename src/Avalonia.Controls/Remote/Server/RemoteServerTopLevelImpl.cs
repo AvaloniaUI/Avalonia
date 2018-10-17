@@ -50,6 +50,8 @@ namespace Avalonia.Controls.Remote.Server
                     lock(_lock)
                     {
                         _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
+                        _invalidated = true;
+                        RenderIfNeeded();
                     }
                 }
                 if (obj is ClientSupportedPixelFormatsMessage supportedFormats)
