@@ -9,6 +9,7 @@ using System.Text;
 using Avalonia.Media;
 
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia
 {
@@ -276,7 +277,10 @@ namespace Avalonia.Skia
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                            canvas.DrawText(textRun.Text, lineX, lineY, _paint);
+                            using (var shaper = new SKShaper(textRun.TextFormat.Typeface))
+                            {
+                                canvas.DrawShapedText(shaper, textRun.Text, lineX, lineY, _paint);
+                            }
                         }
 
                         lineX += textRun.Width;
@@ -563,21 +567,39 @@ namespace Avalonia.Skia
             }
         }
 
-        private static bool IsEmptySpace(char c)
+        private static bool IsCombiningMark(char c)
         {
-            switch (c)
+            if (c >= '\u200B' && c <= '\u200D')
             {
-                case '\u200B':
-                    return true;
-                case '\u200C':
-                    return true;
-                case '\u200D':
-                    return true;
-                case '\u0308':
-                    return true;
-                default:
-                    return false;
+                return true;
             }
+
+            if (c >= '\u0300' && c <= '\u036F')
+            {
+                return true;
+            }
+
+            if (c >= '\u1AB0' && c <= '\u1AFF')
+            {
+                return true;
+            }
+
+            if (c >= '\u1DC0' && c <= '\u1DFF')
+            {
+                return true;
+            }
+
+            if (c >= '\u20D0' && c <= '\u20FF')
+            {
+                return true;
+            }
+
+            if (c >= '\uFE20' && c <= '\uFE2F')
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -825,7 +847,7 @@ namespace Avalonia.Skia
                         {
                             var c = runText[glyphCount];
 
-                            if (char.IsWhiteSpace(c) || IsEmptySpace(c))
+                            if (char.IsWhiteSpace(c) || IsCombiningMark(c))
                             {
                                 glyphCount++;
 

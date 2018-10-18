@@ -1,6 +1,7 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="1.60.0" />
+    <PackageReference Include="SkiaSharp" Version="1.60.3" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="1.60.3" />
     <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="Avalonia.Skia.Linux.Natives" Version="1.60.0.1" />
   </ItemGroup>
 </Project>
