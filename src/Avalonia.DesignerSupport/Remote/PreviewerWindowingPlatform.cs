@@ -57,7 +57,8 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<IRenderTimer>().ToConstant(threading)
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogsStub>()
                 .Bind<IWindowingPlatform>().ToConstant(instance)
-                .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>();
+                .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
         }
 
