@@ -22,7 +22,7 @@
 
 /* Begin PBXFileReference section */
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
-		379A4506214D0F6500CC143D /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../headers; sourceTree = "<group>"; };
+		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../Avalonia.Native/headers; sourceTree = "<group>"; };
 		37A517B22159597E00FBA241 /* Screens.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Screens.mm; sourceTree = "<group>"; };
 		37C09D8721580FE4006A6758 /* SystemDialogs.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SystemDialogs.mm; sourceTree = "<group>"; };
 		37C09D8A21581EF2006A6758 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
@@ -65,11 +65,11 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				37A4E71A2178846A00EACBCD /* headers */,
 				AB573DC3217605E400D389A2 /* gl.mm */,
 				5BF943652167AD1D009CAE35 /* cursor.h */,
 				5B21A981216530F500CEE36E /* cursor.mm */,
 				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
-				379A4506214D0F6500CC143D /* headers */,
 				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
 				AB661C212148288600291242 /* common.h */,
 				379860FE214DA0C000CD0246 /* KeyTransform.h */,
@@ -285,7 +285,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = ../headers;
+				HEADER_SEARCH_PATHS = ../Avalonia.Native/headers;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -296,7 +296,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = ../headers;
+				HEADER_SEARCH_PATHS = ../Avalonia.Native/headers;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
