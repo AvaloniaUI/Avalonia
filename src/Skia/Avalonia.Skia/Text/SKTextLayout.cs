@@ -943,7 +943,7 @@ namespace Avalonia.Skia
 
                         _paint.TextSize = textRun.TextFormat.FontSize;
 
-                        if (IsBreakChar(c) || IsCombiningMark(c))
+                        if (IsBreakChar(c) || (!char.IsHighSurrogate(c) && IsCombiningMark(c)))
                         {
                             rectangles.Add(new Rect(currentX, currentY, 0.0f, currentLine.LineMetrics.Size.Height));
                         }
