@@ -462,18 +462,19 @@ namespace Avalonia.Controls
 
         void SetWindowStartupLocation()
         {
+            var scaling = PlatformImpl?.Scaling ?? 1;
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
                 var screen = Screens.ScreenFromPoint(Bounds.Position);
 
                 if (screen != null)
-                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
+                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize * scaling)).Position;
             }
             else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
             {
                 if (Owner != null)
                 {
-                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
+                    var positionAsSize = (Owner.ClientSize / 2 - ClientSize / 2) * scaling;
                     Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
                 }
             }
