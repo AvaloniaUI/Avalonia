@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.VisualTree;
+using Avalonia.Controls;
 using ReactiveUI;
 
 namespace Avalonia
@@ -20,18 +21,41 @@ namespace Avalonia
         public IObservable<bool> GetActivationForView(IActivatable view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
-             var viewLoaded = Observable
+            if (view is WindowBase window) return GetActivationForWindowBase(window);
+            return GetActivationForVisual(visual);
+        }
+
+        private IObservable<bool> GetActivationForWindowBase(WindowBase window) 
+        {
+            var windowLoaded = Observable
+                .FromEventPattern(
+                    x => window.Initialized += x,
+                    x => window.Initialized -= x)
+                .Select(args => true);
+            var windowUnloaded = Observable
+                .FromEventPattern(
+                    x => window.Closed += x,
+                    x => window.Closed -= x)
+                .Select(args => false);
+            return windowLoaded
+                .Merge(windowUnloaded)
+                .DistinctUntilChanged();
+        }
+
+        private IObservable<bool> GetActivationForVisual(IVisual visual) 
+        {
+            var visualLoaded = Observable
                 .FromEventPattern<VisualTreeAttachmentEventArgs>(
                     x => visual.AttachedToVisualTree += x,
-                    x => visual.DetachedFromVisualTree -= x)
+                    x => visual.AttachedToVisualTree -= x)
                 .Select(args => true);
-             var viewUnloaded = Observable
+            var visualUnloaded = Observable
                 .FromEventPattern<VisualTreeAttachmentEventArgs>(
                     x => visual.DetachedFromVisualTree += x,
                     x => visual.DetachedFromVisualTree -= x)
                 .Select(args => false);
-             return viewLoaded
-                .Merge(viewUnloaded)
+            return visualLoaded
+                .Merge(visualUnloaded)
                 .DistinctUntilChanged();
         }
     }
