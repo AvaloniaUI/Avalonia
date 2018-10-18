@@ -9,7 +9,6 @@ using System.Text;
 using Avalonia.Media;
 
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia
 {
@@ -277,10 +276,7 @@ namespace Avalonia.Skia
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                            using (var shaper = new SKShaper(textRun.TextFormat.Typeface))
-                            {
-                                canvas.DrawShapedText(shaper, textRun.Text, lineX, lineY, _paint);
-                            }
+                            canvas.DrawText(textRun.Text, lineX, lineY, _paint);
                         }
 
                         lineX += textRun.Width;
@@ -947,7 +943,7 @@ namespace Avalonia.Skia
 
                         _paint.TextSize = textRun.TextFormat.FontSize;
 
-                        if (IsBreakChar(c))
+                        if (IsBreakChar(c) || IsCombiningMark(c))
                         {
                             rectangles.Add(new Rect(currentX, currentY, 0.0f, currentLine.LineMetrics.Size.Height));
                         }

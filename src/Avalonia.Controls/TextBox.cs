@@ -540,6 +540,11 @@ namespace Avalonia.Controls
                                 removedCharacters = 2;
                             }
 
+                            if (caretIndex >= 2 && char.IsSurrogatePair(text[caretIndex - 2], text[caretIndex - 1]))
+                            {
+                                removedCharacters = 2;
+                            }
+
                             SetTextInternal(text.Substring(0, caretIndex - removedCharacters) +
                                             text.Substring(caretIndex));
                             CaretIndex -= removedCharacters;
@@ -564,6 +569,11 @@ namespace Avalonia.Controls
                             if (CaretIndex < text.Length - 1 &&
                                 text[caretIndex + 1] == '\n' &&
                                 text[caretIndex] == '\r')
+                            {
+                                removedCharacters = 2;
+                            }
+
+                            if (caretIndex + 1 < text.Length && char.IsSurrogatePair(text[caretIndex], text[caretIndex + 1]))
                             {
                                 removedCharacters = 2;
                             }
@@ -745,11 +755,25 @@ namespace Avalonia.Controls
 
                 if (direction > 0)
                 {
-                    CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
+                    if (char.IsHighSurrogate(text[caretIndex]))
+                    {
+                        CaretIndex += 2;
+                    }
+                    else
+                    {
+                        CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
+                    }
                 }
                 else
                 {
-                    CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
+                    if (char.IsLowSurrogate(c))
+                    {
+                        CaretIndex -= 2;
+                    }
+                    else
+                    {
+                        CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
+                    }
                 }
             }
             else
