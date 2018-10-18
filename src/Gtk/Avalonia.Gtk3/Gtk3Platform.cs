@@ -81,6 +81,7 @@ namespace Avalonia.Gtk3
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
             if (useGpu)
                 EglGlPlatformFeature.TryInitialize();

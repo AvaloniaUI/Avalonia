@@ -15,6 +15,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 {
     internal class AvaloniaXamlSchemaContext : XamlSchemaContext
     {
+        public bool IsDesignMode { get; set; }
         public static AvaloniaXamlSchemaContext Create(IRuntimeTypeProvider typeProvider = null)
         {
             return new AvaloniaXamlSchemaContext(typeProvider ?? new AvaloniaRuntimeTypeProvider());
@@ -280,5 +281,20 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 return $"{MemberType}:{Type.Namespace}:{Type.Name}.{Member}";
             }
         }
+
+
+        public override bool TryGetCompatibleXamlNamespace(string xamlNamespace, out string compatibleNamespace)
+        {
+            //Forces XamlXmlReader to not ignore our namespace in design mode if mc:Ignorable is set
+            if (IsDesignMode &&
+                xamlNamespace == "http://schemas.microsoft.com/expression/blend/2008")
+            {
+                compatibleNamespace = xamlNamespace;
+                return true;
+            }
+
+            return base.TryGetCompatibleXamlNamespace(xamlNamespace, out compatibleNamespace);
+        }
+
     }
 }
