@@ -156,12 +156,12 @@ namespace Avalonia.Gtk.Common
             { GdkKey.R4, Key.F24 },
             { GdkKey.Num_Lock, Key.NumLock },
             { GdkKey.Scroll_Lock, Key.Scroll },
-            //{ GdkKey.?, Key.LeftShift }
-            //{ GdkKey.?, Key.RightShift }
-            //{ GdkKey.?, Key.LeftCtrl }
-            //{ GdkKey.?, Key.RightCtrl }
-            //{ GdkKey.?, Key.LeftAlt }
-            //{ GdkKey.?, Key.RightAlt }
+            { GdkKey.Shift_L, Key.LeftShift },
+            { GdkKey.Shift_R, Key.RightShift },
+            { GdkKey.Control_L, Key.LeftCtrl },
+            { GdkKey.Control_R, Key.RightCtrl },
+            { GdkKey.Alt_L, Key.LeftAlt },
+            { GdkKey.Alt_R, Key.RightAlt },
             //{ GdkKey.?, Key.BrowserBack }
             //{ GdkKey.?, Key.BrowserForward }
             //{ GdkKey.?, Key.BrowserRefresh }
