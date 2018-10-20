@@ -15,7 +15,7 @@ namespace Avalonia.Gtk.Common
             { GdkKey.Clear, Key.Clear },
             { GdkKey.Return, Key.Return },
             { GdkKey.Pause, Key.Pause },
-            //{ GdkKey.?, Key.CapsLock }
+            { GdkKey.Caps_Lock, Key.CapsLock },
             //{ GdkKey.?, Key.HangulMode }
             //{ GdkKey.?, Key.JunjaMode }
             //{ GdkKey.?, Key.FinalMode }
@@ -27,7 +27,7 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.ImeModeChange }
             { GdkKey.space, Key.Space },
             { GdkKey.Prior, Key.Prior },
-            //{ GdkKey.?, Key.PageDown }
+            { GdkKey.Page_Down, Key.PageDown },
             { GdkKey.End, Key.End },
             { GdkKey.KP_End, Key.End },
             { GdkKey.Home, Key.Home },
@@ -114,16 +114,16 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.RWin }
             //{ GdkKey.?, Key.Apps }
             //{ GdkKey.?, Key.Sleep }
-            //{ GdkKey.?, Key.NumPad0 }
-            //{ GdkKey.?, Key.NumPad1 }
-            //{ GdkKey.?, Key.NumPad2 }
-            //{ GdkKey.?, Key.NumPad3 }
-            //{ GdkKey.?, Key.NumPad4 }
-            //{ GdkKey.?, Key.NumPad5 }
-            //{ GdkKey.?, Key.NumPad6 }
-            //{ GdkKey.?, Key.NumPad7 }
-            //{ GdkKey.?, Key.NumPad8 }
-            //{ GdkKey.?, Key.NumPad9 }
+            { GdkKey.KP_0, Key.NumPad0 },
+            { GdkKey.KP_1, Key.NumPad1 },
+            { GdkKey.KP_2, Key.NumPad2 },
+            { GdkKey.KP_3, Key.NumPad3 },
+            { GdkKey.KP_4, Key.NumPad4 },
+            { GdkKey.KP_5, Key.NumPad5 },
+            { GdkKey.KP_6, Key.NumPad6 },
+            { GdkKey.KP_7, Key.NumPad7 },
+            { GdkKey.KP_8, Key.NumPad8 },
+            { GdkKey.KP_9, Key.NumPad9 },
             { GdkKey.multiply, Key.Multiply },
             //{ GdkKey.?, Key.Add }
             //{ GdkKey.?, Key.Separator }
@@ -156,12 +156,12 @@ namespace Avalonia.Gtk.Common
             { GdkKey.R4, Key.F24 },
             { GdkKey.Num_Lock, Key.NumLock },
             { GdkKey.Scroll_Lock, Key.Scroll },
-            //{ GdkKey.?, Key.LeftShift }
-            //{ GdkKey.?, Key.RightShift }
-            //{ GdkKey.?, Key.LeftCtrl }
-            //{ GdkKey.?, Key.RightCtrl }
-            //{ GdkKey.?, Key.LeftAlt }
-            //{ GdkKey.?, Key.RightAlt }
+            { GdkKey.Shift_L, Key.LeftShift },
+            { GdkKey.Shift_R, Key.RightShift },
+            { GdkKey.Control_L, Key.LeftCtrl },
+            { GdkKey.Control_R, Key.RightCtrl },
+            { GdkKey.Alt_L, Key.LeftAlt },
+            { GdkKey.Alt_R, Key.RightAlt },
             //{ GdkKey.?, Key.BrowserBack }
             //{ GdkKey.?, Key.BrowserForward }
             //{ GdkKey.?, Key.BrowserRefresh }
