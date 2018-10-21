@@ -383,7 +383,7 @@ Task("Azure-OSX")
 Task("Azure-Windows")
   .IsDependentOn("Package")
   .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
