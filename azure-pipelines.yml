@@ -25,4 +25,9 @@ jobs:
       arguments: -target "Azure-Windows" -configuration "Release"
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: artifacts/
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      artifactName: 'NuGet'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
+      artifactName: 'Samples'
