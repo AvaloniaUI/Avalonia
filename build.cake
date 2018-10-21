@@ -377,6 +377,19 @@ Task("AppVeyor")
 Task("Travis")
   .IsDependentOn("Run-Tests");
 
+Task("Azure-Linux")
+  .IsDependentOn("Run-Tests");
+
+Task("Azure-OSX")
+  .IsDependentOn("Run-Tests");
+
+Task("Azure-Windows")
+  .IsDependentOn("Package")
+  .IsDependentOn("Copy-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl")
+  .IsDependentOn("Publish-MyGet-Impl")
+  .IsDependentOn("Publish-NuGet-Impl");
+
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
 ///////////////////////////////////////////////////////////////////////////////
