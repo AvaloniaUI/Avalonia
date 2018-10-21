@@ -369,9 +369,7 @@ Task("Package")
 Task("AppVeyor")
   .IsDependentOn("Package")
   .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl")
-  .IsDependentOn("Publish-MyGet-Impl")
-  .IsDependentOn("Publish-NuGet-Impl");
+  .IsDependentOn("Zip-Files-Impl");
 
 Task("Travis")
   .IsDependentOn("Run-Tests");
@@ -386,8 +384,6 @@ Task("Azure-Windows")
   .IsDependentOn("Package")
   .IsDependentOn("Copy-Files-Impl")
   .IsDependentOn("Zip-Files-Impl")
-  .IsDependentOn("Publish-MyGet-Impl")
-  .IsDependentOn("Publish-NuGet-Impl");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
