@@ -29,7 +29,8 @@ jobs:
   
   - task: CmdLine@2
       inputs:
-        script: brew install castxml
+        script: |
+          brew install castxml
 
   - script: |
       dotnet --info
