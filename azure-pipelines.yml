@@ -1,0 +1,13 @@
+pool:
+  vmImage: 'Ubuntu 16.04'
+
+steps:
+- task: cake-build.cake.cake-build-task.Cake@0
+  displayName: 'Cake '
+  inputs:
+    useBuildAgentNuGetExe: true
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: artifacts/
