@@ -27,8 +27,8 @@ jobs:
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./' 
   - task: CmdLine@2
-      inputs:
-        script: brew install castxml
+    inputs:
+      script: brew install castxml
 
   - script: |
       dotnet --info
