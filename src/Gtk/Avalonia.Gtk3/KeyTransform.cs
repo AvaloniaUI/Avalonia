@@ -185,8 +185,8 @@ namespace Avalonia.Gtk.Common
             { GdkKey.comma, Key.OemComma },
             { GdkKey.minus, Key.OemMinus },
             { GdkKey.period, Key.OemPeriod },
-            { GdkKey.slash, Key.Oem2 }
-            //{ GdkKey.?, Key.OemTilde }
+            { GdkKey.slash, Key.Oem2 },
+            { GdkKey.grave, Key.OemTilde },
             //{ GdkKey.?, Key.AbntC1 }
             //{ GdkKey.?, Key.AbntC2 }
             //{ GdkKey.?, Key.Oem4 }
