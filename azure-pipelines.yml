@@ -12,9 +12,7 @@ jobs:
       export DOTNET_CLI_TELEMETRY_OPTOUT=1
       which dotnet
       dotnet --info
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      export PATH="$PATH:$HOME/.dotnet/tools"
-      dotnet cake build.cake -Configuration="Release" -Target="Azure-Linux"
+      ./build.sh --target "Azure-Linux" --configuration "Release"
      
 - job: macOS
   pool:
@@ -29,9 +27,7 @@ jobs:
       export DOTNET_CLI_TELEMETRY_OPTOUT=1
       which dotnet
       dotnet --info
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      export PATH="$PATH:$HOME/.dotnet/tools"
-      dotnet cake build.cake -Configuration="Release" -Target="Azure-OSX"
+      ./build.sh --target "Azure-OSX" --configuration "Release"
 
 - job: Windows
   pool:
@@ -46,9 +42,7 @@ jobs:
       set DOTNET_CLI_TELEMETRY_OPTOUT=1
       where dotnet
       dotnet --info
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
-      dotnet cake build.cake -Configuration="Release" -Target="Azure-Windows"
+      .\build.ps1 --target "Azure-Linux" --configuration "Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: artifacts/
