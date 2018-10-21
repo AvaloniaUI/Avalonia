@@ -5,6 +5,7 @@
     <ProjectReference Include="tests/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
+    <ProjectReference Remove="**/*.pbxproj" />
   </ItemGroup>
   <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\Android')">
     <ProjectReference Remove="src/Android/**/*.*proj" />
