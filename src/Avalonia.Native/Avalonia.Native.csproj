@@ -21,7 +21,7 @@
     </ItemGroup>
 
 
-    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">
       <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
         <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
         <Pack>true</Pack>
