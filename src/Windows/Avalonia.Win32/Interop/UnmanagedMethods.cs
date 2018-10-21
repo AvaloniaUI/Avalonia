@@ -751,9 +751,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        [DllImport("kernel32.dll")]
-        public static extern uint GetCurrentThreadId();
-
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
