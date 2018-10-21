@@ -22,7 +22,7 @@ jobs:
   - task: PowerShell@2
     inputs:
       filePath: build.ps1
-      arguments: -target "Azure-Linux" -configuration "Release"
+      arguments: -target "Azure-Windows" -configuration "Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: artifacts/
