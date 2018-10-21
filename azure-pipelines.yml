@@ -21,7 +21,8 @@ jobs:
   steps:
   - task: PowerShell@2
     inputs:
-      script: build.ps1 --target "Azure-Linux" --configuration "Release"
+      filePath: build.ps1
+      arguments: --target "Azure-Linux" --configuration "Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: artifacts/
