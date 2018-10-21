@@ -19,4 +19,13 @@
       <ProjectReference Include="..\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
       <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     </ItemGroup>
+
+
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+      <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
+        <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
+        <Pack>true</Pack>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
 </Project>
