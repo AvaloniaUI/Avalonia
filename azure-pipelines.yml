@@ -3,6 +3,12 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
+  - task: CmdLine@2
+    inputs:
+    script: |
+      sudo apt-get update
+      sudo apt-get install castxml
+  
   - script: |
       dotnet --info
       ./build.sh --target "Azure-Linux" --configuration "Release"
@@ -20,6 +26,11 @@ jobs:
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
+  
+  - task: CmdLine@2
+    inputs:
+    script: brew install castxml
+
   - script: |
       dotnet --info
       ./build.sh --target "Azure-OSX" --configuration "Release"
