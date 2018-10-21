@@ -135,11 +135,13 @@ namespace Avalonia.Controls
                 for (int i = 0; i < Grid.RowDefinitions.Count; i++)
                 {
                     Results[i].MeasuredResult = rowResult.LengthList[i];
+                    Results[i].MinLength = rowResult.MinLengths[i];
                 }
 
                 for (int i = 0; i < Grid.ColumnDefinitions.Count; i++)
                 {
                     Results[i + Grid.RowDefinitions.Count].MeasuredResult = columnResult.LengthList[i];
+                    Results[i + Grid.RowDefinitions.Count].MinLength = columnResult.MinLengths[i];
                 }
             }
 
@@ -176,8 +178,47 @@ namespace Avalonia.Controls
 
             public DefinitionBase Definition { get; }
             public double MeasuredResult { get; set; }
+            public double MinLength { get; set; }
             public Group SizeGroup { get; set; }
             public Grid OwningGrid { get; }
+
+            public (double length, int priority) GetPriorityLength()
+            {
+                var length = (Definition as ColumnDefinition)?.Width ?? ((RowDefinition)Definition).Height;
+
+                if (length.IsAbsolute)
+                    return (MeasuredResult, 1);
+                if (length.IsAuto)
+                    return (MeasuredResult, 2);
+                if (MinLength > 0)
+                    return (MinLength, 3);
+                return (MeasuredResult, 4);
+            }
+        }
+
+
+        private class LentgthGatherer
+        {
+            public double Length { get; private set; }
+            private int gatheredPriority = 6;
+
+            public void Visit(MeasurementResult result)
+            {
+                var (length, priority) = result.GetPriorityLength();
+
+                if (gatheredPriority < priority)
+                    return;
+
+                gatheredPriority = priority;
+                if (gatheredPriority == priority)
+                {
+                    Length = Math.Max(length,Length);
+                }
+                else
+                {
+                    Length = length;
+                }
+            }
         }
 
 
@@ -208,7 +249,7 @@ namespace Avalonia.Controls
             {
                 if (_results.Contains(result))
                     throw new AvaloniaInternalException(
-                        $"Invalid call to Group.Add - The SharedSizeGroup {Name} already contains the passed result");
+                        $"SharedSizeScopeHost: Invalid call to Group.Add - The SharedSizeGroup {Name} already contains the passed result");
 
                 result.SizeGroup = this;
                 _results.Add(result);
@@ -218,7 +259,7 @@ namespace Avalonia.Controls
             {
                 if (!_results.Contains(result))
                     throw new AvaloniaInternalException(
-                        $"Invalid call to Group.Remove - The SharedSizeGroup {Name} does not contain the passed result");
+                        $"SharedSizeScopeHost: Invalid call to Group.Remove - The SharedSizeGroup {Name} does not contain the passed result");
                 result.SizeGroup = null;
                 _results.Remove(result);
             }
@@ -226,44 +267,12 @@ namespace Avalonia.Controls
 
             private double Gather()
             {
-                var result = 0.0d;
+                var visitor = new LentgthGatherer();
 
-                bool onlyFixed = false;
+                _results.ForEach(visitor.Visit);
 
-                foreach (var measurement in Results)
-                {
-                    if (Double.IsInfinity(measurement.MeasuredResult))
-                        continue;
-
-                    if (measurement.Definition is ColumnDefinition column)
-                    {
-                        if (!onlyFixed && column.Width.IsAbsolute)
-                        {
-                            onlyFixed = true;
-                            result = measurement.MeasuredResult;
-                        }
-                        else if (onlyFixed == column.Width.IsAbsolute)
-                            result = Math.Max(result, measurement.MeasuredResult);
-
-                        result = Math.Max(result, column.MinWidth);
-                    }
-                    if (measurement.Definition is RowDefinition row)
-                    {
-                        if (!onlyFixed && row.Height.IsAbsolute)
-                        {
-                            onlyFixed = true;
-                            result = measurement.MeasuredResult;
-                        }
-                        else if (onlyFixed == row.Height.IsAbsolute)
-                            result = Math.Max(result, measurement.MeasuredResult);
-
-                        result = Math.Max(result, row.MinHeight);
-                    }
-                }
-
-                return result;
+                return visitor.Length;
             }
-
         }
 
         private readonly AvaloniaList<MeasurementCache> _measurementCaches;
@@ -308,7 +317,7 @@ namespace Avalonia.Controls
 
             if (cache == null)
                 throw new AvaloniaInternalException(
-                    $"InvalidateMeasureImpl - called with a grid not present in the internal cache");
+                    $"SharedSizeScopeHost: InvalidateMeasureImpl - called with a grid not present in the internal cache");
 
             // already invalidated the cache, early out.
             if (cache.MeasurementState == MeasurementState.Invalidated)
@@ -340,7 +349,8 @@ namespace Avalonia.Controls
         internal void UpdateMeasureStatus(Grid grid, GridLayout.MeasureResult rowResult, GridLayout.MeasureResult columnResult)
         {
             var cache = _measurementCaches.FirstOrDefault(mc => ReferenceEquals(mc.Grid, grid));
-            Debug.Assert(cache != null);
+            if (cache == null)
+                throw new AvaloniaInternalException("SharedSizeScopeHost: Attempted to update measurement status for a grid that wasn't registered!");
 
             cache.UpdateMeasureResult(rowResult, columnResult);
         }
@@ -386,13 +396,15 @@ namespace Avalonia.Controls
                     rowDesiredLength,
                     rowResult.GreedyDesiredLength,//??
                     rowConventions,
-                    rowLengths),
+                    rowLengths,
+                    rowResult.MinLengths),
                 new GridLayout.MeasureResult(
                     columnResult.ContainerLength,
                     columnDesiredLength,
                     columnResult.GreedyDesiredLength, //??
                     columnConventions,
-                    columnLengths)
+                    columnLengths,
+                    columnResult.MinLengths)
             );
         }
 
@@ -440,7 +452,8 @@ namespace Avalonia.Controls
             if (string.IsNullOrEmpty(scopeName))
                 return;
 
-            Debug.Assert(_groups.TryGetValue(scopeName, out var group));
+            if (!_groups.TryGetValue(scopeName, out var group))
+                throw new AvaloniaInternalException($"SharedSizeScopeHost: The scope {scopeName} wasn't found in the shared size scope");
 
             group.Remove(result);
             if (!group.Results.Any())
@@ -471,7 +484,9 @@ namespace Avalonia.Controls
 
         internal void RegisterGrid(Grid toAdd)
         {
-            Debug.Assert(!_measurementCaches.Any(mc => ReferenceEquals(mc.Grid, toAdd)));
+            if (_measurementCaches.Any(mc => ReferenceEquals(mc.Grid, toAdd)))
+                throw new AvaloniaInternalException("SharedSizeScopeHost: tried to register a grid twice!");
+
             var cache = new MeasurementCache(toAdd);
             _measurementCaches.Add(cache);
             AddGridToScopes(cache);
@@ -480,11 +495,17 @@ namespace Avalonia.Controls
         internal void UnegisterGrid(Grid toRemove)
         {
             var cache = _measurementCaches.FirstOrDefault(mc => ReferenceEquals(mc.Grid, toRemove));
+            if (cache == null)
+                throw new AvaloniaInternalException("SharedSizeScopeHost: tried to unregister a grid that wasn't registered before!");
 
-            Debug.Assert(cache != null);
             _measurementCaches.Remove(cache);
             RemoveGridFromScopes(cache);
             cache.Dispose();
+        }
+
+        internal bool ParticipatesInScope(Grid toCheck)
+        {
+            return _measurementCaches.FirstOrDefault(mc => ReferenceEquals(mc.Grid, toCheck))?.Results.Any() ?? false;
         }
     }
 }

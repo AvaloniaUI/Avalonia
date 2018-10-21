@@ -56,31 +56,12 @@ namespace Avalonia.Controls
             _sharedSizeHost?.InvalidateMeasure(this);
         }
 
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            var scope = this.GetVisualAncestors().OfType<Control>()
-                .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
-
-            Debug.Assert(_sharedSizeHost == null);
-
-            if (scope != null)
-            {
-                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
-                _sharedSizeHost.RegisterGrid(this);
-            }
-        }
-
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-
-            _sharedSizeHost?.UnegisterGrid(this);
-            _sharedSizeHost = null;
-        }
-
         private SharedSizeScopeHost _sharedSizeHost;
 
+        /// <summary>
+        /// Defines the SharedSizeScopeHost private property. 
+        /// The ampersands are used to make accessing the property via xaml inconvenient.
+        /// </summary>
         private static readonly AttachedProperty<SharedSizeScopeHost> s_sharedSizeScopeHostProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScopeHost>("&&SharedSizeScopeHost", null);
 
@@ -94,19 +75,52 @@ namespace Avalonia.Controls
             IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(IsSharedSizeScopeChanged);
         }
 
+        public Grid()
+        {
+            this.AttachedToVisualTree += Grid_AttachedToVisualTree;
+            this.DetachedFromVisualTree += Grid_DetachedFromVisualTree;
+        }
+
+        private void Grid_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            var scope = 
+                new Control[] { this }.Concat(this.GetVisualAncestors().OfType<Control>())
+                    .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
+
+            if (_sharedSizeHost != null)
+                throw new AvaloniaInternalException("Shared size scope already present when attaching to visual tree!");
+
+            if (scope != null)
+            {
+                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
+                _sharedSizeHost.RegisterGrid(this);
+            }
+        }
+
+        private void Grid_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            _sharedSizeHost?.UnegisterGrid(this);
+            _sharedSizeHost = null;
+        }
+
         private static void IsSharedSizeScopeChanged(Control source, AvaloniaPropertyChangedEventArgs arg2) 
         {
-            if ((bool)arg2.NewValue)
-            {
-                Debug.Assert(source.GetValue(s_sharedSizeScopeHostProperty) == null);
-                source.SetValue(s_sharedSizeScopeHostProperty, new SharedSizeScopeHost(source));
-            }
-            else
+            var shouldDispose = (arg2.OldValue is bool d) && d;
+            if (shouldDispose)
             {
                 var host = source.GetValue(s_sharedSizeScopeHostProperty) as SharedSizeScopeHost;
-                Debug.Assert(host != null);
+                if (host == null)
+                    throw new AvaloniaInternalException("SharedScopeHost wasn't set when IsSharedSizeScope was true!");
                 host.Dispose();
                 source.SetValue(s_sharedSizeScopeHostProperty, null);
+            }
+
+            var shouldAssign = (arg2.NewValue is bool a) && a;
+            if (shouldAssign)
+            {
+                if (source.GetValue(s_sharedSizeScopeHostProperty) != null)
+                    throw new AvaloniaInternalException("SharedScopeHost was already set when IsSharedSizeScope is only now being set to true!");
+                source.SetValue(s_sharedSizeScopeHostProperty, new SharedSizeScopeHost(source));
             }
         }
 
@@ -328,7 +342,10 @@ namespace Avalonia.Controls
             _rowLayoutCache = rowLayout;
             _columnLayoutCache = columnLayout;
 
-            _sharedSizeHost?.UpdateMeasureStatus(this, rowResult, columnResult);
+            if (_sharedSizeHost?.ParticipatesInScope(this) ?? false)
+            {
+                _sharedSizeHost.UpdateMeasureStatus(this, rowResult, columnResult);
+            }
 
             return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
 
@@ -379,13 +396,14 @@ namespace Avalonia.Controls
             var columnLayout = _columnLayoutCache;
             var rowLayout = _rowLayoutCache;
 
-            var (rowCache, columnCache) =
-                _sharedSizeHost?.HandleArrange(this, _rowMeasureCache, _columnMeasureCache) ??
-                (_rowMeasureCache, _columnMeasureCache);
+            var rowCache = _rowMeasureCache;
+            var columnCache = _columnMeasureCache;
 
-            if (_sharedSizeHost != null)
-            {
-                rowCache = rowLayout.Measure(finalSize.Width, rowCache.LeanLengthList);
+            if (_sharedSizeHost?.ParticipatesInScope(this) ?? false)
+                {
+                (rowCache, columnCache) = _sharedSizeHost.HandleArrange(this, _rowMeasureCache, _columnMeasureCache);
+            
+                rowCache = rowLayout.Measure(finalSize.Height, rowCache.LeanLengthList);
                 columnCache = columnLayout.Measure(finalSize.Width, columnCache.LeanLengthList);
             }
 
