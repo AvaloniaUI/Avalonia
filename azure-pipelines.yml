@@ -42,7 +42,7 @@ jobs:
       set DOTNET_CLI_TELEMETRY_OPTOUT=1
       where dotnet
       dotnet --info
-      .\build.ps1 --target "Azure-Linux" --configuration "Release"
+      build.ps1 --target "Azure-Linux" --configuration "Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: artifacts/
