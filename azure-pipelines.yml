@@ -11,6 +11,15 @@ jobs:
   pool:
     vmImage: 'xcode9-macos10.13'
   steps:
+  - task: Xcode@5
+    inputs:
+      actions: 'build'
+      scheme: ''
+      sdk: 'macosx10.13'
+      configuration: 'Release'
+      xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
+      xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
+      args: '-derivedDataPath ./'
   - script: |
       dotnet --info
       ./build.sh --target "Azure-OSX" --configuration "Release"
