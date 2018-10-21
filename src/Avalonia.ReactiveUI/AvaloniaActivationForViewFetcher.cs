@@ -32,12 +32,18 @@ namespace Avalonia
                     x => window.Initialized += x,
                     x => window.Initialized -= x)
                 .Select(args => true);
+            var windowActivated = Observable
+                .FromEventPattern(
+                    x => window.Activated += x,
+                    x => window.Activated -= x)
+                .Select(args => true);
             var windowUnloaded = Observable
                 .FromEventPattern(
                     x => window.Closed += x,
                     x => window.Closed -= x)
                 .Select(args => false);
             return windowLoaded
+                .Merge(windowActivated)
                 .Merge(windowUnloaded)
                 .DistinctUntilChanged();
         }
