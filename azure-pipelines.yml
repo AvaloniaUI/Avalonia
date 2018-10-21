@@ -25,12 +25,10 @@ jobs:
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
-      args: '-derivedDataPath ./'
-  
+      args: '-derivedDataPath ./' 
   - task: CmdLine@2
       inputs:
-        script: |
-          brew install castxml
+        script: brew install castxml
 
   - script: |
       dotnet --info
