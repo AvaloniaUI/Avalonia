@@ -115,12 +115,45 @@ namespace Avalonia.Rendering
             }
         }
 
+        private static Matrix? TransformToVisual(IVisual visual, IVisual root)
+        {
+            var result = Matrix.Identity;
+
+            while (visual != root)
+            {
+                if (visual.RenderTransform?.Value != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    var renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+
+                    result *= renderTransform;
+                }
+
+                var topLeft = visual.Bounds.TopLeft;
+
+                if (topLeft != default)
+                {
+                    result *= Matrix.CreateTranslation(topLeft);
+                }
+
+                visual = visual.VisualParent;
+
+                if (visual == null)
+                {
+                    return null;
+                }
+            }
+
+            return result;
+        }
+
         /// <inheritdoc/>
         public void AddDirty(IVisual visual)
         {
             if (visual.Bounds != Rect.Empty)
             {
-                var m = visual.TransformToVisual(_root);
+                var m = TransformToVisual(visual, _root);
 
                 if (m.HasValue)
                 {
@@ -191,7 +224,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        static IEnumerable<IVisual> HitTest(
+        private static IEnumerable<IVisual> HitTest(
            IVisual visual,
            Point p,
            Func<IVisual, bool> filter)
