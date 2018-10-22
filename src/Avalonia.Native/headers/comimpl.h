@@ -63,19 +63,20 @@ public:
 
 
 #define FORWARD_IUNKNOWN() \
-virtual ULONG Release(){ \
+virtual ULONG Release() override \
+{ \
 return ComObject::Release(); \
 } \
-virtual ULONG AddRef() \
+virtual ULONG AddRef() override \
 { \
     return ComObject::AddRef(); \
 } \
-virtual HRESULT QueryInterface(REFIID riid, void **ppvObject) \
+virtual HRESULT QueryInterface(REFIID riid, void **ppvObject) override \
 { \
     return ComObject::QueryInterface(riid, ppvObject); \
 }
 
-#define BEGIN_INTERFACE_MAP() public: virtual HRESULT STDMETHODCALLTYPE QueryInterfaceImpl(REFIID riid, void **ppvObject){
+#define BEGIN_INTERFACE_MAP() public: virtual HRESULT STDMETHODCALLTYPE QueryInterfaceImpl(REFIID riid, void **ppvObject) override {
 #define INTERFACE_MAP_ENTRY(TInterface, IID) if(0 == memcmp(riid, &IID, sizeof(GUID))) { TInterface* casted = this; *ppvObject = casted; return S_OK; }
 #define END_INTERFACE_MAP() return E_NOINTERFACE; }
 #define INHERIT_INTERFACE_MAP(TBase) if(TBase::QueryInterfaceImpl(riid, ppvObject) == S_OK) return S_OK;

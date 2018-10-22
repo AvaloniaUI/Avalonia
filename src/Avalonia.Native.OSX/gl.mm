@@ -48,7 +48,7 @@ public:
     }
     
     
-    virtual HRESULT MakeCurrent()
+    virtual HRESULT MakeCurrent()  override
     {
         [GlContext makeCurrentContext];/*
         glBindFramebufferEXT(GL_FRAMEBUFFER, Framebuffer);
@@ -75,24 +75,24 @@ public:
         _libgl = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib", RTLD_LAZY);
     }
     
-    virtual HRESULT GetSampleCount(int* ret)
+    virtual HRESULT GetSampleCount(int* ret)  override
     {
         *ret = _sampleCount;
         return S_OK;
     }
-    virtual HRESULT GetStencilSize(int* ret)
+    virtual HRESULT GetStencilSize(int* ret) override
     {
         *ret = _stencilSize;
         return S_OK;
     }
     
-    virtual HRESULT ClearContext()
+    virtual HRESULT ClearContext()  override
     {
         [NSOpenGLContext clearCurrentContext];
         return S_OK;
     }
     
-    virtual void* GetProcAddress(char* proc)
+    virtual void* GetProcAddress(char* proc)  override
     {
         return dlsym(_libgl, proc);
     }
@@ -121,14 +121,14 @@ public:
         //return [[NSOpenGLContext alloc] initWithFormat:_format shareContext:nil];
     }
     
-    virtual HRESULT ObtainDisplay(IAvnGlDisplay**retOut)
+    virtual HRESULT ObtainDisplay(IAvnGlDisplay**retOut)  override
     {
         *retOut = _display;
         _display->AddRef();
         return S_OK;
     }
     
-    virtual HRESULT ObtainImmediateContext(IAvnGlContext**retOut)
+    virtual HRESULT ObtainImmediateContext(IAvnGlContext**retOut)  override
     {
         *retOut = _immediate;
         _immediate->AddRef();
@@ -193,14 +193,14 @@ public:
         _view = view;
     }
     
-    virtual HRESULT GetPixelSize(AvnPixelSize* ret)
+    virtual HRESULT GetPixelSize(AvnPixelSize* ret)  override
     {
         auto fsize = [_view convertSizeToBacking: [_view frame].size];
         ret->Width = (int)fsize.width;
         ret->Height = (int)fsize.height;
         return S_OK;
     }
-    virtual HRESULT GetScaling(double* ret)
+    virtual HRESULT GetScaling(double* ret)  override
     {
         *ret = [_window backingScaleFactor];
         return S_OK;
@@ -230,7 +230,7 @@ public:
         _context = GetFeature()->CreateContext();
     }
     
-    virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)
+    virtual HRESULT BeginDrawing(IAvnGlSurfaceRenderingSession** ret)  override
     {
         auto f = GetFeature();
         if(f == NULL)

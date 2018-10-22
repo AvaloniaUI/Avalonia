@@ -11,7 +11,7 @@ public:
     virtual void SelectFolderDialog (IAvnWindow* parentWindowHandle,
                                      IAvnSystemDialogEvents* events,
                                      const char* title,
-                                     const char* initialDirectory)
+                                     const char* initialDirectory) override
     {
         @autoreleasepool
         {
@@ -88,7 +88,7 @@ public:
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* initialFile,
-                                 const char* filters)
+                                 const char* filters) override
     {
         @autoreleasepool
         {
@@ -179,7 +179,7 @@ public:
                                  const char* title,
                                  const char* initialDirectory,
                                  const char* initialFile,
-                                 const char* filters)
+                                 const char* filters) override
     {
         @autoreleasepool
         {

@@ -63,7 +63,7 @@ private:
     public:
         FORWARD_IUNKNOWN()
         bool Cancelled = 0;
-        virtual void Cancel()
+        virtual void Cancel() override
         {
             Cancelled = 1;
         }
@@ -86,20 +86,20 @@ public:
         _signaler = NULL;
     }
     
-    virtual bool GetCurrentThreadIsLoopThread()
+    virtual bool GetCurrentThreadIsLoopThread() override
     {
         return [[NSThread currentThread] isMainThread];
     }
-    virtual void SetSignaledCallback(IAvnSignaledCallback* cb)
+    virtual void SetSignaledCallback(IAvnSignaledCallback* cb) override
     {
         SignaledCallback = cb;
     }
-    virtual IAvnLoopCancellation* CreateLoopCancellation()
+    virtual IAvnLoopCancellation* CreateLoopCancellation() override
     {
         return new LoopCancellation();
     }
     
-    virtual void RunLoop(IAvnLoopCancellation* cancel)
+    virtual void RunLoop(IAvnLoopCancellation* cancel) override
     {
         @autoreleasepool {
             auto can = dynamic_cast<LoopCancellation*>(cancel);
@@ -125,12 +125,12 @@ public:
         }
     }
     
-    virtual void Signal(int priority)
+    virtual void Signal(int priority) override
     {
         [_signaler signal:priority];
     }
     
-    virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback)
+    virtual IUnknown* StartTimer(int priority, int ms, IAvnActionCallback* callback) override
     {
         @autoreleasepool {
             

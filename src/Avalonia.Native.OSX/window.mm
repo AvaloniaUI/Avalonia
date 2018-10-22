@@ -81,12 +81,12 @@ public:
         [Window setContentView: View];
     }
     
-    virtual AvnWindow* GetNSWindow()
+    virtual AvnWindow* GetNSWindow() override
     {
         return Window;
     }
     
-    virtual HRESULT Show()
+    virtual HRESULT Show() override
     {
         @autoreleasepool
         {
@@ -102,7 +102,7 @@ public:
         }
     }
     
-    virtual HRESULT Hide ()
+    virtual HRESULT Hide () override
     {
         @autoreleasepool
         {
@@ -115,7 +115,7 @@ public:
         }
     }
     
-    virtual HRESULT Activate ()
+    virtual HRESULT Activate () override
     {
         @autoreleasepool
         {
@@ -128,7 +128,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT SetTopMost (bool value)
+    virtual HRESULT SetTopMost (bool value) override
     {
         @autoreleasepool
         {
@@ -138,7 +138,7 @@ public:
         }
     }
     
-    virtual HRESULT Close()
+    virtual HRESULT Close() override
     {
         @autoreleasepool
         {
@@ -147,7 +147,7 @@ public:
         }
     }
     
-    virtual HRESULT GetClientSize(AvnSize* ret)
+    virtual HRESULT GetClientSize(AvnSize* ret) override
     {
         @autoreleasepool
         {
@@ -160,7 +160,7 @@ public:
         }
     }
     
-    virtual HRESULT GetMaxClientSize(AvnSize* ret)
+    virtual HRESULT GetMaxClientSize(AvnSize* ret) override
     {
         @autoreleasepool
         {
@@ -176,7 +176,7 @@ public:
         }
     }
     
-    virtual HRESULT GetScaling (double* ret)
+    virtual HRESULT GetScaling (double* ret) override
     {
         @autoreleasepool
         {
@@ -194,7 +194,7 @@ public:
         }
     }
     
-    virtual HRESULT SetMinMaxSize (AvnSize minSize, AvnSize maxSize)
+    virtual HRESULT SetMinMaxSize (AvnSize minSize, AvnSize maxSize) override
     {
         @autoreleasepool
         {
@@ -205,7 +205,7 @@ public:
         }
     }
     
-    virtual HRESULT Resize(double x, double y)
+    virtual HRESULT Resize(double x, double y) override
     {
         @autoreleasepool
         {
@@ -215,7 +215,7 @@ public:
         }
     }
     
-    virtual HRESULT Invalidate (AvnRect rect)
+    virtual HRESULT Invalidate (AvnRect rect) override
     {
         @autoreleasepool
         {
@@ -225,7 +225,7 @@ public:
         }
     }
     
-    virtual bool TryLock()
+    virtual bool TryLock() override
     {
         @autoreleasepool
         {
@@ -233,7 +233,7 @@ public:
         }
     }
     
-    virtual void Unlock()
+    virtual void Unlock() override
     {
         @autoreleasepool
         {
@@ -241,7 +241,7 @@ public:
         }
     }
     
-    virtual HRESULT BeginMoveDrag ()
+    virtual HRESULT BeginMoveDrag () override
     {
         @autoreleasepool
         {
@@ -258,12 +258,12 @@ public:
         }
     }
     
-    virtual HRESULT BeginResizeDrag (AvnWindowEdge edge)
+    virtual HRESULT BeginResizeDrag (AvnWindowEdge edge) override
     {
         return S_OK;
     }
     
-    virtual HRESULT GetPosition (AvnPoint* ret)
+    virtual HRESULT GetPosition (AvnPoint* ret) override
     {
         @autoreleasepool
         {
@@ -283,7 +283,7 @@ public:
         }
     }
     
-    virtual HRESULT SetPosition (AvnPoint point)
+    virtual HRESULT SetPosition (AvnPoint point) override
     {
         @autoreleasepool
         {
@@ -294,7 +294,7 @@ public:
         }
     }
     
-    virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret)
+    virtual HRESULT PointToClient (AvnPoint point, AvnPoint* ret) override
     {
         @autoreleasepool
         {
@@ -312,7 +312,7 @@ public:
         }
     }
     
-    virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret)
+    virtual HRESULT PointToScreen (AvnPoint point, AvnPoint* ret) override
     {
         @autoreleasepool
         {
@@ -329,13 +329,13 @@ public:
         }
     }
     
-    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose)
+    virtual HRESULT ThreadSafeSetSwRenderedFrame(AvnFramebuffer* fb, IUnknown* dispose) override
     {
         [View setSwRenderedFrame: fb dispose: dispose];
         return S_OK;
     }
     
-    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret)
+    virtual HRESULT GetSoftwareFramebuffer(AvnFramebuffer*ret) override
     {
         if(![[NSThread currentThread] isMainThread])
             return E_FAIL;
@@ -345,7 +345,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT SetCursor(IAvnCursor* cursor)
+    virtual HRESULT SetCursor(IAvnCursor* cursor) override
     {
         @autoreleasepool
         {
@@ -367,7 +367,7 @@ public:
         }
     }
     
-    virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ppv)
+    virtual HRESULT CreateGlRenderTarget(IAvnGlSurfaceRenderTarget** ppv) override
     {
         if(View == NULL)
             return E_FAIL;
@@ -440,7 +440,7 @@ private:
         [Window setCanBecomeKeyAndMain];
     }
     
-    virtual HRESULT Show ()
+    virtual HRESULT Show () override
     {
         @autoreleasepool
         {
@@ -450,7 +450,7 @@ private:
         }
     }
     
-    virtual HRESULT ShowDialog (IUnknown**ppv)
+    virtual HRESULT ShowDialog (IUnknown**ppv) override
     {
         @autoreleasepool
         {
@@ -475,7 +475,7 @@ private:
         }
     }
     
-    void WindowStateChanged ()
+    void WindowStateChanged () override
     {
         AvnWindowState state;
         GetWindowState(&state);
@@ -509,7 +509,7 @@ private:
         }
     }
     
-    virtual HRESULT SetCanResize(bool value)
+    virtual HRESULT SetCanResize(bool value) override
     {
         @autoreleasepool
         {
@@ -519,7 +519,7 @@ private:
         }
     }
     
-    virtual HRESULT SetHasDecorations(bool value)
+    virtual HRESULT SetHasDecorations(bool value) override
     {
         @autoreleasepool
         {
@@ -530,7 +530,7 @@ private:
         }
     }
     
-    virtual HRESULT SetTitle (const char* title)
+    virtual HRESULT SetTitle (const char* title) override
     {
         @autoreleasepool
         {
@@ -542,7 +542,7 @@ private:
         }
     }
     
-    virtual HRESULT SetTitleBarColor(AvnColor color)
+    virtual HRESULT SetTitleBarColor(AvnColor color) override
     {
         @autoreleasepool
         {
@@ -571,7 +571,7 @@ private:
         return S_OK;
     }
     
-    virtual HRESULT GetWindowState (AvnWindowState*ret)
+    virtual HRESULT GetWindowState (AvnWindowState*ret) override
     {
         @autoreleasepool
         {
@@ -598,7 +598,7 @@ private:
         }
     }
     
-    virtual HRESULT SetWindowState (AvnWindowState state)
+    virtual HRESULT SetWindowState (AvnWindowState state) override
     {
         @autoreleasepool
         {
@@ -642,7 +642,7 @@ private:
     }
     
 protected:
-    virtual void OnResized ()
+    virtual void OnResized () override
     {
         auto windowState = [Window isMiniaturized] ? Minimized
         : (IsZoomed() ? Maximized : Normal);
@@ -655,7 +655,7 @@ protected:
         }
     }
     
-    virtual NSWindowStyleMask GetStyle()
+    virtual NSWindowStyleMask GetStyle() override
     {
         unsigned long s = NSWindowStyleMaskBorderless;
         if(_hasDecorations)
@@ -1192,12 +1192,12 @@ private:
     }
     
 protected:
-    virtual NSWindowStyleMask GetStyle()
+    virtual NSWindowStyleMask GetStyle() override
     {
         return NSWindowStyleMaskBorderless;
     }
     
-    virtual HRESULT Resize(double x, double y)
+    virtual HRESULT Resize(double x, double y) override
     {
         @autoreleasepool
         {

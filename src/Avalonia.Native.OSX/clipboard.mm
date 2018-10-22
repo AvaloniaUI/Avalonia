@@ -7,7 +7,7 @@ class Clipboard : public ComSingleObject<IAvnClipboard, &IID_IAvnClipboard>
 {
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT GetText (void** retOut)
+    virtual HRESULT GetText (void** retOut) override
     {
         @autoreleasepool
         {
@@ -18,7 +18,7 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT SetText (char* text)
+    virtual HRESULT SetText (char* text) override
     {
         @autoreleasepool
         {
@@ -30,7 +30,7 @@ public:
         return S_OK;
     }
 
-    virtual HRESULT Clear()
+    virtual HRESULT Clear() override
     {
         @autoreleasepool
         {

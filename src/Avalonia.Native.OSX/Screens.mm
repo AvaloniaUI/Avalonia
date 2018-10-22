@@ -7,7 +7,7 @@ class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
 {
     public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT GetScreenCount (int* ret)
+    virtual HRESULT GetScreenCount (int* ret) override
     {
         @autoreleasepool
         {
@@ -17,7 +17,7 @@ class Screens : public ComSingleObject<IAvnScreens, &IID_IAvnScreens>
         }
     }
     
-    virtual HRESULT GetScreen (int index, AvnScreen* ret)
+    virtual HRESULT GetScreen (int index, AvnScreen* ret) override
     {
         @autoreleasepool
         {

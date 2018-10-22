@@ -16,7 +16,7 @@ class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 {
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT SetShowInDock(int show)
+    virtual HRESULT SetShowInDock(int show)  override
     {
         ShowInDock = show;
         SetActivationPolicy();
@@ -64,7 +64,7 @@ class AvaloniaNative : public ComSingleObject<IAvaloniaNativeFactory, &IID_IAval
     
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT Initialize()
+    virtual HRESULT Initialize() override
     {
         @autoreleasepool{
             [[ThreadingInitializer new] do];
@@ -72,12 +72,12 @@ public:
         }
     };
     
-    virtual IAvnMacOptions* GetMacOptions()
+    virtual IAvnMacOptions* GetMacOptions()  override
     {
         return (IAvnMacOptions*)new MacOptions();
     }
     
-    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)
+    virtual HRESULT CreateWindow(IAvnWindowEvents* cb, IAvnWindow** ppv)  override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
@@ -85,7 +85,7 @@ public:
         return S_OK;
     };
     
-    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv)
+    virtual HRESULT CreatePopup(IAvnWindowEvents* cb, IAvnPopup** ppv) override
     {
         if(cb == nullptr || ppv == nullptr)
             return E_POINTER;
@@ -94,37 +94,37 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)
+    virtual HRESULT CreatePlatformThreadingInterface(IAvnPlatformThreadingInterface** ppv)  override
     {
         *ppv = CreatePlatformThreading();
         return S_OK;
     }
     
-    virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv)
+    virtual HRESULT CreateSystemDialogs(IAvnSystemDialogs** ppv) override
     {
         *ppv = ::CreateSystemDialogs();
         return  S_OK;
     }
     
-    virtual HRESULT CreateScreens (IAvnScreens** ppv)
+    virtual HRESULT CreateScreens (IAvnScreens** ppv) override
     {
         *ppv = ::CreateScreens ();
         return S_OK;
     }
 
-    virtual HRESULT CreateClipboard(IAvnClipboard** ppv)
+    virtual HRESULT CreateClipboard(IAvnClipboard** ppv) override
     {
         *ppv = ::CreateClipboard ();
         return S_OK;
     }
 
-    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv)
+    virtual HRESULT CreateCursorFactory(IAvnCursorFactory** ppv) override
     {
         *ppv = ::CreateCursorFactory();
         return S_OK;
     }
     
-    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv)
+    virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) override
     {
         auto rv = ::GetGlFeature();
         if(rv == NULL)
