@@ -70,12 +70,12 @@ namespace Avalonia
 
         public class ActivatableWindow : ReactiveWindow<ActivatableViewModel>
         {
-            public ActivatableWindow() { }
+            public ActivatableWindow() => this.WhenActivated(disposables => { });
         }
 
         public class ActivatableUserControl : ReactiveUserControl<ActivatableViewModel>
         {
-            public ActivatableUserControl() { }
+            public ActivatableUserControl() => this.WhenActivated(disposables => { });
         }
 
         public AvaloniaActivationForViewFetcherTest()

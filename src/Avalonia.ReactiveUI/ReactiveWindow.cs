@@ -24,7 +24,6 @@ namespace Avalonia
         public ReactiveWindow()
         {
             DataContextChanged += (sender, args) => ViewModel = DataContext as TViewModel;
-            this.WhenActivated(disposables => { /* activate ViewModel */ });
         }
             
         /// <summary>
