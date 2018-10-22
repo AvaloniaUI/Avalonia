@@ -11,6 +11,7 @@ jobs:
   
   - script: |
       dotnet --info
+      printenv
       ./build.sh --target "Azure-Linux" --configuration "Release"
      
 - job: macOS
@@ -32,6 +33,7 @@ jobs:
 
   - script: |
       dotnet --info
+      printenv 
       ./build.sh --target "Azure-OSX" --configuration "Release"
 
 - job: Windows
