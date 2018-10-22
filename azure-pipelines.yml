@@ -13,6 +13,10 @@ jobs:
       dotnet --info
       printenv
       ./build.sh --target "Azure-Linux" --configuration "Release"
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
+      artifactName: 'BinariesLinux'
      
 - job: macOS
   pool:
@@ -35,6 +39,15 @@ jobs:
       dotnet --info
       printenv 
       ./build.sh --target "Azure-OSX" --configuration "Release"
+  
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
+      artifactName: 'Avalonia.Native.OSX'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
+      artifactName: 'BinariesOSX'
 
 - job: Windows
   pool:
@@ -52,3 +65,7 @@ jobs:
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
+      artifactName: 'BinariesWindows'
