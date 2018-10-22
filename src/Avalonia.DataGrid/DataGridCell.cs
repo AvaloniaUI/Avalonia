@@ -86,7 +86,7 @@ namespace Avalonia.Controls
                        OwningGrid.CurrentSlot == OwningRow.Slot;
             }
         }
-        
+
         private bool IsEdited
         {
             get
@@ -95,7 +95,7 @@ namespace Avalonia.Controls
                        OwningGrid.EditingColumnIndex == ColumnIndex;
             }
         }
-        
+
         private bool IsMouseOver
         {
             get
@@ -127,7 +127,7 @@ namespace Avalonia.Controls
 
             UpdatePseudoClasses();
             _rightGridLine = e.NameScope.Find<Rectangle>(DATAGRIDCELL_elementRightGridLine);
-            if(_rightGridLine != null && OwningColumn == null)
+            if (_rightGridLine != null && OwningColumn == null)
             {
                 // Turn off the right GridLine for filler cells
                 _rightGridLine.IsVisible = false;
@@ -160,23 +160,22 @@ namespace Avalonia.Controls
         //TODO TabStop
         private void DataGridCell_PointerPressed(PointerPressedEventArgs e)
         {
-            if(e.MouseButton != MouseButton.Left)
-            {
-                return;
-            }
-
             // OwningGrid is null for TopLeftHeaderCell and TopRightHeaderCell because they have no OwningRow
             if (OwningGrid != null)
             {
-                if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
+                OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
+                if (e.MouseButton == MouseButton.Left)
                 {
-                    OwningGrid.Focus();
-                }
-                if (OwningRow != null)
-                {
-                    e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
-                    OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
+                    if (!e.Handled)
+                    //if (!e.Handled && OwningGrid.IsTabStop)
+                    {
+                        OwningGrid.Focus();
+                    }
+                    if (OwningRow != null)
+                    {
+                        e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, ColumnIndex, OwningRow.Slot, !e.Handled);
+                        OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
+                    }
                 }
             }
         }
@@ -262,7 +261,7 @@ namespace Avalonia.Controls
                     _rightGridLine.Fill = OwningGrid.VerticalGridLinesBrush;
                 }
 
-                bool newVisibility = 
+                bool newVisibility =
                     (OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.Vertical || OwningGrid.GridLinesVisibility == DataGridGridLinesVisibility.All)
                         && (OwningGrid.ColumnsInternal.FillerColumn.IsActive || OwningColumn != lastVisibleColumn);
 
@@ -275,7 +274,7 @@ namespace Avalonia.Controls
 
         private void OnOwningColumnSet(DataGridColumn column)
         {
-            if(column == null)
+            if (column == null)
             {
                 Classes.Clear();
             }
@@ -303,34 +302,34 @@ namespace Avalonia.Controls
     [TemplateVisualState(Name = VisualStates.StateValid, GroupName = VisualStates.GroupValidation)]
     public sealed partial class DataGridCell : ContentControl
     */
-    
 
-        //TODO Styles
-        /// <summary>
-        /// Ensures that the correct Style is applied to this object.
-        /// </summary>
-        /// <param name="previousStyle">Caller's previous associated Style</param>
-        /*internal void EnsureStyle(Style previousStyle)
+
+    //TODO Styles
+    /// <summary>
+    /// Ensures that the correct Style is applied to this object.
+    /// </summary>
+    /// <param name="previousStyle">Caller's previous associated Style</param>
+    /*internal void EnsureStyle(Style previousStyle)
+    {
+        if (Style != null
+            && (OwningColumn == null || Style != OwningColumn.CellStyle)
+            && (OwningGrid == null || Style != OwningGrid.CellStyle)
+            && (Style != previousStyle))
         {
-            if (Style != null
-                && (OwningColumn == null || Style != OwningColumn.CellStyle)
-                && (OwningGrid == null || Style != OwningGrid.CellStyle)
-                && (Style != previousStyle))
-            {
-                return;
-            }
+            return;
+        }
 
-            Style style = null;
-            if (OwningColumn != null)
-            {
-                style = OwningColumn.CellStyle;
-            }
-            if (style == null && OwningGrid != null)
-            {
-                style = OwningGrid.CellStyle;
-            }
-            SetStyleWithType(style);
-        } */
+        Style style = null;
+        if (OwningColumn != null)
+        {
+            style = OwningColumn.CellStyle;
+        }
+        if (style == null && OwningGrid != null)
+        {
+            style = OwningGrid.CellStyle;
+        }
+        SetStyleWithType(style);
+    } */
 
 
 }
