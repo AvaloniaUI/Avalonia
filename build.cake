@@ -70,6 +70,7 @@ Setup<AvaloniaBuildData>(context =>
     Information("IsRunningOnUnix: " + parameters.IsRunningOnUnix);
     Information("IsRunningOnWindows: " + parameters.IsRunningOnWindows);
     Information("IsRunningOnAppVeyor: " + parameters.IsRunningOnAppVeyor);
+    Information("IsRunnongOnAzure:" + parameters.IsRunningOnAzure);
     Information("IsPullRequest: " + parameters.IsPullRequest);
     Information("IsMainRepo: " + parameters.IsMainRepo);
     Information("IsMasterBranch: " + parameters.IsMasterBranch);
