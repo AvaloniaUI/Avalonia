@@ -12,10 +12,6 @@
              namespace="Avalonia.Native.Interop"
              attach="true"
              pre="#define COM_GUIDS_MATERIALIZE\n"/>
-    <bindings>
-        <bind from="HRESULT" to="SharpGen.Runtime.Result"/>
-        <bind from="HRESULT" to="SharpGen.Runtime.Result"/>
-    </bindings>
     <mapping>
         <remove function=".*" />
         <map interface="*.Events" callback="true" autogen-shadow="true"/>
