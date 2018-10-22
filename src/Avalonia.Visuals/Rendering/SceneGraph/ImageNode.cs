@@ -30,6 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
             SourceRect = sourceRect;
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
+            SourceVersion = Source.Item.Version;
         }        
 
         /// <summary>
@@ -41,6 +42,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the image to draw.
         /// </summary>
         public IRef<IBitmapImpl> Source { get; }
+
+        /// <summary>
+        /// Source bitmap Version
+        /// </summary>
+        public int SourceVersion { get; }
 
         /// <summary>
         /// Gets the draw opacity.
@@ -83,6 +89,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             return transform == Transform &&
                 Equals(source.Item, Source.Item) &&
+                source.Item.Version == SourceVersion &&
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect &&
@@ -92,8 +99,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            // TODO: Probably need to introduce some kind of locking mechanism in the case of
-            // WriteableBitmap.
             context.Transform = Transform;
             context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
