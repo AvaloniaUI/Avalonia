@@ -61,7 +61,7 @@ namespace Avalonia.Data
 
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Subject).CombineLatest().Select(x => ConvertValue(x, targetType));
+            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType));
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
