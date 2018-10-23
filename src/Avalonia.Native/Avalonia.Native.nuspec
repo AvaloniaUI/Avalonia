@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Avalonia.Native</id>
+    <version>$avalonia-version$</version>
+    <authors>Avalonia Team</authors>
+    <owners>stevenk</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/AvaloniaUI/Avalonia</projectUrl>
+    <description>The Avalonia UI framework</description>
+    <copyright>Copyright 2018</copyright>
+    <tags>Avalonia</tags>
+    <dependencies>
+      <dependency id="Avalonia" version="$avalonia-version$" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\netstandard2.0\Avalonia.Native.dll" target="lib\netstandard2.0\Avalonia.Native.dll" />
+    <file src="..\..\Build\Products\Release\libAvalonia.Native.OSX.dylib" target="runtimes\osx\native\libAvaloniaNative.dylib" />
+  </files>
+</package>

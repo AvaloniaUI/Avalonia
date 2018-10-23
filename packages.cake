@@ -150,7 +150,7 @@ public class Packages
             nuspec.Symbols = false;
             nuspec.NoPackageAnalysis = true;
             nuspec.Description = "The Avalonia UI framework";
-            nuspec.Copyright = "Copyright 2015";
+            nuspec.Copyright = "Copyright 2018";
             nuspec.Tags = new [] { "Avalonia" };
         });
 
