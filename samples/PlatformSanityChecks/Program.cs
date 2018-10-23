@@ -20,7 +20,7 @@ namespace PlatformSanityChecks
             AppBuilder.Configure<App>().RuntimePlatformServicesInitializer();
             var app = new App();
             
-            new AvaloniaX11Platform().Initialize();
+            AvaloniaX11PlatformExtensions.InitializeX11Platform();
 
             CheckPlatformThreading();
 

@@ -9,9 +9,10 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    public unsafe class X11PlatformThreading : IPlatformThreadingInterface
+    unsafe class X11PlatformThreading : IPlatformThreadingInterface
     {
         private readonly IntPtr _display;
+        private readonly Dictionary<IntPtr, Action<XEvent>> _eventHandlers;
         private Thread _mainThread;
 
         [StructLayout(LayoutKind.Explicit)]
@@ -102,9 +103,10 @@ namespace Avalonia.X11
 
         List<X11Timer> _timers = new List<X11Timer>();
         
-        public X11PlatformThreading(IntPtr display)
+        public X11PlatformThreading(IntPtr display, Dictionary<IntPtr, Action<XEvent>> eventHandlers)
         {
             _display = display;
+            _eventHandlers = eventHandlers;
             _mainThread = Thread.CurrentThread;
             var fd = XLib.XConnectionNumber(display);
             var ev = new epoll_event()
@@ -202,12 +204,22 @@ namespace Avalonia.X11
                     }
                     else
                     {
-                        while (XPending(_display))
+                        while (true)
                         {
-                            if (cancellationToken.IsCancellationRequested)
-                                return;
-                            XNextEvent(_display, out var xev);
+                            var pending = XPending(_display);
+                            if (pending == 0)
+                                break;
+                            while (pending > 0)
+                            {
+                                if (cancellationToken.IsCancellationRequested)
+                                    return;
+                                XNextEvent(_display, out var xev);
+                                pending--;
+                                if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                                    handler(xev);
+                            }
                         }
+                        Dispatcher.UIThread.RunJobs();
                     }
                 }
             }
