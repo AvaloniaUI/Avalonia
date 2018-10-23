@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj"/>
+  </ItemGroup>
+</Project>

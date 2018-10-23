@@ -122,11 +122,11 @@ namespace Avalonia
                 if (_resources != null)
                 {
                     hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourcesChanged;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourcesChanged;
+                _resources.ResourcesChanged += ThisResourcesChanged;
 
                 if (hadResources || _resources.Count > 0)
                 {
@@ -342,6 +342,11 @@ namespace Avalonia
             AvaloniaLocator.CurrentMutable
                 .Bind<IGlobalClock>().ToConstant(clock)
                 .GetService<IRenderLoop>()?.Add(clock);
+        }
+
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

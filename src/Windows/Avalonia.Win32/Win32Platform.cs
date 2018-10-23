@@ -77,6 +77,8 @@ namespace Avalonia.Win32
 
         public static void Initialize(bool deferredRendering = true)
         {
+            UnmanagedMethods.SetProcessDPIAware();
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
@@ -87,6 +89,7 @@ namespace Avalonia.Win32
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
             Win32GlManager.Initialize();
             UseDeferredRendering = deferredRendering;
