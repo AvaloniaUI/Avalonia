@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>Avalonia.Native</id>
-    <version>$version$</version>
+    <version>$avalonia-version$</version>
     <authors>Avalonia Team</authors>
     <owners>stevenk</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -12,7 +12,7 @@
     <copyright>Copyright 2018</copyright>
     <tags>Avalonia</tags>
     <dependencies>
-      <dependency id="Avalonia" version="$version$" />
+      <dependency id="Avalonia" version="$avalonia-version$" />
     </dependencies>
   </metadata>
   <files>
