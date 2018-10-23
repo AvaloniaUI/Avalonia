@@ -25,7 +25,7 @@ namespace Avalonia.Gtk3
         public static bool UseDeferredRendering = true;
         private static bool s_gtkInitialized;
 
-        static bool EnvOption(string option, bool def, bool? specified)
+        private static bool EnvOption(string option, bool def, bool? specified)
         {
             bool? Parse(string env)
             {
@@ -45,7 +45,7 @@ namespace Avalonia.Gtk3
             var envValue = Parse(option);
             return envValue ?? def;
         }
-        
+
         public static void Initialize(Gtk3PlatformOptions options)
         {
             Resolver.Custom = options.CustomResolver;
@@ -56,7 +56,8 @@ namespace Avalonia.Gtk3
                 try
                 {
                     X11.XInitThreads();
-                }catch{}
+                }
+                catch { }
                 Resolver.Resolve();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     using (var backends = new Utf8Buffer("x11"))
@@ -66,7 +67,7 @@ namespace Avalonia.Gtk3
                 DisplayClassName =
                     Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
 
-                using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                using (var utf = new Utf8Buffer($"avalonia.app.a{Guid.NewGuid().ToString("N")}"))
                     App = Native.GtkApplicationNew(utf, 0);
                 //Mark current thread as UI thread
                 s_tlsMarker = true;
@@ -111,18 +112,19 @@ namespace Avalonia.Gtk3
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
             var msec = interval.TotalMilliseconds;
-            var imsec = (uint) msec;
+            var imsec = (uint)msec;
             if (imsec == 0)
                 imsec = 1;
             return GlibTimeout.StartTimer(GlibPriority.FromDispatcherPriority(priority), imsec, tick);
         }
 
-        private bool[] _signaled = new bool[(int) DispatcherPriority.MaxValue + 1];
-        object _lock = new object();
+        private bool[] _signaled = new bool[(int)DispatcherPriority.MaxValue + 1];
+        private object _lock = new object();
+
         public void Signal(DispatcherPriority prio)
         {
-            var idx = (int) prio;
-            lock(_lock)
+            var idx = (int)prio;
+            lock (_lock)
                 if (!_signaled[idx])
                 {
                     _signaled[idx] = true;
@@ -137,8 +139,8 @@ namespace Avalonia.Gtk3
                     });
                 }
         }
-        public event Action<DispatcherPriority?> Signaled;
 
+        public event Action<DispatcherPriority?> Signaled;
 
         [ThreadStatic]
         private static bool s_tlsMarker;
@@ -158,7 +160,7 @@ namespace Avalonia
 {
     public static class Gtk3AppBuilderExtensions
     {
-        public static T UseGtk3<T>(this AppBuilderBase<T> builder, Gtk3PlatformOptions options = null) 
+        public static T UseGtk3<T>(this AppBuilderBase<T> builder, Gtk3PlatformOptions options = null)
             where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(() => Gtk3Platform.Initialize(options ?? new Gtk3PlatformOptions()),
