@@ -23,6 +23,9 @@ jobs:
   pool:
     vmImage: 'xcode9-macos10.13'
   steps:
+  - task: DotNetCoreInstaller@0
+    inputs:
+      version: '2.1.403'
   - task: Xcode@5
     inputs:
       actions: 'build'
