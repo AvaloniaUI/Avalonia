@@ -1247,6 +1247,11 @@ namespace Avalonia.Controls
         public event EventHandler<DataGridCellEditEndingEventArgs> CellEditEnding;
 
         /// <summary>
+        /// Occurs when cell is mouse-pressed.
+        /// </summary>
+        public event EventHandler<DataGridCellPointerPressedEventArgs> CellPointerPressed;
+
+        /// <summary>
         /// Occurs when the <see cref="P:Avalonia.Controls.DataGridColumn.DisplayIndex" /> 
         /// property of a column changes.
         /// </summary>
@@ -2221,6 +2226,14 @@ namespace Avalonia.Controls
         protected virtual void OnCellEditEnding(DataGridCellEditEndingEventArgs e)
         {
             CellEditEnding?.Invoke(this, e);
+        }
+
+        /// <summary>
+        /// Raises the CellPointerPressed event.
+        /// </summary>
+        internal virtual void OnCellPointerPressed(DataGridCellPointerPressedEventArgs e)
+        {
+            CellPointerPressed?.Invoke(this, e);
         }
         
         /// <summary>
