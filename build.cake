@@ -339,9 +339,7 @@ Task("Travis")
   .IsDependentOn("Run-Tests");
 
 Task("Azure-Linux")
-  .IsDependentOn("Run-Tests")
-  .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl");
+  .IsDependentOn("Run-Tests");
 
 Task("Azure-OSX")
   .IsDependentOn("Run-Tests")

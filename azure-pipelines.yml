@@ -13,10 +13,6 @@ jobs:
       dotnet --info
       printenv
       ./build.sh --target "Azure-Linux" --configuration "Release"
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesLinux'
      
 - job: macOS
   pool:
