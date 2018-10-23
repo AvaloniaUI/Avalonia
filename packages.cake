@@ -446,7 +446,24 @@ public class Packages
                 },
                 BasePath = context.Directory("./src/Linux/"),
                 OutputDirectory = parameters.NugetRoot
-            }
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.Native
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.Native",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.Native.dll", Target = "lib/netstandard2.0" }
+                },
+                BasePath = context.Directory("./src/Avalonia.Native/bin/" + parameters.DirSuffix + "/netstandard2.0"),
+                OutputDirectory = parameters.NugetRoot
+            },
         };
 
         var nuspecNuGetSettingInterop = new NuGetPackSettings()
