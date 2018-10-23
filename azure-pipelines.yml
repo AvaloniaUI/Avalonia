@@ -61,6 +61,10 @@ jobs:
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
       artifactName: 'BinariesOSX'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/src/Avalonia.Native/nuget'
+      artifactName: 'Avalonia.Native.Nuspec'
 
 - job: Windows
   pool:
