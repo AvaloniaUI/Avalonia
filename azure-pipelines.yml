@@ -12,9 +12,9 @@ jobs:
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
-        export PATH="$PATH:$HOME/.dotnet/tools"
   
   - script: |
+      export PATH="$PATH:$HOME/.dotnet/tools"
       dotnet --info
       printenv
       dotnet cake build.cake -target="Azure-Linux" -configuration="Release"
@@ -39,9 +39,8 @@ jobs:
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
-        export PATH="$PATH:$HOME/.dotnet/tools"
-
   - script: |
+      export PATH="$PATH:$HOME/.dotnet/tools"
       dotnet --info
       printenv
       dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
@@ -63,10 +62,11 @@ jobs:
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
-        set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
   - task: CmdLine@2
     inputs:
-      script: dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
+      script: |
+        set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
+        dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
