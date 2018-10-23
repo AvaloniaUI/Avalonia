@@ -11,8 +11,8 @@ jobs:
   - task: CmdLine@2
     inputs:
       script: |
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet tool install -g Cake.Tool --version 0.30.0
+        export PATH="$PATH:$HOME/.dotnet/tools"
   
   - script: |
       dotnet --info
@@ -38,8 +38,8 @@ jobs:
   - task: CmdLine@2
     inputs:
       script: |
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet tool install -g Cake.Tool --version 0.30.0
+        export PATH="$PATH:$HOME/.dotnet/tools"
 
   - script: |
       dotnet --info
@@ -62,8 +62,8 @@ jobs:
   - task: CmdLine@2
     inputs:
       script: |
-      dotnet tool install -g Cake.Tool --version 0.30.0
-      set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
+        dotnet tool install -g Cake.Tool --version 0.30.0
+        set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
   - task: CmdLine@2
     inputs:
       script: dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
