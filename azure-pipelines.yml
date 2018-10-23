@@ -10,7 +10,9 @@ jobs:
         sudo apt-get install castxml
   - task: CmdLine@2
     inputs:
-      script: dotnet tool install -g Cake.Tool --version 0.30.0
+      script: |
+      dotnet tool install -g Cake.Tool --version 0.30.0
+      export PATH="$PATH:$HOME/.dotnet/tools"
   
   - script: |
       dotnet --info
@@ -35,7 +37,9 @@ jobs:
       script: brew install castxml
   - task: CmdLine@2
     inputs:
-      script: dotnet tool install -g Cake.Tool --version 0.30.0
+      script: |
+      dotnet tool install -g Cake.Tool --version 0.30.0
+      export PATH="$PATH:$HOME/.dotnet/tools"
 
   - script: |
       dotnet --info
@@ -57,7 +61,9 @@ jobs:
   steps:
   - task: CmdLine@2
     inputs:
-      script: dotnet tool install -g Cake.Tool --version 0.30.0
+      script: |
+      dotnet tool install -g Cake.Tool --version 0.30.0
+      set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
   - task: CmdLine@2
     inputs:
       script: dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
