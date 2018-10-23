@@ -23,6 +23,7 @@ namespace Avalonia.Rendering
         private readonly IVisual _root;
         private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
+        private Rect _lastPaintBounds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
@@ -45,6 +46,8 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
+            _lastPaintBounds = rect;
+
             if (_renderTarget == null)
             {
                 _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
@@ -158,6 +161,13 @@ namespace Avalonia.Rendering
                 if (m.HasValue)
                 {
                     var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
+
+                    if (_lastPaintBounds != default)
+                    {
+                        _renderRoot?.Invalidate(_lastPaintBounds);
+                        _lastPaintBounds = default;
+                    }
+
                     _renderRoot?.Invalidate(bounds);
                 }
             }
