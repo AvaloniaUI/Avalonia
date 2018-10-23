@@ -251,7 +251,6 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
 
-                //only renderer (hittesting) know better whether pointer is over the bounds of the button
                 if (ClickMode == ClickMode.Release && 
                     (IsPointerOver || new Rect(Bounds.Size).Contains(e.GetPosition(this))))
                 {

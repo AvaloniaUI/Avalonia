@@ -96,7 +96,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Button_Is_Raising_Click()
+        public void Button_Raises_Click()
         {
             var mouse = Mock.Of<IMouseDevice>();
             IInputElement captured = null;
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Button_Is_Not_Raising_Click_When_PointerReleased_Outside()
+        public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
             var mouse = Mock.Of<IMouseDevice>();
             IInputElement captured = null;
@@ -153,7 +153,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Button_With_RenderTransform_Is_Raising_Click()
+        public void Button_With_RenderTransform_Raises_Click()
         {
             var mouse = Mock.Of<IMouseDevice>();
             IInputElement captured = null;
