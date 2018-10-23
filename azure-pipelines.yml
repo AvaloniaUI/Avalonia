@@ -9,7 +9,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install castxml
   - task: CmdLine@2
-      inputs:
+    inputs:
       dotnet tool install -g Cake.Tool --version 0.30.0
   
   - script: |
@@ -34,7 +34,7 @@ jobs:
     inputs:
       script: brew install castxml
   - task: CmdLine@2
-      inputs:
+    inputs:
       dotnet tool install -g Cake.Tool --version 0.30.0
 
   - script: |
@@ -56,10 +56,10 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - task: CmdLine@2
-      inputs:
+    inputs:
       dotnet tool install -g Cake.Tool --version 0.30.0
   - task: CmdLine@2
-      inputs:
+    inputs:
       dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
   - task: PublishBuildArtifacts@1
     inputs:
