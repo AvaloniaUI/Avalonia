@@ -8,11 +8,14 @@ jobs:
       script: |
         sudo apt-get update
         sudo apt-get install castxml
+  - task: CmdLine@2
+      inputs:
+      dotnet tool install -g Cake.Tool --version 0.30.0
   
   - script: |
       dotnet --info
       printenv
-      ./build.sh --target "Azure-Linux" --configuration "Release"
+      dotnet cake build.cake -target="Azure-Linux" -configuration="Release"
      
 - job: macOS
   pool:
@@ -26,15 +29,18 @@ jobs:
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
-      args: '-derivedDataPath ./' 
+      args: '-derivedDataPath ./'
   - task: CmdLine@2
     inputs:
       script: brew install castxml
+  - task: CmdLine@2
+      inputs:
+      dotnet tool install -g Cake.Tool --version 0.30.0
 
   - script: |
       dotnet --info
-      printenv 
-      ./build.sh --target "Azure-OSX" --configuration "Release"
+      printenv
+      dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
   
   - task: PublishBuildArtifacts@1
     inputs:
@@ -49,10 +55,12 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-  - task: PowerShell@2
-    inputs:
-      filePath: build.ps1
-      arguments: -target "Azure-Windows" -configuration "Release"
+  - task: CmdLine@2
+      inputs:
+      dotnet tool install -g Cake.Tool --version 0.30.0
+  - task: CmdLine@2
+      inputs:
+      dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
