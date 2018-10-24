@@ -1,15 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// ADDINS
-///////////////////////////////////////////////////////////////////////////////
-
-#addin "nuget:?package=NuGet.Core&version=2.14.0"
-#tool "nuget:?package=NuGet.CommandLine&version=4.7.1"
-#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2018.2.3"
-  
-///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
+#tool "nuget:?package=NuGet.CommandLine&version=4.7.1"
+#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2018.2.3"
 #tool "nuget:?package=xunit.runner.console&version=2.3.1"
 #tool "nuget:?package=JetBrains.dotMemoryUnit&version=3.0.20171219.105559"
 
