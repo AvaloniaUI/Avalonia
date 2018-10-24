@@ -240,7 +240,8 @@ namespace Avalonia.X11
                             Resized?.Invoke(nsize);
                         if (changedPos)
                             PositionChanged?.Invoke(npos);
-                    });
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
+                    }, DispatcherPriority.Layout);
             }
             else if (ev.type == XEventName.DestroyNotify)
             {
