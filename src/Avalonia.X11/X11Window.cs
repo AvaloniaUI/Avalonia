@@ -25,6 +25,7 @@ namespace Avalonia.X11
         private IMouseDevice _mouse;
         private Point _position;
         private IntPtr _handle;
+        private IntPtr _renderHandle;
         private bool _mapped;
 
         class InputEventContainer
@@ -62,8 +63,12 @@ namespace Avalonia.X11
                 24,
                 (int)CreateWindowArgs.InputOutput, IntPtr.Zero, 
                 new UIntPtr((uint)valueMask), ref attr);
-
-
+            _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, 300, 200, 0, 24,
+                (int)CreateWindowArgs.InputOutput,
+                IntPtr.Zero,
+                new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
+                                   SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+                
             Handle = new PlatformHandle(_handle, "XID");
             ClientSize = new Size(400, 400);
             _eventHandler = OnEvent;
@@ -86,7 +91,7 @@ namespace Avalonia.X11
             if (feature != null)
                 surfaces.Insert(0,
                     new EglGlPlatformSurface((EglDisplay)feature.Display, feature.DeferredContext,
-                        new SurfaceInfo(_x11.DeferredDisplay, _handle)));
+                        new SurfaceInfo(_x11.DeferredDisplay, _handle, _renderHandle)));
             Surfaces = surfaces.ToArray();
             UpdateWmHits();
             XFlush(_x11.Display);
@@ -95,10 +100,12 @@ namespace Avalonia.X11
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
             private readonly IntPtr _display;
+            private readonly IntPtr _parent;
 
-            public SurfaceInfo(IntPtr display, IntPtr xid)
+            public SurfaceInfo(IntPtr display, IntPtr parent, IntPtr xid)
             {
                 _display = display;
+                _parent = parent;
                 Handle = xid;
             }
             public IntPtr Handle { get; }
@@ -108,8 +115,10 @@ namespace Avalonia.X11
                 get
                 {
                     XLockDisplay(_display);
-                    
-                    XGetGeometry(_display, Handle, out var geo);
+                    XGetGeometry(_display, _parent, out var geo);
+                    XResizeWindow(_display, Handle, geo.width, geo.height);
+                    XFlush(_display);
+                    XSync(_display, true);
                     XUnlockDisplay(_display);
                     return new System.Drawing.Size(geo.width, geo.height);
                 }
@@ -167,7 +176,10 @@ namespace Avalonia.X11
         unsafe void OnEvent(XEvent ev)
         {
             if (ev.type == XEventName.MapNotify)
+            {
                 _mapped = true;
+                XMapWindow(_x11.Display, _renderHandle);
+            }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
             else if (ev.type == XEventName.Expose)
@@ -232,12 +244,7 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.DestroyNotify)
             {
-                if (_handle != IntPtr.Zero)
-                {
-                    _platform.Windows.Remove(_handle);
-                    _handle = IntPtr.Zero;
-                    Closed?.Invoke();
-                }
+                Cleanup();
             }
             else if (ev.type == XEventName.ClientMessage)
             {
@@ -339,12 +346,27 @@ namespace Avalonia.X11
             if (_handle != IntPtr.Zero)
             {
                 XDestroyWindow(_x11.Display, _handle);
+                Cleanup();
+            }
+        }
+
+        void Cleanup()
+        {
+            if (_handle != IntPtr.Zero)
+            {
+                XDestroyWindow(_x11.Display, _handle);
                 _platform.Windows.Remove(_handle);
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
-                
+            }
+
+            if (_renderHandle != IntPtr.Zero)
+            {
+                XDestroyWindow(_x11.Display, _renderHandle);
+                _renderHandle = IntPtr.Zero;
             }
         }
+        
         
         public void Show() => XMapWindow(_x11.Display, _handle);
 
