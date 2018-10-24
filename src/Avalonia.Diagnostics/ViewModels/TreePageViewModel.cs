@@ -28,6 +28,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 if (RaiseAndSetIfChanged(ref _selected, value))
                 {
+                    Details?.Dispose();
                     Details = value != null ? new ControlDetailsViewModel(value.Visual) : null;
                 }
             }

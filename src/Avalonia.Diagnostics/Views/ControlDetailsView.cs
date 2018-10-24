@@ -2,74 +2,73 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Diagnostics.ViewModels;
-using Avalonia.Media;
+using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Diagnostics.Views
 {
-    internal class ControlDetailsView : UserControl
+    public class ControlDetailsView : UserControl
     {
         private static readonly StyledProperty<ControlDetailsViewModel> ViewModelProperty =
             AvaloniaProperty.Register<ControlDetailsView, ControlDetailsViewModel>(nameof(ViewModel));
 
-        private SimpleGrid _grid;
-
         public ControlDetailsView()
         {
             InitializeComponent();
+
             this.GetObservable(DataContextProperty)
                 .Subscribe(x => ViewModel = (ControlDetailsViewModel)x);
         }
 
-        public ControlDetailsViewModel ViewModel
+        internal ControlDetailsViewModel ViewModel
         {
             get => GetValue(ViewModelProperty);
-            private set
-            {
-                SetValue(ViewModelProperty, value);
-                _grid[GridRepeater.ItemsProperty] = value?.Properties;
-            }
+            private set => SetValue(ViewModelProperty, value);
         }
 
         private void InitializeComponent()
         {
-            Func<object, IEnumerable<Control>> pt = PropertyTemplate;
-
-            Content = new ScrollViewer { Content = _grid = new SimpleGrid { [GridRepeater.TemplateProperty] = pt } };
+            AvaloniaXamlLoader.Load(this);
         }
+    }
 
-        private IEnumerable<Control> PropertyTemplate(object i)
+    public class BindingHelper : AvaloniaObject
+    {
+        public static readonly AttachedProperty<BindingHelper> BindBackOnEventProperty
+            = AvaloniaProperty.RegisterAttached<BindingHelper, Control, BindingHelper>("BindBackOnEvent");
+
+        public static BindingHelper GetBindBackOnEvent(Control ctrl) => ctrl.GetValue(BindBackOnEventProperty);
+
+        public static void SetBindBackOnEvent(Control ctrl, BindingHelper value) => ctrl.SetValue(BindBackOnEventProperty, value);
+
+        static BindingHelper()
         {
-            var property = (PropertyDetails)i;
-
-            var margin = new Thickness(2);
-
-            yield return new TextBlock
-            {
-                Margin = margin,
-                Text = property.Name,
-                TextWrapping = TextWrapping.NoWrap,
-                [!ToolTip.TipProperty] = property.GetObservable<string>(nameof(property.Diagnostic)).ToBinding()
-            };
-
-            yield return new TextBlock
-            {
-                Margin = margin,
-                TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.GetObservable<object>(nameof(property.Value))
-                    .Select(v => v?.ToString())
-                    .ToBinding()
-            };
-
-            yield return new TextBlock
-            {
-                Margin = margin,
-                TextWrapping = TextWrapping.NoWrap,
-                [!TextBlock.TextProperty] = property.GetObservable<string>((nameof(property.Priority))).ToBinding()
-            };
+            BindBackOnEventProperty.Changed.AddClassHandler<Control>((c, e) => BindBackOnEventPropertyChanged(c));
         }
+
+        private static void BindBackOnEventPropertyChanged(Control c)
+        {
+            var value = GetBindBackOnEvent(c);
+
+            if (value != null)
+            {
+                var evt = Observable.Merge(value.EventNames.Select(v => Observable.FromEventPattern(c, v)));
+                var avp = AvaloniaPropertyRegistry.Instance.FindRegistered(c, value.PropertyName);
+                c.Bind(Control.TagProperty, value.Binding);
+                c.GetObservable(Control.TagProperty).Subscribe(v => c.SetValue(avp, v));
+                evt.Subscribe(_ => c.Tag = c.GetValue(avp));
+            }
+        }
+
+        public string PropertyName { get; set; }
+        public AvaloniaList<string> EventNames { get; set; } = new AvaloniaList<string>();
+
+        [AssignBinding]
+        public Binding Binding { get; set; }
     }
 }
