@@ -34,7 +34,7 @@ namespace Avalonia.X11
             image.bitmap_unit = bitsPerPixel;
             image.bitmap_bit_order = 0;// LSBFirst;
             image.bitmap_pad = bitsPerPixel;
-            image.depth = 32;
+            image.depth = 24;
             image.bytes_per_line = RowBytes - Width * 4;
             image.bits_per_pixel = bitsPerPixel;
             XLockDisplay(_display);

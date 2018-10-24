@@ -14,7 +14,6 @@ namespace Avalonia.X11
         public IntPtr BlackPixel { get; }
         public IntPtr RootWindow { get; }
         public IntPtr DefaultRootWindow { get; }
-        public XVisualInfo MatchedVisual { get; }
         public X11Atoms Atoms { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
@@ -28,8 +27,6 @@ namespace Avalonia.X11
             RootWindow = XRootWindow(display, DefaultScreen);
             DefaultRootWindow = XDefaultRootWindow(display);
             Atoms = new X11Atoms(display);
-            XMatchVisualInfo(display, DefaultScreen, 32, 4, out var info);
-            MatchedVisual = info;
         }
     }
 }

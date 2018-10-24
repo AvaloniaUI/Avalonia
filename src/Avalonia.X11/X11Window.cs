@@ -44,15 +44,11 @@ namespace Avalonia.X11
             
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
-            /*
-            _handle = XCreateSimpleWindow(_x11.Display, _x11.DefaultRootWindow, 10, 10, 100, 100, 0, IntPtr.Zero,
-                IntPtr.Zero);*/
-            var vinfo = _x11.MatchedVisual;
-            attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, vinfo.visual, 0);
-            attr.backing_store = 2;
+
+            attr.backing_store = 1;
             attr.bit_gravity = Gravity.NorthWestGravity;
             attr.win_gravity = Gravity.NorthWestGravity;
-            valueMask |= SetWindowValuemask.ColorMap | SetWindowValuemask.BackPixel | SetWindowValuemask.BorderPixel
+            valueMask |= SetWindowValuemask.BackPixel | SetWindowValuemask.BorderPixel
                          | SetWindowValuemask.BackPixmap | SetWindowValuemask.BackingStore
                          | SetWindowValuemask.BitGravity | SetWindowValuemask.WinGravity;
 
@@ -63,8 +59,8 @@ namespace Avalonia.X11
             }
             
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, 300, 200, 0,
-                (int)vinfo.depth,
-                (int)CreateWindowArgs.InputOutput, vinfo.visual,
+                24,
+                (int)CreateWindowArgs.InputOutput, IntPtr.Zero, 
                 new UIntPtr((uint)valueMask), ref attr);
 
 
@@ -278,7 +274,7 @@ namespace Avalonia.X11
                 rv |= InputModifiers.Windows;
             return rv;
         }
-        static Stopwatch St = Stopwatch.StartNew();
+        
         private bool _systemDecorations = true;
         private bool _canResize = true;
 
