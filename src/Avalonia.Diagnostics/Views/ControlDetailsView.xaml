@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:v="clr-namespace:Avalonia.Diagnostics.Views;assembly=Avalonia.Diagnostics">
+    <UserControl.Styles>
+        <Style Selector="TextBox.editor[IsReadOnly=True]">
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="TextBox.editor[IsReadOnly=True]">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="AutoCompleteBox.editor">
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="AutoCompleteBox.editor[IsEnabled=False]">
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="*,Auto" Background="Yellow">
+        <ListBox Grid.Row="0" Name="propertiesList" Items="{Binding Properties}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="30*,40*,10*" HorizontalAlignment="Stretch" Background="White">
+                        <TextBlock Text="{Binding Name}" Grid.Column="0" Margin="5 0 0 0" VerticalAlignment="Center" />
+
+                        <Panel Grid.Column="1">
+                            <Border BorderBrush="Orange" BorderThickness="1" IsVisible="{Binding IsChanged}" />
+
+                            <AutoCompleteBox IsEnabled="{Binding !IsReadOnly}" Classes="editor" Margin="1"
+                                                DataValidationErrors.Errors="{Binding ValueErrors}"
+                                                IsTextCompletionEnabled="{Binding !IsReadOnly}"
+                                                AsyncPopulator="{Binding PossibleValuesPopulator}"
+                                                Text="{Binding Value, Mode=TwoWay}" />
+                        </Panel>
+
+                        <!--<TextBox IsReadOnly="{Binding IsReadOnly}" Classes="editor"
+                                     Text="{Binding Value, Mode=TwoWay}"
+                                     Grid.Column="1" />-->
+
+                        <TextBlock Text="{Binding Priority}" Margin="5 0 0 0" Grid.Column="2" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
