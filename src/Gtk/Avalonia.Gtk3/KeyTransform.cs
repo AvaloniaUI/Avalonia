@@ -28,7 +28,9 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.ImeModeChange }
             { GdkKey.space, Key.Space },
             { GdkKey.Prior, Key.Prior },
+            { GdkKey.KP_Prior, Key.Prior },
             { GdkKey.Page_Down, Key.PageDown },
+            { GdkKey.KP_Page_Down, Key.PageDown },
             { GdkKey.End, Key.End },
             { GdkKey.KP_End, Key.End },
             { GdkKey.Home, Key.Home },
@@ -46,19 +48,20 @@ namespace Avalonia.Gtk.Common
             { GdkKey.Execute, Key.Execute },
             //{ GdkKey.?, Key.Snapshot }
             { GdkKey.Insert, Key.Insert },
+            { GdkKey.KP_Insert, Key.Insert },
             { GdkKey.Delete, Key.Delete },
             { GdkKey.KP_Delete, Key.Delete },
             { GdkKey.Help, Key.Help },
-            //{ GdkKey.?, Key.D0 }
-            //{ GdkKey.?, Key.D1 }
-            //{ GdkKey.?, Key.D2 }
-            //{ GdkKey.?, Key.D3 }
-            //{ GdkKey.?, Key.D4 }
-            //{ GdkKey.?, Key.D5 }
-            //{ GdkKey.?, Key.D6 }
-            //{ GdkKey.?, Key.D7 }
-            //{ GdkKey.?, Key.D8 }
-            //{ GdkKey.?, Key.D9 }
+            { GdkKey.Key_0, Key.D0 },
+            { GdkKey.Key_1, Key.D1 },
+            { GdkKey.Key_2, Key.D2 },
+            { GdkKey.Key_3, Key.D3 },
+            { GdkKey.Key_4, Key.D4 },
+            { GdkKey.Key_5, Key.D5 },
+            { GdkKey.Key_6, Key.D6 },
+            { GdkKey.Key_7, Key.D7 },
+            { GdkKey.Key_8, Key.D8 },
+            { GdkKey.Key_9, Key.D9 },
             { GdkKey.A, Key.A },
             { GdkKey.B, Key.B },
             { GdkKey.C, Key.C },
@@ -130,7 +133,7 @@ namespace Avalonia.Gtk.Common
             { GdkKey.KP_Add, Key.Add },
             //{ GdkKey.?, Key.Separator }
             { GdkKey.KP_Subtract, Key.Subtract },
-            //{ GdkKey.?, Key.Decimal }
+            { GdkKey.KP_Decimal, Key.Decimal },
             { GdkKey.KP_Divide, Key.Divide },
             { GdkKey.F1, Key.F1 },
             { GdkKey.F2, Key.F2 },
