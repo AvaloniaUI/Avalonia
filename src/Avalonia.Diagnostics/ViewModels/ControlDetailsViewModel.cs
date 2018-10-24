@@ -1,13 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class ControlDetailsViewModel : ViewModelBase
+    internal class ControlDetailsViewModel : ViewModelBase, IDisposable
     {
         public ControlDetailsViewModel(IVisual control)
         {
@@ -30,6 +31,14 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             get;
             private set;
+        }
+
+        public void Dispose()
+        {
+           foreach(var d in Properties)
+            {
+                d.Dispose();
+            }
         }
     }
 }

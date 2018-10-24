@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.ViewModels;
+using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 
@@ -30,12 +31,14 @@ namespace Avalonia.Diagnostics.Views
             private set
             {
                 SetValue(ViewModelProperty, value);
-                _grid[GridRepeater.ItemsProperty] = value?.Properties;
+                //_grid[GridRepeater.ItemsProperty] = value?.Properties;
             }
         }
 
         private void InitializeComponent()
         {
+            AvaloniaXamlLoader.Load(this);
+            return;
             Func<object, IEnumerable<Control>> pt = PropertyTemplate;
 
             Content = new ScrollViewer

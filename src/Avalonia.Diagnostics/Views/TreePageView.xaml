@@ -1,24 +1,28 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
-  <Grid ColumnDefinitions="*,4,3*">    
-    <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
-      <TreeView.DataTemplates>
-        <TreeDataTemplate DataType="vm:TreeNode"
-                          ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="{Binding Type}"/>
-            <TextBlock Text="{Binding Classes}"/>
-          </StackPanel>
-        </TreeDataTemplate>
-      </TreeView.DataTemplates>
-      <TreeView.Styles>
-        <Style Selector="TreeViewItem">
-          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
-        </Style>
-      </TreeView.Styles>
-    </TreeView>
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:v="clr-namespace:Avalonia.Diagnostics.Views;assembly=Avalonia.Diagnostics"
+             >
+    <Grid ColumnDefinitions="*,4,3*">
+        <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+            <TreeView.DataTemplates>
+                <TreeDataTemplate DataType="vm:TreeNode"
+                                  ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Type}"/>
+                        <TextBlock Text="{Binding Classes}"/>
+                    </StackPanel>
+                </TreeDataTemplate>
+            </TreeView.DataTemplates>
+            <TreeView.Styles>
+                <Style Selector="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                </Style>
+            </TreeView.Styles>
+        </TreeView>
 
-    <GridSplitter Width="4" Grid.Column="1"/>
-    <ContentControl Content="{Binding Details}" Grid.Column="2"/>
-  </Grid>
+        <GridSplitter Width="4" Grid.Column="1"/>
+
+        <v:ControlDetailsView Grid.Column="2" DataContext="{Binding Details}" />
+        <!--<ContentControl Content="{Binding Details}" Grid.Column="2"/>-->
+    </Grid>
 </UserControl>
