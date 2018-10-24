@@ -14,6 +14,7 @@ namespace Avalonia.Gtk.Common
             { GdkKey.Linefeed, Key.LineFeed },
             { GdkKey.Clear, Key.Clear },
             { GdkKey.Return, Key.Return },
+            { GdkKey.KP_Enter, Key.Return },
             { GdkKey.Pause, Key.Pause },
             { GdkKey.Caps_Lock, Key.CapsLock },
             //{ GdkKey.?, Key.HangulMode }
@@ -112,7 +113,7 @@ namespace Avalonia.Gtk.Common
             { GdkKey.z, Key.Z },
             //{ GdkKey.?, Key.LWin }
             //{ GdkKey.?, Key.RWin }
-            //{ GdkKey.?, Key.Apps }
+            { GdkKey.Menu, Key.Apps },
             //{ GdkKey.?, Key.Sleep }
             { GdkKey.KP_0, Key.NumPad0 },
             { GdkKey.KP_1, Key.NumPad1 },
@@ -125,11 +126,12 @@ namespace Avalonia.Gtk.Common
             { GdkKey.KP_8, Key.NumPad8 },
             { GdkKey.KP_9, Key.NumPad9 },
             { GdkKey.multiply, Key.Multiply },
-            //{ GdkKey.?, Key.Add }
+            { GdkKey.KP_Multiply, Key.Multiply },
+            { GdkKey.KP_Add, Key.Add },
             //{ GdkKey.?, Key.Separator }
-            //{ GdkKey.?, Key.Subtract }
+            { GdkKey.KP_Subtract, Key.Subtract },
             //{ GdkKey.?, Key.Decimal }
-            //{ GdkKey.?, Key.Divide }
+            { GdkKey.KP_Divide, Key.Divide },
             { GdkKey.F1, Key.F1 },
             { GdkKey.F2, Key.F2 },
             { GdkKey.F3, Key.F3 },
@@ -182,6 +184,7 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.LaunchApplication2 }
             { GdkKey.semicolon, Key.OemSemicolon },
             { GdkKey.plus, Key.OemPlus },
+            { GdkKey.equal, Key.OemPlus },
             { GdkKey.comma, Key.OemComma },
             { GdkKey.minus, Key.OemMinus },
             { GdkKey.period, Key.OemPeriod },
@@ -189,10 +192,10 @@ namespace Avalonia.Gtk.Common
             { GdkKey.grave, Key.OemTilde },
             //{ GdkKey.?, Key.AbntC1 }
             //{ GdkKey.?, Key.AbntC2 }
-            //{ GdkKey.?, Key.Oem4 }
-            //{ GdkKey.?, Key.OemPipe }
-            //{ GdkKey.?, Key.OemCloseBrackets }
-            //{ GdkKey.?, Key.Oem7 }
+            { GdkKey.bracketleft, Key.OemOpenBrackets },
+            { GdkKey.backslash, Key.OemPipe },
+            { GdkKey.bracketright, Key.OemCloseBrackets },
+            { GdkKey.apostrophe, Key.OemQuotes },
             //{ GdkKey.?, Key.Oem8 }
             //{ GdkKey.?, Key.Oem102 }
             //{ GdkKey.?, Key.ImeProcessed }
