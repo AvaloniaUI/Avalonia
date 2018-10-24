@@ -89,7 +89,7 @@
         <Border BorderThickness="1">
           <Grid ColumnDefinitions="Auto,Auto">
             <Border Grid.Column="0" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-              <Path Fill="Black"
+              <Path Fill="{DynamicResource ThemeForegroundBrush}"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Center"
                       Data="M 0 2 L 4 6 L 0 10 Z" />
