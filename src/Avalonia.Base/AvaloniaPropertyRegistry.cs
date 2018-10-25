@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Avalonia.Data;
 
 namespace Avalonia
 {
@@ -21,6 +22,8 @@ namespace Avalonia
             new Dictionary<Type, List<AvaloniaProperty>>();
         private readonly Dictionary<Type, List<AvaloniaProperty>> _attachedCache =
             new Dictionary<Type, List<AvaloniaProperty>>();
+        private readonly Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>> _initializedCache =
+            new Dictionary<Type, List<KeyValuePair<AvaloniaProperty, object>>>();
 
         /// <summary>
         /// Gets the <see cref="AvaloniaPropertyRegistry"/> instance
@@ -204,6 +207,7 @@ namespace Avalonia
             }
  
             _registeredCache.Clear();
+            _initializedCache.Clear();
         }
 
         /// <summary>
@@ -239,6 +243,57 @@ namespace Avalonia
             }
 
             _attachedCache.Clear();
+            _initializedCache.Clear();
+        }
+
+        internal void NotifyInitialized(AvaloniaObject o)
+        {
+            Contract.Requires<ArgumentNullException>(o != null);
+
+            var type = o.GetType();
+
+            void Notify(AvaloniaProperty property, object value)
+            {
+                var e = new AvaloniaPropertyChangedEventArgs(
+                    o,
+                    property,
+                    AvaloniaProperty.UnsetValue,
+                    value,
+                    BindingPriority.Unset);
+
+                property.NotifyInitialized(e);
+            }
+
+            if (!_initializedCache.TryGetValue(type, out var items))
+            {
+                var build = new Dictionary<AvaloniaProperty, object>();
+
+                foreach (var property in GetRegistered(type))
+                {
+                    var value = !property.IsDirect ?
+                        ((IStyledPropertyAccessor)property).GetDefaultValue(type) :
+                        null;
+                    build.Add(property, value);
+                }
+
+                foreach (var property in GetRegisteredAttached(type))
+                {
+                    if (!build.ContainsKey(property))
+                    {
+                        var value = ((IStyledPropertyAccessor)property).GetDefaultValue(type);
+                        build.Add(property, value);
+                    }
+                }
+
+                items = build.ToList();
+                _initializedCache.Add(type, items);
+            }
+
+            foreach (var i in items)
+            {
+                var value = i.Key.IsDirect ? o.GetValue(i.Key) : i.Value;
+                Notify(i.Key, value);
+            }
         }
     }
 }

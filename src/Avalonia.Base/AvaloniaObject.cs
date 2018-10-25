@@ -22,27 +22,10 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
     {
-        /// <summary>
-        /// The parent object that inherited values are inherited from.
-        /// </summary>
         private IAvaloniaObject _inheritanceParent;
-
-        /// <summary>
-        /// Maintains a list of direct property binding subscriptions so that the binding source
-        /// doesn't get collected.
-        /// </summary>
         private List<DirectBindingSubscription> _directBindings;
-
-        /// <summary>
-        /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
-        /// </summary>
         private PropertyChangedEventHandler _inpcChanged;
-
-        /// <summary>
-        /// Event handler for <see cref="PropertyChanged"/> implementation.
-        /// </summary>
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
-
         private ValueStore _values;
         private ValueStore Values => _values ?? (_values = new ValueStore(this));
 
@@ -52,32 +35,7 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-
-            void Notify(AvaloniaProperty property)
-            {
-                object value = property.IsDirect ?
-                    ((IDirectPropertyAccessor)property).GetValue(this) :
-                    ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
-
-                var e = new AvaloniaPropertyChangedEventArgs(
-                    this,
-                    property,
-                    AvaloniaProperty.UnsetValue,
-                    value,
-                    BindingPriority.Unset);
-
-                property.NotifyInitialized(e);
-            }
-
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
-            {
-                Notify(property);
-            }
-
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()))
-            {
-                Notify(property);
-            }
+            AvaloniaPropertyRegistry.Instance.NotifyInitialized(this);
         }
 
         /// <summary>
@@ -628,7 +586,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The default value.</returns>
-        internal object GetDefaultValue(AvaloniaProperty property)
+        private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
                 return aobj.GetValue(property);
