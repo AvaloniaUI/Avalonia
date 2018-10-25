@@ -54,7 +54,7 @@ public class Parameters
         IsRunningOnUnix = context.IsRunningOnUnix();
         IsRunningOnWindows = context.IsRunningOnWindows();
         IsRunningOnAppVeyor = buildSystem.AppVeyor.IsRunningOnAppVeyor;
-        IsRunningOnAzure = buildSystem.IsRunningOnVSTS;
+        IsRunningOnAzure = buildSystem.IsRunningOnVSTS || buildSystem.IsRunningOnTFS;
         
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
         IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, buildSystem.AppVeyor.Environment.Repository.Name);
