@@ -1,6 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="ButtonSpinner">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
