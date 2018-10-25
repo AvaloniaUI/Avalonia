@@ -18,7 +18,7 @@
             <Style>
               <Style.Resources>
                 <SolidColorBrush x:Key="ThemeBorderMidBrush">Red</SolidColorBrush>
-                <SolidColorBrush x:Key="ThemeControlDarkBrush">DarkRed</SolidColorBrush>
+                <SolidColorBrush x:Key="ThemeControlHighBrush">DarkRed</SolidColorBrush>
               </Style.Resources>
             </Style>
           </Button.Styles>          
