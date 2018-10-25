@@ -32,9 +32,9 @@ namespace Avalonia.Direct2D1.Media
                                  textFormat,
                                  (float)constraint.Width,
                                  (float)constraint.Height)
-                             {
-                                 TextAlignment = textAlignment.ToDirect2D()
-                             };
+                {
+                    TextAlignment = textAlignment.ToDirect2D()
+                };
             }
 
             if (spans != null)
@@ -74,6 +74,8 @@ namespace Avalonia.Direct2D1.Media
             {
                 IsInside = isInside,
                 TextPosition = result.TextPosition,
+                Length = result.Length,
+                Bounds = new Rect(result.Left, result.Top, result.Width, result.Height),
                 IsTrailing = isTrailingHit,
             };
         }

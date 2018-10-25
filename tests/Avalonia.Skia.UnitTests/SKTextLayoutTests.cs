@@ -18,7 +18,13 @@
         {
             const string Text = "012345";
 
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                Text,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -40,7 +46,13 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtStart()
         {
-            var layout = new SKTextLayout(SingleLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                SingleLineText,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -62,7 +74,13 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtEnd()
         {
-            var layout = new SKTextLayout(SingleLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                SingleLineText,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -84,7 +102,13 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToSingleCharacter()
         {
-            var layout = new SKTextLayout("0", SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                "0",
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -108,7 +132,13 @@
         {
             const string Text = "😀😀😀😀";
 
-            var layout = new SKTextLayout(Text, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                Text,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -130,7 +160,13 @@
         [Fact]
         public void TextLengthShouldBeEqualToTextLineLengthSum()
         {
-            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                MultiLineText,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             Assert.Equal(MultiLineText.Length, layout.TextLines.Sum(x => x.Length));
         }
@@ -138,7 +174,13 @@
         [Fact]
         public void TextLengthShouldBeEqualToTextRunTextLengthSum()
         {
-            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(double.PositiveInfinity, double.PositiveInfinity));
+            var layout = new SKTextLayout(
+                MultiLineText,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             Assert.Equal(
                 MultiLineText.Length,
@@ -148,7 +190,13 @@
         [Fact]
         public void ShouldApplyTextStyleSpanToMultiLine()
         {
-            var layout = new SKTextLayout(MultiLineText, SKTypeface.FromFamilyName(null), 12.0f, TextAlignment.Left, TextWrapping.NoWrap, new Size(200, 125));
+            var layout = new SKTextLayout(
+                MultiLineText,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(200, 125));
 
             var effectBrush = new SolidColorBrush(Colors.Red);
 
@@ -157,6 +205,30 @@
             Assert.Equal(effectBrush, layout.TextLines[0].TextRuns[1].DrawingEffect);
             Assert.Equal(effectBrush, layout.TextLines[1].TextRuns[0].DrawingEffect);
             Assert.Equal(effectBrush, layout.TextLines[2].TextRuns[0].DrawingEffect);
+        }
+
+        [Fact]
+        public void ShouldHitTestSurrogatePair()
+        {
+            const string Text = "😀";
+
+            var layout = new SKTextLayout(
+                Text,
+                SKTypeface.FromFamilyName(null),
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            var lineMetrics = layout.TextLines[0].LineMetrics;
+
+            var width = lineMetrics.Size.Width;
+
+            var hitTestResult = layout.HitTestPoint(new Point(width, lineMetrics.BaselineOrigin.Y));
+
+            Assert.Equal(0, hitTestResult.TextPosition);
+
+            Assert.Equal(2, hitTestResult.Length);
         }
     }
 }

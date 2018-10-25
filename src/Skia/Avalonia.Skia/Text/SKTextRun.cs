@@ -6,12 +6,13 @@ using Avalonia.Media;
 using SkiaSharp;
 
 namespace Avalonia.Skia
-{
+{   
     public class SKTextRun
     {
-        public SKTextRun(string text, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
+        public SKTextRun(string text, SKGlyphRun glyphs, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
         {
             Text = text;
+            Glyphs = glyphs;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
             Width = width;
@@ -25,6 +26,14 @@ namespace Avalonia.Skia
         /// The text.
         /// </value>
         public string Text { get; }
+
+        /// <summary>
+        /// Gets the glyphs.
+        /// </summary>
+        /// <value>
+        /// The glyphs.
+        /// </value>
+        public SKGlyphRun Glyphs { get; }
 
         /// <summary>
         /// Gets the text format.
@@ -57,5 +66,10 @@ namespace Avalonia.Skia
         /// The drawing effect.
         /// </value>
         public IBrush DrawingEffect { get; }
+
+        public override string ToString()
+        {
+            return Text;
+        }
     }
 }
