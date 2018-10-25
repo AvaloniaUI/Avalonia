@@ -33,7 +33,7 @@ namespace Avalonia.Skia
 
             var key = new FontKey(typeface.FontFamily.Name, (SKFontStyleWeight)typeface.Weight, skStyle);
 
-            return _cachedTypefaces.TryGetValue(key, out var skTypeface) ? skTypeface : TypefaceCache.Default;
+            return _cachedTypefaces.TryGetValue(key, out var skTypeface) ? skTypeface : TypefaceCache.DefaultTypeface;
         }
 
         private struct FontKey

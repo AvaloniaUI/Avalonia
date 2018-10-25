@@ -28,7 +28,7 @@ namespace Avalonia.Skia
             // Replace 0 characters with zero-width spaces (200B)
             Text = Text.Replace((char)0, (char)0x200B);
 
-            SKTypeface skiaTypeface = TypefaceCache.Default;
+            SKTypeface skiaTypeface = TypefaceCache.DefaultTypeface;
 
             if (typeface.FontFamily.Key != null)
             {
@@ -45,7 +45,7 @@ namespace Avalonia.Skia
                             familyName,
                             typeface.Style,
                             typeface.Weight);
-                        if (skiaTypeface != TypefaceCache.Default) break;
+                        if (skiaTypeface != TypefaceCache.DefaultTypeface) break;
                     }
                 }
                 else
