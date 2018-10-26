@@ -17,13 +17,24 @@ namespace Avalonia.Media.Fonts
         /// <param name="source"></param>
         public FontFamilyKey(Uri source)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
 
             if (source.AbsolutePath.Contains(".ttf"))
             {
                 var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", string.Empty);
                 var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
                 FileName = fileNameWithoutExtension + ".ttf";
+                Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
+            }
+
+            if (source.AbsolutePath.Contains(".otf"))
+            {
+                var filePathWithoutExtension = source.AbsolutePath.Replace(".otf", string.Empty);
+                var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
+                FileName = fileNameWithoutExtension + ".otf";
                 Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
             }
             else
@@ -77,11 +88,20 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is FontFamilyKey other)) return false;
+            if (!(obj is FontFamilyKey other))
+            {
+                return false;
+            }
 
-            if (Location != other.Location) return false;
+            if (Location != other.Location)
+            {
+                return false;
+            }
 
-            if (FileName != other.FileName) return false;
+            if (FileName != other.FileName)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -94,7 +114,10 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override string ToString()
         {
-            if (FileName == null) return Location.PathAndQuery;
+            if (FileName == null)
+            {
+                return Location.PathAndQuery;
+            }
 
             var builder = new UriBuilder(Location);
 
