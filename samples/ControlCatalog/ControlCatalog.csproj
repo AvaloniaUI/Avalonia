@@ -18,7 +18,6 @@
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Regular.ttf" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
