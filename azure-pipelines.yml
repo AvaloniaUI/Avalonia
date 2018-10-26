@@ -52,19 +52,19 @@ jobs:
       dotnet --info
       printenv
       dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
+  
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
-      artifactName: 'NuGet'
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
-      artifactName: 'Samples'
+      pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
+      artifactName: 'Avalonia.Native.OSX'
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesWindows'
-
+      artifactName: 'BinariesOSX'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/src/Avalonia.Native/nuget'
+      artifactName: 'Avalonia.Native.Nuspec'
 
 - job: Windows
   pool:
@@ -79,3 +79,15 @@ jobs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
         dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      artifactName: 'NuGet'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
+      artifactName: 'Samples'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
+      artifactName: 'BinariesWindows'
