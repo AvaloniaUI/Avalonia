@@ -24,7 +24,7 @@
               Background="Transparent">
         <Canvas.Styles>
           <Style Selector="ToolTip">
-            <Setter Property="Background" Value="{DynamicResource ErrorLightBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource ErrorLowBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
           </Style>
         </Canvas.Styles>

@@ -18,6 +18,7 @@ namespace Avalonia.Skia
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
+        private readonly GRContext _grContext;
         
         /// <summary>
         /// Create new surface render target.
@@ -29,7 +30,8 @@ namespace Avalonia.Skia
             Dpi = createInfo.Dpi;
 
             _disableLcdRendering = createInfo.DisableTextLcdRendering;
-            _surface = CreateSurface(PixelSize.Width, PixelSize.Height, createInfo.Format);
+            _grContext = createInfo.GrContext;
+            _surface = CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -46,10 +48,11 @@ namespace Avalonia.Skia
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
         /// <returns></returns>
-        private static SKSurface CreateSurface(int width, int height, PixelFormat? format)
+        private static SKSurface CreateSurface(GRContext gpu, int width, int height, PixelFormat? format)
         {
             var imageInfo = MakeImageInfo(width, height, format);
-
+            if (gpu != null)
+                return SKSurface.Create(gpu, false, imageInfo);
             return SKSurface.Create(imageInfo);
         }
 
@@ -71,7 +74,8 @@ namespace Avalonia.Skia
                 Canvas = _canvas,
                 Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = _disableLcdRendering
+                DisableTextLcdRendering = _disableLcdRendering,
+                GrContext = _grContext
             };
 
             return new DrawingContextImpl(createInfo);
@@ -162,6 +166,11 @@ namespace Avalonia.Skia
             /// Render text without Lcd rendering.
             /// </summary>
             public bool DisableTextLcdRendering;
+
+            /// <summary>
+            /// GPU-accelerated context (optional)
+            /// </summary>
+            public GRContext GrContext;
         }
     }
 }

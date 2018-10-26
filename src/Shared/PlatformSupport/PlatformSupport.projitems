@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssetLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DynLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandardRuntimePlatform.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandardRuntimePlatformServices.cs" />
   </ItemGroup>

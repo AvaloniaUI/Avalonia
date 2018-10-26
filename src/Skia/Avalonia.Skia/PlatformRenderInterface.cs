@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
+using SkiaSharp;
 
 namespace Avalonia.Skia
 {
@@ -15,6 +17,22 @@ namespace Avalonia.Skia
     /// </summary>
     public class PlatformRenderInterface : IPlatformRenderInterface
     {
+        private GRContext GrContext { get; }
+
+        public PlatformRenderInterface()
+        {
+            var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+            if (gl != null)
+            {
+                var display = gl.ImmediateContext.Display;
+                var iface = display.Type == GlDisplayType.OpenGL2
+                    ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
+                    : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc));
+                gl.ImmediateContext.MakeCurrent(null);
+                GrContext = GRContext.Create(GRBackend.OpenGL, iface);
+            }
+        }
+        
         /// <inheritdoc />
         public IFormattedTextImpl CreateFormattedText(
             string text,
@@ -72,7 +90,8 @@ namespace Avalonia.Skia
                 Width = size.Width,
                 Height = size.Height,
                 Dpi = dpi,
-                DisableTextLcdRendering = false
+                DisableTextLcdRendering = false,
+                GrContext = GrContext
             };
             
             return new SurfaceRenderTarget(createInfo);
@@ -83,6 +102,10 @@ namespace Avalonia.Skia
         {
             foreach (var surface in surfaces)
             {
+                if (surface is IGlPlatformSurface glSurface && GrContext != null)
+                {
+                    return new GlRenderTarget(GrContext, glSurface);
+                }
                 if (surface is IFramebufferPlatformSurface framebufferSurface)
                 {
                     return new FramebufferRenderTarget(framebufferSurface);

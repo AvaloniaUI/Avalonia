@@ -289,12 +289,12 @@ namespace Avalonia.Controls.Primitives
         /// <inheritdoc/>
         public override void EndInit()
         {
-            base.EndInit();
-
             if (--_updateCount == 0)
             {
                 UpdateFinished();
             }
+
+            base.EndInit();
         }
 
         /// <summary>
@@ -871,8 +871,8 @@ namespace Avalonia.Controls.Primitives
                         RaisePropertyChanged(SelectedItemProperty, oldItem, item, BindingPriority.LocalValue);
                     }
 
-                    added = e.OldItems;
-                    removed = e.NewItems;
+                    added = e.NewItems;
+                    removed = e.OldItems;
                     break;
             }
 

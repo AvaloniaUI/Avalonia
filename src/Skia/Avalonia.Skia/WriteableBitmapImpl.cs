@@ -125,6 +125,7 @@ namespace Avalonia.Skia
             /// <inheritdoc />
             public void Dispose()
             {
+                _bitmap.NotifyPixelsChanged();
                 _bitmap = null;
             }
             

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls;
@@ -15,9 +16,12 @@ namespace Avalonia.Styling
     /// </summary>
     public class Style : AvaloniaObject, IStyle, ISetStyleParent
     {
-        private static Dictionary<IStyleable, List<IDisposable>> _applied =
-            new Dictionary<IStyleable, List<IDisposable>>();
+        private static Dictionary<IStyleable, CompositeDisposable> _applied =
+            new Dictionary<IStyleable, CompositeDisposable>();
         private IResourceNode _parent;
+
+        private CompositeDisposable _subscriptions;
+
         private IResourceDictionary _resources;
 
         private IList<IAnimation> _animations;
@@ -88,6 +92,14 @@ namespace Avalonia.Styling
             }
         }
 
+        private CompositeDisposable Subscriptions
+        {
+            get
+            {
+                return _subscriptions ?? (_subscriptions = new CompositeDisposable(2));
+            }
+        }
+
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;
 
@@ -109,19 +121,24 @@ namespace Avalonia.Styling
 
                 if (match.ImmediateResult != false)
                 {
-                    var subs = GetSubscriptions(control);
+                    var controlSubscriptions = GetSubscriptions(control);
+                    
+                    var subs = new CompositeDisposable(Setters.Count + Animations.Count);
 
-                    foreach (var animation in Animations)
+                    if (control is Animatable animatable)
                     {
-                        IObservable<bool> obsMatch = match.ObservableResult;
-
-                        if (match.ImmediateResult == true)
+                        foreach (var animation in Animations)
                         {
-                            obsMatch = Observable.Return(true);
-                        } 
+                            IObservable<bool> obsMatch = match.ObservableResult;
 
-                        var sub = animation.Apply((Animatable)control, obsMatch);
-                        subs.Add(sub);
+                            if (match.ImmediateResult == true)
+                            {
+                                obsMatch = Observable.Return(true);
+                            }
+
+                            var sub = animation.Apply(animatable, null, obsMatch);
+                            subs.Add(sub);
+                        } 
                     }
 
                     foreach (var setter in Setters)
@@ -129,17 +146,25 @@ namespace Avalonia.Styling
                         var sub = setter.Apply(this, control, match.ObservableResult);
                         subs.Add(sub);
                     }
+
+                    controlSubscriptions.Add(subs);
+                    Subscriptions.Add(subs);
                 }
             }
             else if (control == container)
             {
-                var subs = GetSubscriptions(control);
+                var controlSubscriptions = GetSubscriptions(control);
+
+                var subs = new CompositeDisposable(Setters.Count);
 
                 foreach (var setter in Setters)
                 {
                     var sub = setter.Apply(this, control, null);
                     subs.Add(sub);
                 }
+                
+                controlSubscriptions.Add(subs);
+                Subscriptions.Add(subs);
             }
         }
 
@@ -180,16 +205,25 @@ namespace Avalonia.Styling
                 throw new InvalidOperationException("The Style already has a parent.");
             }
 
+            if (parent == null)
+            {
+                Detach();
+            }
+
             _parent = parent;
         }
 
-        private static List<IDisposable> GetSubscriptions(IStyleable control)
+        public void Detach()
         {
-            List<IDisposable> subscriptions;
+            _subscriptions?.Dispose();
+            _subscriptions = null;
+        }
 
-            if (!_applied.TryGetValue(control, out subscriptions))
+        private static CompositeDisposable GetSubscriptions(IStyleable control)
+        {
+            if (!_applied.TryGetValue(control, out var subscriptions))
             {
-                subscriptions = new List<IDisposable>(2);
+                subscriptions = new CompositeDisposable(2);
                 subscriptions.Add(control.StyleDetach.Subscribe(ControlDetach));
                 _applied.Add(control, subscriptions);
             }
@@ -206,10 +240,7 @@ namespace Avalonia.Styling
         {
             var subscriptions = _applied[control];
 
-            foreach (var subscription in subscriptions)
-            {
-                subscription.Dispose();
-            }
+            subscriptions.Dispose();
 
             _applied.Remove(control);
         }

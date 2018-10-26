@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -35,7 +36,9 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
-                .Bind<IRenderLoop>().ToConstant(Threading);
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
+                .Bind<IRenderTimer>().ToConstant(Threading);
         }
 
         internal static TopLevel Initialize<T>(T builder, string fbdev = null) where T : AppBuilderBase<T>, new()

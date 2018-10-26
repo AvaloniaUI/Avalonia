@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Platform.Interop;
 using gdouble = System.Double;
 using gint = System.Int32;
 using gint16 = System.Int16;

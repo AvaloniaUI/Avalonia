@@ -7,18 +7,21 @@ using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Gtk3
 {
-    abstract class WindowBaseImpl : IWindowBaseImpl, IPlatformHandle
+    abstract class WindowBaseImpl : IWindowBaseImpl, IPlatformHandle, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         public readonly GtkWindow GtkWidget;
         private IInputRoot _inputRoot;
         private readonly GtkImContext _imContext;
         private readonly FramebufferManager _framebuffer;
+        private readonly EglGlPlatformSurface _egl;
         protected readonly List<IDisposable> Disposables = new List<IDisposable>();
         private Size _lastSize;
         private Point _lastPosition;
@@ -36,7 +39,13 @@ namespace Avalonia.Gtk3
         {
             
             GtkWidget = gtkWidget;
-            _framebuffer = new FramebufferManager(this);
+            
+            var glf = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>() as EglGlPlatformFeature;
+            if (glf != null)
+                _egl = new EglGlPlatformSurface((EglDisplay)glf.Display, glf.DeferredContext, this);
+            else
+                _framebuffer = new FramebufferManager(this);
+            
             _imContext = Native.GtkImMulticontextNew();
             Disposables.Add(_imContext);
             Native.GtkWidgetSetEvents(gtkWidget, 0xFFFFFE);
@@ -57,12 +66,15 @@ namespace Avalonia.Gtk3
             Native.GtkWidgetRealize(gtkWidget);
             GdkWindowHandle = this.Handle.Handle;
             _lastSize = ClientSize;
-            if (Gtk3Platform.UseDeferredRendering)
+
+            if (_egl != null)
+                Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
+            else if (Gtk3Platform.UseDeferredRendering)
             {
                 Native.GtkWidgetSetDoubleBuffered(gtkWidget, false);
                 _gcHandle = GCHandle.Alloc(this);
-                _tickCallback = Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback, GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
-                
+                _tickCallback = Native.GtkWidgetAddTickCallback(GtkWidget, PinnedStaticCallback,
+                    GCHandle.ToIntPtr(_gcHandle), IntPtr.Zero);
             }
         }
 
@@ -114,7 +126,7 @@ namespace Avalonia.Gtk3
             if (state.HasFlag(GdkModifierType.ShiftMask))
                 rv |= InputModifiers.Shift;
             if (state.HasFlag(GdkModifierType.Mod1Mask))
-                rv |= InputModifiers.Control;
+                rv |= InputModifiers.Alt;
             if (state.HasFlag(GdkModifierType.Button1Mask))
                 rv |= InputModifiers.LeftMouseButton;
             if (state.HasFlag(GdkModifierType.Button2Mask))
@@ -488,7 +500,7 @@ namespace Avalonia.Gtk3
         }
 
         IntPtr IPlatformHandle.Handle => Native.GetNativeGdkWindowHandle(Native.GtkWidgetGetWindow(GtkWidget));
-        public IEnumerable<object> Surfaces => new object[] {Handle, _framebuffer};
+        public IEnumerable<object> Surfaces => new object[] {Handle, _egl, _framebuffer};
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -497,5 +509,17 @@ namespace Avalonia.Gtk3
                 ? (IRenderer) new DeferredRenderer(root, loop)
                 : new ImmediateRenderer(root);
         }
+
+        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
+        {
+            get
+            {
+                var cs = ClientSize;
+                return new System.Drawing.Size((int)Math.Max(1, LastKnownScaleFactor * cs.Width),
+                    (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Height));
+            }
+        }
+        double EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Scaling => LastKnownScaleFactor;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
     }
 }

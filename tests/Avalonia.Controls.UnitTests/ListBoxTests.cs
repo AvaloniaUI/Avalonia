@@ -1,16 +1,18 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Input;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
-using Avalonia.Collections;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -170,9 +172,68 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
         }
 
+        [Fact]
+        public void Containers_Correct_After_Clear_Add_Remove()
+        {
+            // Issue #1936
+            var items = new AvaloniaList<string>(Enumerable.Range(0, 11).Select(x => $"Item {x}"));
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectedIndex = 0,
+            };
+
+            Prepare(target);
+
+            items.Clear();
+            items.AddRange(Enumerable.Range(0, 11).Select(x => $"Item {x}"));
+            items.Remove("Item 2");
+
+            Assert.Equal(
+                items,
+                target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content));
+        }
+
+
+        [Fact]
+        public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
+        {
+            var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 11 })
+            };
+
+            Prepare(target);
+
+            var panel = target.Presenter.Panel as IVirtualizingPanel;
+
+            var listBoxItems = panel.Children.OfType<ListBoxItem>();
+
+            //virtualization should have created exactly 10 items
+            Assert.Equal(10, listBoxItems.Count());
+            Assert.Equal("0", listBoxItems.First().DataContext);
+            Assert.Equal("9", listBoxItems.Last().DataContext);
+
+            //instead pixeloffset > 0 there could be pretty complex sequence for repro
+            //it involves add/remove/scroll to end multiple actions
+            //which i can't find so far :(, but this is the simplest way to add it to unit test
+            panel.PixelOffset = 1;
+
+            //here scroll to end -> IndexOutOfRangeException is thrown
+            target.Scroll.Offset = new Vector(0, 2);
+
+            Assert.True(true);
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
-            return new FuncControlTemplate<ListBox>(parent => 
+            return new FuncControlTemplate<ListBox>(parent =>
                 new ScrollViewer
                 {
                     Name = "PART_ScrollViewer",
@@ -189,7 +250,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxItemTemplate()
         {
-            return new FuncControlTemplate<ListBoxItem>(parent => 
+            return new FuncControlTemplate<ListBoxItem>(parent =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",

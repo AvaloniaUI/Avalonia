@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3.Interop
 {

@@ -15,21 +15,22 @@ namespace Avalonia.Animation
     /// </summary>
     internal class TransitionInstance : SingleSubscriberObservableBase<double>
     {
-        private IDisposable timerSubscription;
-        private TimeSpan startTime;
-        private TimeSpan duration;
+        private IDisposable _timerSubscription;
+        private TimeSpan _duration;
+        private readonly IClock _baseClock;
+        private IClock _clock;
 
-        public TransitionInstance(TimeSpan Duration)
+        public TransitionInstance(IClock clock, TimeSpan Duration)
         {
-            duration = Duration;
+            _duration = Duration;
+            _baseClock = clock;
         }
 
         private void TimerTick(TimeSpan t)
         {
-            var interpVal = (double)(t.Ticks - startTime.Ticks) / duration.Ticks;
+            var interpVal = (double)t.Ticks / _duration.Ticks;
 
-            if (interpVal > 1d
-             || interpVal < 0d)
+            if (interpVal > 1d || interpVal < 0d)
             {
                 PublishCompleted();
                 return;
@@ -40,14 +41,14 @@ namespace Avalonia.Animation
 
         protected override void Unsubscribed()
         {
-            timerSubscription?.Dispose();
+            _timerSubscription?.Dispose();
+            _clock.PlayState = PlayState.Stop;
         }
 
         protected override void Subscribed()
         {
-            startTime = Timing.GetTickCount();
-            timerSubscription = Timing.AnimationsTimer
-                                      .Subscribe(t => TimerTick(t));
+            _clock = new Clock(_baseClock);
+            _timerSubscription = _clock.Subscribe(TimerTick);
             PublishNext(0.0d);
         }
     }

@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Win32.Input;
@@ -18,7 +19,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl
+    public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -37,6 +38,7 @@ namespace Avalonia.Win32
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
         private FramebufferManager _framebuffer;
+        private IGlPlatformSurface _gl;
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
@@ -58,6 +60,10 @@ namespace Avalonia.Win32
 #endif
             CreateWindow();
             _framebuffer = new FramebufferManager(_hwnd);
+            if (Win32GlManager.EglFeature != null)
+                _gl = new EglGlPlatformSurface((EglDisplay)Win32GlManager.EglFeature.Display,
+                    Win32GlManager.EglFeature.DeferredContext, this);
+
             s_instances.Add(this);
         }
 
@@ -211,7 +217,7 @@ namespace Avalonia.Win32
 
         public IEnumerable<object> Surfaces => new object[]
         {
-            Handle, _framebuffer
+            Handle, _gl, _framebuffer
         };
 
         public void Activate()
@@ -491,9 +497,15 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
                     var dpi = ToInt32(wParam) & 0xffff;
                     var newDisplayRect = Marshal.PtrToStructure<UnmanagedMethods.RECT>(lParam);
-                    Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
                     ScalingChanged?.Invoke(_scaling);
+                    SetWindowPos(hWnd,
+                        IntPtr.Zero,
+                        newDisplayRect.left,
+                        newDisplayRect.top,
+                        newDisplayRect.right - newDisplayRect.left,
+                        newDisplayRect.bottom - newDisplayRect.top,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE);
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:
@@ -831,9 +843,9 @@ namespace Avalonia.Win32
 
             if (monitor != IntPtr.Zero)
             {
-                MONITORINFO monitorInfo = new MONITORINFO();
+                MONITORINFO monitorInfo = MONITORINFO.Create();
 
-                if (GetMonitorInfo(monitor, monitorInfo))
+                if (GetMonitorInfo(monitor,ref monitorInfo))
                 {
                     RECT rcMonitorArea = monitorInfo.rcMonitor;
 
@@ -921,5 +933,18 @@ namespace Avalonia.Win32
 
             _topmost = value;
         }
+        
+        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
+        {
+            get
+            {
+                RECT rect;
+                GetClientRect(_hwnd, out rect);
+                return new System.Drawing.Size(
+                    Math.Max(1, rect.right - rect.left),
+                    Math.Max(1, rect.bottom - rect.top));
+            }
+        }
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
     }
 }
