@@ -3,8 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #addin "nuget:?package=NuGet.Core&version=2.14.0"
-#tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
-#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
+#tool "nuget:?package=NuGet.CommandLine&version=4.7.1"
+#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2018.2.3"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TOOLS
@@ -311,42 +311,6 @@ Task("Publish-NuGet-Impl")
     Information("Publish-NuGet Task failed, but continuing with next Task...");
 });
 
-Task("Inspect-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsRunningOnWindows)
-    .Does(() =>
-{
-    var badIssues = new []{"PossibleNullReferenceException"};
-    var whitelist = new []{"tests", "src\\android", "src\\ios",
-        "src\\markup\\avalonia.markup.xaml\\portablexaml\\portable.xaml.github"};
-    Information("Running code inspections");
-    
-    var exitCode = StartProcess(Context.Tools.Resolve("inspectcode.exe"),
-        new ProcessSettings
-        {
-            Arguments = "--output=artifacts\\inspectcode.xml --profile=Avalonia.sln.DotSettings Avalonia.sln",
-            RedirectStandardOutput = true
-        });
-
-    Information("Analyzing report");
-    var doc = XDocument.Parse(System.IO.File.ReadAllText("artifacts\\inspectcode.xml"));
-    var failBuild = false;
-    foreach(var xml in doc.Descendants("Issue"))
-    {
-        var typeId = xml.Attribute("TypeId").Value.ToString();
-        if(badIssues.Contains(typeId))
-        {
-            var file = xml.Attribute("File").Value.ToString().ToLower();
-            if(whitelist.Any(wh => file.StartsWith(wh)))
-                continue;
-            var line = xml.Attribute("Line").Value.ToString();
-            Error(typeId + " - " + file + " on line " + line);
-            failBuild = true;
-        }
-    }
-    if(failBuild)
-        throw new Exception("Issues found");
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,7 +328,6 @@ Task("Run-Tests")
 
 Task("Package")
     .IsDependentOn("Run-Tests")
-    .IsDependentOn("Inspect-Impl")
     .IsDependentOn("Create-NuGet-Packages-Impl");
 
 Task("AppVeyor")

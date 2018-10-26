@@ -66,7 +66,7 @@ namespace Avalonia.Gtk3
                 DisplayClassName =
                     Utf8Buffer.StringFromPtr(Native.GTypeName(Marshal.ReadIntPtr(Marshal.ReadIntPtr(disp))));
 
-                using (var utf = new Utf8Buffer("avalonia.app." + Guid.NewGuid()))
+                using (var utf = new Utf8Buffer($"avalonia.app.a{Guid.NewGuid().ToString("N")}"))
                     App = Native.GtkApplicationNew(utf, 0);
                 //Mark current thread as UI thread
                 s_tlsMarker = true;
@@ -81,6 +81,7 @@ namespace Avalonia.Gtk3
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialog>()
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(new PlatformIconLoader());
             if (useGpu)
                 EglGlPlatformFeature.TryInitialize();

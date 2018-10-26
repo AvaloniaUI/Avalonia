@@ -70,6 +70,14 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
+        public void Detach()
+        {
+            if (Source != null)
+            {
+                Loaded.Detach();
+            }
+        }
+
         /// <inheritdoc/>
         public bool TryGetResource(string key, out object value) => Loaded.TryGetResource(key, out value);
 
