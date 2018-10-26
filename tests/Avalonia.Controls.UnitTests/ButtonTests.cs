@@ -3,6 +3,8 @@ using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -99,12 +101,20 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Raises_Click()
         {
             var mouse = Mock.Of<IMouseDevice>();
+            var renderer = Mock.Of<IRenderer>();
             IInputElement captured = null;
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(50, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
 
-            var target = new TestButton() { Bounds = new Rect(0, 0, 100, 100) };
+            var target = new TestButton()
+            {
+                Bounds = new Rect(0, 0, 100, 100),
+                Renderer = renderer
+            };
 
             bool clicked = false;
 
@@ -127,12 +137,20 @@ namespace Avalonia.Controls.UnitTests
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
             var mouse = Mock.Of<IMouseDevice>();
+            var renderer = Mock.Of<IRenderer>();
             IInputElement captured = null;
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(200, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
 
-            var target = new TestButton() { Bounds = new Rect(0, 0, 100, 100) };
+            var target = new TestButton()
+            {
+                Bounds = new Rect(0, 0, 100, 100),
+                Renderer = renderer
+            };
 
             bool clicked = false;
 
@@ -156,15 +174,21 @@ namespace Avalonia.Controls.UnitTests
         public void Button_With_RenderTransform_Raises_Click()
         {
             var mouse = Mock.Of<IMouseDevice>();
+            var renderer = Mock.Of<IRenderer>();
             IInputElement captured = null;
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(150, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
+                    new IVisual[] { r } : new IVisual[0]);
 
             var target = new TestButton()
             {
                 Bounds = new Rect(0, 0, 100, 100),
-                RenderTransform = new TranslateTransform { X = 100, Y = 0 }
+                RenderTransform = new TranslateTransform { X = 100, Y = 0 },
+                Renderer = renderer
             };
 
             //actual bounds of button should  be 100,0,100,100 x -> translated 100 pixels
@@ -191,13 +215,27 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(clicked);
         }
 
-        private class TestButton : Button
+        private class TestButton : Button, IRenderRoot
         {
             public new Rect Bounds
             {
                 get => base.Bounds;
                 set => base.Bounds = value;
             }
+
+            public Size ClientSize => throw new NotImplementedException();
+
+            public IRenderer Renderer { get; set; }
+
+            public double RenderScaling => throw new NotImplementedException();
+
+            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
+
+            public void Invalidate(Rect rect) => throw new NotImplementedException();
+
+            public Point PointToClient(Point point) => throw new NotImplementedException();
+
+            public Point PointToScreen(Point point) => throw new NotImplementedException();
         }
 
         private void RaisePointerPressed(Button button, IMouseDevice device, int clickCount, MouseButton mouseButton)
