@@ -29,19 +29,21 @@ namespace Avalonia.Media.Fonts
                 FileName = fileNameWithoutExtension + ".ttf";
                 Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
             }
-
-            if (source.AbsolutePath.Contains(".otf"))
-            {
-                var filePathWithoutExtension = source.AbsolutePath.Replace(".otf", string.Empty);
-                var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
-                FileName = fileNameWithoutExtension + ".otf";
-                Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
-            }
             else
             {
-                Location = source;
+                if (source.AbsolutePath.Contains(".otf"))
+                {
+                    var filePathWithoutExtension = source.AbsolutePath.Replace(".otf", string.Empty);
+                    var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
+                    FileName = fileNameWithoutExtension + ".otf";
+                    Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
+                }
+                else
+                {
+                    Location = source;
+                }
             }
-        }
+        }      
 
         /// <summary>
         /// Location of stored font asset that belongs to a <see cref="FontFamily"/>
