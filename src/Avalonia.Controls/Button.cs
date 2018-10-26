@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -252,9 +253,10 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
 
-                var hittest = VisualRoot?.Renderer?.HitTest(e.GetPosition(VisualRoot), VisualRoot, null);
+                var hittest = this.GetVisualsAt(e.GetPosition(this));
 
-                if (ClickMode == ClickMode.Release && hittest?.Any(v => v == this) == true)
+                if (ClickMode == ClickMode.Release &&
+                    hittest.Any(c => c == this || (c as IStyledElement)?.TemplatedParent == this) == true)
                 {
                     OnClick();
                 }

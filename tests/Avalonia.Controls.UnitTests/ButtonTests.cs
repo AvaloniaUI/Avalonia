@@ -106,7 +106,7 @@ namespace Avalonia.Controls.UnitTests
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(50, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
 
@@ -142,7 +142,7 @@ namespace Avalonia.Controls.UnitTests
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(200, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
 
@@ -179,7 +179,7 @@ namespace Avalonia.Controls.UnitTests
             Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(150, 50));
             Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
             Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), null))
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
                     new IVisual[] { r } : new IVisual[0]);
@@ -217,6 +217,11 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestButton : Button, IRenderRoot
         {
+            public TestButton()
+            {
+                IsVisible = true;
+            }
+
             public new Rect Bounds
             {
                 get => base.Bounds;
