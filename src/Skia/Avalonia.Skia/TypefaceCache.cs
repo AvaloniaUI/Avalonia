@@ -67,12 +67,8 @@ namespace Avalonia.Skia
 
             if (!entry.TryGetValue(key, out var typeface))
             {
-                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
-
-                if (typeface?.FamilyName != name)
-                {
-                    typeface = Default;
-                }
+                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant)
+                           ?? Default;
 
                 entry[key] = typeface;
             }
