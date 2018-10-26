@@ -469,7 +469,7 @@ public class Packages
                 BasePath = context.Directory("./src/Avalonia.Native/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             }
-        }
+        };
 
         var nuspecNuGetSettingInterop = new NuGetPackSettings()
         {
