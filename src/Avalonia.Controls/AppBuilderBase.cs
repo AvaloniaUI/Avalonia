@@ -222,7 +222,7 @@ namespace Avalonia.Controls
 
         private void SetupAvaloniaModules()
         {
-            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
+            var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                      from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
                                      where attribute.ForWindowingSubsystem == ""
                                       || attribute.ForWindowingSubsystem == WindowingSubsystemName

@@ -22,7 +22,7 @@ namespace Avalonia.LinuxFramebuffer
             _height = height;
         }
 
-        public void Start() => AvaloniaLocator.Current.GetService<IRuntimePlatform>().PostThreadPoolItem(Worker);
+        public void Start() => ThreadPool.UnsafeQueueUserWorkItem(_ => Worker(), null);
 
         private void Worker()
         {
