@@ -44,7 +44,11 @@ namespace Avalonia.Direct2D1.Media
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer, Action finishedCallback)
         {
-            return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: finishedCallback);
+            return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: () =>
+                {
+                    Version++;
+                    finishedCallback?.Invoke();
+                });
         }
     }
 }

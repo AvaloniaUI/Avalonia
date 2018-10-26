@@ -35,7 +35,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
+            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
         public IRenderTargetBitmapImpl CreateLayer(Size size)
