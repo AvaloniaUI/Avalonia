@@ -149,7 +149,7 @@ namespace Avalonia.Gtk3
     public class Gtk3PlatformOptions
     {
         public bool? UseDeferredRendering { get; set; } = true;
-        public bool? UseGpuAcceleration { get; set; } = true;
+        public bool? UseGpuAcceleration { get; set; };
         public ICustomGtk3NativeLibraryResolver CustomResolver { get; set; }
     }
 }
