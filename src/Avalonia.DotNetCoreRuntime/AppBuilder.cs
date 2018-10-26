@@ -43,7 +43,7 @@ namespace Avalonia
             if (os == OperatingSystemType.WinNT)
                 LoadWin32();
             else if(os==OperatingSystemType.OSX)
-                LoadMonoMac();
+                LoadAvaloniaNative();
             else
                 LoadGtk3();
             this.UseSkia();
@@ -51,7 +51,7 @@ namespace Avalonia
             return this;
         }
 
-        void LoadMonoMac() => this.UseMonoMac();
+        void LoadAvaloniaNative() => this.UseAvaloniaNative();
         void LoadWin32() => this.UseWin32();
         void LoadGtk3() => this.UseGtk3();
     }

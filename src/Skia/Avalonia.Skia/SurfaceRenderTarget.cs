@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reactive.Disposables;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
@@ -79,7 +80,7 @@ namespace Avalonia.Skia
                 GrContext = _grContext
             };
 
-            return new DrawingContextImpl(createInfo);
+            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
 
         /// <inheritdoc />
@@ -87,6 +88,8 @@ namespace Avalonia.Skia
 
         /// <inheritdoc />
         public int PixelHeight { get; }
+
+        public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
         public void Save(string fileName)

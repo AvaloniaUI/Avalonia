@@ -497,9 +497,15 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_DPICHANGED:
                     var dpi = ToInt32(wParam) & 0xffff;
                     var newDisplayRect = Marshal.PtrToStructure<UnmanagedMethods.RECT>(lParam);
-                    Position = new Point(newDisplayRect.left, newDisplayRect.top);
                     _scaling = dpi / 96.0;
                     ScalingChanged?.Invoke(_scaling);
+                    SetWindowPos(hWnd,
+                        IntPtr.Zero,
+                        newDisplayRect.left,
+                        newDisplayRect.top,
+                        newDisplayRect.right - newDisplayRect.left,
+                        newDisplayRect.bottom - newDisplayRect.top,
+                        SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE);
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_KEYDOWN:

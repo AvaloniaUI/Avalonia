@@ -157,7 +157,7 @@ namespace Avalonia.Shared.PlatformSupport
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
             {
-                var loadedAssemblies = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies();
+                var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
                 var match = loadedAssemblies.FirstOrDefault(a => a.GetName().Name == name);
                 if (match != null)
                 {

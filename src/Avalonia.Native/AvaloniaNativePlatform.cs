@@ -120,7 +120,7 @@ namespace Avalonia.Native
     {
         public AvaloniaNativeMacOptions MacOptions { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
-        public bool UseGpu { get; set; } = false;
+        public bool UseGpu { get; set; } = true;
         internal AvaloniaNativeOptions(IAvaloniaNativeFactory factory)
         {
             var mac = factory.GetMacOptions();
