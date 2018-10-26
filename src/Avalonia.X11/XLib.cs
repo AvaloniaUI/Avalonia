@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Avalonia.X11
 {
-    internal static class XLib
+    internal unsafe static class XLib
     {
         const string libX11 = "X11";
 
@@ -262,7 +262,7 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern int XGetWindowProperty(IntPtr display, IntPtr window, IntPtr atom, IntPtr long_offset,
             IntPtr long_length, bool delete, IntPtr req_type, out IntPtr actual_type, out int actual_format,
-            out IntPtr nitems, out IntPtr bytes_after, ref IntPtr prop);
+            out IntPtr nitems, out IntPtr bytes_after, out IntPtr prop);
 
         [DllImport(libX11)]
         public static extern int XSetInputFocus(IntPtr display, IntPtr window, RevertTo revert_to, IntPtr time);
@@ -416,6 +416,63 @@ namespace Avalonia.X11
             return XGetGeometry(display, window, out geo.root, out geo.x, out geo.y, out geo.width, out geo.height,
                 out geo.bw, out geo.d);
         }
+        
+        public static void QueryPointer (IntPtr display, IntPtr w, out IntPtr root, out IntPtr child,
+            out int root_x, out int root_y, out int child_x, out int child_y,
+            out int mask)
+        {
+
+            IntPtr c;
+
+            XGrabServer (display);
+
+            XQueryPointer(display, w, out root, out c,
+                out root_x, out root_y, out child_x, out child_y,
+                out mask);
+
+            if (root != w)
+                c = root;
+
+            IntPtr child_last = IntPtr.Zero;
+            while (c != IntPtr.Zero) {
+                child_last = c;
+                XQueryPointer(display, c, out root, out c,
+                    out root_x, out root_y, out child_x, out child_y,
+                    out mask);
+            }
+            XUngrabServer (display);
+            XFlush (display);
+
+            child = child_last;
+        }
+
+        public static (int x, int y) GetCursorPos(X11Info x11, IntPtr? handle = null)
+        {
+            IntPtr root;
+            IntPtr child;
+            int root_x;
+            int root_y;
+            int win_x;
+            int win_y;
+            int keys_buttons;
+
+
+
+            QueryPointer(x11.Display, handle ?? x11.RootWindow, out root, out child, out root_x, out root_y, out win_x, out win_y,
+                out keys_buttons);
+
+
+            if (handle != null)
+            {
+                return (win_x, win_y);
+            }
+            else
+            {
+                return (root_x, root_y);
+            }
+        }
+
+
 
     }
 }

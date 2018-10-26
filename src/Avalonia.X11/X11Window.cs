@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -13,7 +14,7 @@ using Avalonia.Threading;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
-    class X11Window : IWindowImpl, IPopupImpl
+    unsafe class X11Window : IWindowImpl, IPopupImpl
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -134,7 +135,6 @@ namespace Avalonia.X11
 
             if (_popup || !_systemDecorations)
             {
-                functions = 0;
                 decorations = 0;
             }
 
@@ -165,7 +165,6 @@ namespace Avalonia.X11
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public Func<bool> Closing { get; set; }
-        public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Action Closed { get; set; }
         public Action<Point> PositionChanged { get; set; }
@@ -190,7 +189,10 @@ namespace Avalonia.X11
                 Deactivated?.Invoke();
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawMouseEventType.Move, ev, ev.MotionEvent.state);
-
+            else if (ev.type == XEventName.PropertyNotify)
+            {
+                OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
+            }
             else if (ev.type == XEventName.ButtonPress)
             {
                 if (ev.ButtonEvent.button < 4)
@@ -260,8 +262,76 @@ namespace Avalonia.X11
                 }
             }
         }
-        
-        
+
+        private WindowState _lastWindowState;
+        public WindowState WindowState
+        {
+            get { return _lastWindowState; }
+            set
+            {
+                _lastWindowState = value;
+                if (value == WindowState.Minimized)
+                {
+                    XIconifyWindow(_x11.Display, _handle, _x11.DefaultScreen);
+                }
+                else if (value == WindowState.Maximized)
+                {
+                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_HIDDEN, IntPtr.Zero);
+                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)1, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                        _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
+                }
+                else
+                {
+                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_HIDDEN, IntPtr.Zero);
+                    SendNetWMMessage(_x11.Atoms._NET_WM_STATE, (IntPtr)0, _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT,
+                        _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ);
+                }
+            }
+        }
+
+        private void OnPropertyChange(IntPtr atom, bool hasValue)
+        {
+            if (atom == _x11.Atoms._NET_WM_STATE)
+            {
+                WindowState state = WindowState.Normal;
+                if(hasValue)
+                {
+
+                    XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
+                        false, (IntPtr)Atom.XA_ATOM, out var actualAtom, out var actualFormat, out var nitems, out var bytesAfter,
+                        out var prop);
+                    int maximized = 0;
+                    var pitems = (IntPtr*)prop.ToPointer();
+                    for (var c = 0; c < nitems.ToInt32(); c++)
+                    {
+                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_HIDDEN)
+                        {
+                            state = WindowState.Minimized;
+                            break;
+                        }
+
+                        if (pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_HORZ ||
+                            pitems[c] == _x11.Atoms._NET_WM_STATE_MAXIMIZED_VERT)
+                        {
+                            maximized++;
+                            if (maximized == 2)
+                            {
+                                state = WindowState.Maximized;
+                                break;
+                            }
+                        }
+                    }
+                    XFree(prop);
+                }
+                if (_lastWindowState != state)
+                {
+                    _lastWindowState = state;
+                    WindowStateChanged?.Invoke(state);
+                }
+            }
+
+        }
+
 
         InputModifiers TranslateModifiers(XModifierMask state)
         {
@@ -437,25 +507,8 @@ namespace Avalonia.X11
         {
             if (_x11.Atoms._NET_ACTIVE_WINDOW != IntPtr.Zero)
             {
-
-                var ev = new XEvent
-                {
-                    AnyEvent = 
-                    {
-                        type = XEventName.ClientMessage,
-                        window = _handle,
-                    },
-                    ClientMessageEvent = {
-                    message_type = _x11.Atoms._NET_ACTIVE_WINDOW,
-                    format = 32,
-                        ptr1 = new IntPtr(1),
-                        ptr2 = _x11.LastActivityTimestamp
-                        
-                    }
-                };
-
-                XSendEvent(_x11.Display, _x11.RootWindow, false,
-                    new IntPtr((int)(XEventMask.SubstructureRedirectMask | XEventMask.StructureNotifyMask)), ref ev);
+                SendNetWMMessage(_x11.Atoms._NET_ACTIVE_WINDOW, (IntPtr)1, _x11.LastActivityTimestamp,
+                    IntPtr.Zero);
             }
             else
             {
@@ -467,14 +520,64 @@ namespace Avalonia.X11
         
         public IScreenImpl Screen { get; } = new ScreenStub();
         public Size MaxClientSize { get; } = new Size(1920, 1280);
-        
-       
+
+
+
+        void SendNetWMMessage(IntPtr message_type, IntPtr l0,
+            IntPtr? l1 = null, IntPtr? l2 = null, IntPtr? l3 = null, IntPtr? l4 = null)
+        {
+            XEvent xev;
+
+            xev = new XEvent();
+            xev.ClientMessageEvent.type = XEventName.ClientMessage;
+            xev.ClientMessageEvent.send_event = true;
+            xev.ClientMessageEvent.window = _handle;
+            xev.ClientMessageEvent.message_type = message_type;
+            xev.ClientMessageEvent.format = 32;
+            xev.ClientMessageEvent.ptr1 = l0;
+            xev.ClientMessageEvent.ptr2 = l1 ?? IntPtr.Zero;
+            xev.ClientMessageEvent.ptr3 = l2 ?? IntPtr.Zero;
+            xev.ClientMessageEvent.ptr4 = l3 ?? IntPtr.Zero;
+            xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
+            XSendEvent(_x11.Display, _x11.RootWindow, false,
+                new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
+
+        }
+
+        void BeginMoveResize(NetWmMoveResize side)
+        {
+            var pos = GetCursorPos(_x11);
+            XUngrabPointer(_x11.Display, _x11.LastActivityTimestamp);
+            SendNetWMMessage (_x11.Atoms._NET_WM_MOVERESIZE, (IntPtr) pos.x, (IntPtr) pos.y,
+                (IntPtr) side,
+                (IntPtr) 1, (IntPtr)1); // left button
+        }
+
         public void BeginMoveDrag()
         {
+            BeginMoveResize(NetWmMoveResize._NET_WM_MOVERESIZE_MOVE);
         }
 
         public void BeginResizeDrag(WindowEdge edge)
         {
+            var side = NetWmMoveResize._NET_WM_MOVERESIZE_CANCEL;
+            if (edge == WindowEdge.East)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_RIGHT;
+            if (edge == WindowEdge.North)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOP;
+            if (edge == WindowEdge.South)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOM;
+            if (edge == WindowEdge.West)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_LEFT;
+            if (edge == WindowEdge.NorthEast)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPRIGHT;
+            if (edge == WindowEdge.NorthWest)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_TOPLEFT;
+            if (edge == WindowEdge.SouthEast)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT;
+            if (edge == WindowEdge.SouthWest)
+                side = NetWmMoveResize._NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT;
+            BeginMoveResize(side);
         }
         
         public void SetTitle(string title)
