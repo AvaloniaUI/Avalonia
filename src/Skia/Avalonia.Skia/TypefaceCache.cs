@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     /// </summary>
     internal static class TypefaceCache
     {
-        public static SKTypeface Default = SKTypeface.FromFamilyName(FontFamily.Default.Name);
+        public static SKTypeface Default = CreateDefaultTypeface();
         static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> Cache = new Dictionary<string, Dictionary<FontKey, SKTypeface>>();
 
         struct FontKey
@@ -49,6 +49,13 @@ namespace Avalonia.Skia
             // Equals and GetHashCode ommitted
         }
 
+        private static SKTypeface CreateDefaultTypeface()
+        {
+            var defaultTypeface = SKTypeface.FromFamilyName(FontFamily.Default.Name) ?? SKTypeface.FromFamilyName(null);
+
+            return defaultTypeface;
+        }
+
         private static SKTypeface GetTypeface(string name, FontKey key)
         {
             var familyKey = name;
@@ -60,12 +67,8 @@ namespace Avalonia.Skia
 
             if (!entry.TryGetValue(key, out var typeface))
             {
-                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant);
-
-                if (typeface.FamilyName != name)
-                {
-                    typeface = Default;
-                }
+                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant)
+                           ?? Default;
 
                 entry[key] = typeface;
             }

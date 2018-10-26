@@ -1,15 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-// ADDINS
-///////////////////////////////////////////////////////////////////////////////
-
-#addin "nuget:?package=NuGet.Core&version=2.14.0"
-#tool "nuget:?package=NuGet.CommandLine&version=4.3.0"
-#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2017.1.20170613.162720"
-
-///////////////////////////////////////////////////////////////////////////////
 // TOOLS
 ///////////////////////////////////////////////////////////////////////////////
 
+#tool "nuget:?package=NuGet.CommandLine&version=4.7.1"
+#tool "nuget:?package=JetBrains.ReSharper.CommandLineTools&version=2018.2.3"
 #tool "nuget:?package=xunit.runner.console&version=2.3.1"
 #tool "nuget:?package=JetBrains.dotMemoryUnit&version=3.0.20171219.105559"
 
@@ -21,7 +15,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet;
 
 ///////////////////////////////////////////////////////////////////////////////
 // SCRIPTS
@@ -71,6 +64,7 @@ Setup<AvaloniaBuildData>(context =>
     Information("IsRunningOnUnix: " + parameters.IsRunningOnUnix);
     Information("IsRunningOnWindows: " + parameters.IsRunningOnWindows);
     Information("IsRunningOnAppVeyor: " + parameters.IsRunningOnAppVeyor);
+    Information("IsRunnongOnAzure:" + parameters.IsRunningOnAzure);
     Information("IsPullRequest: " + parameters.IsPullRequest);
     Information("IsMainRepo: " + parameters.IsMainRepo);
     Information("IsMasterBranch: " + parameters.IsMasterBranch);
@@ -246,71 +240,6 @@ Task("Create-NuGet-Packages-Impl")
     }
 });
 
-Task("Publish-MyGet-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMasterBranch)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMyGetRelease)
-    .Does<AvaloniaBuildData>(data =>
-{
-    var apiKey = EnvironmentVariable("MYGET_API_KEY");
-    if(string.IsNullOrEmpty(apiKey)) 
-    {
-        throw new InvalidOperationException("Could not resolve MyGet API key.");
-    }
-
-    var apiUrl = EnvironmentVariable("MYGET_API_URL");
-    if(string.IsNullOrEmpty(apiUrl)) 
-    {
-        throw new InvalidOperationException("Could not resolve MyGet API url.");
-    }
-
-    foreach(var nupkg in data.Packages.NugetPackages)
-    {
-        NuGetPush(nupkg, new NuGetPushSettings {
-            Source = apiUrl,
-            ApiKey = apiKey
-        });
-    }
-})
-.OnError(exception =>
-{
-    Information("Publish-MyGet Task failed, but continuing with next Task...");
-});
-
-Task("Publish-NuGet-Impl")
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsLocalBuild)
-    .WithCriteria<AvaloniaBuildData>((context, data) => !data.Parameters.IsPullRequest)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsMainRepo)
-    .WithCriteria<AvaloniaBuildData>((context, data) => data.Parameters.IsNuGetRelease)
-    .Does<AvaloniaBuildData>(data =>
-{
-    var apiKey = EnvironmentVariable("NUGET_API_KEY");
-    if(string.IsNullOrEmpty(apiKey)) 
-    {
-        throw new InvalidOperationException("Could not resolve NuGet API key.");
-    }
-
-    var apiUrl = EnvironmentVariable("NUGET_API_URL");
-    if(string.IsNullOrEmpty(apiUrl)) 
-    {
-        throw new InvalidOperationException("Could not resolve NuGet API url.");
-    }
-
-    foreach(var nupkg in data.Packages.NugetPackages)
-    {
-        NuGetPush(nupkg, new NuGetPushSettings {
-            ApiKey = apiKey,
-            Source = apiUrl
-        });
-    }
-})
-.OnError(exception =>
-{
-    Information("Publish-NuGet Task failed, but continuing with next Task...");
-});
-
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -333,12 +262,23 @@ Task("Package")
 Task("AppVeyor")
   .IsDependentOn("Package")
   .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl")
-  .IsDependentOn("Publish-MyGet-Impl")
-  .IsDependentOn("Publish-NuGet-Impl");
+  .IsDependentOn("Zip-Files-Impl");
 
 Task("Travis")
   .IsDependentOn("Run-Tests");
+
+Task("Azure-Linux")
+  .IsDependentOn("Run-Tests");
+
+Task("Azure-OSX")
+  .IsDependentOn("Run-Tests")
+  .IsDependentOn("Copy-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl");
+
+Task("Azure-Windows")
+  .IsDependentOn("Package")
+  .IsDependentOn("Copy-Files-Impl")
+  .IsDependentOn("Zip-Files-Impl");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
