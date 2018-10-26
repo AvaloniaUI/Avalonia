@@ -17,11 +17,13 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         class LockedBitmap : ILockedFramebuffer
         {
+            private readonly WriteableWicBitmapImpl _parent;
             private readonly BitmapLock _lock;
             private readonly PixelFormat _format;
 
-            public LockedBitmap(BitmapLock l, PixelFormat format)
+            public LockedBitmap(WriteableWicBitmapImpl parent, BitmapLock l, PixelFormat format)
             {
+                _parent = parent;
                 _lock = l;
                 _format = format;
             }
@@ -30,6 +32,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             public void Dispose()
             {
                 _lock.Dispose();
+                _parent.Version++;
             }
 
             public IntPtr Address => _lock.Data.DataPointer;
@@ -40,6 +43,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         }
 
-        public ILockedFramebuffer Lock() => new LockedBitmap(WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
+        public ILockedFramebuffer Lock() =>
+            new LockedBitmap(this, WicImpl.Lock(BitmapLockFlags.Write), PixelFormat.Value);
     }
 }

@@ -13,14 +13,10 @@ namespace Avalonia.Shared.PlatformSupport
 {
     internal partial class StandardRuntimePlatform : IRuntimePlatform
     {
-        public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);
-        public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
         public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
         {
             return new Timer(_ => tick(), null, interval, interval);
         }
-
-        public string GetStackTrace() => Environment.StackTrace;
 
         public IUnmanagedBlob AllocBlob(int size) => new UnmanagedBlob(this, size);
         

@@ -20,6 +20,11 @@ namespace Avalonia.Platform
         /// Gets the size of the bitmap, in device pixels.
         /// </summary>
         PixelSize PixelSize { get; }
+        
+        /// <summary>
+        /// Version of the pixel data
+        /// </summary>
+        int Version { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.

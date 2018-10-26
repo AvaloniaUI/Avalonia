@@ -64,6 +64,8 @@ namespace Avalonia.Skia
         public Vector Dpi { get; }
         public PixelSize PixelSize { get; }
 
+        public int Version { get; } = 1;
+
         /// <inheritdoc />
         public void Dispose()
         {
