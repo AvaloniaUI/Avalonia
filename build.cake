@@ -271,14 +271,12 @@ Task("Azure-Linux")
   .IsDependentOn("Run-Tests");
 
 Task("Azure-OSX")
-  .IsDependentOn("Run-Tests")
+  .IsDependentOn("Package")
   .IsDependentOn("Copy-Files-Impl")
   .IsDependentOn("Zip-Files-Impl");
 
 Task("Azure-Windows")
-  .IsDependentOn("Package")
-  .IsDependentOn("Copy-Files-Impl")
-  .IsDependentOn("Zip-Files-Impl");
+  .IsDependentOn("Run-Tests");
 
 ///////////////////////////////////////////////////////////////////////////////
 // EXECUTE
