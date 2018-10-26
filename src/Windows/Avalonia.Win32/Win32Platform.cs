@@ -19,6 +19,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
@@ -48,17 +49,7 @@ namespace Avalonia.Win32
 
         public Win32Platform()
         {
-            // Declare that this process is aware of per monitor DPI
-            if (UnmanagedMethods.ShCoreAvailable)
-            {
-                var osVersion = Environment.OSVersion.Version;
-                if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor > 2))
-                {
-                    UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS
-                        .PROCESS_PER_MONITOR_DPI_AWARE);
-                }
-            }
-
+            SetDpiAwareness();
             CreateMessageWindow();
         }
 
@@ -77,8 +68,6 @@ namespace Avalonia.Win32
 
         public static void Initialize(bool deferredRendering = true)
         {
-            UnmanagedMethods.SetProcessDPIAware();
-
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<IStandardCursorFactory>().ToConstant(CursorFactory.Instance)
@@ -250,5 +239,33 @@ namespace Avalonia.Win32
             }
         }
 
+        private static void SetDpiAwareness()
+        {
+            // Ideally we'd set DPI awareness in the manifest but this doesn't work for netcoreapp2.0
+            // apps as they are actually dlls run by a console loader. Instead we have to do it in code,
+            // but there are various ways to do this depending on the OS version.
+            var user32 = LoadLibrary("user32.dll");
+            var method = GetProcAddress(user32, nameof(SetProcessDpiAwarenessContext));
+
+            if (method != null)
+            {
+                if (SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
+                    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE))
+                {
+                    return;
+                }
+            }
+
+            var shcore = LoadLibrary("shcore.dll");
+            method = GetProcAddress(shcore, nameof(SetProcessDpiAwareness));
+
+            if (method != null)
+            {
+                SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                return;
+            }
+
+            SetProcessDPIAware();
+        }
     }
 }

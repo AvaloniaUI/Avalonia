@@ -150,7 +150,7 @@ public class Packages
             nuspec.Symbols = false;
             nuspec.NoPackageAnalysis = true;
             nuspec.Description = "The Avalonia UI framework";
-            nuspec.Copyright = "Copyright 2015";
+            nuspec.Copyright = "Copyright 2018";
             nuspec.Tags = new [] { "Avalonia" };
         });
 
@@ -408,20 +408,6 @@ public class Packages
                 BasePath = context.Directory("./src/Skia/Avalonia.Skia/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
             },
-            new NuGetPackSettings()
-            {
-                Id = "Avalonia.MonoMac",
-                Dependencies = new DependencyBuilder(this)
-                {
-                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
-                }.Dep("MonoMac.NetStandard").ToArray(),
-                Files = new []
-                {
-                    new NuSpecContent { Source = "netstandard2.0/Avalonia.MonoMac.dll", Target = "lib/netstandard2.0" },
-                },
-                BasePath = context.Directory("./src/OSX/Avalonia.MonoMac/bin/" + parameters.DirSuffix),
-                OutputDirectory = parameters.NugetRoot
-            },
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Desktop
             ///////////////////////////////////////////////////////////////////////////////
@@ -434,7 +420,7 @@ public class Packages
                     new NuSpecDependency() { Id = "Avalonia.Win32", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Skia", Version = parameters.Version },
                     new NuSpecDependency() { Id = "Avalonia.Gtk3", Version = parameters.Version },
-                    new NuSpecDependency() { Id = "Avalonia.MonoMac", Version = parameters.Version }
+                    new NuSpecDependency() { Id = "Avalonia.Native", Version = parameters.Version }
                 },
                 Files = new NuSpecContent[]
                 {
@@ -460,7 +446,24 @@ public class Packages
                 },
                 BasePath = context.Directory("./src/Linux/"),
                 OutputDirectory = parameters.NugetRoot
-            }
+            },
+            ///////////////////////////////////////////////////////////////////////////////
+            // Avalonia.Native
+            ///////////////////////////////////////////////////////////////////////////////
+            new NuGetPackSettings()
+            {
+                Id = "Avalonia.Native",
+                Dependencies = new []
+                {
+                    new NuSpecDependency() { Id = "Avalonia", Version = parameters.Version }
+                },
+                Files = new []
+                {
+                    new NuSpecContent { Source = "Avalonia.Native.dll", Target = "lib/netstandard2.0" }
+                },
+                BasePath = context.Directory("./src/Avalonia.Native/bin/" + parameters.DirSuffix + "/netstandard2.0"),
+                OutputDirectory = parameters.NugetRoot
+            },
         };
 
         var nuspecNuGetSettingInterop = new NuGetPackSettings()
