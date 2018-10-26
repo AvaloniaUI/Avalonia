@@ -9,14 +9,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.X11
 {
-    class CursorFactoryStub : IStandardCursorFactory
-    {
-        public IPlatformHandle GetCursor(StandardCursorType cursorType)
-        {
-            return new PlatformHandle(IntPtr.Zero, "FAKE");
-        }
-    }
-
     class ClipboardStub : IClipboard
     {
         private string _text;

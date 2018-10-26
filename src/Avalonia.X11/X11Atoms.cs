@@ -176,9 +176,6 @@ namespace Avalonia.X11 {
 		public readonly IntPtr OEMTEXT;
 		public readonly IntPtr UNICODETEXT;
 		public readonly IntPtr TARGETS;
-		public readonly IntPtr PostAtom;
-		public readonly IntPtr HoverState;
-		public readonly IntPtr AsyncAtom;
 
 
 		public X11Atoms (IntPtr display) {
@@ -249,10 +246,7 @@ namespace Avalonia.X11 {
 				"PRIMARY",
 				"COMPOUND_TEXT",
 				"UTF8_STRING",
-				"TARGETS",
-				"_SWF_AsyncAtom",
-				"_SWF_PostMessageAtom",
-				"_SWF_HoverAtom" };
+				"TARGETS"};
 
 			IntPtr[] atoms = new IntPtr [atom_names.Length];;
 
@@ -324,9 +318,6 @@ namespace Avalonia.X11 {
 			OEMTEXT = atoms [off++];
 			UNICODETEXT = atoms [off++];
 			TARGETS = atoms [off++];
-			AsyncAtom = atoms [off++];
-			PostAtom = atoms [off++];
-			HoverState = atoms [off++];
 
 			DIB = XA_PIXMAP;
 
