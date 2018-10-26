@@ -20,6 +20,11 @@ namespace Avalonia.Platform
         /// Gets the height of the bitmap, in pixels.
         /// </summary>
         int PixelHeight { get; }
+        
+        /// <summary>
+        /// Version of the pixel data
+        /// </summary>
+        int Version { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.

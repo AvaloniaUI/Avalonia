@@ -14,6 +14,7 @@ public class Parameters
     public bool IsRunningOnUnix { get; private set; }
     public bool IsRunningOnWindows { get; private set; }
     public bool IsRunningOnAppVeyor { get; private set; }
+    public bool IsRunningOnAzure { get; private set; }
     public bool IsPullRequest { get; private set; }
     public bool IsMainRepo { get; private set; }
     public bool IsMasterBranch { get; private set; }
@@ -53,6 +54,8 @@ public class Parameters
         IsRunningOnUnix = context.IsRunningOnUnix();
         IsRunningOnWindows = context.IsRunningOnWindows();
         IsRunningOnAppVeyor = buildSystem.AppVeyor.IsRunningOnAppVeyor;
+        IsRunningOnAzure = buildSystem.IsRunningOnVSTS || buildSystem.IsRunningOnTFS || context.EnvironmentVariable("LOGNAME") == "vsts";
+        
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
         IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, buildSystem.AppVeyor.Environment.Repository.Name);
         IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, buildSystem.AppVeyor.Environment.Repository.Branch);
@@ -84,6 +87,11 @@ public class Parameters
                 // Use AssemblyVersion with Build as version
                 Version += "-build" + context.EnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-beta";
             }
+        }
+        else if (IsRunningOnAzure)
+        {
+                // Use AssemblyVersion with Build as version
+                Version += "-build" + context.EnvironmentVariable("BUILD_BUILDID") + "-beta";   
         }
 
         // DIRECTORIES
