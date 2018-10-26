@@ -55,7 +55,7 @@ namespace Avalonia
 
             LoadAssembliesInDirectory();
 
-            var windowingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
+            var windowingSubsystemAttribute = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportWindowingSubsystemAttribute>()
                                                where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                orderby attribute.Priority ascending
@@ -65,7 +65,7 @@ namespace Avalonia
                 throw new InvalidOperationException("No windowing subsystem found. Are you missing assembly references?");
             }
 
-            var renderingSubsystemAttribute = (from assembly in RuntimePlatform.GetLoadedAssemblies()
+            var renderingSubsystemAttribute = (from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                                from attribute in assembly.GetCustomAttributes<ExportRenderingSubsystemAttribute>()
                                                where attribute.RequiredOS == os && CheckEnvironment(attribute.EnvironmentChecker)
                                                where attribute.RequiresWindowingSubsystem == null

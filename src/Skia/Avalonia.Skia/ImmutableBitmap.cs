@@ -65,6 +65,8 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public int PixelHeight { get; }
 
+        public int Version { get; } = 1;
+
         /// <inheritdoc />
         public void Dispose()
         {
