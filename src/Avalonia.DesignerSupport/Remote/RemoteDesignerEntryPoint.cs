@@ -15,6 +15,8 @@ namespace Avalonia.DesignerSupport.Remote
     {
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
         private static ClientViewportAllocatedMessage s_viewportAllocatedMessage;
+        private static ClientRenderInfoMessage s_renderInfoMessage;
+
         private static IAvaloniaRemoteTransportConnection s_transport;
         class CommandLineArgs
         {
@@ -161,7 +163,8 @@ namespace Avalonia.DesignerSupport.Remote
             PreviewerWindowingPlatform.PreFlightMessages = new List<object>
             {
                 s_supportedPixelFormats,
-                s_viewportAllocatedMessage
+                s_viewportAllocatedMessage,
+                s_renderInfoMessage
             };
         }
 
@@ -171,6 +174,11 @@ namespace Avalonia.DesignerSupport.Remote
             if (obj is ClientSupportedPixelFormatsMessage formats)
             {
                 s_supportedPixelFormats = formats;
+                RebuildPreFlight();
+            }
+            if (obj is ClientRenderInfoMessage renderInfo)
+            {
+                s_renderInfoMessage = renderInfo;
                 RebuildPreFlight();
             }
             if (obj is ClientViewportAllocatedMessage viewport)

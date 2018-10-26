@@ -11,11 +11,19 @@ namespace Avalonia.Controls.Remote
 {
     public class RemoteWidget : Control
     {
+        public enum SizingMode
+        {
+            Local,
+            Remote
+        }
+
         private readonly IAvaloniaRemoteTransportConnection _connection;
         private FrameMessage _lastFrame;
         private WriteableBitmap _bitmap;
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
+            Mode = SizingMode.Local;
+
             _connection = connection;
             _connection.OnMessage += (t, msg) => Dispatcher.UIThread.Post(() => OnMessage(msg));
             _connection.Send(new ClientSupportedPixelFormatsMessage
@@ -27,6 +35,8 @@ namespace Avalonia.Controls.Remote
                 }
             });
         }
+
+        public SizingMode Mode { get; set; }
 
         private void OnMessage(object msg)
         {
@@ -44,13 +54,17 @@ namespace Avalonia.Controls.Remote
 
         protected override void ArrangeCore(Rect finalRect)
         {
-            _connection.Send(new ClientViewportAllocatedMessage
+            if (Mode == SizingMode.Local)
             {
-                Width = finalRect.Width,
-                Height = finalRect.Height,
-                DpiX = 96,
-                DpiY = 96 //TODO: Somehow detect the actual DPI
-            });
+                _connection.Send(new ClientViewportAllocatedMessage
+                {
+                    Width = finalRect.Width,
+                    Height = finalRect.Height,
+                    DpiX = 10 * 96,
+                    DpiY = 10 * 96 //TODO: Somehow detect the actual DPI
+                });
+            }
+
             base.ArrangeCore(finalRect);
         }
 
