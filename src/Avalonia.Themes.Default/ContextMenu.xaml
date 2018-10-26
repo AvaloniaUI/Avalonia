@@ -1,8 +1,8 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="ContextMenu">
-    <Setter Property="BorderBrush" Value="Gray"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Padding" Value="4,2"/>
-    <Setter Property="TextBlock.FontSize" Value="12" />
+    <Setter Property="TextBlock.FontSize" Value="{DynamicResource FontSizeNormal}" />
     <Setter Property="TextBlock.FontWeight" Value="Normal" />
     <Setter Property="Template">
     <ControlTemplate>

@@ -52,6 +52,6 @@
     </Setter>
   </Style>
   <Style Selector="DropDown:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
 </Styles>
