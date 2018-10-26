@@ -34,7 +34,7 @@ namespace Avalonia.Media.Fonts
         {
             var availableAssets = s_assetLoader.GetAssets(location);
 
-            var matchingAssets = availableAssets.Where(x => x.absolutePath.EndsWith(".ttf"));
+            var matchingAssets = availableAssets.Where(x => x.absolutePath.EndsWith(".ttf") || x.absolutePath.EndsWith(".otf"));
 
             return matchingAssets.Select(x => GetAssetUri(x.absolutePath, x.assembly));
         }
@@ -52,8 +52,9 @@ namespace Avalonia.Media.Fonts
 
             var compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
 
-            var matchingResources =
-                availableResources.Where(x => x.absolutePath.Contains(compareTo) && x.absolutePath.EndsWith(".ttf"));
+            var matchingResources = availableResources.Where(
+                x => x.absolutePath.Contains(compareTo)
+                     && (x.absolutePath.EndsWith(".ttf") || x.absolutePath.EndsWith(".otf")));
 
             return matchingResources.Select(x => GetAssetUri(x.absolutePath, x.assembly));
         }

@@ -24,7 +24,10 @@ namespace Avalonia.Media.Fonts
 
             var names = new List<string>(familyNames);
 
-            if (names.Count == 0) throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
+            if (names.Count == 0)
+            {
+                throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
+            }
 
             Names = new ReadOnlyCollection<string>(names);
 
@@ -95,7 +98,10 @@ namespace Avalonia.Media.Fonts
             {
                 builder.Append(Names[index]);
 
-                if (index == Names.Count - 1) break;
+                if (index == Names.Count - 1)
+                {
+                    break;
+                }
 
                 builder.Append(", ");
             }
@@ -123,7 +129,10 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is FamilyNameCollection other)) return false;
+            if (!(obj is FamilyNameCollection other))
+            {
+                return false;
+            }
 
             return other.ToString().Equals(ToString());
         }

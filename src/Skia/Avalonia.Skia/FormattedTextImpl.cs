@@ -45,7 +45,10 @@ namespace Avalonia.Skia
                             familyName,
                             typeface.Style,
                             typeface.Weight);
-                        if (skiaTypeface != TypefaceCache.DefaultTypeface) break;
+                        if (skiaTypeface != TypefaceCache.DefaultTypeface)
+                        {
+                            break;
+                        }
                     }
                 }
                 else

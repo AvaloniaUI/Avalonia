@@ -12,6 +12,44 @@
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Black.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-BlackItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Bold.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-BoldItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-ExtraBold.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-ExtraBoldItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-ExtraLight.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-ExtraLightItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Italic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Light.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-LightItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Medium.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-MediumItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Regular.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-SemiBold.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-SemiBoldItalic.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-Thin.otf" />
+    <None Remove="Assets\Fonts\Montserrat\Montserrat-ThinItalic.otf" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Black.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-BlackItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Bold.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-BoldItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-ExtraBold.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-ExtraBoldItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-ExtraLight.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-ExtraLightItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Italic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Light.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-LightItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Medium.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-MediumItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Regular.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-SemiBold.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-SemiBoldItalic.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-Thin.otf" />
+    <EmbeddedResource Include="Assets\Fonts\Montserrat\Montserrat-ThinItalic.otf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
