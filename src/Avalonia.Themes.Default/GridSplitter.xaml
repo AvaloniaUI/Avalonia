@@ -1,7 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="GridSplitter:vertical">
     <Setter Property="Width" Value="6"/>
-    <Setter Property="Background" Value="{DynamicResource ThemeControlLightBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}">
@@ -25,7 +25,7 @@
   </Style>
   <Style Selector="GridSplitter:horizontal">
     <Setter Property="Height" Value="6"/>
-    <Setter Property="Background" Value="{DynamicResource ThemeControlLightBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeControlLowBrush}"/>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}">

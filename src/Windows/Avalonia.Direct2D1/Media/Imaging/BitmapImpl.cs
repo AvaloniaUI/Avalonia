@@ -9,6 +9,7 @@ namespace Avalonia.Direct2D1.Media
     {
         public abstract int PixelWidth { get; }
         public abstract int PixelHeight { get; }
+        public int Version { get; protected set; } = 1;
 
         public abstract OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target);
 

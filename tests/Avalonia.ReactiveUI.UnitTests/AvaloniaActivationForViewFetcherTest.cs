@@ -23,13 +23,66 @@ namespace Avalonia
 
             public TestUserControlWithWhenActivated()
             {
-                this.WhenActivated(disposables => {
+                this.WhenActivated(disposables => 
+                {
                     Active = true;
                     Disposable
                         .Create(() => Active = false)
                         .DisposeWith(disposables);
                 });
             }
+        }
+
+        public class TestWindowWithWhenActivated : Window, IActivatable
+        {
+            public bool Active { get; private set; }
+
+            public TestWindowWithWhenActivated()
+            {
+                this.WhenActivated(disposables => 
+                {
+                    Active = true;
+                    Disposable
+                        .Create(() => Active = false)
+                        .DisposeWith(disposables);
+                });
+            }
+        }
+
+        public class ActivatableViewModel : ISupportsActivation
+        {
+            public ViewModelActivator Activator { get; }
+
+            public bool IsActivated { get; private set; }
+
+            public ActivatableViewModel() 
+            {
+                Activator = new ViewModelActivator();
+                this.WhenActivated(disposables => 
+                {
+                    IsActivated = true;
+                    Disposable
+                        .Create(() => IsActivated = false)
+                        .DisposeWith(disposables);
+                });
+            }
+        }
+
+        public class ActivatableWindow : ReactiveWindow<ActivatableViewModel>
+        {
+            public ActivatableWindow() => this.WhenActivated(disposables => { });
+        }
+
+        public class ActivatableUserControl : ReactiveUserControl<ActivatableViewModel>
+        {
+            public ActivatableUserControl() => this.WhenActivated(disposables => { });
+        }
+
+        public AvaloniaActivationForViewFetcherTest()
+        {
+            Locator.CurrentMutable.RegisterConstant(
+                new AvaloniaActivationForViewFetcher(), 
+                typeof(IActivationForViewFetcher));
         }
 
         [Fact]
@@ -71,10 +124,6 @@ namespace Avalonia
         [Fact]
         public void Activation_For_View_Fetcher_Should_Support_When_Activated()
         {
-            Locator.CurrentMutable.RegisterConstant(
-                new AvaloniaActivationForViewFetcher(), 
-                typeof(IActivationForViewFetcher));
-
             var userControl = new TestUserControlWithWhenActivated();
             Assert.False(userControl.Active);
 
@@ -84,6 +133,54 @@ namespace Avalonia
 
             fakeRenderedDecorator.Child = null;
             Assert.False(userControl.Active);
+        }
+
+        [Fact]
+        public void Activation_For_View_Fetcher_Should_Support_Windows() 
+        {
+            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            {
+                var window = new TestWindowWithWhenActivated();
+                Assert.False(window.Active);
+
+                window.Show();
+                Assert.True(window.Active);
+
+                window.Close();
+                Assert.False(window.Active);
+            }
+        }
+
+        [Fact]
+        public void Activatable_Window_View_Model_Is_Activated_And_Deactivated() 
+        {
+            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            {
+                var viewModel = new ActivatableViewModel();
+                var window = new ActivatableWindow { ViewModel = viewModel };
+                Assert.False(viewModel.IsActivated);
+
+                window.Show();
+                Assert.True(viewModel.IsActivated);
+
+                window.Close();
+                Assert.False(viewModel.IsActivated);
+            }
+        }
+
+        [Fact]
+        public void Activatable_User_Control_View_Model_Is_Activated_And_Deactivated() 
+        {
+            var root = new TestRoot();
+            var viewModel = new ActivatableViewModel();
+            var control = new ActivatableUserControl { ViewModel = viewModel };
+            Assert.False(viewModel.IsActivated);
+
+            root.Child = control;
+            Assert.True(viewModel.IsActivated);
+
+            root.Child = null;
+            Assert.False(viewModel.IsActivated);
         }
     }
 }

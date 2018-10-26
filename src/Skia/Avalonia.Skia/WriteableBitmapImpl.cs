@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
 using SkiaSharp;
@@ -16,6 +17,7 @@ namespace Avalonia.Skia
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
         private readonly SKBitmap _bitmap;
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Create new writeable bitmap.
@@ -55,10 +57,13 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public int PixelHeight { get; }
 
+        public int Version { get; private set; } = 1;
+
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
-            context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
+            lock (_lock)
+                context.Canvas.DrawBitmap(_bitmap, sourceRect, destRect, paint);
         }
 
         /// <inheritdoc />
@@ -86,7 +91,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public ILockedFramebuffer Lock() => new BitmapFramebuffer(_bitmap);
+        public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
 
         /// <summary>
         /// Get snapshot as image.
@@ -94,7 +99,8 @@ namespace Avalonia.Skia
         /// <returns>Image snapshot.</returns>
         public SKImage GetSnapshot()
         {
-            return SKImage.FromPixels(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
+            lock (_lock)
+                return SKImage.FromPixels(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
         }
 
         /// <summary>
@@ -112,22 +118,28 @@ namespace Avalonia.Skia
         /// </summary>
         private class BitmapFramebuffer : ILockedFramebuffer
         {
+            private WriteableBitmapImpl _parent;
             private SKBitmap _bitmap;
 
             /// <summary>
             /// Create framebuffer from given bitmap.
             /// </summary>
             /// <param name="bitmap">Bitmap.</param>
-            public BitmapFramebuffer(SKBitmap bitmap)
+            public BitmapFramebuffer(WriteableBitmapImpl parent, SKBitmap bitmap)
             {
+                _parent = parent;
                 _bitmap = bitmap;
+                Monitor.Enter(parent._lock);
             }
 
             /// <inheritdoc />
             public void Dispose()
             {
                 _bitmap.NotifyPixelsChanged();
+                _parent.Version++;
+                Monitor.Exit(_parent._lock);
                 _bitmap = null;
+                _parent = null;
             }
             
             /// <inheritdoc />
