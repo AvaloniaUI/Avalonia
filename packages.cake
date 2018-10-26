@@ -6,6 +6,7 @@ using System.Xml.Linq;
 public class Packages
 {
     public List<NuGetPackSettings> NuspecNuGetSettings { get; private set; }
+    public List<NuGetPackSettings> NuspecNuGetSettingsOSX { get; private set; }
     public FilePath[] NugetPackages { get; private set; }
     public FilePath[] BinFiles { get; private set; }
     public string NugetPackagesDir {get; private set;}
@@ -447,6 +448,10 @@ public class Packages
                 BasePath = context.Directory("./src/Linux/"),
                 OutputDirectory = parameters.NugetRoot
             },
+        };
+
+        var nuspecNuGetSettingsDesktopOSX = new []
+        {
             ///////////////////////////////////////////////////////////////////////////////
             // Avalonia.Native
             ///////////////////////////////////////////////////////////////////////////////
@@ -463,8 +468,8 @@ public class Packages
                 },
                 BasePath = context.Directory("./src/Avalonia.Native/bin/" + parameters.DirSuffix + "/netstandard2.0"),
                 OutputDirectory = parameters.NugetRoot
-            },
-        };
+            }
+        }
 
         var nuspecNuGetSettingInterop = new NuGetPackSettings()
         {
@@ -494,6 +499,12 @@ public class Packages
         }
 
         NuspecNuGetSettings.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
+
+        NuspecNuGetSettingsOSX = new List<NuGetPackSettings>();
+
+        NuspecNuGetSettingsOSX.AddRange(nuspecNuGetSettingsDesktopOSX);
+
+        NuspecNuGetSettingsOSX.ForEach((nuspec) => SetNuGetNuspecCommonProperties(nuspec));
 
         NugetPackages = NuspecNuGetSettings.Select(nuspec => {
             return nuspec.OutputDirectory.CombineWithFilePath(string.Concat(nuspec.Id, ".", nuspec.Version, ".nupkg"));

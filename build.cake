@@ -240,6 +240,15 @@ Task("Create-NuGet-Packages-Impl")
     }
 });
 
+Task("Create-NuGet-Packages-OSX-Impl")
+    .Does<AvaloniaBuildData>(data =>
+{
+    foreach(var nuspec in data.Packages.NuspecNuGetSettingsOSX)
+    {
+        NuGetPack(nuspec);
+    }
+});
+
 ///////////////////////////////////////////////////////////////////////////////
 // TARGETS
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,6 +281,7 @@ Task("Azure-Linux")
 
 Task("Azure-OSX")
   .IsDependentOn("Run-Tests")
+  .IsDependentOn("Create-NuGet-Packages-OSX-Impl")
   .IsDependentOn("Copy-Files-Impl")
   .IsDependentOn("Zip-Files-Impl");
 
