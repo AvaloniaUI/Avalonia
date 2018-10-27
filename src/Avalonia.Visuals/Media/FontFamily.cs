@@ -48,7 +48,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Represents the default font family
         /// </summary>
-        public static FontFamily Default => new FontFamily("Courier New");
+        public static FontFamily Default => new FontFamily("system-ui");
 
         /// <summary>
         /// Gets the primary family name of the font family.
