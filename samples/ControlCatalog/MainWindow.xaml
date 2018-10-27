@@ -2,6 +2,6 @@
         Title="Avalonia Control Gallery"
         Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
         xmlns:local="clr-namespace:ControlCatalog"
-        FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Quicksand">
+        FontFamily="resm:ControlCatalog.Assets.Fonts?assembly=ControlCatalog#Ubuntu">
     <local:MainView/>
 </Window>
