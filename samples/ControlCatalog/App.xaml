@@ -6,7 +6,6 @@
     <Style Selector="TextBlock.h1">
       <Setter Property="Foreground" Value="#212121"/>
       <Setter Property="FontSize" Value="20"/>
-      <Setter Property="FontWeight" Value="Medium"/>
     </Style>
 
     <Style Selector="TextBlock.h2">
