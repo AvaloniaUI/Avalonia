@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -94,7 +95,7 @@ namespace Avalonia.X11
                     new EglGlPlatformSurface((EglDisplay)feature.Display, feature.DeferredContext,
                         new SurfaceInfo(_x11.DeferredDisplay, _handle, _renderHandle)));
             Surfaces = surfaces.ToArray();
-            UpdateWmHits();
+            UpdateMotifHits();
             XFlush(_x11.Display);
         }
 
@@ -128,7 +129,7 @@ namespace Avalonia.X11
             public double Scaling { get; } = 1;
         }
 
-        void UpdateWmHits()
+        void UpdateMotifHits()
         {
             var functions = MotifFunctions.All;
             var decorations = MotifDecorations.All;
@@ -154,13 +155,36 @@ namespace Avalonia.X11
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
                 PropertyMode.Replace, ref hints, 5);
         }
+
+        void UpdateSizeHits()
+        {
+            var hints = new XSizeHints();
+            hints.min_width = (int)_minMaxSize.minSize.Width;
+            hints.min_height = (int)_minMaxSize.minSize.Height;
+            hints.height_inc = hints.width_inc = 1;
+            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
+            // People might be passing double.MaxValue
+            if (_minMaxSize.maxSize.Width < 100000 && _minMaxSize.maxSize.Height < 100000)
+            {
+
+                hints.max_width = (int)Math.Max(100000, _minMaxSize.maxSize.Width);
+                hints.max_height = (int)Math.Max(100000, _minMaxSize.maxSize.Height);
+                flags |= XSizeHintsFlags.PMaxSize;
+            }
+
+            hints.flags = (IntPtr)flags;
+
+            XSetWMNormalHints(_x11.Display, _handle, ref hints);
+        }
         
         public Size ClientSize { get; private set; }
+        //TODO
         public double Scaling { get; } = 1;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
+        //TODO
         public Action<double> ScalingChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
@@ -355,6 +379,7 @@ namespace Avalonia.X11
         
         private bool _systemDecorations = true;
         private bool _canResize = true;
+        private (Size minSize, Size maxSize) _minMaxSize;
 
         void ScheduleInput(RawInputEventArgs args)
         {
@@ -451,7 +476,7 @@ namespace Avalonia.X11
         public void SetSystemDecorations(bool enabled)
         {
             _systemDecorations = enabled;
-            UpdateWmHits();
+            UpdateMotifHits();
         }
         
                 
@@ -477,7 +502,7 @@ namespace Avalonia.X11
         public void CanResize(bool value)
         {
             _canResize = value;
-            UpdateWmHits();
+            UpdateMotifHits();
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -590,33 +615,42 @@ namespace Avalonia.X11
         
         public void SetTitle(string title)
         {
+            var data = Encoding.UTF8.GetBytes(title);
+            fixed (void* pdata = data)
+            {
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME, _x11.Atoms.UTF8_STRING, 8,
+                    PropertyMode.Replace, pdata, data.Length);
+                XStoreName(_x11.Display, _handle, title);
+            }
         }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
-            
+            _minMaxSize = (minSize, maxSize);
+            UpdateSizeHits();
         }
 
         public void SetTopmost(bool value)
         {
-            
+            SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
+                (IntPtr)(value ? 1 : 0), _x11.Atoms._NET_WM_STATE_ABOVE, IntPtr.Zero);
         }
 
         public IDisposable ShowDialog()
         {
+            // TODO
             return Disposable.Empty;
         }
 
         public void SetIcon(IWindowIconImpl icon)
         {
+            //TODO
         }
 
         public void ShowTaskbarIcon(bool value)
         {
-        }
-
-
-
-        
+            SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
+                (IntPtr)(value ? 0 : 1), _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR, IntPtr.Zero);
+        }        
     }
 }

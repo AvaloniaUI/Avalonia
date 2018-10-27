@@ -22,6 +22,7 @@
 //
 
 using System;
+using System.Linq;
 using static Avalonia.X11.XLib;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -172,158 +173,27 @@ namespace Avalonia.X11 {
 		public readonly IntPtr _NET_WM_WINDOW_TYPE_NORMAL;
 		public readonly IntPtr CLIPBOARD;
 		public readonly IntPtr PRIMARY;
-		public readonly IntPtr DIB;
 		public readonly IntPtr OEMTEXT;
 		public readonly IntPtr UNICODETEXT;
 		public readonly IntPtr TARGETS;
+	    public readonly IntPtr UTF8_STRING;
 
 
 		public X11Atoms (IntPtr display) {
 
 			// make sure this array stays in sync with the statements below
-			string [] atom_names = new string[] {
-				"WM_PROTOCOLS",
-				"WM_DELETE_WINDOW",
-				"WM_TAKE_FOCUS",
-				"_NET_SUPPORTED",
-				"_NET_CLIENT_LIST",
-				"_NET_NUMBER_OF_DESKTOPS",
-				"_NET_DESKTOP_GEOMETRY",
-				"_NET_DESKTOP_VIEWPORT",
-				"_NET_CURRENT_DESKTOP",
-				"_NET_DESKTOP_NAMES",
-				"_NET_ACTIVE_WINDOW",
-				"_NET_WORKAREA",
-				"_NET_SUPPORTING_WM_CHECK",
-				"_NET_VIRTUAL_ROOTS",
-				"_NET_DESKTOP_LAYOUT",
-				"_NET_SHOWING_DESKTOP",
-				"_NET_CLOSE_WINDOW",
-				"_NET_MOVERESIZE_WINDOW",
-				"_NET_WM_MOVERESIZE",
-				"_NET_RESTACK_WINDOW",
-				"_NET_REQUEST_FRAME_EXTENTS",
-				"_NET_WM_NAME",
-				"_NET_WM_VISIBLE_NAME",
-				"_NET_WM_ICON_NAME",
-				"_NET_WM_VISIBLE_ICON_NAME",
-				"_NET_WM_DESKTOP",
-				"_NET_WM_WINDOW_TYPE",
-				"_NET_WM_STATE",
-				"_NET_WM_ALLOWED_ACTIONS",
-				"_NET_WM_STRUT",
-				"_NET_WM_STRUT_PARTIAL",
-				"_NET_WM_ICON_GEOMETRY",
-				"_NET_WM_ICON",
-				"_NET_WM_PID",
-				"_NET_WM_HANDLED_ICONS",
-				"_NET_WM_USER_TIME",
-				"_NET_FRAME_EXTENTS",
-				"_NET_WM_PING",
-				"_NET_WM_SYNC_REQUEST",
-				"_NET_SYSTEM_TRAY_OPCODE",
-				"_NET_SYSTEM_TRAY_ORIENTATION",
-				"_NET_WM_STATE_MAXIMIZED_HORZ",
-				"_NET_WM_STATE_MAXIMIZED_VERT",
-				"_NET_WM_STATE_HIDDEN",
-				"_XEMBED",
-				"_XEMBED_INFO",
-				"_MOTIF_WM_HINTS",
-				"_NET_WM_STATE_SKIP_TASKBAR",
-				"_NET_WM_STATE_ABOVE",
-				"_NET_WM_STATE_MODAL",
-				"_NET_WM_CONTEXT_HELP",
-				"_NET_WM_WINDOW_OPACITY",
-				"_NET_WM_WINDOW_TYPE_DESKTOP",
-				"_NET_WM_WINDOW_TYPE_DOCK",
-				"_NET_WM_WINDOW_TYPE_TOOLBAR",
-				"_NET_WM_WINDOW_TYPE_MENU",
-				"_NET_WM_WINDOW_TYPE_UTILITY",
-				"_NET_WM_WINDOW_TYPE_DIALOG",
-				"_NET_WM_WINDOW_TYPE_SPLASH",
-				"_NET_WM_WINDOW_TYPE_NORMAL",
-				"CLIPBOARD",
-				"PRIMARY",
-				"COMPOUND_TEXT",
-				"UTF8_STRING",
-				"TARGETS"};
 
-			IntPtr[] atoms = new IntPtr [atom_names.Length];;
+		    var fields = typeof(X11Atoms).GetFields()
+		        .Where(f => f.FieldType == typeof(IntPtr) && (IntPtr)f.GetValue(this) == IntPtr.Zero).ToArray();
+		    var atomNames = fields.Select(f => f.Name).ToArray();
+            
+			IntPtr[] atoms = new IntPtr [atomNames.Length];;
 
-			XInternAtoms (display, atom_names, atom_names.Length, false, atoms);
+			XInternAtoms (display, atomNames, atomNames.Length, true, atoms);
 
-			int off = 0;
-			WM_PROTOCOLS = atoms [off++];
-			WM_DELETE_WINDOW = atoms [off++];
-			WM_TAKE_FOCUS = atoms [off++];
-			_NET_SUPPORTED = atoms [off++];
-			_NET_CLIENT_LIST = atoms [off++];
-			_NET_NUMBER_OF_DESKTOPS = atoms [off++];
-			_NET_DESKTOP_GEOMETRY = atoms [off++];
-			_NET_DESKTOP_VIEWPORT = atoms [off++];
-			_NET_CURRENT_DESKTOP = atoms [off++];
-			_NET_DESKTOP_NAMES = atoms [off++];
-			_NET_ACTIVE_WINDOW = atoms [off++];
-			_NET_WORKAREA = atoms [off++];
-			_NET_SUPPORTING_WM_CHECK = atoms [off++];
-			_NET_VIRTUAL_ROOTS = atoms [off++];
-			_NET_DESKTOP_LAYOUT = atoms [off++];
-			_NET_SHOWING_DESKTOP = atoms [off++];
-			_NET_CLOSE_WINDOW = atoms [off++];
-			_NET_MOVERESIZE_WINDOW = atoms [off++];
-			_NET_WM_MOVERESIZE = atoms [off++];
-			_NET_RESTACK_WINDOW = atoms [off++];
-			_NET_REQUEST_FRAME_EXTENTS = atoms [off++];
-			_NET_WM_NAME = atoms [off++];
-			_NET_WM_VISIBLE_NAME = atoms [off++];
-			_NET_WM_ICON_NAME = atoms [off++];
-			_NET_WM_VISIBLE_ICON_NAME = atoms [off++];
-			_NET_WM_DESKTOP = atoms [off++];
-			_NET_WM_WINDOW_TYPE = atoms [off++];
-			_NET_WM_STATE = atoms [off++];
-			_NET_WM_ALLOWED_ACTIONS = atoms [off++];
-			_NET_WM_STRUT = atoms [off++];
-			_NET_WM_STRUT_PARTIAL = atoms [off++];
-			_NET_WM_ICON_GEOMETRY = atoms [off++];
-			_NET_WM_ICON = atoms [off++];
-			_NET_WM_PID = atoms [off++];
-			_NET_WM_HANDLED_ICONS = atoms [off++];
-			_NET_WM_USER_TIME = atoms [off++];
-			_NET_FRAME_EXTENTS = atoms [off++];
-			_NET_WM_PING = atoms [off++];
-			_NET_WM_SYNC_REQUEST = atoms [off++];
-			_NET_SYSTEM_TRAY_OPCODE = atoms [off++];
-			_NET_SYSTEM_TRAY_ORIENTATION = atoms [off++];
-			_NET_WM_STATE_MAXIMIZED_HORZ = atoms [off++];
-			_NET_WM_STATE_MAXIMIZED_VERT = atoms [off++];
-			_NET_WM_STATE_HIDDEN = atoms [off++];
-			_XEMBED = atoms [off++];
-			_XEMBED_INFO = atoms [off++];
-			_MOTIF_WM_HINTS = atoms [off++];
-			_NET_WM_STATE_SKIP_TASKBAR = atoms [off++];
-			_NET_WM_STATE_ABOVE = atoms [off++];
-			_NET_WM_STATE_MODAL = atoms [off++];
-			_NET_WM_CONTEXT_HELP = atoms [off++];
-			_NET_WM_WINDOW_OPACITY = atoms [off++];
-			_NET_WM_WINDOW_TYPE_DESKTOP = atoms [off++];
-			_NET_WM_WINDOW_TYPE_DOCK = atoms [off++];
-			_NET_WM_WINDOW_TYPE_TOOLBAR = atoms [off++];
-			_NET_WM_WINDOW_TYPE_MENU = atoms [off++];
-			_NET_WM_WINDOW_TYPE_UTILITY = atoms [off++];
-			_NET_WM_WINDOW_TYPE_DIALOG = atoms [off++];
-			_NET_WM_WINDOW_TYPE_SPLASH = atoms [off++];
-			_NET_WM_WINDOW_TYPE_NORMAL = atoms [off++];
-			CLIPBOARD = atoms [off++];
-			PRIMARY = atoms [off++];
-			OEMTEXT = atoms [off++];
-			UNICODETEXT = atoms [off++];
-			TARGETS = atoms [off++];
+		    for (var c = 0; c < fields.Length; c++)
+		        fields[c].SetValue(this, atoms[c]);
 
-			DIB = XA_PIXMAP;
-
-		    var defScreen = XDefaultScreen(display);
-			// XXX multi screen stuff here
-			_NET_SYSTEM_TRAY_S = XInternAtom (display, "_NET_SYSTEM_TRAY_S" + defScreen.ToString(), false);
 		}
 
 	}
