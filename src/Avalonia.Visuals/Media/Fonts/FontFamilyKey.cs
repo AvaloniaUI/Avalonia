@@ -43,7 +43,7 @@ namespace Avalonia.Media.Fonts
                     Location = source;
                 }
             }
-        }      
+        }
 
         /// <summary>
         /// Location of stored font asset that belongs to a <see cref="FontFamily"/>
