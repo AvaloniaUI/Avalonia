@@ -44,6 +44,12 @@ namespace Avalonia.Controls
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
+            // WPF doesn't change anything when spliter is in the last row/column
+            // but resizes the splitter row/column when it's the first one.
+            // this is different, but more internally consistent.
+            if (_prevDefinition == null || _nextDefinition == null)
+                return;
+
             var delta = _orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
             double max;
             double min;
