@@ -247,7 +247,7 @@ namespace Avalonia.Win32
             var user32 = LoadLibrary("user32.dll");
             var method = GetProcAddress(user32, nameof(SetProcessDpiAwarenessContext));
 
-            if (method != null)
+            if (method != IntPtr.Zero)
             {
                 if (SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
                     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE))
@@ -259,7 +259,7 @@ namespace Avalonia.Win32
             var shcore = LoadLibrary("shcore.dll");
             method = GetProcAddress(shcore, nameof(SetProcessDpiAwareness));
 
-            if (method != null)
+            if (method != IntPtr.Zero)
             {
                 SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
                 return;
