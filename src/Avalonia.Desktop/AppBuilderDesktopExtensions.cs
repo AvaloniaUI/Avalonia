@@ -20,11 +20,11 @@ namespace Avalonia
             if (os == OperatingSystemType.WinNT)
             {
                 LoadWin32(builder);
-                LoadDirect2D1(builder);
+                LoadSkia(builder);
             }
             else if(os==OperatingSystemType.OSX)
             {
-                LoadMonoMac(builder);
+                LoadAvaloniaNative(builder);
                 LoadSkia(builder);
             }
             else
@@ -35,9 +35,9 @@ namespace Avalonia
             return builder;
         }
 
-        static void LoadMonoMac<TAppBuilder>(TAppBuilder builder)
+        static void LoadAvaloniaNative<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
-             => builder.UseMonoMac();
+             => builder.UseAvaloniaNative();
         static void LoadWin32<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
              => builder.UseWin32();

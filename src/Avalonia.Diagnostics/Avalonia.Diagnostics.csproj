@@ -4,9 +4,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Views\EventsView.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -21,10 +18,4 @@
   </ItemGroup>  
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
-  <ItemGroup>
-    <EmbeddedResource Update="Views\EventsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-</Project>
 </Project>

@@ -181,9 +181,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.OpenGL", "src\Avalonia.OpenGL\Avalonia.OpenGL.csproj", "{7CCAEFC4-135D-401D-BDDD-896B9B7D3569}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Native", "src\Avalonia.Native\Avalonia.Native.csproj", "{12A91A62-C064-42CA-9A8C-A1272F354388}"
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSX", "OSX", "{A59C4C0A-64DF-4621-B450-2BA00D6F61E2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.MonoMac", "src\OSX\Avalonia.MonoMac\Avalonia.MonoMac.csproj", "{CBFD5788-567D-401B-9DFA-74E4224025A0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Skia.UnitTests", "tests\Avalonia.Skia.UnitTests\Avalonia.Skia.UnitTests.csproj", "{E1240B49-7B4B-4371-A00E-068778C5CF0B}"
 EndProject

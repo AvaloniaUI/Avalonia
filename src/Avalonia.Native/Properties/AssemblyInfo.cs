@@ -1,4 +1,4 @@
-﻿using Avalonia.MonoMac;
+﻿using Avalonia.Native;
 using Avalonia.Platform;
 
-[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 1, "MonoMac", typeof(MonoMacPlatform), nameof(MonoMacPlatform.Initialize))]
+[assembly: ExportWindowingSubsystem(OperatingSystemType.OSX, 1, "AvaloniaNative", typeof(AvaloniaNativePlatform), nameof(AvaloniaNativePlatform.Initialize))]
