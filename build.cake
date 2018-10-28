@@ -85,6 +85,13 @@ void DotNetCoreBuild(Parameters parameters)
     var settings = new DotNetCoreBuildSettings 
     {
         Configuration = parameters.Configuration,
+        MSBuildSettings = new DotNetCoreMSBuildSettings
+        {
+            Properties =
+            {
+                { "PackageVersion", new [] { parameters.Version } }
+            }
+        }
     };
 
     DotNetCoreBuild(parameters.MSBuildSolution, settings);
@@ -99,6 +106,7 @@ Task("Build-Impl")
             settings.SetConfiguration(data.Configuration);
             settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("iOSRoslynPathHackRequired", "true");
+            settings.WithProperty("PackageVersion", data.Version);
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.WithRestore();
         });
@@ -211,6 +219,13 @@ void DotNetCorePack(Parameters parameters)
     var settings = new DotNetCorePackSettings 
     {
         Configuration = parameters.Configuration,
+        MSBuildSettings = new DotNetCoreMSBuildSettings
+        {
+            Properties =
+            {
+                { "PackageVersion", new [] { parameters.Version } }
+            }
+        }
     };
 
     DotNetCorePack(parameters.MSBuildSolution, settings);
@@ -225,6 +240,7 @@ Task("Create-NuGet-Packages-Impl")
             settings.SetConfiguration(data.Configuration);
             settings.SetVerbosity(Verbosity.Minimal);
             settings.WithProperty("iOSRoslynPathHackRequired", "true");
+            settings.WithProperty("PackageVersion", data.Version);
             settings.UseToolVersion(MSBuildToolVersion.VS2017);
             settings.WithRestore();
             settings.WithTarget("Pack");

@@ -23,13 +23,4 @@
   <ItemGroup>
     <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
   </ItemGroup>
-
-  <Target Name="Pack" DependsOnTargets="PrepareProjectReferences">
-    <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
-             Targets="Pack"
-             Properties="$(TraversalGlobalProperties);$(TraversalBuildGlobalProperties)"
-             BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)"
-             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
-  </Target>
 </Project>
