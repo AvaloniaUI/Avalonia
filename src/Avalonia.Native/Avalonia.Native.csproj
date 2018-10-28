@@ -8,25 +8,14 @@
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="SharpGenTools.Sdk" Version="1.1.2" PrivateAssets="all" />
-        <PackageReference Include="SharpGen.Runtime.Com" Version="1.1.0" />
-        <SharpGenMapping Include="Mappings.xml" />
-      <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-      <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-      <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
-      <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
-      <ProjectReference Include="..\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
-      <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    </ItemGroup>
 
-
-    <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">
-      <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
-        <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
-        <Pack>true</Pack>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+  <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+    <Content Include="../../Build/Products/Release/libAvalonia.Native.OSX.dylib">
+      <PackagePath>runtimes/osx/native/libAvaloniaNative.dylib</PackagePath>
+      <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   
   <ItemGroup>
     <SharpGenMapping Include="Mappings.xml" />
