@@ -64,6 +64,11 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
       artifactName: 'BinariesOSX'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      artifactName: 'NuGetOSX'
+    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
 
 - job: Windows
   pool:
