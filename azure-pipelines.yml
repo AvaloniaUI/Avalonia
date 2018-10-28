@@ -58,12 +58,6 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
       artifactName: 'Avalonia.Native.OSX'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesOSX'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
@@ -92,9 +86,4 @@ jobs:
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesWindows'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
