@@ -60,10 +60,6 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesOSX'
-  - task: PublishBuildArtifacts@1
-    inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
       artifactName: 'NuGetOSX'
 
@@ -88,7 +84,3 @@ jobs:
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesWindows'
