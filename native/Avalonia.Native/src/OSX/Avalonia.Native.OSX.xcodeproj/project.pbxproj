@@ -22,7 +22,7 @@
 
 /* Begin PBXFileReference section */
 		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
-		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../Avalonia.Native/headers; sourceTree = "<group>"; };
+		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
 		37A517B22159597E00FBA241 /* Screens.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Screens.mm; sourceTree = "<group>"; };
 		37C09D8721580FE4006A6758 /* SystemDialogs.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SystemDialogs.mm; sourceTree = "<group>"; };
 		37C09D8A21581EF2006A6758 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
@@ -285,7 +285,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = ../Avalonia.Native/headers;
+				HEADER_SEARCH_PATHS = ../../inc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -296,7 +296,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = ../Avalonia.Native/headers;
+				HEADER_SEARCH_PATHS = ../../inc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
