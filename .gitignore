@@ -185,3 +185,13 @@ project.lock.json
 BenchmarkDotNet.Artifacts/
 
 dirs.sln
+
+
+##################
+# XCode
+##################
+Index/
+Logs/
+ModuleCache.noindex/
+Build/Intermediates.noindex/
+info.plist
