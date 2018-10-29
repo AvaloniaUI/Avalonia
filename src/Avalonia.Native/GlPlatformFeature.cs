@@ -100,12 +100,12 @@ namespace Avalonia.Native
 
         public IGlDisplay Display { get; }
 
-        public System.Drawing.Size PixelSize
+        public PixelSize Size
         {
             get
             {
                 var s = _session.GetPixelSize();
-                return new System.Drawing.Size(s.Width, s.Height);
+                return new PixelSize(s.Width, s.Height);
             }
         }
 
