@@ -29,7 +29,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private Control Visual
         {
-            get 
+            get
             {
                 return new Panel
                 {
@@ -83,7 +83,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-        
+
 #if AVALONIA_SKIA_SKIP_FAIL
         [Fact(Skip = "FIXME")]
 #else
@@ -270,7 +270,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-        
+
         [Fact]
         public async Task VisualBrush_NoStretch_NoTile_BottomRightQuarterSource_BottomRightQuarterDest()
         {
@@ -429,6 +429,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             HorizontalAlignment = HorizontalAlignment.Left,
                             Child = new TextBlock
                             {
+                                FontFamily = new FontFamily("Courier New"),
                                 Text = "Visual"
                             }
                         }),
