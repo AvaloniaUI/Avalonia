@@ -155,4 +155,5 @@
   <Import Project="..\..\build\Rx.props" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\build\AndroidWorkarounds.props" />
+  <Import Project="..\..\build\LegacyProject.targets" />
 </Project>
