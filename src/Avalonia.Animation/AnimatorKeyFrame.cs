@@ -61,6 +61,10 @@ namespace Avalonia.Animation
             {
                 throw new ArgumentNullException($"KeyFrame value can't be null.");
             }
+            if(Value is T typedValue)
+            {
+                return typedValue;
+            }
             if (!typeConv.CanConvertTo(Value.GetType()))
             {
                 throw new InvalidCastException($"KeyFrame value doesnt match property type.");

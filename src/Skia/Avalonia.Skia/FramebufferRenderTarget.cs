@@ -41,7 +41,7 @@ namespace Avalonia.Skia
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var framebuffer = _platformSurface.Lock();
-            var framebufferImageInfo = new SKImageInfo(framebuffer.Width, framebuffer.Height,
+            var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
                 framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
 
             CreateSurface(framebufferImageInfo, framebuffer);

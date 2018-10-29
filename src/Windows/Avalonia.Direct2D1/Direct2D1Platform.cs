@@ -110,9 +110,9 @@ namespace Avalonia.Direct2D1
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
-        public IBitmapImpl CreateBitmap(int width, int height)
+        public IBitmapImpl CreateBitmap(PixelSize size, Vector dpi)
         {
-            return new WicBitmapImpl(width, height);
+            return new WicBitmapImpl(size, dpi);
         }
 
         public IFormattedTextImpl CreateFormattedText(
@@ -159,18 +159,14 @@ namespace Avalonia.Direct2D1
             throw new NotSupportedException("Don't know how to create a Direct2D1 renderer from any of provided surfaces");
         }
 
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
-            int width,
-            int height,
-            double dpiX,
-            double dpiY)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
-            return new WicRenderTargetBitmapImpl(width, height, dpiX, dpiY);
+            return new WicRenderTargetBitmapImpl(size, dpi);
         }
 
-        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
-            return new WriteableWicBitmapImpl(width, height, format);
+            return new WriteableWicBitmapImpl(size, dpi, format);
         }
 
         public IStreamGeometryImpl CreateStreamGeometry()
@@ -188,9 +184,9 @@ namespace Avalonia.Direct2D1
             return new WicBitmapImpl(stream);
         }
 
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new WicBitmapImpl(format, data, width, height, stride);
+            return new WicBitmapImpl(format, data, size, dpi, stride);
         }
     }
 }
