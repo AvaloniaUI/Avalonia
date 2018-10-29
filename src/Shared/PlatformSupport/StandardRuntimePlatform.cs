@@ -113,7 +113,7 @@ namespace Avalonia.Shared.PlatformSupport
         
         
         
-#if FULLDOTNET || DOTNETCORE
+#if NET461 || NETCOREAPP2_0
         [DllImport("libc", SetLastError = true)]
         private static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags, int fd, IntPtr offset);
         [DllImport("libc", SetLastError = true)]

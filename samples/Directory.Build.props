@@ -1,3 +1,6 @@
 <Project>
+  <PropertyGroup>
+      <IsPackable>false</IsPackable>
+  </PropertyGroup>
   <Import Project="..\build\SharedVersion.props" />
 </Project>
