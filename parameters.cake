@@ -22,11 +22,13 @@ public class Parameters
     public bool IsReleasable { get; private set; }
     public bool IsMyGetRelease { get; private set; }
     public bool IsNuGetRelease { get; private set; }
+    public bool PublishTestResults { get; private set; }
     public string Version { get; private set; } 
     public DirectoryPath ArtifactsDir { get; private set; }
     public DirectoryPath NugetRoot { get; private set; }
     public DirectoryPath ZipRoot { get; private set; }
     public DirectoryPath BinRoot { get; private set; }
+    public DirectoryPath TestResultsRoot { get; private set; }
     public string DirSuffix { get; private set; }
     public DirectoryPathCollection BuildDirs { get; private set; }
     public string FileZipSuffix { get; private set; }
@@ -91,7 +93,8 @@ public class Parameters
         else if (IsRunningOnAzure)
         {
                 // Use AssemblyVersion with Build as version
-                Version += "-build" + context.EnvironmentVariable("BUILD_BUILDID") + "-beta";   
+                Version += "-build" + context.EnvironmentVariable("BUILD_BUILDID") + "-beta";
+                PublishTestResults = true; 
         }
 
         // DIRECTORIES
@@ -99,6 +102,7 @@ public class Parameters
         NugetRoot = ArtifactsDir.Combine("nuget");
         ZipRoot = ArtifactsDir.Combine("zip");
         BinRoot = ArtifactsDir.Combine("bin");
+        TestResultsRoot = ArtifactsDir.Combine("test-results");
         BuildDirs = context.GetDirectories("**/bin") + context.GetDirectories("**/obj");
         DirSuffix = Configuration;
         FileZipSuffix = Version + ".zip";
