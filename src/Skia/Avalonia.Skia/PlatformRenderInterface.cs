@@ -67,34 +67,28 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            return new ImmutableBitmap(width, height, stride, format, data);
+            return new ImmutableBitmap(size, dpi, stride, format, data);
         }
 
         /// <inheritdoc />
-        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(
-            int width,
-            int height,
-            double dpiX,
-            double dpiY)
+        public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
-            if (width < 1)
+            if (size.Width < 1)
             {
-                throw new ArgumentException("Width can't be less than 1", nameof(width));
+                throw new ArgumentException("Width can't be less than 1", nameof(size));
             }
 
-            if (height < 1)
+            if (size.Height < 1)
             {
-                throw new ArgumentException("Height can't be less than 1", nameof(height));
+                throw new ArgumentException("Height can't be less than 1", nameof(size));
             }
-
-            var dpi = new Vector(dpiX, dpiY);
 
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
-                Width = width,
-                Height = height,
+                Width = size.Width,
+                Height = size.Height,
                 Dpi = dpi,
                 DisableTextLcdRendering = false,
                 GrContext = GrContext
@@ -123,9 +117,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IWriteableBitmapImpl CreateWriteableBitmap(int width, int height, PixelFormat? format = null)
+        public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? format = null)
         {
-            return new WriteableBitmapImpl(width, height, format);
+            return new WriteableBitmapImpl(size, dpi, format);
         }
     }
 }
