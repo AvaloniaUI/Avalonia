@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
     /// A 2x3 matrix.
     /// </summary>
-    public struct Matrix
+    public readonly struct Matrix
     {
         private readonly double _m11;
         private readonly double _m12;
@@ -47,7 +47,7 @@ namespace Avalonia
         /// <summary>
         /// Returns the multiplicative identity matrix.
         /// </summary>
-        public static Matrix Identity => new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        public static Matrix Identity { get; } = new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
 
         /// <summary>
         /// Returns whether the matrix is the identity matrix.
@@ -55,7 +55,7 @@ namespace Avalonia
         public bool IsIdentity => Equals(Identity);
 
         /// <summary>
-        /// HasInverse Property - returns true if this matrix is invertable, false otherwise.
+        /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
         public bool HasInverse => GetDeterminant() != 0;
 
@@ -151,6 +151,19 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates a skew matrix from the given axis skew angles in radians.
+        /// </summary>
+        /// <param name="xAngle">The amount of skew along the X-axis, in radians.</param>
+        /// <param name="yAngle">The amount of skew along the Y-axis, in radians.</param>
+        /// <returns>A rotation matrix.</returns>
+        public static Matrix CreateSkew(double xAngle, double yAngle)
+        {
+            double tanX = Math.Tan(xAngle);
+            double tanY = Math.Tan(yAngle);
+            return new Matrix(1.0, tanY, tanX, 1.0, 0.0, 0.0);
+        }
+
+        /// <summary>
         /// Creates a scale matrix from the given X and Y components.
         /// </summary>
         /// <param name="xScale">Value to scale by on the X-axis.</param>
@@ -193,7 +206,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Converts an ange in degrees to radians.
+        /// Converts an angle in degrees to radians.
         /// </summary>
         /// <param name="angle">The angle in degrees.</param>
         /// <returns>The angle in radians.</returns>
@@ -214,7 +227,6 @@ namespace Avalonia
         {
             return (_m11 * _m22) - (_m12 * _m21);
         }
-
 
         /// <summary>
         /// Returns a boolean indicating whether the matrix is equal to the other given matrix.
@@ -301,27 +313,19 @@ namespace Avalonia
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Matrix"/>.</returns>
-        public static Matrix Parse(string s, CultureInfo culture)
+        public static Matrix Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToArray();
-
-            if (parts.Length == 6)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix"))
             {
                 return new Matrix(
-                    double.Parse(parts[0], culture), 
-                    double.Parse(parts[1], culture), 
-                    double.Parse(parts[2], culture), 
-                    double.Parse(parts[3], culture), 
-                    double.Parse(parts[4], culture), 
-                    double.Parse(parts[5], culture));
-            }
-            else
-            {
-                throw new FormatException("Invalid Matrix.");
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
             }
         }
     }

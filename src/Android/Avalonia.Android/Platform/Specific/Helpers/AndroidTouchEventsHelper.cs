@@ -1,10 +1,8 @@
-using Android.Graphics;
+using System;
 using Android.Views;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
 using Avalonia.Platform;
-using System;
 
 namespace Avalonia.Android.Platform.Specific.Helpers
 {
@@ -125,8 +123,6 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             //if return false events for move and up are not received!!!
             return e.Action != MotionEventActions.Up;
         }
-
-        private Paint _paint;
 
         public void Dispose()
         {

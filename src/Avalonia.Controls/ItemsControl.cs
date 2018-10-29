@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -14,6 +15,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -54,6 +56,7 @@ namespace Avalonia.Controls
 
         private IEnumerable _items = new AvaloniaList<object>();
         private IItemContainerGenerator _itemContainerGenerator;
+        private IDisposable _itemsCollectionChangedSubscription;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -153,6 +156,7 @@ namespace Avalonia.Controls
         void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
         {
             Presenter = presenter;
+            ItemContainerGenerator.Clear();
         }
 
         /// <summary>
@@ -321,21 +325,58 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Caled when the <see cref="Items"/> property changes.
+        /// Handles directional navigation within the <see cref="ItemsControl"/>.
+        /// </summary>
+        /// <param name="e">The key events.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                var focus = FocusManager.Instance;
+                var direction = e.Key.ToNavigationDirection();
+                var container = Presenter?.Panel as INavigableContainer;
+
+                if (container == null ||
+                    focus.Current == null ||
+                    direction == null ||
+                    direction.Value.IsTab())
+                {
+                    return;
+                }
+
+                var current = focus.Current
+                    .GetSelfAndVisualAncestors()
+                    .OfType<IInputElement>()
+                    .FirstOrDefault(x => x.VisualParent == container);
+
+                if (current != null)
+                {
+                    var next = GetNextControl(container, direction.Value, current, false);
+
+                    if (next != null)
+                    {
+                        focus.Focus(next, NavigationMethod.Directional);
+                        e.Handled = true;
+                    }
+                }
+            }
+
+            base.OnKeyDown(e);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Items"/> property changes.
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void ItemsChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var incc = e.OldValue as INotifyCollectionChanged;
-
-            if (incc != null)
-            {
-                incc.CollectionChanged -= ItemsCollectionChanged;
-            }
+            _itemsCollectionChangedSubscription?.Dispose();
+            _itemsCollectionChangedSubscription = null;
 
             var oldValue = e.OldValue as IEnumerable;
             var newValue = e.NewValue as IEnumerable;
 
+            UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
             AddControlItemsToLogicalChildren(newValue);
             SubscribeToItems(newValue);
@@ -359,13 +400,12 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
-            
-            int? count = (Items as IList)?.Count;
-            if (count != null)
-                ItemCount = (int)count;
+
+            UpdateItemCount();
 
             var collection = sender as ICollection;
             PseudoClasses.Set(":empty", collection == null || collection.Count == 0);
+            PseudoClasses.Set(":singleitem", collection != null && collection.Count == 1);
         }
 
         /// <summary>
@@ -423,12 +463,13 @@ namespace Avalonia.Controls
         private void SubscribeToItems(IEnumerable items)
         {
             PseudoClasses.Set(":empty", items == null || items.Count() == 0);
+            PseudoClasses.Set(":singleitem", items != null && items.Count() == 1);
 
             var incc = items as INotifyCollectionChanged;
 
             if (incc != null)
             {
-                incc.CollectionChanged += ItemsCollectionChanged;
+                _itemsCollectionChangedSubscription = incc.WeakSubscribe(ItemsCollectionChanged);
             }
         }
 
@@ -443,6 +484,45 @@ namespace Avalonia.Controls
                 _itemContainerGenerator.ItemTemplate = (IDataTemplate)e.NewValue;
                 // TODO: Rebuild the item containers.
             }
+        }
+
+        private void UpdateItemCount()
+        {
+            if (Items == null)
+            {
+                ItemCount = 0;
+            }
+            else if (Items is IList list)
+            {
+                ItemCount = list.Count;
+            }
+            else
+            {
+                ItemCount = Items.Count();
+            }
+        }
+
+        protected static IInputElement GetNextControl(
+            INavigableContainer container,
+            NavigationDirection direction,
+            IInputElement from,
+            bool wrap)
+        {
+            IInputElement result;
+
+            do
+            {
+                result = container.GetControl(direction, from, wrap);
+
+                if (result?.Focusable == true)
+                {
+                    return result;
+                }
+
+                from = result;
+            } while (from != null);
+
+            return null;
         }
     }
 }

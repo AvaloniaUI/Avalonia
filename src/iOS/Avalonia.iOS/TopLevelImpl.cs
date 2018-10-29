@@ -1,23 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Text;
-using CoreAnimation;
-using CoreGraphics;
-using Foundation;
-using Avalonia.Controls.Platform;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Media;
-using Avalonia.Platform;
-using UIKit;
 using Avalonia.iOS.Specific;
-using ObjCRuntime;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Rendering;
+using CoreGraphics;
+using Foundation;
+using ObjCRuntime;
+using UIKit;
 
 namespace Avalonia.iOS
 {
@@ -26,13 +18,12 @@ namespace Avalonia.iOS
     {
         private IInputRoot _inputRoot;
         private readonly KeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
-        private Point _position;
 
         public TopLevelImpl()
         {
             _keyboardHelper = new KeyboardEventsHelper<TopLevelImpl>(this);
             AutoresizingMask = UIViewAutoresizing.All;
-            _keyboardHelper.ActivateAutoShowKeybord();
+            _keyboardHelper.ActivateAutoShowKeyboard();
         }
 
         [Export("hasText")]
@@ -52,7 +43,7 @@ namespace Avalonia.iOS
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IPlatformHandle Handle => null;
+        public new IPlatformHandle Handle => null;
 
         public double Scaling => UIScreen.MainScreen.Scale;
 

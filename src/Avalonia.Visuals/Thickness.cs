@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
+using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
-    public struct Thickness
+    public readonly struct Thickness
     {
         /// <summary>
         /// The thickness on the left.
@@ -90,7 +90,12 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether all sides are set to 0.
         /// </summary>
-        public bool IsEmpty => Left == 0 && Top == 0 && Right == 0 && Bottom == 0;
+        public bool IsEmpty => Left.Equals(0) && IsUniform;
+
+        /// <summary>
+        /// Gets a value indicating whether all sides are equal.
+        /// </summary>
+        public bool IsUniform => Left.Equals(Right) && Top.Equals(Bottom) && Right.Equals(Bottom);
 
         /// <summary>
         /// Compares two Thicknesses.
@@ -108,7 +113,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="a">The first thickness.</param>
         /// <param name="b">The second thickness.</param>
-        /// <returns>The unequality.</returns>
+        /// <returns>The inequality.</returns>
         public static bool operator !=(Thickness a, Thickness b)
         {
             return !a.Equals(b);
@@ -159,32 +164,28 @@ namespace Avalonia
         /// Parses a <see cref="Thickness"/> string.
         /// </summary>
         /// <param name="s">The string.</param>
-        /// <param name="culture">The current culture.</param>
         /// <returns>The <see cref="Thickness"/>.</returns>
-        public static Thickness Parse(string s, CultureInfo culture)
+        public static Thickness Parse(string s)
         {
-            var parts = s.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(x => x.Trim())
-                .ToList();
-
-            switch (parts.Count)
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Thickness"))
             {
-                case 1:
-                    var uniform = double.Parse(parts[0], culture);
-                    return new Thickness(uniform);
-                case 2:
-                    var horizontal = double.Parse(parts[0], culture);
-                    var vertical = double.Parse(parts[1], culture);
-                    return new Thickness(horizontal, vertical);
-                case 4:
-                    var left = double.Parse(parts[0], culture);
-                    var top = double.Parse(parts[1], culture);
-                    var right = double.Parse(parts[2], culture);
-                    var bottom = double.Parse(parts[3], culture);
-                    return new Thickness(left, top, right, bottom);
-            }
+                if(tokenizer.TryReadDouble(out var a))
+                {
+                    if (tokenizer.TryReadDouble(out var b))
+                    {
+                        if (tokenizer.TryReadDouble(out var c))
+                        {
+                            return new Thickness(a, b, c, tokenizer.ReadDouble());
+                        }
 
-            throw new FormatException("Invalid Thickness.");
+                        return new Thickness(a, b);
+                    }
+
+                    return new Thickness(a);
+                }
+
+                throw new FormatException("Invalid Thickness.");
+            }
         }
 
         /// <summary>

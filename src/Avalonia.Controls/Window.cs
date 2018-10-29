@@ -13,6 +13,7 @@ using Avalonia.Styling;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
+using System.ComponentModel;
 
 namespace Avalonia.Controls
 {
@@ -48,13 +49,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static List<Window> s_windows = new List<Window>();
-
-        /// <summary>
-        /// Retrieves an enumeration of all Windows in the currently running application.
-        /// </summary>
-        public static IReadOnlyList<Window> OpenWindows => s_windows;
-
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -66,13 +60,19 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> HasSystemDecorationsProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
-        
+
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(ShowInTaskbar), true);
-        
+
+        /// <summary>
+        /// Represents the current window state (normal, minimized, maximized)
+        /// </summary>
+        public static readonly StyledProperty<WindowState> WindowStateProperty =
+            AvaloniaProperty.Register<Window, WindowState>(nameof(WindowState));
+
         /// <summary>
         /// Defines the <see cref="Title"/> property.
         /// </summary>
@@ -85,9 +85,22 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<WindowIcon> IconProperty =
             AvaloniaProperty.Register<Window, WindowIcon>(nameof(Icon));
 
+        /// <summary>
+        /// Defines the <see cref="WindowStartupLocation"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Window, WindowStartupLocation> WindowStartupLocationProperty =
+            AvaloniaProperty.RegisterDirect<Window, WindowStartupLocation>(
+                nameof(WindowStartupLocation),
+                o => o.WindowStartupLocation,
+                (o, v) => o.WindowStartupLocation = v);
+
+        public static readonly StyledProperty<bool> CanResizeProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
+        private WindowStartupLocation _windowStartupLocation;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -97,11 +110,16 @@ namespace Avalonia.Controls
             BackgroundProperty.OverrideDefaultValue(typeof(Window), Brushes.White);
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
-                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool) e.NewValue));
+                (s, e) => s.PlatformImpl?.SetSystemDecorations((bool)e.NewValue));
 
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
             IconProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetIcon(((WindowIcon)e.NewValue).PlatformImpl));
+
+            CanResizeProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.CanResize((bool)e.NewValue));
+
+            WindowStateProperty.Changed.AddClassHandler<Window>(
+                (w, e) => { if (w.PlatformImpl != null) w.PlatformImpl.WindowState = (WindowState)e.NewValue; });
         }
 
         /// <summary>
@@ -119,6 +137,8 @@ namespace Avalonia.Controls
         public Window(IWindowImpl impl)
             : base(impl)
         {
+            impl.Closing = HandleClosing;
+            impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
             Screens = new Screens(PlatformImpl?.Screen);
         }
@@ -172,7 +192,7 @@ namespace Avalonia.Controls
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
         }
-        
+
         /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
@@ -188,12 +208,19 @@ namespace Avalonia.Controls
         /// </summary>
         public WindowState WindowState
         {
-            get { return PlatformImpl?.WindowState ?? WindowState.Normal; }
-            set
-            {
-                if (PlatformImpl != null)
-                    PlatformImpl.WindowState = value;
-            }
+            get { return GetValue(WindowStateProperty); }
+            set { SetValue(WindowStateProperty, value); }
+        }
+
+        /// <summary>
+        /// Enables or disables resizing of the window.
+        /// Note that if <see cref="HasSystemDecorations"/> is set to False then this property
+        /// has no effect and should be treated as a recommendation for the user setting HasSystemDecorations.
+        /// </summary>
+        public bool CanResize
+        {
+            get { return GetValue(CanResizeProperty); }
+            set { SetValue(CanResizeProperty, value); }
         }
 
         /// <summary>
@@ -205,6 +232,15 @@ namespace Avalonia.Controls
             set { SetValue(IconProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the startup location of the window.
+        /// </summary>
+        public WindowStartupLocation WindowStartupLocation
+        {
+            get { return _windowStartupLocation; }
+            set { SetAndRaise(WindowStartupLocationProperty, ref _windowStartupLocation, value); }
+        }
+
         /// <inheritdoc/>
         Size ILayoutRoot.MaxClientSize => _maxPlatformClientSize;
 
@@ -212,19 +248,42 @@ namespace Avalonia.Controls
         Type IStyleable.StyleKey => typeof(Window);
 
         /// <summary>
+        /// Fired before a window is closed.
+        /// </summary>
+        public event EventHandler<CancelEventArgs> Closing;
+
+        private static void AddWindow(Window window)
+        {
+            if (Application.Current == null)
+            {
+                return;
+            }
+
+            Application.Current.Windows.Add(window);
+        }
+
+        private static void RemoveWindow(Window window)
+        {
+            if (Application.Current == null)
+            {
+                return;
+            }
+
+            Application.Current.Windows.Remove(window);
+        }
+
+        /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
-            s_windows.Remove(this);
-            PlatformImpl?.Dispose();
-            IsVisible = false;
+            Close(false);
         }
 
         protected override void HandleApplicationExiting()
         {
             base.HandleApplicationExiting();
-            Close();
+            Close(true);
         }
 
         /// <summary>
@@ -239,7 +298,54 @@ namespace Avalonia.Controls
         public void Close(object dialogResult)
         {
             _dialogResult = dialogResult;
-            Close();
+            Close(false);
+        }
+
+        internal void Close(bool ignoreCancel)
+        {
+            bool close = true;
+
+            try
+            {
+                if (!ignoreCancel && HandleClosing())
+                {
+                    close = false;
+                    return;
+                }
+            }
+            finally
+            {
+                if (close)
+                {
+                    PlatformImpl?.Dispose();
+                    HandleClosed();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
+        /// </summary>
+        protected virtual bool HandleClosing()
+        {
+            var args = new CancelEventArgs();
+            Closing?.Invoke(this, args);
+
+            return args.Cancel;
+        }
+
+        protected virtual void HandleWindowStateChanged(WindowState state)
+        {
+            WindowState = state;
+
+            if (state == WindowState.Minimized)
+            {
+                Renderer.Stop();
+            }
+            else
+            {
+                Renderer.Start();
+            }
         }
 
         /// <summary>
@@ -271,17 +377,18 @@ namespace Avalonia.Controls
                 return;
             }
 
-            s_windows.Add(this);
+            AddWindow(this);
 
             EnsureInitialized();
             IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
+            SetWindowStartupLocation();
         }
 
         /// <summary>
@@ -302,7 +409,7 @@ namespace Avalonia.Controls
         /// The type of the result produced by the dialog.
         /// </typeparam>
         /// <returns>.
-        /// A task that can be used to retrive the result of the dialog when it closes.
+        /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
         public Task<TResult> ShowDialog<TResult>()
         {
@@ -311,15 +418,16 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The window is already being shown.");
             }
 
-            s_windows.Add(this);
+            AddWindow(this);
 
             EnsureInitialized();
+            SetWindowStartupLocation();
             IsVisible = true;
-            LayoutManager.Instance.ExecuteInitialLayoutPass(this);
+            LayoutManager.ExecuteInitialLayoutPass(this);
 
             using (BeginAutoSizing())
             {
-                var affectedWindows = s_windows.Where(w => w.IsEnabled && w != this).ToList();
+                var affectedWindows = Application.Current.Windows.Where(w => w.IsEnabled && w != this).ToList();
                 var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
                 SetIsEnabled(affectedWindows, false);
 
@@ -337,7 +445,7 @@ namespace Avalonia.Controls
                         modal?.Dispose();
                         SetIsEnabled(affectedWindows, true);
                         activated?.Activate();
-                        result.SetResult((TResult)_dialogResult);
+                        result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
 
                 return result.Task;
@@ -349,6 +457,25 @@ namespace Avalonia.Controls
             foreach (var window in windows)
             {
                 window.IsEnabled = isEnabled;
+            }
+        }
+
+        void SetWindowStartupLocation()
+        {
+            if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
+            {
+                var screen = Screens.ScreenFromPoint(Bounds.Position);
+
+                if (screen != null)
+                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
+            }
+            else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
+            {
+                if (Owner != null)
+                {
+                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
+                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                }
             }
         }
 
@@ -404,8 +531,8 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            IsVisible = false;
-            s_windows.Remove(this);
+            RemoveWindow(this);
+
             base.HandleClosed();
         }
 

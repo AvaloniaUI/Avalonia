@@ -2,21 +2,24 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
+using System.ComponentModel;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Describes how an area is painted.
     /// </summary>
-    public abstract class Brush : AvaloniaObject, IBrush
+    [TypeConverter(typeof(BrushConverter))]
+    public abstract class Brush : AvaloniaObject, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
         /// </summary>
         public static readonly StyledProperty<double> OpacityProperty =
             AvaloniaProperty.Register<Brush, double>(nameof(Opacity), 1.0);
+
+        /// <inheritdoc/>
+        public event EventHandler Invalidated;
 
         /// <summary>
         /// Gets or sets the opacity of the brush.
@@ -34,26 +37,52 @@ namespace Avalonia.Media
         /// <returns>The <see cref="Color"/>.</returns>
         public static IBrush Parse(string s)
         {
+            Contract.Requires<ArgumentNullException>(s != null);
+            Contract.Requires<FormatException>(s.Length > 0);
+
             if (s[0] == '#')
             {
                 return new SolidColorBrush(Color.Parse(s));
             }
-            else
-            {
-                var upper = s.ToUpperInvariant();
-                var member = typeof(Brushes).GetTypeInfo().DeclaredProperties
-                    .FirstOrDefault(x => x.Name.ToUpperInvariant() == upper);
 
-                if (member != null)
-                {
-                    var brush = (ISolidColorBrush)member.GetValue(null);
-                    return new SolidColorBrush(brush.Color, brush.Opacity);
-                }
-                else
-                {
-                    throw new FormatException($"Invalid brush string: '{s}'.");
-                }
+            var brush = KnownColors.GetKnownBrush(s);
+            if (brush != null)
+            {
+                return brush;
+            }
+
+            throw new FormatException($"Invalid brush string: '{s}'.");
+        }
+
+        /// <inheritdoc/>
+        public abstract IBrush ToImmutable();
+
+        /// <summary>
+        /// Marks a property as affecting the brush's visual representation.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a brush's static constructor, any change to the
+        /// property will cause the <see cref="Invalidated"/> event to be raised on the brush.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : Brush
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
             }
         }
+
+        /// <summary>
+        /// Raises the <see cref="Invalidated"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
     }
 }

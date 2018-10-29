@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
@@ -20,17 +20,19 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public Size MaxClientSize { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; }
+        public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
+        public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
         public Point Position { get; set; }
         public Action<Point> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
+        public Action<WindowState> WindowStateChanged { get; set; }
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
         public void Dispose()
         {
@@ -77,6 +79,10 @@ namespace Avalonia.DesignerSupport.Remote
 
         public IScreenImpl Screen { get; } = new ScreenStub();
 
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public void SetTitle(string title)
         {
         }
@@ -92,6 +98,14 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         public void ShowTaskbarIcon(bool value)
+        {
+        }
+
+        public void CanResize(bool value)
+        {
+        }
+
+        public void SetTopmost(bool value)
         {
         }
     }

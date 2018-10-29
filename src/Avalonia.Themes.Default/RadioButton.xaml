@@ -8,7 +8,7 @@
         <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
           <Ellipse Name="border"
                    Stroke="{TemplateBinding BorderBrush}"
-                   StrokeThickness="{TemplateBinding BorderThickness}"
+                   StrokeThickness="1"
                    Width="18"
                    Height="18"
                    VerticalAlignment="Center"/>
@@ -39,7 +39,7 @@
     </Setter>
   </Style>
   <Style Selector="RadioButton:pointerover /template/ Ellipse#border">
-    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderDarkBrush}"/>
+    <Setter Property="Stroke" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   <Style Selector="RadioButton /template/ Ellipse#checkMark">
     <Setter Property="IsVisible" Value="False"/>

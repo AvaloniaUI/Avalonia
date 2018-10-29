@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Resources;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -14,25 +13,23 @@ namespace Avalonia.Shared.PlatformSupport
 {
     internal partial class StandardRuntimePlatform : IRuntimePlatform
     {
-        public void PostThreadPoolItem(Action cb) => ThreadPool.UnsafeQueueUserWorkItem(_ => cb(), null);
-        public Assembly[] GetLoadedAssemblies() => AppDomain.CurrentDomain.GetAssemblies();
         public IDisposable StartSystemTimer(TimeSpan interval, Action tick)
         {
             return new Timer(_ => tick(), null, interval, interval);
         }
-
-        public string GetStackTrace() => Environment.StackTrace;
 
         public IUnmanagedBlob AllocBlob(int size) => new UnmanagedBlob(this, size);
         
         class UnmanagedBlob : IUnmanagedBlob
         {
             private readonly StandardRuntimePlatform _plat;
+            private IntPtr _address;
+            private readonly object _lock = new object();
 #if DEBUG
             private static readonly List<string> Backtraces = new List<string>();
             private static Thread GCThread;
             private readonly string _backtrace;
-
+            private static readonly object _btlock = new object();
 
             class GCThreadDetector
             {
@@ -55,28 +52,35 @@ namespace Avalonia.Shared.PlatformSupport
             
             public UnmanagedBlob(StandardRuntimePlatform plat, int size)
             {
+                if (size <= 0)
+                    throw new ArgumentException("Positive number required", nameof(size));
                 _plat = plat;
-                Address = plat.Alloc(size);
+                _address = plat.Alloc(size);
                 GC.AddMemoryPressure(size);
                 Size = size;
 #if DEBUG
                 _backtrace = Environment.StackTrace;
-                Backtraces.Add(_backtrace);
+                lock (_btlock)
+                    Backtraces.Add(_backtrace);
 #endif
             }
 
             void DoDispose()
             {
-                if (!IsDisposed)
+                lock (_lock)
                 {
+                    if (!IsDisposed)
+                    {
 #if DEBUG
-                    Backtraces.Remove(_backtrace);
+                        lock (_btlock)
+                            Backtraces.Remove(_backtrace);
 #endif
-                    _plat.Free(Address, Size);
-                    GC.RemoveMemoryPressure(Size);
-                    IsDisposed = true;
-                    Address = IntPtr.Zero;
-                    Size = 0;
+                        _plat.Free(_address, Size);
+                        GC.RemoveMemoryPressure(Size);
+                        IsDisposed = true;
+                        _address = IntPtr.Zero;
+                        Size = 0;
+                    }
                 }
             }
 
@@ -102,14 +106,14 @@ namespace Avalonia.Shared.PlatformSupport
                 DoDispose();
             }
 
-            public IntPtr Address { get; private set; }
+            public IntPtr Address => IsDisposed ? throw new ObjectDisposedException("UnmanagedBlob") : _address; 
             public int Size { get; private set; }
             public bool IsDisposed { get; private set; }
         }
         
         
         
-#if FULLDOTNET || DOTNETCORE
+#if NET461 || NETCOREAPP2_0
         [DllImport("libc", SetLastError = true)]
         private static extern IntPtr mmap(IntPtr addr, IntPtr length, int prot, int flags, int fd, IntPtr offset);
         [DllImport("libc", SetLastError = true)]

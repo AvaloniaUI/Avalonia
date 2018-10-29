@@ -12,7 +12,7 @@ namespace Avalonia.Styling
     public interface IStyleable : IAvaloniaObject, INamed
     {
         /// <summary>
-        /// Signalled when the control's style should be removed.
+        /// Signaled when the control's style should be removed.
         /// </summary>
         IObservable<IStyleable> StyleDetach { get; }
 

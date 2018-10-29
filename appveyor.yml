@@ -5,18 +5,12 @@ configuration:
 environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  NUGET_API_KEY:
-    secure: Xv89dlP2MSBZKhl1nrWSxqcDgCXB0HRhOd4SWQ+jRJ7QoLxQel5mLTipXM++J3G5
   NUGET_API_URL: https://www.nuget.org/api/v2/package
   MYGET_API_KEY:
     secure: OtVfyN3ErqQrDTnWH2HDfJDlCiu/i4/X4wFmK3ZXXP7HmCiXYPSbTjMPwwdOxRaK
   MYGET_API_URL: https://www.myget.org/F/avalonia-ci/api/v2/package
 init:
 - ps: if (Test-Path env:nuget_address) {[System.IO.File]::AppendAllText("C:\Windows\System32\drivers\etc\hosts", "`n$($env:nuget_address)`tapi.nuget.org")}
-install:
-  - if not exist dotnet-2.0.0.exe appveyor DownloadFile https://download.microsoft.com/download/0/F/D/0FD852A4-7EA1-4E2A-983A-0484AC19B92C/dotnet-sdk-2.0.0-win-x64.exe -FileName "dotnet-2.0.0.exe"
-  - ps: Start-Process -FilePath "dotnet-2.0.0.exe" -ArgumentList "/quiet" -Wait
-  - cmd: set PATH=%programfiles(x86)%\GtkSharp\2.12\bin\;%PATH%
 before_build:
 - git submodule update --init
 build_script:
@@ -27,5 +21,3 @@ artifacts:
   - path: artifacts\nuget\*.nupkg
   - path: artifacts\zip\*.zip
   - path: artifacts\inspectcode.xml
-cache:
-  - dotnet-2.0.0.exe

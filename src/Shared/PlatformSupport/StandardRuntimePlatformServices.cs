@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Shared.PlatformSupport
 {
@@ -10,9 +9,19 @@ namespace Avalonia.Shared.PlatformSupport
     {
         public static void Register(Assembly assembly = null)
         {
+            var standardPlatform = new StandardRuntimePlatform();
             AvaloniaLocator.CurrentMutable
-                .Bind<IRuntimePlatform>().ToSingleton<StandardRuntimePlatform>()
-                .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly));
+                .Bind<IRuntimePlatform>().ToConstant(standardPlatform)
+                .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly))
+                .Bind<IDynamicLibraryLoader>().ToConstant(
+#if __IOS__
+                    new IOSLoader()
+#else
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                        ? (IDynamicLibraryLoader)new Win32Loader()
+                        : new UnixLoader()
+#endif
+                );
         }
     }
 }

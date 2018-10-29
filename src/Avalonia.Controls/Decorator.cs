@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Layout;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -27,7 +28,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Decorator()
         {
-            AffectsMeasure(ChildProperty, PaddingProperty);
+            AffectsMeasure<Decorator>(ChildProperty, PaddingProperty);
             ChildProperty.Changed.AddClassHandler<Decorator>(x => x.ChildChanged);
         }
 
@@ -53,25 +54,13 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            var content = Child;
-            var padding = Padding;
-
-            if (content != null)
-            {
-                content.Measure(availableSize.Deflate(padding));
-                return content.DesiredSize.Inflate(padding);
-            }
-            else
-            {
-                return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
-            }
+            return LayoutHelper.MeasureChild(Child, availableSize, Padding);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Child?.Arrange(new Rect(finalSize).Deflate(Padding));
-            return finalSize;
+            return LayoutHelper.ArrangeChild(Child, finalSize, Padding);
         }
 
         /// <summary>

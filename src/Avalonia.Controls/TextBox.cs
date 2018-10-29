@@ -30,9 +30,12 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
-        
+
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
+
+        public static readonly StyledProperty<char> PasswordCharProperty =
+            AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
@@ -65,6 +68,10 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
+        public static readonly DirectProperty<TextBox, string> NewLineProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
+                textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
+
         struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string Text { get; }
@@ -85,8 +92,10 @@ namespace Avalonia.Controls
         private int _selectionEnd;
         private TextPresenter _presenter;
         private UndoRedoHelper<UndoRedoState> _undoRedoHelper;
+        private bool _isUndoingRedoing;
         private bool _ignoreTextChanges;
-        private static readonly string[] invalidCharacters = new String[1]{"\u007f"};
+        private string _newLine = Environment.NewLine;
+        private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
         static TextBox()
         {
@@ -98,9 +107,19 @@ namespace Avalonia.Controls
             var horizontalScrollBarVisibility = Observable.CombineLatest(
                 this.GetObservable(AcceptsReturnProperty),
                 this.GetObservable(TextWrappingProperty),
-                (acceptsReturn, wrapping) => acceptsReturn && wrapping == TextWrapping.NoWrap ?
-                    ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled);
-
+                (acceptsReturn, wrapping) =>
+                {
+                    if (acceptsReturn)
+                    {
+                        return wrapping == TextWrapping.NoWrap ?
+                            ScrollBarVisibility.Auto :
+                            ScrollBarVisibility.Disabled;
+                    }
+                    else
+                    {
+                        return ScrollBarVisibility.Hidden;
+                    }
+                });
             Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
@@ -136,11 +155,17 @@ namespace Avalonia.Controls
                     _undoRedoHelper.UpdateLastState();
             }
         }
-        
+
         public bool IsReadOnly
         {
             get { return GetValue(IsReadOnlyProperty); }
             set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        public char PasswordChar
+        {
+            get => GetValue(PasswordCharProperty);
+            set => SetValue(PasswordCharProperty, value);
         }
 
         public int SelectionStart
@@ -187,8 +212,15 @@ namespace Avalonia.Controls
             {
                 if (!_ignoreTextChanges)
                 {
-                    CaretIndex = CoerceCaretIndex(CaretIndex, value?.Length ?? 0);
-                    SetAndRaise(TextProperty, ref _text, value);
+                    var caretIndex = CaretIndex;
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
+
+                    if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
+                    {
+                        _undoRedoHelper.Clear();
+                    }
                 }
             }
         }
@@ -217,14 +249,23 @@ namespace Avalonia.Controls
             set { SetValue(TextWrappingProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets which characters are inserted when Enter is pressed. Default: <see cref="Environment.NewLine"/>
+        /// </summary>
+        public string NewLine
+        {
+            get { return _newLine; }
+            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
+        }
+
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
 
-            if(IsFocused)
+            if (IsFocused)
             {
-                _presenter.ShowCaret();
+                DecideCaretVisibility();
             }
         }
 
@@ -244,8 +285,18 @@ namespace Avalonia.Controls
             }
             else
             {
-                _presenter?.ShowCaret();
+                DecideCaretVisibility();
             }
+
+            e.Handled = true;
+        }
+
+        private void DecideCaretVisibility()
+        {
+            if (!IsReadOnly)
+                _presenter?.ShowCaret();
+            else
+                _presenter?.HideCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -258,7 +309,11 @@ namespace Avalonia.Controls
 
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            HandleTextInput(e.Text);
+            if (!e.Handled)
+            {
+                HandleTextInput(e.Text);
+                e.Handled = true;
+            }
         }
 
         private void HandleTextInput(string input)
@@ -313,164 +368,242 @@ namespace Avalonia.Controls
             string text = Text ?? string.Empty;
             int caretIndex = CaretIndex;
             bool movement = false;
+            bool selection = false;
             bool handled = false;
             var modifiers = e.Modifiers;
 
-            switch (e.Key)
+            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+            bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+            bool DetectSelection() => e.Modifiers.HasFlag(keymap.SelectionModifiers);
+
+            if (Match(keymap.SelectAll))
             {
-                case Key.A:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        SelectAll();
-                        handled = true;
-                    }
-                    break;
-                case Key.C:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        Copy();
-                        handled = true;
-                    }
-                    break;
+                SelectAll();
+                handled = true;
+            }
+            else if (Match(keymap.Copy))
+            {
+                if (!IsPasswordBox)
+                {
+                    Copy();
+                }
 
-                case Key.X:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        Copy();
-                        DeleteSelection();
-                        handled = true;
-                    }
-                    break;
+                handled = true;
+            }
+            else if (Match(keymap.Cut))
+            {
+                if (!IsPasswordBox)
+                {
+                    Copy();
+                    DeleteSelection();
+                }
 
-                case Key.V:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        Paste();
-                        handled = true;
-                    }
+                handled = true;
+            }
+            else if (Match(keymap.Paste))
+            {
 
-                    break;
+                Paste();
+                handled = true;
+            }
+            else if (Match(keymap.Undo))
+            {
 
-                case Key.Z:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        _undoRedoHelper.Undo();
-                        handled = true;
-                    }
-                    break;
-                case Key.Y:
-                    if (modifiers == InputModifiers.Control)
-                    {
-                        _undoRedoHelper.Redo();
-                        handled = true;
-                    }
-                    break;
-                case Key.Left:
-                    MoveHorizontal(-1, modifiers);
-                    movement = true;
-                    break;
+                try
+                {
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Undo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
 
-                case Key.Right:
-                    MoveHorizontal(1, modifiers);
-                    movement = true;
-                    break;
+                handled = true;
+            }
+            else if (Match(keymap.Redo))
+            {
+                try
+                {
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Redo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
 
-                case Key.Up:
-                    movement = MoveVertical(-1, modifiers);
-                    break;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheStartOfDocument))
+            {
+                MoveHome(true);
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheEndOfDocument))
+            {
+                MoveEnd(true);
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheStartOfLine))
+            {
+                MoveHome(false);
+                movement = true;
+                selection = false;
+                handled = true;
+                
+            }
+            else if (Match(keymap.MoveCursorToTheEndOfLine))
+            {
+                MoveEnd(false);
+                movement = true;
+                selection = false;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheStartOfDocumentWithSelection))
+            {
+                MoveHome(true);
+                movement = true;
+                selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheEndOfDocumentWithSelection))
+            {
+                MoveEnd(true);
+                movement = true;
+                selection = true;
+                handled = true;
+            }
+            else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
+            {
+                MoveHome(false);
+                movement = true;
+                selection = true;
+                handled = true;
+                
+            }
+            else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
+            {
+                MoveEnd(false);
+                movement = true;
+                selection = true;
+                handled = true;
+            }
+            else
+            {
+                bool hasWholeWordModifiers = modifiers.HasFlag(keymap.WholeWordTextActionModifiers);
+                switch (e.Key)
+                {
+                    case Key.Left:
+                        MoveHorizontal(-1, hasWholeWordModifiers);
+                        movement = true;
+                        selection = DetectSelection();
+                        break;
 
-                case Key.Down:
-                    movement = MoveVertical(1, modifiers);
-                    break;
+                    case Key.Right:
+                        MoveHorizontal(1, hasWholeWordModifiers);
+                        movement = true;
+                        selection = DetectSelection();
+                        break;
 
-                case Key.Home:
-                    MoveHome(modifiers);
-                    movement = true;
-                    break;
+                    case Key.Up:
+                        movement = MoveVertical(-1);
+                        selection = DetectSelection();
+                        break;
 
-                case Key.End:
-                    MoveEnd(modifiers);
-                    movement = true;
-                    break;
+                    case Key.Down:
+                        movement = MoveVertical(1);
+                        selection = DetectSelection();
+                        break;
 
-                case Key.Back:
-                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
-                    {
-                        SetSelectionForControlBackspace(modifiers);
-                    }
-
-                    if (!DeleteSelection() && CaretIndex > 0)
-                    {
-                        var removedCharacters = 1;
-                        // handle deleting /r/n
-                        // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
-                        // a /r should also be deleted.
-                        if (CaretIndex > 1 &&
-                            text[CaretIndex - 1] == '\n' &&
-                            text[CaretIndex - 2] == '\r')
+                    case Key.Back:
+                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
                         {
-                            removedCharacters = 2;
+                            SetSelectionForControlBackspace();
                         }
 
-                        SetTextInternal(text.Substring(0, caretIndex - removedCharacters) + text.Substring(caretIndex));
-                        CaretIndex -= removedCharacters;
-                        SelectionStart = SelectionEnd = CaretIndex;
-                    }
-                    handled = true;
-                    break;
-
-                case Key.Delete:
-                    if (modifiers == InputModifiers.Control && SelectionStart == SelectionEnd)
-                    {
-                        SetSelectionForControlDelete(modifiers);
-                    }
-
-                    if (!DeleteSelection() && caretIndex < text.Length)
-                    {
-                        var removedCharacters = 1;
-                        // handle deleting /r/n
-                        // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
-                        // a /r should also be deleted.
-                        if (CaretIndex < text.Length - 1 &&
-                            text[caretIndex + 1] == '\n' &&
-                            text[caretIndex] == '\r')
+                        if (!DeleteSelection() && CaretIndex > 0)
                         {
-                            removedCharacters = 2;
+                            var removedCharacters = 1;
+                            // handle deleting /r/n
+                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                            // a /r should also be deleted.
+                            if (CaretIndex > 1 &&
+                                text[CaretIndex - 1] == '\n' &&
+                                text[CaretIndex - 2] == '\r')
+                            {
+                                removedCharacters = 2;
+                            }
+
+                            SetTextInternal(text.Substring(0, caretIndex - removedCharacters) +
+                                            text.Substring(caretIndex));
+                            CaretIndex -= removedCharacters;
+                            SelectionStart = SelectionEnd = CaretIndex;
                         }
 
-                        SetTextInternal(text.Substring(0, caretIndex) + text.Substring(caretIndex + removedCharacters));
-                    }
-                    handled = true;
-                    break;
-
-                case Key.Enter:
-                    if (AcceptsReturn)
-                    {
-                        HandleTextInput("\r\n");
                         handled = true;
-                    }
+                        break;
 
-                    break;
+                    case Key.Delete:
+                        if (hasWholeWordModifiers && SelectionStart == SelectionEnd)
+                        {
+                            SetSelectionForControlDelete();
+                        }
 
-                case Key.Tab:
-                    if (AcceptsTab)
-                    {
-                        HandleTextInput("\t");
+                        if (!DeleteSelection() && caretIndex < text.Length)
+                        {
+                            var removedCharacters = 1;
+                            // handle deleting /r/n
+                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
+                            // a /r should also be deleted.
+                            if (CaretIndex < text.Length - 1 &&
+                                text[caretIndex + 1] == '\n' &&
+                                text[caretIndex] == '\r')
+                            {
+                                removedCharacters = 2;
+                            }
+
+                            SetTextInternal(text.Substring(0, caretIndex) +
+                                            text.Substring(caretIndex + removedCharacters));
+                        }
+
                         handled = true;
-                    }
-                    else
-                    {
-                        base.OnKeyDown(e);
-                    }
+                        break;
 
-                    break;
+                    case Key.Enter:
+                        if (AcceptsReturn)
+                        {
+                            HandleTextInput(NewLine);
+                            handled = true;
+                        }
 
-                default:
-                    handled = false;
-                    break;
+                        break;
+
+                    case Key.Tab:
+                        if (AcceptsTab)
+                        {
+                            HandleTextInput("\t");
+                            handled = true;
+                        }
+                        else
+                        {
+                            base.OnKeyDown(e);
+                        }
+
+                        break;
+
+                    default:
+                        handled = false;
+                        break;
+                }
             }
 
-            if (movement && ((modifiers & InputModifiers.Shift) != 0))
+            if (movement && selection)
             {
                 SelectionEnd = CaretIndex;
             }
@@ -487,37 +620,34 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (e.Source == _presenter)
+            var point = e.GetPosition(_presenter);
+            var index = CaretIndex = _presenter.GetCaretIndex(point);
+            var text = Text;
+
+            if (text != null && e.MouseButton == MouseButton.Left)
             {
-                var point = e.GetPosition(_presenter);
-                var index = CaretIndex = _presenter.GetCaretIndex(point);
-                var text = Text;
-
-                if (text != null)
+                switch (e.ClickCount)
                 {
-                    switch (e.ClickCount)
-                    {
-                        case 1:
-                            SelectionStart = SelectionEnd = index;
-                            break;
-                        case 2:
-                            if (!StringUtils.IsStartOfWord(text, index))
-                            {
-                                SelectionStart = StringUtils.PreviousWord(text, index);
-                            }
+                    case 1:
+                        SelectionStart = SelectionEnd = index;
+                        break;
+                    case 2:
+                        if (!StringUtils.IsStartOfWord(text, index))
+                        {
+                            SelectionStart = StringUtils.PreviousWord(text, index);
+                        }
 
-                            SelectionEnd = StringUtils.NextWord(text, index);
-                            break;
-                        case 3:
-                            SelectionStart = 0;
-                            SelectionEnd = text.Length;
-                            break;
-                    }
+                        SelectionEnd = StringUtils.NextWord(text, index);
+                        break;
+                    case 3:
+                        SelectionStart = 0;
+                        SelectionEnd = text.Length;
+                        break;
                 }
-
-                e.Device.Capture(_presenter);
-                e.Handled = true;
             }
+
+            e.Device.Capture(_presenter);
+            e.Handled = true;
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
@@ -544,7 +674,7 @@ namespace Avalonia.Controls
                 DataValidationErrors.SetError(this, status.Error);
             }
         }
-        
+
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
@@ -592,12 +722,12 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private void MoveHorizontal(int direction, InputModifiers modifiers)
+        private void MoveHorizontal(int direction, bool wholeWord)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) == 0)
+            if (!wholeWord)
             {
                 var index = caretIndex + direction;
 
@@ -635,7 +765,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool MoveVertical(int count, InputModifiers modifiers)
+        private bool MoveVertical(int count)
         {
             var formattedText = _presenter.FormattedText;
             var lines = formattedText.GetLines().ToList();
@@ -658,12 +788,12 @@ namespace Avalonia.Controls
             }
         }
 
-        private void MoveHome(InputModifiers modifiers)
+        private void MoveHome(bool document)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) != 0)
+            if (document)
             {
                 caretIndex = 0;
             }
@@ -688,12 +818,12 @@ namespace Avalonia.Controls
             CaretIndex = caretIndex;
         }
 
-        private void MoveEnd(InputModifiers modifiers)
+        private void MoveEnd(bool document)
         {
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
 
-            if ((modifiers & InputModifiers.Control) != 0)
+            if (document)
             {
                 caretIndex = text.Length;
             }
@@ -781,7 +911,7 @@ namespace Avalonia.Controls
             int pos = 0;
             int i;
 
-            for (i = 0; i < lines.Count; ++i)
+            for (i = 0; i < lines.Count - 1; ++i)
             {
                 var line = lines[i];
                 pos += line.Length;
@@ -808,19 +938,21 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SetSelectionForControlBackspace(InputModifiers modifiers)
+        private void SetSelectionForControlBackspace()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(-1, modifiers);
+            MoveHorizontal(-1, true);
             SelectionEnd = CaretIndex;
         }
 
-        private void SetSelectionForControlDelete(InputModifiers modifiers)
+        private void SetSelectionForControlDelete()
         {
             SelectionStart = CaretIndex;
-            MoveHorizontal(1, modifiers);
+            MoveHorizontal(1, true);
             SelectionEnd = CaretIndex;
         }
+
+        private bool IsPasswordBox => PasswordChar != default(char);
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {

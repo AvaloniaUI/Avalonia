@@ -21,12 +21,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public LinearGradientBrushTests() : base(@"Media\LinearGradientBrush")
         {
         }
-
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
+        
         [Fact]
-#endif
         public async Task LinearGradientBrush_RedBlue_Horizontal_Fill()
         {
             Decorator target = new Decorator
@@ -40,7 +36,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
-                        GradientStops = new[]
+                        GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }
@@ -52,12 +48,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
-
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
+        
         [Fact]
-#endif
         public async Task LinearGradientBrush_RedBlue_Vertical_Fill()
         {
             Decorator target = new Decorator
@@ -71,7 +63,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     {
                         StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative),
                         EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                        GradientStops = new[]
+                        GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }

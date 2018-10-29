@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+      <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
+    </ItemGroup>
+
+</Project>

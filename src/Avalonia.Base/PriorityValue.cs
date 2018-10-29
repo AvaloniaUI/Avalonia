@@ -12,16 +12,16 @@ using Avalonia.Utilities;
 namespace Avalonia
 {
     /// <summary>
-    /// Maintains a list of prioritised bindings together with a current value.
+    /// Maintains a list of prioritized bindings together with a current value.
     /// </summary>
     /// <remarks>
     /// Bindings, in the form of <see cref="IObservable{Object}"/>s are added to the object using
     /// the <see cref="Add"/> method. With the observable is passed a priority, where lower values
-    /// represent higher priorites. The current <see cref="Value"/> is selected from the highest
+    /// represent higher priorities. The current <see cref="Value"/> is selected from the highest
     /// priority binding that doesn't return <see cref="AvaloniaProperty.UnsetValue"/>. Where there
     /// are multiple bindings registered with the same priority, the most recently added binding
     /// has a higher priority. Each time the value changes, the 
-    /// <see cref="IPriorityValueOwner.Changed(PriorityValue, object, object)"/> method on the 
+    /// <see cref="IPriorityValueOwner.Changed"/> method on the 
     /// owner object is fired with the old and new values.
     /// </remarks>
     internal class PriorityValue
@@ -30,7 +30,6 @@ namespace Avalonia
         private readonly SingleOrDictionary<int, PriorityLevel> _levels = new SingleOrDictionary<int, PriorityLevel>();
 
         private readonly Func<object, object> _validate;
-        private static readonly DeferredSetter<PriorityValue, (object value, int priority)> delayedSetter = new DeferredSetter<PriorityValue, (object, int)>();
         private (object value, int priority) _value;
 
         /// <summary>
@@ -237,17 +236,23 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Updates the current <see cref="Value"/> and notifies all subscibers.
+        /// Updates the current <see cref="Value"/> and notifies all subscribers.
         /// </summary>
         /// <param name="value">The value to set.</param>
         /// <param name="priority">The priority level that the value came from.</param>
         private void UpdateValue(object value, int priority)
         {
-            delayedSetter.SetAndNotify(this,
+            Owner.Setter.SetAndNotify(Property,
                 ref _value,
                 UpdateCore,
                 (value, priority));
         }
+
+        private bool UpdateCore(
+            object update,
+            ref (object value, int priority) backing,
+            Action<Action> notify)
+            => UpdateCore(((object, int))update, ref backing, notify);
 
         private bool UpdateCore(
             (object value, int priority) update,
@@ -281,12 +286,12 @@ namespace Avalonia
 
                 if (notification == null || notification.HasValue)
                 {
-                    notify(() => Owner?.Changed(this, old, Value));
+                    notify(() => Owner?.Changed(Property, ValuePriority, old, Value));
                 }
 
                 if (notification != null)
                 {
-                    Owner?.BindingNotificationReceived(this, notification);
+                    Owner?.BindingNotificationReceived(Property, notification);
                 }
             }
             else

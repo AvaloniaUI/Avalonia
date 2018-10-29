@@ -46,11 +46,11 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void GetValue_Throws_Exception_For_Unregistered_Property()
+        public void GetValue_Doesnt_Throw_Exception_For_Unregistered_Property()
         {
             var target = new Class3();
 
-            Assert.Throws<ArgumentException>(() => target.GetValue(Class1.FooProperty));
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
         }
 
         private class Class1 : AvaloniaObject

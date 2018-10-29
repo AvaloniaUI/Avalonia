@@ -1,8 +1,4 @@
 using System;
-using System.IO;
-using System.Linq;
-using Android.Content;
-using Android.Views;
 using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -56,7 +52,9 @@ namespace Avalonia.Android
                 .Bind<ISystemDialogImpl>().ToTransient<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(Instance)
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoader>()
-                .Bind<IRenderLoop>().ToConstant(new DefaultRenderLoop(60))
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(app.GetType().Assembly));
 
             SkiaPlatform.Initialize();

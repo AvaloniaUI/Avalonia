@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Controls.Utils;
+using Avalonia.Layout;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -8,7 +10,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control which decorates a child with a border and background.
     /// </summary>
-    public class Border : Decorator
+    public partial class Border : Decorator
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -25,21 +27,28 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="BorderThickness"/> property.
         /// </summary>
-        public static readonly StyledProperty<double> BorderThicknessProperty =
-            AvaloniaProperty.Register<Border, double>(nameof(BorderThickness));
+        public static readonly StyledProperty<Thickness> BorderThicknessProperty =
+            AvaloniaProperty.Register<Border, Thickness>(nameof(BorderThickness));
 
         /// <summary>
         /// Defines the <see cref="CornerRadius"/> property.
         /// </summary>
-        public static readonly StyledProperty<float> CornerRadiusProperty =
-            AvaloniaProperty.Register<Border, float>(nameof(CornerRadius));
+        public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
+            AvaloniaProperty.Register<Border, CornerRadius>(nameof(CornerRadius));
+
+        private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
         /// Initializes static members of the <see cref="Border"/> class.
         /// </summary>
         static Border()
         {
-            AffectsRender(BackgroundProperty, BorderBrushProperty);
+            AffectsRender<Border>(
+                BackgroundProperty,
+                BorderBrushProperty,
+                BorderThicknessProperty,
+                CornerRadiusProperty);
+            AffectsMeasure<Border>(BorderThicknessProperty);
         }
 
         /// <summary>
@@ -63,7 +72,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
-        public double BorderThickness
+        public Thickness BorderThickness
         {
             get { return GetValue(BorderThicknessProperty); }
             set { SetValue(BorderThicknessProperty, value); }
@@ -72,7 +81,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the radius of the border rounded corners.
         /// </summary>
-        public float CornerRadius
+        public CornerRadius CornerRadius
         {
             get { return GetValue(CornerRadiusProperty); }
             set { SetValue(CornerRadiusProperty, value); }
@@ -84,21 +93,7 @@ namespace Avalonia.Controls
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            var background = Background;
-            var borderBrush = BorderBrush;
-            var borderThickness = BorderThickness;
-            var cornerRadius = CornerRadius;
-            var rect = new Rect(Bounds.Size).Deflate(BorderThickness);
-
-            if (background != null)
-            {
-                context.FillRectangle(background, rect, cornerRadius);
-            }
-
-            if (borderBrush != null && borderThickness > 0)
-            {
-                context.DrawRectangle(new Pen(borderBrush, borderThickness), rect, cornerRadius);
-            }
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
         }
 
         /// <summary>
@@ -108,7 +103,7 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return MeasureOverrideImpl(availableSize, Child, Padding, BorderThickness);
+            return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness);
         }
 
         /// <summary>
@@ -118,32 +113,9 @@ namespace Avalonia.Controls
         /// <returns>The space taken.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            if (Child != null)
-            {
-                var padding = Padding + new Thickness(BorderThickness);
-                Child.Arrange(new Rect(finalSize).Deflate(padding));
-            }
+            _borderRenderHelper.Update(finalSize, BorderThickness, CornerRadius);
 
-            return finalSize;
-        }
-
-        internal static Size MeasureOverrideImpl(
-            Size availableSize,
-            IControl child,
-            Thickness padding,
-            double borderThickness)
-        {
-            padding += new Thickness(borderThickness);
-
-            if (child != null)
-            {
-                child.Measure(availableSize.Deflate(padding));
-                return child.DesiredSize.Inflate(padding);
-            }
-            else
-            {
-                return new Size(padding.Left + padding.Right, padding.Bottom + padding.Top);
-            }
+            return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
         }
     }
 }

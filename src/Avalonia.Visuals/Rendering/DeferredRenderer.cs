@@ -2,17 +2,18 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
-using System.Collections.Generic;
-using System.IO;
-using Avalonia.Media.Immutable;
-using System.Threading;
-using System.Linq;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
+using System.Threading.Tasks;
 
 namespace Avalonia.Rendering
 {
@@ -20,7 +21,7 @@ namespace Avalonia.Rendering
     /// A renderer which renders the state of the visual tree to an intermediate scene graph
     /// representation which is then rendered on a rendering thread.
     /// </summary>
-    public class DeferredRenderer : RendererBase, IRenderer, IVisualBrushRenderer
+    public class DeferredRenderer : RendererBase, IRenderer, IRenderLoopTask, IVisualBrushRenderer
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
@@ -28,10 +29,9 @@ namespace Avalonia.Rendering
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
-        private Scene _scene;
+        private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
-        private bool _updateQueued;
         private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -117,6 +117,9 @@ namespace Avalonia.Rendering
             var scene = Interlocked.Exchange(ref _scene, null);
             scene?.Dispose();
             Stop();
+
+            Layers.Clear();
+            RenderTarget?.Dispose();
         }
 
         /// <inheritdoc/>
@@ -128,7 +131,7 @@ namespace Avalonia.Rendering
                 UpdateScene();
             }
 
-            return _scene?.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
+            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
         }
 
         /// <inheritdoc/>
@@ -146,7 +149,7 @@ namespace Avalonia.Rendering
         {
             if (!_running && _renderLoop != null)
             {
-                _renderLoop.Tick += OnRenderLoopTick;
+                _renderLoop.Add(this);
                 _running = true;
             }
         }
@@ -156,8 +159,20 @@ namespace Avalonia.Rendering
         {
             if (_running && _renderLoop != null)
             {
-                _renderLoop.Tick -= OnRenderLoopTick;
+                _renderLoop.Remove(this);
                 _running = false;
+            }
+        }
+
+        bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
+
+        void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
+
+        void IRenderLoopTask.Render()
+        {
+            using (var scene = _scene?.Clone())
+            {
+                Render(scene?.Item);
             }
         }
 
@@ -180,7 +195,7 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene);
+        internal void UnitTestRender() => Render(_scene.Item);
 
         private void Render(Scene scene)
         {
@@ -334,6 +349,8 @@ namespace Avalonia.Rendering
 
         private void RenderComposite(Scene scene, IDrawingContextImpl context)
         {
+            context.Clear(Colors.Transparent);
+            
             var clientRect = new Rect(scene.Size);
 
             foreach (var layer in scene.Layers)
@@ -376,65 +393,34 @@ namespace Avalonia.Rendering
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
-
-            try
+            if (_root.IsVisible)
             {
-                if (_root.IsVisible)
+                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                var scene = sceneRef.Item;
+
+                if (_dirty == null)
                 {
-                    var scene = _scene?.Clone() ?? new Scene(_root);
-
-                    if (_dirty == null)
-                    {
-                        _dirty = new DirtyVisuals();
-                        _sceneBuilder.UpdateAll(scene);
-                    }
-                    else if (_dirty.Count > 0)
-                    {
-                        foreach (var visual in _dirty)
-                        {
-                            _sceneBuilder.Update(scene, visual);
-                        }
-                    }
-
-                    var oldScene = Interlocked.Exchange(ref _scene, scene);
-                    oldScene?.Dispose();
-
-                    _dirty.Clear();
-                    (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
+                    _dirty = new DirtyVisuals();
+                    _sceneBuilder.UpdateAll(scene);
                 }
-                else
+                else if (_dirty.Count > 0)
                 {
-                    var oldScene = Interlocked.Exchange(ref _scene, null);
-                    oldScene?.Dispose();
+                    foreach (var visual in _dirty)
+                    {
+                        _sceneBuilder.Update(scene, visual);
+                    }
                 }
+
+                var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
+                oldScene?.Dispose();
+
+                _dirty.Clear();
+                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
-            finally
+            else
             {
-                _updateQueued = false;
-            }
-        }
-
-        private void OnRenderLoopTick(object sender, EventArgs e)
-        {
-            if (Monitor.TryEnter(_rendering))
-            {
-                try
-                {
-                    if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
-                    {
-                        _updateQueued = true;
-                        _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
-                    }
-
-                    Scene scene = null;
-                    Interlocked.Exchange(ref scene, _scene);
-                    Render(scene);
-                }
-                catch { }
-                finally
-                {
-                    Monitor.Exit(_rendering);
-                }
+                var oldScene = Interlocked.Exchange(ref _scene, null);
+                oldScene?.Dispose();
             }
         }
 

@@ -6,8 +6,9 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Parsers;
 using Avalonia.Metadata;
 
 namespace Avalonia.Markup.Xaml.Templates
@@ -41,16 +42,11 @@ namespace Avalonia.Markup.Xaml.Templates
         {
             if (ItemsSource != null)
             {
-                var obs = new ExpressionObserver(item, ItemsSource.Path);
+                var obs = ExpressionObserverBuilder.Build(item, ItemsSource.Path);
                 return InstancedBinding.OneWay(obs, BindingPriority.Style);
             }
 
             return null;
-        }
-
-        public bool IsExpanded(object item)
-        {
-            return true;
         }
 
         public IControl Build(object data)

@@ -9,19 +9,6 @@ namespace Avalonia.Input
     public static class KeyboardNavigation
     {
         /// <summary>
-        /// Defines the DirectionalNavigation attached property.
-        /// </summary>
-        /// <remarks>
-        /// The DirectionalNavigation attached property defines how pressing arrow keys causes
-        /// focus to be navigated between the children of the container.
-        /// </remarks>
-        public static readonly AttachedProperty<KeyboardNavigationMode> DirectionalNavigationProperty =
-            AvaloniaProperty.RegisterAttached<InputElement, KeyboardNavigationMode>(
-                "DirectionalNavigation",
-                typeof(KeyboardNavigation),
-                KeyboardNavigationMode.None);
-
-        /// <summary>
         /// Defines the TabNavigation attached property.
         /// </summary>
         /// <remarks>
@@ -45,26 +32,6 @@ namespace Avalonia.Input
             AvaloniaProperty.RegisterAttached<InputElement, IInputElement>(
                 "TabOnceActiveElement",
                 typeof(KeyboardNavigation));
-
-        /// <summary>
-        /// Gets the <see cref="DirectionalNavigationProperty"/> for a container.
-        /// </summary>
-        /// <param name="element">The container.</param>
-        /// <returns>The <see cref="KeyboardNavigationMode"/> for the container.</returns>
-        public static KeyboardNavigationMode GetDirectionalNavigation(InputElement element)
-        {
-            return element.GetValue(DirectionalNavigationProperty);
-        }
-
-        /// <summary>
-        /// Sets the <see cref="DirectionalNavigationProperty"/> for a container.
-        /// </summary>
-        /// <param name="element">The container.</param>
-        /// <param name="value">The <see cref="KeyboardNavigationMode"/> for the container.</param>
-        public static void SetDirectionalNavigation(InputElement element, KeyboardNavigationMode value)
-        {
-            element.SetValue(DirectionalNavigationProperty, value);
-        }
 
         /// <summary>
         /// Gets the <see cref="TabNavigationProperty"/> for a container.

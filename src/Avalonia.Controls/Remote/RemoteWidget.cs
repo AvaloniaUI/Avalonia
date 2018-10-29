@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Remote.Protocol;
@@ -12,11 +11,19 @@ namespace Avalonia.Controls.Remote
 {
     public class RemoteWidget : Control
     {
+        public enum SizingMode
+        {
+            Local,
+            Remote
+        }
+
         private readonly IAvaloniaRemoteTransportConnection _connection;
         private FrameMessage _lastFrame;
-        private WritableBitmap _bitmap;
+        private WriteableBitmap _bitmap;
         public RemoteWidget(IAvaloniaRemoteTransportConnection connection)
         {
+            Mode = SizingMode.Local;
+
             _connection = connection;
             _connection.OnMessage += (t, msg) => Dispatcher.UIThread.Post(() => OnMessage(msg));
             _connection.Send(new ClientSupportedPixelFormatsMessage
@@ -28,6 +35,8 @@ namespace Avalonia.Controls.Remote
                 }
             });
         }
+
+        public SizingMode Mode { get; set; }
 
         private void OnMessage(object msg)
         {
@@ -45,13 +54,17 @@ namespace Avalonia.Controls.Remote
 
         protected override void ArrangeCore(Rect finalRect)
         {
-            _connection.Send(new ClientViewportAllocatedMessage
+            if (Mode == SizingMode.Local)
             {
-                Width = finalRect.Width,
-                Height = finalRect.Height,
-                DpiX = 96,
-                DpiY = 96 //TODO: Somehow detect the actual DPI
-            });
+                _connection.Send(new ClientViewportAllocatedMessage
+                {
+                    Width = finalRect.Width,
+                    Height = finalRect.Height,
+                    DpiX = 10 * 96,
+                    DpiY = 10 * 96 //TODO: Somehow detect the actual DPI
+                });
+            }
+
             base.ArrangeCore(finalRect);
         }
 
@@ -62,7 +75,7 @@ namespace Avalonia.Controls.Remote
                 var fmt = (PixelFormat) _lastFrame.Format;
                 if (_bitmap == null || _bitmap.PixelWidth != _lastFrame.Width ||
                     _bitmap.PixelHeight != _lastFrame.Height)
-                    _bitmap = new WritableBitmap(_lastFrame.Width, _lastFrame.Height, fmt);
+                    _bitmap = new WriteableBitmap(_lastFrame.Width, _lastFrame.Height, fmt);
                 using (var l = _bitmap.Lock())
                 {
                     var lineLen = (fmt == PixelFormat.Rgb565 ? 2 : 4) * _lastFrame.Width;

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Platform;
 using Avalonia.Utilities;
+using Avalonia.Visuals.Media.Imaging;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -20,7 +20,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The draw opacity.</param>
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
             : base(destRect, transform, null)
         {
             Transform = transform;
@@ -28,7 +29,9 @@ namespace Avalonia.Rendering.SceneGraph
             Opacity = opacity;
             SourceRect = sourceRect;
             DestRect = destRect;
-        }
+            BitmapInterpolationMode = bitmapInterpolationMode;
+            SourceVersion = Source.Item.Version;
+        }        
 
         /// <summary>
         /// Gets the transform with which the node will be drawn.
@@ -39,6 +42,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the image to draw.
         /// </summary>
         public IRef<IBitmapImpl> Source { get; }
+
+        /// <summary>
+        /// Source bitmap Version
+        /// </summary>
+        public int SourceVersion { get; }
 
         /// <summary>
         /// Gets the draw opacity.
@@ -56,6 +64,14 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect DestRect { get; }
 
         /// <summary>
+        /// Gets the bitmap interpolation mode.
+        /// </summary>
+        /// <value>
+        /// The scaling mode.
+        /// </value>
+        public BitmapInterpolationMode BitmapInterpolationMode { get; }
+
+        /// <summary>
         /// Determines if this draw operation equals another.
         /// </summary>
         /// <param name="transform">The transform of the other draw operation.</param>
@@ -63,27 +79,28 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="opacity">The opacity of the other draw operation.</param>
         /// <param name="sourceRect">The source rect of the other draw operation.</param>
         /// <param name="destRect">The dest rect of the other draw operation.</param>
+        /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         /// <returns>True if the draw operations are the same, otherwise false.</returns>
         /// <remarks>
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
             return transform == Transform &&
                 Equals(source.Item, Source.Item) &&
+                source.Item.Version == SourceVersion &&
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
-                destRect == DestRect;
+                destRect == DestRect &&
+                bitmapInterpolationMode == BitmapInterpolationMode;
         }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
         {
-            // TODO: Probably need to introduce some kind of locking mechanism in the case of
-            // WriteableBitmap.
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect);
+            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
 
         /// <inheritdoc/>

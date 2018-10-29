@@ -76,9 +76,23 @@ namespace Avalonia.Controls.Presenters
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
 
-                        panel.PixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
-                            panel.Children[0].Bounds.Height :
-                            panel.Children[0].Bounds.Width;
+                        double pixelOffset;
+                        var child = panel.Children[0];
+
+                        if (child.IsArrangeValid)
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.Bounds.Height :
+                                                    child.Bounds.Width;
+                        }
+                        else
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.DesiredSize.Height :
+                                                    child.DesiredSize.Width;
+                        }
+
+                        panel.PixelOffset = pixelOffset;
                     }
                 }
             }
@@ -390,7 +404,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="delta">The delta of the move.</param>
         /// <remarks>
         /// If the move is less than a page, then this method moves the containers for the items
-        /// that are still visible to the correct place, and recyles and moves the others. For
+        /// that are still visible to the correct place, and recycles and moves the others. For
         /// example: if there are 20 items and 10 containers visible and the user scrolls 5
         /// items down, then the bottom 5 containers will be moved to the top and the top 5 will
         /// be moved to the bottom and recycled to display the newly visible item. Updates 
@@ -402,6 +416,10 @@ namespace Avalonia.Controls.Presenters
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
             var selector = Owner.MemberSelector;
+
+            //validate delta it should never overflow last index or generate index < 0 
+            delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
+
             var sign = delta < 0 ? -1 : 1;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;
@@ -518,7 +536,7 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 var container = generator.ContainerFromIndex(index);
-                var layoutManager = LayoutManager.Instance;
+                var layoutManager = (Owner.GetVisualRoot() as ILayoutRoot)?.LayoutManager;
 
                 // We need to do a layout here because it's possible that the container we moved to
                 // is only partially visible due to differing item sizes. If the container is only 

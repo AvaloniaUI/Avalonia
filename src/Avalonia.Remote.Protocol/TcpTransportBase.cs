@@ -48,14 +48,12 @@ namespace Avalonia.Remote.Protocol
                 {
                     var cl = await server.AcceptTcpClientAsync();
                     AcceptNew();
-                    Task.Run(async () =>
+                    await Task.Run(async () =>
                     {
                         var tcs = new TaskCompletionSource<int>();
                         var t = CreateTransport(_resolver, cl.GetStream(), () => tcs.TrySetResult(0));
                         cb(t);
                         await tcs.Task;
-
-
                     });
                 }
                 catch

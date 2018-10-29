@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Input;
+﻿using System.Collections.Generic;
 using Avalonia.Gtk3;
+using Avalonia.Input;
 
 namespace Avalonia.Gtk.Common
 {
@@ -18,8 +14,9 @@ namespace Avalonia.Gtk.Common
             { GdkKey.Linefeed, Key.LineFeed },
             { GdkKey.Clear, Key.Clear },
             { GdkKey.Return, Key.Return },
+            { GdkKey.KP_Enter, Key.Return },
             { GdkKey.Pause, Key.Pause },
-            //{ GdkKey.?, Key.CapsLock }
+            { GdkKey.Caps_Lock, Key.CapsLock },
             //{ GdkKey.?, Key.HangulMode }
             //{ GdkKey.?, Key.JunjaMode }
             //{ GdkKey.?, Key.FinalMode }
@@ -31,30 +28,40 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.ImeModeChange }
             { GdkKey.space, Key.Space },
             { GdkKey.Prior, Key.Prior },
-            //{ GdkKey.?, Key.PageDown }
+            { GdkKey.KP_Prior, Key.Prior },
+            { GdkKey.Page_Down, Key.PageDown },
+            { GdkKey.KP_Page_Down, Key.PageDown },
             { GdkKey.End, Key.End },
+            { GdkKey.KP_End, Key.End },
             { GdkKey.Home, Key.Home },
+            { GdkKey.KP_Home, Key.Home },
             { GdkKey.Left, Key.Left },
+            { GdkKey.KP_Left, Key.Left },
             { GdkKey.Up, Key.Up },
+            { GdkKey.KP_Up, Key.Up },
             { GdkKey.Right, Key.Right },
+            { GdkKey.KP_Right, Key.Right },
             { GdkKey.Down, Key.Down },
+            { GdkKey.KP_Down, Key.Down },
             { GdkKey.Select, Key.Select },
             { GdkKey.Print, Key.Print },
             { GdkKey.Execute, Key.Execute },
             //{ GdkKey.?, Key.Snapshot }
             { GdkKey.Insert, Key.Insert },
+            { GdkKey.KP_Insert, Key.Insert },
             { GdkKey.Delete, Key.Delete },
+            { GdkKey.KP_Delete, Key.Delete },
             { GdkKey.Help, Key.Help },
-            //{ GdkKey.?, Key.D0 }
-            //{ GdkKey.?, Key.D1 }
-            //{ GdkKey.?, Key.D2 }
-            //{ GdkKey.?, Key.D3 }
-            //{ GdkKey.?, Key.D4 }
-            //{ GdkKey.?, Key.D5 }
-            //{ GdkKey.?, Key.D6 }
-            //{ GdkKey.?, Key.D7 }
-            //{ GdkKey.?, Key.D8 }
-            //{ GdkKey.?, Key.D9 }
+            { GdkKey.Key_0, Key.D0 },
+            { GdkKey.Key_1, Key.D1 },
+            { GdkKey.Key_2, Key.D2 },
+            { GdkKey.Key_3, Key.D3 },
+            { GdkKey.Key_4, Key.D4 },
+            { GdkKey.Key_5, Key.D5 },
+            { GdkKey.Key_6, Key.D6 },
+            { GdkKey.Key_7, Key.D7 },
+            { GdkKey.Key_8, Key.D8 },
+            { GdkKey.Key_9, Key.D9 },
             { GdkKey.A, Key.A },
             { GdkKey.B, Key.B },
             { GdkKey.C, Key.C },
@@ -109,24 +116,25 @@ namespace Avalonia.Gtk.Common
             { GdkKey.z, Key.Z },
             //{ GdkKey.?, Key.LWin }
             //{ GdkKey.?, Key.RWin }
-            //{ GdkKey.?, Key.Apps }
+            { GdkKey.Menu, Key.Apps },
             //{ GdkKey.?, Key.Sleep }
-            //{ GdkKey.?, Key.NumPad0 }
-            //{ GdkKey.?, Key.NumPad1 }
-            //{ GdkKey.?, Key.NumPad2 }
-            //{ GdkKey.?, Key.NumPad3 }
-            //{ GdkKey.?, Key.NumPad4 }
-            //{ GdkKey.?, Key.NumPad5 }
-            //{ GdkKey.?, Key.NumPad6 }
-            //{ GdkKey.?, Key.NumPad7 }
-            //{ GdkKey.?, Key.NumPad8 }
-            //{ GdkKey.?, Key.NumPad9 }
+            { GdkKey.KP_0, Key.NumPad0 },
+            { GdkKey.KP_1, Key.NumPad1 },
+            { GdkKey.KP_2, Key.NumPad2 },
+            { GdkKey.KP_3, Key.NumPad3 },
+            { GdkKey.KP_4, Key.NumPad4 },
+            { GdkKey.KP_5, Key.NumPad5 },
+            { GdkKey.KP_6, Key.NumPad6 },
+            { GdkKey.KP_7, Key.NumPad7 },
+            { GdkKey.KP_8, Key.NumPad8 },
+            { GdkKey.KP_9, Key.NumPad9 },
             { GdkKey.multiply, Key.Multiply },
-            //{ GdkKey.?, Key.Add }
+            { GdkKey.KP_Multiply, Key.Multiply },
+            { GdkKey.KP_Add, Key.Add },
             //{ GdkKey.?, Key.Separator }
-            //{ GdkKey.?, Key.Subtract }
-            //{ GdkKey.?, Key.Decimal }
-            //{ GdkKey.?, Key.Divide }
+            { GdkKey.KP_Subtract, Key.Subtract },
+            { GdkKey.KP_Decimal, Key.Decimal },
+            { GdkKey.KP_Divide, Key.Divide },
             { GdkKey.F1, Key.F1 },
             { GdkKey.F2, Key.F2 },
             { GdkKey.F3, Key.F3 },
@@ -151,14 +159,14 @@ namespace Avalonia.Gtk.Common
             { GdkKey.R2, Key.F22 },
             { GdkKey.F23, Key.F23 },
             { GdkKey.R4, Key.F24 },
-            //{ GdkKey.?, Key.NumLock }
-            //{ GdkKey.?, Key.Scroll }
-            //{ GdkKey.?, Key.LeftShift }
-            //{ GdkKey.?, Key.RightShift }
-            //{ GdkKey.?, Key.LeftCtrl }
-            //{ GdkKey.?, Key.RightCtrl }
-            //{ GdkKey.?, Key.LeftAlt }
-            //{ GdkKey.?, Key.RightAlt }
+            { GdkKey.Num_Lock, Key.NumLock },
+            { GdkKey.Scroll_Lock, Key.Scroll },
+            { GdkKey.Shift_L, Key.LeftShift },
+            { GdkKey.Shift_R, Key.RightShift },
+            { GdkKey.Control_L, Key.LeftCtrl },
+            { GdkKey.Control_R, Key.RightCtrl },
+            { GdkKey.Alt_L, Key.LeftAlt },
+            { GdkKey.Alt_R, Key.RightAlt },
             //{ GdkKey.?, Key.BrowserBack }
             //{ GdkKey.?, Key.BrowserForward }
             //{ GdkKey.?, Key.BrowserRefresh }
@@ -177,19 +185,20 @@ namespace Avalonia.Gtk.Common
             //{ GdkKey.?, Key.SelectMedia }
             //{ GdkKey.?, Key.LaunchApplication1 }
             //{ GdkKey.?, Key.LaunchApplication2 }
-            //{ GdkKey.?, Key.OemSemicolon }
-            //{ GdkKey.?, Key.OemPlus }
-            //{ GdkKey.?, Key.OemComma }
-            //{ GdkKey.?, Key.OemMinus }
-            //{ GdkKey.?, Key.OemPeriod }
-            //{ GdkKey.?, Key.Oem2 }
-            //{ GdkKey.?, Key.OemTilde }
+            { GdkKey.semicolon, Key.OemSemicolon },
+            { GdkKey.plus, Key.OemPlus },
+            { GdkKey.equal, Key.OemPlus },
+            { GdkKey.comma, Key.OemComma },
+            { GdkKey.minus, Key.OemMinus },
+            { GdkKey.period, Key.OemPeriod },
+            { GdkKey.slash, Key.Oem2 },
+            { GdkKey.grave, Key.OemTilde },
             //{ GdkKey.?, Key.AbntC1 }
             //{ GdkKey.?, Key.AbntC2 }
-            //{ GdkKey.?, Key.Oem4 }
-            //{ GdkKey.?, Key.OemPipe }
-            //{ GdkKey.?, Key.OemCloseBrackets }
-            //{ GdkKey.?, Key.Oem7 }
+            { GdkKey.bracketleft, Key.OemOpenBrackets },
+            { GdkKey.backslash, Key.OemPipe },
+            { GdkKey.bracketright, Key.OemCloseBrackets },
+            { GdkKey.apostrophe, Key.OemQuotes },
             //{ GdkKey.?, Key.Oem8 }
             //{ GdkKey.?, Key.Oem102 }
             //{ GdkKey.?, Key.ImeProcessed }

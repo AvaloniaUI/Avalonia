@@ -9,7 +9,7 @@ using Avalonia.Data;
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
-    /// A template used to build hierachical data.
+    /// A template used to build hierarchical data.
     /// </summary>
     public class FuncTreeDataTemplate : FuncDataTemplate, ITreeDataTemplate
     {

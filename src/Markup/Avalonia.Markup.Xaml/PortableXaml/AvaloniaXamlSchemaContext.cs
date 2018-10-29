@@ -1,6 +1,6 @@
 ﻿using Avalonia.Data;
 using Avalonia.Markup.Xaml.Context;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Markup.Xaml.Styling;
 using Portable.Xaml;
@@ -15,6 +15,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 {
     internal class AvaloniaXamlSchemaContext : XamlSchemaContext
     {
+        public bool IsDesignMode { get; set; }
         public static AvaloniaXamlSchemaContext Create(IRuntimeTypeProvider typeProvider = null)
         {
             return new AvaloniaXamlSchemaContext(typeProvider ?? new AvaloniaRuntimeTypeProvider());
@@ -200,8 +201,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
             var type = (getter ?? setter).DeclaringType;
 
-            var prop = AvaloniaPropertyRegistry.Instance.GetAttached(type)
-                    .FirstOrDefault(v => v.Name == attachablePropertyName);
+            var prop = AvaloniaPropertyRegistry.Instance.FindRegistered(type, attachablePropertyName);
 
             if (prop != null)
             {
@@ -281,5 +281,20 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 return $"{MemberType}:{Type.Namespace}:{Type.Name}.{Member}";
             }
         }
+
+
+        public override bool TryGetCompatibleXamlNamespace(string xamlNamespace, out string compatibleNamespace)
+        {
+            //Forces XamlXmlReader to not ignore our namespace in design mode if mc:Ignorable is set
+            if (IsDesignMode &&
+                xamlNamespace == "http://schemas.microsoft.com/expression/blend/2008")
+            {
+                compatibleNamespace = xamlNamespace;
+                return true;
+            }
+
+            return base.TryGetCompatibleXamlNamespace(xamlNamespace, out compatibleNamespace);
+        }
+
     }
 }

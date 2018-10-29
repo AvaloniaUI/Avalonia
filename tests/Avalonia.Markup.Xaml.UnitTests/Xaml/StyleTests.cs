@@ -2,11 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Portable.Xaml;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -144,6 +145,57 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 var target = window.Find<TextBlock>("target");
 
                 Assert.NotNull(target.FocusAdorner);
+            }
+        }
+
+        [Fact]
+        public void Setter_Can_Set_Attached_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='DockPanel.Dock' Value='Right'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = (TextBlock)window.Content;
+
+                window.ApplyTemplate();
+
+                Assert.Equal(Dock.Right, DockPanel.GetDock(textBlock));
+            }
+        }
+
+        [Fact(Skip = "The animation system currently needs to be able to set any property on any object")]
+        public void Disallows_Setting_Non_Registered_Property()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='Button.IsDefault' Value='True'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var ex = Assert.Throws<XamlObjectWriterException>(() => loader.Load(xaml));
+
+                Assert.Equal(
+                    "Property 'Button.IsDefault' is not registered on 'Avalonia.Controls.TextBlock'.",
+                    ex.InnerException.Message);
             }
         }
     }

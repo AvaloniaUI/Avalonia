@@ -21,12 +21,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public RadialGradientBrushTests() : base(@"Media\RadialGradientBrush")
         {
         }
-
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
+        
         [Fact]
-#endif
         public async Task RadialGradientBrush_RedBlue()
         {
             Decorator target = new Decorator
@@ -38,7 +34,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 {
                     Background = new RadialGradientBrush
                     {
-                        GradientStops = new[]
+                        GradientStops =
                         {
                             new GradientStop { Color = Colors.Red, Offset = 0 },
                             new GradientStop { Color = Colors.Blue, Offset = 1 }

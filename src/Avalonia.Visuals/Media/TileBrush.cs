@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Visuals.Media.Imaging;
+
 namespace Avalonia.Media
 {
     /// <summary>
@@ -75,6 +77,18 @@ namespace Avalonia.Media
         public static readonly StyledProperty<TileMode> TileModeProperty =
             AvaloniaProperty.Register<TileBrush, TileMode>(nameof(TileMode));
 
+        static TileBrush()
+        {
+            AffectsRender<TileBrush>(
+                AlignmentXProperty,
+                AlignmentYProperty,
+                DestinationRectProperty,
+                SourceRectProperty,
+                StretchProperty,
+                TileModeProperty);
+            RenderOptions.BitmapInterpolationModeProperty.OverrideDefaultValue<TileBrush>(BitmapInterpolationMode.Default);
+        }
+
         /// <summary>
         /// Gets or sets the horizontal alignment of a tile in the destination.
         /// </summary>
@@ -128,6 +142,18 @@ namespace Avalonia.Media
         {
             get { return (TileMode)GetValue(TileModeProperty); }
             set { SetValue(TileModeProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the bitmap interpolation mode.
+        /// </summary>
+        /// <value>
+        /// The bitmap interpolation mode.
+        /// </value>
+        public BitmapInterpolationMode BitmapInterpolationMode
+        {
+            get { return RenderOptions.GetBitmapInterpolationMode(this); }
+            set { RenderOptions.SetBitmapInterpolationMode(this, value); }
         }
     }
 }

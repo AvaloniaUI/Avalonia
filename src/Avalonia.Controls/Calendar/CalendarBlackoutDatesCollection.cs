@@ -3,12 +3,12 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
-using Avalonia.Collections;
-using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
+using Avalonia.Threading;
+using Avalonia.Collections;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Primitives
 {

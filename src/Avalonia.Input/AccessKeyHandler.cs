@@ -49,14 +49,36 @@ namespace Avalonia.Input
         private bool _altIsDown;
 
         /// <summary>
-        /// Element to restore folowing AltKey taking focus.
+        /// Element to restore following AltKey taking focus.
         /// </summary>
         private IInputElement _restoreFocusElement;
 
         /// <summary>
+        /// The window's main menu.
+        /// </summary>
+        private IMainMenu _mainMenu;
+
+        /// <summary>
         /// Gets or sets the window's main menu.
         /// </summary>
-        public IMainMenu MainMenu { get; set; }
+        public IMainMenu MainMenu
+        {
+            get => _mainMenu;
+            set
+            {
+                if (_mainMenu != null)
+                {
+                    _mainMenu.MenuClosed -= MainMenuClosed;
+                }
+
+                _mainMenu = value;
+
+                if (_mainMenu != null)
+                {
+                    _mainMenu.MenuClosed += MainMenuClosed;
+                }
+            }
+        }
 
         /// <summary>
         /// Sets the owner of the access key handler.
@@ -160,13 +182,7 @@ namespace Avalonia.Input
         {
             bool menuIsOpen = MainMenu?.IsOpen == true;
 
-            if (e.Key == Key.Escape && menuIsOpen)
-            {
-                // When the Escape key is pressed with the main menu open, close it.
-                CloseMenu();
-                e.Handled = true;
-            }
-            else if ((e.Modifiers & InputModifiers.Alt) != 0 || menuIsOpen)
+            if ((e.Modifiers & InputModifiers.Alt) != 0 || menuIsOpen)
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
@@ -244,6 +260,11 @@ namespace Avalonia.Input
         {
             MainMenu.Close();
             _owner.ShowAccessKeys = _showingAccessKeys = false;
+        }
+
+        private void MainMenuClosed(object sender, EventArgs e)
+        {
+            _owner.ShowAccessKeys = false;
         }
     }
 }

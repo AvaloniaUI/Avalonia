@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Markup;
-using System.Windows.Media;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace Avalonia.Win32.Interop.Wpf
 {
@@ -55,7 +44,7 @@ namespace Avalonia.Win32.Interop.Wpf
             set => _impl.ControlRoot.Content = value;
         }
 
-        //Separate class is needed to prevent accidential resurrection
+        //Separate class is needed to prevent accidental resurrection
         class Disposer
         {
             private readonly WpfTopLevelImpl _impl;

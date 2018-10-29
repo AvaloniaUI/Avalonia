@@ -8,7 +8,6 @@ using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -161,6 +160,11 @@ namespace Avalonia.Controls.Presenters
         /// <returns>An <see cref="ItemVirtualizer"/>.</returns>
         public static ItemVirtualizer Create(ItemsPresenter owner)
         {
+            if (owner.Panel == null)
+            {
+                return null;
+            }
+
             var virtualizingPanel = owner.Panel as IVirtualizingPanel;
             var scrollable = (ILogicalScrollable)owner;
             ItemVirtualizer result = null;
@@ -275,6 +279,6 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Invalidates the current scroll.
         /// </summary>
-        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll();
+        protected void InvalidateScroll() => ((ILogicalScrollable)Owner).InvalidateScroll?.Invoke();
     }
 }

@@ -17,6 +17,11 @@ namespace Avalonia.Platform
         WindowState WindowState { get; set; }
 
         /// <summary>
+        /// Gets or sets a method called when the minimized/maximized state of the window changes.
+        /// </summary>
+        Action<WindowState> WindowStateChanged { get; set; }
+
+        /// <summary>
         /// Sets the title of the window.
         /// </summary>
         /// <param name="title">The title.</param>
@@ -44,5 +49,16 @@ namespace Avalonia.Platform
         /// Enables or disables the taskbar icon
         /// </summary>
         void ShowTaskbarIcon(bool value);
+
+        /// <summary>
+        /// Enables or disables resizing of the window
+        /// </summary>
+        void CanResize(bool value);
+
+        /// <summary>
+        /// Gets or sets a method called before the underlying implementation is destroyed.
+        /// Return true to prevent the underlying implementation from closing.
+        /// </summary>
+        Func<bool> Closing { get; set; }
     }
 }

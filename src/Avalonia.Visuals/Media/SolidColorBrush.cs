@@ -1,20 +1,25 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
+    public class SolidColorBrush : Brush, ISolidColorBrush
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.
         /// </summary>
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<SolidColorBrush, Color>(nameof(Color));
+
+        static SolidColorBrush()
+        {
+            AffectsRender<SolidColorBrush>(ColorProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SolidColorBrush"/> class.
@@ -53,6 +58,21 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Parses a brush string.
+        /// </summary>
+        /// <param name="s">The brush string.</param>
+        /// <returns>The <see cref="Color"/>.</returns>
+        /// <remarks>
+        /// Whereas <see cref="Brush.Parse(string)"/> may return an immutable solid color brush,
+        /// this method always returns a mutable <see cref="SolidColorBrush"/>.
+        /// </remarks>
+        public static new SolidColorBrush Parse(string s)
+        {
+            var brush = (ISolidColorBrush)Brush.Parse(s);
+            return brush is SolidColorBrush solid ? solid : new SolidColorBrush(brush.Color);
+        }
+
+        /// <summary>
         /// Returns a string representation of the brush.
         /// </summary>
         /// <returns>A string representation of the brush.</returns>
@@ -62,9 +82,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        IBrush IMutableBrush.ToImmutable()
+        public override IBrush ToImmutable()
         {
-            return new Immutable.ImmutableSolidColorBrush(this);
+            return new ImmutableSolidColorBrush(this);
         }
     }
 }

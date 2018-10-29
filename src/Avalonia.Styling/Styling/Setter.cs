@@ -3,8 +3,8 @@
 
 using System;
 using System.Reactive.Disposables;
-using System.Reactive.Subjects;
 using System.Reflection;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -19,7 +19,7 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter
+    public class Setter : ISetter, IAnimationSetter
     {
         private object _value;
 
@@ -65,10 +65,10 @@ namespace Avalonia.Styling
 
             set
             {
-                if (value is IStyleable)
+                if (value is IRequiresTemplateInSetter)
                 {
                     throw new ArgumentException(
-                        "Cannot assign a control to Style.Value. Wrap the control in a <Template>.",
+                        "Cannot assign a control to Setter.Value. Wrap the control in a <Template>.",
                         "value");
                 }
 
@@ -105,7 +105,7 @@ namespace Avalonia.Styling
                 if (template != null && !isPropertyOfTypeITemplate)
                 {
                     var materialized = template.Build();
-                    NameScope.SetNameScope((Visual)materialized, new NameScope());
+                    NameScope.SetNameScope((StyledElement)materialized, new NameScope());
                     value = materialized;
                 }
 
@@ -125,7 +125,7 @@ namespace Avalonia.Styling
 
                 if (source != null)
                 {
-                    var cloned = Clone(source, style, activator);
+                    var cloned = Clone(source, source.Mode == BindingMode.Default ? Property.GetMetadata(control.GetType()).DefaultBindingMode : source.Mode, style, activator);
                     return BindingOperations.Apply(control, Property, cloned, null);
                 }
             }
@@ -133,13 +133,13 @@ namespace Avalonia.Styling
             return Disposable.Empty;
         }
 
-        private InstancedBinding Clone(InstancedBinding sourceInstance, IStyle style, IObservable<bool> activator)
+        private InstancedBinding Clone(InstancedBinding sourceInstance, BindingMode mode, IStyle style, IObservable<bool> activator)
         {
             if (activator != null)
             {
                 var description = style?.ToString();
 
-                switch (sourceInstance.Mode)
+                switch (mode)
                 {
                     case BindingMode.OneTime:
                         if (sourceInstance.Observable != null)
@@ -157,18 +157,11 @@ namespace Avalonia.Styling
                             var activated = new ActivatedObservable(activator, sourceInstance.Observable, description);
                             return InstancedBinding.OneWay(activated, BindingPriority.StyleTrigger);
                         }
-                    case BindingMode.OneWayToSource:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.OneWayToSource(activated, BindingPriority.StyleTrigger);
-                        }
-                    case BindingMode.TwoWay:
-                        {
-                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
-                            return InstancedBinding.TwoWay(activated, BindingPriority.StyleTrigger);
-                        }
                     default:
-                        throw new NotSupportedException("Unsupported BindingMode.");
+                        {
+                            var activated = new ActivatedSubject(activator, sourceInstance.Subject, description);
+                            return new InstancedBinding(activated, sourceInstance.Mode, BindingPriority.StyleTrigger);
+                        }
                 }
 
             }

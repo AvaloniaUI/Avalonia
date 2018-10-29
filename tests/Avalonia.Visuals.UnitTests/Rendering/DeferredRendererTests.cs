@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -10,8 +11,11 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Visuals.Media.Imaging;
 using Avalonia.VisualTree;
+
 using Moq;
+
 using Xunit;
 
 namespace Avalonia.Visuals.UnitTests.Rendering
@@ -19,26 +23,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
     public class DeferredRendererTests
     {
         [Fact]
-        public void First_Frame_Calls_UpdateScene_On_Dispatcher()
-        {
-            var root = new TestRoot();
-
-            var dispatcher = new Mock<IDispatcher>();
-            dispatcher.Setup(x => x.Post(It.IsAny<Action>(), DispatcherPriority.Render))
-                .Callback<Action, DispatcherPriority>((a, p) => a());
-
-            CreateTargetAndRunFrame(root, dispatcher: dispatcher.Object);
-
-            dispatcher.Verify(x => 
-                x.Post(
-                    It.Is<Action>(a => a.Method.Name == "UpdateScene"),
-                    DispatcherPriority.Render));
-        }
-
-        [Fact]
         public void First_Frame_Calls_SceneBuilder_UpdateAll()
         {
-            var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
 
@@ -50,6 +36,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         [Fact]
         public void Frame_Does_Not_Call_SceneBuilder_If_No_Dirty_Controls()
         {
+            var dispatcher = new ImmediateDispatcher();
             var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var sceneBuilder = MockSceneBuilder(root);
@@ -59,8 +46,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 sceneBuilder: sceneBuilder.Object);
 
             target.Start();
-            IgnoreFirstFrame(loop, sceneBuilder);
-            RunFrame(loop);
+            IgnoreFirstFrame(target, sceneBuilder);
+            RunFrame(target);
 
             sceneBuilder.Verify(x => x.UpdateAll(It.IsAny<Scene>()), Times.Never);
             sceneBuilder.Verify(x => x.Update(It.IsAny<Scene>(), It.IsAny<Visual>()), Times.Never);
@@ -69,8 +56,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         [Fact]
         public void Should_Update_Dirty_Controls_In_Order()
         {
-            var loop = new Mock<IRenderLoop>();
             var dispatcher = new ImmediateDispatcher();
+            var loop = new Mock<IRenderLoop>();
 
             Border border;
             Decorator decorator;
@@ -94,7 +81,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
                 dispatcher: dispatcher);
 
             target.Start();
-            IgnoreFirstFrame(loop, sceneBuilder);
+            IgnoreFirstFrame(target, sceneBuilder);
             target.AddDirty(border);
             target.AddDirty(canvas);
             target.AddDirty(root);
@@ -104,7 +91,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             sceneBuilder.Setup(x => x.Update(It.IsAny<Scene>(), It.IsAny<IVisual>()))
                 .Callback<Scene, IVisual>((_, v) => result.Add(v));
 
-            RunFrame(loop);
+            RunFrame(target);
 
             Assert.Equal(new List<IVisual> { root, decorator, border, canvas }, result);
         }
@@ -194,7 +181,6 @@ namespace Avalonia.Visuals.UnitTests.Rendering
         [Fact]
         public void Should_Create_Layer_For_Root()
         {
-            var loop = new Mock<IRenderLoop>();
             var root = new TestRoot();
             var rootLayer = new Mock<IRenderTargetBitmapImpl>();
 
@@ -235,19 +221,19 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var loop = new Mock<IRenderLoop>();
-            var target = CreateTargetAndRunFrame(root, loop: loop);
+            var timer = new Mock<IRenderTimer>();
+            var target = CreateTargetAndRunFrame(root, timer);
 
             Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
 
             var animation = new BehaviorSubject<double>(0.5);
             border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
-            RunFrame(loop);
+            RunFrame(target);
 
             Assert.Equal(new IVisual[] { root, border }, target.Layers.Select(x => x.LayerRoot));
 
             animation.OnCompleted();
-            RunFrame(loop);
+            RunFrame(target);
 
             Assert.Equal(new[] { root }, target.Layers.Select(x => x.LayerRoot));
         }
@@ -276,8 +262,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             root.Measure(Size.Infinity);
             root.Arrange(new Rect(root.DesiredSize));
 
-            var loop = new Mock<IRenderLoop>();
-            var target = CreateTargetAndRunFrame(root, loop: loop);
+            var timer = new Mock<IRenderTimer>();
+            var target = CreateTargetAndRunFrame(root, timer);
 
             Assert.Single(target.Layers);
         }
@@ -336,24 +322,25 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
             var borderLayer = target.Layers[border].Bitmap;
 
-            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>()));
+            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
         }
 
         private DeferredRenderer CreateTargetAndRunFrame(
             TestRoot root,
-            Mock<IRenderLoop> loop = null,
+            Mock<IRenderTimer> timer = null,
             ISceneBuilder sceneBuilder = null,
             IDispatcher dispatcher = null)
         {
-            loop = loop ?? new Mock<IRenderLoop>();
+            timer = timer ?? new Mock<IRenderTimer>();
+            dispatcher = dispatcher ?? new ImmediateDispatcher();
             var target = new DeferredRenderer(
                 root,
-                loop.Object,
+                new RenderLoop(timer.Object, dispatcher),
                 sceneBuilder: sceneBuilder,
-                dispatcher: dispatcher ?? new ImmediateDispatcher());
+                dispatcher: dispatcher);
             root.Renderer = target;
             target.Start();
-            RunFrame(loop);
+            RunFrame(target);
             return target;
         }
 
@@ -362,15 +349,16 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }
 
-        private void IgnoreFirstFrame(Mock<IRenderLoop> loop, Mock<ISceneBuilder> sceneBuilder)
+        private void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
         {
-            RunFrame(loop);
+            RunFrame(task);
             sceneBuilder.ResetCalls();
         }
 
-        private void RunFrame(Mock<IRenderLoop> loop)
+        private void RunFrame(IRenderLoopTask task)
         {
-            loop.Raise(x => x.Tick += null, EventArgs.Empty);
+            task.Update(TimeSpan.Zero);
+            task.Render();
         }
 
         private IRenderTargetBitmapImpl CreateLayer()

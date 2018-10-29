@@ -3,14 +3,14 @@
 
 using System;
 using System.Globalization;
-using System.Xml.Linq;
+using JetBrains.Annotations;
 
 namespace Avalonia
 {
     /// <summary>
     /// Defines a vector.
     /// </summary>
-    public struct Vector
+    public readonly struct Vector
     {
         /// <summary>
         /// The X vector.
@@ -120,6 +120,56 @@ namespace Avalonia
         public static Vector operator -(Vector a, Vector b)
         {
             return new Vector(a._x - b._x, a._y - b._y);
+        }
+
+        /// <summary>
+        /// Check if two vectors are equal (bitwise).
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(Vector other)
+        {
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _x == other._x && _y == other._y;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+        }
+
+        /// <summary>
+        /// Check if two vectors are nearly equal (numerically).
+        /// </summary>
+        /// <param name="other">The other vector.</param>
+        /// <returns>True if vectors are nearly equal.</returns>
+        [Pure]
+        public bool NearlyEquals(Vector other)
+        {
+            const float tolerance = float.Epsilon;
+
+            return Math.Abs(_x - other._x) < tolerance && Math.Abs(_y - other._y) < tolerance;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+
+            return obj is Vector vector && Equals(vector);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (_x.GetHashCode() * 397) ^ _y.GetHashCode();
+            }
+        }
+
+        public static bool operator ==(Vector left, Vector right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Vector left, Vector right)
+        {
+            return !left.Equals(right);
         }
 
         /// <summary>

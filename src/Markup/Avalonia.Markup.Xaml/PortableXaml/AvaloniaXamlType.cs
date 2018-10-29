@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Xaml.Data;
+using Avalonia.Markup.Data;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using Portable.Xaml;
@@ -19,16 +19,36 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
     public class AvaloniaXamlType : XamlType
     {
+        static readonly AvaloniaPropertyTypeConverter propertyTypeConverter = new AvaloniaPropertyTypeConverter();
+
         public AvaloniaXamlType(Type underlyingType, XamlSchemaContext schemaContext) :
             base(underlyingType, schemaContext)
         {
+        }
+
+        protected override XamlMember LookupAttachableMember(string name)
+        {
+            var m =  base.LookupAttachableMember(name);
+
+            if (m == null)
+            {
+                // Might be an AddOwnered attached property.
+                var avProp = AvaloniaPropertyRegistry.Instance.FindRegistered(UnderlyingType, name);
+
+                if (avProp?.IsAttached == true)
+                {
+                    return new AvaloniaPropertyXamlMember(avProp, this);
+                }
+            }
+
+            return m;
         }
 
         protected override XamlMember LookupMember(string name, bool skipReadOnlyCheck)
         {
             var m = base.LookupMember(name, skipReadOnlyCheck);
 
-            if (m == null)
+            if (m == null && !name.Contains("."))
             {
                 //so far Portable.xaml haven't found the member/property
                 //but what if we have AvaloniaProperty

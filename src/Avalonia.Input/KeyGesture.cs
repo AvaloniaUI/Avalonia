@@ -1,13 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Avalonia.Input
 {
     public sealed class KeyGesture : IEquatable<KeyGesture>
     {
+        public KeyGesture()
+        {
+            
+        }
+
+        public KeyGesture(Key key, InputModifiers modifiers = InputModifiers.None)
+        {
+            Key = key;
+            Modifiers = modifiers;
+        }
+        
         public bool Equals(KeyGesture other)
         {
             if (ReferenceEquals(null, other)) return false;
@@ -45,7 +54,7 @@ namespace Avalonia.Input
         public InputModifiers Modifiers { get; set; }
 
         
-        static readonly Dictionary<string, Key> KeySynonims = new Dictionary<string, Key>
+        static readonly Dictionary<string, Key> KeySynonyms = new Dictionary<string, Key>
         {
             {"+", Key.OemPlus },
             {"-", Key.OemMinus},
@@ -56,7 +65,7 @@ namespace Avalonia.Input
         static Key ParseKey(string key)
         {
             Key rv;
-            if (KeySynonims.TryGetValue(key.ToLower(), out rv))
+            if (KeySynonyms.TryGetValue(key.ToLower(), out rv))
                 return rv;
             return (Key)Enum.Parse(typeof (Key), key, true);
         }

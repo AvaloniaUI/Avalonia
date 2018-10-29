@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -54,13 +52,14 @@ namespace Avalonia.Controls
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
+        private ILayoutManager _layoutManager;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
         static TopLevel()
         {
-            AffectsMeasure(ClientSizeProperty);
+            AffectsMeasure<TopLevel>(ClientSizeProperty);
         }
 
         /// <summary>
@@ -97,7 +96,6 @@ namespace Avalonia.Controls
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
-            var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
             Renderer = impl.CreateRenderer(this);
 
             impl.SetInputRoot(this);
@@ -145,6 +143,16 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        public ILayoutManager LayoutManager
+        {
+            get
+            {
+                if (_layoutManager == null)
+                    _layoutManager = CreateLayoutManager();
+                return _layoutManager;
+            }
         }
 
         /// <summary>
@@ -214,7 +222,7 @@ namespace Avalonia.Controls
         protected virtual IRenderTarget CreateRenderTarget()
         {
             if(PlatformImpl == null)
-                throw new InvalidOperationException("Cann't create render target, PlatformImpl is null (might be already disposed)");
+                throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
             return _renderInterface.CreateRenderTarget(PlatformImpl.Surfaces);
         }
 
@@ -235,6 +243,11 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default(Point);
         }
+        
+        /// <summary>
+        /// Creates the layout manager for this <see cref="TopLevel" />.
+        /// </summary>
+        protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager();
 
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -267,7 +280,7 @@ namespace Avalonia.Controls
             ClientSize = clientSize;
             Width = clientSize.Width;
             Height = clientSize.Height;
-            LayoutManager.Instance.ExecuteLayoutPass();
+            LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
         }
 

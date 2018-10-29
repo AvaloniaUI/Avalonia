@@ -11,6 +11,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
+using Avalonia.Input.Platform;
 
 namespace Avalonia.UnitTests
 {
@@ -50,7 +51,6 @@ namespace Avalonia.UnitTests
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())
                 .Bind<IKeyboardNavigationHandler>().ToConstant(Services.KeyboardNavigation)
-                .Bind<ILayoutManager>().ToConstant(Services.LayoutManager)
                 .Bind<IMouseDevice>().ToConstant(Services.MouseDevice?.Invoke())
                 .Bind<IRuntimePlatform>().ToConstant(Services.Platform)
                 .Bind<IPlatformRenderInterface>().ToConstant(Services.RenderInterface)
@@ -59,6 +59,7 @@ namespace Avalonia.UnitTests
                 .Bind<IStandardCursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IApplicationLifecycle>().ToConstant(this);
             var styles = Services.Theme?.Invoke();
 

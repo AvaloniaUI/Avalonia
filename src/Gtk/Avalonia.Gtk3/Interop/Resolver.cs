@@ -4,9 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3.Interop
 {
@@ -84,7 +83,7 @@ namespace Avalonia.Gtk3.Interop
             }
         }
 
-        static IntPtr LoadDll(IDynLoader  loader, GtkDll dll)
+        static IntPtr LoadDll(IDynamicLibraryLoader  loader, GtkDll dll)
         {
             
             var exceptions = new List<Exception>();
@@ -120,7 +119,7 @@ namespace Avalonia.Gtk3.Interop
 
         public static void Resolve(string basePath = null)
         {
-            var loader = Platform.Value == OperatingSystemType.WinNT ? (IDynLoader)new Win32Loader() : new UnixLoader();
+            var loader = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
 
             var dlls = Enum.GetValues(typeof(GtkDll)).Cast<GtkDll>().ToDictionary(x => x, x => LoadDll(loader, x));
             

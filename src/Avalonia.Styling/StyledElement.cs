@@ -1,0 +1,813 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Avalonia.Animation;
+using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Diagnostics;
+using Avalonia.Logging;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
+
+namespace Avalonia
+{
+    /// <summary>
+    /// Extends an <see cref="Animatable"/> with the following features:
+    /// 
+    /// - An inherited <see cref="DataContext"/>.
+    /// - Implements <see cref="IStyleable"/> to allow styling to work on the styled element.
+    /// - Implements <see cref="ILogical"/> to form part of a logical tree.
+    /// - A collection of class strings for custom styling.
+    /// </summary>
+    public class StyledElement : Animatable, IStyledElement, ISetLogicalParent, ISetInheritanceParent
+    {
+        /// <summary>
+        /// Defines the <see cref="DataContext"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object> DataContextProperty =
+            AvaloniaProperty.Register<StyledElement, object>(
+                nameof(DataContext),
+                inherits: true,
+                notifying: DataContextNotifying);
+
+        /// <summary>
+        /// Defines the <see cref="Name"/> property.
+        /// </summary>
+        public static readonly DirectProperty<StyledElement, string> NameProperty =
+            AvaloniaProperty.RegisterDirect<StyledElement, string>(nameof(Name), o => o.Name, (o, v) => o.Name = v);
+        
+        /// <summary>
+        /// Defines the <see cref="Parent"/> property.
+        /// </summary>
+        public static readonly DirectProperty<StyledElement, IStyledElement> ParentProperty =
+            AvaloniaProperty.RegisterDirect<StyledElement, IStyledElement>(nameof(Parent), o => o.Parent);
+
+        /// <summary>
+        /// Defines the <see cref="TemplatedParent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ITemplatedControl> TemplatedParentProperty =
+            AvaloniaProperty.Register<StyledElement, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
+
+        private int _initCount;
+        private string _name;
+        private readonly Classes _classes = new Classes();
+        private bool _isAttachedToLogicalTree;
+        private IAvaloniaList<ILogical> _logicalChildren;
+        private INameScope _nameScope;
+        private IResourceDictionary _resources;
+        private Styles _styles;
+        private bool _styled;
+        private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
+        private bool _dataContextUpdating;
+
+        /// <summary>
+        /// Initializes static members of the <see cref="StyledElement"/> class.
+        /// </summary>
+        static StyledElement()
+        {
+            DataContextProperty.Changed.AddClassHandler<StyledElement>(x => x.OnDataContextChangedCore);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StyledElement"/> class.
+        /// </summary>
+        public StyledElement()
+        {
+            _nameScope = this as INameScope;
+            _isAttachedToLogicalTree = this is IStyleRoot;
+        }
+
+        /// <summary>
+        /// Raised when the styled element is attached to a rooted logical tree.
+        /// </summary>
+        public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
+
+        /// <summary>
+        /// Raised when the styled element is detached from a rooted logical tree.
+        /// </summary>
+        public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
+
+        /// <summary>
+        /// Occurs when the <see cref="DataContext"/> property changes.
+        /// </summary>
+        /// <remarks>
+        /// This event will be raised when the <see cref="DataContext"/> property has changed and
+        /// all subscribers to that change have been notified.
+        /// </remarks>
+        public event EventHandler DataContextChanged;
+
+        /// <summary>
+        /// Occurs when the styled element has finished initialization.
+        /// </summary>
+        /// <remarks>
+        /// The Initialized event indicates that all property values on the styled element have been set.
+        /// When loading the styled element from markup, it occurs when 
+        /// <see cref="ISupportInitialize.EndInit"/> is called *and* the styled element
+        /// is attached to a rooted logical tree. When the styled element is created by code and
+        /// <see cref="ISupportInitialize"/> is not used, it is called when the styled element is attached
+        /// to the visual tree.
+        /// </remarks>
+        public event EventHandler Initialized;
+
+        /// <summary>
+        /// Occurs when a resource in this styled element or a parent styled element has changed.
+        /// </summary>
+        public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <summary>
+        /// Gets or sets the name of the styled element.
+        /// </summary>
+        /// <remarks>
+        /// An element's name is used to uniquely identify an element within the element's name
+        /// scope. Once the element is added to a logical tree, its name cannot be changed.
+        /// </remarks>
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value))
+                {
+                    throw new InvalidOperationException("Cannot set Name to null or empty string.");
+                }
+
+                if (_styled)
+                {
+                    throw new InvalidOperationException("Cannot set Name : styled element already styled.");
+                }
+
+                _name = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the styled element's classes.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Classes can be used to apply user-defined styling to styled elements, or to allow styled elements
+        /// that share a common purpose to be easily selected.
+        /// </para>
+        /// <para>
+        /// Even though this property can be set, the setter is only intended for use in object
+        /// initializers. Assigning to this property does not change the underlying collection,
+        /// it simply clears the existing collection and adds the contents of the assigned
+        /// collection.
+        /// </para>
+        /// </remarks>
+        public Classes Classes
+        {
+            get
+            {
+                return _classes;
+            }
+
+            set
+            {
+                if (_classes != value)
+                {
+                    _classes.Replace(value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the control's data context.
+        /// </summary>
+        /// <remarks>
+        /// The data context is an inherited property that specifies the default object that will
+        /// be used for data binding.
+        /// </remarks>
+        public object DataContext
+        {
+            get { return GetValue(DataContextProperty); }
+            set { SetValue(DataContextProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the element has finished initialization.
+        /// </summary>
+        /// <remarks>
+        /// For more information about when IsInitialized is set, see the <see cref="Initialized"/>
+        /// event.
+        /// </remarks>
+        public bool IsInitialized { get; private set; }
+
+        /// <summary>
+        /// Gets the styles for the styled element.
+        /// </summary>
+        /// <remarks>
+        /// Styles for the entire application are added to the Application.Styles collection, but
+        /// each styled element may in addition define its own styles which are applied to the styled element
+        /// itself and its children.
+        /// </remarks>
+        public Styles Styles
+        {
+            get { return _styles ?? (Styles = new Styles()); }
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                if (_styles != value)
+                {
+                    if (_styles != null)
+                    {
+                        (_styles as ISetStyleParent)?.SetParent(null);
+                        _styles.ResourcesChanged -= ThisResourcesChanged;
+                    }
+
+                    _styles = value;
+
+                    if (value is ISetStyleParent setParent && setParent.ResourceParent == null)
+                    {
+                        setParent.SetParent(this);
+                    }
+
+                    _styles.ResourcesChanged += ThisResourcesChanged;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the styled element's resource dictionary.
+        /// </summary>
+        public IResourceDictionary Resources
+        {
+            get => _resources ?? (Resources = new ResourceDictionary());
+            set
+            {
+                Contract.Requires<ArgumentNullException>(value != null);
+
+                var hadResources = false;
+
+                if (_resources != null)
+                {
+                    hadResources = _resources.Count > 0;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
+                }
+
+                _resources = value;
+                _resources.ResourcesChanged += ThisResourcesChanged;
+
+                if (hadResources || _resources.Count > 0)
+                {
+                    ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the styled element whose lookless template this styled element is part of.
+        /// </summary>
+        public ITemplatedControl TemplatedParent
+        {
+            get { return GetValue(TemplatedParentProperty); }
+            internal set { SetValue(TemplatedParentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets the styled element's logical children.
+        /// </summary>
+        protected IAvaloniaList<ILogical> LogicalChildren
+        {
+            get
+            {
+                if (_logicalChildren == null)
+                {
+                    var list = new AvaloniaList<ILogical>
+                    {
+                        ResetBehavior = ResetBehavior.Remove,
+                        Validate = ValidateLogicalChild
+                    };
+                    list.CollectionChanged += LogicalChildrenCollectionChanged;
+                    _logicalChildren = list;
+                }
+
+                return _logicalChildren;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Classes"/> collection in a form that allows adding and removing
+        /// pseudoclasses.
+        /// </summary>
+        protected IPseudoClasses PseudoClasses => Classes;
+
+        /// <summary>
+        /// Gets a value indicating whether the element is attached to a rooted logical tree.
+        /// </summary>
+        bool ILogical.IsAttachedToLogicalTree => _isAttachedToLogicalTree;
+
+        /// <summary>
+        /// Gets the styled element's logical parent.
+        /// </summary>
+        public IStyledElement Parent { get; private set; }
+
+        /// <summary>
+        /// Gets the styled element's logical parent.
+        /// </summary>
+        ILogical ILogical.LogicalParent => Parent;
+
+        /// <summary>
+        /// Gets the styled element's logical children.
+        /// </summary>
+        IAvaloniaReadOnlyList<ILogical> ILogical.LogicalChildren => LogicalChildren;
+
+        /// <inheritdoc/>
+        bool IResourceProvider.HasResources => _resources?.Count > 0 || Styles.HasResources;
+
+        /// <inheritdoc/>
+        IResourceNode IResourceNode.ResourceParent => ((IStyleHost)this).StylingParent as IResourceNode;
+
+        /// <inheritdoc/>
+        IAvaloniaReadOnlyList<string> IStyleable.Classes => Classes;
+
+        /// <summary>
+        /// Gets the type by which the styled element is styled.
+        /// </summary>
+        /// <remarks>
+        /// Usually controls are styled by their own type, but there are instances where you want
+        /// a styled element to be styled by its base type, e.g. creating SpecialButton that
+        /// derives from Button and adds extra functionality but is still styled as a regular
+        /// Button.
+        /// </remarks>
+        Type IStyleable.StyleKey => GetType();
+
+        /// <inheritdoc/>
+        IObservable<IStyleable> IStyleable.StyleDetach => _styleDetach;
+
+        /// <inheritdoc/>
+        bool IStyleHost.IsStylesInitialized => _styles != null;
+
+        /// <inheritdoc/>
+        IStyleHost IStyleHost.StylingParent => (IStyleHost)InheritanceParent;
+
+        /// <inheritdoc/>
+        public virtual void BeginInit()
+        {
+            ++_initCount;
+        }
+
+        /// <inheritdoc/>
+        public virtual void EndInit()
+        {
+            if (_initCount == 0)
+            {
+                throw new InvalidOperationException("BeginInit was not called.");
+            }
+
+            if (--_initCount == 0 && _isAttachedToLogicalTree)
+            {
+                InitializeStylesIfNeeded();
+
+                InitializeIfNeeded();
+            }
+        }
+
+        private void InitializeStylesIfNeeded(bool force = false)
+        {
+            if (_initCount == 0 && (!_styled || force))
+            {
+                RegisterWithNameScope();
+                ApplyStyling();
+                _styled = true;
+            }
+        }
+
+        protected void InitializeIfNeeded()
+        {
+            if (_initCount == 0 && !IsInitialized)
+            {
+                IsInitialized = true;
+                Initialized?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnAttachedToLogicalTreeCore(e);
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            this.OnDetachedFromLogicalTreeCore(e);
+        }
+
+        /// <inheritdoc/>
+        void ILogical.NotifyResourcesChanged(ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, new ResourcesChangedEventArgs());
+        }
+
+        /// <inheritdoc/>
+        bool IResourceProvider.TryGetResource(string key, out object value)
+        {
+            value = null;
+            return (_resources?.TryGetResource(key, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, out value) ?? false);
+        }
+
+        /// <summary>
+        /// Sets the styled element's logical parent.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        void ISetLogicalParent.SetParent(ILogical parent)
+        {
+            var old = Parent;
+
+            if (parent != old)
+            {
+                if (old != null && parent != null)
+                {
+                    throw new InvalidOperationException("The Control already has a parent.");
+                }
+
+                if (_isAttachedToLogicalTree)
+                {
+                    var oldRoot = FindStyleRoot(old) ?? this as IStyleRoot;
+
+                    if (oldRoot == null)
+                    {
+                        throw new AvaloniaInternalException("Was attached to logical tree but cannot find root.");
+                    }
+
+                    var e = new LogicalTreeAttachmentEventArgs(oldRoot);
+                    OnDetachedFromLogicalTreeCore(e);
+                }
+
+                if (InheritanceParent == null || parent == null)
+                {
+                    InheritanceParent = parent as AvaloniaObject;
+                }
+
+                Parent = (IStyledElement)parent;
+
+                if (old != null)
+                {
+                    old.ResourcesChanged -= ThisResourcesChanged;
+                }
+                if (Parent != null)
+                {
+                    Parent.ResourcesChanged += ThisResourcesChanged;
+                }
+                ((ILogical)this).NotifyResourcesChanged(new ResourcesChangedEventArgs());
+
+                if (Parent is IStyleRoot || Parent?.IsAttachedToLogicalTree == true || this is IStyleRoot)
+                {
+                    var newRoot = FindStyleRoot(this);
+
+                    if (newRoot == null)
+                    {
+                        throw new AvaloniaInternalException("Parent is attached to logical tree but cannot find root.");
+                    }
+
+                    var e = new LogicalTreeAttachmentEventArgs(newRoot);
+                    OnAttachedToLogicalTreeCore(e);
+                }
+
+                RaisePropertyChanged(ParentProperty, old, Parent, BindingPriority.LocalValue);
+            }
+        }
+
+        /// <summary>
+        /// Sets the styled element's inheritance parent.
+        /// </summary>
+        /// <param name="parent">The parent.</param>
+        void ISetInheritanceParent.SetParent(IAvaloniaObject parent)
+        {
+            InheritanceParent = parent;
+        }
+
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property is true.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="className">The pseudo-class.</param>
+        [Obsolete("Use PseudoClass<TOwner> and specify the control type.")]
+        protected static void PseudoClass(AvaloniaProperty<bool> property, string className)
+        {
+            PseudoClass<StyledElement>(property, className);
+        }
+
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property is true.
+        /// </summary>
+        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="className">The pseudo-class.</param>
+        protected static void PseudoClass<TOwner>(AvaloniaProperty<bool> property, string className)
+            where TOwner : class, IStyledElement
+        {
+            PseudoClass<TOwner, bool>(property, x => x, className);
+        }
+
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property equals a certain value.
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="selector">Returns a boolean value based on the property value.</param>
+        /// <param name="className">The pseudo-class.</param>
+        [Obsolete("Use PseudoClass<TOwner, TProperty> and specify the control type.")]
+        protected static void PseudoClass<TProperty>(
+            AvaloniaProperty<TProperty> property,
+            Func<TProperty, bool> selector,
+            string className)
+        {
+            PseudoClass<StyledElement, TProperty>(property, selector, className);
+        }
+
+        /// <summary>
+        /// Adds a pseudo-class to be set when a property equals a certain value.
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <typeparam name="TOwner">The type to apply the pseudo-class to.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="selector">Returns a boolean value based on the property value.</param>
+        /// <param name="className">The pseudo-class.</param>
+        protected static void PseudoClass<TOwner, TProperty>(
+            AvaloniaProperty<TProperty> property,
+            Func<TProperty, bool> selector,
+            string className)
+                where TOwner : class, IStyledElement
+        {
+            Contract.Requires<ArgumentNullException>(property != null);
+            Contract.Requires<ArgumentNullException>(selector != null);
+            Contract.Requires<ArgumentNullException>(className != null);
+
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                throw new ArgumentException("Cannot supply an empty className.");
+            }
+
+            property.Changed.Merge(property.Initialized)
+                .Where(e => e.Sender is TOwner)
+                .Subscribe(e =>
+                {
+                    if (selector((TProperty)e.NewValue))
+                    {
+                        ((StyledElement)e.Sender).PseudoClasses.Add(className);
+                    }
+                    else
+                    {
+                        ((StyledElement)e.Sender).PseudoClasses.Remove(className);
+                    }
+                });
+        }
+
+        /// <summary>
+        /// Called when the styled element is added to a rooted logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when the styled element is removed from a rooted logical tree.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// Called when the <see cref="DataContext"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnDataContextChanged(EventArgs e)
+        {
+            DataContextChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="DataContext"/> begins updating.
+        /// </summary>
+        protected virtual void OnDataContextBeginUpdate()
+        {
+        }
+
+        /// <summary>
+        /// Called when the <see cref="DataContext"/> finishes updating.
+        /// </summary>
+        protected virtual void OnDataContextEndUpdate()
+        {
+        }
+        
+        private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
+        {
+            if (o is StyledElement element)
+            {
+                DataContextNotifying(element, updateStarted);
+            }
+        }
+
+        private static void DataContextNotifying(StyledElement element, bool updateStarted)
+        {
+            if (updateStarted)
+            {
+                if (!element._dataContextUpdating)
+                {
+                    element._dataContextUpdating = true;
+                    element.OnDataContextBeginUpdate();
+
+                    foreach (var child in element.LogicalChildren)
+                    {
+                        if (child is StyledElement s &&
+                            s.InheritanceParent == element &&
+                            !s.IsSet(DataContextProperty))
+                        {
+                            DataContextNotifying(s, updateStarted);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (element._dataContextUpdating)
+                {
+                    element.OnDataContextEndUpdate();
+                    element._dataContextUpdating = false;
+                }
+            }
+        }
+
+        private static IStyleRoot FindStyleRoot(IStyleHost e)
+        {
+            while (e != null)
+            {
+                if (e is IStyleRoot root)
+                {
+                    return root;
+                }
+
+                e = e.StylingParent;
+            }
+
+            return null;
+        }
+
+        private void ApplyStyling()
+        {
+            AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
+        }
+
+        private void RegisterWithNameScope()
+        {
+            if (_nameScope == null)
+            {
+                _nameScope = NameScope.GetNameScope(this) ?? ((StyledElement)Parent)?._nameScope;
+            }
+
+            if (Name != null)
+            {
+                _nameScope?.Register(Name, this);
+
+                var visualParent = Parent as StyledElement;
+
+                if (this is INameScope && visualParent != null)
+                {
+                    // If we have e.g. a named UserControl in a window then we want that control
+                    // to be findable by name from the Window, so register with both name scopes.
+                    // This differs from WPF's behavior in that XAML manually registers controls 
+                    // with name scopes based on the XAML file in which the name attribute appears,
+                    // but we're trying to avoid XAML magic in Avalonia in order to made code-
+                    // created UIs easy. This will cause problems if a UserControl declares a name
+                    // in its XAML and that control is included multiple times in a parent control
+                    // (as the name will be duplicated), however at the moment I'm fine with saying
+                    // "don't do that".
+                    var parentNameScope = NameScope.FindNameScope(visualParent);
+                    parentNameScope?.Register(Name, this);
+                }
+            }
+        }
+
+        private static void ValidateLogicalChild(ILogical c)
+        {
+            if (c == null)
+            {
+                throw new ArgumentException("Cannot add null to LogicalChildren.");
+            }
+        }
+
+        private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        {
+            // This method can be called when a control is already attached to the logical tree
+            // in the following scenario:
+            // - ListBox gets assigned Items containing ListBoxItem
+            // - ListBox makes ListBoxItem a logical child
+            // - ListBox template gets applied; making its Panel get attached to logical tree
+            // - That AttachedToLogicalTree signal travels down to the ListBoxItem
+            if (!_isAttachedToLogicalTree)
+            {
+                _isAttachedToLogicalTree = true;
+
+                InitializeStylesIfNeeded(true);
+
+                OnAttachedToLogicalTree(e);
+                AttachedToLogicalTree?.Invoke(this, e);
+            }
+
+            foreach (var child in LogicalChildren.OfType<StyledElement>())
+            {
+                child.OnAttachedToLogicalTreeCore(e);
+            }
+        }
+
+        private void OnDetachedFromLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
+        {
+            if (_isAttachedToLogicalTree)
+            {
+                if (Name != null)
+                {
+                    _nameScope?.Unregister(Name);
+                }
+
+                _isAttachedToLogicalTree = false;
+                _styleDetach.OnNext(this);
+                OnDetachedFromLogicalTree(e);
+                DetachedFromLogicalTree?.Invoke(this, e);
+
+                foreach (var child in LogicalChildren.OfType<StyledElement>())
+                {
+                    child.OnDetachedFromLogicalTreeCore(e);
+                }
+
+#if DEBUG
+                if (((INotifyCollectionChangedDebug)_classes).GetCollectionChangedSubscribers()?.Length > 0)
+                {
+                    Logger.Warning(
+                        LogArea.Control,
+                        this,
+                        "{Type} detached from logical tree but still has class listeners",
+                        this.GetType());
+                }
+#endif
+            }
+        }
+
+        private void OnDataContextChangedCore(AvaloniaPropertyChangedEventArgs e)
+        {
+            OnDataContextChanged(EventArgs.Empty);
+        }
+
+        private void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    ClearLogicalParent(e.OldItems.Cast<ILogical>());
+                    SetLogicalParent(e.NewItems.Cast<ILogical>());
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    throw new NotSupportedException("Reset should not be signaled on LogicalChildren collection");
+            }
+        }
+
+        private void SetLogicalParent(IEnumerable<ILogical> children)
+        {
+            foreach (var i in children)
+            {
+                if (i.LogicalParent == null)
+                {
+                    ((ISetLogicalParent)i).SetParent(this);
+                }
+            }
+        }
+
+        private void ClearLogicalParent(IEnumerable<ILogical> children)
+        {
+            foreach (var i in children)
+            {
+                if (i.LogicalParent == this)
+                {
+                    ((ISetLogicalParent)i).SetParent(null);
+                }
+            }
+        }
+
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ((ILogical)this).NotifyResourcesChanged(e);
+        }
+    }
+}

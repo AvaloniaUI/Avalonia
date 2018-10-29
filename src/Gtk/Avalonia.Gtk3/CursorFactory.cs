@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 using CursorType = Avalonia.Gtk3.GdkCursorType;
 namespace Avalonia.Gtk3
 {
@@ -32,7 +33,10 @@ namespace Avalonia.Gtk3
             {StandardCursorType.TopLeftCorner, CursorType.TopLeftCorner},
             {StandardCursorType.TopRightCorner, CursorType.TopRightCorner},
             {StandardCursorType.BottomLeftCorner, CursorType.BottomLeftCorner},
-            {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner}
+            {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner},
+            {StandardCursorType.DragCopy, CursorType.CenterPtr},
+            {StandardCursorType.DragMove, CursorType.Fleur},
+            {StandardCursorType.DragLink, CursorType.Cross},
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =

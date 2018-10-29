@@ -14,6 +14,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private int _selectedTab;
         private TreePageViewModel _logicalTree;
         private TreePageViewModel _visualTree;
+        private EventsViewModel _eventsView;
         private string _focusedControl;
         private string _pointerOverElement;
 
@@ -21,6 +22,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
+            _eventsView = new EventsViewModel(root);
 
             UpdateFocusedControl();
             KeyboardDevice.Instance.PropertyChanged += (s, e) =>
@@ -31,6 +33,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             };
 
+            SelectedTab = 0;
             root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
         }
@@ -55,6 +58,9 @@ namespace Avalonia.Diagnostics.ViewModels
                         break;
                     case 1:
                         Content = _visualTree;
+                        break;
+                    case 2:
+                        Content = _eventsView;
                         break;
                 }
 
@@ -86,7 +92,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateFocusedControl()
         {
-            _focusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
+            FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
         }
     }
 }

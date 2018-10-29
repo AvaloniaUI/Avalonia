@@ -19,6 +19,13 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
+            Renderer = Mock.Of<IRenderer>();
+        }
+
+        public TestRoot(IControl child)
+            : this()
+        {
+            Child = child;
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
@@ -43,9 +50,9 @@ namespace Avalonia.UnitTests
 
         public double LayoutScaling => 1;
 
-        public double RenderScaling => 1;
+        public ILayoutManager LayoutManager { get; set; } = new LayoutManager();
 
-        public ILayoutManager LayoutManager => AvaloniaLocator.Current.GetService<ILayoutManager>();
+        public double RenderScaling => 1;
 
         public IRenderer Renderer { get; set; }
 

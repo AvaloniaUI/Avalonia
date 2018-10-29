@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Reflection;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
-using Avalonia.DesignerSupport;
 using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
@@ -18,6 +15,8 @@ namespace Avalonia.DesignerSupport.Remote
     {
         private static ClientSupportedPixelFormatsMessage s_supportedPixelFormats;
         private static ClientViewportAllocatedMessage s_viewportAllocatedMessage;
+        private static ClientRenderInfoMessage s_renderInfoMessage;
+
         private static IAvaloniaRemoteTransportConnection s_transport;
         class CommandLineArgs
         {
@@ -125,7 +124,11 @@ namespace Avalonia.DesignerSupport.Remote
 
         class NeverClose : ICloseable
         {
-            public event EventHandler Closed;
+            public event EventHandler Closed
+            {
+                add {}
+                remove {}
+            }
         }
         
         public static void Main(string[] cmdline)
@@ -140,6 +143,7 @@ namespace Avalonia.DesignerSupport.Remote
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             if (builderMethod == null)
                 throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
+            Design.IsDesignMode = true;
             Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
             var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
@@ -159,7 +163,8 @@ namespace Avalonia.DesignerSupport.Remote
             PreviewerWindowingPlatform.PreFlightMessages = new List<object>
             {
                 s_supportedPixelFormats,
-                s_viewportAllocatedMessage
+                s_viewportAllocatedMessage,
+                s_renderInfoMessage
             };
         }
 
@@ -169,6 +174,11 @@ namespace Avalonia.DesignerSupport.Remote
             if (obj is ClientSupportedPixelFormatsMessage formats)
             {
                 s_supportedPixelFormats = formats;
+                RebuildPreFlight();
+            }
+            if (obj is ClientRenderInfoMessage renderInfo)
+            {
+                s_renderInfoMessage = renderInfo;
                 RebuildPreFlight();
             }
             if (obj is ClientViewportAllocatedMessage viewport)

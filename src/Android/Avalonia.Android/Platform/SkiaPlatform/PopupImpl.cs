@@ -1,15 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using Android.App;
 using Android.Content;
 using Android.Graphics;
-using Android.OS;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
 using Avalonia.Controls;
 using Avalonia.Platform;
 
@@ -36,7 +29,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _clientSize = value;
             UpdateParams();
         }
-        
+
+        public void SetMinMaxSize(Size minSize, Size maxSize)
+        {
+        }
+
         public IScreenImpl Screen { get; }
 
         public Point Position
@@ -106,7 +103,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             //Not supported
         }
-        
 
+        public void SetTopmost(bool value)
+        {
+            //Not supported
+        }
     }
 }

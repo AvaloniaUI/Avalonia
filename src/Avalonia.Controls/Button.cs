@@ -80,7 +80,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
-            PseudoClass(IsPressedProperty, ":pressed");
+            PseudoClass<Button>(IsPressedProperty, ":pressed");
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (e.MouseButton == MouseButton.Left)
+            if (IsPressed && e.MouseButton == MouseButton.Left)
             {
                 e.Device.Capture(null);
                 IsPressed = false;

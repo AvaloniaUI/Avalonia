@@ -9,15 +9,16 @@
   <Style Selector="Calendar">
     <!--<Setter Property="Focusable" Value="False" />-->
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
     <Setter Property="HeaderBackground" Value="{DynamicResource ThemeAccentBrush2}" />
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel Name="Root"
-                    HorizontalAlignment="Center">
+                    HorizontalAlignment="Center"
+                    ClipToBounds="True">
 
-          <CalendarItem Name="CalendarItem"
+                    <CalendarItem Name="CalendarItem"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"

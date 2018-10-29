@@ -7,7 +7,9 @@
                         BorderThickness="{TemplateBinding BorderThickness}"
                         ContentTemplate="{TemplateBinding ContentTemplate}"
                         Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"/>
+                        Padding="{TemplateBinding Padding}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
     </ControlTemplate>
   </Setter>
 </Style>

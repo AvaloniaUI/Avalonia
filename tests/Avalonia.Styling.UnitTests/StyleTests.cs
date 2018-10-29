@@ -151,7 +151,7 @@ namespace Avalonia.Styling.UnitTests
             {
                 Setters = new[]
                 {
-                    new Setter(Border.BorderThicknessProperty, 4),
+                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                 }
             };
 
@@ -162,9 +162,34 @@ namespace Avalonia.Styling.UnitTests
 
             style.Attach(border, null);
 
-            Assert.Equal(4, border.BorderThickness);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
             root.Child = null;
-            Assert.Equal(0, border.BorderThickness);
+            Assert.Equal(new Thickness(0), border.BorderThickness);
+        }
+
+        [Fact]
+        public void Style_Should_Detach_Setters_When_Detach_Is_Called()
+        {
+            Border border;
+
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters = new[]
+                {
+                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                }
+            };
+
+            var root = new TestRoot
+            {
+                Child = border = new Border(),
+            };
+
+            style.Attach(border, null);
+
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+            style.Detach();
+            Assert.Equal(new Thickness(0), border.BorderThickness);
         }
 
         private class Class1 : Control

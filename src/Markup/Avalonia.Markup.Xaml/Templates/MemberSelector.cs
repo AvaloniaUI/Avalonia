@@ -3,7 +3,8 @@
 
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using System;
 using System.Reactive.Linq;
 
@@ -25,6 +26,11 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
+        public static MemberSelector Parse(string s)
+        {
+            return new MemberSelector { MemberName = s };
+        }
+
         public object Select(object o)
         {
             if (string.IsNullOrEmpty(MemberName))
@@ -32,7 +38,7 @@ namespace Avalonia.Markup.Xaml.Templates
                 return o;
             }
 
-            var expression = new ExpressionObserver(o, MemberName);
+            var expression = ExpressionObserverBuilder.Build(o, MemberName);
             object result = AvaloniaProperty.UnsetValue;
 
             expression.Subscribe(x => result = x);

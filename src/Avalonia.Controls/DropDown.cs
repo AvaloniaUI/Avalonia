@@ -6,7 +6,6 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -51,6 +50,7 @@ namespace Avalonia.Controls
         {
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
             SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
+            KeyDownEvent.AddClassHandler<DropDown>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -96,54 +96,46 @@ namespace Avalonia.Controls
             this.UpdateSelectionBoxItem(this.SelectedItem);
         }
 
-        protected override void OnGotFocus(GotFocusEventArgs e)
-        {
-            base.OnGotFocus(e);
-
-            if (!e.Handled && e.NavigationMethod == NavigationMethod.Directional)
-            {
-                e.Handled = UpdateSelectionFromEventSource(e.Source);
-            }
-        }
-
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
-            if (!e.Handled)
-            {
-                if (e.Key == Key.F4 ||
-                    ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
-                {
-                    IsDropDownOpen = !IsDropDownOpen;
-                    e.Handled = true;
-                }
-                else if (IsDropDownOpen && (e.Key == Key.Escape || e.Key == Key.Enter))
-                {
-                    IsDropDownOpen = false;
-                    e.Handled = true;
-                }
+            if (e.Handled)
+                return;
 
-                if (!IsDropDownOpen)
+            if (e.Key == Key.F4 ||
+                ((e.Key == Key.Down || e.Key == Key.Up) && ((e.Modifiers & InputModifiers.Alt) != 0)))
+            {
+                IsDropDownOpen = !IsDropDownOpen;
+                e.Handled = true;
+            }
+            else if (IsDropDownOpen && e.Key == Key.Escape)
+            {
+                IsDropDownOpen = false;
+                e.Handled = true;
+            }
+            else if (IsDropDownOpen && e.Key == Key.Enter)
+            {
+                SelectFocusedItem();
+                IsDropDownOpen = false;
+                e.Handled = true;
+            }
+            else if (!IsDropDownOpen)
+            {
+                if (e.Key == Key.Down)
                 {
-                    if (e.Key == Key.Down)
-                    {
-                        if (SelectedIndex == -1)
-                            SelectedIndex = 0;
-                        
-                        if (++SelectedIndex >= ItemCount)
-                            SelectedIndex = 0;
-                        
-                        e.Handled = true;
-                    }
-                    else if (e.Key == Key.Up)
-                    {
-                        if (--SelectedIndex < 0)
-                            SelectedIndex = ItemCount - 1;
-                        
-                        e.Handled = true;
-                    }
+                    if (++SelectedIndex >= ItemCount)
+                        SelectedIndex = 0;
+
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Up)
+                {
+                    if (--SelectedIndex < 0)
+                        SelectedIndex = ItemCount - 1;
+
+                    e.Handled = true;
                 }
             }
         }
@@ -164,6 +156,7 @@ namespace Avalonia.Controls
                 else
                 {
                     IsDropDownOpen = !IsDropDownOpen;
+                    e.Handled = true;
                 }
             }
             base.OnPointerPressed(e);
@@ -227,6 +220,18 @@ namespace Avalonia.Controls
             else
             {
                 SelectionBoxItem = item;
+            }
+        }
+
+        private void SelectFocusedItem()
+        {
+            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            {
+                if (dropdownItem.ContainerControl.IsFocused)
+                {
+                    SelectedIndex = dropdownItem.Index;
+                    break;
+                }
             }
         }
     }

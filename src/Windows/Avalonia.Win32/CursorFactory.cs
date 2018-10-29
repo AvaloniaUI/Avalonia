@@ -1,14 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Win32.Interop;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
@@ -18,6 +15,27 @@ namespace Avalonia.Win32
 
         private CursorFactory()
         {
+        }
+
+        static CursorFactory()
+        {
+            LoadModuleCursor(StandardCursorType.DragMove, "ole32.dll", 2);
+            LoadModuleCursor(StandardCursorType.DragCopy, "ole32.dll", 3);
+            LoadModuleCursor(StandardCursorType.DragLink, "ole32.dll", 4);
+        }
+
+        private static void LoadModuleCursor(StandardCursorType cursorType, string module, int id)
+        {
+            IntPtr mh = UnmanagedMethods.GetModuleHandle(module);
+            if (mh != IntPtr.Zero)
+            {
+                IntPtr cursor = UnmanagedMethods.LoadCursor(mh, new IntPtr(id));
+                if (cursor != IntPtr.Zero)
+                {
+                    PlatformHandle phCursor = new PlatformHandle(cursor, PlatformConstants.CursorHandleType);
+                    Cache.Add(cursorType, phCursor);
+                }
+            }
         }
 
         private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
@@ -47,6 +65,11 @@ namespace Avalonia.Win32
             //Using SizeNorthEastSouthWest
             {StandardCursorType.TopRightCorner, 32643},
             {StandardCursorType.BottomLeftCorner, 32643},
+
+            // Fallback, should have been loaded from ole32.dll
+            {StandardCursorType.DragMove, 32516},
+            {StandardCursorType.DragCopy, 32516},
+            {StandardCursorType.DragLink, 32516},
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =

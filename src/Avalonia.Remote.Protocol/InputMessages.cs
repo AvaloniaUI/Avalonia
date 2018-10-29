@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 /*
  We are keeping copies of core events here, so they can be used 
  without referencing Avalonia itself, e. g. from projects that
@@ -77,6 +73,12 @@ namespace Avalonia.Remote.Protocol.Input
     {
         public bool IsDown { get; set; }
         public Key Key { get; set; }
+    }
+
+    [AvaloniaRemoteMessageGuid("C174102E-7405-4594-916F-B10B8248A17D")]
+    public class TextInputEventMessage : InputEventMessageBase
+    {
+        public string Text { get; set; }
     }
 
 }

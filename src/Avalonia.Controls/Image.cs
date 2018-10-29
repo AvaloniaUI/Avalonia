@@ -1,12 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
 namespace Avalonia.Controls
-{
+{   
     /// <summary>
     /// Displays a <see cref="Bitmap"/> image.
     /// </summary>
@@ -26,8 +25,8 @@ namespace Avalonia.Controls
 
         static Image()
         {
-            AffectsRender(SourceProperty);
-            AffectsRender(StretchProperty);
+            AffectsRender<Image>(SourceProperty, StretchProperty);
+            AffectsMeasure<Image>(SourceProperty, StretchProperty);
         }
 
         /// <summary>
@@ -68,7 +67,9 @@ namespace Avalonia.Controls
                 Rect sourceRect = new Rect(sourceSize)
                     .CenterRect(new Rect(destRect.Size / scale));
 
-                context.DrawImage(source, 1, sourceRect, destRect);
+                var interpolationMode = RenderOptions.GetBitmapInterpolationMode(this);
+
+                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode);
             }
         }
 

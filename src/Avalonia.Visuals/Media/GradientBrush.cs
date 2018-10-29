@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using Avalonia.Collections;
 using Avalonia.Metadata;
 
 namespace Avalonia.Media
@@ -21,35 +24,74 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="GradientStops"/> property.
         /// </summary>
-        public static readonly StyledProperty<IList<GradientStop>> GradientStopsProperty =
-            AvaloniaProperty.Register<GradientBrush, IList<GradientStop>>(nameof(Opacity));
+        public static readonly StyledProperty<GradientStops> GradientStopsProperty =
+            AvaloniaProperty.Register<GradientBrush, GradientStops>(nameof(GradientStops));
+
+        private IDisposable _gradientStopsSubscription;
+
+        static GradientBrush()
+        {
+            GradientStopsProperty.Changed.Subscribe(GradientStopsChanged);
+            AffectsRender<LinearGradientBrush>(SpreadMethodProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientBrush"/> class.
         /// </summary>
         public GradientBrush()
         {
-            this.GradientStops = new List<GradientStop>();
+            this.GradientStops = new GradientStops();
         }
 
-        /// <summary>
-        /// Gets or sets the brush's spread method that defines how to draw a gradient that
-        /// doesn't fill the bounds of the destination control.
-        /// </summary>
+        /// <inheritdoc/>
         public GradientSpreadMethod SpreadMethod
         {
             get { return GetValue(SpreadMethodProperty); }
             set { SetValue(SpreadMethodProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets the brush's gradient stops.
-        /// </summary>
+        /// <inheritdoc/>
         [Content]
-        public IList<GradientStop> GradientStops
+        public GradientStops GradientStops
         {
             get { return GetValue(GradientStopsProperty); }
             set { SetValue(GradientStopsProperty, value); }
+        }
+
+        /// <inheritdoc/>
+        IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
+
+        private static void GradientStopsChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is GradientBrush brush)
+            {
+                var oldValue = (GradientStops)e.OldValue;
+                var newValue = (GradientStops)e.NewValue;
+
+                if (oldValue != null)
+                {
+                    oldValue.CollectionChanged -= brush.GradientStopsChanged;
+                    brush._gradientStopsSubscription.Dispose();
+                }
+
+                if (newValue != null)
+                {
+                    newValue.CollectionChanged += brush.GradientStopsChanged;
+                    brush._gradientStopsSubscription = newValue.TrackItemPropertyChanged(brush.GradientStopChanged);
+                }
+
+                brush.RaiseInvalidated(EventArgs.Empty);
+            }
+        }
+
+        private void GradientStopsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            RaiseInvalidated(EventArgs.Empty);
+        }
+
+        private void GradientStopChanged(Tuple<object, PropertyChangedEventArgs> e)
+        {
+            RaiseInvalidated(EventArgs.Empty);
         }
     }
 }

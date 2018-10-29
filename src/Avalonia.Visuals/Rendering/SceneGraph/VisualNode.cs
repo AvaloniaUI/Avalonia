@@ -59,6 +59,9 @@ namespace Avalonia.Rendering.SceneGraph
         public Rect ClipBounds { get; set; }
 
         /// <inheritdoc/>
+        public Rect LayoutBounds { get; set; }
+
+        /// <inheritdoc/>
         public bool ClipToBounds { get; set; }
 
         /// <inheritdoc/>
@@ -67,9 +70,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public bool HasAncestorGeometryClip { get; }
 
-        /// <summary>
-        /// Gets or sets the opacity of the scene graph node.
-        /// </summary>
+        /// <inheritdoc/>
         public double Opacity
         {
             get { return _opacity; }
@@ -84,7 +85,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <summary>
-        /// Gets or sets the opacity mask for the scnee graph node.
+        /// Gets or sets the opacity mask for the scene graph node.
         /// </summary>
         public IBrush OpacityMask { get; set; }
 
@@ -113,6 +114,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="child">The child to add.</param>
         public void AddChild(IVisualNode child)
         {
+            if (child.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
             _children.Add(child);
         }
@@ -135,7 +141,6 @@ namespace Avalonia.Rendering.SceneGraph
         {
             EnsureChildrenCreated();
             _children.Remove(child);
-            child.Dispose();
         }
 
         /// <summary>
@@ -145,16 +150,19 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="node">The child to add.</param>
         public void ReplaceChild(int index, IVisualNode node)
         {
+            if (node.Disposed)
+            {
+                throw new ObjectDisposedException("Visual node for {node.Visual}");
+            }
+
             EnsureChildrenCreated();
-            var old = _children[index];
             _children[index] = node;
-            old.Dispose();
         }
 
         /// <summary>
         /// Replaces an item in the <see cref="DrawOperations"/> collection.
         /// </summary>
-        /// <param name="index">The opeation to be replaced.</param>
+        /// <param name="index">The operation to be replaced.</param>
         /// <param name="operation">The operation to add.</param>
         public void ReplaceDrawOperation(int index, IRef<IDrawOperation> operation)
         {
@@ -261,7 +269,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (OpacityMask != null)
             {
-                context.PushOpacityMask(OpacityMask, ClipBounds);
+                context.PushOpacityMask(OpacityMask, LayoutBounds);
             }
         }
 
@@ -330,12 +338,10 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        public bool Disposed { get; }
+        
         public void Dispose()
         {
-            foreach (var child in Children)
-            {
-                child.Dispose();
-            }
             _drawOperationsRefCounter?.Dispose();
         }
 

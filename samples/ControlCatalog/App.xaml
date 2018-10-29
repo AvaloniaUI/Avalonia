@@ -14,6 +14,11 @@
       <Setter Property="FontSize" Value="13"/>
     </Style>
 
-    <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
+      <Style Selector="TextBlock.h3">
+          <Setter Property="Foreground" Value="#a2a2a2"/>
+          <Setter Property="FontSize" Value="13"/>
+      </Style>
+
+      <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
   </Application.Styles>
 </Application>

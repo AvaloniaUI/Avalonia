@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Controls.Generators;
@@ -11,14 +12,13 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A menu item control.
     /// </summary>
-    public class MenuItem : HeaderedSelectingItemsControl, ISelectable
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -63,6 +63,18 @@ namespace Avalonia.Controls
             RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
 
         /// <summary>
+        /// Defines the <see cref="PointerEnterItem"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnterItemEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PointerLeaveItem"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveItemEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
+
+        /// <summary>
         /// Defines the <see cref="SubmenuOpened"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> SubmenuOpenedEvent =
@@ -72,15 +84,7 @@ namespace Avalonia.Controls
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
         private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel
-            {
-                [KeyboardNavigation.DirectionalNavigationProperty] = KeyboardNavigationMode.Cycle,
-            });
-
-        /// <summary>
-        /// The timer used to display submenus.
-        /// </summary>
-        private IDisposable _submenuTimer;
+            new FuncTemplate<IPanel>(() => new StackPanel());
 
         /// <summary>
         /// The submenu popup.
@@ -93,18 +97,19 @@ namespace Avalonia.Controls
         static MenuItem()
         {
             SelectableMixin.Attach<MenuItem>(IsSelectedProperty);
+            CommandProperty.Changed.Subscribe(CommandChanged);
             FocusableProperty.OverrideDefaultValue<MenuItem>(true);
+            HeaderProperty.Changed.AddClassHandler<MenuItem>(x => x.HeaderChanged);
             IconProperty.Changed.AddClassHandler<MenuItem>(x => x.IconChanged);
+            IsSelectedProperty.Changed.AddClassHandler<MenuItem>(x => x.IsSelectedChanged);
             ItemsPanelProperty.OverrideDefaultValue<MenuItem>(DefaultPanel);
             ClickEvent.AddClassHandler<MenuItem>(x => x.OnClick);
             SubmenuOpenedEvent.AddClassHandler<MenuItem>(x => x.OnSubmenuOpened);
             IsSubMenuOpenProperty.Changed.AddClassHandler<MenuItem>(x => x.SubMenuOpenChanged);
-            AccessKeyHandler.AccessKeyPressedEvent.AddClassHandler<MenuItem>(x => x.AccessKeyPressed);
         }
 
         public MenuItem()
         {
-
         }
 
         /// <summary>
@@ -114,6 +119,30 @@ namespace Avalonia.Controls
         {
             add { AddHandler(ClickEvent, value); }
             remove { RemoveHandler(ClickEvent, value); }
+        }
+
+        /// <summary>
+        /// Occurs when the pointer enters a menu item.
+        /// </summary>
+        /// <remarks>
+        /// A bubbling version of the <see cref="InputElement.PointerEnter"/> event for menu items.
+        /// </remarks>
+        public event EventHandler<PointerEventArgs> PointerEnterItem
+        {
+            add { AddHandler(PointerEnterItemEvent, value); }
+            remove { RemoveHandler(PointerEnterItemEvent, value); }
+        }
+
+        /// <summary>
+        /// Raised when the pointer leaves a menu item.
+        /// </summary>
+        /// <remarks>
+        /// A bubbling version of the <see cref="InputElement.PointerLeave"/> event for menu items.
+        /// </remarks>
+        public event EventHandler<PointerEventArgs> PointerLeaveItem
+        {
+            add { AddHandler(PointerLeaveItemEvent, value); }
+            remove { RemoveHandler(PointerLeaveItemEvent, value); }
         }
 
         /// <summary>
@@ -187,9 +216,70 @@ namespace Avalonia.Controls
         public bool HasSubMenu => !Classes.Contains(":empty");
 
         /// <summary>
-        /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level menu item.
+        /// Gets a value that indicates whether the <see cref="MenuItem"/> is a top-level main menu item.
         /// </summary>
         public bool IsTopLevel => Parent is Menu;
+
+        /// <inheritdoc/>
+        bool IMenuItem.IsPointerOverSubMenu => _popup.PopupRoot?.IsPointerOver ?? false;
+
+        /// <inheritdoc/>
+        IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+
+        /// <inheritdoc/>
+        bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
+
+        /// <inheritdoc/>
+        IMenuItem IMenuElement.SelectedItem
+        {
+            get
+            {
+                var index = SelectedIndex;
+                return (index != -1) ?
+                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    null;
+            }
+            set
+            {
+                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+            }
+        }
+
+        /// <inheritdoc/>
+        IEnumerable<IMenuItem> IMenuElement.SubItems
+        {
+            get
+            {
+                return ItemContainerGenerator.Containers
+                    .Select(x => x.ContainerControl)
+                    .OfType<IMenuItem>();
+            }
+        }            
+
+        /// <summary>
+        /// Opens the submenu.
+        /// </summary>
+        /// <remarks>
+        /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to true.
+        /// </remarks>
+        public void Open() => IsSubMenuOpen = true;
+
+        /// <summary>
+        /// Closes the submenu.
+        /// </summary>
+        /// <remarks>
+        /// This has the same effect as setting <see cref="IsSubMenuOpen"/> to false.
+        /// </remarks>
+        public void Close() => IsSubMenuOpen = false;
+
+        /// <inheritdoc/>
+        void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
+
+        /// <inheritdoc/>
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new MenuItemContainerGenerator(this);
+        }
 
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.
@@ -204,163 +294,43 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Called when the <see cref="MenuItem"/> recieves focus.
-        /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
-            IsSelected = true;
+            e.Handled = UpdateSelectionFromEventSource(e.Source, true);
         }
 
         /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
-
-        /// <summary>
-        /// Called when a key is pressed in the <see cref="MenuItem"/>.
-        /// </summary>
-        /// <param name="e">The event args.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            // Some keypresses we want to pass straight to the parent MenuItem/Menu without giving
-            // this MenuItem the chance to handle them. This is usually e.g. when the submenu is
-            // closed so passing them to the base would try to move the selection in a hidden
-            // submenu.
-            var passStraightToParent = true;
-
-            switch (e.Key)
-            {
-                case Key.Left:
-                    if (!IsTopLevel && IsSubMenuOpen)
-                    {
-                        IsSubMenuOpen = false;
-                        e.Handled = true;
-                    }
-
-                    passStraightToParent = IsTopLevel || !IsSubMenuOpen;
-                    break;
-
-                case Key.Right:
-                    if (!IsTopLevel && HasSubMenu && !IsSubMenuOpen)
-                    {
-                        SelectedIndex = 0;
-                        IsSubMenuOpen = true;
-                        e.Handled = true;
-                    }
-
-                    passStraightToParent = IsTopLevel || !IsSubMenuOpen;
-                    break;
-
-                case Key.Enter:
-                    if (HasSubMenu)
-                    {
-                        goto case Key.Right;
-                    }
-                    else
-                    {
-                        RaiseEvent(new RoutedEventArgs(ClickEvent));
-                        e.Handled = true;
-                    }
-
-                    break;
-
-                case Key.Escape:
-                    if (IsSubMenuOpen)
-                    {
-                        IsSubMenuOpen = false;
-                        e.Handled = true;
-                    }
-
-                    break;
-            }
-
-            if (!passStraightToParent)
-            {
-                base.OnKeyDown(e);
-            }
+            // Don't handle here: let event bubble up to menu.
         }
 
-        /// <summary>
-        /// Called when the pointer enters the <see cref="MenuItem"/>.
-        /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <inheritdoc/>
         protected override void OnPointerEnter(PointerEventArgs e)
         {
             base.OnPointerEnter(e);
 
-            var menu = Parent as Menu;
-
-            if (menu != null)
+            RaiseEvent(new PointerEventArgs
             {
-                if (menu.IsOpen)
-                {
-                    IsSubMenuOpen = true;
-                }
-            }
-            else if (HasSubMenu && !IsSubMenuOpen)
-            {
-                _submenuTimer = DispatcherTimer.Run(
-                    () => IsSubMenuOpen = true,
-                    TimeSpan.FromMilliseconds(400));
-            }
-            else
-            {
-                var parentItem = Parent as MenuItem;
-                if (parentItem != null)
-                {
-                    foreach (var sibling in parentItem.Items
-                        .OfType<MenuItem>()
-                        .Where(x => x != this && x.IsSubMenuOpen))
-                    {
-                        sibling.CloseSubmenus();
-                        sibling.IsSubMenuOpen = false;
-                        sibling.IsSelected = false;
-                    }
-                }
-            }
+                Device = e.Device,
+                RoutedEvent = PointerEnterItemEvent,
+                Source = this,
+            });
         }
 
-        /// <summary>
-        /// Called when the pointer leaves the <see cref="MenuItem"/>.
-        /// </summary>
-        /// <param name="e">The event args.</param>
+        /// <inheritdoc/>
         protected override void OnPointerLeave(PointerEventArgs e)
         {
             base.OnPointerLeave(e);
 
-            if (_submenuTimer != null)
+            RaiseEvent(new PointerEventArgs
             {
-                _submenuTimer.Dispose();
-                _submenuTimer = null;
-            }
-        }
-
-        /// <summary>
-        /// Called when the pointer is pressed over the <see cref="MenuItem"/>.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected override void OnPointerPressed(PointerPressedEventArgs e)
-        {
-            base.OnPointerPressed(e);
-
-            if (!HasSubMenu)
-            {
-                RaiseEvent(new RoutedEventArgs(ClickEvent));
-            }
-            else if (IsTopLevel)
-            {
-                IsSubMenuOpen = !IsSubMenuOpen;
-            }
-            else
-            {
-                IsSubMenuOpen = true;
-            }
-
-            e.Handled = true;
+                Device = e.Device,
+                RoutedEvent = PointerLeaveItemEvent,
+                Source = this,
+            });
         }
 
         /// <summary>
@@ -373,7 +343,7 @@ namespace Avalonia.Controls
 
             if (menuItem != null && menuItem.Parent == this)
             {
-                foreach (var child in Items.OfType<MenuItem>())
+                foreach (var child in ((IMenuItem)this).SubItems)
                 {
                     if (child != menuItem && child.IsSubMenuOpen)
                     {
@@ -388,29 +358,21 @@ namespace Avalonia.Controls
         {
             base.OnTemplateApplied(e);
 
-            _popup = e.NameScope.Get<Popup>("PART_Popup");
-            _popup.DependencyResolver = DependencyResolver.Instance;
-            _popup.Opened += PopupOpened;
-            _popup.Closed += PopupClosed;
-        }
-
-        /// <summary>
-        /// Called when the menu item's access key is pressed.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void AccessKeyPressed(RoutedEventArgs e)
-        {
-            if (HasSubMenu)
+            if (_popup != null)
             {
-                SelectedIndex = 0;
-                IsSubMenuOpen = true;
-            }
-            else
-            {
-                RaiseEvent(new RoutedEventArgs(ClickEvent));
+                _popup.Opened -= PopupOpened;
+                _popup.Closed -= PopupClosed;
+                _popup.DependencyResolver = null;
             }
 
-            e.Handled = true;
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+
+            if (_popup != null)
+            {
+                _popup.DependencyResolver = DependencyResolver.Instance;
+                _popup.Opened += PopupOpened;
+                _popup.Closed += PopupClosed;
+            }
         }
 
         /// <summary>
@@ -418,9 +380,61 @@ namespace Avalonia.Controls
         /// </summary>
         private void CloseSubmenus()
         {
-            foreach (var child in Items.OfType<MenuItem>())
+            foreach (var child in ((IMenuItem)this).SubItems)
             {
                 child.IsSubMenuOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Command"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void CommandChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Sender is MenuItem menuItem)
+            {
+                if (e.OldValue is ICommand oldCommand)
+                {
+                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
+                }
+
+                if (e.NewValue is ICommand newCommand)
+                {
+                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                }
+
+                menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ICommand.CanExecuteChanged"/> event fires.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args.</param>
+        private void CanExecuteChanged(object sender, EventArgs e)
+        {
+            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
+            // use IsEnabledCore etc. but it will do for now.
+            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
+        }
+
+        /// <summary>
+        /// Called when the <see cref="Header"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is string newValue && newValue == "-")
+            {
+                PseudoClasses.Add(":separator");
+                Focusable = false;
+            }
+            else if (e.OldValue is string oldValue && oldValue == "-")
+            {
+                PseudoClasses.Remove(":separator");
+                Focusable = true;
             }
         }
 
@@ -441,6 +455,18 @@ namespace Avalonia.Controls
             if (newValue != null)
             {
                 LogicalChildren.Add(newValue);
+            }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="IsSelected"/> property changes.
+        /// </summary>
+        /// <param name="e">The property change event.</param>
+        private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                Focus();
             }
         }
 

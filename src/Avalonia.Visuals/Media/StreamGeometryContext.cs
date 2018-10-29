@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
 using Avalonia.Platform;
 
 namespace Avalonia.Media
@@ -15,7 +14,7 @@ namespace Avalonia.Media
     /// <see cref="StreamGeometry.Open"/>.
     /// </remarks>
     /// TODO: This class is just a wrapper around IStreamGeometryContextImpl: is it needed?
-    public class StreamGeometryContext : IDisposable
+    public class StreamGeometryContext : IGeometryContext
     {
         private readonly IStreamGeometryContextImpl _impl;
 

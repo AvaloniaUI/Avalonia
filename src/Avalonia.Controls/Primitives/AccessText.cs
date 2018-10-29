@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static AccessText()
         {
-            AffectsRender(ShowAccessKeyProperty);
+            AffectsRender<AccessText>(ShowAccessKeyProperty);
         }
 
         /// <summary>
@@ -78,21 +78,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Creates the <see cref="FormattedText"/> used to render the text.
-        /// </summary>
-        /// <param name="constraint">The constraint of the text.</param>
-        /// <returns>A <see cref="FormattedText"/> object.</returns>
-        protected override FormattedText CreateFormattedText(Size constraint)
+        /// <inheritdoc/>
+        protected override FormattedText CreateFormattedText(Size constraint, string text)
         {
-            return new FormattedText
-            {
-                Constraint = constraint,
-                Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
-                Text = StripAccessKey(Text),
-                TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
-            };
+            return base.CreateFormattedText(constraint, StripAccessKey(text));
         }
 
         /// <summary>

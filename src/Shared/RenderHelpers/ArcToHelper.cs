@@ -595,7 +595,7 @@ namespace Avalonia.RenderHelpers
                     double cos4 = Math.Cos(4 * eta);
                     double cos6 = Math.Cos(6 * eta);
 
-                    // select the right coeficients set according to degree and b/a
+                    // select the right coefficients set according to degree and b/a
                     double[][][] coeffs;
                     double[] safety;
                     if (degree == 2)
@@ -654,7 +654,7 @@ namespace Avalonia.RenderHelpers
                 if (IsPieSlice)
                 {
                     // check the location of the test point with respect to the
-                    // angular sector counted from the centre of the ellipse
+                    // angular sector counted from the center of the ellipse
                     double dxC = x - Cx;
                     double dyC = y - Cy;
                     double u = dxC * _cosTheta + dyC * _sinTheta;
@@ -982,7 +982,7 @@ namespace Avalonia.RenderHelpers
             /// At some point I did not trust the WPF Matrix struct, and wrote my own simple one -_-
             /// This is supposed to be replaced with proper WPF Matrices everywhere
             /// </summary>
-            private struct SimpleMatrix
+            private readonly struct SimpleMatrix
             {
                 private readonly double _a, _b, _c, _d;
 

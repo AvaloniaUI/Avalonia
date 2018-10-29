@@ -6,9 +6,21 @@ using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.Primitives
 {
+    public class ScrollEventArgs : EventArgs
+    {
+        public ScrollEventArgs(ScrollEventType eventType, double newValue)
+        {
+            ScrollEventType = eventType;
+            NewValue = newValue;
+        }
+        public double NewValue { get; private set; }
+        public ScrollEventType ScrollEventType { get; private set; }
+    }
+
     /// <summary>
     /// A scrollbar control.
     /// </summary>
@@ -42,8 +54,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static ScrollBar()
         {
-            PseudoClass(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
+            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
+
+            Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragDelta, RoutingStrategies.Bubble);
+            Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragComplete, RoutingStrategies.Bubble);
         }
 
         /// <summary>
@@ -87,6 +102,8 @@ namespace Avalonia.Controls.Primitives
             get { return GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
         }
+
+        public event EventHandler<ScrollEventArgs> Scroll;
 
         /// <summary>
         /// Calculates whether the scrollbar should be visible.
@@ -140,6 +157,8 @@ namespace Avalonia.Controls.Primitives
             _pageUpButton = e.NameScope.Find<Button>("PART_PageUpButton");
             _pageDownButton = e.NameScope.Find<Button>("PART_PageDownButton");
 
+
+
             if (_lineUpButton != null)
             {
                 _lineUpButton.Click += LineUpClick;
@@ -184,21 +203,39 @@ namespace Avalonia.Controls.Primitives
         private void SmallDecrement()
         {
             Value = Math.Max(Value - SmallChange * ViewportSize, Minimum);
+            OnScroll(ScrollEventType.SmallDecrement);
         }
 
         private void SmallIncrement()
         {
             Value = Math.Min(Value + SmallChange * ViewportSize, Maximum);
+            OnScroll(ScrollEventType.SmallIncrement);
         }
 
         private void LargeDecrement()
         {
             Value = Math.Max(Value - LargeChange * ViewportSize, Minimum);
+            OnScroll(ScrollEventType.LargeDecrement);
         }
 
         private void LargeIncrement()
         {
             Value = Math.Min(Value + LargeChange * ViewportSize, Maximum);
+            OnScroll(ScrollEventType.LargeIncrement);
+        }
+
+        private void OnThumbDragDelta(VectorEventArgs e)
+        {
+            OnScroll(ScrollEventType.ThumbTrack);
+        }
+        private void OnThumbDragComplete(VectorEventArgs e)
+        {
+            OnScroll(ScrollEventType.EndScroll);
+        }
+
+        protected void OnScroll(ScrollEventType scrollEventType)
+        {
+            Scroll?.Invoke(this, new ScrollEventArgs(scrollEventType, Value));
         }
     }
 }

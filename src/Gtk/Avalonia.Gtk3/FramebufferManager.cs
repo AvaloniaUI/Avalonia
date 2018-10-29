@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -26,8 +22,9 @@ namespace Avalonia.Gtk3
         {
             // This method may be called from non-UI thread, don't touch anything that calls back to GTK/GDK
             var s = _window.ClientSize;
-            var width = (int) s.Width;
-            var height = (int) s.Height;
+            var width = Math.Max(1, (int) s.Width);
+            var height = Math.Max(1, (int) s.Height);
+            
             
             if (!Dispatcher.UIThread.CheckAccess() && Gtk3Platform.DisplayClassName.ToLower().Contains("x11"))
             {

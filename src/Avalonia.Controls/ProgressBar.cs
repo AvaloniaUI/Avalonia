@@ -1,12 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Reactive.Linq;
 
-using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -21,17 +17,28 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateStartingOffset),
+                p => p.IndeterminateStartingOffset,
+                (p, o) => p.IndeterminateStartingOffset = o);
+
+        private static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
+            AvaloniaProperty.RegisterDirect<ProgressBar, double>(
+                nameof(IndeterminateEndingOffset),
+                p => p.IndeterminateEndingOffset,
+                (p, o) => p.IndeterminateEndingOffset = o);
+
         private Border _indicator;
-        private IndeterminateAnimation _indeterminateAnimation;
 
         static ProgressBar()
         {
-            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
 
-            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(
-                (p, e) => { if (p._indicator != null) p.UpdateIsIndeterminate((bool)e.NewValue); });
-            OrientationProperty.Changed.AddClassHandler<ProgressBar>(
-                (p, e) => { if (p._indicator != null) p.UpdateOrientation((Orientation)e.NewValue); });
+            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
         }
 
         public bool IsIndeterminate
@@ -44,6 +51,19 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
+        }
+        private double _indeterminateStartingOffset;
+        private double IndeterminateStartingOffset
+        {
+            get => _indeterminateStartingOffset;
+            set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
+        }
+
+        private double _indeterminateEndingOffset;
+        private double IndeterminateEndingOffset
+        {
+            get => _indeterminateEndingOffset;
+            set => SetAndRaise(IndeterminateEndingOffsetProperty, ref _indeterminateEndingOffset, value);
         }
 
         /// <inheritdoc/>
@@ -59,8 +79,6 @@ namespace Avalonia.Controls
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             UpdateIndicator(Bounds.Size);
-            UpdateOrientation(Orientation);
-            UpdateIsIndeterminate(IsIndeterminate);
         }
 
         private void UpdateIndicator(Size bounds)
@@ -70,9 +88,20 @@ namespace Avalonia.Controls
                 if (IsIndeterminate)
                 {
                     if (Orientation == Orientation.Horizontal)
-                        _indicator.Width = bounds.Width / 5.0;
+                    {
+                        var width = bounds.Width / 5.0;
+                        IndeterminateStartingOffset = -width;
+                        _indicator.Width = width;
+                        IndeterminateEndingOffset = bounds.Width;
+
+                    }
                     else
-                        _indicator.Height = bounds.Height / 5.0;
+                    {
+                        var height = bounds.Height / 5.0;
+                        IndeterminateStartingOffset = -bounds.Height;
+                        _indicator.Height = height;
+                        IndeterminateEndingOffset = height;
+                    }
                 }
                 else
                 {
@@ -86,96 +115,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateOrientation(Orientation orientation)
-        {
-            if (orientation == Orientation.Horizontal)
-            {
-                MinHeight = 14;
-                MinWidth = 200;
-
-                _indicator.HorizontalAlignment = HorizontalAlignment.Left;
-                _indicator.VerticalAlignment = VerticalAlignment.Stretch;
-            }
-            else
-            {
-                MinHeight = 200;
-                MinWidth = 14;
-
-                _indicator.HorizontalAlignment = HorizontalAlignment.Stretch;
-                _indicator.VerticalAlignment = VerticalAlignment.Bottom;
-            }
-        }
-
-        private void UpdateIsIndeterminate(bool isIndeterminate)
-        {
-            if (isIndeterminate)
-            {
-                if (_indeterminateAnimation == null || _indeterminateAnimation.Disposed)
-                    _indeterminateAnimation = IndeterminateAnimation.StartAnimation(this);
-            }
-            else
-                _indeterminateAnimation?.Dispose();
-        }
-
-        private void ValueChanged(AvaloniaPropertyChangedEventArgs e)
+        private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
-        }
-
-        private class IndeterminateAnimation : IDisposable
-        {
-            private WeakReference<ProgressBar> _progressBar;
-            private IDisposable _indeterminateBindSubscription;
-            private TimeSpan _startTime;
-            private bool _disposed;
-
-            public bool Disposed => _disposed;
-
-            private IndeterminateAnimation(ProgressBar progressBar)
-            {
-                _progressBar = new WeakReference<ProgressBar>(progressBar);
-                _startTime = Animate.Stopwatch.Elapsed;
-                _indeterminateBindSubscription = Animate.Timer.TakeWhile(x => (x - _startTime).TotalSeconds <= 4.0)
-                                                              .Select(GetAnimationRect)
-                                                              .Finally(() => _startTime = Animate.Stopwatch.Elapsed)
-                                                              .Repeat()
-                                                              .Subscribe(AnimationTick);
-            }
-
-            public static IndeterminateAnimation StartAnimation(ProgressBar progressBar)
-            {
-                return new IndeterminateAnimation(progressBar);
-            }
-
-            private Rect GetAnimationRect(TimeSpan time)
-            {
-                if (_progressBar.TryGetTarget(out var progressBar))
-                {
-                    if (progressBar.Orientation == Orientation.Horizontal)
-                        return new Rect(-progressBar._indicator.Width - 5 + (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Width + progressBar._indicator.Width + 10), 0, progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                    else
-                        return new Rect(0, progressBar.Bounds.Height + 5 - (time - _startTime).TotalSeconds / 4.0 * (progressBar.Bounds.Height + progressBar._indicator.Height + 10), progressBar._indicator.Bounds.Width, progressBar._indicator.Bounds.Height);
-                }
-                else
-                {
-                    _indeterminateBindSubscription.Dispose();
-                    return Rect.Empty;
-                }
-            }
-
-            private void AnimationTick(Rect rect)
-            {
-                if (_progressBar.TryGetTarget(out var progressBar))
-                    progressBar._indicator.Arrange(rect);
-                else
-                    _indeterminateBindSubscription.Dispose();
-            }
-
-            public void Dispose()
-            {
-                _indeterminateBindSubscription?.Dispose();
-                _disposed = true;
-            }
         }
     }
 }

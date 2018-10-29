@@ -14,10 +14,10 @@ namespace Avalonia.Controls
     public class TabControl : SelectingItemsControl
     {
         /// <summary>
-        /// Defines the <see cref="Transition"/> property.
+        /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
-        public static readonly StyledProperty<IPageTransition> TransitionProperty =
-            Avalonia.Controls.Carousel.TransitionProperty.AddOwner<TabControl>();
+        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
+            Avalonia.Controls.Carousel.PageTransitionProperty.AddOwner<TabControl>();
 
         /// <summary>
         /// Defines an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue<TabControl>(false);
-            AffectsMeasure(TabStripPlacementProperty);
+            AffectsMeasure<TabControl>(TabStripPlacementProperty);
         }
 
         /// <summary>
@@ -68,10 +68,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the transition to use when switching tabs.
         /// </summary>
-        public IPageTransition Transition
+        public IPageTransition PageTransition
         {
-            get { return GetValue(TransitionProperty); }
-            set { SetValue(TransitionProperty, value); }
+            get { return GetValue(PageTransitionProperty); }
+            set { SetValue(PageTransitionProperty, value); }
         }
 
         /// <summary>

@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Platform;
 
 namespace Avalonia.Input
@@ -38,7 +34,10 @@ namespace Avalonia.Input
         TopLeftCorner,
         TopRightCorner,
         BottomLeftCorner,
-        BottomRightCorner
+        BottomRightCorner,
+        DragMove,
+        DragCopy,
+        DragLink,
 
         // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
         // We might enable them later, preferably, by loading pixmax direclty from theme with fallback image
@@ -61,6 +60,13 @@ namespace Avalonia.Input
         }
 
         public IPlatformHandle PlatformCursor { get; }
+
+        public static Cursor Parse(string s)
+        {
+            return Enum.TryParse<StandardCursorType>(s, true, out var t) ?
+                new Cursor(t) :
+                throw new ArgumentException($"Unrecognized cursor type '{s}'.");
+        }
 
         private static IPlatformHandle GetCursor(StandardCursorType type)
         {

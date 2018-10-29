@@ -4,7 +4,6 @@
 using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -75,6 +74,7 @@ namespace Avalonia.Controls.Primitives
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             e.Device.Capture(this);
+            e.Handled = true;
             _lastPoint = e.GetPosition(this);
 
             var ev = new VectorEventArgs
@@ -91,6 +91,7 @@ namespace Avalonia.Controls.Primitives
             if (_lastPoint.HasValue)
             {
                 e.Device.Capture(null);
+                e.Handled = true;
                 _lastPoint = null;
 
                 var ev = new VectorEventArgs

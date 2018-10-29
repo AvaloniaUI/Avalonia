@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsChecked),
                 o => o.IsChecked,
                 (o, v) => o.IsChecked = v,
-                unsetValue: false,
+                unsetValue: null,
                 defaultBindingMode: BindingMode.TwoWay);
 
         public static readonly StyledProperty<bool> IsThreeStateProperty =
@@ -24,9 +24,9 @@ namespace Avalonia.Controls.Primitives
 
         static ToggleButton()
         {
-            PseudoClass(IsCheckedProperty, c => c == true, ":checked");
-            PseudoClass(IsCheckedProperty, c => c == false, ":unchecked");
-            PseudoClass(IsCheckedProperty, c => c == null, ":indeterminate");
+            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == true, ":checked");
+            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == false, ":unchecked");
+            PseudoClass<ToggleButton, bool?>(IsCheckedProperty, c => c == null, ":indeterminate");
         }
 
         public bool? IsChecked

@@ -5,7 +5,6 @@ using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -74,6 +73,31 @@ namespace Avalonia.Controls.Primitives
 
         /// <inheritdoc/>
         public void Dispose() => PlatformImpl?.Dispose();
+
+        /// <summary>
+        /// Moves the Popups position so that it doesnt overlap screen edges.
+        /// This method can be called immediately after Show has been called.
+        /// </summary>
+        public void SnapInsideScreenEdges()
+        {
+            var screen = Application.Current.MainWindow?.Screens.ScreenFromPoint(Position);
+
+            if (screen != null)
+            {
+                var screenX = Position.X + Bounds.Width - screen.Bounds.X;
+                var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
+
+                if (screenX > screen.Bounds.Width)
+                {
+                    Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
+                }
+
+                if (screenY > screen.Bounds.Height)
+                {
+                    Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
+                }
+            }
+        }
 
         /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)

@@ -17,6 +17,19 @@ namespace Avalonia.Media
         public TransformGroup()
         {
             Children = new Transforms();
+            Children.ResetBehavior = ResetBehavior.Remove;
+            Children.CollectionChanged += delegate
+            {
+                Children.ForEachItem(
+                    (tr) => tr.Changed += ChildTransform_Changed,
+                    (tr) => tr.Changed -= ChildTransform_Changed,
+                    () => { });
+            };
+        }
+
+        private void ChildTransform_Changed(object sender, System.EventArgs e)
+        {
+            this.RaiseChanged();
         }
 
         /// <summary>
@@ -33,7 +46,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the tranform's <see cref="Matrix" />.
+        /// Gets the transform's <see cref="Matrix" />.
         /// </summary>
         public override Matrix Value
         {
