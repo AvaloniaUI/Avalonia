@@ -25,6 +25,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         {
             Decorator target = new Decorator
             {
+                FontFamily = new FontFamily("Courier New"),
                 Padding = new Thickness(8),
                 Width = 200,
                 Height = 200,
