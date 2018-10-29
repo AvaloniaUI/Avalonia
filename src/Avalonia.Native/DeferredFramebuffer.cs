@@ -18,15 +18,14 @@ namespace Avalonia.Native
         {
             _lockWindow = lockWindow;
             Address = Marshal.AllocHGlobal(width * height * 4);
-            Width = width;
-            Height = height;
+            Size = new PixelSize(width, height);
             RowBytes = width * 4;
             Dpi = dpi;
             Format = PixelFormat.Rgba8888;
         }
 
         public IntPtr Address { get; set; }
-        public int Width { get; set; }
+        public PixelSize Size { get; set; }
         public int Height { get; set; }
         public int RowBytes { get; set; }
         public Vector Dpi { get; set; }
@@ -66,8 +65,8 @@ namespace Avalonia.Native
                         X = Dpi.X,
                         Y = Dpi.Y
                     },
-                    Width = Width,
-                    Height = Height,
+                    Width = Size.Width,
+                    Height = Size.Height,
                     PixelFormat = (AvnPixelFormat)Format,
                     Stride = RowBytes
                 };
