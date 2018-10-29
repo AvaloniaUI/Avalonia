@@ -46,7 +46,7 @@
         <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorLowBrush" Color="{DynamicResource ErrorLowColor}"></SolidColorBrush>
 
-        <Thickness x:Key="ThemeBorderThickness">2</Thickness>
+        <Thickness x:Key="ThemeBorderThickness">1</Thickness>
         <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
 
         <sys:Double x:Key="FontSizeSmall">10</sys:Double>
