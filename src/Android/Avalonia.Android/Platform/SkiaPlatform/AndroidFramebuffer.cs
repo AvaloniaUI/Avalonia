@@ -20,9 +20,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             ANativeWindow_Buffer buffer;
             var rc = new ARect()
             {
-                right = Width = ANativeWindow_getWidth(_window),
-                bottom = Height = ANativeWindow_getHeight(_window)
+                right = ANativeWindow_getWidth(_window),
+                bottom = ANativeWindow_getHeight(_window)
             };
+            Size = new PixelSize(rc.right, rc.bottom);
             ANativeWindow_lock(_window, out buffer, ref rc);
 
             Format = buffer.format == AndroidPixelFormat.WINDOW_FORMAT_RGB_565
@@ -41,8 +42,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public IntPtr Address { get; set; }
-        public int Width { get; }
-        public int Height { get; }
+        public PixelSize Size { get; }
         public int RowBytes { get; }
         public Vector Dpi { get; } = new Vector(96, 96);
         public PixelFormat Format { get; }

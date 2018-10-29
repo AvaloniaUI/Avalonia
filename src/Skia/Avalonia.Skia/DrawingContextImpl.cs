@@ -142,7 +142,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, BitmapInterpolationMode.Default);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
         }
 
@@ -391,7 +391,7 @@ namespace Avalonia.Skia
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
             var calc = new TileBrushCalculator(tileBrush,
-                    new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
+                    new Size(tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height), targetSize);
 
             var intermediate = CreateRenderTarget(
                 (int)calc.IntermediateSize.Width,
@@ -401,7 +401,7 @@ namespace Avalonia.Skia
 
             using (var context = intermediate.CreateDrawingContext(null))
             {
-                var rect = new Rect(0, 0, tileBrushImage.PixelWidth, tileBrushImage.PixelHeight);
+                var rect = new Rect(0, 0, tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height);
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);

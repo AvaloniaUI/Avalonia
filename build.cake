@@ -78,6 +78,7 @@ Task("Clean-Impl")
     CleanDirectory(data.ArtifactsDir);
     CleanDirectory(data.NugetRoot);
     CleanDirectory(data.ZipRoot);
+    CleanDirectory(data.TestResultsRoot);
 });
 
 void DotNetCoreBuild(Parameters parameters)
@@ -129,13 +130,20 @@ void RunCoreTest(string project, Parameters parameters, bool coreOnly = false)
             continue;
         Information("Running for " + fw);
         
-        DotNetCoreTest(project,
-            new DotNetCoreTestSettings {
-                Configuration = parameters.Configuration,
-                Framework = fw,
-                NoBuild = true,
-                NoRestore = true
-            });
+        var settings = new DotNetCoreTestSettings {
+            Configuration = parameters.Configuration,
+            Framework = fw,
+            NoBuild = true,
+            NoRestore = true
+        };
+
+        if (parameters.PublishTestResults)
+        {
+            settings.Logger = "trx";
+            settings.ResultsDirectory = parameters.TestResultsRoot;
+        }
+
+        DotNetCoreTest(project, settings);
     }
 }
 
