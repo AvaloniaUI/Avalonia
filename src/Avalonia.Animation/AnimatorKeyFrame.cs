@@ -61,7 +61,7 @@ namespace Avalonia.Animation
             {
                 throw new ArgumentNullException($"KeyFrame value can't be null.");
             }
-            if(Value is T typedValue )
+            if(Value is T typedValue)
             {
                 return typedValue;
             }
