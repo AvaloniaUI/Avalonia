@@ -16,7 +16,6 @@ namespace Avalonia.Skia
     /// </summary>
     public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
-        private readonly Vector _dpi;
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
@@ -28,12 +27,12 @@ namespace Avalonia.Skia
         /// <param name="createInfo">Create info.</param>
         public SurfaceRenderTarget(CreateInfo createInfo)
         {
-            PixelWidth = createInfo.Width;
-            PixelHeight = createInfo.Height;
-            _dpi = createInfo.Dpi;
+            PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
+            Dpi = createInfo.Dpi;
+
             _disableLcdRendering = createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
-            _surface = CreateSurface(createInfo.GrContext, PixelWidth, PixelHeight, createInfo.Format);
+            _surface = CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -74,7 +73,7 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = _dpi,
+                Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,
                 GrContext = _grContext
@@ -84,10 +83,10 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public int PixelWidth { get; }
+        public Vector Dpi { get; }
 
         /// <inheritdoc />
-        public int PixelHeight { get; }
+        public PixelSize PixelSize { get; }
 
         public int Version { get; private set; } = 1;
 

@@ -30,6 +30,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
                 Height = 200,
                 Child = new TextBlock
                 {
+                    FontFamily = new FontFamily("Courier New"),
                     Background = Brushes.Red,
                     FontSize = 12,
                     Foreground = Brushes.Black,

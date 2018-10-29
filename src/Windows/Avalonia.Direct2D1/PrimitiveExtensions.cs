@@ -41,6 +41,10 @@ namespace Avalonia.Direct2D1
             return new Rect(new Point(r.Left, r.Top), new Point(r.Right, r.Bottom));
         }
 
+        public static PixelSize ToAvalonia(this Size2 p) => new PixelSize(p.Width, p.Height);
+
+        public static Vector ToAvaloniaVector(this Size2F p) => new Vector(p.Width, p.Height);
+
         public static RawRectangleF ToSharpDX(this Rect r)
         {
             return new RawRectangleF((float)r.X, (float)r.Y, (float)r.Right, (float)r.Bottom);

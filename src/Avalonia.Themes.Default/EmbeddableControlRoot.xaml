@@ -1,6 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui" Selector="EmbeddableControlRoot">
   <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-  <Setter Property="FontFamily" Value="Segoe UI"/>
   <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
   <Setter Property="Template">
     <ControlTemplate>

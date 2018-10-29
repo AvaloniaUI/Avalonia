@@ -1,23 +1,14 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+<Project Sdk="MSBuild.Sdk.Extras">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ExtrasEnableWpfProjectSetup>true</ExtrasEnableWpfProjectSetup>
     <ExtrasEnableImplicitWinFormsReferences>true</ExtrasEnableImplicitWinFormsReferences>
     <UseDirect3D9>true</UseDirect3D9>
+    <PackageId>Avalonia.Win32.Interoperability</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    <ProjectReference Include="..\..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
-    <ProjectReference Include="..\..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-    <ProjectReference Include="..\..\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj" />
+    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
     <ProjectReference Include="..\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
   </ItemGroup>

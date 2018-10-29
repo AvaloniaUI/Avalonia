@@ -23,12 +23,11 @@ namespace Avalonia.iOS
             var frame = view.Frame;
             _viewWidth = frame.Width;
             _viewHeight = frame.Height;
-            Width = (int) frame.Width * factor;
-            Height = (int) frame.Height * factor;
-            RowBytes = Width * 4;
+            Size = new PixelSize((int)frame.Width * factor, (int)frame.Height * factor);
+            RowBytes = Size.Width * 4;
             Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Rgba8888;
-            Address = Marshal.AllocHGlobal(Height * RowBytes);
+            Address = Marshal.AllocHGlobal(Size.Height * RowBytes);
         }
 
         public void Dispose()
@@ -37,7 +36,7 @@ namespace Avalonia.iOS
                 return;
             var nfo = (int) CGBitmapFlags.ByteOrder32Big | (int) CGImageAlphaInfo.PremultipliedLast;
             using (var colorSpace = CGColorSpace.CreateDeviceRGB())
-            using (var bContext = new CGBitmapContext(Address, Width, Height, 8, Width * 4,
+            using (var bContext = new CGBitmapContext(Address, Size.Width, Size.Height, 8, Size.Width * 4,
                 colorSpace, (CGImageAlphaInfo) nfo))
             using (var image = bContext.ToImage())
             using (var context = UIGraphics.GetCurrentContext())
@@ -52,8 +51,7 @@ namespace Avalonia.iOS
         }
 
         public IntPtr Address { get; private set; }
-        public int Width { get; }
-        public int Height { get; }
+        public PixelSize Size { get; }
         public int RowBytes { get; }
         public Vector Dpi { get; }
         public PixelFormat Format { get; }
