@@ -4,23 +4,7 @@
     <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>CS1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.xml</DocumentationFile>
+    <IsPackable>false</IsPackable>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
