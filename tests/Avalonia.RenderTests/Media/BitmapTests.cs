@@ -29,14 +29,13 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         class Framebuffer : ILockedFramebuffer, IFramebufferPlatformSurface
         {
-            public Framebuffer(PixelFormat fmt, int width, int height)
+            public Framebuffer(PixelFormat fmt, PixelSize size)
             {
                 Format = fmt;
                 var bpp = fmt == PixelFormat.Rgb565 ? 2 : 4;
-                Width = width;
-                Height = height;
-                RowBytes = bpp * width;
-                Address = Marshal.AllocHGlobal(Height * RowBytes);
+                Size = size;
+                RowBytes = bpp * size.Width;
+                Address = Marshal.AllocHGlobal(size.Height * RowBytes);
             }
 
             public IntPtr Address { get; }
@@ -45,11 +44,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
             public PixelFormat Format { get; }
 
-            public int Height { get; }
+            public PixelSize Size { get; }
 
             public int RowBytes { get; }
-
-            public int Width { get; }
 
             public void Dispose()
             {
@@ -74,7 +71,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public void FramebufferRenderResultsShouldBeUsableAsBitmap(PixelFormat fmt)
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
-            var fb = new Framebuffer(fmt, 80, 80);
+            var fb = new Framebuffer(fmt, new PixelSize(80, 80));
             var r = Avalonia.AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             using (var target = r.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext(null))
@@ -87,9 +84,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 ctx.PopOpacity();
             }
 
-            var bmp = new Bitmap(fmt, fb.Address, fb.Width, fb.Height, fb.RowBytes);
+            var bmp = new Bitmap(fmt, fb.Address, fb.Size, new Vector(96, 96), fb.RowBytes);
             fb.Deallocate();
-            using (var rtb = new RenderTargetBitmap(100, 100))
+            using (var rtb = new RenderTargetBitmap(new PixelSize(100, 100), new Vector(96, 96)))
             {
                 using (var ctx = rtb.CreateDrawingContext(null))
                 {
@@ -108,7 +105,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
         public void WriteableBitmapShouldBeUsable(PixelFormat fmt)
         {
-            var writeableBitmap = new WriteableBitmap(256, 256, fmt);
+            var writeableBitmap = new WriteableBitmap(new PixelSize(256, 256), new Vector(96, 96), fmt);
 
             var data = new int[256 * 256];
             for (int y = 0; y < 256; y++)

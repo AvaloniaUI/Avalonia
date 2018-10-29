@@ -330,12 +330,8 @@ namespace Avalonia.Direct2D1.Media
             {
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
-                var pixelSize = size * (dpi / 96);
-                return platform.CreateRenderTargetBitmap(
-                    (int)pixelSize.Width,
-                    (int)pixelSize.Height,
-                    dpi.X,
-                    dpi.Y);
+                var pixelSize = PixelSize.FromSize(size, dpi);
+                return platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
 
