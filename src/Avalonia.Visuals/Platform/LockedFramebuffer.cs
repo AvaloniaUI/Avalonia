@@ -11,7 +11,7 @@ namespace Avalonia.Platform
         {
             _onDispose = onDispose;
             Address = address;
-            Size = Size;
+            Size = size;
             RowBytes = rowBytes;
             Dpi = dpi;
             Format = format;
