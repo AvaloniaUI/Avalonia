@@ -52,12 +52,20 @@ namespace Avalonia.Controls
                 grid.RowDefinitions.CollectionChanged += DefinitionsCollectionChanged;
                 grid.ColumnDefinitions.CollectionChanged += DefinitionsCollectionChanged;
 
+
                 _subscriptions = new CompositeDisposable(
                     Disposable.Create(() => grid.RowDefinitions.CollectionChanged -= DefinitionsCollectionChanged),
                     Disposable.Create(() => grid.ColumnDefinitions.CollectionChanged -= DefinitionsCollectionChanged),
                     grid.RowDefinitions.TrackItemPropertyChanged(DefinitionPropertyChanged),
                     grid.ColumnDefinitions.TrackItemPropertyChanged(DefinitionPropertyChanged));
 
+            }
+
+            // method to be hooked up once RowDefinitions/ColumnDefinitions collections can be replaced on a grid
+            private void DefinitionsChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+            {
+                // route to collection changed as a Reset.
+                DefinitionsCollectionChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
 
             private void DefinitionPropertyChanged(Tuple<object, PropertyChangedEventArgs> propertyChanged)
@@ -78,7 +86,9 @@ namespace Avalonia.Controls
                     offset = Grid.RowDefinitions.Count;
 
                 var newItems = e.NewItems?.OfType<DefinitionBase>().Select(db => new MeasurementResult(Grid, db)).ToList() ?? new List<MeasurementResult>();
-                var oldItems = Results.GetRange(e.OldStartingIndex + offset, e.OldItems?.Count ?? 0);
+                var oldItems = e.OldStartingIndex >= 0 
+                                    ? Results.GetRange(e.OldStartingIndex + offset, e.OldItems.Count) 
+                                    : new List<MeasurementResult>();
 
                 void NotifyNewItems()
                 {

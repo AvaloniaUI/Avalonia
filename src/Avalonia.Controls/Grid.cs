@@ -105,6 +105,7 @@ namespace Avalonia.Controls
 
                 _columnDefinitions = value;
                 _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _columnDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
             }
         }
 
@@ -132,6 +133,7 @@ namespace Avalonia.Controls
 
                 _rowDefinitions = value;
                 _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _rowDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
             }
         }
 
