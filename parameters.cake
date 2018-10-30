@@ -18,6 +18,7 @@ public class Parameters
     public bool IsPullRequest { get; private set; }
     public bool IsMainRepo { get; private set; }
     public bool IsMasterBranch { get; private set; }
+    public bool IsReleaseBranch { get; private set; }
     public bool IsTagged { get; private set; }
     public bool IsReleasable { get; private set; }
     public bool IsMyGetRelease { get; private set; }
@@ -46,8 +47,9 @@ public class Parameters
         SkipTests = context.HasArgument("skip-tests");
 
         // CONFIGURATION
-        MainRepo = "AvaloniaUI/Avalonia";
+        MainRepo = "https://github.com/AvaloniaUI/Avalonia";
         MasterBranch = "master";
+        ReleaseBranchPrefix = "release/";
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./dirs.proj";
 
@@ -59,12 +61,14 @@ public class Parameters
         IsRunningOnAzure = buildSystem.IsRunningOnVSTS || buildSystem.IsRunningOnTFS || context.EnvironmentVariable("LOGNAME") == "vsts";
         
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
-        IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, buildSystem.AppVeyor.Environment.Repository.Name);
-        IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, buildSystem.AppVeyor.Environment.Repository.Branch);
+        IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, context.EnvironmentVariable("BUILD_REPOSITORY_URI"));
+        IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
+        IsReleaseBranch = StringComparer.OrdinalIgnoreCase.StartsWith(ReleaseBranchPrefix, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
         IsTagged = buildSystem.AppVeyor.Environment.Repository.Tag.IsTag 
                 && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
         IsMyGetRelease = !IsTagged && IsReleasable;
+        IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
         // VERSION
         Version = context.Argument("force-nuget-version", GetVersion());
@@ -92,9 +96,13 @@ public class Parameters
         }
         else if (IsRunningOnAzure)
         {
+            if(!IsNuGetRelease)
+            {
                 // Use AssemblyVersion with Build as version
                 Version += "-build" + context.EnvironmentVariable("BUILD_BUILDID") + "-beta";
-                PublishTestResults = true; 
+            }
+
+            PublishTestResults = true; 
         }
 
         // DIRECTORIES
