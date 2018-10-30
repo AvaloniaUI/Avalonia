@@ -23,7 +23,6 @@ namespace Avalonia.Rendering
         private readonly IVisual _root;
         private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
-        private Rect _lastPaintBounds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
@@ -46,8 +45,6 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
-            _lastPaintBounds = rect;
-
             if (_renderTarget == null)
             {
                 _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
@@ -129,10 +126,17 @@ namespace Avalonia.Rendering
                 {
                     var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
 
-                    if (_lastPaintBounds != default)
+                    //use transformedbounds as previous render state of the visual bounds
+                    //so we can invalidate old and new bounds of a control in case it moved/shrinked
+                    if (visual.TransformedBounds.HasValue)
                     {
-                        _renderRoot?.Invalidate(_lastPaintBounds);
-                        _lastPaintBounds = default;
+                        var trb = visual.TransformedBounds.Value;
+                        var trBounds = trb.Bounds.TransformToAABB(trb.Transform);
+
+                        if (trBounds != bounds)
+                        {
+                            _renderRoot?.Invalidate(trBounds);
+                        }
                     }
 
                     _renderRoot?.Invalidate(bounds);
