@@ -29,6 +29,7 @@ jobs:
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
      
 - job: macOS
   pool:
@@ -77,6 +78,7 @@ jobs:
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
   
   - task: PublishBuildArtifacts@1
     inputs:
@@ -111,6 +113,7 @@ jobs:
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
 
   - task: PublishBuildArtifacts@1
     inputs:

@@ -50,6 +50,7 @@ Setup<Parameters>(context =>
     Information("IsPullRequest: " + parameters.IsPullRequest);
     Information("IsMainRepo: " + parameters.IsMainRepo);
     Information("IsMasterBranch: " + parameters.IsMasterBranch);
+    Information("IsReleaseBranch: " + parameters.IsReleaseBranch);
     Information("IsTagged: " + parameters.IsTagged);
     Information("IsReleasable: " + parameters.IsReleasable);
     Information("IsMyGetRelease: " + parameters.IsMyGetRelease);

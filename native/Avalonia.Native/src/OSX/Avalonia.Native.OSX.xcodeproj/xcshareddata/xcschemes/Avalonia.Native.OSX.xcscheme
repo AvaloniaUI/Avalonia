@@ -38,7 +38,7 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "$PROJECT_DIR/../../../../samples/ControlCatalog"
+      customWorkingDirectory = "$PROJECT_DIR/../../../../samples/ControlCatalog.NetCore"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
@@ -58,7 +58,7 @@
       </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "bin/Debug/netcoreapp2.0/ControlCatalog.dll"
+            argument = "bin/Debug/netcoreapp2.0/ControlCatalog.NetCore.dll"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

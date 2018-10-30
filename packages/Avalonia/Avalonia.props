@@ -1,0 +1,6 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)\..\tools\netcoreapp2.0\designer\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
+    <AvaloniaPreviewerNetFullToolPath>$(MSBuildThisFileDirectory)\..\tools\net461\designer\Avalonia.Designer.HostApp.exe</AvaloniaPreviewerNetFullToolPath>
+  </PropertyGroup>
+</Project>
