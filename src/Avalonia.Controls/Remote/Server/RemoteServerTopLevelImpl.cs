@@ -211,10 +211,10 @@ namespace Avalonia.Controls.Remote.Server
                 }
                 if(obj is KeyEventMessage key)
                 {
-                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-
                     Dispatcher.UIThread.Post(() =>
                     {
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
                         Input?.Invoke(new RawKeyEventArgs(
                             KeyboardDevice,
                             0,
@@ -225,10 +225,10 @@ namespace Avalonia.Controls.Remote.Server
                 }
                 if(obj is TextInputEventMessage text)
                 {
-                    Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-
                     Dispatcher.UIThread.Post(() =>
                     {
+                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+
                         Input?.Invoke(new RawTextInputEventArgs(
                             KeyboardDevice,
                             0,
