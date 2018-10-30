@@ -1,0 +1,174 @@
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
+using System.Globalization;
+using Avalonia.Utilities;
+
+namespace Avalonia
+{
+    /// <summary>
+    /// Represents a size in device pixels.
+    /// </summary>
+    public readonly struct PixelSize
+    {
+        /// <summary>
+        /// A size representing zero
+        /// </summary>
+        public static readonly PixelSize Empty = new PixelSize(0, 0);
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PixelSize"/> structure.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <param name="height">The height.</param>
+        public PixelSize(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+
+        /// <summary>
+        /// Gets the aspect ratio of the size.
+        /// </summary>
+        public double AspectRatio => (double)Width / Height;
+
+        /// <summary>
+        /// Gets the width.
+        /// </summary>
+        public int Width { get; }
+
+        /// <summary>
+        /// Gets the height.
+        /// </summary>
+        public int Height { get; }
+
+        /// <summary>
+        /// Checks for equality between two <see cref="PixelSize"/>s.
+        /// </summary>
+        /// <param name="left">The first size.</param>
+        /// <param name="right">The second size.</param>
+        /// <returns>True if the sizes are equal; otherwise false.</returns>
+        public static bool operator ==(PixelSize left, PixelSize right)
+        {
+            return left.Width == right.Width && left.Height == right.Height;
+        }
+
+        /// <summary>
+        /// Checks for inequality between two <see cref="Size"/>s.
+        /// </summary>
+        /// <param name="left">The first size.</param>
+        /// <param name="right">The second size.</param>
+        /// <returns>True if the sizes are unequal; otherwise false.</returns>
+        public static bool operator !=(PixelSize left, PixelSize right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// Parses a <see cref="PixelSize"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="PixelSize"/>.</returns>
+        public static PixelSize Parse(string s)
+        {
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size"))
+            {
+                return new PixelSize(
+                    tokenizer.ReadInt32(),
+                    tokenizer.ReadInt32());
+            }
+        }
+
+        /// <summary>
+        /// Checks for equality between a size and an object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>
+        /// True if <paramref name="obj"/> is a size that equals the current size.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is PixelSize other)
+            {
+                return this == other;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a hash code for a <see cref="PixelSize"/>.
+        /// </summary>
+        /// <returns>The hash code.</returns>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = (hash * 23) + Width.GetHashCode();
+                hash = (hash * 23) + Height.GetHashCode();
+                return hash;
+            }
+        }
+
+        /// <summary>
+        /// Returns a new <see cref="PixelSize"/> with the same height and the specified width.
+        /// </summary>
+        /// <param name="width">The width.</param>
+        /// <returns>The new <see cref="PixelSize"/>.</returns>
+        public PixelSize WithWidth(int width) => new PixelSize(width, Height);
+
+        /// <summary>
+        /// Returns a new <see cref="PixelSize"/> with the same width and the specified height.
+        /// </summary>
+        /// <param name="height">The height.</param>
+        /// <returns>The new <see cref="PixelSize"/>.</returns>
+        public PixelSize WithHeight(int height) => new PixelSize(Width, height);
+
+        /// <summary>
+        /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
+        /// specified dots per inch (DPI).
+        /// </summary>
+        /// <param name="dpi">The dots per inch.</param>
+        /// <returns>The device-independent size.</returns>
+        public Size ToSize(double dpi) => new Size(Width / (dpi / 96), Height / (dpi / 96));
+
+        /// <summary>
+        /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
+        /// specified dots per inch (DPI).
+        /// </summary>
+        /// <param name="dpi">The dots per inch.</param>
+        /// <returns>The device-independent size.</returns>
+        public Size ToSize(Vector dpi) => new Size(Width / (dpi.X / 96), Height / (dpi.Y / 96));
+
+        /// <summary>
+        /// Converts a <see cref="Size"/> to device pixels using the specified dots per inch (DPI).
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="dpi">The dots per inch.</param>
+        /// <returns>The device-independent size.</returns>
+        public static PixelSize FromSize(Size size, double dpi) => new PixelSize(
+            (int)(size.Width * (dpi / 96)),
+            (int)(size.Height * (dpi / 96)));
+
+        /// <summary>
+        /// Converts a <see cref="Size"/> to device pixels using the specified dots per inch (DPI).
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="dpi">The dots per inch.</param>
+        /// <returns>The device-independent size.</returns>
+        public static PixelSize FromSize(Size size, Vector dpi) => new PixelSize(
+            (int)(size.Width * (dpi.X / 96)),
+            (int)(size.Height * (dpi.Y / 96)));
+
+        /// <summary>
+        /// Returns the string representation of the size.
+        /// </summary>
+        /// <returns>The string representation of the size.</returns>
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", Width, Height);
+        }
+    }
+}

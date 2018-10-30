@@ -98,7 +98,7 @@
         </Border>
 
         <!-- For comparison -->
-        
+
         <Ellipse Grid.Row="2"
                  Grid.Column="0"
                  Width="100"
@@ -127,6 +127,6 @@
                  Stretch="UniformToFill"
                  Fill="Blue"
                  Margin="5" />
-        
+
     </Grid>
 </UserControl>

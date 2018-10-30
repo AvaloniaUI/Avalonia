@@ -1,13 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -196,6 +194,44 @@ namespace Avalonia.Controls.UnitTests
                 target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content));
         }
 
+        [Fact]
+        public void Toggle_Selection_Should_Update_Containers()
+        {
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                SelectionMode = SelectionMode.Toggle,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 })
+            };
+
+            Prepare(target);
+
+            var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
+
+            var item = lbItems[0];
+
+            Assert.Equal(false, item.IsSelected);
+
+            RaisePressedEvent(target, item, MouseButton.Left);
+
+            Assert.Equal(true, item.IsSelected);
+
+            RaisePressedEvent(target, item, MouseButton.Left);
+
+            Assert.Equal(false, item.IsSelected);
+        }
+
+        private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
+        {
+            listBox.RaiseEvent(new PointerPressedEventArgs
+            {
+                Source = item,
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = mouseButton
+            });
+        }
 
         [Fact]
         public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
