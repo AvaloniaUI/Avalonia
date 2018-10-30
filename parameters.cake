@@ -9,6 +9,7 @@ public class Parameters
     public string MasterBranch { get; private set; }
     public string ReleasePlatform { get; private set; }
     public string ReleaseConfiguration { get; private set; }
+    public string ReleaseBranchPrefix { get; private set; }
     public string MSBuildSolution { get; private set; }
     public bool IsLocalBuild { get; private set; }
     public bool IsRunningOnUnix { get; private set; }
@@ -63,7 +64,7 @@ public class Parameters
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
         IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, context.EnvironmentVariable("BUILD_REPOSITORY_URI"));
         IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
-        IsReleaseBranch = StringComparer.OrdinalIgnoreCase.StartsWith(ReleaseBranchPrefix, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
+        IsReleaseBranch = context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME").ToLower().StartsWith(ReleaseBranchPrefix.ToLower());
         IsTagged = buildSystem.AppVeyor.Environment.Repository.Tag.IsTag 
                 && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
