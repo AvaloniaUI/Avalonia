@@ -50,7 +50,7 @@ public class Parameters
         // CONFIGURATION
         MainRepo = "https://github.com/AvaloniaUI/Avalonia";
         MasterBranch = "master";
-        ReleaseBranchPrefix = "release/";
+        ReleaseBranchPrefix = "refs/heads/release/";
         ReleaseConfiguration = "Release";
         MSBuildSolution = "./dirs.proj";
 
@@ -64,7 +64,7 @@ public class Parameters
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
         IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, context.EnvironmentVariable("BUILD_REPOSITORY_URI"));
         IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
-        IsReleaseBranch = context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME").ToLower().StartsWith(ReleaseBranchPrefix.ToLower());
+        IsReleaseBranch = context.EnvironmentVariable("BUILD_SOURCEBRANCH").ToLower().StartsWith(ReleaseBranchPrefix.ToLower());
         IsTagged = buildSystem.AppVeyor.Environment.Repository.Tag.IsTag 
                 && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
