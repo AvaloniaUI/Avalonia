@@ -27,7 +27,7 @@
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
-      <_PackageFiles Include="build/Avalonia.props">
+      <_PackageFiles Include="Avalonia.props">
         <PackagePath>build/Avalonia.props</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
