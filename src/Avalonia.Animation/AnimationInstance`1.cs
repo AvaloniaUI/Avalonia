@@ -163,7 +163,8 @@ namespace Avalonia.Animation
    
             if (!_isLooping)
             {
-                if ((_currentIteration > _repeatCount) || (time >= iterationEndpoint))
+                var totalTime = _repeatCount * _duration.Ticks + _delay.Ticks;
+                if (time.Ticks >= totalTime)
                 {
                     var easedTime = _easeFunc.Ease(isCurIterReverse?0.0:1.0);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
