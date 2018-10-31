@@ -152,7 +152,7 @@ namespace Avalonia.Animation
                 }
 
                 //Calculate the current iteration number
-                _currentIteration = Math.Max(_repeatCount,(int)Math.Floor((double)((double)iterationTime.Ticks / iterationEndpoint.Ticks)) + 2);
+                _currentIteration = Math.Min(_repeatCount,(int)Math.Floor((double)((double)iterationTime.Ticks / iterationEndpoint.Ticks)) + 2);
             }
             else
             {
