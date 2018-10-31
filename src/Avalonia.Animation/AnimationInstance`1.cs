@@ -72,10 +72,13 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-        }
+          }
 
         protected override void Unsubscribed()
         {
+            //Animation may have been stopped before it has finished
+            ApplyFinalFill();
+
             _timerSubscription?.Dispose();
             _clock.PlayState = PlayState.Stop;
         }
@@ -98,11 +101,15 @@ namespace Avalonia.Animation
             }
         }
 
-        private void DoComplete()
+        private void ApplyFinalFill()
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
                 _targetControl.SetValue(_parent.Property, _lastInterpValue, BindingPriority.LocalValue);
+        }
 
+        private void DoComplete()
+        {
+            ApplyFinalFill();
             _onCompleteAction?.Invoke();
             PublishCompleted();
         }
@@ -167,10 +174,10 @@ namespace Avalonia.Animation
    
             if (!_isLooping)
             {
-                var totalTime = _repeatCount * _duration.Ticks + _delay.Ticks;
+                var totalTime = _iterationDelay ? _repeatCount * ( _duration.Ticks + _delay.Ticks) : _repeatCount * _duration.Ticks + _delay.Ticks;
                 if (time.Ticks >= totalTime)
                 {
-                    var easedTime = _easeFunc.Ease(isCurIterReverse?0.0:1.0);
+                    var easedTime = _easeFunc.Ease(isCurIterReverse ? 0.0 : 1.0);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
                    
                     DoComplete();
