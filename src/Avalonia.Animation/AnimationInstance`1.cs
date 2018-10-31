@@ -141,9 +141,6 @@ namespace Avalonia.Animation
             }
             else if (time > iterationEndpoint)
             {
-                //Subtract first iteration to properly get the subsequent iteration time
-                time -= iterationEndpoint;
-
                 if (!_iterationDelay & delayEndpoint > TimeSpan.Zero)
                 {
                     delayEndpoint = TimeSpan.Zero;
@@ -151,27 +148,32 @@ namespace Avalonia.Animation
                 }
 
                 //Calculate the current iteration number
-                _currentIteration = (int)Math.Floor((double)((double)time.Ticks / iterationEndpoint.Ticks)) + 2;
+                _currentIteration = (int)Math.Floor((double)((double)time.Ticks / iterationEndpoint.Ticks))+1;
             }
             else
             {
                 return;
             }
 
-            time = TimeSpan.FromTicks((long)(time.Ticks % iterationEndpoint.Ticks));
-
-            if (!_isLooping)
-            {
-                if ((_currentIteration > _repeatCount) || (time > iterationEndpoint))
-                    DoComplete();
-            }
-
-            // Determine if the current iteration should have its normalized time inverted.
+             // Determine if the current iteration should have its normalized time inverted.
             bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
                                     _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
                                     _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
                                     _animationDirection == PlaybackDirection.Reverse ? true : false;
-
+   
+            if (!_isLooping)
+            {
+                if ((_currentIteration > _repeatCount) || (time >= iterationEndpoint))
+                {
+                    var easedTime = _easeFunc.Ease(isCurIterReverse?0.0:1.0);
+                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                   
+                    DoComplete();
+                    return;
+                }
+            }
+            time = TimeSpan.FromTicks((long)(time.Ticks % iterationEndpoint.Ticks));
+        
             if (delayEndpoint > TimeSpan.Zero & time < delayEndpoint)
             {
                 DoDelay();
