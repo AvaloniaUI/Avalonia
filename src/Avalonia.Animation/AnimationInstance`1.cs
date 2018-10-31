@@ -133,6 +133,7 @@ namespace Avalonia.Animation
             DoPlayStates();
             var delayEndpoint = _delay;
             var iterationEndpoint = delayEndpoint + _duration;
+            var iterationTime = time;
 
             //determine if time is currently in the first iteration.
             if (time >= TimeSpan.Zero & time <= iterationEndpoint)
@@ -141,6 +142,9 @@ namespace Avalonia.Animation
             }
             else if (time > iterationEndpoint)
             {
+                //Subtract first iteration to properly get the subsequent iteration time
+                iterationTime -= iterationEndpoint;
+
                 if (!_iterationDelay & delayEndpoint > TimeSpan.Zero)
                 {
                     delayEndpoint = TimeSpan.Zero;
@@ -148,7 +152,7 @@ namespace Avalonia.Animation
                 }
 
                 //Calculate the current iteration number
-                _currentIteration = (int)Math.Floor((double)((double)time.Ticks / iterationEndpoint.Ticks))+1;
+                _currentIteration = Math.Max(_repeatCount,(int)Math.Floor((double)((double)iterationTime.Ticks / iterationEndpoint.Ticks)) + 2);
             }
             else
             {
@@ -173,20 +177,20 @@ namespace Avalonia.Animation
                     return;
                 }
             }
-            time = TimeSpan.FromTicks((long)(time.Ticks % iterationEndpoint.Ticks));
+            iterationTime = TimeSpan.FromTicks((long)(iterationTime.Ticks % iterationEndpoint.Ticks));
         
-            if (delayEndpoint > TimeSpan.Zero & time < delayEndpoint)
+            if (delayEndpoint > TimeSpan.Zero & iterationTime < delayEndpoint)
             {
                 DoDelay();
             }
             else
             {
                 // Offset the delay time            
-                time -= delayEndpoint;
+                iterationTime -= delayEndpoint;
                 iterationEndpoint -= delayEndpoint;
 
                 // Normalize time
-                var interpVal = (double)time.Ticks / iterationEndpoint.Ticks;
+                var interpVal = (double)iterationTime.Ticks / iterationEndpoint.Ticks;
 
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;
