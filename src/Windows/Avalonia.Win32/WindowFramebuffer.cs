@@ -61,7 +61,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public PixelSize Size => new PixelSize(_bmpInfo.biWidth, _bmpInfo.biHeight);
+        public PixelSize Size => new PixelSize(_bmpInfo.biWidth, -_bmpInfo.biHeight);
 
         public void DrawToDevice(IntPtr hDC, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1,
             int height = -1)

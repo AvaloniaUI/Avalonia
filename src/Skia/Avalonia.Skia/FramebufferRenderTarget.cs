@@ -143,23 +143,26 @@ namespace Avalonia.Skia
 
                 // Create bitmap using default platform settings
                 _bitmap = new SKBitmap(destinationInfo.Width, destinationInfo.Height);
+                SKColorType bitmapColorType;
 
                 if (!_bitmap.CanCopyTo(destinationInfo.ColorType))
                 {
+                    bitmapColorType = _bitmap.ColorType;
                     _bitmap.Dispose();
 
                     throw new Exception(
-                        $"Unable to create pixel format shim for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                        $"Unable to create pixel format shim for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
                 Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
 
                 if (Surface == null)
                 {
+                    bitmapColorType = _bitmap.ColorType;
                     _bitmap.Dispose();
 
                     throw new Exception(
-                        $"Unable to create pixel format shim surface for conversion from {_bitmap.ColorType} to {destinationInfo.ColorType}");
+                        $"Unable to create pixel format shim surface for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
                 SurfaceCopyHandler = Disposable.Create(CopySurface);

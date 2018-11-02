@@ -304,7 +304,7 @@ namespace Avalonia
             {
                 var thisOffset = GetOffsetFrom(common, this);
                 var thatOffset = GetOffsetFrom(common, visual);
-                return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+                return -thatOffset * thisOffset;
             }
 
             return null;
@@ -454,13 +454,28 @@ namespace Avalonia
         /// <param name="ancestor">The ancestor visual.</param>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual offset.</returns>
-        private static Vector GetOffsetFrom(IVisual ancestor, IVisual visual)
+        private static Matrix GetOffsetFrom(IVisual ancestor, IVisual visual)
         {
-            var result = new Vector();
+            var result = Matrix.Identity;
 
             while (visual != ancestor)
             {
-                result = new Vector(result.X + visual.Bounds.X, result.Y + visual.Bounds.Y);
+                if (visual.RenderTransform?.Value != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    var renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+
+                    result *= renderTransform;
+                }
+
+                var topLeft = visual.Bounds.TopLeft;
+
+                if (topLeft != default)
+                {
+                    result *= Matrix.CreateTranslation(topLeft);
+                }
+
                 visual = visual.VisualParent;
 
                 if (visual == null)

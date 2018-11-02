@@ -125,6 +125,20 @@ namespace Avalonia.Rendering
                 if (m.HasValue)
                 {
                     var bounds = new Rect(visual.Bounds.Size).TransformToAABB(m.Value);
+
+                    //use transformedbounds as previous render state of the visual bounds
+                    //so we can invalidate old and new bounds of a control in case it moved/shrinked
+                    if (visual.TransformedBounds.HasValue)
+                    {
+                        var trb = visual.TransformedBounds.Value;
+                        var trBounds = trb.Bounds.TransformToAABB(trb.Transform);
+
+                        if (trBounds != bounds)
+                        {
+                            _renderRoot?.Invalidate(trBounds);
+                        }
+                    }
+
                     _renderRoot?.Invalidate(bounds);
                 }
             }
@@ -191,7 +205,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        static IEnumerable<IVisual> HitTest(
+        private static IEnumerable<IVisual> HitTest(
            IVisual visual,
            Point p,
            Func<IVisual, bool> filter)
