@@ -256,7 +256,7 @@ namespace Avalonia.Controls
                 var hittest = this.GetVisualsAt(e.GetPosition(this));
 
                 if (ClickMode == ClickMode.Release &&
-                    hittest.Any(c => c == this || (c as IStyledElement)?.TemplatedParent == this) == true)
+                    hittest.Any(c => c == this || (c as IStyledElement)?.TemplatedParent == this))
                 {
                     OnClick();
                 }
