@@ -4,10 +4,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Views\ControlDetailsView.xaml" />
-    <None Remove="Views\EventsView.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
