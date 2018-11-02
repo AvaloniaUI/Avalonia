@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Primitives
                 control.Clip = clip;
             }
 
-            clip.Rect = bounds.Clip.TransformToAABB(-bounds.Transform);
+            clip.Rect = bounds.Bounds;
         }
 
         private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
