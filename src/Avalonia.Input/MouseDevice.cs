@@ -298,21 +298,48 @@ namespace Avalonia.Input
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            var element = root.PointerOverElement;
+            var element = root.PointerOverElement;           
             var e = new PointerEventArgs
             {
                 RoutedEvent = InputElement.PointerLeaveEvent,
                 Device = device,
             };
 
-            while (element != null)
+            if (element!=null && !element.IsAttachedToVisualTree)
+            {
+                // element has been removed from visual tree so do top down cleanup
+                if (root.IsPointerOver)
+                    ClearChildrenPointerOver(e, root,true);
+            }
+            else
+            {
+                while (element != null)
+                {
+                    e.Source = element;
+                    e.Handled = false;
+                    element.RaiseEvent(e);
+                    element = (IInputElement)element.VisualParent;
+                }
+            }
+            root.PointerOverElement = null;
+        }
+
+        private void ClearChildrenPointerOver(PointerEventArgs e, IInputElement element,bool clearRoot)
+        {
+            foreach (IInputElement el in element.VisualChildren)
+            {
+                if (el.IsPointerOver)
+                {
+                    ClearChildrenPointerOver(e, el, true);
+                    break;
+                }
+            }
+            if(clearRoot)
             {
                 e.Source = element;
+                e.Handled = false;
                 element.RaiseEvent(e);
-                element = (IInputElement)element.VisualParent;
             }
-
-            root.PointerOverElement = null;
         }
 
         private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p)
@@ -361,12 +388,19 @@ namespace Avalonia.Input
             el = root.PointerOverElement;
             e.RoutedEvent = InputElement.PointerLeaveEvent;
 
-            while (el != null && el != branch)
+            if (el!=null && branch!=null && !el.IsAttachedToVisualTree)
             {
-                e.Source = el;
-                e.Handled = false;
-                el.RaiseEvent(e);
-                el = (IInputElement)el.VisualParent;
+                ClearChildrenPointerOver(e,branch,false);
+            }
+            else
+            {
+                while (el != null && el != branch)
+                {
+                    e.Source = el;
+                    e.Handled = false;
+                    el.RaiseEvent(e);
+                    el = (IInputElement)el.VisualParent;
+                }
             }
 
             el = root.PointerOverElement = element;
