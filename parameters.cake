@@ -64,7 +64,7 @@ public class Parameters
         IsPullRequest = buildSystem.AppVeyor.Environment.PullRequest.IsPullRequest;
         IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, context.EnvironmentVariable("BUILD_REPOSITORY_URI"));
         IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch, context.EnvironmentVariable("BUILD_SOURCEBRANCHNAME"));
-        IsReleaseBranch = context.EnvironmentVariable("BUILD_SOURCEBRANCH").ToLower().StartsWith(ReleaseBranchPrefix.ToLower());
+        IsReleaseBranch = (context.EnvironmentVariable("BUILD_SOURCEBRANCH")??"").StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase);
         IsTagged = buildSystem.AppVeyor.Environment.Repository.Tag.IsTag 
                 && !string.IsNullOrWhiteSpace(buildSystem.AppVeyor.Environment.Repository.Tag.Name);
         IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
