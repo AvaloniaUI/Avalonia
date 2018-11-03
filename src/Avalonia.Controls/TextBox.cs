@@ -655,6 +655,8 @@ namespace Avalonia.Controls
             if (_presenter != null && e.Device.Captured == _presenter)
             {
                 var point = e.GetPosition(_presenter);
+
+                point = new Point(Math.Max(Math.Min(point.X, _presenter.Bounds.Width - 1), 0), Math.Max(Math.Min(point.Y, _presenter.Bounds.Height - 1), 0));
                 CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
             }
         }
