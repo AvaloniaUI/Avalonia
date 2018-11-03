@@ -121,7 +121,7 @@ namespace Avalonia.Skia
 
                 int offset = 0;
 
-                if (point.X >= (rects[line.Start].X + line.Width) / 2 && line.Length > 0)
+                if (point.X >= (rects[line.Start].X + line.Width) && line.Length > 0)
                 {
                     offset = line.TextLength > line.Length ?
                                     line.Length : (line.Length - 1);
