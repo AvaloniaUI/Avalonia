@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Measure_Should_Return_Correct_Size_For_No_Stretch()
         {
-            var bitmap = Mock.Of<IBitmap>(x => x.PixelWidth == 50 && x.PixelHeight == 100);
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
             var target = new Image();
             target.Stretch = Stretch.None;
             target.Source = bitmap;
@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Measure_Should_Return_Correct_Size_For_Fill_Stretch()
         {
-            var bitmap = Mock.Of<IBitmap>(x => x.PixelWidth == 50 && x.PixelHeight == 100);
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
             var target = new Image();
             target.Stretch = Stretch.Fill;
             target.Source = bitmap;
@@ -39,7 +39,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Measure_Should_Return_Correct_Size_For_Uniform_Stretch()
         {
-            var bitmap = Mock.Of<IBitmap>(x => x.PixelWidth == 50 && x.PixelHeight == 100);
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
             var target = new Image();
             target.Stretch = Stretch.Uniform;
             target.Source = bitmap;
@@ -52,7 +52,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Measure_Should_Return_Correct_Size_For_UniformToFill_Stretch()
         {
-            var bitmap = Mock.Of<IBitmap>(x => x.PixelWidth == 50 && x.PixelHeight == 100);
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
             var target = new Image();
             target.Stretch = Stretch.UniformToFill;
             target.Source = bitmap;

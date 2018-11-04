@@ -4,20 +4,32 @@ jobs:
     vmImage: 'ubuntu-16.04'
   steps:
   - task: CmdLine@2
+    displayName: 'Install CastXML'
     inputs:
       script: |
         sudo apt-get update
         sudo apt-get install castxml
+
   - task: CmdLine@2
+    displayName: 'Install Cake'
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
   
-  - script: |
-      export PATH="$PATH:$HOME/.dotnet/tools"
-      dotnet --info
-      printenv
-      dotnet cake build.cake -target="Azure-Linux" -configuration="Release"
+  - task: CmdLine@2
+    displayName: 'Run Cake'
+    inputs:
+      script: |
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet --info
+        printenv
+        dotnet cake build.cake -target="Azure-Linux" -configuration="Release"
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
      
 - job: macOS
   pool:
@@ -26,6 +38,7 @@ jobs:
   - task: DotNetCoreInstaller@0
     inputs:
       version: '2.1.403'
+
   - task: Xcode@5
     inputs:
       actions: 'build'
@@ -35,34 +48,48 @@ jobs:
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
+
   - task: CmdLine@2
+    displayName: 'Install CastXML'
     inputs:
       script: brew install castxml
+
   - task: CmdLine@2
+    displayName: 'Install Cake'
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
-  - script: |
-      export COREHOST_TRACE=0
-      export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-      export DOTNET_CLI_TELEMETRY_OPTOUT=1
-      which dotnet
-      dotnet --info
-      export PATH="$PATH:$HOME/.dotnet/tools"
-      dotnet --info
-      printenv
-      dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
+
+  - task: CmdLine@2
+    displayName: 'Run Cake'
+    inputs:
+      script: |
+        export COREHOST_TRACE=0
+        export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+        export DOTNET_CLI_TELEMETRY_OPTOUT=1
+        which dotnet
+        dotnet --info
+        export PATH="$PATH:$HOME/.dotnet/tools"
+        dotnet --info
+        printenv
+        dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
   
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
       artifactName: 'Avalonia.Native.OSX'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-
+    
   - task: PublishBuildArtifacts@1
     inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesOSX'
+      pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
+      artifactName: 'NuGetOSX'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
 
 - job: Windows
@@ -70,26 +97,32 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - task: CmdLine@2
+    displayName: 'Install Cake'
     inputs:
       script: |
         dotnet tool install -g Cake.Tool --version 0.30.0
+
   - task: CmdLine@2
+    displayName: 'Run Cake'
     inputs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
         dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
+      
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
       artifactName: 'NuGet'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: '$(Build.SourcesDirectory)/artifacts/bin'
-      artifactName: 'BinariesWindows'
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))

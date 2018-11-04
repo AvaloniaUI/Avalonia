@@ -28,7 +28,7 @@ namespace Avalonia.Skia
             var gl = disp.GlInterface;
             gl.GetIntegerv(GL_FRAMEBUFFER_BINDING, out var fb);
 
-            var size = session.PixelSize;
+            var size = session.Size;
             var scaling = session.Scaling;
 
             GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc

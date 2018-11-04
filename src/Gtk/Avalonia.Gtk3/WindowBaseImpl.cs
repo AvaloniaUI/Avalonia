@@ -510,12 +510,12 @@ namespace Avalonia.Gtk3
                 : new ImmediateRenderer(root);
         }
 
-        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
+        PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size
         {
             get
             {
                 var cs = ClientSize;
-                return new System.Drawing.Size((int)Math.Max(1, LastKnownScaleFactor * cs.Width),
+                return new PixelSize((int)Math.Max(1, LastKnownScaleFactor * cs.Width),
                     (int)Math.Max(1, LastKnownScaleFactor * ClientSize.Height));
             }
         }
