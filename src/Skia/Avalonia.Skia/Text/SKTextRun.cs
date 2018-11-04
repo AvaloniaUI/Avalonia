@@ -9,10 +9,10 @@ namespace Avalonia.Skia
 {   
     public class SKTextRun
     {
-        public SKTextRun(string text, SKGlyphRun glyphs, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
+        public SKTextRun(string text, SKGlyphRun glyphRun, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
         {
             Text = text;
-            Glyphs = glyphs;
+            GlyphRun = glyphRun;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
             Width = width;
@@ -28,12 +28,12 @@ namespace Avalonia.Skia
         public string Text { get; }
 
         /// <summary>
-        /// Gets the glyphs.
+        /// Gets the glyph run.
         /// </summary>
         /// <value>
         /// The glyphs.
         /// </value>
-        public SKGlyphRun Glyphs { get; }
+        public SKGlyphRun GlyphRun { get; }
 
         /// <summary>
         /// Gets the text format.
