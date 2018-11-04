@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Data;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -656,7 +657,7 @@ namespace Avalonia.Controls
             {
                 var point = e.GetPosition(_presenter);
 
-                point = new Point(Math.Max(Math.Min(point.X, _presenter.Bounds.Width - 1), 0), Math.Max(Math.Min(point.Y, _presenter.Bounds.Height - 1), 0));
+                point = new Point(MathUtilities.Clamp(point.X, 0, _presenter.Bounds.Width - 1), MathUtilities.Clamp(point.Y, 0, _presenter.Bounds.Height - 1));
                 CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
             }
         }
