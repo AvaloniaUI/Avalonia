@@ -315,7 +315,7 @@ namespace Avalonia.Skia
             {
                 if (pointY <= currentY + textLine.LineMetrics.Size.Height)
                 {
-                    var currentX = 0.0f;
+                    var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
 
                     var textPosition = textLine.StartingIndex;
 
@@ -410,21 +410,40 @@ namespace Avalonia.Skia
         /// <returns></returns>
         public Rect HitTestTextPosition(int textPosition)
         {
-            var currentX = 0.0f;
+            if (!TextLines.Any())
+            {
+                return new Rect();
+            }
+
+            if (textPosition < 0 || textPosition >= _text.Length)
+            {
+                var lastLine = TextLines.Last();
+
+                var offsetX = GetTextLineOffsetX(_textAlignment, lastLine.LineMetrics.Size.Width);
+
+                var lineX = offsetX + lastLine.LineMetrics.Size.Width;
+
+                var lineY = Size.Height - lastLine.LineMetrics.Size.Height;
+
+                return new Rect(lineX, lineY, 0, lastLine.LineMetrics.Size.Height);
+            }
+
             var currentY = 0.0f;
 
             foreach (var textLine in TextLines)
             {
-                if (textLine.StartingIndex + textLine.Length < textPosition)
+                if (textLine.StartingIndex + textLine.Length - 1 < textPosition)
                 {
                     currentY += textLine.LineMetrics.Size.Height;
 
                     continue;
                 }
 
+                var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    if (textLine.StartingIndex + textRun.Text.Length < textPosition)
+                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textPosition)
                     {
                         currentX += textRun.Width;
 
@@ -433,7 +452,7 @@ namespace Avalonia.Skia
 
                     foreach (var glyphCluster in textRun.Glyphs.GlyphClusters)
                     {
-                        if (glyphCluster.TextPosition + glyphCluster.Length < textPosition)
+                        if (textLine.StartingIndex + glyphCluster.TextPosition + glyphCluster.Length - 1 < textPosition)
                         {
                             currentX += glyphCluster.Bounds.Width;
 
@@ -445,7 +464,7 @@ namespace Avalonia.Skia
                 }
             }
 
-            return new Rect(0, 0, Size.Width, Size.Height);
+            return new Rect();
         }
 
         /// <summary>
@@ -464,7 +483,7 @@ namespace Avalonia.Skia
             {
                 if (textLine.StartingIndex + textLine.Length > textPosition)
                 {
-                    var currentX = 0.0f;
+                    var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
                     var runIndex = 0;
 
                     while (textLength > 0 && runIndex < textLine.TextRuns.Count)
@@ -1051,7 +1070,7 @@ namespace Avalonia.Skia
             textLineMetrics = CreateTextLineMetrics(textRuns, out _);
 
             return textRuns;
-        }       
+        }
 
         /// <summary>
         /// Performs line breaks if needed and returns a list of text lines.
