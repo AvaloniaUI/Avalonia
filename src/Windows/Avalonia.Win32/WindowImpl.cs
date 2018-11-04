@@ -933,14 +933,14 @@ namespace Avalonia.Win32
 
             _topmost = value;
         }
-        
-        System.Drawing.Size EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.PixelSize
+
+        PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size
         {
             get
             {
                 RECT rect;
                 GetClientRect(_hwnd, out rect);
-                return new System.Drawing.Size(
+                return new PixelSize(
                     Math.Max(1, rect.right - rect.left),
                     Math.Max(1, rect.bottom - rect.top));
             }

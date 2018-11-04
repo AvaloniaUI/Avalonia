@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="..\Directory.Build.props" />
   <Import Project="..\build\SharedVersion.props" />
   <Import Project="..\build\SourceLink.props" Condition="'$(DisableSourceLink)' == ''" />
 </Project>

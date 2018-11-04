@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Avalonia.Collections;
 using Xunit;
 
@@ -82,13 +81,31 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.Equal(source, result);
         }
 
-        [Fact]
-        public void CreateDerivedList_Handles_MoveRange()
+        [Theory]
+        [InlineData(0, 2, 3)]
+        [InlineData(0, 2, 4)]
+        [InlineData(0, 2, 5)]
+        [InlineData(0, 4, 4)]
+        [InlineData(1, 2, 0)]
+        [InlineData(1, 2, 4)]
+        [InlineData(1, 2, 5)]
+        [InlineData(1, 4, 0)]
+        [InlineData(2, 2, 0)]
+        [InlineData(2, 2, 1)]
+        [InlineData(2, 2, 3)]
+        [InlineData(2, 2, 4)]
+        [InlineData(2, 2, 5)]
+        [InlineData(4, 2, 0)]
+        [InlineData(4, 2, 1)]
+        [InlineData(4, 2, 3)]
+        [InlineData(5, 1, 0)]
+        [InlineData(5, 1, 3)]
+        public void CreateDerivedList_Handles_MoveRange(int oldIndex, int count, int newIndex)
         {
-            var source = new AvaloniaList<int>(new[] { 0, 1, 2, 3 });
+            var source = new AvaloniaList<int>(new[] { 0, 1, 2, 3, 4, 5 });
             var target = source.CreateDerivedList(x => new Wrapper(x));
 
-            source.MoveRange(1, 2, 0);
+            source.MoveRange(oldIndex, count, newIndex);
 
             var result = target.Select(x => x.Value).ToList();
 

@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <ItemGroup>
-        <None Include="$(MSBuildThisFileDirectory)..\..\runtimes\osx-x64\native\libAvalonia.Native.OSX.dylib">
-            <Link>libAvalonia.Native.OSX.dylib</Link>
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-</Project>
