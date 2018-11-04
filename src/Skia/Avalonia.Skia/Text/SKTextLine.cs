@@ -2,18 +2,17 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace Avalonia.Skia
 {
     public class SKTextLine
     {
-        private readonly List<SKTextRun> _textRuns;
-
-        public SKTextLine(int startingIndex, int length, List<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
+        public SKTextLine(int startingIndex, int length, IReadOnlyList<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
         {
             StartingIndex = startingIndex;
             Length = length;
-            _textRuns = textRuns;
+            TextRuns = textRuns;
             LineMetrics = lineMetrics;
         }
 
@@ -39,7 +38,7 @@ namespace Avalonia.Skia
         /// <value>
         /// The text runs.
         /// </value>
-        public IReadOnlyList<SKTextRun> TextRuns => _textRuns;
+        public IReadOnlyList<SKTextRun> TextRuns { get; }
 
         /// <summary>
         /// Gets the line metrics.
@@ -48,5 +47,22 @@ namespace Avalonia.Skia
         /// The line metrics.
         /// </value>
         public SKTextLineMetrics LineMetrics { get; }
+
+        public override string ToString()
+        {
+            if (TextRuns == null)
+            {
+                return string.Empty;
+            }
+
+            var textBuilder = new StringBuilder();
+
+            foreach (var textRun in TextRuns)
+            {
+                textBuilder.Append(textRun.Text);
+            }
+
+            return textBuilder.ToString();
+        }
     }
 }

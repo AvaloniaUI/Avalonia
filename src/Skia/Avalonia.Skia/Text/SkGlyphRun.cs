@@ -3,25 +3,23 @@
 
 using System.Collections.Generic;
 
+using SkiaSharp;
+
 namespace Avalonia.Skia
 {
-    using SkiaSharp;
-
     public class SKGlyphRun
     {
-        private readonly List<SKGlyphCluster> _glyphClusters;
-
-        public SKGlyphRun(byte[] glyphIds, SKPoint[] glyphPositions, List<SKGlyphCluster> glyphClusters)
+        public SKGlyphRun(byte[] glyphIds, SKPoint[] glyphPositions, IReadOnlyList<SKGlyphCluster> glyphClusters)
         {
             GlyphIds = glyphIds;
             GlyphPositions = glyphPositions;
-            _glyphClusters = glyphClusters;
+            GlyphClusters = glyphClusters;
         }
 
         public byte[] GlyphIds { get; }
 
         public SKPoint[] GlyphPositions { get; }
 
-        public IReadOnlyList<SKGlyphCluster> GlyphClusters => _glyphClusters;
+        public IReadOnlyList<SKGlyphCluster> GlyphClusters { get; }
     }
 }

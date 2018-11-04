@@ -3,19 +3,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 using Avalonia.Media;
 
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia
 {
-    using System.Globalization;
-    using SkiaSharp.HarfBuzz;
-
-    public partial class SKTextLayout
+    public class SKTextLayout
     {
         private readonly string _text;
 
@@ -32,8 +32,6 @@ namespace Avalonia.Skia
         private readonly SKPaint _paint;
 
         private readonly List<SKTextLine> _textLines;
-
-        private List<Rect> _rectangles;
 
         public SKTextLayout(
             string text,
@@ -262,20 +260,24 @@ namespace Avalonia.Skia
         /// <param name="origin">The origin.</param>
         public void Draw(DrawingContextImpl context, IBrush foreground, SKCanvas canvas, SKPoint origin)
         {
-            var currentMatrix = canvas.TotalMatrix;
+            if (!TextLines.Any())
+            {
+                return;
+            }
 
             _paint.TextEncoding = SKTextEncoding.GlyphId;
 
+            var currentMatrix = canvas.TotalMatrix;
+
+            canvas.Translate(origin.X, origin.Y);
+
             using (var foregroundWrapper = context.CreatePaint(foreground, Size))
             {
-                var currentX = origin.X;
-                var currentY = origin.Y;
-
                 foreach (var textLine in TextLines)
                 {
-                    var offsetX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
-                    var lineX = currentX + offsetX;
-                    var lineY = currentY + textLine.LineMetrics.BaselineOrigin.Y;
+                    var lineOffsetX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+
+                    canvas.Translate(lineOffsetX, textLine.LineMetrics.BaselineOrigin.Y);
 
                     foreach (var textRun in textLine.TextRuns)
                     {
@@ -283,15 +285,13 @@ namespace Avalonia.Skia
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                            canvas.Translate(lineX, lineY);
-
                             canvas.DrawPositionedText(textRun.Glyphs.GlyphIds, textRun.Glyphs.GlyphPositions, _paint);
                         }
 
-                        lineX += textRun.Width;
+                        canvas.Translate(textRun.Width, 0);
                     }
 
-                    currentY += textLine.LineMetrics.Size.Height;
+                    canvas.Translate(-textLine.LineMetrics.Size.Width, textLine.LineMetrics.Descent);
                 }
             }
 
@@ -305,66 +305,74 @@ namespace Avalonia.Skia
         /// <returns></returns>
         public TextHitTestResult HitTestPoint(Point point)
         {
-            var rectangles = GetRectangles();
-
             var pointY = (float)point.Y;
 
             var currentY = 0.0f;
 
             bool isTrailing;
 
-            var length = 1;
-
             foreach (var textLine in TextLines)
             {
                 if (pointY <= currentY + textLine.LineMetrics.Size.Height)
                 {
-                    for (var index = textLine.StartingIndex; index < rectangles.Count; index++)
+                    var currentX = 0.0f;
+
+                    var textPosition = textLine.StartingIndex;
+
+                    foreach (var textRun in textLine.TextRuns)
                     {
-                        var glyphRectangle = rectangles[index];
-
-                        if (glyphRectangle.Contains(point))
+                        if (currentX + textRun.Width < point.X)
                         {
-                            isTrailing = point.X - glyphRectangle.X > glyphRectangle.Width / 2;
+                            currentX += textRun.Width;
 
-                            if (isTrailing && char.IsHighSurrogate(_text[index]))
+                            textPosition += textRun.Text.Length;
+
+                            continue;
+                        }
+
+                        foreach (var glyphCluster in textRun.Glyphs.GlyphClusters)
+                        {
+                            if (currentX + glyphCluster.Bounds.Width < point.X)
                             {
-                                length++;
+                                currentX += glyphCluster.Bounds.Width;
+
+                                continue;
                             }
+
+                            isTrailing = point.X - currentX > glyphCluster.Bounds.Width / 2;
+
+                            var isInside = point.X > 0 && point.X <= textRun.Width;
 
                             return new TextHitTestResult
                             {
-                                IsInside = true,
-                                TextPosition = index,
-                                Length = length,
-                                Bounds = glyphRectangle,
+                                IsInside = isInside,
+                                TextPosition = textPosition + glyphCluster.TextPosition,
+                                Length = glyphCluster.Length,
+                                Bounds = new Rect(currentX, currentY, glyphCluster.Bounds.Width, glyphCluster.Bounds.Height),
                                 IsTrailing = isTrailing
                             };
                         }
                     }
 
-                    var offset = 0;
-
-                    if (point.X >= (rectangles[textLine.StartingIndex].X + textLine.LineMetrics.Size.Width) / 2
-                        && textLine.Length > 0)
+                    if (point.X > currentX + textLine.LineMetrics.Size.Width && textLine.Length > 0)
                     {
-                        offset = textLine.Length - 1;
+                        var lastRun = textLine.TextRuns.LastOrDefault();
+
+                        var lastCluster = lastRun?.Glyphs.GlyphClusters.LastOrDefault();
+
+                        if (lastCluster != null)
+                        {
+                            isTrailing = _text.Length == lastCluster.TextPosition + lastCluster.Length;
+
+                            return new TextHitTestResult
+                            {
+                                IsInside = false,
+                                TextPosition = textLine.StartingIndex + lastCluster.TextPosition,
+                                Length = lastCluster.Length,
+                                IsTrailing = isTrailing
+                            };
+                        }
                     }
-
-                    if (offset > 2 && IsBreakChar(_text[offset - 1]))
-                    {
-                        offset--;
-                    }
-
-                    isTrailing = _text.Length == textLine.StartingIndex + offset + 1;
-
-                    return new TextHitTestResult
-                    {
-                        IsInside = false,
-                        TextPosition = textLine.StartingIndex + offset,
-                        Length = length,
-                        IsTrailing = isTrailing
-                    };
                 }
 
                 currentY += textLine.LineMetrics.Size.Height;
@@ -372,12 +380,26 @@ namespace Avalonia.Skia
 
             isTrailing = point.X > Size.Width || point.Y > Size.Height;
 
+            if (isTrailing)
+            {
+                var lastCluster = TextLines.LastOrDefault()?.TextRuns.LastOrDefault()?.Glyphs.GlyphClusters.LastOrDefault();
+
+                if (lastCluster != null)
+                {
+                    return new TextHitTestResult
+                    {
+                        IsInside = false,
+                        IsTrailing = true,
+                        TextPosition = lastCluster.TextPosition,
+                        Length = lastCluster.Length
+                    };
+                }
+            }
+
             return new TextHitTestResult
             {
                 IsInside = false,
-                IsTrailing = isTrailing,
-                Length = length,
-                TextPosition = isTrailing ? _text.Length - 1 : 0
+                IsTrailing = false
             };
         }
 
@@ -388,23 +410,42 @@ namespace Avalonia.Skia
         /// <returns></returns>
         public Rect HitTestTextPosition(int textPosition)
         {
-            var rectangles = GetRectangles();
+            var currentX = 0.0f;
+            var currentY = 0.0f;
 
-            if (textPosition < 0 || textPosition >= rectangles.Count)
+            foreach (var textLine in TextLines)
             {
-                var r = rectangles.LastOrDefault();
+                if (textLine.StartingIndex + textLine.Length < textPosition)
+                {
+                    currentY += textLine.LineMetrics.Size.Height;
 
-                return new Rect(r.X + r.Width, r.Y, 0, r.Height);
+                    continue;
+                }
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    if (textLine.StartingIndex + textRun.Text.Length < textPosition)
+                    {
+                        currentX += textRun.Width;
+
+                        continue;
+                    }
+
+                    foreach (var glyphCluster in textRun.Glyphs.GlyphClusters)
+                    {
+                        if (glyphCluster.TextPosition + glyphCluster.Length < textPosition)
+                        {
+                            currentX += glyphCluster.Bounds.Width;
+
+                            continue;
+                        }
+
+                        return new Rect(currentX, currentY, glyphCluster.Bounds.Width, glyphCluster.Bounds.Height);
+                    }
+                }
             }
 
-            if (textPosition == rectangles.Count)
-            {
-                var lr = rectangles[rectangles.Count - 1];
-
-                return new Rect(new Point(lr.X + lr.Width, lr.Y), rectangles[textPosition - 1].Size);
-            }
-
-            return rectangles[textPosition];
+            return new Rect(0, 0, Size.Width, Size.Height);
         }
 
         /// <summary>
@@ -417,24 +458,51 @@ namespace Avalonia.Skia
         {
             var result = new List<Rect>();
 
-            var rectangles = GetRectangles();
-
-            var lastIndex = textPosition + textLength - 1;
-
             var currentY = 0.0f;
 
             foreach (var textLine in TextLines)
             {
-                if (textLine.StartingIndex + textLine.Length > textPosition && lastIndex >= textLine.StartingIndex)
+                if (textLine.StartingIndex + textLine.Length > textPosition)
                 {
-                    var lineEndIndex = textLine.StartingIndex + (textLine.Length > 0 ? textLine.Length - 1 : 0);
+                    var currentX = 0.0f;
+                    var runIndex = 0;
 
-                    var left = rectangles[textLine.StartingIndex > textPosition ? textLine.StartingIndex : textPosition]
-                        .X;
+                    while (textLength > 0 && runIndex < textLine.TextRuns.Count)
+                    {
+                        var currentTextRun = textLine.TextRuns[runIndex];
 
-                    var right = rectangles[lineEndIndex > lastIndex ? lastIndex : lineEndIndex].Right;
+                        if (textLine.StartingIndex + currentTextRun.Text.Length > textPosition && textLength > 0)
+                        {
+                            var clusterIndex = 0;
 
-                    result.Add(new Rect(left, currentY, right - left, textLine.LineMetrics.Size.Height));
+                            while (textLength > 0 && clusterIndex < currentTextRun.Glyphs.GlyphClusters.Count)
+                            {
+                                var glyphCluster = currentTextRun.Glyphs.GlyphClusters[clusterIndex];
+
+                                if (glyphCluster.TextPosition >= textPosition && textLength > 0)
+                                {
+                                    result.Add(
+                                        new Rect(
+                                            currentX,
+                                            currentY,
+                                            glyphCluster.Bounds.Width,
+                                            textLine.LineMetrics.Size.Height));
+
+                                    textPosition += glyphCluster.Length;
+
+                                    textLength -= glyphCluster.Length;
+                                }
+
+                                currentX += glyphCluster.Bounds.Width;
+
+                                clusterIndex++;
+                            }
+                        }
+
+                        currentX += currentTextRun.Width;
+
+                        runIndex++;
+                    }
                 }
 
                 currentY += textLine.LineMetrics.Size.Height;
@@ -475,8 +543,6 @@ namespace Avalonia.Skia
             return new SKPaint
             {
                 IsAntialias = true,
-
-                /*Bug: Transparency issue with LcdRenderText = true,*/
                 IsStroke = false,
                 TextEncoding = SKTextEncoding.Utf16,
                 Typeface = typeface,
@@ -542,10 +608,6 @@ namespace Avalonia.Skia
             SKTextRun textRun,
             DrawingContextImpl.PaintWrapper foregroundWrapper)
         {
-            paint.Typeface = textRun.TextFormat.Typeface;
-
-            paint.TextSize = textRun.TextFormat.FontSize;
-
             if (textRun.DrawingEffect == null)
             {
                 foregroundWrapper.ApplyTo(paint);
@@ -619,20 +681,6 @@ namespace Avalonia.Skia
             }
 
             return count;
-        }
-
-        /// <summary>
-        /// Gets the rectangles to hit test against. Each index maps to a text position.
-        /// </summary>
-        /// <returns></returns>
-        private List<Rect> GetRectangles()
-        {
-            if (_rectangles == null || _rectangles.Count != _text.Length)
-            {
-                _rectangles = CreateRectangles();
-            }
-
-            return _rectangles;
         }
 
         /// <summary>
@@ -794,11 +842,9 @@ namespace Avalonia.Skia
 
                 var glyphsIds = result.Codepoints.Select(cp => BitConverter.GetBytes((ushort)cp)).SelectMany(b => b).ToArray();
 
-                var glyphClusters = CreateGlyphClusters(glyphsIds, result.Clusters, result.Points);
+                var glyphClusters = CreateGlyphClusters(text, glyphsIds, result.Clusters, result.Points);
 
                 var glyphs = new SKGlyphRun(glyphsIds, result.Points, glyphClusters);
-
-                _paint.TextEncoding = SKTextEncoding.GlyphId;
 
                 var width = glyphs.GlyphClusters.Sum(x => x.Bounds.Width);
 
@@ -806,28 +852,26 @@ namespace Avalonia.Skia
             }
         }
 
-        private List<SKGlyphCluster> CreateGlyphClusters(byte[] glyphsIds, uint[] clusters, SKPoint[] points)
+        private List<SKGlyphCluster> CreateGlyphClusters(string text, byte[] glyphsIds, uint[] clusters, IReadOnlyList<SKPoint> points)
         {
-            var clusterInfos = new List<SKGlyphCluster>();
+            var glyphClusters = new List<SKGlyphCluster>();
 
             _paint.TextEncoding = SKTextEncoding.GlyphId;
 
             var height = _paint.FontMetrics.Descent - _paint.FontMetrics.Ascent + _paint.FontMetrics.Leading;
 
-            uint current = 0;
+            var current = 0;
 
-            while (current < clusters.Length - 1)
+            var lastIndex = clusters.Length - 1;
+
+            while (current <= lastIndex)
             {
+                // ToDo: Need a custom implementation that searches for the next cluster.
                 var next = Array.BinarySearch(clusters, clusters[current] + 1);
 
                 if (next < 0)
                 {
                     next = ~next;
-                }
-
-                if (next == clusters.Length)
-                {
-                    next--;
                 }
 
                 var width = 0.0f;
@@ -836,8 +880,14 @@ namespace Avalonia.Skia
                 {
                     var byteIndex = index * 2;
 
-                    var glyphWidth = points[index].X
-                                     + _paint.MeasureText(new[] { glyphsIds[byteIndex], glyphsIds[byteIndex + 1] });
+                    var bufferHandle = GCHandle.Alloc(glyphsIds, GCHandleType.Pinned);
+                    var bufferPtr = Marshal.UnsafeAddrOfPinnedArrayElement(glyphsIds, byteIndex);
+
+                    var measuredWidth = _paint.MeasureText(bufferPtr, new IntPtr(2));
+
+                    bufferHandle.Free();
+
+                    var glyphWidth = points[index].X + measuredWidth;
 
                     if (width < glyphWidth)
                     {
@@ -851,14 +901,19 @@ namespace Avalonia.Skia
 
                 var length = next - current;
 
-                var clusterInfo = new SKGlyphCluster((int)current, (int)length, rect);
+                if (current == lastIndex)
+                {
+                    length = text.Length - current;
+                }
 
-                clusterInfos.Add(clusterInfo);
+                var clusterInfo = new SKGlyphCluster(current, length, rect);
 
-                current = (uint)next;
+                glyphClusters.Add(clusterInfo);
+
+                current = next;
             }
 
-            return clusterInfos;
+            return glyphClusters;
         }
 
         /// <summary>
@@ -876,11 +931,11 @@ namespace Avalonia.Skia
             out SKTextLineMetrics textLineMetrics)
         {
             var textRuns = new List<SKTextRun>();
-            var currentPosition = 0;
+            var textPosition = 0;
 
             var runText = text.Substring(startingIndex, length);
 
-            while (currentPosition < length)
+            while (textPosition < length)
             {
                 var glyphCount = Math.Min(runText.Length, _typeface.CountGlyphs(runText));
 
@@ -943,6 +998,7 @@ namespace Avalonia.Skia
 
                                 var symbol = Encoding.Unicode.GetString(bytes);
 
+                                // ToDo: Use CharsToGlyphs when new SkiaSharp is released
                                 if (typeface.CountGlyphs(symbol) == 0)
                                 {
                                     break;
@@ -975,104 +1031,27 @@ namespace Avalonia.Skia
                     }
                 }
 
-                if (currentPosition + glyphCount < length)
+                if (textPosition + glyphCount < length)
                 {
-                    runText = text.Substring(startingIndex + currentPosition, glyphCount);
+                    runText = text.Substring(startingIndex + textPosition, glyphCount);
                 }
 
                 var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));
 
                 textRuns.Add(currentRun);
 
-                currentPosition += glyphCount;
+                textPosition += glyphCount;
 
-                if (currentPosition != length)
+                if (textPosition != length)
                 {
-                    runText = text.Substring(startingIndex + currentPosition);
+                    runText = text.Substring(startingIndex + textPosition);
                 }
             }
 
             textLineMetrics = CreateTextLineMetrics(textRuns, out _);
 
             return textRuns;
-        }
-
-        /// <summary>
-        /// Creates a list of rectangles to hit test against. Each index maps to a text position.
-        /// </summary>
-        /// <returns></returns>
-        private List<Rect> CreateRectangles()
-        {
-            var rectangles = new List<Rect>();
-
-            var currentY = 0.0f;
-
-            foreach (var currentLine in _textLines)
-            {
-                var currentX = GetTextLineOffsetX(_textAlignment, currentLine.LineMetrics.Size.Width);
-                var currentHeight = currentLine.LineMetrics.Size.Height;
-
-                foreach (var textRun in currentLine.TextRuns)
-                {
-                    if (textRun.Text.Length == 0)
-                    {
-                        rectangles.Add(new Rect(currentX, currentY, 0, currentLine.LineMetrics.Size.Height));
-
-                        continue;
-                    }
-
-                    for (var index = 0; index < textRun.Text.Length; index++)
-                    {
-                        var c = textRun.Text[index];
-
-                        _paint.Typeface = textRun.TextFormat.Typeface;
-
-                        _paint.TextSize = textRun.TextFormat.FontSize;
-
-                        if (IsBreakChar(c) || (!char.IsHighSurrogate(c) && IsZeroSpace(c)))
-                        {
-                            rectangles.Add(new Rect(currentX, currentY, 0.0f, currentHeight));
-                        }
-                        else
-                        {
-                            byte[] bytes;
-
-                            var isSurrogatePair = false;
-
-                            if (char.IsHighSurrogate(c))
-                            {
-                                index++;
-
-                                var lowSurrogate = textRun.Text[index];
-
-                                bytes = Encoding.Unicode.GetBytes(new[] { c, lowSurrogate });
-
-                                isSurrogatePair = true;
-                            }
-                            else
-                            {
-                                bytes = Encoding.Unicode.GetBytes(new[] { c });
-                            }
-
-                            var width = _paint.MeasureText(bytes);
-
-                            rectangles.Add(new Rect(currentX, currentY, width, currentHeight));
-
-                            if (isSurrogatePair)
-                            {
-                                rectangles.Add(new Rect(currentX, currentY, 0.0f, currentHeight));
-                            }
-
-                            currentX += width;
-                        }
-                    }
-                }
-
-                currentY += currentLine.LineMetrics.Size.Height;
-            }
-
-            return rectangles;
-        }
+        }       
 
         /// <summary>
         /// Performs line breaks if needed and returns a list of text lines.
@@ -1102,11 +1081,6 @@ namespace Avalonia.Skia
 
                     if (currentWidth > availableLength)
                     {
-                        _paint.Typeface = textRun.TextFormat.Typeface;
-
-                        _paint.TextSize = textRun.TextFormat.FontSize;
-
-                        // returns number of bytes
                         var measuredLength = BreakGlyphs(textRun.Glyphs, availableLength);
 
                         if (measuredLength < textRun.Text.Length)
