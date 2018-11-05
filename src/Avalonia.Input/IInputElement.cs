@@ -33,9 +33,9 @@ namespace Avalonia.Input
         event EventHandler<KeyEventArgs> KeyUp;
 
         /// <summary>
-        /// Occurs when a user typed some text while the control has focus.
+        /// Occurs when text input system asks for a handler to be selected
         /// </summary>
-        event EventHandler<TextInputEventArgs> TextInput;
+        event EventHandler<TextInputHandlerSelectionEventArgs> TextInputHandlerSelection;
 
         /// <summary>
         /// Occurs when the pointer enters the control.

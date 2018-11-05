@@ -18,7 +18,8 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
-    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
+    public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost,
+        ITextInputHandler
     {
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
@@ -308,13 +309,20 @@ namespace Avalonia.Controls
             _presenter?.HideCaret();
         }
 
-        protected override void OnTextInput(TextInputEventArgs e)
+        protected override void OnTextInputHandlerSelection(TextInputHandlerSelectionEventArgs e)
         {
             if (!e.Handled)
             {
-                HandleTextInput(e.Text);
+                e.Handler = this;
                 e.Handled = true;
             }
+            base.OnTextInputHandlerSelection(e);
+        }
+
+        void ITextInputHandler.OnTextEntered (uint timestamp, string text)
+        {
+            if (!RaiseCompatibleTextInput(text))
+                HandleTextInput(text);
         }
 
         private void HandleTextInput(string input)

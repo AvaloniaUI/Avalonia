@@ -115,20 +115,23 @@ namespace Avalonia.Input
                     }
                 }
 
+                
+                // Compatibility layer with backends that still use RawTextInputEventArgs
                 var text = e as RawTextInputEventArgs;
 
                 if (text != null)
                 {
-                    var ev = new TextInputEventArgs()
+                    var ev = new TextInputHandlerSelectionEventArgs
                     {
-                        Device = this,
-                        Text = text.Text,
                         Source = element,
-                        RoutedEvent = InputElement.TextInputEvent
+                        RoutedEvent = InputElement.TextInputHandlerSelectionEvent
                     };
-
                     element.RaiseEvent(ev);
-                    e.Handled = ev.Handled;
+                    if (ev.Handled && ev.Handler != null)
+                    {
+                        ev.Handler.OnTextEntered(e.Timestamp, text.Text);
+                        e.Handled = ev.Handled;
+                    }
                 }
             }
         }

@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Handles access keys within a <see cref="MenuItem"/>
     /// </summary>
-    public class MenuItemAccessKeyHandler : IAccessKeyHandler
+    public class MenuItemAccessKeyHandler : IAccessKeyHandler, ITextInputHandler
     {
         /// <summary>
         /// The registered access keys.
@@ -50,7 +50,16 @@ namespace Avalonia.Controls
 
             _owner = owner;
 
-            _owner.AddHandler(InputElement.TextInputEvent, OnTextInput);
+            _owner.AddHandler(InputElement.TextInputHandlerSelectionEvent, OnTextInputHandlerSelection, RoutingStrategies.Bubble);
+        }
+
+        private void OnTextInputHandlerSelection(object sender, TextInputHandlerSelectionEventArgs e)
+        {
+            if (!e.Handled && e.Handler == null)
+            {
+                e.Handler = this;
+                e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -84,20 +93,18 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Handles a key being pressed in the menu.
+        /// We are currently using "text" input event, which we shouldn't
         /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnTextInput(object sender, TextInputEventArgs e)
+        // TODO: Replace this with KeyDown event
+        void ITextInputHandler.OnTextEntered (uint timestamp, string text)
         {
-            if (!string.IsNullOrWhiteSpace(e.Text))
+            if (!string.IsNullOrWhiteSpace(text))
             {
-                var text = e.Text.ToUpper();
+                text = text.ToUpperInvariant();
                 var focus = _registered
                     .FirstOrDefault(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)?.Item2;
 
                 focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
-
-                e.Handled = true;
             }
         }
     }

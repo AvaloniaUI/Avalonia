@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -85,11 +86,11 @@ namespace Avalonia.Input
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="TextInput"/> event.
+        /// Defines the <see cref=" TextInputHandlerSelection"/> event.
         /// </summary>
-        public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
-            RoutedEvent.Register<InputElement, TextInputEventArgs>(
-                "TextInput",
+        public static readonly RoutedEvent<TextInputHandlerSelectionEventArgs> TextInputHandlerSelectionEvent =
+            RoutedEvent.Register<InputElement, TextInputHandlerSelectionEventArgs>(
+                "TextInputHandlerSelection",
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace Avalonia.Input
             LostFocusEvent.AddClassHandler<InputElement>(x => x.OnLostFocus);
             KeyDownEvent.AddClassHandler<InputElement>(x => x.OnKeyDown);
             KeyUpEvent.AddClassHandler<InputElement>(x => x.OnKeyUp);
-            TextInputEvent.AddClassHandler<InputElement>(x => x.OnTextInput);
+            TextInputHandlerSelectionEvent.AddClassHandler<InputElement>(x => x.OnTextInputHandlerSelection);
             PointerEnterEvent.AddClassHandler<InputElement>(x => x.OnPointerEnterCore);
             PointerLeaveEvent.AddClassHandler<InputElement>(x => x.OnPointerLeaveCore);
             PointerMovedEvent.AddClassHandler<InputElement>(x => x.OnPointerMoved);
@@ -210,12 +211,12 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Occurs when a user typed some text while the control has focus.
+        /// Occurs when text input system asks for a handler to be selected
         /// </summary>
-        public event EventHandler<TextInputEventArgs> TextInput
+        public event EventHandler<TextInputHandlerSelectionEventArgs> TextInputHandlerSelection
         {
-            add { AddHandler(TextInputEvent, value); }
-            remove { RemoveHandler(TextInputEvent, value); }
+            add { AddHandler(TextInputHandlerSelectionEvent, value); }
+            remove { RemoveHandler(TextInputHandlerSelectionEvent, value); }
         }
 
         /// <summary>
@@ -431,14 +432,6 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="TextInput"/> event occurs.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected virtual void OnTextInput(TextInputEventArgs e)
-        {
-        }
-
-        /// <summary>
         /// Called before the <see cref="PointerEnter"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
@@ -540,5 +533,121 @@ namespace Avalonia.Input
                 child.UpdateIsEnabledCore(this);
             }
         }
+
+        #region OnTextInput compatibility layer
+
+        private static Dictionary<Type, bool> s_compatibleTextInputRegistry = new Dictionary<Type, bool>();
+        private CompatibleTextInputHandler _compatibleTextInputHandler;
+        class CompatibleTextInputHandler : ITextInputHandler
+        {
+            private readonly InputElement _parent;
+
+            public CompatibleTextInputHandler(InputElement parent)
+            {
+                _parent = parent;
+            }
+            
+            public EventHandler<TextInputEventArgs> Event;
+            public void OnTextEntered(uint timestamp, string text)
+            {
+                _parent.RaiseCompatibleTextInput(text);
+            }
+        }
+        
+        /// <summary>
+        /// Called before the <see cref="TextInputHandlerSelection"/> event occurs.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnTextInputHandlerSelection(TextInputHandlerSelectionEventArgs e)
+        {
+            if (_compatibleTextInputHandler != null && !e.Handled)
+            {
+                e.Handler = _compatibleTextInputHandler;
+                e.Handled = true;
+            }
+        }
+        
+        [Obsolete("Use TextInputHandlerSelection")]
+        public event EventHandler<TextInputEventArgs> TextInput
+        {
+            add
+            {
+                if (_compatibleTextInputHandler == null)
+                {
+                    _compatibleTextInputHandler = new CompatibleTextInputHandler(this);
+                    _compatibleTextInputHandler.Event += value;
+                }
+            }
+            remove
+            {
+                if (_compatibleTextInputHandler != null)
+                {
+                    _compatibleTextInputHandler.Event -= value;
+                    if (_compatibleTextInputHandler.Event == null)
+                        _compatibleTextInputHandler = null;
+                }
+            }
+        }
+
+        protected internal bool RaiseCompatibleTextInput(string text)
+        {
+            if (_compatibleTextInputHandler != null)
+            {
+                var ev = new TextInputEventArgs
+                {
+                    Text = text,
+                    Source = this
+                };
+                _compatibleTextInputHandler.Event?.Invoke(this, ev);
+                if(!ev.Handled)
+                    OnTextInput(ev);
+                return ev.Handled;
+            }
+
+            return false;
+        }
+        
+        [Obsolete("Use TextInputHandlerSelection")]
+        protected virtual void OnTextInput(TextInputEventArgs e)
+        {
+            
+        }
+
+        static bool CheckIfOverridden(MethodInfo method, Type target)
+        {
+            while (true)
+            {
+                var baseMethod = method.GetBaseDefinition();
+                if(baseMethod == method || baseMethod == null)
+                    break;
+                method = baseMethod;
+            }
+
+            var fromType = method.DeclaringType;
+            while (fromType != target && target != null)
+            {
+                var found = target.GetMethod(method.Name,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null, method.GetParameters().Select(p => p.ParameterType).ToArray(), null);
+                if (found != null && found.DeclaringType != fromType)
+                    return true;
+                
+                target = target.BaseType;
+            }
+
+            return false;
+        }
+
+        public InputElement()
+        {
+            var type = GetType();
+            if (!s_compatibleTextInputRegistry.TryGetValue(type, out var needsCompat))
+                s_compatibleTextInputRegistry[type] = needsCompat =
+                    CheckIfOverridden(new Action<TextInputEventArgs>(OnTextInput).Method, type);
+            if (needsCompat)
+                TextInput += (o, e) => OnTextInput(e);
+        }
+
+        #endregion
     }
 }

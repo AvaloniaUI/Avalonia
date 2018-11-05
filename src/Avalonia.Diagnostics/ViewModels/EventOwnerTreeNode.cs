@@ -18,7 +18,7 @@ namespace Avalonia.Diagnostics.ViewModels
            Button.ClickEvent,
            InputElement.KeyDownEvent,
            InputElement.KeyUpEvent,
-           InputElement.TextInputEvent,
+           InputElement.TextInputHandlerSelectionEvent,
            InputElement.PointerReleasedEvent,
            InputElement.PointerPressedEvent,
         };

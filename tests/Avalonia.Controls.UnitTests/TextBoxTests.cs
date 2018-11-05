@@ -114,12 +114,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal("0", target.Text);
 
                 target.CaretIndex = 1;
-                target.RaiseEvent(new TextInputEventArgs
-                {
-                    RoutedEvent = InputElement.TextInputEvent,
-                    Text = "2",
-                });
-
+                RaiseTextEvent(target, "2");
                 Assert.Equal("02", target.Text);
             }
         }
@@ -417,11 +412,12 @@ namespace Avalonia.Controls.UnitTests
 
         private void RaiseTextEvent(TextBox textBox, string text)
         {
-            textBox.RaiseEvent(new TextInputEventArgs
+            var ev = new TextInputHandlerSelectionEventArgs
             {
-                RoutedEvent = InputElement.TextInputEvent,
-                Text = text
-            });
+                RoutedEvent = InputElement.TextInputHandlerSelectionEvent
+            };
+            textBox.RaiseEvent(ev);
+            ev.Handler?.OnTextEntered(0, text);
         }
 
         private class Class1 : NotifyingBase
