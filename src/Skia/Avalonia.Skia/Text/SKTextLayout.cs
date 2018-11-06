@@ -375,11 +375,11 @@ namespace Avalonia.Skia
                         var glyphCluster = textRun?.GlyphRun.GlyphClusters.LastOrDefault();
 
                         if (glyphCluster != null)
-                        {                           
+                        {
                             textPosition += glyphCluster.TextPosition;
 
                             isTrailing = _text.Length == textPosition + 1;
-                                             
+
                             return new TextHitTestResult
                             {
                                 IsInside = false,
@@ -485,51 +485,70 @@ namespace Avalonia.Skia
         {
             var result = new List<Rect>();
 
-            var currentY = 0.0f;
+            var currentY = 0f;
+            var remainingLength = textLength;
 
             foreach (var textLine in TextLines)
             {
-                if (textLine.StartingIndex + textLine.Length > textPosition)
+                if (textLine.StartingIndex + textLine.Length - 1 < textPosition)
                 {
-                    var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
-                    var runIndex = 0;
+                    currentY += textLine.LineMetrics.Size.Height;
 
-                    while (textLength > 0 && runIndex < textLine.TextRuns.Count)
+                    continue;
+                }
+
+                var lineX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var currentPosition = textLine.StartingIndex;
+                var start = new Point();
+
+                foreach (var textRun in textLine.TextRuns)
+                {
+                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textLength)
                     {
-                        var currentTextRun = textLine.TextRuns[runIndex];
+                        lineX += textRun.Width;
 
-                        if (textLine.StartingIndex + currentTextRun.Text.Length > textPosition && textLength > 0)
+                        currentPosition += textRun.Text.Length;
+
+                        continue;
+                    }
+
+                    foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
+                    {
+                        if (currentPosition + glyphCluster.TextPosition < textPosition)
                         {
-                            var clusterIndex = 0;
+                            lineX += glyphCluster.Bounds.Width;
 
-                            while (textLength > 0 && clusterIndex < currentTextRun.GlyphRun.GlyphClusters.Count)
-                            {
-                                var glyphCluster = currentTextRun.GlyphRun.GlyphClusters[clusterIndex];
-
-                                if (glyphCluster.TextPosition >= textPosition && textLength > 0)
-                                {
-                                    result.Add(
-                                        new Rect(
-                                            currentX,
-                                            currentY,
-                                            glyphCluster.Bounds.Width,
-                                            textLine.LineMetrics.Size.Height));
-
-                                    textPosition += glyphCluster.Length;
-
-                                    textLength -= glyphCluster.Length;
-                                }
-
-                                currentX += glyphCluster.Bounds.Width;
-
-                                clusterIndex++;
-                            }
+                            continue;
                         }
 
-                        currentX += currentTextRun.Width;
+                        if (start == default)
+                        {
+                            start = new Point(lineX, currentY);
+                        }
 
-                        runIndex++;
+                        remainingLength -= glyphCluster.Length;
+
+                        lineX += glyphCluster.Bounds.Width;
+
+                        if (remainingLength <= 0)
+                        {
+                            break;
+                        }                      
                     }
+
+                    if (remainingLength <= 0)
+                    {
+                        break;
+                    }
+                }
+
+                var rect = new Rect(start.X, start.Y, lineX - start.X, textLine.LineMetrics.Size.Height);
+
+                result.Add(rect);
+
+                if (remainingLength <= 0)
+                {
+                    break;
                 }
 
                 currentY += textLine.LineMetrics.Size.Height;
