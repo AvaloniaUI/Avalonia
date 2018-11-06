@@ -963,7 +963,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
-    return _lastKeyHandled;
+    bool result = _lastKeyHandled;
+    
+    _lastKeyHandled = false;
+    
+    return result;
 }
 
 - (void)keyDown:(NSEvent *)event
