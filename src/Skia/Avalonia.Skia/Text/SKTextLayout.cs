@@ -265,9 +265,9 @@ namespace Avalonia.Skia
                 return;
             }
 
-            _paint.TextEncoding = SKTextEncoding.GlyphId;
-
             var currentMatrix = canvas.TotalMatrix;
+
+            _paint.TextEncoding = SKTextEncoding.GlyphId;
 
             canvas.Translate(origin.X, origin.Y);
 
@@ -497,13 +497,13 @@ namespace Avalonia.Skia
                     continue;
                 }
 
-                var lineX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var lineX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
                 var currentPosition = textLine.StartingIndex;
-                var start = new Point();
+                var startX = -1f;
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textLength)
+                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textPosition)
                     {
                         lineX += textRun.Width;
 
@@ -521,9 +521,9 @@ namespace Avalonia.Skia
                             continue;
                         }
 
-                        if (start == default)
+                        if (startX < 0)
                         {
-                            start = new Point(lineX, currentY);
+                            startX = lineX;
                         }
 
                         remainingLength -= glyphCluster.Length;
@@ -533,7 +533,7 @@ namespace Avalonia.Skia
                         if (remainingLength <= 0)
                         {
                             break;
-                        }                      
+                        }
                     }
 
                     if (remainingLength <= 0)
@@ -542,7 +542,7 @@ namespace Avalonia.Skia
                     }
                 }
 
-                var rect = new Rect(start.X, start.Y, lineX - start.X, textLine.LineMetrics.Size.Height);
+                var rect = new Rect(startX, currentY, lineX - startX, textLine.LineMetrics.Size.Height);
 
                 result.Add(rect);
 
