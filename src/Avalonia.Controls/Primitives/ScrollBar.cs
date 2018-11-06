@@ -128,6 +128,20 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.PageUp)
+            {
+                LargeDecrement();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageDown)
+            {
+                LargeIncrement();
+                e.Handled = true;
+            }
+        }
+
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
