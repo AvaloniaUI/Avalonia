@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Styles =
                     {
-                        new Style(x => x.OfType<ContentControl>())
+                        new Style(x => x.OfType<UserControl>())
                         {
                             Setters = new[]
                             {
