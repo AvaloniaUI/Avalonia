@@ -173,6 +173,12 @@ public:
     virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) = 0;
 };
 
+AVNCOM(IAvnString, 17) : IUnknown
+{
+    virtual HRESULT GetPointer(void**retOut) = 0;
+    virtual HRESULT GetLength(int*ret) = 0;
+};
+
 AVNCOM(IAvnWindowBase, 02) : IUnknown
 {
     virtual HRESULT Show() = 0;
@@ -315,7 +321,7 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual HRESULT GetText (void** retOut) = 0;
+    virtual HRESULT GetText (IAvnString** ppv   ) = 0;
     virtual HRESULT SetText (char* text) = 0;
     virtual HRESULT Clear() = 0;
 };
