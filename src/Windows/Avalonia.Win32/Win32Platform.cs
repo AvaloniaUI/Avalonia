@@ -9,6 +9,7 @@ using System.IO;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -18,6 +19,7 @@ using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
@@ -40,24 +42,14 @@ namespace Avalonia.Win32
     class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
-        private static uint _uiThread;
+        private static Thread _uiThread;
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private IntPtr _hwnd;
         private readonly List<Delegate> _delegates = new List<Delegate>();
 
         public Win32Platform()
         {
-            // Declare that this process is aware of per monitor DPI
-            if (UnmanagedMethods.ShCoreAvailable)
-            {
-                var osVersion = Environment.OSVersion.Version;
-                if (osVersion.Major > 6 || (osVersion.Major == 6 && osVersion.Minor > 2))
-                {
-                    UnmanagedMethods.SetProcessDpiAwareness(UnmanagedMethods.PROCESS_DPI_AWARENESS
-                        .PROCESS_PER_MONITOR_DPI_AWARE);
-                }
-            }
-
+            SetDpiAwareness();
             CreateMessageWindow();
         }
 
@@ -82,13 +74,15 @@ namespace Avalonia.Win32
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
                 .Bind<IPlatformSettings>().ToConstant(s_instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop(60))
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-
+            Win32GlManager.Initialize();
             UseDeferredRendering = deferredRendering;
-            _uiThread = UnmanagedMethods.GetCurrentThreadId();
+            _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
@@ -152,7 +146,7 @@ namespace Avalonia.Win32
                 new IntPtr(SignalL));
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThread == UnmanagedMethods.GetCurrentThreadId();
+        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
         public event Action<DispatcherPriority?> Signaled;
 
@@ -245,5 +239,33 @@ namespace Avalonia.Win32
             }
         }
 
+        private static void SetDpiAwareness()
+        {
+            // Ideally we'd set DPI awareness in the manifest but this doesn't work for netcoreapp2.0
+            // apps as they are actually dlls run by a console loader. Instead we have to do it in code,
+            // but there are various ways to do this depending on the OS version.
+            var user32 = LoadLibrary("user32.dll");
+            var method = GetProcAddress(user32, nameof(SetProcessDpiAwarenessContext));
+
+            if (method != IntPtr.Zero)
+            {
+                if (SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) ||
+                    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE))
+                {
+                    return;
+                }
+            }
+
+            var shcore = LoadLibrary("shcore.dll");
+            method = GetProcAddress(shcore, nameof(SetProcessDpiAwareness));
+
+            if (method != IntPtr.Zero)
+            {
+                SetProcessDpiAwareness(PROCESS_DPI_AWARENESS.PROCESS_PER_MONITOR_DPI_AWARE);
+                return;
+            }
+
+            SetProcessDPIAware();
+        }
     }
 }

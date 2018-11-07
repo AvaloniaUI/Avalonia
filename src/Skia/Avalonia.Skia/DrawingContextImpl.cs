@@ -29,6 +29,7 @@ namespace Avalonia.Skia
         private double _currentOpacity = 1.0f;
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
+        private GRContext _grContext;
 
         /// <summary>
         /// Context create info.
@@ -54,6 +55,11 @@ namespace Avalonia.Skia
             /// Render text without Lcd rendering.
             /// </summary>
             public bool DisableTextLcdRendering;
+
+            /// <summary>
+            /// GPU-accelerated context (optional)
+            /// </summary>
+            public GRContext GrContext;
         }
 
         /// <summary>
@@ -67,7 +73,8 @@ namespace Avalonia.Skia
             _visualBrushRenderer = createInfo.VisualBrushRenderer;
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
-
+            _grContext = createInfo.GrContext;
+            
             Canvas = createInfo.Canvas;
 
             if (Canvas == null)
@@ -135,7 +142,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelWidth, source.Item.PixelHeight), destRect, BitmapInterpolationMode.Default);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
         }
 
@@ -384,7 +391,7 @@ namespace Avalonia.Skia
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
             var calc = new TileBrushCalculator(tileBrush,
-                    new Size(tileBrushImage.PixelWidth, tileBrushImage.PixelHeight), targetSize);
+                    new Size(tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height), targetSize);
 
             var intermediate = CreateRenderTarget(
                 (int)calc.IntermediateSize.Width,
@@ -394,7 +401,7 @@ namespace Avalonia.Skia
 
             using (var context = intermediate.CreateDrawingContext(null))
             {
-                var rect = new Rect(0, 0, tileBrushImage.PixelWidth, tileBrushImage.PixelHeight);
+                var rect = new Rect(0, 0, tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height);
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
@@ -615,7 +622,8 @@ namespace Avalonia.Skia
                 Height = height,
                 Dpi = dpi,
                 Format = format,
-                DisableTextLcdRendering = !_canTextUseLcdRendering
+                DisableTextLcdRendering = !_canTextUseLcdRendering,
+                GrContext = _grContext
             };
 
             return new SurfaceRenderTarget(createInfo);

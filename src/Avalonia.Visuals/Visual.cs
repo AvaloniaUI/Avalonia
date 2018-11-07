@@ -100,7 +100,7 @@ namespace Avalonia
         /// </summary>
         static Visual()
         {
-            AffectsRender(
+            AffectsRender<Visual>(
                 BoundsProperty,
                 ClipProperty,
                 ClipToBoundsProperty,
@@ -304,7 +304,7 @@ namespace Avalonia
             {
                 var thisOffset = GetOffsetFrom(common, this);
                 var thatOffset = GetOffsetFrom(common, visual);
-                return Matrix.CreateTranslation(-thatOffset) * Matrix.CreateTranslation(thisOffset);
+                return -thatOffset * thisOffset;
             }
 
             return null;
@@ -320,11 +320,47 @@ namespace Avalonia
         /// on the control which when changed should cause a redraw. This is similar to WPF's
         /// FrameworkPropertyMetadata.AffectsRender flag.
         /// </remarks>
+        [Obsolete("Use AffectsRender<T> and specify the control type.")]
         protected static void AffectsRender(params AvaloniaProperty[] properties)
         {
+            AffectsRender<Visual>(properties);
+        }
+
+        /// <summary>
+        /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
+        /// called.
+        /// </summary>
+        /// <typeparam name="T">The control which the property affects.</typeparam>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// This method should be called in a control's static constructor with each property
+        /// on the control which when changed should cause a redraw. This is similar to WPF's
+        /// FrameworkPropertyMetadata.AffectsRender flag.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : Visual
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    if (e.OldValue is IAffectsRender oldValue)
+                    {
+                        oldValue.Invalidated -= sender.AffectsRenderInvalidated;
+                    }
+
+                    if (e.NewValue is IAffectsRender newValue)
+                    {
+                        newValue.Invalidated += sender.AffectsRenderInvalidated;
+                    }
+
+                    sender.InvalidateVisual();
+                }
+            }
+
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsRenderInvalidate);
+                property.Changed.Subscribe(Invalidate);
             }
         }
 
@@ -413,27 +449,33 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Called when a property changes that should invalidate the visual.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private static void AffectsRenderInvalidate(AvaloniaPropertyChangedEventArgs e)
-        {
-            (e.Sender as Visual)?.InvalidateVisual();
-        }
-
-        /// <summary>
         /// Gets the visual offset from the specified ancestor.
         /// </summary>
         /// <param name="ancestor">The ancestor visual.</param>
         /// <param name="visual">The visual.</param>
         /// <returns>The visual offset.</returns>
-        private static Vector GetOffsetFrom(IVisual ancestor, IVisual visual)
+        private static Matrix GetOffsetFrom(IVisual ancestor, IVisual visual)
         {
-            var result = new Vector();
+            var result = Matrix.Identity;
 
             while (visual != ancestor)
             {
-                result = new Vector(result.X + visual.Bounds.X, result.Y + visual.Bounds.Y);
+                if (visual.RenderTransform?.Value != null)
+                {
+                    var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
+                    var offset = Matrix.CreateTranslation(origin);
+                    var renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
+
+                    result *= renderTransform;
+                }
+
+                var topLeft = visual.Bounds.TopLeft;
+
+                if (topLeft != default)
+                {
+                    result *= Matrix.CreateTranslation(topLeft);
+                }
+
                 visual = visual.VisualParent;
 
                 if (visual == null)
@@ -529,6 +571,8 @@ namespace Avalonia
 
             OnVisualParentChanged(old, value);
         }
+
+        private void AffectsRenderInvalidated(object sender, EventArgs e) => InvalidateVisual();
 
         /// <summary>
         /// Called when the <see cref="VisualChildren"/> collection changes.

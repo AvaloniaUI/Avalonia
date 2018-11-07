@@ -17,6 +17,55 @@ namespace Avalonia.Animation
     /// </summary>
     public class Animation : AvaloniaList<KeyFrame>, IAnimation
     {
+        /// <summary>
+        /// Gets or sets the active time of this animation.
+        /// </summary>
+        public TimeSpan Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the repeat count for this animation.
+        /// </summary>
+        public RepeatCount RepeatCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the playback direction for this animation.
+        /// </summary>
+        public PlaybackDirection PlaybackDirection { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value fill mode for this animation.
+        /// </summary>
+        public FillMode FillMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the easing function to be used for this animation.
+        /// </summary>
+        public Easing Easing { get; set; } = new LinearEasing();
+
+        /// <summary>
+        /// Gets or sets the speed multiple for this animation.
+        /// </summary>
+        public double SpeedRatio { get; set; } = 1d;
+
+        /// <summary> 
+        /// Gets or sets the delay time for this animation. 
+        /// </summary> 
+        /// <remarks>
+        /// Describes a delay to be added before the animation starts, and optionally between 
+        /// repeats of the animation if <see cref="DelayBetweenIterations"/> is set. 
+        /// </remarks> 
+        public TimeSpan Delay { get; set; }
+
+        /// <summary> 
+        /// Gets or sets a value indicating whether <see cref="Delay"/> will be applied between 
+        /// iterations of the animation.
+        /// </summary> 
+        /// <remarks>
+        /// If this property is not set, then <see cref="Delay"/> will only be applied to the first 
+        /// iteration of the animation. 
+        /// </remarks> 
+        public bool DelayBetweenIterations { get; set; }
+
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
             ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) )
@@ -39,38 +88,6 @@ namespace Avalonia.Animation
             }
             return null;
         }
-
-        public AvaloniaList<IAnimator> _animators { get; set; } = new AvaloniaList<IAnimator>();
-
-        /// <summary>
-        /// Run time of this animation.
-        /// </summary>
-        public TimeSpan Duration { get; set; }
-
-        /// <summary>
-        /// Delay time for this animation.
-        /// </summary>
-        public TimeSpan Delay { get; set; }
-
-        /// <summary>
-        /// The repeat count for this animation.
-        /// </summary>
-        public RepeatCount RepeatCount { get; set; }
-
-        /// <summary>
-        /// The playback direction for this animation.
-        /// </summary>
-        public PlaybackDirection PlaybackDirection { get; set; }
-
-        /// <summary>
-        /// The value fill mode for this animation.
-        /// </summary>
-        public FillMode FillMode { get; set; }
-
-        /// <summary>
-        /// Easing function to be used.
-        /// </summary>
-        public Easing Easing { get; set; } = new LinearEasing();
 
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
@@ -127,12 +144,12 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public IDisposable Apply(Animatable control, IObservable<bool> match, Action onComplete)
+        public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
             var (animators, subscriptions) = InterpretKeyframes(control);
             if (animators.Count == 1)
             {
-                subscriptions.Add(animators[0].Apply(this, control, match, onComplete));
+                subscriptions.Add(animators[0].Apply(this, control, clock, match, onComplete));
             }
             else
             {
@@ -146,7 +163,7 @@ namespace Avalonia.Animation
                         animatorOnComplete = () => tcs.SetResult(null);
                         completionTasks.Add(tcs.Task);
                     }
-                    subscriptions.Add(animator.Apply(this, control, match, animatorOnComplete));
+                    subscriptions.Add(animator.Apply(this, control, clock, match, animatorOnComplete));
                 }
 
                 if (onComplete != null)
@@ -158,7 +175,7 @@ namespace Avalonia.Animation
         }
 
         /// <inheritdocs/>
-        public Task RunAsync(Animatable control)
+        public Task RunAsync(Animatable control, IClock clock = null)
         {
             var run = new TaskCompletionSource<object>();
 
@@ -166,7 +183,7 @@ namespace Avalonia.Animation
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
             IDisposable subscriptions = null;
-            subscriptions = this.Apply(control, Observable.Return(true), () =>
+            subscriptions = this.Apply(control, clock, Observable.Return(true), () =>
             {
                 run.SetResult(null);
                 subscriptions?.Dispose();

@@ -73,22 +73,21 @@ namespace Avalonia.Direct2D1.RenderTests
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
+            var size = new Size(target.Width, target.Height);
+            var dpi = new Vector(96, 96);
 
-            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(
-                (int)target.Width,
-                (int)target.Height))
+            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpi))
             {
-                Size size = new Size(target.Width, target.Height);
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 bitmap.Render(target);
                 bitmap.Save(immediatePath);
             }
 
-            using (var rtb = factory.CreateRenderTargetBitmap((int)target.Width, (int)target.Height, 96, 96))
+            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpi))
             using (var renderer = new DeferredRenderer(target, rtb))
             {
-                Size size = new Size(target.Width, target.Height);
                 target.Measure(size);
                 target.Arrange(new Rect(size));
                 renderer.UnitTestUpdateScene();

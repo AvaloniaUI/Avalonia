@@ -105,6 +105,14 @@ namespace Avalonia.Styling
             }
         }
 
+        public void Detach()
+        {
+            foreach (IStyle style in this)
+            {
+                style.Detach();
+            }
+        }
+
         /// <inheritdoc/>
         public bool TryGetResource(string key, out object value)
         {

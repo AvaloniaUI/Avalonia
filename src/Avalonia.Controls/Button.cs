@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -80,7 +82,7 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue(typeof(Button), true);
             CommandProperty.Changed.Subscribe(CommandChanged);
             IsDefaultProperty.Changed.Subscribe(IsDefaultChanged);
-            PseudoClass(IsPressedProperty, ":pressed");
+            PseudoClass<Button>(IsPressedProperty, ":pressed");
         }
 
         /// <summary>
@@ -251,7 +253,10 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
 
-                if (ClickMode == ClickMode.Release && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
+                var hittest = this.GetVisualsAt(e.GetPosition(this));
+
+                if (ClickMode == ClickMode.Release &&
+                    hittest.Any(c => c == this || (c as IStyledElement)?.TemplatedParent == this))
                 {
                     OnClick();
                 }
@@ -261,9 +266,9 @@ namespace Avalonia.Controls
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
         {
             base.UpdateDataValidation(property, status);
-            if(property == CommandProperty)
+            if (property == CommandProperty)
             {
-                if(status?.ErrorType == BindingErrorType.Error)
+                if (status?.ErrorType == BindingErrorType.Error)
                 {
                     IsEnabled = false;
                 }

@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// </summary>
         static DockPanel()
         {
-            AffectsArrange(DockProperty);
+            AffectsParentMeasure<DockPanel>(DockProperty);
         }
 
         /// <summary>

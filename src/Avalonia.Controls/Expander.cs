@@ -35,12 +35,12 @@ namespace Avalonia.Controls
 
         static Expander()
         {
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Down, ":down");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Up, ":up");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Left, ":left");
-            PseudoClass(ExpandDirectionProperty, d => d == ExpandDirection.Right, ":right");
+            PseudoClass<Expander, ExpandDirection>(ExpandDirectionProperty, d => d == ExpandDirection.Down, ":down");
+            PseudoClass<Expander, ExpandDirection>(ExpandDirectionProperty, d => d == ExpandDirection.Up, ":up");
+            PseudoClass<Expander, ExpandDirection>(ExpandDirectionProperty, d => d == ExpandDirection.Left, ":left");
+            PseudoClass<Expander, ExpandDirection>(ExpandDirectionProperty, d => d == ExpandDirection.Right, ":right");
 
-            PseudoClass(IsExpandedProperty, ":expanded");
+            PseudoClass<Expander>(IsExpandedProperty, ":expanded");
 
             IsExpandedProperty.Changed.AddClassHandler<Expander>(x => x.OnIsExpandedChanged);
         }

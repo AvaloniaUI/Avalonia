@@ -25,6 +25,7 @@ namespace Avalonia.Animation
             Cue = cue;
         }
 
+        internal bool isNeutral;
         public Type AnimatorType { get; }
         public Cue Cue { get; }
         public AvaloniaProperty Property { get; private set; }
@@ -59,6 +60,10 @@ namespace Avalonia.Animation
             if (Value == null)
             {
                 throw new ArgumentNullException($"KeyFrame value can't be null.");
+            }
+            if(Value is T typedValue)
+            {
+                return typedValue;
             }
             if (!typeConv.CanConvertTo(Value.GetType()))
             {

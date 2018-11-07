@@ -222,7 +222,7 @@ namespace Avalonia.Controls
 
         private void SetupAvaloniaModules()
         {
-            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
+            var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                      from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
                                      where attribute.ForWindowingSubsystem == ""
                                       || attribute.ForWindowingSubsystem == WindowingSubsystemName
@@ -272,10 +272,10 @@ namespace Avalonia.Controls
 
             s_setupWasAlreadyCalled = true;
 
-            Instance.RegisterServices();
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
+            Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
         }

@@ -4,12 +4,14 @@
 using System;
 using System.Reactive.Concurrency;
 using System.Threading;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
 
@@ -120,11 +122,11 @@ namespace Avalonia
                 if (_resources != null)
                 {
                     hadResources = _resources.Count > 0;
-                    _resources.ResourcesChanged -= ResourcesChanged;
+                    _resources.ResourcesChanged -= ThisResourcesChanged;
                 }
 
                 _resources = value;
-                _resources.ResourcesChanged += ResourcesChanged;
+                _resources.ResourcesChanged += ThisResourcesChanged;
 
                 if (hadResources || _resources.Count > 0)
                 {
@@ -335,6 +337,16 @@ namespace Avalonia
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
                 .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
+
+            var clock = new RenderLoopClock();
+            AvaloniaLocator.CurrentMutable
+                .Bind<IGlobalClock>().ToConstant(clock)
+                .GetService<IRenderLoop>()?.Add(clock);
+        }
+
+        private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)
+        {
+            ResourcesChanged?.Invoke(this, e);
         }
     }
 }

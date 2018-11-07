@@ -56,30 +56,29 @@ namespace Avalonia.Media.Imaging
         {
             PlatformImpl.Dispose();
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
-        /// <param name="format">Pixel format</param>
-        /// <param name="data">Pointer to source bytes</param>
-        /// <param name="width">Bitmap width</param>
-        /// <param name="height">Bitmap height</param>
-        /// <param name="stride">Bytes per row</param>
-        public Bitmap(PixelFormat format, IntPtr data, int width, int height, int stride)
+        /// <param name="format">The pixel format.</param>
+        /// <param name="data">The pointer to the source bytes.</param>
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
+        /// <param name="stride">The number of bytes per row.</param>
+        public Bitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             PlatformImpl = RefCountable.Create(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>()
-                .LoadBitmap(format, data, width, height, stride));
+                .LoadBitmap(format, data, size, dpi, stride));
         }
 
-        /// <summary>
-        /// Gets the width of the bitmap, in pixels.
-        /// </summary>
-        public int PixelWidth => PlatformImpl.Item.PixelWidth;
+        /// <inheritdoc/>
+        public Vector Dpi => PlatformImpl.Item.Dpi;
 
-        /// <summary>
-        /// Gets the height of the bitmap, in pixels.
-        /// </summary>
-        public int PixelHeight => PlatformImpl.Item.PixelHeight;
+        /// <inheritdoc/>
+        public Size Size => PlatformImpl.Item.PixelSize.ToSize(Dpi);
+
+        /// <inheritdoc/>
+        public PixelSize PixelSize => PlatformImpl.Item.PixelSize;
 
         /// <summary>
         /// Gets the platform-specific bitmap implementation.

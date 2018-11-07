@@ -13,6 +13,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using System.Threading.Tasks;
 
 namespace Avalonia.Rendering
 {
@@ -20,7 +21,7 @@ namespace Avalonia.Rendering
     /// A renderer which renders the state of the visual tree to an intermediate scene graph
     /// representation which is then rendered on a rendering thread.
     /// </summary>
-    public class DeferredRenderer : RendererBase, IRenderer, IVisualBrushRenderer
+    public class DeferredRenderer : RendererBase, IRenderer, IRenderLoopTask, IVisualBrushRenderer
     {
         private readonly IDispatcher _dispatcher;
         private readonly IRenderLoop _renderLoop;
@@ -31,7 +32,6 @@ namespace Avalonia.Rendering
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
-        private bool _updateQueued;
         private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -149,7 +149,7 @@ namespace Avalonia.Rendering
         {
             if (!_running && _renderLoop != null)
             {
-                _renderLoop.Tick += OnRenderLoopTick;
+                _renderLoop.Add(this);
                 _running = true;
             }
         }
@@ -159,8 +159,20 @@ namespace Avalonia.Rendering
         {
             if (_running && _renderLoop != null)
             {
-                _renderLoop.Tick -= OnRenderLoopTick;
+                _renderLoop.Remove(this);
                 _running = false;
+            }
+        }
+
+        bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
+
+        void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
+
+        void IRenderLoopTask.Render()
+        {
+            using (var scene = _scene?.Clone())
+            {
+                Render(scene?.Item);
             }
         }
 
@@ -344,7 +356,7 @@ namespace Avalonia.Rendering
             foreach (var layer in scene.Layers)
             {
                 var bitmap = Layers[layer.LayerRoot].Bitmap;
-                var sourceRect = new Rect(0, 0, bitmap.Item.PixelWidth, bitmap.Item.PixelHeight);
+                var sourceRect = new Rect(0, 0, bitmap.Item.PixelSize.Width, bitmap.Item.PixelSize.Height);
 
                 if (layer.GeometryClip != null)
                 {
@@ -368,7 +380,7 @@ namespace Avalonia.Rendering
 
             if (_overlay != null)
             {
-                var sourceRect = new Rect(0, 0, _overlay.Item.PixelWidth, _overlay.Item.PixelHeight);
+                var sourceRect = new Rect(0, 0, _overlay.Item.PixelSize.Width, _overlay.Item.PixelSize.Height);
                 context.DrawImage(_overlay, 0.5, sourceRect, clientRect);
             }
 
@@ -381,67 +393,34 @@ namespace Avalonia.Rendering
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
-
-            try
+            if (_root.IsVisible)
             {
-                if (_root.IsVisible)
+                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                var scene = sceneRef.Item;
+
+                if (_dirty == null)
                 {
-                    var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
-                    var scene = sceneRef.Item;
-
-                    if (_dirty == null)
-                    {
-                        _dirty = new DirtyVisuals();
-                        _sceneBuilder.UpdateAll(scene);
-                    }
-                    else if (_dirty.Count > 0)
-                    {
-                        foreach (var visual in _dirty)
-                        {
-                            _sceneBuilder.Update(scene, visual);
-                        }
-                    }
-
-                    var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
-                    oldScene?.Dispose();
-
-                    _dirty.Clear();
-                    (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
+                    _dirty = new DirtyVisuals();
+                    _sceneBuilder.UpdateAll(scene);
                 }
-                else
+                else if (_dirty.Count > 0)
                 {
-                    var oldScene = Interlocked.Exchange(ref _scene, null);
-                    oldScene?.Dispose();
+                    foreach (var visual in _dirty)
+                    {
+                        _sceneBuilder.Update(scene, visual);
+                    }
                 }
+
+                var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
+                oldScene?.Dispose();
+
+                _dirty.Clear();
+                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
-            finally
+            else
             {
-                _updateQueued = false;
-            }
-        }
-
-        private void OnRenderLoopTick(object sender, EventArgs e)
-        {
-            if (Monitor.TryEnter(_rendering))
-            {
-                try
-                {
-                    if (!_updateQueued && (_dirty == null || _dirty.Count > 0))
-                    {
-                        _updateQueued = true;
-                        _dispatcher.Post(UpdateScene, DispatcherPriority.Render);
-                    }
-                    
-                    using (var scene = _scene?.Clone())
-                    {
-                        Render(scene?.Item);
-                    }
-                }
-                catch { }
-                finally
-                {
-                    Monitor.Exit(_rendering);
-                }
+                var oldScene = Interlocked.Exchange(ref _scene, null);
+                oldScene?.Dispose();
             }
         }
 
@@ -453,8 +432,8 @@ namespace Avalonia.Rendering
             var pixelSize = size * scaling;
 
             if (_overlay == null ||
-                _overlay.Item.PixelWidth != pixelSize.Width ||
-                _overlay.Item.PixelHeight != pixelSize.Height)
+                _overlay.Item.PixelSize.Width != pixelSize.Width ||
+                _overlay.Item.PixelSize.Height != pixelSize.Height)
             {
                 _overlay?.Dispose();
                 _overlay = RefCountable.Create(parentContext.CreateLayer(size));

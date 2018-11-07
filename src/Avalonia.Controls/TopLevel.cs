@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
-            AffectsMeasure(ClientSizeProperty);
+            AffectsMeasure<TopLevel>(ClientSizeProperty);
         }
 
         /// <summary>
@@ -96,7 +96,6 @@ namespace Avalonia.Controls
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
-            var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
             Renderer = impl.CreateRenderer(this);
 
             impl.SetInputRoot(this);

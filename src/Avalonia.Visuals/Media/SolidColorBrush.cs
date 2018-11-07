@@ -1,18 +1,25 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using Avalonia.Media.Immutable;
+
 namespace Avalonia.Media
 {
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
+    public class SolidColorBrush : Brush, ISolidColorBrush
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.
         /// </summary>
         public static readonly StyledProperty<Color> ColorProperty =
             AvaloniaProperty.Register<SolidColorBrush, Color>(nameof(Color));
+
+        static SolidColorBrush()
+        {
+            AffectsRender<SolidColorBrush>(ColorProperty);
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SolidColorBrush"/> class.
@@ -75,9 +82,9 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        IBrush IMutableBrush.ToImmutable()
+        public override IBrush ToImmutable()
         {
-            return new Immutable.ImmutableSolidColorBrush(this);
+            return new ImmutableSolidColorBrush(this);
         }
     }
 }

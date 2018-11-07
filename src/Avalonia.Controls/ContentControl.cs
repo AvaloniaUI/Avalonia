@@ -45,8 +45,8 @@ namespace Avalonia.Controls
         static ContentControl()
         {
             ContentControlMixin.Attach<ContentControl>(ContentProperty, x => x.LogicalChildren);
-            PseudoClass(ContentProperty, x => x != null, ":valid");
-            PseudoClass(ContentProperty, x => x == null, ":invalid");
+            PseudoClass<ContentControl, object>(ContentProperty, x => x != null, ":valid");
+            PseudoClass<ContentControl, object>(ContentProperty, x => x == null, ":invalid");
         }
 
         /// <summary>

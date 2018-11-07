@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -191,6 +192,49 @@ namespace Avalonia.Visuals.UnitTests
 
             Assert.Throws<InvalidOperationException>(() => root2.Child = child);
             Assert.Empty(root2.GetVisualChildren());
+        }
+
+        [Fact]
+        public void TransformToVisual_Should_Work()
+        {
+            var child = new Decorator { Width = 100, Height = 100 };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = child.TransformToVisual(root);
+
+            Assert.NotNull(tr);
+
+            var point = root.Bounds.TopLeft * tr;
+
+            //child is centered (400 - 100)/2
+            Assert.Equal(new Point(150, 150), point);
+        }
+
+        [Fact]
+        public void TransformToVisual_With_RenderTransform_Should_Work()
+        {
+            var child = new Decorator
+            {
+                Width = 100,
+                Height = 100,
+                RenderTransform = new ScaleTransform() { ScaleX = 2, ScaleY = 2 }
+            };
+            var root = new TestRoot() { Child = child, Width = 400, Height = 400 };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(new Point(), root.DesiredSize));
+
+            var tr = child.TransformToVisual(root);
+
+            Assert.NotNull(tr);
+
+            var point = root.Bounds.TopLeft * tr;
+
+            //child is centered (400 - 100*2 scale)/2
+            Assert.Equal(new Point(100, 100), point);
         }
     }
 }

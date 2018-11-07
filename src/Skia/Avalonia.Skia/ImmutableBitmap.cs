@@ -31,22 +31,24 @@ namespace Avalonia.Skia
                     throw new ArgumentException("Unable to load bitmap from provided data");
                 }
 
-                PixelWidth = _image.Width;
-                PixelHeight = _image.Height;
+                PixelSize = new PixelSize(_image.Width, _image.Height);
+
+                // TODO: Skia doesn't have an API for DPI.
+                Dpi = new Vector(96, 96);
             }
         }
 
         /// <summary>
         /// Create immutable bitmap from given pixel data copy.
         /// </summary>
-        /// <param name="width">Width of data pixels.</param>
-        /// <param name="height">Height of data pixels.</param>
+        /// <param name="size">Size of the bitmap.</param>
+        /// <param name="dpi">DPI of the bitmap.</param>
         /// <param name="stride">Stride of data pixels.</param>
         /// <param name="format">Format of data pixels.</param>
         /// <param name="data">Data pixels.</param>
-        public ImmutableBitmap(int width, int height, int stride, PixelFormat format, IntPtr data)
+        public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, IntPtr data)
         {
-            var imageInfo = new SKImageInfo(width, height, format.ToSkColorType(), SKAlphaType.Premul);
+            var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), SKAlphaType.Premul);
 
             _image = SKImage.FromPixelCopy(imageInfo, data, stride);
 
@@ -55,15 +57,14 @@ namespace Avalonia.Skia
                 throw new ArgumentException("Unable to create bitmap from provided data");
             }
 
-            PixelWidth = width;
-            PixelHeight = height;
+            PixelSize = size;
+            Dpi = dpi;
         }
 
-        /// <inheritdoc />
-        public int PixelWidth { get; }
+        public Vector Dpi { get; }
+        public PixelSize PixelSize { get; }
 
-        /// <inheritdoc />
-        public int PixelHeight { get; }
+        public int Version { get; } = 1;
 
         /// <inheritdoc />
         public void Dispose()
