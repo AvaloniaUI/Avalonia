@@ -23,12 +23,6 @@
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Pages\TabControlPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-  </ItemGroup>
   
   <Import Project="..\..\build\Serilog.props" />
 </Project>
