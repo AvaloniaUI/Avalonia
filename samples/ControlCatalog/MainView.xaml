@@ -1,9 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Background="{DynamicResource ThemeBackgroundBrush}"
-        TextBlock.Foreground="{DynamicResource ThemeForegroundBrush}"
-        TextBlock.FontSize="{DynamicResource FontSizeNormal}">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <TabControl Classes="sidebar" Name="Sidebar">
     <TabControl.PageTransition>
       <CrossFade Duration="0.25"/>
