@@ -4,9 +4,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="TabItem.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
@@ -16,12 +13,12 @@
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="TabItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>  
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
-  <ItemGroup>
-    <EmbeddedResource Update="TabItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
 </Project>

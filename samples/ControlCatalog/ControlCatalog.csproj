@@ -11,9 +11,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Assets\*" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Pages\TabControlPage.xaml" />
-  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
@@ -27,15 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Pages\TabControlPage.xaml.cs">
-      <DependentUpon>TabControlPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Pages\TabControlPage.xaml">
+    <None Update="Pages\TabControlPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
+    </None>
   </ItemGroup>
   
   <Import Project="..\..\build\Serilog.props" />
