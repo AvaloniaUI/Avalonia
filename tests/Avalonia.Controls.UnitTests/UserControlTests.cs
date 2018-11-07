@@ -40,7 +40,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ContentControl>(parent =>
+            return new FuncControlTemplate<UserControl>(parent =>
             {
                 return new Border
                 {
