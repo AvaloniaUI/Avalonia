@@ -6,8 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-      <ProjectReference Include="..\Avalonia.OpenGL\Avalonia.OpenGL.csproj" />
+        <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     </ItemGroup>
 
 </Project>
