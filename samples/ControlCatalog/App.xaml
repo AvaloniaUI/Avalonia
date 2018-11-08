@@ -2,23 +2,16 @@
   <Application.Styles>
     <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
     <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
-
     <Style Selector="TextBlock.h1">
-      <Setter Property="Foreground" Value="#212121"/>
-      <Setter Property="FontSize" Value="20"/>
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
       <Setter Property="FontWeight" Value="Medium"/>
     </Style>
-
     <Style Selector="TextBlock.h2">
-      <Setter Property="Foreground" Value="#727272"/>
-      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeNormal}"/>
     </Style>
-
-      <Style Selector="TextBlock.h3">
-          <Setter Property="Foreground" Value="#a2a2a2"/>
-          <Setter Property="FontSize" Value="13"/>
-      </Style>
-
-      <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
+    <Style Selector="TextBlock.h3">
+      <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
+    </Style>
+    <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
   </Application.Styles>
 </Application>
