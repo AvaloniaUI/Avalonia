@@ -259,7 +259,6 @@ namespace Avalonia.X11
             {
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
-                Console.WriteLine($"{ev.ConfigureEvent.x} {ev.ConfigureEvent.y} {ev.ConfigureEvent.width} {ev.ConfigureEvent.height}");
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
                     {
