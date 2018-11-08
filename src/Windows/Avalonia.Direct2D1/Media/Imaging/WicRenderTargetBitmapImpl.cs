@@ -13,17 +13,15 @@ namespace Avalonia.Direct2D1.Media
         private readonly WicRenderTarget _renderTarget;
 
         public WicRenderTargetBitmapImpl(
-            int width,
-            int height,
-            double dpiX,
-            double dpiY,
+            PixelSize size,
+            Vector dpi,
             Platform.PixelFormat? pixelFormat = null)
-            : base(width, height, pixelFormat)
+            : base(size, dpi, pixelFormat)
         {
             var props = new RenderTargetProperties
             {
-                DpiX = (float)dpiX,
-                DpiY = (float)dpiY,
+                DpiX = (float)dpi.X,
+                DpiY = (float)dpi.Y,
             };
 
             _renderTarget = new WicRenderTarget(
@@ -44,7 +42,11 @@ namespace Avalonia.Direct2D1.Media
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer, Action finishedCallback)
         {
-            return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: finishedCallback);
+            return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: () =>
+                {
+                    Version++;
+                    finishedCallback?.Invoke();
+                });
         }
     }
 }

@@ -7,8 +7,9 @@ namespace Avalonia.Direct2D1.Media
 {
     public abstract class BitmapImpl : IBitmapImpl, IDisposable
     {
-        public abstract int PixelWidth { get; }
-        public abstract int PixelHeight { get; }
+        public abstract Vector Dpi { get; }
+        public abstract PixelSize PixelSize { get; }
+        public int Version { get; protected set; } = 1;
 
         public abstract OptionalDispose<D2DBitmap> GetDirect2DBitmap(SharpDX.Direct2D1.RenderTarget target);
 

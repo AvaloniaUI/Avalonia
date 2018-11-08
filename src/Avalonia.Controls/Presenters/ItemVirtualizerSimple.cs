@@ -76,9 +76,23 @@ namespace Avalonia.Controls.Presenters
                         var firstIndex = ItemCount - panel.Children.Count;
                         RecycleContainersForMove(firstIndex - FirstIndex);
 
-                        panel.PixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
-                            panel.Children[0].Bounds.Height :
-                            panel.Children[0].Bounds.Width;
+                        double pixelOffset;
+                        var child = panel.Children[0];
+
+                        if (child.IsArrangeValid)
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.Bounds.Height :
+                                                    child.Bounds.Width;
+                        }
+                        else
+                        {
+                            pixelOffset = VirtualizingPanel.ScrollDirection == Orientation.Vertical ?
+                                                    child.DesiredSize.Height :
+                                                    child.DesiredSize.Width;
+                        }
+
+                        panel.PixelOffset = pixelOffset;
                     }
                 }
             }
@@ -402,6 +416,10 @@ namespace Avalonia.Controls.Presenters
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
             var selector = Owner.MemberSelector;
+
+            //validate delta it should never overflow last index or generate index < 0 
+            delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
+
             var sign = delta < 0 ? -1 : 1;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;

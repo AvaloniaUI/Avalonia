@@ -1,5 +1,5 @@
-<UserControl 
-  xmlns="https://github.com/avaloniaui">
+<UserControl
+xmlns="https://github.com/avaloniaui">
   <Grid ColumnDefinitions="Auto" RowDefinitions="Auto,Auto">
     <Grid.Styles>
       <Styles>
@@ -17,7 +17,7 @@
         </Style>
       </Styles>
     </Grid.Styles>
-    <Border Name="clipped" 
+    <Border Name="clipped"
             Background="Yellow"
             Width="100"
             Height="100"
@@ -44,9 +44,9 @@
       <Border Name="clipChild" Background="{DynamicResource ThemeAccentBrush}" Margin="4">
         <!-- Setting opacity puts the TextBox on a new layer -->
         <TextBox Text="Avalonia" Opacity="0.9" VerticalAlignment="Center"/>
-          <Border.RenderTransform>
-            <RotateTransform/>
-          </Border.RenderTransform>
+        <Border.RenderTransform>
+          <RotateTransform/>
+        </Border.RenderTransform>
       </Border>
     </Border>
     <CheckBox Name="useMask" IsChecked="True" Grid.Row="1">Apply Geometry Clip</CheckBox>

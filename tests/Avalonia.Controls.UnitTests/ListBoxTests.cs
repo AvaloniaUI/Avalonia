@@ -1,13 +1,11 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -194,6 +192,79 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(
                 items,
                 target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content));
+        }
+
+        [Fact]
+        public void Toggle_Selection_Should_Update_Containers()
+        {
+            var items = Enumerable.Range(0, 10).Select(x => $"Item {x}").ToArray();
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                SelectionMode = SelectionMode.Toggle,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 })
+            };
+
+            Prepare(target);
+
+            var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
+
+            var item = lbItems[0];
+
+            Assert.Equal(false, item.IsSelected);
+
+            RaisePressedEvent(target, item, MouseButton.Left);
+
+            Assert.Equal(true, item.IsSelected);
+
+            RaisePressedEvent(target, item, MouseButton.Left);
+
+            Assert.Equal(false, item.IsSelected);
+        }
+
+        private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
+        {
+            listBox.RaiseEvent(new PointerPressedEventArgs
+            {
+                Source = item,
+                RoutedEvent = InputElement.PointerPressedEvent,
+                MouseButton = mouseButton
+            });
+        }
+
+        [Fact]
+        public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
+        {
+            var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
+
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 11 })
+            };
+
+            Prepare(target);
+
+            var panel = target.Presenter.Panel as IVirtualizingPanel;
+
+            var listBoxItems = panel.Children.OfType<ListBoxItem>();
+
+            //virtualization should have created exactly 10 items
+            Assert.Equal(10, listBoxItems.Count());
+            Assert.Equal("0", listBoxItems.First().DataContext);
+            Assert.Equal("9", listBoxItems.Last().DataContext);
+
+            //instead pixeloffset > 0 there could be pretty complex sequence for repro
+            //it involves add/remove/scroll to end multiple actions
+            //which i can't find so far :(, but this is the simplest way to add it to unit test
+            panel.PixelOffset = 1;
+
+            //here scroll to end -> IndexOutOfRangeException is thrown
+            target.Scroll.Offset = new Vector(0, 2);
+
+            Assert.True(true);
         }
 
         private FuncControlTemplate ListBoxTemplate()
