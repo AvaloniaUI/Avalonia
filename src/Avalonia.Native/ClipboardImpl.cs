@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -40,7 +41,10 @@ namespace Avalonia.Native
 
             if (text != null)
             {
-                _native.SetText(text);
+                using (var buffer = new Utf8Buffer(text))
+                {
+                    _native.SetText(buffer.DangerousGetHandle());
+                }
             }
 
             return Task.CompletedTask;

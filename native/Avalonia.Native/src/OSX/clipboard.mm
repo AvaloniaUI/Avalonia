@@ -16,13 +16,13 @@ public:
         }
     }
     
-    virtual HRESULT SetText (char* text) override
+    virtual HRESULT SetText (void* utf8String) override
     {
         @autoreleasepool
         {
             NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
             [pasteBoard clearContents];
-            [pasteBoard setString:@(text) forType:NSPasteboardTypeString];
+            [pasteBoard setString:[NSString stringWithUTF8String:(const char*)utf8String] forType:NSPasteboardTypeString];
         }
         
         return S_OK;
