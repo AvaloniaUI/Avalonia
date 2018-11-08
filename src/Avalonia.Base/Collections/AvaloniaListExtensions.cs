@@ -104,7 +104,12 @@ namespace Avalonia.Collections
                     case NotifyCollectionChangedAction.Move:
                     case NotifyCollectionChangedAction.Replace:
                         Remove(e.OldStartingIndex, e.OldItems);
-                        Add(e.NewStartingIndex, e.NewItems);
+                        int newIndex = e.NewStartingIndex;
+                        if(newIndex > e.OldStartingIndex)
+                        {
+                            newIndex -= e.OldItems.Count;
+                        }
+                        Add(newIndex, e.NewItems);
                         break;
 
                     case NotifyCollectionChangedAction.Remove:

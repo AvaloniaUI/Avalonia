@@ -100,15 +100,13 @@ namespace Avalonia.Native
             public FramebufferWrapper(AvnFramebuffer fb)
             {
                 Address = fb.Data;
-                Width = fb.Width;
-                Height = fb.Height;
+                Size = new PixelSize(fb.Width, fb.Height);
                 RowBytes = fb.Stride;
                 Dpi = new Vector(fb.Dpi.X, fb.Dpi.Y);
                 Format = (PixelFormat)fb.PixelFormat;
             }
             public IntPtr Address { get; set; }
-            public int Width { get; set; }
-            public int Height { get; set; }
+            public PixelSize Size { get; set; }
             public int RowBytes {get;set;}
             public Vector Dpi { get; set; }
             public PixelFormat Format { get; }

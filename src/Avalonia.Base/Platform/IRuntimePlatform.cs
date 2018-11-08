@@ -5,10 +5,7 @@ namespace Avalonia.Platform
 {
     public interface IRuntimePlatform
     {
-        Assembly[] GetLoadedAssemblies();
-        void PostThreadPoolItem(Action cb);
         IDisposable StartSystemTimer(TimeSpan interval, Action tick);
-        string GetStackTrace();
         RuntimePlatformInfo GetRuntimeInfo();
         IUnmanagedBlob AllocBlob(int size);
     }

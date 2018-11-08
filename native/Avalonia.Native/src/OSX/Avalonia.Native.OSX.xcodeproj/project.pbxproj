@@ -1,0 +1,334 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		37A517B32159597E00FBA241 /* Screens.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37A517B22159597E00FBA241 /* Screens.mm */; };
+		37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37C09D8721580FE4006A6758 /* SystemDialogs.mm */; };
+		37DDA9B0219330F8002E132B /* AvnString.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37DDA9AF219330F8002E132B /* AvnString.mm */; };
+		37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */ = {isa = PBXBuildFile; fileRef = 37E2330E21583241000CB7E2 /* KeyTransform.mm */; };
+		5B21A982216530F500CEE36E /* cursor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B21A981216530F500CEE36E /* cursor.mm */; };
+		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
+		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
+		AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB1E522B217613570091CD71 /* OpenGL.framework */; };
+		AB573DC4217605E400D389A2 /* gl.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB573DC3217605E400D389A2 /* gl.mm */; };
+		AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB661C1D2148230F00291242 /* AppKit.framework */; };
+		AB661C202148286E00291242 /* window.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB661C1F2148286E00291242 /* window.mm */; };
+		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		379860FE214DA0C000CD0246 /* KeyTransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyTransform.h; sourceTree = "<group>"; };
+		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
+		37A517B22159597E00FBA241 /* Screens.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Screens.mm; sourceTree = "<group>"; };
+		37C09D8721580FE4006A6758 /* SystemDialogs.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SystemDialogs.mm; sourceTree = "<group>"; };
+		37C09D8A21581EF2006A6758 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
+		37DDA9AF219330F8002E132B /* AvnString.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnString.mm; sourceTree = "<group>"; };
+		37DDA9B121933371002E132B /* AvnString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnString.h; sourceTree = "<group>"; };
+		37E2330E21583241000CB7E2 /* KeyTransform.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = KeyTransform.mm; sourceTree = "<group>"; };
+		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
+		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
+		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
+		AB00E4F62147CA920032A60A /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		AB1E522B217613570091CD71 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		AB573DC3217605E400D389A2 /* gl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = gl.mm; sourceTree = "<group>"; };
+		AB661C1D2148230F00291242 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		AB661C1F2148286E00291242 /* window.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = window.mm; sourceTree = "<group>"; };
+		AB661C212148288600291242 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libAvalonia.Native.OSX.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AB7A61EC2147C814003C5833 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */,
+				AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AB661C1C2148230E00291242 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB1E522B217613570091CD71 /* OpenGL.framework */,
+				AB661C1D2148230F00291242 /* AppKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AB7A61E62147C814003C5833 = {
+			isa = PBXGroup;
+			children = (
+				37DDA9B121933371002E132B /* AvnString.h */,
+				37DDA9AF219330F8002E132B /* AvnString.mm */,
+				37A4E71A2178846A00EACBCD /* headers */,
+				AB573DC3217605E400D389A2 /* gl.mm */,
+				5BF943652167AD1D009CAE35 /* cursor.h */,
+				5B21A981216530F500CEE36E /* cursor.mm */,
+				5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */,
+				AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */,
+				AB661C212148288600291242 /* common.h */,
+				379860FE214DA0C000CD0246 /* KeyTransform.h */,
+				37E2330E21583241000CB7E2 /* KeyTransform.mm */,
+				AB661C1F2148286E00291242 /* window.mm */,
+				37C09D8A21581EF2006A6758 /* window.h */,
+				AB00E4F62147CA920032A60A /* main.mm */,
+				37A517B22159597E00FBA241 /* Screens.mm */,
+				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
+				AB7A61F02147C815003C5833 /* Products */,
+				AB661C1C2148230E00291242 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		AB7A61F02147C815003C5833 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		AB7A61ED2147C814003C5833 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		AB7A61EE2147C814003C5833 /* Avalonia.Native.OSX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "Avalonia.Native.OSX" */;
+			buildPhases = (
+				AB7A61EB2147C814003C5833 /* Sources */,
+				AB7A61EC2147C814003C5833 /* Frameworks */,
+				AB7A61ED2147C814003C5833 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Avalonia.Native.OSX;
+			productName = Avalonia.Native.OSX;
+			productReference = AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AB7A61E72147C814003C5833 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1000;
+				ORGANIZATIONNAME = Avalonia;
+				TargetAttributes = {
+					AB7A61EE2147C814003C5833 = {
+						CreatedOnToolsVersion = 8.3.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "Avalonia.Native.OSX" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = AB7A61E62147C814003C5833;
+			productRefGroup = AB7A61F02147C815003C5833 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AB7A61EE2147C814003C5833 /* Avalonia.Native.OSX */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AB7A61EB2147C814003C5833 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */,
+				5B21A982216530F500CEE36E /* cursor.mm in Sources */,
+				37DDA9B0219330F8002E132B /* AvnString.mm in Sources */,
+				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
+				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
+				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
+				AB00E4F72147CA920032A60A /* main.mm in Sources */,
+				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
+				AB573DC4217605E400D389A2 /* gl.mm in Sources */,
+				AB661C202148286E00291242 /* window.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AB7A61F62147C815003C5833 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		AB7A61F72147C815003C5833 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		AB7A61F92147C815003C5833 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = ../../inc;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		AB7A61FA2147C815003C5833 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = ../../inc;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AB7A61EA2147C814003C5833 /* Build configuration list for PBXProject "Avalonia.Native.OSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB7A61F62147C815003C5833 /* Debug */,
+				AB7A61F72147C815003C5833 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB7A61F82147C815003C5833 /* Build configuration list for PBXNativeTarget "Avalonia.Native.OSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB7A61F92147C815003C5833 /* Debug */,
+				AB7A61FA2147C815003C5833 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AB7A61E72147C814003C5833 /* Project object */;
+}

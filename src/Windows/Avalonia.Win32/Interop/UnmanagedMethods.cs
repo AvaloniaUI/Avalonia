@@ -31,6 +31,11 @@ namespace Avalonia.Win32.Interop
 
         public delegate IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
+        public static readonly IntPtr DPI_AWARENESS_CONTEXT_UNAWARE = new IntPtr(-1);
+        public static readonly IntPtr DPI_AWARENESS_CONTEXT_SYSTEM_AWARE = new IntPtr(-2);
+        public static readonly IntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = new IntPtr(-3);
+        public static readonly IntPtr DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new IntPtr(-4);
+
         public enum Cursor
         {
             IDC_ARROW = 32512,
@@ -751,9 +756,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        [DllImport("kernel32.dll")]
-        public static extern uint GetCurrentThreadId();
-
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(SystemMetric smIndex);
 
@@ -956,6 +958,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibrary(string fileName);
 
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
+
         [DllImport("comdlg32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetSaveFileNameW")]
         public static extern bool GetSaveFileName(IntPtr lpofn);
 
@@ -969,6 +974,9 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("shcore.dll")]
         public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiAWarenessContext);
 
         [DllImport("shcore.dll")]
         public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
@@ -1077,7 +1085,6 @@ namespace Avalonia.Win32.Interop
                 MONITOR_DEFAULTTONEAREST = 0x00000002
             }
         }
-
 
         public enum PROCESS_DPI_AWARENESS
         {

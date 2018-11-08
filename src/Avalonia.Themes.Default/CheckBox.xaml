@@ -50,7 +50,7 @@
     <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="CheckBox:pointerover /template/ Border#border">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
   <Style Selector="CheckBox /template/ Path#checkMark">
     <Setter Property="IsVisible" Value="False"/>

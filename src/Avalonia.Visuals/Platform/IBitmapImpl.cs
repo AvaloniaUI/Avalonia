@@ -12,14 +12,19 @@ namespace Avalonia.Platform
     public interface IBitmapImpl : IDisposable
     {
         /// <summary>
-        /// Gets the width of the bitmap, in pixels.
+        /// Gets the dots per inch (DPI) of the image.
         /// </summary>
-        int PixelWidth { get; }
+        Vector Dpi { get; }
 
         /// <summary>
-        /// Gets the height of the bitmap, in pixels.
+        /// Gets the size of the bitmap, in device pixels.
         /// </summary>
-        int PixelHeight { get; }
+        PixelSize PixelSize { get; }
+        
+        /// <summary>
+        /// Version of the pixel data
+        /// </summary>
+        int Version { get; }
 
         /// <summary>
         /// Saves the bitmap to a file.

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reactive.Disposables;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
@@ -15,7 +16,6 @@ namespace Avalonia.Skia
     /// </summary>
     public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
-        private readonly Vector _dpi;
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
@@ -27,12 +27,12 @@ namespace Avalonia.Skia
         /// <param name="createInfo">Create info.</param>
         public SurfaceRenderTarget(CreateInfo createInfo)
         {
-            PixelWidth = createInfo.Width;
-            PixelHeight = createInfo.Height;
-            _dpi = createInfo.Dpi;
+            PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
+            Dpi = createInfo.Dpi;
+
             _disableLcdRendering = createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
-            _surface = CreateSurface(createInfo.GrContext, PixelWidth, PixelHeight, createInfo.Format);
+            _surface = CreateSurface(createInfo.GrContext, PixelSize.Width, PixelSize.Height, createInfo.Format);
 
             _canvas = _surface?.Canvas;
 
@@ -73,20 +73,22 @@ namespace Avalonia.Skia
             var createInfo = new DrawingContextImpl.CreateInfo
             {
                 Canvas = _canvas,
-                Dpi = _dpi,
+                Dpi = Dpi,
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = _disableLcdRendering,
                 GrContext = _grContext
             };
 
-            return new DrawingContextImpl(createInfo);
+            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
 
         /// <inheritdoc />
-        public int PixelWidth { get; }
+        public Vector Dpi { get; }
 
         /// <inheritdoc />
-        public int PixelHeight { get; }
+        public PixelSize PixelSize { get; }
+
+        public int Version { get; private set; } = 1;
 
         /// <inheritdoc />
         public void Save(string fileName)

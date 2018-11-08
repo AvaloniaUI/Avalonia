@@ -58,7 +58,7 @@ namespace Avalonia.Controls
             if (source != null)
             {
                 Rect viewPort = new Rect(Bounds.Size);
-                Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
+                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
                 Vector scale = Stretch.CalculateScaling(Bounds.Size, sourceSize);
                 Size scaledSize = sourceSize * scale;
                 Rect destRect = viewPort
@@ -84,8 +84,7 @@ namespace Avalonia.Controls
 
             if (source != null)
             {
-                Size sourceSize = new Size(source.PixelWidth, source.PixelHeight);
-
+                Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
                 if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
                 {
                     return sourceSize;

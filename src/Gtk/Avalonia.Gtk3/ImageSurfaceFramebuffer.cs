@@ -22,8 +22,7 @@ namespace Avalonia.Gtk3
             height *= _factor;
             _surface = new ManagedCairoSurface(width, height);
             
-            Width = width;
-            Height = height;
+            Size = new PixelSize(width, height);
             Address = _surface.Buffer;
             RowBytes = _surface.Stride;
             Native.CairoSurfaceFlush(_surface.Surface);
@@ -115,18 +114,17 @@ namespace Avalonia.Gtk3
                     if (_impl.CurrentCairoContext != IntPtr.Zero)
                         Draw(_impl.CurrentCairoContext, _surface.Surface, _factor);
                     else
-                        DrawToWidget(_widget, _surface.Surface, Width, Height, _factor);
+                        DrawToWidget(_widget, _surface.Surface, Size.Width, Size.Height, _factor);
                     _surface.Dispose();
                 }
                 else
-                    _impl.SetNextRenderOperation(new RenderOp(_widget, _surface, _factor, Width, Height));
+                    _impl.SetNextRenderOperation(new RenderOp(_widget, _surface, _factor, Size.Width, Size.Height));
                 _surface = null;
             }
         }
 
         public IntPtr Address { get; }
-        public int Width  { get; }
-        public int Height { get; }
+        public PixelSize Size { get; }
         public int RowBytes { get; }
 
         

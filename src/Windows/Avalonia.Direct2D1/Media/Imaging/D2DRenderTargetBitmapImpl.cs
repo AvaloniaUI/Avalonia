@@ -19,9 +19,6 @@ namespace Avalonia.Direct2D1.Media.Imaging
             _renderTarget = renderTarget;
         }
 
-        public override int PixelWidth => _renderTarget.PixelSize.Width;
-        public override int PixelHeight => _renderTarget.PixelSize.Height;
-
         public static D2DRenderTargetBitmapImpl CreateCompatible(
             SharpDX.Direct2D1.RenderTarget renderTarget,
             Size size)
@@ -35,7 +32,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
 
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget);
+            return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
         public IRenderTargetBitmapImpl CreateLayer(Size size)

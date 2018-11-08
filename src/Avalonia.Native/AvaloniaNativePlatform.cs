@@ -76,6 +76,7 @@ namespace Avalonia.Native
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
+                .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows))
                 .Bind<AvaloniaNativeOptions>().ToConstant(opts);
         }
 
@@ -120,7 +121,7 @@ namespace Avalonia.Native
     {
         public AvaloniaNativeMacOptions MacOptions { get; set; }
         public bool UseDeferredRendering { get; set; } = true;
-        public bool UseGpu { get; set; } = false;
+        public bool UseGpu { get; set; } = true;
         internal AvaloniaNativeOptions(IAvaloniaNativeFactory factory)
         {
             var mac = factory.GetMacOptions();

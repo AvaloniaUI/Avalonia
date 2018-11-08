@@ -76,11 +76,11 @@
   </Style>
   <Style Selector="Slider /template/ Border#TrackBackground">
     <Setter Property="BorderThickness" Value="2"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}"/>
   </Style>
   <Style Selector="Slider /template/ RepeatButton.repeattrack">
     <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ThemeBorderLowBrush}"/>
     <Setter Property="Template">
         <ControlTemplate>
             <Border Background="{TemplateBinding Background}" />
