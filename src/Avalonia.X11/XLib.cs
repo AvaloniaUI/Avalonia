@@ -402,6 +402,42 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern IntPtr XCreateColormap(IntPtr display, IntPtr window, IntPtr visual, int create);
         
+        public enum XLookupStatus
+        {
+            XBufferOverflow = -1,
+            XLookupNone = 1,
+            XLookupChars = 2,
+            XLookupKeySym = 3,
+            XLookupBoth = 4
+        }
+        
+        [DllImport (libX11)]
+        public static extern unsafe int XLookupString(ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
+        
+        [DllImport ("libX11")]
+        public static extern unsafe int Xutf8LookupString(IntPtr xic, ref XEvent xevent, void* buffer, int num_bytes, out IntPtr keysym, out IntPtr status);
+        
+        [DllImport (libX11)]
+        public static extern unsafe IntPtr XKeycodeToKeysym(IntPtr display, int keycode, int index);
+        
+        [DllImport (libX11)]
+        public static extern unsafe IntPtr XSetLocaleModifiers(string modifiers);
+
+        [DllImport (libX11)]
+        public static extern IntPtr XOpenIM (IntPtr display, IntPtr rdb, IntPtr res_name, IntPtr res_class);
+
+        [DllImport (libX11)]
+        public static extern IntPtr XCreateIC (IntPtr xim, string name, XIMProperties im_style, string name2, IntPtr value2, IntPtr terminator);
+        
+        [DllImport (libX11)]
+        public static extern IntPtr XCreateIC (IntPtr xim, string name, XIMProperties im_style, string name2, IntPtr value2, string name3, IntPtr value3, IntPtr terminator);
+        
+        [DllImport (libX11)]
+        public static extern void XCloseIM (IntPtr xim);
+
+        [DllImport (libX11)]
+        public static extern void XDestroyIC (IntPtr xic);
+        
         public struct XGeometry
         {
             public IntPtr root;

@@ -16,6 +16,7 @@ namespace Avalonia.X11
         public IntPtr DefaultRootWindow { get; }
         public IntPtr DefaultCursor { get; }
         public X11Atoms Atoms { get; }
+        public IntPtr Xim { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
         
@@ -29,6 +30,9 @@ namespace Avalonia.X11
             DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_arrow);
             DefaultRootWindow = XDefaultRootWindow(display);
             Atoms = new X11Atoms(display);
+            //TODO: Open an actual XIM once we get support for preedit in our textbox
+            XSetLocaleModifiers("@im=none");
+            Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }

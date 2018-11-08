@@ -72,7 +72,7 @@ namespace Avalonia.X11 {
 		internal int		y;
 		internal int		x_root;
 		internal int		y_root;
-		internal int		state;
+	    internal XModifierMask state;
 		internal int		keycode;
 		internal bool		same_screen;
 	}

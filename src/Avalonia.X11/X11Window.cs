@@ -13,6 +13,8 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using static Avalonia.X11.XLib;
+// ReSharper disable IdentifierTypo
+// ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
     unsafe class X11Window : IWindowImpl, IPopupImpl
@@ -20,13 +22,14 @@ namespace Avalonia.X11
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
         private readonly X11Info _x11;
-        private readonly Action<XEvent> _eventHandler;
         private bool _invalidated;
         private XConfigureEvent? _configure;
         private IInputRoot _inputRoot;
-        private IMouseDevice _mouse;
+        private readonly IMouseDevice _mouse;
+        private readonly IKeyboardDevice _keyboard;
         private Point _position;
         private IntPtr _handle;
+        private IntPtr _xic;
         private IntPtr _renderHandle;
         private bool _mapped;
 
@@ -34,7 +37,7 @@ namespace Avalonia.X11
         {
             public RawInputEventArgs Event;
         }
-        private Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
+        private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
         private InputEventContainer _lastEvent;
 
         public X11Window(AvaloniaX11Platform platform, bool popup)
@@ -43,7 +46,9 @@ namespace Avalonia.X11
             _popup = popup;
             _x11 = platform.Info;
             _mouse = platform.MouseDevice;
-            
+            _keyboard = platform.KeyboardDevice;
+            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
+                XNames.XNClientWindow, _handle, IntPtr.Zero);
             
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
@@ -73,8 +78,7 @@ namespace Avalonia.X11
                 
             Handle = new PlatformHandle(_handle, "XID");
             ClientSize = new Size(400, 400);
-            _eventHandler = OnEvent;
-            platform.Windows[_handle] = _eventHandler;
+            platform.Windows[_handle] = OnEvent;
             XSelectInput(_x11.Display, _handle,
                 new IntPtr(0xffffff 
                            ^ (int)XEventMask.SubstructureRedirectMask 
@@ -145,12 +149,14 @@ namespace Avalonia.X11
                 decorations ^= MotifDecorations.Maximize | MotifDecorations.ResizeH;
             }
 
-            var hints = new MotifWmHints();
-            hints.flags = new IntPtr((int)(MotifFlags.Decorations | MotifFlags.Functions));
+            var hints = new MotifWmHints
+            {
+                flags = new IntPtr((int)(MotifFlags.Decorations | MotifFlags.Functions)),
+                decorations = new IntPtr((int)decorations),
+                functions = new IntPtr((int)functions)
+            };
 
-            hints.decorations = new IntPtr((int)decorations);
-            hints.functions = new IntPtr((int)functions);
-            
+
             XChangeProperty(_x11.Display, _handle,
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
                 PropertyMode.Replace, ref hints, 5);
@@ -158,9 +164,11 @@ namespace Avalonia.X11
 
         void UpdateSizeHits()
         {
-            var hints = new XSizeHints();
-            hints.min_width = (int)_minMaxSize.minSize.Width;
-            hints.min_height = (int)_minMaxSize.minSize.Height;
+            var hints = new XSizeHints
+            {
+                min_width = (int)_minMaxSize.minSize.Width,
+                min_height = (int)_minMaxSize.minSize.Height
+            };
             hints.height_inc = hints.width_inc = 1;
             var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
             // People might be passing double.MaxValue
@@ -196,8 +204,10 @@ namespace Avalonia.X11
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
 
-        unsafe void OnEvent(XEvent ev)
+        void OnEvent(XEvent ev)
         {
+            if(XFilterEvent(ref ev, _handle))
+                return;
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
@@ -212,7 +222,7 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.FocusOut)
                 Deactivated?.Invoke();
             else if (ev.type == XEventName.MotionNotify)
-                MouseEvent(RawMouseEventType.Move, ev, ev.MotionEvent.state);
+                MouseEvent(RawMouseEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -222,7 +232,7 @@ namespace Avalonia.X11
                 if (ev.ButtonEvent.button < 4)
                     MouseEvent(ev.ButtonEvent.button == 1 ? RawMouseEventType.LeftButtonDown
                         : ev.ButtonEvent.button == 2 ? RawMouseEventType.MiddleButtonDown
-                        : RawMouseEventType.RightButtonDown, ev, ev.ButtonEvent.state);
+                        : RawMouseEventType.RightButtonDown, ref ev, ev.ButtonEvent.state);
                 else
                 {
                     var delta = ev.ButtonEvent.button == 4
@@ -234,7 +244,7 @@ namespace Avalonia.X11
                                 : new Vector(-1, 0);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
                         _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
-                        TranslateModifiers(ev.ButtonEvent.state)));
+                        TranslateModifiers(ev.ButtonEvent.state)), ref ev);
                 }
                 
             }
@@ -243,12 +253,13 @@ namespace Avalonia.X11
                 if (ev.ButtonEvent.button < 4)
                     MouseEvent(ev.ButtonEvent.button == 1 ? RawMouseEventType.LeftButtonUp
                         : ev.ButtonEvent.button == 2 ? RawMouseEventType.MiddleButtonUp
-                        : RawMouseEventType.RightButtonUp, ev, ev.ButtonEvent.state);
+                        : RawMouseEventType.RightButtonUp, ref ev, ev.ButtonEvent.state);
             }
             else if (ev.type == XEventName.ConfigureNotify)
             {
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
+                Console.WriteLine($"{ev.ConfigureEvent.x} {ev.ConfigureEvent.y} {ev.ConfigureEvent.width} {ev.ConfigureEvent.height}");
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
                     {
@@ -257,7 +268,9 @@ namespace Avalonia.X11
                         var cev = _configure.Value;
                         _configure = null;
                         var nsize = new Size(cev.width, cev.height);
-                        var npos = new Point(cev.x, cev.y);
+                        XTranslateCoordinates(_x11.Display, _handle, _x11.DefaultRootWindow, 0, 0, out var xret,
+                            out var yret, out var _);
+                        var npos = new Point(xret, yret);
                         var changedSize = ClientSize != nsize;
                         var changedPos = npos != _position;
                         ClientSize = nsize;
@@ -285,12 +298,37 @@ namespace Avalonia.X11
 
                 }
             }
+            else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
+            {
+                var buffer = stackalloc byte[40];
+
+                var latinKeysym = XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, 0);
+                ScheduleInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(),
+                    ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
+                    X11KeyTransform.ConvertKey(latinKeysym), TranslateModifiers(ev.KeyEvent.state)), ref ev);
+
+                if (ev.type == XEventName.KeyPress)
+                {
+                    var len = Xutf8LookupString(_xic, ref ev, buffer, 40, out _, out _);
+                    if (len != 0)
+                    {
+                        var text = Encoding.UTF8.GetString(buffer, len);
+                        if (text.Length == 1)
+                        {
+                            if (text[0] < ' ' || text[0] == 0x7f) //Control codes or DEL
+                                return;
+                        }
+                        ScheduleInput(new RawTextInputEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), text),
+                            ref ev);
+                    }
+                }
+            }
         }
 
         private WindowState _lastWindowState;
         public WindowState WindowState
         {
-            get { return _lastWindowState; }
+            get => _lastWindowState;
             set
             {
                 _lastWindowState = value;
@@ -322,7 +360,7 @@ namespace Avalonia.X11
                 {
 
                     XGetWindowProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_STATE, IntPtr.Zero, new IntPtr(256),
-                        false, (IntPtr)Atom.XA_ATOM, out var actualAtom, out var actualFormat, out var nitems, out var bytesAfter,
+                        false, (IntPtr)Atom.XA_ATOM, out _, out _, out var nitems, out _,
                         out var prop);
                     int maximized = 0;
                     var pitems = (IntPtr*)prop.ToPointer();
@@ -381,8 +419,9 @@ namespace Avalonia.X11
         private bool _canResize = true;
         private (Size minSize, Size maxSize) _minMaxSize;
 
-        void ScheduleInput(RawInputEventArgs args)
+        void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
+            _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             _lastEvent = new InputEventContainer() {Event = args};
             _inputQueue.Enqueue(_lastEvent);
             if (_inputQueue.Count == 1)
@@ -399,9 +438,8 @@ namespace Avalonia.X11
             }
         }
         
-        void MouseEvent(RawMouseEventType type, XEvent ev, XModifierMask mods)
+        void MouseEvent(RawMouseEventType type, ref XEvent ev, XModifierMask mods)
         {
-            _x11.LastActivityTimestamp = ev.ButtonEvent.time;
             var mev = new RawMouseEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
                 type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods)); 
@@ -411,7 +449,7 @@ namespace Avalonia.X11
                     _lastEvent.Event = mev;
                     return;
                 }
-            ScheduleInput(mev);
+            ScheduleInput(mev, ref ev);
         }
 
         void DoPaint()
@@ -448,6 +486,12 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            if (_xic != IntPtr.Zero)
+            {
+                XDestroyIC(_xic);
+                _xic = IntPtr.Zero;
+            }
+            
             if (_handle != IntPtr.Zero)
             {
                 XDestroyWindow(_x11.Display, _handle);
@@ -455,7 +499,7 @@ namespace Avalonia.X11
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
             }
-
+            
             if (_renderHandle != IntPtr.Zero)
             {
                 XDestroyWindow(_x11.Display, _renderHandle);
@@ -484,9 +528,11 @@ namespace Avalonia.X11
         {
             if (clientSize == ClientSize)
                 return;
-            var changes = new XWindowChanges();
-            changes.width = (int)clientSize.Width;
-            changes.height = (int)clientSize.Height;
+            var changes = new XWindowChanges
+            {
+                width = (int)clientSize.Width,
+                height = (int)clientSize.Height
+            };
             var needResize = clientSize != ClientSize;
             XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWHeight | ChangeWindowFlags.CWWidth,
                 ref changes);
@@ -524,9 +570,11 @@ namespace Avalonia.X11
             get => _position;
             set
             {
-                var changes = new XWindowChanges();
-                changes.x = (int)value.X;
-                changes.y = (int)value.Y;
+                var changes = new XWindowChanges
+                {
+                    x = (int)value.X,
+                    y = (int)value.Y
+                };
                 XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWX | ChangeWindowFlags.CWY,
                     ref changes);
                 XFlush(_x11.Display);
@@ -536,7 +584,7 @@ namespace Avalonia.X11
 
         public IMouseDevice MouseDevice => _mouse;
        
-        public unsafe void Activate()
+        public void Activate()
         {
             if (_x11.Atoms._NET_ACTIVE_WINDOW != IntPtr.Zero)
             {
@@ -559,18 +607,21 @@ namespace Avalonia.X11
         void SendNetWMMessage(IntPtr message_type, IntPtr l0,
             IntPtr? l1 = null, IntPtr? l2 = null, IntPtr? l3 = null, IntPtr? l4 = null)
         {
-            XEvent xev;
-
-            xev = new XEvent();
-            xev.ClientMessageEvent.type = XEventName.ClientMessage;
-            xev.ClientMessageEvent.send_event = true;
-            xev.ClientMessageEvent.window = _handle;
-            xev.ClientMessageEvent.message_type = message_type;
-            xev.ClientMessageEvent.format = 32;
-            xev.ClientMessageEvent.ptr1 = l0;
-            xev.ClientMessageEvent.ptr2 = l1 ?? IntPtr.Zero;
-            xev.ClientMessageEvent.ptr3 = l2 ?? IntPtr.Zero;
-            xev.ClientMessageEvent.ptr4 = l3 ?? IntPtr.Zero;
+            var xev = new XEvent
+            {
+                ClientMessageEvent =
+                {
+                    type = XEventName.ClientMessage,
+                    send_event = true,
+                    window = _handle,
+                    message_type = message_type,
+                    format = 32,
+                    ptr1 = l0,
+                    ptr2 = l1 ?? IntPtr.Zero,
+                    ptr3 = l2 ?? IntPtr.Zero,
+                    ptr4 = l3 ?? IntPtr.Zero
+                }
+            };
             xev.ClientMessageEvent.ptr4 = l4 ?? IntPtr.Zero;
             XSendEvent(_x11.Display, _x11.RootWindow, false,
                 new IntPtr((int)(EventMask.SubstructureRedirectMask | EventMask.SubstructureNotifyMask)), ref xev);
