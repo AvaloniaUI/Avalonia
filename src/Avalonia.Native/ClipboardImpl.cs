@@ -26,11 +26,12 @@ namespace Avalonia.Native
 
         public unsafe Task<string> GetTextAsync()
         {
-            var text = _native.GetText();
+            using (var text = _native.GetText())
+            {
+                var result = System.Text.Encoding.UTF8.GetString((byte*)text.Pointer(), text.Length());
 
-            var result = System.Text.Encoding.UTF8.GetString((byte*)text.GetPointer(), text.GetLength());
-
-            return Task.FromResult(result);
+                return Task.FromResult(result);
+            }
         }
 
         public Task SetTextAsync(string text)

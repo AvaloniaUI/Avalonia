@@ -175,8 +175,8 @@ public:
 
 AVNCOM(IAvnString, 17) : IUnknown
 {
-    virtual HRESULT GetPointer(void**retOut) = 0;
-    virtual HRESULT GetLength(int*ret) = 0;
+    virtual HRESULT Pointer(void**retOut) = 0;
+    virtual HRESULT Length(int*ret) = 0;
 };
 
 AVNCOM(IAvnWindowBase, 02) : IUnknown
@@ -321,7 +321,7 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual HRESULT GetText (IAvnString** ppv   ) = 0;
+    virtual IAvnString* GetText () = 0;
     virtual HRESULT SetText (char* text) = 0;
     virtual HRESULT Clear() = 0;
 };

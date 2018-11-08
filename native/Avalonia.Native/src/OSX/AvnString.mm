@@ -21,7 +21,7 @@ public:
         _string = string;
     }
     
-    virtual HRESULT GetPointer(void**retOut) override
+    virtual HRESULT Pointer(void**retOut) override
     {
         @autoreleasepool
         {
@@ -36,7 +36,7 @@ public:
         }
     }
     
-    virtual HRESULT GetLength(int*retOut) override
+    virtual HRESULT Length(int*retOut) override
     {
         if(retOut == nullptr)
         {
