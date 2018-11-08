@@ -321,7 +321,7 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual IAvnString* GetText () = 0;
+    virtual HRESULT GetText (IAvnString**ppv) = 0;
     virtual HRESULT SetText (void* utf8Text) = 0;
     virtual HRESULT Clear() = 0;
 };
