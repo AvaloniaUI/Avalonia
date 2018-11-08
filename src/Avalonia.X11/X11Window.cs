@@ -507,7 +507,11 @@ namespace Avalonia.X11
         }
         
         
-        public void Show() => XMapWindow(_x11.Display, _handle);
+        public void Show()
+        {
+            XMapWindow(_x11.Display, _handle);
+            XFlush(_x11.Display);
+        }
 
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
         
