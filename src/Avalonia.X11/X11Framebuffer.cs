@@ -13,12 +13,11 @@ namespace Avalonia.X11
         {
             _display = display;
             _xid = xid;
-            Width = width*factor;
-            Height = height*factor;
-            RowBytes = Width * 4;
+            Size = new PixelSize(width * factor, height * factor);
+            RowBytes = width * 4;
             Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Bgra8888;
-            _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(RowBytes * Height);
+            _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(RowBytes * height);
             Address = _blob.Address;
         }
         
@@ -26,8 +25,8 @@ namespace Avalonia.X11
         {
             var image = new XImage();
             int bitsPerPixel = 32;
-            image.width = Width;
-            image.height = Height;
+            image.width = Size.Width;
+            image.height = Size.Height;
             image.format = 2; //ZPixmap;
             image.data = Address;
             image.byte_order = 0;// LSBFirst;
@@ -35,12 +34,12 @@ namespace Avalonia.X11
             image.bitmap_bit_order = 0;// LSBFirst;
             image.bitmap_pad = bitsPerPixel;
             image.depth = 24;
-            image.bytes_per_line = RowBytes - Width * 4;
+            image.bytes_per_line = RowBytes - Size.Width * 4;
             image.bits_per_pixel = bitsPerPixel;
             XLockDisplay(_display);
             XInitImage(ref image);
             var gc = XCreateGC(_display, _xid, 0, IntPtr.Zero);
-            XPutImage(_display, _xid, gc, ref image, 0, 0, 0, 0, (uint) Width, (uint) Height);
+            XPutImage(_display, _xid, gc, ref image, 0, 0, 0, 0, (uint) Size.Width, (uint) Size.Height);
             XFreeGC(_display, gc);
             XSync(_display, true);
             XUnlockDisplay(_display);
@@ -48,8 +47,7 @@ namespace Avalonia.X11
         }
 
         public IntPtr Address { get; }
-        public int Width { get; }
-        public int Height { get; }
+        public PixelSize Size { get; }
         public int RowBytes { get; }
         public Vector Dpi { get; }
         public PixelFormat Format { get; }

@@ -116,7 +116,7 @@ namespace Avalonia.X11
             }
             public IntPtr Handle { get; }
 
-            public System.Drawing.Size PixelSize
+            public PixelSize Size
             {
                 get
                 {
@@ -126,7 +126,7 @@ namespace Avalonia.X11
                     XFlush(_display);
                     XSync(_display, true);
                     XUnlockDisplay(_display);
-                    return new System.Drawing.Size(geo.width, geo.height);
+                    return new PixelSize(geo.width, geo.height);
                 }
             }
 

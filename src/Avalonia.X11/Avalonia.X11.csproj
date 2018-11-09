@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+        <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     </ItemGroup>
 
 </Project>
