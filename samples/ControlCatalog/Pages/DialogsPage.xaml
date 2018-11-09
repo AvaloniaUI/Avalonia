@@ -3,10 +3,6 @@
       <Button Name="OpenFile">Open File</Button>
       <Button Name="SaveFile">Save File</Button>
       <Button Name="SelectFolder">Select Folder</Button>
-      <StackPanel Orientation="Horizontal">
-          <CheckBox Name="IsModal" IsChecked="True"/>
-          <TextBlock>Modal to window</TextBlock>
-      </StackPanel>
       <Button Name="DecoratedWindow">Decorated window</Button>
   </StackPanel>
 </UserControl>
