@@ -501,6 +501,11 @@ namespace Avalonia.Win32
                     //Remove root reference to this class, so unmanaged delegate can be collected
                     s_instances.Remove(this);
                     Closed?.Invoke();
+                    if (_parent != null)
+                    {
+                        _parent._disabledBy.Remove(this);
+                        _parent.UpdateEnabled();
+                    }
                     //Free other resources
                     Dispose();
                     return IntPtr.Zero;
