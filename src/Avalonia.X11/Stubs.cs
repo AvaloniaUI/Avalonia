@@ -9,27 +9,6 @@ using Avalonia.Platform;
 
 namespace Avalonia.X11
 {
-    class ClipboardStub : IClipboard
-    {
-        private string _text;
-        public Task<string> GetTextAsync()
-        {
-            return Task.FromResult(_text);
-        }
-
-        public Task SetTextAsync(string text)
-        {
-            _text = text;
-            return Task.CompletedTask;
-        }
-
-        public Task ClearAsync()
-        {
-            _text = null;
-            return Task.CompletedTask;
-        }
-    }
-
     class PlatformSettingsStub : IPlatformSettings
     {
         public Size DoubleClickSize { get; } = new Size(2, 2);

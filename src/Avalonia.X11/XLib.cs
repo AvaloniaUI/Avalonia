@@ -117,6 +117,19 @@ namespace Avalonia.X11
         [DllImport(libX11)]
         public static extern int XInternAtoms(IntPtr display, string[] atom_names, int atom_count, bool only_if_exists,
             IntPtr[] atoms);
+        
+        [DllImport(libX11)]
+        public static extern IntPtr XGetAtomName(IntPtr display, IntPtr atom);
+
+        public static string GetAtomName(IntPtr display, IntPtr atom)
+        {
+            var ptr = XGetAtomName(display, atom);
+            if (ptr == IntPtr.Zero)
+                return null;
+            var s = Marshal.PtrToStringAnsi(ptr);
+            XFree(ptr);
+            return s;
+        }
 
         [DllImport(libX11)]
         public static extern int XSetWMProtocols(IntPtr display, IntPtr window, IntPtr[] protocols, int count);

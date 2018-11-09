@@ -172,11 +172,16 @@ namespace Avalonia.X11 {
 		public readonly IntPtr _NET_WM_WINDOW_TYPE_DIALOG;
 		public readonly IntPtr _NET_WM_WINDOW_TYPE_NORMAL;
 		public readonly IntPtr CLIPBOARD;
+		public readonly IntPtr CLIPBOARD_MANAGER;
+		public readonly IntPtr SAVE_TARGETS;
+		public readonly IntPtr MULTIPLE;
 		public readonly IntPtr PRIMARY;
 		public readonly IntPtr OEMTEXT;
 		public readonly IntPtr UNICODETEXT;
 		public readonly IntPtr TARGETS;
 	    public readonly IntPtr UTF8_STRING;
+	    public readonly IntPtr UTF16_STRING;
+	    public readonly IntPtr ATOM_PAIR;
 
 
 		public X11Atoms (IntPtr display) {
