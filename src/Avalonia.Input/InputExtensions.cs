@@ -45,7 +45,8 @@ namespace Avalonia.Input
             return element != null &&
                    element.IsVisible &&
                    element.IsHitTestVisible &&
-                   element.IsEnabledCore;
+                   element.IsEnabledCore &&
+                   element.IsAttachedToVisualTree;
         }
     }
 }
