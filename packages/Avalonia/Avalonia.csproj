@@ -1,4 +1,4 @@
-<Project Sdk="AggregatePackage.NuGet.Sdk">
+﻿<Project Sdk="AggregatePackage.NuGet.Sdk">
   <PropertyGroup>
       <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
@@ -24,6 +24,11 @@
       </_PackageFiles>
       <_PackageFiles Include="$(DesignerHostAppPath)/Avalonia.Designer.HostApp/bin/$(Configuration)/net461/Avalonia.Designer.HostApp.exe">
         <PackagePath>tools/net461/designer</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>None</BuildAction>
+      </_PackageFiles>
+      <_PackageFiles Include="Avalonia.props">
+        <PackagePath>build/Avalonia.props</PackagePath>
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>

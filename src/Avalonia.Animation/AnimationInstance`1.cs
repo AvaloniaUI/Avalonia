@@ -72,10 +72,13 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-        }
+          }
 
         protected override void Unsubscribed()
         {
+            //Animation may have been stopped before it has finished
+            ApplyFinalFill();
+
             _timerSubscription?.Dispose();
             _clock.PlayState = PlayState.Stop;
         }
@@ -98,11 +101,15 @@ namespace Avalonia.Animation
             }
         }
 
-        private void DoComplete()
+        private void ApplyFinalFill()
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
                 _targetControl.SetValue(_parent.Property, _lastInterpValue, BindingPriority.LocalValue);
+        }
 
+        private void DoComplete()
+        {
+            ApplyFinalFill();
             _onCompleteAction?.Invoke();
             PublishCompleted();
         }
@@ -133,6 +140,7 @@ namespace Avalonia.Animation
             DoPlayStates();
             var delayEndpoint = _delay;
             var iterationEndpoint = delayEndpoint + _duration;
+            var iterationTime = time;
 
             //determine if time is currently in the first iteration.
             if (time >= TimeSpan.Zero & time <= iterationEndpoint)
@@ -142,7 +150,7 @@ namespace Avalonia.Animation
             else if (time > iterationEndpoint)
             {
                 //Subtract first iteration to properly get the subsequent iteration time
-                time -= iterationEndpoint;
+                iterationTime -= iterationEndpoint;
 
                 if (!_iterationDelay & delayEndpoint > TimeSpan.Zero)
                 {
@@ -151,39 +159,45 @@ namespace Avalonia.Animation
                 }
 
                 //Calculate the current iteration number
-                _currentIteration = (int)Math.Floor((double)((double)time.Ticks / iterationEndpoint.Ticks)) + 2;
+                _currentIteration = Math.Min(_repeatCount,(int)Math.Floor((double)((double)iterationTime.Ticks / iterationEndpoint.Ticks)) + 2);
             }
             else
             {
                 return;
             }
 
-            time = TimeSpan.FromTicks((long)(time.Ticks % iterationEndpoint.Ticks));
-
-            if (!_isLooping)
-            {
-                if ((_currentIteration > _repeatCount) || (time > iterationEndpoint))
-                    DoComplete();
-            }
-
-            // Determine if the current iteration should have its normalized time inverted.
+             // Determine if the current iteration should have its normalized time inverted.
             bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
                                     _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
                                     _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
                                     _animationDirection == PlaybackDirection.Reverse ? true : false;
-
-            if (delayEndpoint > TimeSpan.Zero & time < delayEndpoint)
+   
+            if (!_isLooping)
+            {
+                var totalTime = _iterationDelay ? _repeatCount * ( _duration.Ticks + _delay.Ticks) : _repeatCount * _duration.Ticks + _delay.Ticks;
+                if (time.Ticks >= totalTime)
+                {
+                    var easedTime = _easeFunc.Ease(isCurIterReverse ? 0.0 : 1.0);
+                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                   
+                    DoComplete();
+                    return;
+                }
+            }
+            iterationTime = TimeSpan.FromTicks((long)(iterationTime.Ticks % iterationEndpoint.Ticks));
+        
+            if (delayEndpoint > TimeSpan.Zero & iterationTime < delayEndpoint)
             {
                 DoDelay();
             }
             else
             {
                 // Offset the delay time            
-                time -= delayEndpoint;
+                iterationTime -= delayEndpoint;
                 iterationEndpoint -= delayEndpoint;
 
                 // Normalize time
-                var interpVal = (double)time.Ticks / iterationEndpoint.Ticks;
+                var interpVal = (double)iterationTime.Ticks / iterationEndpoint.Ticks;
 
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;

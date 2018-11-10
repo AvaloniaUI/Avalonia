@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -440,6 +441,20 @@ namespace Avalonia.Controls
             RaisePropertyChanged(VerticalScrollBarMaximumProperty, 0, VerticalScrollBarMaximum);
             RaisePropertyChanged(VerticalScrollBarValueProperty, 0, VerticalScrollBarValue);
             RaisePropertyChanged(VerticalScrollBarViewportSizeProperty, 0, VerticalScrollBarViewportSize);
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.PageUp)
+            {
+                VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageDown)
+            {
+                VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+                e.Handled = true;
+            }
         }
     }
 }
