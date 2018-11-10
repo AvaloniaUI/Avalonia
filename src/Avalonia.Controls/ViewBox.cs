@@ -34,6 +34,7 @@ namespace Avalonia.Controls
         static Viewbox()
         {
             AffectsMeasure<Viewbox>(StretchProperty);
+            ClipToBoundsProperty.OverrideDefaultValue<Viewbox>(true);
         }
 
         protected override Size MeasureOverride(Size availableSize)
