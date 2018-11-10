@@ -143,14 +143,17 @@ namespace Avalonia.Controls.Utils
         /// <param name="containerLength">
         /// The container length. Usually, it is the constraint of the <see cref="Layoutable.MeasureOverride"/> method.
         /// </param>
+        /// <param name="conventions">
+        /// Overriding conventions that allows the algorithm to handle external inputa 
+        /// </param>
         /// <returns>
         /// The measured result that containing the desired size and all the column/row lengths.
         /// </returns>
         [NotNull, Pure]
-        internal MeasureResult Measure(double containerLength)
+        internal MeasureResult Measure(double containerLength, IReadOnlyList<LengthConvention> conventions = null)
         {
             // Prepare all the variables that this method needs to use.
-            var conventions = _conventions.Select(x => x.Clone()).ToList();
+            conventions = conventions ?? _conventions.Select(x => x.Clone()).ToList();
             var starCount = conventions.Where(x => x.Length.IsStar).Sum(x => x.Length.Value);
             var aggregatedLength = 0.0;
             double starUnitLength;
@@ -248,7 +251,7 @@ namespace Avalonia.Controls.Utils
             // | min | max |     |           | min |     |  min max  | max |
             // |#des#| fix |#des#| fix | fix | fix | fix |   #des#   |#des#|
 
-            var desiredStarMin = AggregateAdditionalConventionsForStars(conventions);
+            var (minLengths, desiredStarMin) = AggregateAdditionalConventionsForStars(conventions);
             aggregatedLength += desiredStarMin;
 
             // M6/7. Determine the desired length of the grid for current container length. Its value is stored in desiredLength.
@@ -282,7 +285,7 @@ namespace Avalonia.Controls.Utils
 
             // Returns the measuring result.
             return new MeasureResult(containerLength, desiredLength, greedyDesiredLength,
-                conventions, dynamicConvention);
+                conventions, dynamicConvention, minLengths);
         }
 
         /// <summary>
@@ -306,14 +309,14 @@ namespace Avalonia.Controls.Utils
             if (finalLength - measure.ContainerLength > LayoutTolerance)
             {
                 // If the final length is larger, we will rerun the whole measure.
-                measure = Measure(finalLength);
+                measure = Measure(finalLength, measure.LeanLengthList);
             }
             else if (finalLength - measure.ContainerLength < -LayoutTolerance)
             {
                 // If the final length is smaller, we measure the M6/6 procedure only.
                 var dynamicConvention = ExpandStars(measure.LeanLengthList, finalLength);
                 measure = new MeasureResult(finalLength, measure.DesiredLength, measure.GreedyDesiredLength,
-                    measure.LeanLengthList, dynamicConvention);
+                    measure.LeanLengthList, dynamicConvention, measure.MinLengths);
             }
 
             return new ArrangeResult(measure.LengthList);
@@ -370,7 +373,7 @@ namespace Avalonia.Controls.Utils
         /// <param name="conventions">All the conventions that have almost been fixed except the rest *.</param>
         /// <returns>The total desired length of all the * length.</returns>
         [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double AggregateAdditionalConventionsForStars(
+        private (List<double>, double) AggregateAdditionalConventionsForStars(
             IReadOnlyList<LengthConvention> conventions)
         {
             // 1. Determine all one-span column's desired widths or row's desired heights.
@@ -403,7 +406,7 @@ namespace Avalonia.Controls.Utils
                 lengthList[group.Key] = Math.Max(lengthList[group.Key], length > 0 ? length : 0);
             }
 
-            return lengthList.Sum() - fixedLength;
+            return (lengthList, lengthList.Sum() - fixedLength);
         }
 
         /// <summary>
@@ -638,13 +641,14 @@ namespace Avalonia.Controls.Utils
             /// Initialize a new instance of <see cref="MeasureResult"/>.
             /// </summary>
             internal MeasureResult(double containerLength, double desiredLength, double greedyDesiredLength,
-                IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<double> expandedConventions)
+                IReadOnlyList<LengthConvention> leanConventions, IReadOnlyList<double> expandedConventions, IReadOnlyList<double> minLengths)
             {
                 ContainerLength = containerLength;
                 DesiredLength = desiredLength;
                 GreedyDesiredLength = greedyDesiredLength;
                 LeanLengthList = leanConventions;
                 LengthList = expandedConventions;
+                MinLengths = minLengths;
             }
 
             /// <summary>
@@ -674,6 +678,7 @@ namespace Avalonia.Controls.Utils
             /// Gets the length list for each column/row.
             /// </summary>
             public IReadOnlyList<double> LengthList { get; }
+            public IReadOnlyList<double> MinLengths { get; }
         }
 
         /// <summary>
