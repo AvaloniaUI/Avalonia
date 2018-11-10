@@ -22,7 +22,7 @@ namespace Avalonia.Controls
 
         static LayoutTransformControl()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<Viewbox>(true);
+            ClipToBoundsProperty.OverrideDefaultValue<LayoutTransformControl>(true);
 
             LayoutTransformProperty.Changed
                 .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
