@@ -31,4 +31,13 @@ extern NSSize ToNSSize (AvnSize s);
 #define NSDebugLog(...) (void)0
 #endif
 
+template<typename T> inline T* objc_cast(id from) {
+    if(from == nil)
+        return nil;
+    if ([from isKindOfClass:[T class]]) {
+        return static_cast<T*>(from);
+    }
+    return nil;
+}
+
 #endif

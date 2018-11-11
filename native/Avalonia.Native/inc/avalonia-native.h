@@ -207,7 +207,7 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
-    virtual HRESULT ShowDialog (IUnknown**ppv) = 0;
+    virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
     virtual HRESULT SetTitle (const char* title) = 0;

@@ -34,6 +34,12 @@ namespace ControlCatalog.Pages
                 {
                     new DecoratedWindow().ShowDialog(GetWindow());
                 };
+            this.FindControl<Button>("Dialog").Click += delegate
+                {
+                    new MainWindow().ShowDialog(GetWindow());
+                };
+
+
         }
 
         Window GetWindow() => (Window)this.VisualRoot;
