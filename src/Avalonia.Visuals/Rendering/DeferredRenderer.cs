@@ -36,6 +36,7 @@ namespace Avalonia.Rendering
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
+        private readonly IDeferredRendererLock _lock;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -44,11 +45,13 @@ namespace Avalonia.Rendering
         /// <param name="renderLoop">The render loop.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
+        /// <param name="rendererLock">Lock object used before trying to access render target</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
             ISceneBuilder sceneBuilder = null,
-            IDispatcher dispatcher = null)
+            IDispatcher dispatcher = null,
+            IDeferredRendererLock rendererLock = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -57,6 +60,7 @@ namespace Avalonia.Rendering
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
+            _lock = rendererLock ?? new ManagedDeferredRendererLock();
         }
 
         /// <summary>
@@ -137,6 +141,10 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
+            var t = (IRenderLoopTask)this;
+            if(t.NeedsUpdate)
+                UpdateScene();
+            t.Render();
         }
 
         /// <inheritdoc/>
@@ -170,10 +178,9 @@ namespace Avalonia.Rendering
 
         void IRenderLoopTask.Render()
         {
-            using (var scene = _scene?.Clone())
-            {
-                Render(scene?.Item);
-            }
+            using (var l = _lock.TryLock())
+                if (l != null)
+                    Render();
         }
 
         /// <inheritdoc/>
@@ -197,6 +204,14 @@ namespace Avalonia.Rendering
 
         internal void UnitTestRender() => Render(_scene.Item);
 
+        private void Render()
+        {
+            using (var scene = _scene?.Clone())
+            {
+                Render(scene?.Item);
+            }
+        }
+        
         private void Render(Scene scene)
         {
             bool renderOverlay = DrawDirtyRects || DrawFps;
@@ -415,7 +430,6 @@ namespace Avalonia.Rendering
                 oldScene?.Dispose();
 
                 _dirty.Clear();
-                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
             else
             {

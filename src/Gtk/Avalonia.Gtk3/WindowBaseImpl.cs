@@ -265,6 +265,8 @@ namespace Avalonia.Gtk3
                 Paint?.Invoke(new Rect(ClientSize));
                 CurrentCairoContext = IntPtr.Zero;
             }
+            else
+                Paint?.Invoke(new Rect(ClientSize));
             return true;
         }
 

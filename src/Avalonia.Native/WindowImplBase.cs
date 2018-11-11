@@ -245,7 +245,9 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRendererProxy(root, _gpu ? _native : null);
+                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
+                    rendererLock:
+                    _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
             return new ImmediateRenderer(root);
         }
 
