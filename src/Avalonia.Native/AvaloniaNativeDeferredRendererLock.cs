@@ -16,7 +16,7 @@ namespace Avalonia.Native
         public IDisposable TryLock()
         {
             if (_window.TryLock())
-                Disposable.Create(() => _window.Unlock());
+                return Disposable.Create(() => _window.Unlock());
             return null;
         }
     }
