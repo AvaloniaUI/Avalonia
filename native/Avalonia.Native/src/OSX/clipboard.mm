@@ -2,29 +2,34 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 #include "common.h"
+#include "AvnString.h"
 
 class Clipboard : public ComSingleObject<IAvnClipboard, &IID_IAvnClipboard>
 {
 public:
     FORWARD_IUNKNOWN()
-    virtual HRESULT GetText (void** retOut) override
+    virtual HRESULT GetText (IAvnString**ppv) override
     {
         @autoreleasepool
         {
-            NSString *str = [[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString];
-            *retOut = (void *)str.UTF8String;
+            if(ppv == nullptr)
+            {
+                return E_POINTER;
+            }
+            
+            *ppv = CreateAvnString([[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString]);
+            
+            return S_OK;
         }
-        
-        return S_OK;
     }
     
-    virtual HRESULT SetText (char* text) override
+    virtual HRESULT SetText (void* utf8String) override
     {
         @autoreleasepool
         {
             NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
             [pasteBoard clearContents];
-            [pasteBoard setString:@(text) forType:NSPasteboardTypeString];
+            [pasteBoard setString:[NSString stringWithUTF8String:(const char*)utf8String] forType:NSPasteboardTypeString];
         }
         
         return S_OK;
