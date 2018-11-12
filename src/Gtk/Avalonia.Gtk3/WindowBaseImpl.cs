@@ -222,14 +222,14 @@ namespace Avalonia.Gtk3
         {
             var evnt = (GdkEventKey*) pev;
             _lastKbdEvent = evnt->time;
-            if (Native.GtkImContextFilterKeypress(_imContext, pev))
-                return true;
             var e = new RawKeyEventArgs(
                 Gtk3Platform.Keyboard,
                 evnt->time,
                 evnt->type == GdkEventType.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
                 Avalonia.Gtk.Common.KeyTransform.ConvertKey((GdkKey)evnt->keyval), GetModifierKeys((GdkModifierType)evnt->state));
             OnInput(e);
+            if (Native.GtkImContextFilterKeypress(_imContext, pev))
+                return true;
             return true;
         }
 
