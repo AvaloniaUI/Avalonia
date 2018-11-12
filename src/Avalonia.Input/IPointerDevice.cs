@@ -12,5 +12,7 @@ namespace Avalonia.Input
         void Capture(IInputElement control);
 
         Point GetPosition(IVisual relativeTo);
+
+        void LayoutUpdated(IInputRoot root);
     }
 }

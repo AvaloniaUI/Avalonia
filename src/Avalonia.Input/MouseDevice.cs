@@ -104,6 +104,18 @@ namespace Avalonia.Input
                 ProcessRawEvent(margs);
         }
 
+        public void LayoutUpdated(IInputRoot root)
+        {
+            if (Captured == null)
+            {
+                SetPointerOver(this, root, root.PointToClient(Position));    
+            }
+            else
+            {
+                SetPointerOver(this, root, Captured);               
+            }                   
+        }
+
         private void ProcessRawEvent(RawMouseEventArgs e)
         {
             Contract.Requires<ArgumentNullException>(e != null);
@@ -298,7 +310,7 @@ namespace Avalonia.Input
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            var element = root.PointerOverElement;           
+            var element = root.PointerOverElement;
             var e = new PointerEventArgs
             {
                 RoutedEvent = InputElement.PointerLeaveEvent,
@@ -311,16 +323,14 @@ namespace Avalonia.Input
                 if (root.IsPointerOver)
                     ClearChildrenPointerOver(e, root,true);
             }
-            else
+            while (element != null)
             {
-                while (element != null)
-                {
-                    e.Source = element;
-                    e.Handled = false;
-                    element.RaiseEvent(e);
-                    element = (IInputElement)element.VisualParent;
-                }
+                e.Source = element;
+                e.Handled = false;
+                element.RaiseEvent(e);
+                element = (IInputElement)element.VisualParent;
             }
+            
             root.PointerOverElement = null;
         }
 
@@ -392,16 +402,14 @@ namespace Avalonia.Input
             {
                 ClearChildrenPointerOver(e,branch,false);
             }
-            else
+            
+            while (el != null && el != branch)
             {
-                while (el != null && el != branch)
-                {
-                    e.Source = el;
-                    e.Handled = false;
-                    el.RaiseEvent(e);
-                    el = (IInputElement)el.VisualParent;
-                }
-            }
+                e.Source = el;
+                e.Handled = false;
+                el.RaiseEvent(e);
+                el = (IInputElement)el.VisualParent;
+            }            
 
             el = root.PointerOverElement = element;
             e.RoutedEvent = InputElement.PointerEnterEvent;
