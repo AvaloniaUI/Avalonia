@@ -1,10 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Controls.Generators
-{
-    using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives;
 
+namespace Avalonia.Controls.Generators
+{    
     public class TabItemContainerGenerator : ItemContainerGenerator<TabItem>
     {
         public TabItemContainerGenerator(TabControl owner)
@@ -30,10 +30,7 @@ namespace Avalonia.Controls.Generators
             {
                 if (item is IHeadered headered)
                 {
-                    if (tabItem.Header != headered.Header)
-                    {
-                        tabItem.Header = headered.Header;
-                    }
+                    tabItem.Header = headered.Header;
                 }
                 else
                 {
@@ -50,9 +47,9 @@ namespace Avalonia.Controls.Generators
             }
 
             if (tabItem.Content == null)
-            {              
+            {
                 tabItem[~ContentControl.ContentProperty] = tabItem[~StyledElement.DataContextProperty];
-            }                    
+            }
 
             return tabItem;
         }

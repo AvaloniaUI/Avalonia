@@ -1,8 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -92,7 +90,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the tabstrip placement of the tabcontrol.
+        /// Gets or sets the tabstrip placement of the TabControl.
         /// </summary>
         public Dock TabStripPlacement
         {
@@ -101,7 +99,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the data template used to display the content of the control.
+        /// Gets or sets the default data template used to display the content of the selected tab.
         /// </summary>
         public IDataTemplate ContentTemplate
         {
@@ -110,10 +108,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the currently selected content.
+        /// Gets or sets the content of the selected tab.
         /// </summary>
         /// <value>
-        /// The content of the selected.
+        /// The content of the selected tab.
         /// </value>
         public object SelectedContent
         {
@@ -122,10 +120,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the template for the currently selected content.
+        /// Gets or sets the content template for the selected tab.
         /// </summary>
         /// <value>
-        /// The selected content template.
+        /// The content template of the selected tab.
         /// </value>
         public IDataTemplate SelectedContentTemplate
         {
@@ -142,19 +140,9 @@ namespace Avalonia.Controls
         {
             base.OnTemplateApplied(e);
 
-            ItemsPresenterPart = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+            ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
 
-            if (ItemsPresenterPart == null)
-            {
-                throw new NotSupportedException("ItemsPresenter not found.");
-            }
-
-            ContentPart = e.NameScope.Find<ContentPresenter>("PART_Content");
-
-            if (ContentPart == null)
-            {
-                throw new NotSupportedException("ContentPresenter not found.");
-            }
+            ContentPart = e.NameScope.Get<ContentPresenter>("PART_Content");
         }
 
         /// <inheritdoc/>

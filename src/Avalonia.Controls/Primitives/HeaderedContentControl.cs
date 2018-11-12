@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives
         }     
 
         /// <summary>
-        /// Gets or sets the data template used to display the content of the control.
+        /// Gets or sets the data template used to display the header content of the control.
         /// </summary>
         public IDataTemplate HeaderTemplate
         {

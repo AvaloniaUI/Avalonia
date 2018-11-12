@@ -67,7 +67,7 @@ namespace Avalonia.Controls
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
-        }     
+        }
 
         /// <summary>
         /// Gets the presenter from the control's template.
