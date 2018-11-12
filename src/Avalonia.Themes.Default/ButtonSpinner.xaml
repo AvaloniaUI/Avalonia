@@ -87,6 +87,9 @@
           </Grid>
         </Border>
       </ControlTemplate>
-    </Setter>
+    </Setter>    
+  </Style>
+  <Style Selector="ButtonSpinner:pointerover">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   </Style>
 </Styles>
