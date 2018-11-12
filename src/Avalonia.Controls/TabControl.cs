@@ -57,10 +57,6 @@ namespace Avalonia.Controls
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new WrapPanel());
 
-        internal ItemsPresenter ItemsPresenterPart { get; private set; }
-
-        internal ContentPresenter ContentPart { get; private set; }
-
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
         /// </summary>
@@ -68,7 +64,7 @@ namespace Avalonia.Controls
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
-            AffectsMeasure(TabStripPlacementProperty);
+            AffectsMeasure<TabControl>(TabStripPlacementProperty);
         }
 
         /// <summary>
@@ -116,7 +112,7 @@ namespace Avalonia.Controls
         public object SelectedContent
         {
             get { return GetValue(SelectedContentProperty); }
-            set { SetValue(SelectedContentProperty, value); }
+            internal set { SetValue(SelectedContentProperty, value); }
         }
 
         /// <summary>
@@ -128,8 +124,12 @@ namespace Avalonia.Controls
         public IDataTemplate SelectedContentTemplate
         {
             get { return GetValue(SelectedContentTemplateProperty); }
-            set { SetValue(SelectedContentTemplateProperty, value); }
+            internal set { SetValue(SelectedContentTemplateProperty, value); }
         }
+
+        internal ItemsPresenter ItemsPresenterPart { get; private set; }
+
+        internal ContentPresenter ContentPart { get; private set; }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
