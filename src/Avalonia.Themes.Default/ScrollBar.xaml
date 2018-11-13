@@ -3,7 +3,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid RowDefinitions="10,*,10">
+                    <Grid RowDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
@@ -58,7 +58,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid ColumnDefinitions="10,*,10">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
