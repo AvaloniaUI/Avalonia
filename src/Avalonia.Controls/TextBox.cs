@@ -265,7 +265,6 @@ namespace Avalonia.Controls
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
             _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
-            _presenter.Background = Brushes.Azure;
 
             if (IsFocused)
             {

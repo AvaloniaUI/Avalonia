@@ -3,8 +3,8 @@
 
 using SkiaSharp;
 
-namespace Avalonia.Skia
-{
+namespace Avalonia.Skia.Text
+{   
     public struct SKTextLineMetrics
     {
         public SKTextLineMetrics(float width, float ascent, float descent, float leading)

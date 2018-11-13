@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Text
 {
     public class SKTextLine
     {

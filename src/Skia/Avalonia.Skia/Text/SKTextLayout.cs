@@ -13,7 +13,7 @@ using Avalonia.Media;
 using SkiaSharp;
 using SkiaSharp.HarfBuzz;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Text
 {
     public class SKTextLayout
     {
@@ -281,11 +281,38 @@ namespace Avalonia.Skia
 
                     foreach (var textRun in textLine.TextRuns)
                     {
+#if LAYOUT_DEBUG
+                        canvas.Translate(0, -textLine.LineMetrics.BaselineOrigin.Y);
+
+                        canvas.DrawRect(
+                            new SKRect(
+                                0,
+                                0,
+                                textRun.Width,
+                                textLine.LineMetrics.Size.Height),
+                            new SKPaint
+                            {
+                                IsStroke = true,
+                                Color = GetRandomColor().ToSKColor()
+                            });
+
+                        foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
+                        {
+                            canvas.DrawRect(
+                                glyphCluster.Bounds,
+                                new SKPaint
+                                {
+                                    Color = GetRandomColor().ToSKColor()
+                                });
+                        }
+
+                        canvas.Translate(0, textLine.LineMetrics.BaselineOrigin.Y);
+#endif
                         if (textRun.TextFormat.Typeface != null)
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                            canvas.DrawPositionedText(textRun.GlyphRun.GlyphIds, textRun.GlyphRun.GlyphPositions, _paint);
+                            canvas.DrawPositionedText(textRun.GlyphRun.GlyphIds, textRun.GlyphRun.GlyphPositions, _paint);                           
                         }
 
                         canvas.Translate(textRun.Width, 0);
@@ -297,6 +324,15 @@ namespace Avalonia.Skia
 
             canvas.SetMatrix(currentMatrix);
         }
+
+#if LAYOUT_DEBUG
+        private static readonly Random s_random = new Random();
+
+        private static Color GetRandomColor()
+        {
+            return Color.FromArgb(128, (byte)s_random.Next(256), (byte)s_random.Next(256), (byte)s_random.Next(256));
+        }
+#endif
 
         /// <summary>
         /// Hit tests the specified point.
@@ -654,6 +690,10 @@ namespace Avalonia.Skia
             SKTextRun textRun,
             DrawingContextImpl.PaintWrapper foregroundWrapper)
         {
+            paint.Typeface = textRun.TextFormat.Typeface;
+
+            paint.TextSize = textRun.TextFormat.FontSize;
+
             if (textRun.DrawingEffect == null)
             {
                 foregroundWrapper.ApplyTo(paint);
@@ -978,7 +1018,7 @@ namespace Avalonia.Skia
 
                     bufferHandle.Free();
 
-                    // ToDo: proper width calculation of clusters width diacritics
+                    // ToDo: proper width calculation of clusters with diacritics
                     if (width < measuredWidth)
                     {
                         width = measuredWidth;

@@ -3,7 +3,7 @@
 
 using SkiaSharp;
 
-namespace Avalonia.Skia
+namespace Avalonia.Skia.Text
 {
     public class SKGlyphCluster
     {

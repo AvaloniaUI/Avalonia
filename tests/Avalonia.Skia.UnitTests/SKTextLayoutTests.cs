@@ -1,17 +1,18 @@
-﻿namespace Avalonia.Skia.UnitTests
+﻿using System.Linq;
+
+using Avalonia.Media;
+using Avalonia.Skia.Text;
+
+using SkiaSharp;
+
+using Xunit;
+
+namespace Avalonia.Skia.UnitTests
 {
-    using System.Linq;
-
-    using Avalonia.Media;
-
-    using SkiaSharp;
-
-    using Xunit;
-
     public class SKTextLayoutTests
     {
-        private static string SingleLineText = "0123456789";
-        private static string MultiLineText = "123456789\r123456789\r123456789\r123456789\r";
+        private static readonly string SingleLineText = "0123456789";
+        private static readonly string MultiLineText = "123456789\r123456789\r123456789\r123456789\r";
 
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()

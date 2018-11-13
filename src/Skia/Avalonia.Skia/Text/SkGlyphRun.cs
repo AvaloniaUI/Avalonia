@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 using SkiaSharp;
 
-namespace Avalonia.Skia
-{
+namespace Avalonia.Skia.Text
+{  
     public class SKGlyphRun
     {
         public SKGlyphRun(byte[] glyphIds, SKPoint[] glyphPositions, IReadOnlyList<SKGlyphCluster> glyphClusters)

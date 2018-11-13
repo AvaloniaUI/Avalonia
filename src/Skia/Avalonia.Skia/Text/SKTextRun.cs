@@ -5,8 +5,8 @@ using Avalonia.Media;
 
 using SkiaSharp;
 
-namespace Avalonia.Skia
-{   
+namespace Avalonia.Skia.Text
+{
     public class SKTextRun
     {
         public SKTextRun(string text, SKGlyphRun glyphRun, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)

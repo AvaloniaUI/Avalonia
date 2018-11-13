@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 
+using Avalonia.Skia.Text;
+
 namespace Avalonia.Skia
 {
     /// <summary>
