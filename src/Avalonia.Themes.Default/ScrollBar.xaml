@@ -54,7 +54,7 @@
     </Style>
     <Style Selector="ScrollBar:horizontal">
         <Setter Property="Height"
-                Value="10" />
+                Value="{DynamicResource ScrollBarHeight}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
@@ -109,15 +109,15 @@
     </Style>
     <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
         <Setter Property="MinWidth"
-                Value="10" />
+                Value="{DynamicResource ScrollBarWidth}" />
     </Style>
     <Style Selector="ScrollBar:vertical">
         <Setter Property="Width"
-                Value="10" />
+                Value="{DynamicResource ScrollBarWidth}" />
     </Style>
     <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
         <Setter Property="MinHeight"
-                Value="10" />
+                Value="{DynamicResource ScrollBarHeight}" />
     </Style>
     <Style Selector="ScrollBar /template/ RepeatButton.repeat">
         <Setter Property="Padding"
