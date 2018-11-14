@@ -120,8 +120,8 @@ namespace Avalonia.Layout.UnitTests
 
                 Assert.True(horzScroll.IsVisible);
                 Assert.True(vertScroll.IsVisible);
-                Assert.Equal(new Size(196, 10), horzScroll.Bounds.Size);
-                Assert.Equal(new Size(10, 196), vertScroll.Bounds.Size);
+                Assert.Equal(new Size(196, 4), horzScroll.Bounds.Size);
+                Assert.Equal(new Size(4, 196), vertScroll.Bounds.Size);
                 Assert.Equal(new Point(0, 196), Position(horzScroll));
                 Assert.Equal(new Point(196, 0), Position(vertScroll));
             }
