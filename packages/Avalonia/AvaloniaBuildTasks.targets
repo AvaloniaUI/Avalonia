@@ -21,10 +21,10 @@
   </Target>
   
   <Target Name="GenerateAvaloniaResources" 
-          BeforeTargets="CoreCompile"
+          BeforeTargets="CoreCompile;CoreResGen"
           Inputs="@(AvaloniaResource);$(MSBuildProjectFile)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources">
+          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences">
     <GenerateAvaloniaResourcesTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       Output="$(AvaloniaResourcesTemporaryFilePath)"
