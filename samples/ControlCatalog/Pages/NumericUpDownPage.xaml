@@ -6,7 +6,7 @@
 
     <TextBlock Margin="2,5,2,2" FontSize="14" FontWeight="Bold">Features:</TextBlock>
     <Grid Margin="2" ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto">
-      <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto, Auto" RowDefinitions="35,35,35,35,35">
+      <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">ShowButtonSpinner:</TextBlock>
         <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding #upDown.ShowButtonSpinner}" VerticalAlignment="Center" Margin="2"/>
 
@@ -20,7 +20,7 @@
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>
 
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="35,35,35,35,35">
+      <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
         <DropDown Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                   VerticalAlignment="Center" Margin="2">
@@ -49,7 +49,7 @@
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="35,35,35,35,35" ColumnDefinitions="Auto, 120">
+      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, 120">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
                        CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" Width="70" HorizontalAlignment="Center"/>
