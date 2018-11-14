@@ -118,6 +118,13 @@ namespace Avalonia.Shared.PlatformSupport
             if (uri.Scheme == "res")
             {
                 var (asm, path) = GetResAsmAndPath(uri);
+                if (asm == null)
+                {
+                    throw new ArgumentException(
+                        "No default assembly, entry assembly or explicit assembly specified; " +
+                        "don't know where to look up for the resource, try specifying assembly explicitly.");
+                }
+
                 if (asm?.AvaloniaResources == null)
                     return Enumerable.Empty<Uri>();
                 path = path.TrimEnd('/') + '/';
@@ -167,6 +174,10 @@ namespace Avalonia.Shared.PlatformSupport
             if (uri.Scheme == "res")
             {
                 var (asm, path) = GetResAsmAndPath(uri);
+                if(asm == null)
+                    throw new ArgumentException(
+                        "No default assembly, entry assembly or explicit assembly specified; " +
+                        "don't know where to look up for the resource, try specifying assembly explicitly.");
                 if (asm.AvaloniaResources == null)
                     return null;
                 asm.AvaloniaResources.TryGetValue(path, out var desc);
@@ -189,13 +200,6 @@ namespace Avalonia.Shared.PlatformSupport
             }
 
             var asm = (asmPart == null ? null : GetAssembly(asmPart)) ?? _defaultAssembly;
-            if (asm == null)
-            {
-                throw new ArgumentException(
-                    "No default assembly, entry assembly or explicit assembly specified; " +
-                    "don't know where to look up for the resource, try specifying assembly explicitly.");
-            }
-
             return (asm, path);
         }
         
@@ -203,12 +207,20 @@ namespace Avalonia.Shared.PlatformSupport
         {
             if (uri != null)
             {
-                var qs = ParseQueryString(uri);
-                string assemblyName;
+                if (!uri.IsAbsoluteUri)
+                    return null;
+                if (uri.Scheme == "res")
+                    return GetResAsmAndPath(uri).asm;
 
-                if (qs.TryGetValue("assembly", out assemblyName))
+                if (uri.Scheme == "resm")
                 {
-                    return GetAssembly(assemblyName);
+                    var qs = ParseQueryString(uri);
+                    string assemblyName;
+
+                    if (qs.TryGetValue("assembly", out assemblyName))
+                    {
+                        return GetAssembly(assemblyName);
+                    }
                 }
             }
 
