@@ -1206,8 +1206,6 @@ namespace Avalonia.Skia.Text
 
                         if (measuredLength < textRun.Text.Length)
                         {
-                            var hasFoundWordStart = false;
-
                             for (var i = measuredLength; i > 0; i--)
                             {
                                 var c = textRun.Text[i];
@@ -1216,15 +1214,8 @@ namespace Avalonia.Skia.Text
                                 {
                                     measuredLength = ++i;
 
-                                    hasFoundWordStart = true;
-
                                     break;
                                 }
-                            }
-
-                            if (!hasFoundWordStart)
-                            {
-                                measuredLength = 0;
                             }
                         }
 
