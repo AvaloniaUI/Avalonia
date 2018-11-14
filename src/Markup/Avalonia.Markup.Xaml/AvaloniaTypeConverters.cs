@@ -37,7 +37,8 @@ namespace Avalonia.Markup.Xaml
             { typeof(Selector), typeof(SelectorTypeConverter) },
             { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
-            { typeof(CultureInfo), typeof(CultureInfoConverter)}
+            { typeof(CultureInfo), typeof(CultureInfoConverter)},
+            { typeof(Uri), typeof(AvaloniaUriTypeConverter)}
         };
 
         /// <summary>

@@ -5,6 +5,8 @@
 
   <ItemGroup>
       <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" EmbedReference="false" />
+      <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
+
   </ItemGroup>
 
   <PropertyGroup>
@@ -27,14 +29,22 @@
         <Visible>false</Visible>
         <BuildAction>None</BuildAction>
       </_PackageFiles>
-      <_PackageFiles Include="Avalonia.props">
-        <PackagePath>build/Avalonia.props</PackagePath>
-        <Visible>false</Visible>
-        <BuildAction>None</BuildAction>
-      </_PackageFiles>
     </ItemGroup>
   </Target>
-
+  <ItemGroup>
+    <Content Include="*.props">
+       <Pack>true</Pack>
+       <PackagePath>build\</PackagePath>
+    </Content>
+    <Content Include="*.targets">
+      <Pack>true</Pack>
+      <PackagePath>build\</PackagePath>
+    </Content>
+    <Content Include="../../src/Avalonia.Build.Tasks/bin/$(Configuration)/netstandard2.0/Avalonia.Build.Tasks.dll">
+      <Pack>true</Pack>
+      <PackagePath>tools\</PackagePath>
+    </Content>
+  </ItemGroup>
   <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\NetFX.props" />
   <Import Project="..\..\build\CoreLibraries.props" />
