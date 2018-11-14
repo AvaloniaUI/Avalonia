@@ -98,6 +98,9 @@ namespace Avalonia.Layout.UnitTests
                     }
                 };
 
+                window.Resources["ScrollBarWidth"] = 10.0;
+                window.Resources["ScrollBarHeight"] = 10.0;
+
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass(window);
 
@@ -113,17 +116,17 @@ namespace Avalonia.Layout.UnitTests
                 Assert.Single(presenters);
 
                 var presenter = presenters[0];
-                Assert.Equal(new Size(196, 196), presenter.Bounds.Size);
+                Assert.Equal(new Size(190, 190), presenter.Bounds.Size);
 
                 var horzScroll = scrollBars.Single(x => x.Orientation == Orientation.Horizontal);
                 var vertScroll = scrollBars.Single(x => x.Orientation == Orientation.Vertical);
 
                 Assert.True(horzScroll.IsVisible);
                 Assert.True(vertScroll.IsVisible);
-                Assert.Equal(new Size(196, 4), horzScroll.Bounds.Size);
-                Assert.Equal(new Size(4, 196), vertScroll.Bounds.Size);
-                Assert.Equal(new Point(0, 196), Position(horzScroll));
-                Assert.Equal(new Point(196, 0), Position(vertScroll));
+                Assert.Equal(new Size(190, 10), horzScroll.Bounds.Size);
+                Assert.Equal(new Size(10, 190), vertScroll.Bounds.Size);
+                Assert.Equal(new Point(0, 190), Position(horzScroll));
+                Assert.Equal(new Point(190, 0), Position(vertScroll));
             }
         }
 
