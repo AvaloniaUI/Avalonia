@@ -502,11 +502,11 @@ private:
         }
     }
     
-    virtual HRESULT SetTitle (const char* title) override
+    virtual HRESULT SetTitle (void* utf8title) override
     {
         @autoreleasepool
         {
-            _lastTitle = [NSString stringWithUTF8String:title];
+            _lastTitle = [NSString stringWithUTF8String:(const char*)utf8title];
             [Window setTitle:_lastTitle];
             [Window setTitleVisibility:NSWindowTitleVisible];
             
@@ -948,7 +948,11 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 
 - (BOOL)performKeyEquivalent:(NSEvent *)event
 {
-    return _lastKeyHandled;
+    bool result = _lastKeyHandled;
+    
+    _lastKeyHandled = false;
+    
+    return result;
 }
 
 - (void)keyDown:(NSEvent *)event
