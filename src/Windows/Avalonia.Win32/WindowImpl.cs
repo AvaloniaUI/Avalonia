@@ -633,7 +633,6 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
                     UnmanagedMethods.PAINTSTRUCT ps;
-
                     if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
                     {
                         var f = Scaling;
