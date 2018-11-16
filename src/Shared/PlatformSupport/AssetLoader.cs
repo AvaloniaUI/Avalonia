@@ -385,10 +385,13 @@ namespace Avalonia.Shared.PlatformSupport
         
         public static void RegisterResUriParsers()
         {
-            UriParser.Register(new GenericUriParser(GenericUriParserOptions.GenericAuthority |
-                                                    GenericUriParserOptions.NoUserInfo |
-                                                    GenericUriParserOptions.NoPort | GenericUriParserOptions.NoQuery |
-                                                    GenericUriParserOptions.NoFragment), "avares", -1);
+            if (!UriParser.IsKnownScheme("avares"))
+                UriParser.Register(new GenericUriParser(
+                    GenericUriParserOptions.GenericAuthority |
+                    GenericUriParserOptions.NoUserInfo |
+                    GenericUriParserOptions.NoPort |
+                    GenericUriParserOptions.NoQuery |
+                    GenericUriParserOptions.NoFragment), "avares", -1);
         }
     }
 }
