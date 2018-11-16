@@ -30,7 +30,7 @@ namespace Avalonia.DesignerSupport
                         xamlFileProjectPath = "/Designer/Fake.xaml";
                     //Fabricate fake Uri
                     baseUri =
-                        new Uri($"res:asm:{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
+                        new Uri($"avares://{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;

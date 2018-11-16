@@ -231,7 +231,7 @@ namespace Avalonia.Markup.Xaml
         private static IEnumerable<Uri> GetUrisFor(IAssetLoader assetLocator, Type type)
         {
             var asm = type.GetTypeInfo().Assembly.GetName().Name;
-            var xamlInfoUri = new Uri($"res:asm:{asm}/!AvaloniaResourceXamlInfo");
+            var xamlInfoUri = new Uri($"avares://{asm}/!AvaloniaResourceXamlInfo");
             var typeName = type.FullName;
             if (typeName == null)
                 throw new ArgumentException("Type doesn't have a FullName");
@@ -243,7 +243,7 @@ namespace Avalonia.Markup.Xaml
                     var xamlInfo = (AvaloniaResourceXamlInfo)s_xamlInfoSerializer.ReadObject(xamlInfoStream);
                     if (xamlInfo.ClassToResourcePathIndex.TryGetValue(typeName, out var rv) == true)
                     {
-                        yield return new Uri($"res:asm:{asm}{rv}");
+                        yield return new Uri($"avares://{asm}{rv}");
                         yield break;
                     }
                 }

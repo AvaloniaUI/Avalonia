@@ -20,20 +20,20 @@ namespace Avalonia.Shared.PlatformSupport
         private static readonly Dictionary<string, AssemblyDescriptor> AssemblyNameCache
             = new Dictionary<string, AssemblyDescriptor>();
 
-        private AssemblyDescriptor _defaultAssembly;
+        private AssemblyDescriptor _defaultResmAssembly;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetLoader"/> class.
         /// </summary>
         /// <param name="assembly">
-        /// The default assembly from which to load assets for which no assembly is specified.
+        /// The default assembly from which to load resm: assets for which no assembly is specified.
         /// </param>
         public AssetLoader(Assembly assembly = null)
         {
             if (assembly == null)
                 assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
-                _defaultAssembly = new AssemblyDescriptor(assembly);
+                _defaultResmAssembly = new AssemblyDescriptor(assembly);
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace Avalonia.Shared.PlatformSupport
         /// <param name="assembly">The default assembly.</param>
         public void SetDefaultAssembly(Assembly assembly)
         {
-            _defaultAssembly = new AssemblyDescriptor(assembly);
+            _defaultResmAssembly = new AssemblyDescriptor(assembly);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Avalonia.Shared.PlatformSupport
             }
 
             uri = EnsureAbsolute(uri, baseUri);
-            if (uri.Scheme == "res")
+            if (uri.Scheme == "avares")
             {
                 var (asm, path) = GetResAsmAndPath(uri);
                 if (asm == null)
@@ -129,7 +129,7 @@ namespace Avalonia.Shared.PlatformSupport
                     return Enumerable.Empty<Uri>();
                 path = path.TrimEnd('/') + '/';
                 return asm.AvaloniaResources.Where(r => r.Key.StartsWith(path))
-                    .Select(x => new Uri($"res:asm:{asm.Name}{x.Key}"));
+                    .Select(x => new Uri($"avares://{asm.Name}{x.Key}"));
             }
 
             return Enumerable.Empty<Uri>();
@@ -153,7 +153,7 @@ namespace Avalonia.Shared.PlatformSupport
         {           
             if (uri.IsAbsoluteUri && uri.Scheme == "resm")
             {
-                var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultAssembly;
+                var asm = GetAssembly(uri) ?? GetAssembly(baseUri) ?? _defaultResmAssembly;
 
                 if (asm == null)
                 {
@@ -171,13 +171,9 @@ namespace Avalonia.Shared.PlatformSupport
 
             uri = EnsureAbsolute(uri, baseUri);
 
-            if (uri.Scheme == "res")
+            if (uri.Scheme == "avares")
             {
                 var (asm, path) = GetResAsmAndPath(uri);
-                if(asm == null)
-                    throw new ArgumentException(
-                        "No default assembly, entry assembly or explicit assembly specified; " +
-                        "don't know where to look up for the resource, try specifying assembly explicitly.");
                 if (asm.AvaloniaResources == null)
                     return null;
                 asm.AvaloniaResources.TryGetValue(path, out var desc);
@@ -189,18 +185,8 @@ namespace Avalonia.Shared.PlatformSupport
 
         private (AssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
-            string path = null, asmPart = null;
-            if (!uri.AbsolutePath.StartsWith("asm:"))
-                path = uri.AbsolutePath;
-            else
-            {
-                var sp = uri.AbsolutePath.Split(new[] {'/'}, 2);
-                asmPart = sp[0].Substring(4);
-                path = '/' + sp[1];
-            }
-
-            var asm = (asmPart == null ? null : GetAssembly(asmPart)) ?? _defaultAssembly;
-            return (asm, path);
+            var asm = GetAssembly(uri.Authority);
+            return (asm, uri.AbsolutePath);
         }
         
         private AssemblyDescriptor GetAssembly(Uri uri)
@@ -209,7 +195,7 @@ namespace Avalonia.Shared.PlatformSupport
             {
                 if (!uri.IsAbsoluteUri)
                     return null;
-                if (uri.Scheme == "res")
+                if (uri.Scheme == "avares")
                     return GetResAsmAndPath(uri).asm;
 
                 if (uri.Scheme == "resm")
@@ -230,9 +216,7 @@ namespace Avalonia.Shared.PlatformSupport
         private AssemblyDescriptor GetAssembly(string name)
         {
             if (name == null)
-            {
-                return _defaultAssembly;
-            }
+                throw new ArgumentNullException(nameof(name));
 
             AssemblyDescriptor rv;
             if (!AssemblyNameCache.TryGetValue(name, out rv))
@@ -247,9 +231,7 @@ namespace Avalonia.Shared.PlatformSupport
                 {
                     // iOS does not support loading assemblies dynamically!
                     //
-#if NETCOREAPP1_0
-                    AssemblyNameCache[name] = rv = new AssemblyDescriptor(Assembly.Load(new AssemblyName(name)));
-#elif __IOS__
+#if __IOS__
                     throw new InvalidOperationException(
                         $"Assembly {name} needs to be referenced and explicitly loaded before loading resources");
 #else
@@ -399,6 +381,14 @@ namespace Avalonia.Shared.PlatformSupport
             public Dictionary<string, IAssetDescriptor> Resources { get; }
             public Dictionary<string, IAssetDescriptor> AvaloniaResources { get; }
             public string Name { get; }
+        }
+        
+        public static void RegisterResUriParsers()
+        {
+            UriParser.Register(new GenericUriParser(GenericUriParserOptions.GenericAuthority |
+                                                    GenericUriParserOptions.NoUserInfo |
+                                                    GenericUriParserOptions.NoPort | GenericUriParserOptions.NoQuery |
+                                                    GenericUriParserOptions.NoFragment), "avares", -1);
         }
     }
 }
