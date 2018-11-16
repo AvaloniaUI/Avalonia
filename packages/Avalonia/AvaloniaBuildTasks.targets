@@ -22,7 +22,7 @@
   
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
-          Inputs="@(AvaloniaResource);$(MSBuildProjectFile)"
+          Inputs="@(AvaloniaResource);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
           DependsOnTargets="$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences">
     <GenerateAvaloniaResourcesTask
