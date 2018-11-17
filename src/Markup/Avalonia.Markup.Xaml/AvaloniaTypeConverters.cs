@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Converters;
@@ -36,6 +37,7 @@ namespace Avalonia.Markup.Xaml
             { typeof(Selector), typeof(SelectorTypeConverter) },
             { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
+            { typeof(CultureInfo), typeof(CultureInfoConverter)}
         };
 
         /// <summary>

@@ -397,10 +397,11 @@ namespace Avalonia.Controls
         /// <returns>
         /// A task that can be used to track the lifetime of the dialog.
         /// </returns>
-        public Task ShowDialog()
+        public Task ShowDialog(Window parent)
         {
-            return ShowDialog<object>();
+            return ShowDialog<object>(parent);
         }
+
 
         /// <summary>
         /// Shows the window as a dialog.
@@ -411,8 +412,21 @@ namespace Avalonia.Controls
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>()
+        public Task<TResult> ShowDialog<TResult>(Window parent) => ShowDialog<TResult>(parent.PlatformImpl);
+        
+        /// <summary>
+        /// Shows the window as a dialog.
+        /// </summary>
+        /// <typeparam name="TResult">
+        /// The type of the result produced by the dialog.
+        /// </typeparam>
+        /// <returns>.
+        /// A task that can be used to retrieve the result of the dialog when it closes.
+        /// </returns>
+        public Task<TResult> ShowDialog<TResult>(IWindowImpl parent)
         {
+            if(parent == null)
+                throw new ArgumentNullException(nameof(parent));
             if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
@@ -427,36 +441,22 @@ namespace Avalonia.Controls
 
             using (BeginAutoSizing())
             {
-                var affectedWindows = Application.Current.Windows.Where(w => w.IsEnabled && w != this).ToList();
-                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
-                SetIsEnabled(affectedWindows, false);
 
-                var modal = PlatformImpl?.ShowDialog();
+                PlatformImpl?.ShowDialog(parent);
                 var result = new TaskCompletionSource<TResult>();
 
                 Renderer?.Start();
-
                 Observable.FromEventPattern<EventHandler, EventArgs>(
                     x => this.Closed += x,
                     x => this.Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
-                        modal?.Dispose();
-                        SetIsEnabled(affectedWindows, true);
-                        activated?.Activate();
+                        parent.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
 
                 return result.Task;
-            }
-        }
-
-        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
-        {
-            foreach (var window in windows)
-            {
-                window.IsEnabled = isEnabled;
             }
         }
 

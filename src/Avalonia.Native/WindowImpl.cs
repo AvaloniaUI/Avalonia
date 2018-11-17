@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Native.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -46,9 +47,9 @@ namespace Avalonia.Native
 
         public IAvnWindow Native => _native;
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl window)
         {
-            return _native.ShowDialog();
+            _native.ShowDialog(((WindowImpl)window).Native);
         }
 
         public void CanResize(bool value)
@@ -68,7 +69,10 @@ namespace Avalonia.Native
 
         public void SetTitle(string title)
         {
-            _native.SetTitle(title);
+            using (var buffer = new Utf8Buffer(title))
+            {
+                _native.SetTitle(buffer.DangerousGetHandle());
+            }
         }
 
         public WindowState WindowState

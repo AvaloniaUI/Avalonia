@@ -145,7 +145,7 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                if (((IVisual)e.Source).GetVisualRoot() is PopupRoot)
+                if (_popup?.PopupRoot != null && ((IVisual)e.Source).GetVisualRoot() == _popup?.PopupRoot)
                 {
                     if (UpdateSelectionFromEventSource(e.Source))
                     {
