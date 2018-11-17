@@ -32,27 +32,23 @@ public:
 - (void) do;
 @end
 @implementation ThreadingInitializer
-
-pthread_mutex_t mutex;
-pthread_cond_t cond;
-
+{
+    int _fds[2];
+}
 - (void) runOnce
 {
-    pthread_mutex_lock(&mutex);
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
+    char buf[]={0};
+    write(_fds[1], buf, 1);
 }
 
 - (void) do
 {
-    pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&cond, NULL);
+    pipe(_fds);
     [[[NSThread alloc] initWithTarget:self selector:@selector(runOnce) object:nil] start];
-    pthread_mutex_lock(&mutex);
-    pthread_cond_wait(&cond, &mutex);
-    pthread_mutex_unlock(&mutex);
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&mutex);
+    char buf[1];
+    read(_fds[0], buf, 1);
+    close(_fds[0]);
+    close(_fds[1]);
 }
 
 
