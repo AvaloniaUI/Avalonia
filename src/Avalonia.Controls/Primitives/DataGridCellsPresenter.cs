@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Utilities;
 using System;
 using System.Diagnostics;
+using Avalonia.Controls;
 
 namespace Avalonia.Controls.Primitives
 {

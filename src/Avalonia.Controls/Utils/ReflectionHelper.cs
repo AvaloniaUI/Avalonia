@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Controls.Utils
 {
     internal static class TypeHelper
     {

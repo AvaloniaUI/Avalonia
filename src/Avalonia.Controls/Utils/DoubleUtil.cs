@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Controls.Utils
 {
     internal static class DoubleUtil
     {

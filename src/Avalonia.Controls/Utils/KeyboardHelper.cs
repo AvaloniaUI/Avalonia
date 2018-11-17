@@ -5,7 +5,7 @@
 
 using Avalonia.Input;
 
-namespace Avalonia.Controls.Primitives
+namespace Avalonia.Controls.Utils
 {
     internal static class KeyboardHelper
     {

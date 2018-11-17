@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Text;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Controls.Utils
 {
     public interface ICellEditBinding
     {
@@ -38,7 +38,7 @@ namespace Avalonia.Utilities
             action(_validationErrors);
             var isValid = IsValid;
 
-            if(!isValid || !wasValid)
+            if (!isValid || !wasValid)
             {
                 _changedSubject.OnNext(isValid);
             }
@@ -80,13 +80,13 @@ namespace Avalonia.Utilities
 
             private void OnValidationError(BindingNotification notification)
             {
-                if(notification.Error != null)
+                if (notification.Error != null)
                 {
                     _editBinding.AlterValidationErrors(errors =>
                     {
                         errors.Clear();
                         var unpackedErrors = ValidationUtil.UnpackException(notification.Error);
-                        if(unpackedErrors != null)
+                        if (unpackedErrors != null)
                             errors.AddRange(unpackedErrors);
                     });
                 }
@@ -96,7 +96,7 @@ namespace Avalonia.Utilities
                 _controlValue = value;
                 _isControlValueSet = true;
 
-                if(!_editBinding.IsValid)
+                if (!_editBinding.IsValid)
                 {
                     SetSourceValue(value);
                 }
@@ -152,7 +152,7 @@ namespace Avalonia.Utilities
             }
             public void CommitEdit()
             {
-                if(_isControlValueSet)
+                if (_isControlValueSet)
                     SetSourceValue(_controlValue);
             }
         }

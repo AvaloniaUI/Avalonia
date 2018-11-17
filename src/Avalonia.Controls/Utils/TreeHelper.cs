@@ -7,7 +7,7 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Controls.Utils
 {
     internal static class TreeHelper
     {

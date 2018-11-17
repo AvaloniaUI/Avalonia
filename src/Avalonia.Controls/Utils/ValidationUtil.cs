@@ -11,7 +11,7 @@ using System.Threading;
 using System.Linq;
 using Avalonia.Data;
 
-namespace Avalonia.Utilities
+namespace Avalonia.Controls.Utils
 {
     internal static class ValidationUtil
     {
