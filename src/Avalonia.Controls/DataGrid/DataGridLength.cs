@@ -7,6 +7,7 @@ using Avalonia.Utilities;
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
