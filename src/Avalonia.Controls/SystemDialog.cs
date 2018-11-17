@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,28 +19,40 @@ namespace Avalonia.Controls
 
     public class SaveFileDialog : FileDialog
     {
-        public string DefaultExtension { get; set; }        
+        public string DefaultExtension { get; set; }
 
-        public async Task<string> ShowAsync(Window window)
-            =>
-                ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl)) ??
-                 new string[0]).FirstOrDefault();
+        public async Task<string> ShowAsync(Window parent)
+        {
+            if(parent == null)
+                throw new ArgumentNullException(nameof(parent));
+            return ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>()
+                 .ShowFileDialogAsync(this, parent?.PlatformImpl)) ??
+             new string[0]).FirstOrDefault();
+        }
     }
 
     public class OpenFileDialog : FileDialog
     {
         public bool AllowMultiple { get; set; }
 
-        public Task<string[]> ShowAsync(Window window = null)
-            => AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, window?.PlatformImpl);
+        public Task<string[]> ShowAsync(Window parent)
+        {
+            if(parent == null)
+                throw new ArgumentNullException(nameof(parent));
+            return AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFileDialogAsync(this, parent?.PlatformImpl);
+        }
     }
 
     public class OpenFolderDialog : FileSystemDialog
     {
         public string DefaultDirectory { get; set; }
 
-        public Task<string> ShowAsync(Window window = null)
-               => AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, window?.PlatformImpl);
+        public Task<string> ShowAsync(Window parent)
+        {
+            if(parent == null)
+                throw new ArgumentNullException(nameof(parent));
+            return AvaloniaLocator.Current.GetService<ISystemDialogImpl>().ShowFolderDialogAsync(this, parent?.PlatformImpl);
+        }
     }
 
     public abstract class SystemDialog

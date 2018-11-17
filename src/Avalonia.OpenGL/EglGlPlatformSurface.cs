@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Avalonia.OpenGL
 {
@@ -12,10 +13,10 @@ namespace Avalonia.OpenGL
         }
 
         private readonly EglDisplay _display;
-        private readonly IGlContext _context;
+        private readonly EglContext _context;
         private readonly IEglWindowGlPlatformSurfaceInfo _info;
         
-        public EglGlPlatformSurface(EglDisplay display, IGlContext context, IEglWindowGlPlatformSurfaceInfo info)
+        public EglGlPlatformSurface(EglDisplay display, EglContext context, IEglWindowGlPlatformSurfaceInfo info)
         {
             _display = display;
             _context = context;
@@ -30,11 +31,11 @@ namespace Avalonia.OpenGL
 
         class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
-            private readonly IGlContext _context;
-            private readonly IGlSurface _glSurface;
+            private readonly EglContext _context;
+            private readonly EglSurface _glSurface;
             private readonly IEglWindowGlPlatformSurfaceInfo _info;
 
-            public RenderTarget(IGlContext context, IGlSurface glSurface, IEglWindowGlPlatformSurfaceInfo info)
+            public RenderTarget(EglContext context, EglSurface glSurface, IEglWindowGlPlatformSurfaceInfo info)
             {
                 _context = context;
                 _glSurface = glSurface;
@@ -45,21 +46,33 @@ namespace Avalonia.OpenGL
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()
             {
-                _context.MakeCurrent(_glSurface);
-                return new Session(_context, _glSurface, _info);
+                var l = _context.Lock();
+                try
+                {
+                    _context.MakeCurrent(_glSurface);
+                    return new Session(_context, _glSurface, _info, l);
+                }
+                catch
+                {
+                    l.Dispose();
+                    throw;
+                }
             }
             
             class Session : IGlPlatformSurfaceRenderingSession
             {
                 private readonly IGlContext _context;
-                private readonly IGlSurface _glSurface;
+                private readonly EglSurface _glSurface;
                 private readonly IEglWindowGlPlatformSurfaceInfo _info;
+                private IDisposable _lock;
 
-                public Session(IGlContext context, IGlSurface glSurface, IEglWindowGlPlatformSurfaceInfo info)
+                public Session(IGlContext context, EglSurface glSurface, IEglWindowGlPlatformSurfaceInfo info,
+                    IDisposable @lock)
                 {
                     _context = context;
                     _glSurface = glSurface;
                     _info = info;
+                    _lock = @lock;
                 }
 
                 public void Dispose()
@@ -67,6 +80,7 @@ namespace Avalonia.OpenGL
                     _context.Display.GlInterface.Flush();
                     _glSurface.SwapBuffers();
                     _context.Display.ClearContext();
+                    _lock.Dispose();
                 }
 
                 public IGlDisplay Display => _context.Display;

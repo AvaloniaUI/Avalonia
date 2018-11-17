@@ -44,25 +44,51 @@ namespace Avalonia.Controls
 
         protected override void OnDragDelta(VectorEventArgs e)
         {
+            // WPF doesn't change anything when spliter is in the last row/column
+            // but resizes the splitter row/column when it's the first one.
+            // this is different, but more internally consistent.
+            if (_prevDefinition == null || _nextDefinition == null)
+                return;
+
             var delta = _orientation == Orientation.Vertical ? e.Vector.X : e.Vector.Y;
             double max;
             double min;
             GetDeltaConstraints(out min, out max);
             delta = Math.Min(Math.Max(delta, min), max);
-            foreach (var definition in _definitions)
+
+            var prevIsStar = IsStar(_prevDefinition);
+            var nextIsStar = IsStar(_nextDefinition);
+
+            if (prevIsStar && nextIsStar)
             {
-                if (definition == _prevDefinition)
+                foreach (var definition in _definitions)
                 {
-                    SetLengthInStars(_prevDefinition, GetActualLength(_prevDefinition) + delta);
+                    if (definition == _prevDefinition)
+                    {
+                        SetLengthInStars(_prevDefinition, GetActualLength(_prevDefinition) + delta);
+                    }
+                    else if (definition == _nextDefinition)
+                    {
+                        SetLengthInStars(_nextDefinition, GetActualLength(_nextDefinition) - delta);
+                    }
+                    else if (IsStar(definition))
+                    {
+                        SetLengthInStars(definition, GetActualLength(definition)); // same size but in stars.
+                    }
                 }
-                else if (definition == _nextDefinition)
-                {
-                    SetLengthInStars(_nextDefinition, GetActualLength(_nextDefinition) - delta);
-                }
-                else if (IsStar(definition))
-                {
-                    SetLengthInStars(definition, GetActualLength(definition)); // same size but in stars.
-                }
+            }
+            else if (prevIsStar)
+            {
+                SetLength(_nextDefinition, GetActualLength(_nextDefinition) - delta);
+            }
+            else if (nextIsStar)
+            {
+                SetLength(_prevDefinition, GetActualLength(_prevDefinition) + delta);
+            }
+            else
+            {
+                SetLength(_prevDefinition, GetActualLength(_prevDefinition) + delta);
+                SetLength(_nextDefinition, GetActualLength(_nextDefinition) - delta);
             }
         }
 
@@ -71,7 +97,7 @@ namespace Avalonia.Controls
             if (definition == null)
                 return 0;
             var columnDefinition = definition as ColumnDefinition;
-            return columnDefinition?.ActualWidth ?? ((RowDefinition) definition).ActualHeight;
+            return columnDefinition?.ActualWidth ?? ((RowDefinition)definition).ActualHeight;
         }
 
         private double GetMinLength(DefinitionBase definition)
@@ -79,7 +105,7 @@ namespace Avalonia.Controls
             if (definition == null)
                 return 0;
             var columnDefinition = definition as ColumnDefinition;
-            return columnDefinition?.MinWidth ?? ((RowDefinition) definition).MinHeight;
+            return columnDefinition?.MinWidth ?? ((RowDefinition)definition).MinHeight;
         }
 
         private double GetMaxLength(DefinitionBase definition)
@@ -87,13 +113,13 @@ namespace Avalonia.Controls
             if (definition == null)
                 return 0;
             var columnDefinition = definition as ColumnDefinition;
-            return columnDefinition?.MaxWidth ?? ((RowDefinition) definition).MaxHeight;
+            return columnDefinition?.MaxWidth ?? ((RowDefinition)definition).MaxHeight;
         }
 
         private bool IsStar(DefinitionBase definition)
         {
             var columnDefinition = definition as ColumnDefinition;
-            return columnDefinition?.Width.IsStar ?? ((RowDefinition) definition).Height.IsStar;
+            return columnDefinition?.Width.IsStar ?? ((RowDefinition)definition).Height.IsStar;
         }
 
         private void SetLengthInStars(DefinitionBase definition, double value)
@@ -105,7 +131,20 @@ namespace Avalonia.Controls
             }
             else
             {
-                ((RowDefinition) definition).Height = new GridLength(value, GridUnitType.Star);
+                ((RowDefinition)definition).Height = new GridLength(value, GridUnitType.Star);
+            }
+        }
+
+        private void SetLength(DefinitionBase definition, double value)
+        {
+            var columnDefinition = definition as ColumnDefinition;
+            if (columnDefinition != null)
+            {
+                columnDefinition.Width = new GridLength(value);
+            }
+            else
+            {
+                ((RowDefinition)definition).Height = new GridLength(value);
             }
         }
 
@@ -160,7 +199,7 @@ namespace Avalonia.Controls
             }
             if (_grid.Children.OfType<Control>() // Decision based on other controls in the same column
                 .Where(c => Grid.GetColumn(c) == col)
-                .Any(c => c.GetType() != typeof (GridSplitter)))
+                .Any(c => c.GetType() != typeof(GridSplitter)))
             {
                 return Orientation.Horizontal;
             }

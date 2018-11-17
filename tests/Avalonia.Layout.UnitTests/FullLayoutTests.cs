@@ -21,6 +21,7 @@ using Xunit;
 using Avalonia.Media;
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls.UnitTests;
 using Avalonia.UnitTests;
 
 namespace Avalonia.Layout.UnitTests
@@ -197,6 +198,7 @@ namespace Avalonia.Layout.UnitTests
             windowImpl.SetupGet(x => x.Scaling).Returns(1);
 
             AvaloniaLocator.CurrentMutable
+                .Bind<IStandardCursorFactory>().ToConstant(new CursorFactoryMock())
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader())
                 .Bind<IInputManager>().ToConstant(new Mock<IInputManager>().Object)
                 .Bind<IGlobalStyles>().ToConstant(globalStyles.Object)
