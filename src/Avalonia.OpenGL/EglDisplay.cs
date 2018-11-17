@@ -12,7 +12,8 @@ namespace Avalonia.OpenGL
         private readonly IntPtr _display;
         private readonly IntPtr _config;
         private readonly int[] _contextAttributes;
-        
+
+        public IntPtr Handle => _display;
         public EglDisplay(EglInterface egl)
         {
             _egl = egl;  
@@ -121,7 +122,7 @@ namespace Avalonia.OpenGL
             });
             if (surf == IntPtr.Zero)
                 throw new OpenGlException("eglCreatePbufferSurface failed");
-            var rv = new EglContext(this, ctx, surf);
+            var rv = new EglContext(this, _egl, ctx, surf);
             rv.MakeCurrent(null);
             return rv;
         }
@@ -132,12 +133,12 @@ namespace Avalonia.OpenGL
                 throw new OpenGlException("eglMakeCurrent failed");
         }
 
-        public IGlSurface CreateWindowSurface(IntPtr window)
+        public EglSurface CreateWindowSurface(IntPtr window)
         {
             var s = _egl.CreateWindowSurface(_display, _config, window, new[] {EGL_NONE, EGL_NONE});
             if (s == IntPtr.Zero)
                 throw new OpenGlException("eglCreateWindowSurface failed");
-            return new EglSurface(this, s);
+            return new EglSurface(this, _egl, s);
         }
 
         public int SampleCount
@@ -155,50 +156,6 @@ namespace Avalonia.OpenGL
             {
                 _egl.GetConfigAttrib(_display, _config, EGL_STENCIL_SIZE, out var rv);
                 return rv;
-            }
-        }
-
-        class EglSurface : SafeHandle, IGlSurface
-        {
-            private readonly EglDisplay _display;
-
-            public EglSurface(EglDisplay display, IntPtr surface)  : base(surface, true)
-            {
-                _display = display;
-            }
-
-            protected override bool ReleaseHandle()
-            {
-                _display._egl.DestroySurface(_display._display, handle);
-                return true;
-            }
-
-            public override bool IsInvalid => handle == IntPtr.Zero;
-
-            public IGlDisplay Display => _display;
-            public void SwapBuffers() => _display._egl.SwapBuffers(_display._display, handle);
-        }
-        
-        class EglContext : IGlContext
-        {
-            private readonly EglDisplay _disp;
-
-            public EglContext(EglDisplay display, IntPtr ctx, IntPtr offscreenSurface)
-            {
-                _disp = display;
-                Context = ctx;
-                OffscreenSurface = offscreenSurface;
-            }
-
-            public IntPtr Context { get; }
-            public IntPtr OffscreenSurface { get; }
-            public IGlDisplay Display => _disp;
-
-            public void MakeCurrent(IGlSurface surface)
-            {
-                var surf = ((EglSurface)surface)?.DangerousGetHandle() ?? OffscreenSurface;
-                if (!_disp._egl.MakeCurrent(_disp._display, surf, surf, Context))
-                    throw new OpenGlException("eglMakeCurrent failed");
             }
         }
     }
