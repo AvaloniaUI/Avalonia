@@ -144,7 +144,7 @@ namespace Avalonia.Rendering
             var t = (IRenderLoopTask)this;
             if(t.NeedsUpdate)
                 UpdateScene();
-            t.Render();
+            Render(true);
         }
 
         /// <inheritdoc/>
@@ -176,12 +176,7 @@ namespace Avalonia.Rendering
 
         void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
 
-        void IRenderLoopTask.Render()
-        {
-            using (var l = _lock.TryLock())
-                if (l != null)
-                    Render();
-        }
+        void IRenderLoopTask.Render() => Render(false);
 
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
@@ -202,17 +197,19 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene.Item);
+        internal void UnitTestRender() => Render(_scene.Item, false);
 
-        private void Render()
+        private void Render(bool forceComposite)
         {
-            using (var scene = _scene?.Clone())
-            {
-                Render(scene?.Item);
-            }
+            using (var l = _lock.TryLock())
+                if (l != null)
+                    using (var scene = _scene?.Clone())
+                    {
+                        Render(scene?.Item, forceComposite);
+                    }
         }
         
-        private void Render(Scene scene)
+        private void Render(Scene scene, bool forceComposite)
         {
             bool renderOverlay = DrawDirtyRects || DrawFps;
             bool composite = false;
@@ -256,7 +253,7 @@ namespace Avalonia.Rendering
                         RenderOverlay(scene, context);
                         RenderComposite(scene, context);
                     }
-                    else if (composite)
+                    else if (composite || forceComposite)
                     {
                         context = context ?? RenderTarget.CreateDrawingContext(this);
                         RenderComposite(scene, context);
