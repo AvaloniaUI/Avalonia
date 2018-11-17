@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using System;
@@ -9,9 +9,9 @@ using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 
-namespace DataGridSample
+namespace ControlCatalog.Models
 {
-    public class Person : System.ComponentModel.INotifyDataErrorInfo, INotifyPropertyChanged
+    public class Person : INotifyDataErrorInfo, INotifyPropertyChanged
     {
         string _firstName;
         string _lastName;
@@ -93,76 +93,6 @@ namespace DataGridSample
                 return errorList;
             else
                 return null;
-        }
-    }
-
-    public class GDPValueConverter : Avalonia.Data.Converters.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if(value is int gdp)
-            {
-                if (gdp <= 5000)
-                    return Brushes.Orange;
-                else if (gdp <= 10000)
-                    return Brushes.Yellow;
-                else
-                    return Brushes.LightGreen;
-            }
-
-            return value;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class MainWindow : Window
-    {
-        public MainWindow()
-        {
-            InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-            var dg1 = this.FindControl<DataGrid>("dataGrid1");
-            dg1.IsReadOnly = true;
-
-            var collectionView1 = new Avalonia.Collections.CollectionViewBase(Countries.All);
-            //collectionView.GroupDescriptions.Add(new Avalonia.Collections.PathGroupDescription("Region"));
-
-            dg1.Items = collectionView1;
-
-            var dg2 = this.FindControl<DataGrid>("dataGridGrouping");
-            dg2.IsReadOnly = true;
-
-            var collectionView2 = new Avalonia.Collections.CollectionViewBase(Countries.All);
-            collectionView2.GroupDescriptions.Add(new Avalonia.Collections.PathGroupDescription("Region"));
-
-            dg2.Items = collectionView2;
-
-            var dg3 = this.FindControl<DataGrid>("dataGridEdit");
-            dg3.IsReadOnly = false;
-
-            var items = new List<Person>
-            {
-                new Person { FirstName = "John", LastName = "Doe" },
-                new Person { FirstName = "Elizabeth", LastName = "Thomas" },
-                new Person { FirstName = "Zack", LastName = "Ward" }
-            };
-            var collectionView3 = new Avalonia.Collections.CollectionViewBase(items);
-
-            dg3.Items = collectionView3;
-
-            var addButton = this.FindControl<Button>("btnAdd");
-            addButton.Click += (a, b) => collectionView3.AddNew(); 
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }
