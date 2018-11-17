@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Utilities;
 using System;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {

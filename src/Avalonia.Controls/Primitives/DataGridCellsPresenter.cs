@@ -8,6 +8,7 @@ using Avalonia.Utilities;
 using System;
 using System.Diagnostics;
 using Avalonia.Controls;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Primitives
 {

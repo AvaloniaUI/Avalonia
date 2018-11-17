@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using Avalonia.Reactive;
 using System.Diagnostics;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {

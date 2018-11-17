@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Utils;
 using Avalonia.Utilities;
 
 namespace Avalonia.Collections

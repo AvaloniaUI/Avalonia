@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;

@@ -4,6 +4,7 @@
 // All other rights reserved.
 
 using Avalonia.Collections;
+using Avalonia.Controls.Utils;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using System;

@@ -11,6 +11,7 @@ using Avalonia.Utilities;
 using System;
 using System.Linq;
 using System.Diagnostics;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls
 {
