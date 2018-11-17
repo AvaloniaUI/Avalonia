@@ -131,7 +131,7 @@
   </Style>
 
   <!--FIX-->
-  <Style Selector="prim|DataGridRowHeader">
+  <Style Selector="DataGridRowHeader">
     <Setter Property="Template">
       <ControlTemplate>
         <Grid
