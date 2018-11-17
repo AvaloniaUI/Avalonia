@@ -28,7 +28,7 @@ namespace Avalonia.Skia
                 var iface = display.Type == GlDisplayType.OpenGL2
                     ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc));
-                gl.ImmediateContext.MakeCurrent(null);
+                gl.ImmediateContext.MakeCurrent();
                 GrContext = GRContext.Create(GRBackend.OpenGL, iface);
             }
         }

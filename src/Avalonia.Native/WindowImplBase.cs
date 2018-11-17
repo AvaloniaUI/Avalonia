@@ -186,10 +186,6 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                if (_parent._deferredRendering
-                    && _parent._lastRenderedLogicalSize != _parent.ClientSize)
-                    // Hack to trigger Paint event on the renderer
-                    _parent.Paint?.Invoke(new Rect());
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
         }
@@ -245,7 +241,9 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRendererProxy(root, _gpu ? _native : null);
+                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
+                    rendererLock:
+                    _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
             return new ImmediateRenderer(root);
         }
 
