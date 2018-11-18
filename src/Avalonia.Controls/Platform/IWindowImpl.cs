@@ -30,10 +30,7 @@ namespace Avalonia.Platform
         /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
-        /// <returns>
-        /// An <see cref="IDisposable"/> that should be used to close the window.
-        /// </returns>
-        IDisposable ShowDialog();
+        void ShowDialog(IWindowImpl parent);
 
         /// <summary>
         /// Enables or disables system window decorations (title bar, buttons, etc)
