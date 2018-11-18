@@ -2,9 +2,6 @@
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <TabControl Classes="sidebar" Name="Sidebar">
-    <TabControl.PageTransition>
-      <CrossFade Duration="0.25"/>
-    </TabControl.PageTransition>
     <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
     <TabItem Header="Border"><pages:BorderPage/></TabItem>
     <TabItem Header="Button"><pages:ButtonPage/></TabItem>
@@ -29,5 +26,6 @@
     <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
     <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
     <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
+    <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
   </TabControl>
 </UserControl>
