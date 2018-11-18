@@ -18,6 +18,8 @@ class WindowBaseImpl;
 -(AvnWindow* _Nonnull) initWithParent: (WindowBaseImpl* _Nonnull) parent;
 -(void) setCanBecomeKeyAndMain;
 -(void) pollModalSession: (NSModalSession _Nonnull) session;
+-(void) restoreParentWindow;
+-(bool) shouldTryToHandleEvents;
 @end
 
 struct INSWindowHolder

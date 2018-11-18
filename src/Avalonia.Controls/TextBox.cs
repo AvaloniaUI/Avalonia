@@ -262,7 +262,6 @@ namespace Avalonia.Controls
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
-            _presenter.Cursor = new Cursor(StandardCursorType.Ibeam);
 
             if (IsFocused)
             {

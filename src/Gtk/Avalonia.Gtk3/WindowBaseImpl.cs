@@ -265,6 +265,8 @@ namespace Avalonia.Gtk3
                 Paint?.Invoke(new Rect(ClientSize));
                 CurrentCairoContext = IntPtr.Zero;
             }
+            else
+                Paint?.Invoke(new Rect(ClientSize));
             return true;
         }
 
@@ -422,7 +424,7 @@ namespace Avalonia.Gtk3
             Native.GdkWindowSetCursor(Native.GtkWidgetGetWindow(GtkWidget), cursor?.Handle ??  IntPtr.Zero);
         }
 
-        public void Show() => Native.GtkWindowPresent(GtkWidget);
+        public virtual void Show() => Native.GtkWindowPresent(GtkWidget);
 
         public void Hide() => Native.GtkWidgetHide(GtkWidget);
 
