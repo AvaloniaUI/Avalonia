@@ -99,8 +99,7 @@ namespace Avalonia.Layout.UnitTests
                     }
                 };
 
-                window.Resources["ScrollBarWidth"] = 10.0;
-                window.Resources["ScrollBarHeight"] = 10.0;
+                window.Resources["ScrollBarThickness"] = 10.0;
 
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass(window);
