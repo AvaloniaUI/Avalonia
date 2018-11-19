@@ -13,6 +13,7 @@ using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -234,8 +235,6 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            _framebuffer?.Dispose();
-            _framebuffer = null;
             if (_hwnd != IntPtr.Zero)
             {
                 UnmanagedMethods.DestroyWindow(_hwnd);

@@ -88,18 +88,21 @@ namespace Avalonia.Data.Core
             _subscriber(value);
         }
 
-        protected void ValueChanged(object value)
+        protected void ValueChanged(object value) => ValueChanged(value, true);
+
+        private void ValueChanged(object value, bool notify)
         {
             var notification = value as BindingNotification;
 
             if (notification == null)
             {
                 LastValue = new WeakReference(value);
+
                 if (Next != null)
                 {
-                    Next.Target = new WeakReference(value);
+                    Next.Target = LastValue;
                 }
-                else
+                else if (notify)
                 {
                     _subscriber(value);
                 }
@@ -110,7 +113,7 @@ namespace Avalonia.Data.Core
 
                 if (Next != null)
                 {
-                    Next.Target = new WeakReference(notification.Value);
+                    Next.Target = LastValue;
                 }
 
                 if (Next == null || notification.Error != null)
@@ -136,6 +139,7 @@ namespace Avalonia.Data.Core
             }
             else
             {
+                ValueChanged(AvaloniaProperty.UnsetValue, notify:false);
                 _listening = false;
             }
         }
