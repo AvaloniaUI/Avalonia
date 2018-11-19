@@ -179,10 +179,22 @@ namespace Avalonia.Controls
             if (_popup != null)
             {
                 _popup.Opened -= PopupOpened;
+                _popup.Closed -= PopupClosed;
             }
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
+            _popup.Closed += PopupClosed;
+
+            base.OnTemplateApplied(e);
+        }
+
+        private void PopupClosed(object sender, EventArgs e)
+        {
+            if (Focusable)
+            {
+                Focus();
+            }
         }
 
         private void PopupOpened(object sender, EventArgs e)
