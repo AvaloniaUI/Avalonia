@@ -35,6 +35,7 @@
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
                    PlacementTarget="{TemplateBinding}"
+                   ObeyScreenEdges="True"
                    StaysOpen="False">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
