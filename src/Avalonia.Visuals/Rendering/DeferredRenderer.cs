@@ -85,6 +85,7 @@ namespace Avalonia.Rendering
             RenderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
+            _lock = new ManagedDeferredRendererLock();
         }
 
         /// <inheritdoc/>
