@@ -190,6 +190,14 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
         }
 
+        internal void ItemFocused(DropDownItem dropDownItem)
+        {
+            if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
+            {
+                dropDownItem.BringIntoView();
+            }
+        }
+
         private void PopupClosed(object sender, EventArgs e)
         {
             if (Focusable)
