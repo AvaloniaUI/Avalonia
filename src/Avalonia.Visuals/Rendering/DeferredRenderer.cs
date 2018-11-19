@@ -119,8 +119,13 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Dispose()
         {
-            var scene = Interlocked.Exchange(ref _scene, null);
-            scene?.Dispose();
+            lock (_sceneLock)
+            {
+                var scene = _scene;
+                _scene = null;
+                scene?.Dispose();
+            }
+
             Stop();
 
             Layers.Clear();
@@ -135,7 +140,8 @@ namespace Avalonia.Rendering
                 // When unit testing the renderLoop may be null, so update the scene manually.
                 UpdateScene();
             }
-
+            //It's safe to access _scene here without a lock since
+            //it's only changed from UI thread which we are currently on
             return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
         }
 
@@ -209,7 +215,10 @@ namespace Avalonia.Rendering
                     bool reRun = false;
                     do
                     {
-                        using (var scene = _scene?.Clone())
+                        IRef<Scene> scene;
+                        lock (_sceneLock)
+                            scene = _scene?.Clone();
+                        using (scene)
                             reRun = Render(scene?.Item, forceComposite, reRun);
                     } while (reRun);
                 }
@@ -447,15 +456,23 @@ namespace Avalonia.Rendering
                     }
                 }
 
-                var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
-                oldScene?.Dispose();
+                lock (_sceneLock)
+                {
+                    var oldScene = _scene;
+                    _scene = sceneRef;
+                    oldScene?.Dispose();
+                }
 
                 _dirty.Clear();
             }
             else
             {
-                var oldScene = Interlocked.Exchange(ref _scene, null);
-                oldScene?.Dispose();
+                lock (_sceneLock)
+                {
+                    var oldScene = _scene;
+                    _scene = null;
+                    oldScene?.Dispose();
+                }
             }
         }
 
