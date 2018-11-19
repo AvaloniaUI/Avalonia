@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
@@ -135,6 +136,16 @@ namespace Avalonia.Controls
                     if (--SelectedIndex < 0)
                         SelectedIndex = ItemCount - 1;
 
+                    e.Handled = true;
+                }
+            }
+            else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
+                      (e.Key == Key.Up || e.Key == Key.Down))
+            {
+                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => c.Focusable);
+                if (firstChild != null)
+                {
+                    firstChild.Focus();
                     e.Handled = true;
                 }
             }
