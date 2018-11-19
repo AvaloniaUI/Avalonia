@@ -170,6 +170,7 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+
             base.OnPointerPressed(e);
         }
 
@@ -199,18 +200,26 @@ namespace Avalonia.Controls
 
         private void PopupOpened(object sender, EventArgs e)
         {
-            var selectedIndex = SelectedIndex;
-
-            if (selectedIndex != -1)
-            {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
-                container?.Focus();
-            }
+            TryFocusSelectedItem();
         }
 
         private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateSelectionBoxItem(e.NewValue);
+            TryFocusSelectedItem();
+        }
+
+        private void TryFocusSelectedItem()
+        {
+            var selectedIndex = SelectedIndex;
+            if (IsDropDownOpen && selectedIndex != -1)
+            {
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                if (container != null && container.Focusable)
+                {
+                    container.Focus();
+                }
+            }
         }
 
         private void UpdateSelectionBoxItem(object item)
