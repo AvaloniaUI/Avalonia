@@ -249,8 +249,6 @@ namespace Avalonia.Controls
                         if (containerControl != null)
                         {
                             ((ISetLogicalParent)containerControl).SetParent(this);
-                            containerControl.SetValue(TemplatedParentProperty, null);
-
                             containerControl.UpdateChild();
 
                             if (containerControl.Child != null)
