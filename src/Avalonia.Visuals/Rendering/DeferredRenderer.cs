@@ -37,6 +37,7 @@ namespace Avalonia.Rendering
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
         private readonly IDeferredRendererLock _lock;
+        private readonly object _sceneLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -172,7 +173,8 @@ namespace Avalonia.Rendering
             }
         }
 
-        bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
+        bool NeedsUpdate => _dirty == null || _dirty.Count > 0;
+        bool IRenderLoopTask.NeedsUpdate => NeedsUpdate;
 
         void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
 
@@ -197,19 +199,23 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene.Item, false);
+        internal void UnitTestRender() => Render(_scene.Item, false, false);
 
         private void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
                 if (l != null)
-                    using (var scene = _scene?.Clone())
+                {
+                    bool reRun = false;
+                    do
                     {
-                        Render(scene?.Item, forceComposite);
-                    }
+                        using (var scene = _scene?.Clone())
+                            reRun = Render(scene?.Item, forceComposite, reRun);
+                    } while (reRun);
+                }
         }
-        
-        private void Render(Scene scene, bool forceComposite)
+       
+        private bool Render(Scene scene, bool forceComposite, bool reUpdating)
         {
             bool renderOverlay = DrawDirtyRects || DrawFps;
             bool composite = false;
@@ -242,7 +248,18 @@ namespace Avalonia.Rendering
                             SaveDebugFrames(scene.Generation);
                         }
 
-                        _lastSceneId = scene.Generation;
+                        lock (_sceneLock)
+                            _lastSceneId = scene.Generation;
+
+                        // We have consumed the previously available scene, but there might be some dirty 
+                        // rects since the last update. *If* we are on UI thread, we can force immediate scene
+                        // rebuild before rendering anything on-screen
+                        // By returning true we indicate that this method should be called again
+                        if (!reUpdating && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
+                        {
+                            UpdateScene();
+                            return true;
+                        }
 
                         composite = true;
                     }
@@ -268,6 +285,8 @@ namespace Avalonia.Rendering
                 RenderTarget?.Dispose();
                 RenderTarget = null;
             }
+
+            return false;
         }
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
@@ -405,6 +424,11 @@ namespace Avalonia.Rendering
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
+            lock (_sceneLock)
+            {
+                if (_scene?.Item.Generation > _lastSceneId)
+                    return;
+            }
             if (_root.IsVisible)
             {
                 var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
