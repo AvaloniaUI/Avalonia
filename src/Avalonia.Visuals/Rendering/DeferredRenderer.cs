@@ -205,98 +205,104 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene.Item, false, false);
+        internal void UnitTestRender() => Render(false);
 
         private void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
-                if (l != null)
+            {
+                if (l == null)
+                    return;
+
+                IDrawingContextImpl context = null;
+                try
                 {
-                    bool reRun = false;
-                    do
+                    try
                     {
-                        IRef<Scene> scene;
-                        lock (_sceneLock)
-                            scene = _scene?.Clone();
+                        IDrawingContextImpl GetContext()
+                        {
+                            if (context != null)
+                                return context;
+                            if (RenderTarget == null)
+                                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                            return context = RenderTarget.CreateDrawingContext(this);
+
+                        }
+
+                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
                         using (scene)
-                            reRun = Render(scene?.Item, forceComposite, reRun);
-                    } while (reRun);
+                        {
+                            var overlay = DrawDirtyRects || DrawFps;
+                            if (DrawDirtyRects)
+                                _dirtyRectsDisplay.Tick();
+                            if (overlay)
+                                RenderOverlay(scene.Item, GetContext());
+                            if (updated || forceComposite || overlay)
+                                RenderComposite(scene.Item, GetContext());
+                        }
+                    }
+                    finally
+                    {
+                        context?.Dispose();
+                    }
                 }
-        }
-       
-        private bool Render(Scene scene, bool forceComposite, bool reUpdating)
-        {
-            bool renderOverlay = DrawDirtyRects || DrawFps;
-            bool composite = false;
-
-            if (RenderTarget == null)
-            {
-                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-            }
-
-            if (renderOverlay)
-            {
-                _dirtyRectsDisplay.Tick();
-            }
-
-            try
-            {
-                if (scene != null && scene.Size != Size.Empty)
+                catch (RenderTargetCorruptedException ex)
                 {
-                    IDrawingContextImpl context = null;
-
-                    if (scene.Generation != _lastSceneId)
-                    {
-                        context = RenderTarget.CreateDrawingContext(this);
-                        Layers.Update(scene, context);
-
-                        RenderToLayers(scene);
-
-                        if (DebugFramesPath != null)
-                        {
-                            SaveDebugFrames(scene.Generation);
-                        }
-
-                        lock (_sceneLock)
-                            _lastSceneId = scene.Generation;
-
-                        // We have consumed the previously available scene, but there might be some dirty 
-                        // rects since the last update. *If* we are on UI thread, we can force immediate scene
-                        // rebuild before rendering anything on-screen
-                        // By returning true we indicate that this method should be called again
-                        if (!reUpdating && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
-                        {
-                            UpdateScene();
-                            return true;
-                        }
-
-                        composite = true;
-                    }
-
-                    if (renderOverlay)
-                    {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
-                        RenderOverlay(scene, context);
-                        RenderComposite(scene, context);
-                    }
-                    else if (composite || forceComposite)
-                    {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
-                        RenderComposite(scene, context);
-                    }
-
-                    context?.Dispose();
+                    Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                    RenderTarget?.Dispose();
+                    RenderTarget = null;
                 }
             }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                RenderTarget?.Dispose();
-                RenderTarget = null;
-            }
-
-            return false;
         }
+
+        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(Func<IDrawingContextImpl> contextFactory,
+            bool recursiveCall = false)
+        {
+            IRef<Scene> sceneRef;
+            lock (_sceneLock)
+                sceneRef = _scene?.Clone();
+            if (sceneRef == null)
+                return (null, false);
+            using (sceneRef)
+            {
+                var scene = sceneRef.Item;
+                if (scene.Generation != _lastSceneId)
+                {
+                    var context = contextFactory();
+                    Layers.Update(scene, context);
+
+                    RenderToLayers(scene);
+
+                    if (DebugFramesPath != null)
+                    {
+                        SaveDebugFrames(scene.Generation);
+                    }
+
+                    lock (_sceneLock)
+                        _lastSceneId = scene.Generation;
+
+
+                    // We have consumed the previously available scene, but there might be some dirty 
+                    // rects since the last update. *If* we are on UI thread, we can force immediate scene
+                    // rebuild before rendering anything on-screen
+                    // We are calling the same method recursively here 
+                    if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
+                    {
+                        UpdateScene();
+                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(contextFactory, true);
+                        return (rs, true);
+                    }
+                    
+                    // Indicate that we have updated the layers
+                    return (sceneRef.Clone(), true);
+                }
+                
+                // Just return scene, layers weren't updated
+                return (sceneRef.Clone(), false);
+            }
+            
+        }
+
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
