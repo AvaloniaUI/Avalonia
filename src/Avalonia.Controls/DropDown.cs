@@ -4,8 +4,10 @@
 using System;
 using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -13,12 +15,17 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// A drop-down list control.
     /// </summary>
     public class DropDown : SelectingItemsControl
     {
+        /// <summary>
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// </summary>
+        private static readonly FuncTemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
@@ -40,6 +47,12 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
             AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
+        /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<DropDown>();
+
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
@@ -49,6 +62,7 @@ namespace Avalonia.Controls
         /// </summary>
         static DropDown()
         {
+            ItemsPanelProperty.OverrideDefaultValue<DropDown>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
             SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
             KeyDownEvent.AddClassHandler<DropDown>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
@@ -79,6 +93,15 @@ namespace Avalonia.Controls
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the virtualization mode for the items.
+        /// </summary>
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return GetValue(VirtualizationModeProperty); }
+            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <inheritdoc/>
