@@ -58,10 +58,8 @@ namespace Avalonia.Native
 
         public IGlDisplay Display { get; }
 
-        public void MakeCurrent(IGlSurface surface)
+        public void MakeCurrent()
         {
-            if (surface != null)
-                throw new ArgumentException(nameof(surface));
             Context.MakeCurrent();
         }
     }

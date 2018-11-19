@@ -29,6 +29,7 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.TabStripItem.xaml?assembly=Avalonia.Themes.Default"/>
   <!-- TabControl needs to come after TabStrip as it redefines the inner TabStrip.ItemsPanel-->
   <StyleInclude Source="resm:Avalonia.Themes.Default.TabControl.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.TabItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.TextBox.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ToggleButton.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Expander.xaml?assembly=Avalonia.Themes.Default"/>

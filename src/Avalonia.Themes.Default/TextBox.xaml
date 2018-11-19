@@ -62,4 +62,7 @@
   <Style Selector="TextBox:error /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
+  <Style Selector="TextBox">
+    <Setter Property="Cursor" Value="IBeam" />
+  </Style>
 </Styles>

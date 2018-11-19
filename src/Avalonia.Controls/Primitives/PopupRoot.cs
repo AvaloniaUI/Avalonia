@@ -84,8 +84,10 @@ namespace Avalonia.Controls.Primitives
 
             if (screen != null)
             {
-                var screenX = Position.X + Bounds.Width - screen.Bounds.X;
-                var screenY = Position.Y + Bounds.Height - screen.Bounds.Y;
+                var scaling = VisualRoot.RenderScaling;
+
+                var screenX = Position.X + (Bounds.Width * scaling) - screen.Bounds.X;
+                var screenY = Position.Y + (Bounds.Height * scaling) - screen.Bounds.Y;
 
                 if (screenX > screen.Bounds.Width)
                 {

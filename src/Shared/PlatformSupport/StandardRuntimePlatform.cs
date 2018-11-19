@@ -89,9 +89,11 @@ namespace Avalonia.Shared.PlatformSupport
 #if DEBUG
                 if (Thread.CurrentThread.ManagedThreadId == GCThread?.ManagedThreadId)
                 {
-                    Console.Error.WriteLine("Native blob disposal from finalizer thread\nBacktrace: "
-                                            + Environment.StackTrace
-                                            + "\n\nBlob created by " + _backtrace);
+                    lock(_lock)
+                        if (!IsDisposed)
+                            Console.Error.WriteLine("Native blob disposal from finalizer thread\nBacktrace: "
+                                                    + Environment.StackTrace
+                                                    + "\n\nBlob created by " + _backtrace);
                 }
 #endif
                 DoDispose();

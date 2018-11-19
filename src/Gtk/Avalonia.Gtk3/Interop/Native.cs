@@ -67,6 +67,9 @@ namespace Avalonia.Gtk3.Interop
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate void gtk_window_set_modal(GtkWindow window, bool modal);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate void gtk_window_set_transient_for(GtkWindow window, IntPtr parent);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)] //No manual import
             public delegate IntPtr gdk_get_native_handle(IntPtr gdkWindow);
@@ -408,6 +411,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_new GtkWindowNew;
         public static D.gtk_window_set_icon GtkWindowSetIcon;
         public static D.gtk_window_set_modal GtkWindowSetModal;
+        public static D.gtk_window_set_transient_for GtkWindowSetTransientFor;
         public static D.gdk_set_allowed_backends GdkSetAllowedBackends;
         public static D.gtk_init GtkInit;
         public static D.gtk_window_present GtkWindowPresent;

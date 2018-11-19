@@ -1,9 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Reactive.Subjects;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.Data.Core;
+using Avalonia.Markup.Parsers;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -161,6 +165,100 @@ namespace Avalonia.Markup.UnitTests.Data
 
             decorator2.Child = target;
             Assert.Equal("decorator2", target.Text);
+        }
+
+        [Fact]
+        public void Should_Update_When_Detached_And_Attached_To_Visual_Tree_With_BindingPath()
+        {
+            TextBlock target;
+            Decorator decorator1;
+            Decorator decorator2;
+
+            var viewModel = new { Value = "Foo" };
+
+            var root1 = new TestRoot
+            {
+                Child = decorator1 = new Decorator
+                {
+                    Name = "decorator1",
+                    Child = target = new TextBlock(),
+                },
+                DataContext = viewModel
+            };
+
+            var root2 = new TestRoot
+            {
+                Child = decorator2 = new Decorator
+                {
+                    Name = "decorator2",
+                },
+                DataContext = viewModel
+            };
+
+            var binding = new Binding
+            {
+                Path = "DataContext.Value",
+                RelativeSource = new RelativeSource
+                {
+                    AncestorType = typeof(Decorator),
+                }
+            };
+
+            target.Bind(TextBox.TextProperty, binding);
+            Assert.Equal("Foo", target.Text);
+
+            decorator1.Child = null;
+            Assert.Null(target.Text);
+
+            decorator2.Child = target;
+            Assert.Equal("Foo", target.Text);
+        }
+
+        [Fact]
+        public void Should_Update_When_Detached_And_Attached_To_Visual_Tree_With_ComplexBindingPath()
+        {
+            TextBlock target;
+            Decorator decorator1;
+            Decorator decorator2;
+
+            var vm = new { Foo = new  { Value = "Foo" } };
+
+            var root1 = new TestRoot
+            {
+                Child = decorator1 = new Decorator
+                {
+                    Name = "decorator1",
+                    Child = target = new TextBlock(),
+                },
+                DataContext = vm
+            };
+
+            var root2 = new TestRoot
+            {
+                Child = decorator2 = new Decorator
+                {
+                    Name = "decorator2",
+                },
+                DataContext = vm
+            };
+
+            var binding = new Binding
+            {
+                Path = "DataContext.Foo.Value",
+                RelativeSource = new RelativeSource
+                {
+                    AncestorType = typeof(Decorator),
+                }
+            };
+
+            target.Bind(TextBox.TextProperty, binding);
+            Assert.Equal("Foo", target.Text);
+
+            decorator1.Child = null;
+            Assert.Null(target.Text);
+
+            decorator2.Child = target;
+            Assert.Equal("Foo", target.Text);
         }
     }
 }
