@@ -3,8 +3,6 @@
         <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
         <Setter Property="Padding" Value="4"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
@@ -16,28 +14,23 @@
                     Background="{TemplateBinding Background}"
                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                     VerticalAlignment="{TemplateBinding VerticalAlignment}">
-                    <ScrollViewer
-                        Name="PART_ScrollViewer"
-                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                        <DockPanel>
-                            <ItemsPresenter
-                                Name="PART_ItemsPresenter"
-                                Items="{TemplateBinding Items}"
-                                ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                MemberSelector="{TemplateBinding MemberSelector}"                     >
-                            </ItemsPresenter>
-                            <ContentPresenter
-                                Name="PART_Content"
-                                Margin="{TemplateBinding Padding}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                Content="{TemplateBinding SelectedContent}"
-                                ContentTemplate="{TemplateBinding SelectedContentTemplate}">
-                            </ContentPresenter>
-                        </DockPanel>
-                    </ScrollViewer>
+                    <DockPanel>
+                        <ItemsPresenter
+                            Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            MemberSelector="{TemplateBinding MemberSelector}"                     >
+                        </ItemsPresenter>
+                        <ContentPresenter
+                            Name="PART_Content"
+                            Margin="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding SelectedContent}"
+                            ContentTemplate="{TemplateBinding SelectedContentTemplate}">
+                        </ContentPresenter>
+                    </DockPanel>
                 </Border>
             </ControlTemplate>
         </Setter>
