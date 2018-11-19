@@ -818,12 +818,12 @@ namespace Avalonia.Skia.Text
                     {
                         case '\r':
                             {
+                                var length = index - currentPosition;
+
                                 if (index < _text.Length - 1 && _text[index + 1] == '\n')
                                 {
                                     index++;
-                                }
-
-                                var length = index - currentPosition + 1;
+                                }                              
 
                                 var breakLines = PerformLineBreak(_text, currentPosition, length);
 
@@ -835,12 +835,12 @@ namespace Avalonia.Skia.Text
 
                         case '\n':
                             {
+                                var length = index - currentPosition;
+
                                 if (index < _text.Length - 1 && _text[index + 1] == '\r')
                                 {
                                     index++;
-                                }
-
-                                var length = index - currentPosition + 1;
+                                }                             
 
                                 var breakLines = PerformLineBreak(_text, currentPosition, length);
 
