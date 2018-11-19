@@ -4,6 +4,7 @@
     <Setter Property="Padding" Value="2"/>
     <Setter Property="HorizontalAlignment" Value="Stretch"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="Template">
       <ControlTemplate>
         <ContentPresenter Name="PART_ContentPresenter"
@@ -18,7 +19,11 @@
       </ControlTemplate>
     </Setter>
   </Style>
-
+    
+  <Style Selector="DropDownItem:focus /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush3}"/>
+  </Style>
+    
   <Style Selector="DropDownItem:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
   </Style>
