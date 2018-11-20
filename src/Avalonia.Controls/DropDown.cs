@@ -284,7 +284,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                var selector = MemberSelector;
+                SelectionBoxItem = selector != null ? selector.Select(item) : item;
             }
         }
 
