@@ -260,7 +260,7 @@ namespace Avalonia.Controls.Primitives
                     var child = template.Build(this);
                     var nameScope = new NameScope();
                     NameScope.SetNameScope((Control)child, nameScope);
-                    child.SetValue(TemplatedParentProperty, this);
+                    ApplyTemplatedParent(child);
                     RegisterNames(child, nameScope);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
@@ -324,6 +324,23 @@ namespace Avalonia.Controls.Primitives
         protected virtual void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             InvalidateMeasure();
+        }
+
+        /// <summary>
+        /// Sets the TemplatedParent property for the created template children.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        private void ApplyTemplatedParent(IControl control)
+        {
+            control.SetValue(TemplatedParentProperty, this);
+
+            foreach (var child in control.LogicalChildren)
+            {
+                if (child is IControl c)
+                {
+                    ApplyTemplatedParent(c);
+                }
+            }
         }
 
         /// <summary>

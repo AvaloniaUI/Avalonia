@@ -47,9 +47,9 @@ namespace Avalonia.Native
 
         public IAvnWindow Native => _native;
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl window)
         {
-            return _native.ShowDialog();
+            _native.ShowDialog(((WindowImpl)window).Native);
         }
 
         public void CanResize(bool value)

@@ -27,11 +27,11 @@ namespace Avalonia
     {
         public static T UseWin32<T>(
             this T builder,
-            bool deferredRendering = true) 
+            bool deferredRendering = true, bool allowEgl = false) 
                 where T : AppBuilderBase<T>, new()
         {
             return builder.UseWindowingSubsystem(
-                () => Win32.Win32Platform.Initialize(deferredRendering),
+                () => Win32.Win32Platform.Initialize(deferredRendering, allowEgl),
                 "Win32");
         }
     }
@@ -66,7 +66,7 @@ namespace Avalonia.Win32
             Initialize(true);
         }
 
-        public static void Initialize(bool deferredRendering = true)
+        public static void Initialize(bool deferredRendering = true, bool allowEgl = false)
         {
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
@@ -80,7 +80,8 @@ namespace Avalonia.Win32
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
                 .Bind<IPlatformIconLoader>().ToConstant(s_instance);
-            Win32GlManager.Initialize();
+            if (allowEgl)
+                Win32GlManager.Initialize();
             UseDeferredRendering = deferredRendering;
             _uiThread = Thread.CurrentThread;
 

@@ -49,8 +49,11 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplatedControl> TemplatedParentProperty =
-            AvaloniaProperty.Register<StyledElement, ITemplatedControl>(nameof(TemplatedParent), inherits: true);
+        public static readonly DirectProperty<StyledElement, ITemplatedControl> TemplatedParentProperty =
+            AvaloniaProperty.RegisterDirect<StyledElement, ITemplatedControl>(
+                nameof(TemplatedParent),
+                o => o.TemplatedParent,
+                (o ,v) => o.TemplatedParent = v);
 
         private int _initCount;
         private string _name;
@@ -62,6 +65,7 @@ namespace Avalonia
         private Styles _styles;
         private bool _styled;
         private Subject<IStyleable> _styleDetach = new Subject<IStyleable>();
+        private ITemplatedControl _templatedParent;
         private bool _dataContextUpdating;
 
         /// <summary>
@@ -269,8 +273,8 @@ namespace Avalonia
         /// </summary>
         public ITemplatedControl TemplatedParent
         {
-            get { return GetValue(TemplatedParentProperty); }
-            internal set { SetValue(TemplatedParentProperty, value); }
+            get => _templatedParent;
+            internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
         }
 
         /// <summary>
