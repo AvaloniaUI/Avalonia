@@ -39,15 +39,17 @@
                    StaysOpen="False">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
-                <ScrollViewer>
-                  <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  MemberSelector="{TemplateBinding MemberSelector}"
-                                  VirtualizationMode="{TemplateBinding VirtualizationMode}"
+                  <AdornerDecorator Margin="-1 -1 0 0">
+                      <ScrollViewer>
+                          <ItemsPresenter Name="PART_ItemsPresenter"
+                                          Items="{TemplateBinding Items}"
+                                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                                          ItemTemplate="{TemplateBinding ItemTemplate}"
+                                          MemberSelector="{TemplateBinding MemberSelector}"
+                                          VirtualizationMode="{TemplateBinding VirtualizationMode}"
                                   />
-                </ScrollViewer>
+                      </ScrollViewer>
+                  </AdornerDecorator>
               </Border>
             </Popup>
           </Grid>

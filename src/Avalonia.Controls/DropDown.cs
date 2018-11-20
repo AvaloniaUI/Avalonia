@@ -165,10 +165,10 @@ namespace Avalonia.Controls
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
                       (e.Key == Key.Up || e.Key == Key.Down))
             {
-                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => c.Focusable);
+                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
-                    firstChild.Focus();
+                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
                     e.Handled = true;
                 }
             }
@@ -223,7 +223,7 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
-            if (Focusable)
+            if (CanFocus(this))
             {
                 Focus();
             }
@@ -246,12 +246,14 @@ namespace Avalonia.Controls
             if (IsDropDownOpen && selectedIndex != -1)
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
-                if (container != null && container.Focusable)
+                if (container != null && CanFocus(container))
                 {
                     container.Focus();
                 }
             }
         }
+
+        private bool CanFocus(IControl control) => control.Focusable && control.IsEnabledCore && control.IsVisible;
 
         private void UpdateSelectionBoxItem(object item)
         {
