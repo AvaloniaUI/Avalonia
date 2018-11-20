@@ -246,6 +246,13 @@ namespace Avalonia.Controls
             if (IsDropDownOpen && selectedIndex != -1)
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+
+                if(container == null && SelectedItems.Count > 0)
+                {
+                    ScrollIntoView(SelectedItems[0]);
+                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                }
+
                 if (container != null && CanFocus(container))
                 {
                     container.Focus();
