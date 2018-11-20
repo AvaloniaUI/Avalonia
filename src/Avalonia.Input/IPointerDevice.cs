@@ -13,6 +13,6 @@ namespace Avalonia.Input
 
         Point GetPosition(IVisual relativeTo);
 
-        void LayoutUpdated(IInputRoot root);
+        void SceneInvalidated(IInputRoot root, Rect rect);
     }
 }

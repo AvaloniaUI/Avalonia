@@ -230,7 +230,7 @@ namespace Avalonia.Controls
         void IRenderRoot.Invalidate(Rect rect)
         {
             PlatformImpl?.Invalidate(rect);
-            UpdatePointerOver();
+            UpdatePointerOver(rect);
         }
         
         /// <inheritdoc/>
@@ -351,9 +351,9 @@ namespace Avalonia.Controls
             _inputManager.ProcessInput(e);
         }
 
-        private void UpdatePointerOver()
+        private void UpdatePointerOver(Rect rect)
         {
-            (this as IInputRoot).MouseDevice.LayoutUpdated(this);
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, rect);
         }
     }
 }

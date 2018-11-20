@@ -104,16 +104,21 @@ namespace Avalonia.Input
                 ProcessRawEvent(margs);
         }
 
-        public void LayoutUpdated(IInputRoot root)
+        public void SceneInvalidated(IInputRoot root, Rect rect)
         {
-            if (Captured == null)
+            var clientPoint = root.PointToClient(Position);
+
+            if (rect.Contains(clientPoint))
             {
-                SetPointerOver(this, root, root.PointToClient(Position));    
+                if (Captured == null)
+                {
+                    SetPointerOver(this, root, clientPoint);
+                }
+                else
+                {
+                    SetPointerOver(this, root, Captured);
+                }
             }
-            else
-            {
-                SetPointerOver(this, root, Captured);               
-            }                   
         }
 
         private void ProcessRawEvent(RawMouseEventArgs e)
