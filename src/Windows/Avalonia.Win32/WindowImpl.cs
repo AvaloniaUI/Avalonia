@@ -13,6 +13,7 @@ using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -42,6 +43,8 @@ namespace Avalonia.Win32
         private OleDropTarget _dropTarget;
         private Size _minSize;
         private Size _maxSize;
+        private WindowImpl _parent;
+        private readonly List<WindowImpl> _disabledBy = new List<WindowImpl>();
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -165,10 +168,10 @@ namespace Avalonia.Win32
             private set;
         }
 
-        public bool IsEnabled
+
+        void UpdateEnabled()
         {
-            get { return UnmanagedMethods.IsWindowEnabled(_hwnd); }
-            set { UnmanagedMethods.EnableWindow(_hwnd, value); }
+            EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
         public Size MaxClientSize
@@ -232,8 +235,6 @@ namespace Avalonia.Win32
 
         public void Dispose()
         {
-            _framebuffer?.Dispose();
-            _framebuffer = null;
             if (_hwnd != IntPtr.Zero)
             {
                 UnmanagedMethods.DestroyWindow(_hwnd);
@@ -248,6 +249,12 @@ namespace Avalonia.Win32
 
         public void Hide()
         {
+            if (_parent != null)
+            {
+                _parent._disabledBy.Remove(this);
+                _parent.UpdateEnabled();
+                _parent = null;
+            }
             UnmanagedMethods.ShowWindow(_hwnd, UnmanagedMethods.ShowWindowCommand.Hide);
         }
 
@@ -359,6 +366,7 @@ namespace Avalonia.Win32
 
         public virtual void Show()
         {
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, IntPtr.Zero);
             ShowWindow(_showWindowState);
         }
 
@@ -412,11 +420,13 @@ namespace Avalonia.Win32
             }
         }
 
-        public virtual IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl parent)
         {
-            Show();
-
-            return Disposable.Empty;
+            _parent = (WindowImpl)parent;
+            _parent._disabledBy.Add(this);
+            _parent.UpdateEnabled();
+            SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, ((WindowImpl)parent)._hwnd);
+            ShowWindow(_showWindowState);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -490,6 +500,11 @@ namespace Avalonia.Win32
                     //Remove root reference to this class, so unmanaged delegate can be collected
                     s_instances.Remove(this);
                     Closed?.Invoke();
+                    if (_parent != null)
+                    {
+                        _parent._disabledBy.Remove(this);
+                        _parent.UpdateEnabled();
+                    }
                     //Free other resources
                     Dispose();
                     return IntPtr.Zero;
@@ -633,7 +648,6 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
                     UnmanagedMethods.PAINTSTRUCT ps;
-
                     if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
                     {
                         var f = Scaling;
