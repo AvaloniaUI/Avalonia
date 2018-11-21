@@ -1,32 +1,41 @@
 <UserControl xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <TabControl Classes="sidebar" Name="Sidebar">
-    <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
-    <TabItem Header="Border"><pages:BorderPage/></TabItem>
-    <TabItem Header="Button"><pages:ButtonPage/></TabItem>
-    <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
-    <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
-    <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
-    <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
-    <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
-    <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
-    <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
-    <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
-    <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
-    <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
-    <TabItem Header="Image"><pages:ImagePage/></TabItem>
-    <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
-    <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
-    <TabItem Header="Menu"><pages:MenuPage/></TabItem>
-	<TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
-    <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
-    <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
-    <TabItem Header="Slider"><pages:SliderPage/></TabItem>
-    <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
-    <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
-    <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
-    <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
-    <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
-  </TabControl>
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Background="{DynamicResource ThemeBackgroundBrush}"
+        Foreground="{DynamicResource ThemeForegroundBrush}"
+        FontSize="{DynamicResource FontSizeNormal}">
+  <Grid>
+    <DropDown x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <DropDownItem>Light</DropDownItem>
+      <DropDownItem>Dark</DropDownItem>
+    </DropDown>
+    <TabControl Classes="sidebar" Name="Sidebar">
+      <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
+      <TabItem Header="Border"><pages:BorderPage/></TabItem>
+      <TabItem Header="Button"><pages:ButtonPage/></TabItem>
+      <TabItem Header="ButtonSpinner"><pages:ButtonSpinnerPage/></TabItem>
+      <TabItem Header="Calendar"><pages:CalendarPage/></TabItem>
+      <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
+      <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
+      <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
+      <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
+      <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
+      <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
+      <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
+      <TabItem Header="Image"><pages:ImagePage/></TabItem>
+      <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
+      <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
+      <TabItem Header="Menu"><pages:MenuPage/></TabItem>
+	  <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
+      <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
+      <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
+      <TabItem Header="Slider"><pages:SliderPage/></TabItem>
+      <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
+      <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
+      <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
+      <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
+      <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+    </TabControl>
+  </Grid>
 </UserControl>
