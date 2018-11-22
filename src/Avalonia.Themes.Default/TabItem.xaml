@@ -3,9 +3,11 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLightBrush}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Padding" Value="8"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <ContentPresenter 
+                <ContentPresenter
                     Name="PART_ContentPresenter"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -14,6 +16,7 @@
                     Content="{TemplateBinding Header}"
                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                    Margin="{TemplateBinding Margin}"
                     Padding="{TemplateBinding Padding}"/>
             </ControlTemplate>
         </Setter>
@@ -35,5 +38,8 @@
     </Style>
     <Style Selector="TabItem:selected:focus:pointerover /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
+    </Style>
+    <Style Selector="TabItem[TabStripPlacement=Right]">
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
     </Style>
 </Styles>

@@ -26,43 +26,19 @@
                 <TabControl
                     Margin="0 16"
                     TabStripPlacement="{Binding TabPlacement}">
-                    <TabItem>
-                        <TabItem.Header>
-                            <TextBlock
-                               Text="Arch"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Margin="8">
-                            </TextBlock>
-                        </TabItem.Header>
+                    <TabItem Header="Arch">
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the first page in the TabControl.</TextBlock>
                             <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem>
-                        <TabItem.Header>
-                            <TextBlock
-                               Text="Leaf"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Margin="8">
-                            </TextBlock>
-                        </TabItem.Header>
+                    <TabItem Header="Leaf">                       
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the second page in the TabControl.</TextBlock>
                             <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem IsEnabled="False">
-                        <TabItem.Header>
-                            <TextBlock
-                               Text="Disabled"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"
-                               Margin="8">
-                            </TextBlock>
-                        </TabItem.Header>
+                    <TabItem Header="Disabled" IsEnabled="False">
                         <TextBlock>You should not see this.</TextBlock>
                     </TabItem>
                 </TabControl>
@@ -82,10 +58,7 @@
                     <TabControl.ItemTemplate>
                         <DataTemplate>
                             <TextBlock
-                                Text="{Binding Header}"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Margin="8">
+                                Text="{Binding Header}">
                             </TextBlock>
                         </DataTemplate>
                     </TabControl.ItemTemplate>
