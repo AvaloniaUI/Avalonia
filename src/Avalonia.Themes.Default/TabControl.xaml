@@ -1,10 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style Selector="TabControl">
-        <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-        <Setter Property="Padding" Value="4"/>
-        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Style Selector="TabControl">        
         <Setter Property="Template">
             <ControlTemplate>
                 <Border
@@ -35,11 +30,17 @@
             </ControlTemplate>
         </Setter>
     </Style>
+    <Style Selector="TabControl[TabStripPlacement=Top]">
+        <Setter Property="Padding" Value="0 4 0 0"/>
+    </Style>
     <Style Selector="TabControl[TabStripPlacement=Top] /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Top"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Bottom] /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Bottom"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Bottom]">
+        <Setter Property="Padding" Value="0 0 0 4"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Left"/>
@@ -47,10 +48,16 @@
     <Style Selector="TabControl[TabStripPlacement=Left] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
         <Setter Property="Orientation" Value="Vertical"/>
     </Style>
+    <Style Selector="TabControl[TabStripPlacement=Left]">
+        <Setter Property="Padding" Value="4 0 0 0"/>
+    </Style>
     <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter">
         <Setter Property="DockPanel.Dock" Value="Right"/>
     </Style>
     <Style Selector="TabControl[TabStripPlacement=Right] /template/ ItemsPresenter#PART_ItemsPresenter > WrapPanel">
         <Setter Property="Orientation" Value="Vertical"/>
+    </Style>
+    <Style Selector="TabControl[TabStripPlacement=Right]">
+        <Setter Property="Padding" Value="0 0 0 4"/>
     </Style>
 </Styles>

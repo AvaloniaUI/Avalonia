@@ -23,8 +23,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsSelectedProperty =
             ListBoxItem.IsSelectedProperty.AddOwner<TabItem>();
 
-        private TabControl _parentTabControl;
-
         /// <summary>
         /// Initializes static members of the <see cref="TabItem"/> class.
         /// </summary>
@@ -56,11 +54,7 @@ namespace Avalonia.Controls
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        internal TabControl ParentTabControl
-        {
-            get => _parentTabControl;
-            set => _parentTabControl = value;
-        }
+        internal TabControl ParentTabControl { get; set; }
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {
