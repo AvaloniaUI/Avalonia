@@ -17,8 +17,7 @@
                             VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                             Background="{TemplateBinding Background}">
                             <ItemsPresenter
-                                Name="PART_ItemsPresenter"
-                                MinWidth="190"                            
+                                Name="PART_ItemsPresenter"                          
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
