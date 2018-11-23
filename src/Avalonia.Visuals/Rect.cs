@@ -129,7 +129,7 @@ namespace Avalonia
         /// Gets the bottom position of the rectangle.
         /// </summary>
         public double Bottom => _y + _height;
-        
+
         /// <summary>
         /// Gets the top left point of the rectangle.
         /// </summary>
