@@ -173,6 +173,12 @@ public:
     virtual HRESULT ObtainGlFeature(IAvnGlFeature** ppv) = 0;
 };
 
+AVNCOM(IAvnString, 17) : IUnknown
+{
+    virtual HRESULT Pointer(void**retOut) = 0;
+    virtual HRESULT Length(int*ret) = 0;
+};
+
 AVNCOM(IAvnWindowBase, 02) : IUnknown
 {
     virtual HRESULT Show() = 0;
@@ -207,10 +213,10 @@ AVNCOM(IAvnPopup, 03) : virtual IAvnWindowBase
 
 AVNCOM(IAvnWindow, 04) : virtual IAvnWindowBase
 {
-    virtual HRESULT ShowDialog (IUnknown**ppv) = 0;
+    virtual HRESULT ShowDialog (IAvnWindow* parent) = 0;
     virtual HRESULT SetCanResize(bool value) = 0;
     virtual HRESULT SetHasDecorations(bool value) = 0;
-    virtual HRESULT SetTitle (const char* title) = 0;
+    virtual HRESULT SetTitle (void* utf8Title) = 0;
     virtual HRESULT SetTitleBarColor (AvnColor color) = 0;
     virtual HRESULT SetWindowState(AvnWindowState state) = 0;
     virtual HRESULT GetWindowState(AvnWindowState*ret) = 0;
@@ -315,8 +321,8 @@ AVNCOM(IAvnScreens, 0e) : IUnknown
 
 AVNCOM(IAvnClipboard, 0f) : IUnknown
 {
-    virtual HRESULT GetText (void** retOut) = 0;
-    virtual HRESULT SetText (char* text) = 0;
+    virtual HRESULT GetText (IAvnString**ppv) = 0;
+    virtual HRESULT SetText (void* utf8Text) = 0;
     virtual HRESULT Clear() = 0;
 };
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Avalonia.Input.Platform;
 using Avalonia.Native.Interop;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
@@ -24,12 +25,14 @@ namespace Avalonia.Native
             return Task.CompletedTask;
         }
 
-        public Task<string> GetTextAsync()
+        public unsafe Task<string> GetTextAsync()
         {
-            var outPtr = _native.GetText();
-            var text = Marshal.PtrToStringAnsi(outPtr);
+            using (var text = _native.GetText())
+            {
+                var result = System.Text.Encoding.UTF8.GetString((byte*)text.Pointer(), text.Length());
 
-            return Task.FromResult(text);
+                return Task.FromResult(result);
+            }
         }
 
         public Task SetTextAsync(string text)
@@ -38,7 +41,10 @@ namespace Avalonia.Native
 
             if (text != null)
             {
-                _native.SetText(text);
+                using (var buffer = new Utf8Buffer(text))
+                {
+                    _native.SetText(buffer.DangerousGetHandle());
+                }
             }
 
             return Task.CompletedTask;

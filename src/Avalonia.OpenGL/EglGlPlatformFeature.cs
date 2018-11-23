@@ -7,7 +7,7 @@ namespace Avalonia.OpenGL
     {
         public IGlDisplay Display { get; set; }
         public IGlContext ImmediateContext { get; set; }
-        public IGlContext DeferredContext { get; set; }
+        public EglContext DeferredContext { get; set; }
 
         public static void TryInitialize()
         {
@@ -26,7 +26,7 @@ namespace Avalonia.OpenGL
                 {
                     Display = disp,
                     ImmediateContext = ctx,
-                    DeferredContext = disp.CreateContext(ctx)
+                    DeferredContext = (EglContext)disp.CreateContext(ctx)
                 };
             }
             catch(Exception e)

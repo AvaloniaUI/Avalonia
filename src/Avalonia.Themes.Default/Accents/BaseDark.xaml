@@ -52,5 +52,7 @@
         <sys:Double x:Key="FontSizeSmall">10</sys:Double>
         <sys:Double x:Key="FontSizeNormal">12</sys:Double>
         <sys:Double x:Key="FontSizeLarge">16</sys:Double>
+
+        <sys:Double x:Key="ScrollBarThickness">10</sys:Double>
     </Style.Resources>
 </Style>

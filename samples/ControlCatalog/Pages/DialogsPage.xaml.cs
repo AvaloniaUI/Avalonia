@@ -31,12 +31,18 @@ namespace ControlCatalog.Pages
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
-            {
-                new DecoratedWindow().Show();
-            };
+                {
+                    new DecoratedWindow().ShowDialog(GetWindow());
+                };
+            this.FindControl<Button>("Dialog").Click += delegate
+                {
+                    new MainWindow().ShowDialog(GetWindow());
+                };
+
+
         }
 
-        Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked.Value ? (Window)this.VisualRoot : null;
+        Window GetWindow() => (Window)this.VisualRoot;
 
         private void InitializeComponent()
         {

@@ -3,7 +3,8 @@
     <FocusAdornerTemplate>
       <Rectangle Stroke="Black"
                  StrokeThickness="1"
-                 StrokeDashArray="1,2"/>
+                 StrokeDashArray="1,2"
+                 Margin="1"/>
     </FocusAdornerTemplate>
   </Setter>
 </Style>
