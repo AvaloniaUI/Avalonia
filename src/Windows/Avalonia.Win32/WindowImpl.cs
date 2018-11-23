@@ -455,6 +455,54 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
         }
 
+
+        protected int BorderTop { get; private set; }
+        protected int BorderLeft { get; private set; }
+        protected int BorderRight { get; private set; }
+        protected int BorderBottom { get; private set; }
+
+        private HitTestValues NCHitText(uint m, IntPtr LParam, IntPtr wParam)
+        {
+            int lParam = (int)LParam;
+            Point pt = new Point(lParam & 0xffff, lParam >> 16);
+
+            var rc = new Rect(Position, ClientSize);
+
+            int row = 1;
+            int col = 1;
+            bool onResizeBorder = false;
+
+            // Determine if we are on the top or bottom border
+            if (pt.Y >= rc.Top && pt.Y < rc.Top + BorderTop)
+            {
+                onResizeBorder = pt.Y < (rc.Top + BorderBottom);
+                row = 0;
+            }
+            else if (pt.Y < rc.Bottom && pt.Y > rc.Bottom - BorderBottom)
+            {
+                row = 2;
+            }
+
+            // Determine if we are on the left border or the right border
+            if (pt.X >= rc.Left && pt.X < rc.Left + BorderLeft)
+            {
+                col = 0;
+            }
+            else if (pt.X < rc.Right && pt.X >= rc.Right - BorderRight)
+            {
+                col = 2;
+            }
+
+            HitTestValues[,] hitTests = new HitTestValues[,]
+            {
+                {HitTestValues.HTTOPLEFT, onResizeBorder ? HitTestValues.HTTOP : HitTestValues.HTCAPTION, HitTestValues.HTTOPRIGHT},
+                {HitTestValues.HTLEFT, HitTestValues.HTNOWHERE, HitTestValues.HTRIGHT},
+                {HitTestValues.HTBOTTOMLEFT, HitTestValues.HTBOTTOM, HitTestValues.HTBOTTOMRIGHT}
+            };
+
+            return hitTests[row, col];
+        }
+
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -464,6 +512,8 @@ namespace Avalonia.Win32
             uint timestamp = unchecked((uint)UnmanagedMethods.GetMessageTime());
 
             RawInputEventArgs e = null;
+
+            bool callDWP = false;
 
             WindowsMouseDevice.Instance.CurrentWindow = this;
 
@@ -484,7 +534,53 @@ namespace Avalonia.Win32
                             break;
                     }
 
+                    MARGINS margins = new MARGINS();
+
+                    margins.leftWidth = Math.Abs(BorderLeft);
+                    margins.rightWidth = Math.Abs(BorderRight);
+                    margins.bottomHeight = Math.Abs(BorderBottom);
+                    margins.topHeight = Math.Abs(BorderTop);
+
+                   // int hr = UnmanagedMethods.DwmExtendFrameIntoClientArea(hWnd, ref margins);
+
                     return IntPtr.Zero;
+
+                case WindowsMessage.WM_NCCALCSIZE:
+                    return IntPtr.Zero;
+                //break;
+
+                case WindowsMessage.WM_CREATE:
+                    RECT rcClient;
+                    UnmanagedMethods.GetWindowRect(hWnd, out rcClient);
+
+
+                    RECT rc = new RECT();
+                    uint style = UnmanagedMethods.GetWindowLong(hWnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+                    uint styleEx = UnmanagedMethods.GetWindowLong(hWnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
+                    UnmanagedMethods.AdjustWindowRectEx(ref rc, style, false, styleEx);
+
+                    BorderTop = Math.Abs(rc.top);
+                    BorderLeft = Math.Abs(0);
+                    BorderRight = Math.Abs(0);
+                    BorderBottom = Math.Abs(0);
+                    break;
+
+                case WindowsMessage.WM_NCHITTEST:
+                    var ht = NCHitText(msg, lParam, wParam);
+
+
+                    callDWP = (ht == HitTestValues.HTNOWHERE);
+
+                    if (callDWP)
+                    {
+
+                    }
+                    else
+                    {
+                        return new IntPtr((int)ht);
+                    }
+                    break;
+
 
                 case UnmanagedMethods.WindowsMessage.WM_CLOSE:
                     bool? preventClosing = Closing?.Invoke();
