@@ -907,18 +907,6 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]
         public static extern bool SetWindowText(IntPtr hwnd, string lpString);
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct MARGINS
-        {
-            public int leftWidth;
-            public int rightWidth;
-            public int topHeight;
-            public int bottomHeight;
-        }
-
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
-
         public enum ClassLongIndex : int
         {
             GCL_HCURSOR = -12,
