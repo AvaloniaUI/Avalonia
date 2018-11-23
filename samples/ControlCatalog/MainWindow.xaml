@@ -2,7 +2,5 @@
         Title="Avalonia Control Gallery"
         Icon="resm:ControlCatalog.Assets.test_icon.ico?assembly=ControlCatalog"
         xmlns:local="clr-namespace:ControlCatalog" Background="Transparent">
-    <Grid HorizontalAlignment="Left" Width="200" Background="Red">
-        <TextBlock Text="Drawing in Non-client Area Win32" />
-    </Grid>
- </Window>
+    <local:MainView />
+</Window>
