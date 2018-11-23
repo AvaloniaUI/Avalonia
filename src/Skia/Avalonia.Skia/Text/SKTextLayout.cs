@@ -485,18 +485,22 @@ namespace Avalonia.Skia.Text
 
                 var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
 
+                var currentPosition = textLine.StartingIndex;
+
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textPosition)
+                    if (currentPosition + textRun.Text.Length - 1 < textPosition)
                     {
                         currentX += textRun.Width;
+
+                        currentPosition += textRun.Text.Length;
 
                         continue;
                     }
 
                     foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
                     {
-                        if (textLine.StartingIndex + glyphCluster.TextPosition + glyphCluster.Length - 1 < textPosition)
+                        if (currentPosition + glyphCluster.TextPosition + glyphCluster.Length - 1 < textPosition)
                         {
                             currentX += glyphCluster.Bounds.Width;
 
@@ -539,7 +543,7 @@ namespace Avalonia.Skia.Text
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    if (textLine.StartingIndex + textRun.Text.Length - 1 < textPosition)
+                    if (currentPosition + textRun.Text.Length - 1 < textPosition)
                     {
                         lineX += textRun.Width;
 
@@ -571,6 +575,8 @@ namespace Avalonia.Skia.Text
                             break;
                         }
                     }
+
+                    currentPosition += textRun.Text.Length;
 
                     if (remainingLength <= 0)
                     {
@@ -720,9 +726,13 @@ namespace Avalonia.Skia.Text
         {
             switch (c)
             {
-                case '\r':
-                    return true;
-                case '\n':
+                case '\u000A':
+                case '\u000B':
+                case '\u000C':
+                case '\u000D':
+                case '\u0085':
+                case '\u2028':
+                case '\u2029':
                     return true;
                 default:
                     return false;
@@ -900,12 +910,10 @@ namespace Avalonia.Skia.Text
 
                 return new SKTextLine(startingIndex, length, new List<SKTextRun>(), textLineMetrics);
             }
-            else
-            {
-                var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
 
-                return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
-            }
+            var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
+
+            return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
         }
 
         /// <summary>
@@ -916,6 +924,11 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private SKTextRun CreateTextRun(string text, SKTextFormat textFormat)
         {
+            if (IsBreakChar(text[0]))
+            {
+                return CreateLineBreak(text, textFormat);
+            }
+
             _paint.Typeface = textFormat.Typeface;
 
             _paint.TextSize = textFormat.FontSize;
@@ -1046,49 +1059,50 @@ namespace Avalonia.Skia.Text
 
                 var c = runText[0];
 
-                // ToDo: This needs refactoring to support all kinds of line breaks.
-                switch (c)
+                if (IsBreakChar(c))
                 {
-                    case '\r':
+                    glyphCount++;
+
+                    if (glyphCount < runText.Length)
+                    {
+                        switch (c)
                         {
-                            glyphCount++;
-
-                            if (runText[glyphCount] == '\n')
+                            case '\r':
                             {
-                                glyphCount++;
-                            }
-
-                            break;
-                        }
-
-                    case '\n':
-                        {
-                            glyphCount++;
-
-                            if (runText[glyphCount] == '\r')
-                            {
-                                glyphCount++;
-                            }
-
-                            break;
-                        }
-
-                    default:
-                        {
-                            glyphCount = Math.Min(runText.Length, _typeface.CountGlyphs(runText));
-
-                            if (glyphCount > 0)
-                            {
-                                c = runText[glyphCount - 1];
-
-                                if (IsBreakChar(c))
+                                if (runText[glyphCount] == '\n')
                                 {
-                                    glyphCount--;
+                                    glyphCount++;
                                 }
+
+                                break;
                             }
 
-                            break;
+                            case '\n':
+                            {
+                                if (runText[glyphCount] == '\r')
+                                {
+                                    glyphCount++;
+                                }
+
+                                break;
+                            }
                         }
+                    }                   
+                }
+                else
+                {
+                    glyphCount = Math.Min(runText.Length, _typeface.CountGlyphs(runText));
+
+                    // Exclude line break
+                    if (glyphCount > 0)
+                    {
+                        c = runText[glyphCount - 1];
+
+                        if (IsBreakChar(c))
+                        {
+                            glyphCount--;
+                        }
+                    }
                 }
 
                 var typeface = _typeface;
@@ -1129,7 +1143,6 @@ namespace Avalonia.Skia.Text
 
                                 var symbol = Encoding.Unicode.GetString(bytes);
 
-                                // ToDo: Use CharsToGlyphs when new SkiaSharp is released
                                 if (typeface.CountGlyphs(symbol) == 0)
                                 {
                                     break;
@@ -1164,7 +1177,7 @@ namespace Avalonia.Skia.Text
 
                 if (textPosition + glyphCount < length)
                 {
-                    runText = runText.Substring(startingIndex + textPosition, glyphCount);
+                    runText = runText.Substring(textPosition, glyphCount);
                 }
 
                 var currentRun = CreateTextRun(runText, new SKTextFormat(typeface, _fontSize));

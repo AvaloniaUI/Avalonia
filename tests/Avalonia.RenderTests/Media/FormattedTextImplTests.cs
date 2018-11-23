@@ -248,6 +248,8 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 return new Rect(v[0], v[1], v[2], v[3]);
             }).ToArray();
 
+            var compare = input.Substring(index, length);
+
             var fmt = Create(input, FontSize);
             var htRes = fmt.HitTestTextRange(index, length).ToArray();
 
