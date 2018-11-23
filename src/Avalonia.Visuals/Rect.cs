@@ -120,8 +120,6 @@ namespace Avalonia
         /// </summary>
         public Size Size => new Size(_width, _height);
 
-        public double Left => _x;
-
         /// <summary>
         /// Gets the right position of the rectangle.
         /// </summary>
@@ -131,12 +129,7 @@ namespace Avalonia
         /// Gets the bottom position of the rectangle.
         /// </summary>
         public double Bottom => _y + _height;
-
-        /// <summary>
-        /// Gets the top position of the rectangle.
-        /// </summary>
-        public double Top => _y;
-
+        
         /// <summary>
         /// Gets the top left point of the rectangle.
         /// </summary>
