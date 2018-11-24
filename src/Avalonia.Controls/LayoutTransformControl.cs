@@ -5,28 +5,30 @@
 // http://silverlight.codeplex.com/SourceControl/changeset/view/74775#Release/Silverlight4/Source/Controls.Layout.Toolkit/LayoutTransformer/LayoutTransformer.cs
 //
 
-using Avalonia.Controls.Primitives;
-using Avalonia.Media;
-using Avalonia.VisualTree;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Control that implements support for transformations as if applied by LayoutTransform.
     /// </summary>
-    public class LayoutTransformControl : ContentControl
+    public class LayoutTransformControl : Decorator
     {
         public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
 
         static LayoutTransformControl()
         {
+            ClipToBoundsProperty.OverrideDefaultValue<LayoutTransformControl>(true);
+
             LayoutTransformProperty.Changed
                 .AddClassHandler<LayoutTransformControl>(x => x.OnLayoutTransformChanged);
+
+            ChildProperty.Changed
+                .AddClassHandler<LayoutTransformControl>(x => x.OnChildChanged);
         }
 
         /// <summary>
@@ -38,8 +40,7 @@ namespace Avalonia.Controls
             set { SetValue(LayoutTransformProperty, value); }
         }
 
-        public Control TransformRoot => _transformRoot ??
-                            (_transformRoot = this.GetVisualChildren().OfType<Control>().FirstOrDefault());
+        public IControl TransformRoot => Child;
 
         /// <summary>
         /// Provides the behavior for the "Arrange" pass of layout.
@@ -132,16 +133,8 @@ namespace Avalonia.Controls
             return transformedDesiredSize;
         }
 
-        /// <summary>
-        /// Builds the visual tree for the LayoutTransformerControl when a new
-        /// template is applied.
-        /// </summary>
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        private void OnChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            base.OnTemplateApplied(e);
-
-            _matrixTransform = new MatrixTransform();
-
             if (null != TransformRoot)
             {
                 TransformRoot.RenderTransform = _matrixTransform;
@@ -169,14 +162,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// RenderTransform/MatrixTransform applied to TransformRoot.
         /// </summary>
-        private MatrixTransform _matrixTransform;
+        private MatrixTransform _matrixTransform = new MatrixTransform();
 
         /// <summary>
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
         private IDisposable _transformChangedEvent = null;
-        private Control _transformRoot;
+
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.
         /// </summary>
@@ -215,7 +208,8 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ApplyLayoutTransform()
         {
-            if (LayoutTransform == null) return;
+            if (LayoutTransform == null)
+                return;
 
             // Get the transform matrix and apply it
             _transformation = RoundMatrix(LayoutTransform.Value, DecimalsAfterRound);
@@ -376,11 +370,8 @@ namespace Avalonia.Controls
         {
             var newTransform = e.NewValue as Transform;
 
-            if (_transformChangedEvent != null)
-            {
-                _transformChangedEvent.Dispose();
-                _transformChangedEvent = null;
-            }
+            _transformChangedEvent?.Dispose();
+            _transformChangedEvent = null;
 
             if (newTransform != null)
             {

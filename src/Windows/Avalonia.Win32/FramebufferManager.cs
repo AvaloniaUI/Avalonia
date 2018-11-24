@@ -5,7 +5,7 @@ using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class FramebufferManager : IFramebufferPlatformSurface, IDisposable
+    class FramebufferManager : IFramebufferPlatformSurface
     {
         private readonly IntPtr _hwnd;
         private WindowFramebuffer _fb;
@@ -28,11 +28,6 @@ namespace Avalonia.Win32
                 _fb = new WindowFramebuffer(_hwnd, new PixelSize(width, height));
             }
             return _fb;
-        }
-
-        public void Dispose()
-        {
-            _fb?.Deallocate();
         }
     }
 }
