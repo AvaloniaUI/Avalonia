@@ -159,8 +159,8 @@ namespace Avalonia
         /// <param name="dpi">The dots per inch.</param>
         /// <returns>The device-independent size.</returns>
         public static PixelSize FromSize(Size size, Vector dpi) => new PixelSize(
-            (int)(size.Width * (dpi.X / 96)),
-            (int)(size.Height * (dpi.Y / 96)));
+            (int)Math.Ceiling(size.Width * (dpi.X / 96)),
+            (int)Math.Ceiling(size.Height * (dpi.Y / 96)));
 
         /// <summary>
         /// Returns the string representation of the size.
