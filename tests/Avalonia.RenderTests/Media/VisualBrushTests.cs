@@ -451,6 +451,159 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
 
         [Fact]
+        public async Task VisualBrush_Grip_96_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 10,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Grip_144_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 7.5,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 144);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Grip_192_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 10,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 192);
+            CompareImages();
+        }
+
+        [Fact]
         public async Task VisualBrush_Checkerboard_96_Dpi()
         {
             var target = new Border
