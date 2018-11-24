@@ -20,8 +20,9 @@ namespace Avalonia.Direct2D1.Media
             BitmapImpl bitmap,
             Size targetSize)
         {
-            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSize(96), targetSize, new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height));
-             
+            var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
+            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSize(dpi), targetSize);
+
             if (!calc.NeedsIntermediate)
             {
                 _bitmap = bitmap.GetDirect2DBitmap(target);

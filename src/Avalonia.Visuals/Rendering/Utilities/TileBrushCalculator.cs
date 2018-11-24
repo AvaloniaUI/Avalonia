@@ -9,7 +9,6 @@ namespace Avalonia.Rendering.Utilities
     {
         private readonly Size _imageSize;
         private readonly Rect _drawRect;
-        private readonly Vector _dpi;
 
         public bool IsValid { get; }
 
@@ -19,7 +18,7 @@ namespace Avalonia.Rendering.Utilities
         /// <param name="brush">The brush to be rendered.</param>
         /// <param name="contentSize">The size of the content of the tile brush.</param>
         /// <param name="targetSize">The size of the control to which the brush is being rendered.</param>
-        public TileBrushCalculator(ITileBrush brush, Size contentSize, Size targetSize, Vector dpi)
+        public TileBrushCalculator(ITileBrush brush, Size contentSize, Size targetSize)
             : this(
                   brush.TileMode,
                   brush.Stretch,
@@ -28,8 +27,7 @@ namespace Avalonia.Rendering.Utilities
                   brush.SourceRect,
                   brush.DestinationRect,
                   contentSize,
-                  targetSize,
-                  dpi)
+                  targetSize)
         {
         }
 
@@ -52,14 +50,12 @@ namespace Avalonia.Rendering.Utilities
             RelativeRect sourceRect,
             RelativeRect destinationRect,
             Size contentSize,
-            Size targetSize,
-            Vector dpi)
+            Size targetSize)
         {
             _imageSize = contentSize;
-            _dpi = dpi;
 
-            SourceRect = sourceRect.ToPixels(_imageSize) * (_dpi / 96);
-            DestinationRect = destinationRect.ToPixels(targetSize) * (dpi / 96);
+            SourceRect = sourceRect.ToPixels(_imageSize);
+            DestinationRect = destinationRect.ToPixels(targetSize);
 
             var scale = stretch.CalculateScaling(DestinationRect.Size, SourceRect.Size);
             var translate = CalculateTranslate(alignmentX, alignmentY, SourceRect, DestinationRect, scale);
