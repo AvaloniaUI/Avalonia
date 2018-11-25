@@ -9,10 +9,7 @@ using System.Runtime.Serialization.Json;
 
 namespace Avalonia.Utilities
 {
-    #if !BUILDTASK
-    public 
-    #endif
-        static class AvaloniaResourcesIndexReaderWriter
+    public static class AvaloniaResourcesIndexReaderWriter
     {
         private const int LastKnownVersion = 1;
         public static List<AvaloniaResourcesIndexEntry> Read(Stream stream)

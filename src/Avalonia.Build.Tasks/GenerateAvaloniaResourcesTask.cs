@@ -67,7 +67,7 @@ namespace Avalonia.Build.Tasks
 
         List<Source> BuildResourceSources() => Resources.Select(r => new Source(r.ItemSpec, Root)).ToList();
 
-        void Pack(Stream output, List<Source> sources)
+        private void Pack(Stream output, List<Source> sources)
         {
             var offsets = new Dictionary<Source, int>();
             var coffset = 0;
@@ -94,7 +94,7 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        bool PreProcessXamlFiles(List<Source> sources)
+        private bool PreProcessXamlFiles(List<Source> sources)
         {
             var typeToXamlIndex = new Dictionary<string, string>(); 
             
@@ -109,7 +109,7 @@ namespace Avalonia.Build.Tasks
                     }
                     catch(Exception e)
                     {
-                        BuildEngine.LogError(s.SystemPath, "File doesn't contain valid XAML: " + e);
+                        BuildEngine.LogError(BuildEngineErrorCode.InvalidXAML, s.SystemPath, "File doesn't contain valid XAML: " + e);
                         return false;
                     }
 
@@ -118,7 +118,7 @@ namespace Avalonia.Build.Tasks
                         if (typeToXamlIndex.ContainsKey(info.XClass))
                         {
                             
-                            BuildEngine.LogError(s.SystemPath,
+                            BuildEngine.LogError(BuildEngineErrorCode.DuplicateXClass, s.SystemPath,
                                 $"Duplicate x:Class directive, {info.XClass} is already used in {typeToXamlIndex[info.XClass]}");
                             return false;
                         }
@@ -140,7 +140,8 @@ namespace Avalonia.Build.Tasks
         public bool Execute()
         {
             foreach(var r in EmbeddedResources.Where(r=>r.ItemSpec.EndsWith(".xaml")||r.ItemSpec.EndsWith(".paml")))
-                BuildEngine.LogWarning(r.ItemSpec, "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
+                BuildEngine.LogWarning(BuildEngineErrorCode.LegacyResmScheme, r.ItemSpec,
+                    "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
             var resources = BuildResourceSources();
 
             if (!PreProcessXamlFiles(resources))
