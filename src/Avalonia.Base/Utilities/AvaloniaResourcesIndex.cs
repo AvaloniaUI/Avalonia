@@ -9,7 +9,10 @@ using System.Runtime.Serialization.Json;
 
 namespace Avalonia.Utilities
 {
-    public static class AvaloniaResourcesIndexReaderWriter
+    #if !BUILDTASK
+    public
+    #endif
+    static class AvaloniaResourcesIndexReaderWriter
     {
         private const int LastKnownVersion = 1;
         public static List<AvaloniaResourcesIndexEntry> Read(Stream stream)
@@ -34,14 +37,20 @@ namespace Avalonia.Utilities
     }
 
     [DataContract]
-    public class AvaloniaResourcesIndex
+#if !BUILDTASK
+    public
+#endif
+    class AvaloniaResourcesIndex
     {       
         [DataMember]
         public List<AvaloniaResourcesIndexEntry> Entries { get; set; } = new List<AvaloniaResourcesIndexEntry>();
     }
 
     [DataContract]
-    public class AvaloniaResourcesIndexEntry
+#if !BUILDTASK
+    public
+#endif
+    class AvaloniaResourcesIndexEntry
     {
         [DataMember]
         public string Path { get; set; }
