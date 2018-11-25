@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ViewboxPage">
     <UserControl.Resources>
         <StreamGeometry x:Key="Acorn">
             F1 M 16.6309,18.6563C 17.1309,
