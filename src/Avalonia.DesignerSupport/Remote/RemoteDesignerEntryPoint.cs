@@ -199,7 +199,7 @@ namespace Avalonia.DesignerSupport.Remote
                 s_currentWindow = null;
                 try
                 {
-                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath);
+                    s_currentWindow = DesignWindowLoader.LoadDesignerWindow(xaml.Xaml, xaml.AssemblyPath, xaml.XamlFileProjectPath);
                     s_transport.Send(new UpdateXamlResultMessage(){Handle = s_currentWindow.PlatformImpl?.Handle?.Handle.ToString()});
                 }
                 catch (Exception e)

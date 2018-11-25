@@ -32,11 +32,11 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByLocation(Uri location)
         {
-            var availableAssets = s_assetLoader.GetAssets(location);
+            var availableAssets = s_assetLoader.GetAssets(location, null);
 
-            var matchingAssets = availableAssets.Where(x => x.absolutePath.EndsWith(".ttf") || x.absolutePath.EndsWith(".otf"));
+            var matchingAssets = availableAssets.Where(x => x.AbsolutePath.EndsWith(".ttf") || x.AbsolutePath.EndsWith(".otf"));
 
-            return matchingAssets.Select(x => GetAssetUri(x.absolutePath, x.assembly));
+            return matchingAssets;
         }
 
         /// <summary>
@@ -48,25 +48,15 @@ namespace Avalonia.Media.Fonts
         /// <returns></returns>
         private static IEnumerable<Uri> GetFontAssetsByFileName(Uri location, string fileName)
         {
-            var availableResources = s_assetLoader.GetAssets(location);
+            var availableResources = s_assetLoader.GetAssets(location, null);
 
             var compareTo = location.AbsolutePath + "." + fileName.Split('*').First();
 
             var matchingResources =
-                availableResources.Where(x => x.absolutePath.Contains(compareTo) && (x.absolutePath.EndsWith(".ttf") || x.absolutePath.EndsWith(".otf")));
+                availableResources.Where(x => x.AbsolutePath.Contains(compareTo) && (x.AbsolutePath.EndsWith(".ttf") || x.AbsolutePath.EndsWith(".otf")));
 
-            return matchingResources.Select(x => GetAssetUri(x.absolutePath, x.assembly));
+            return matchingResources;
         }
 
-        /// <summary>
-        /// Returns a <see cref="Uri"/> for a font asset that follows the resm scheme
-        /// </summary>
-        /// <param name="absolutePath"></param>
-        /// <param name="assembly"></param>
-        /// <returns></returns>
-        private static Uri GetAssetUri(string absolutePath, Assembly assembly)
-        {
-            return new Uri("resm:" + absolutePath + "?assembly=" + assembly.GetName().Name, UriKind.RelativeOrAbsolute);
-        }
     }
 }
