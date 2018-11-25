@@ -431,9 +431,12 @@ namespace Avalonia.Controls.Primitives
             {
                 if (i.ContainerControl != null && i.Item != null)
                 {
-                    MarkContainerSelected(
-                        i.ContainerControl,
-                        SelectedItems.Contains(i.Item));
+                    var ms = MemberSelector;
+                    bool selected = ms == null ? 
+                        SelectedItems.Contains(i.Item) : 
+                        SelectedItems.OfType<object>().Any(v => Equals(ms.Select(v), i.Item));
+
+                    MarkContainerSelected(i.ContainerControl, selected);
                 }
             }
         }

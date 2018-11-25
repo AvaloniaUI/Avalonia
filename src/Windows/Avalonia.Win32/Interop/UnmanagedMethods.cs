@@ -780,8 +780,8 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLong")]
         private static extern uint SetWindowLong32b(IntPtr hWnd, int nIndex, uint value);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint SetWindowLongPtr(IntPtr hWnd, int nIndex, uint value);
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "SetWindowLongPtr")]
+        private static extern IntPtr SetWindowLong64b(IntPtr hWnd, int nIndex, IntPtr value);
 
         public static uint SetWindowLong(IntPtr hWnd, int nIndex, uint value)
         {
@@ -791,7 +791,19 @@ namespace Avalonia.Win32.Interop
             }
             else
             {
-                return SetWindowLongPtr(hWnd, nIndex, value);
+                return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
+            }
+        }
+        
+        public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr handle)
+        {
+            if (IntPtr.Size == 4)
+            {
+                return new IntPtr(SetWindowLong32b(hWnd, nIndex, (uint)handle.ToInt32()));
+            }
+            else
+            {
+                return SetWindowLong64b(hWnd, nIndex, handle);
             }
         }
 
