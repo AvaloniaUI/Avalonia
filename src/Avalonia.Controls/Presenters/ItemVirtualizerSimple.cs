@@ -525,10 +525,6 @@ namespace Avalonia.Controls.Presenters
                 {
                     newOffset = index - Math.Ceiling(ViewportValue - 1);
                 }
-                else if (OffsetValue + ViewportValue > ItemCount)
-                {
-                    newOffset = OffsetValue - 1;
-                }
 
                 if (newOffset != -1)
                 {
