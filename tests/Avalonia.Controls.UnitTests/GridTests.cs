@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -156,6 +158,68 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Layout_StarColumn_Should_Pass_Calculated_Width_On_Measure_And_Arrange()
+        {
+            Square child;
+
+            var target = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("*,*"),
+                Children =
+                {
+                    (child = new Square
+                    {
+                        [Grid.ColumnProperty] = 0,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    })
+                }
+            };
+
+            target.Measure(new Size(200, 200));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(target.ColumnDefinitions[0].ActualWidth, 100);
+            Assert.Equal(target.ColumnDefinitions[1].ActualWidth, 100);
+
+            Assert.Equal(new Size(100, 100), child.DesiredSize);
+            Assert.Equal(new Rect(0, 50, 100, 100), child.Bounds);
+        }
+
+        [Fact]
+        public void Layout_LeftAlingment_And_StarColumn_Shouldnt_Stretch()
+        {
+            Square child;
+
+            var target = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("*,100"),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Children =
+                {
+                    (child = new Square
+                    {
+                        [Grid.ColumnProperty] = 0,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center
+                    })
+                }
+            };
+
+            target.Measure(new Size(300, 100));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.Equal(target.ColumnDefinitions[0].ActualWidth, 100);
+            Assert.Equal(target.ColumnDefinitions[1].ActualWidth, 100);
+
+            Assert.Equal(new Size(100, 100), child.DesiredSize);
+            Assert.Equal(new Rect(0, 0, 100, 100), child.Bounds);
+
+            Assert.Equal(200, target.DesiredSize.Width);
+            Assert.Equal(200, target.Bounds.Width);
+        }
+
+        [Fact]
         public void Changing_Child_Column_Invalidates_Measure()
         {
             Border child;
@@ -180,5 +244,19 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(target.IsMeasureValid);
         }
 
+        private class Square : Control
+        {
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                var min = Math.Min(availableSize.Width, availableSize.Height);
+                return new Size(min, min);
+            }
+
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                var min = Math.Min(finalSize.Width, finalSize.Height);
+                return base.ArrangeOverride(new Size(min, min));
+            }
+        }
     }
 }

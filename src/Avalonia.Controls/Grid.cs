@@ -314,7 +314,10 @@ namespace Avalonia.Controls
             {
                 if (measureCache.TryGetValue(child, out var desiredSize))
                 {
-                    return desiredSize;
+                    if (!(desiredSize.Width > size.Width) && !(desiredSize.Height > size.Height))
+                    {
+                        return desiredSize;
+                    }
                 }
 
                 child.Measure(size);
