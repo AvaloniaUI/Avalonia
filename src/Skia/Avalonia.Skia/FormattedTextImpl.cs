@@ -28,9 +28,6 @@ namespace Avalonia.Skia
 
             Text = text ?? string.Empty;
 
-            // Replace 0 characters with zero-width spaces (200B)
-            Text = Text.Replace((char)0, (char)0x200B);
-
             var skiaTypeface = TypefaceCache.Default;
 
             if (typeface.FontFamily.Key != null)
