@@ -22,7 +22,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 
             var fontFamilyKey = new FontFamilyKey(source);
 
-            Assert.Equal(new Uri("resm:Avalonia.Visuals.UnitTests"), fontFamilyKey.Location);
+            Assert.Equal(new Uri("resm:Avalonia.Visuals.UnitTests"), fontFamilyKey.Source);
 
             Assert.Null(fontFamilyKey.FileName);
         }
@@ -34,7 +34,7 @@ namespace Avalonia.Visuals.UnitTests.Media.Fonts
 
             var fontFamilyKey = new FontFamilyKey(source);
 
-            Assert.Equal(new Uri("resm:Avalonia.Visuals.UnitTests"), fontFamilyKey.Location);
+            Assert.Equal(new Uri("resm:Avalonia.Visuals.UnitTests"), fontFamilyKey.Source);
 
             Assert.Equal("MyFont.ttf", fontFamilyKey.FileName);
         }
