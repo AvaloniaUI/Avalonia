@@ -36,4 +36,8 @@
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration)"/>
 
   </Target>
+  
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(AvaloniaResource)" />
+  </ItemGroup>
 </Project>
