@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Collections;
+using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -93,6 +96,87 @@ namespace Avalonia.Visuals.UnitTests.Rendering
 
             //then new position
             Assert.Equal(new Rect(100, 100, 100, 100), invalidationCalls[2]);
+        }
+
+        [Fact]
+        public void Should_Render_Child_In_Parent_With_RenderTransform()
+        {
+            var targetMock = new Mock<Control>() { CallBase = true };
+            var target = targetMock.Object;
+            target.Width = 100;
+            target.Height = 50;
+            var child = new Panel()
+            {
+                RenderTransform = new RotateTransform() { Angle = 90 },
+                Children =
+                {
+                    new Panel()
+                    {
+                        Children =
+                        {
+                            target
+                        }
+                    }
+                }
+            };
+
+            var visualTarget = targetMock.As<IVisual>();
+            int rendered = 0;
+            visualTarget.Setup(v => v.Render(It.IsAny<DrawingContext>())).Callback(() => rendered++);
+
+            var root = new TestRoot(child);
+            root.Renderer = new ImmediateRenderer(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            root.Measure(new Size(50, 100));
+            root.Arrange(new Rect(new Size(50, 100)));
+
+            root.Renderer.Paint(root.Bounds);
+
+            Assert.Equal(1, rendered);
+        }
+
+        [Fact]
+        public void Should_Render_Child_In_Parent_With_RenderTransform2()
+        {
+            var targetMock = new Mock<Control>() { CallBase = true };
+            var target = targetMock.Object;
+
+            target.Width = 100;
+            target.Height = 50;
+            target.HorizontalAlignment = HorizontalAlignment.Center;
+            target.VerticalAlignment = VerticalAlignment.Center;
+
+            var child = new Panel()
+            {
+                RenderTransform = new RotateTransform() { Angle = 90 },
+                Children =
+                {
+                    new Panel()
+                    {
+                        Children =
+                        {
+                            target
+                        }
+                    }
+                }
+            };
+
+            var visualTarget = targetMock.As<IVisual>();
+            int rendered = 0;
+            visualTarget.Setup(v => v.Render(It.IsAny<DrawingContext>())).Callback(() => rendered++);
+
+            var root = new TestRoot(child);
+            root.Renderer = new ImmediateRenderer(root);
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            root.Measure(new Size(300, 100));
+            root.Arrange(new Rect(new Size(300, 100)));
+            root.Renderer.Paint(root.Bounds);
+
+            Assert.Equal(1, rendered);
         }
     }
 }
