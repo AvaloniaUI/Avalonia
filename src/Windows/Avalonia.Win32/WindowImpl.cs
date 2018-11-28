@@ -265,13 +265,18 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);            
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
 
-            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
-
-            UnmanagedMethods.RECT windowRect;
-
-            UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+            if (value)
+            {
+                style |= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU & WindowStyles.WS_SIZEFRAME);
+            }
+            else
+            {
+                style ^= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU & WindowStyles.WS_SIZEFRAME);
+            }
+            
+            UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
 
             Rect newRect;
             var oldThickness = BorderThickness;
@@ -436,7 +441,7 @@ namespace Avalonia.Win32
                 0,
                 atom,
                 null,
-                (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
+                (int)(WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU & WindowStyles.WS_SIZEFRAME),
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
                 UnmanagedMethods.CW_USEDEFAULT,
