@@ -266,7 +266,14 @@ namespace Avalonia.Rendering
 
                 if (clipToBounds)
                 {
-                    clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                    if (visual.RenderTransform != null)
+                    {
+                        clipRect = new Rect(visual.Bounds.Size);
+                    }
+                    else
+                    {
+                        clipRect = clipRect.Intersect(new Rect(visual.Bounds.Size));
+                    }
                 }
 
                 using (context.PushPostTransform(m))
