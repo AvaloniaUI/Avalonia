@@ -17,6 +17,11 @@ namespace Avalonia.Media.Fonts
             s_assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
         }
 
+        /// <summary>
+        /// Loads all font assets that belong to the specified <see cref="FontFamilyKey"/>
+        /// </summary>
+        /// <param name="fontFamilyKey"></param>
+        /// <returns></returns>
         public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey)
         {
             var sourceWithoutArguments = fontFamilyKey.Source.OriginalString.Split('?').First();
