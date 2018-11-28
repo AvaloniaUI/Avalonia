@@ -70,6 +70,11 @@ namespace Avalonia.Controls
         /// Gets or sets the current scroll offset in the cross axis.
         /// </summary>
         double CrossAxisOffset { get; set; }
+ 
+        /// <summary>
+        /// Gets the smallest number of child items to scroll.
+        /// </summary>
+        int ScrollQuantum { get; }
 
         /// <summary>
         /// Invalidates the measure of the control and forces a call to 
@@ -83,5 +88,7 @@ namespace Avalonia.Controls
         /// the available size hasn't changed.
         /// </remarks>
         void ForceInvalidateMeasure();
+
+       
     }
 }

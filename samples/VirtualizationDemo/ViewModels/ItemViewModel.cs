@@ -18,5 +18,6 @@ namespace VirtualizationDemo.ViewModels
         }
 
         public string Header => $"{_prefix} {_index}";
+        public double Height => _index%6*40+10 ;
     }
 }

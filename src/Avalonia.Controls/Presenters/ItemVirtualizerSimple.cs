@@ -35,7 +35,7 @@ namespace Avalonia.Controls.Presenters
         public override bool IsLogicalScrollEnabled => true;
 
         /// <inheritdoc/>
-        public override double ExtentValue => ItemCount;
+        public override double ExtentValue => Math.Ceiling((double)ItemCount/VirtualizingPanel.ScrollQuantum);
 
         /// <inheritdoc/>
         public override double OffsetValue
@@ -43,14 +43,17 @@ namespace Avalonia.Controls.Presenters
             get
             {
                 var offset = VirtualizingPanel.PixelOffset > 0 ? 1 : 0;
-                return FirstIndex + offset;
+                return FirstIndex / VirtualizingPanel.ScrollQuantum + offset;
             }
 
             set
             {
                 var panel = VirtualizingPanel;
-                var offset = VirtualizingPanel.PixelOffset > 0 ? 1 : 0;
-                var delta = (int)(value - (FirstIndex + offset));
+                var offset = panel.PixelOffset > 0 ? 1 : 0;
+                var current = FirstIndex / panel.ScrollQuantum + offset;
+                var delta = ((int)value - current);
+
+                delta *= panel.ScrollQuantum;
 
                 if (delta != 0)
                 {
@@ -61,7 +64,7 @@ namespace Avalonia.Controls.Presenters
                         if (panel.PixelOffset > 0)
                         {
                             panel.PixelOffset = 0;
-                            delta += 1;
+                            delta += panel.ScrollQuantum;
                         }
 
                         if (delta != 0)
@@ -74,6 +77,7 @@ namespace Avalonia.Controls.Presenters
                         // We're moving to a partially obscured item at the end of the list so
                         // offset the panel by the height of the first item.
                         var firstIndex = ItemCount - panel.Children.Count;
+                        firstIndex = (int)Math.Ceiling((double)firstIndex / (double)panel.ScrollQuantum) * panel.ScrollQuantum;
                         RecycleContainersForMove(firstIndex - FirstIndex);
 
                         double pixelOffset;
@@ -103,9 +107,9 @@ namespace Avalonia.Controls.Presenters
         {
             get
             {
-                // If we can't fit the last item in the panel fully, subtract 1 from the viewport.
+                // If we can't fit the last items in the panel fully, subtract 1 line from the viewport.
                 var overflow = VirtualizingPanel.PixelOverflow > 0 ? 1 : 0;
-                return VirtualizingPanel.Children.Count - overflow;
+                return Math.Ceiling((double)VirtualizingPanel.Children.Count / VirtualizingPanel.ScrollQuantum) - overflow;
             }
         }
 
@@ -219,7 +223,7 @@ namespace Avalonia.Controls.Presenters
             if (panel.PixelOffset != 0 && FirstIndex + panel.Children.Count < ItemCount)
             {
                 panel.PixelOffset = 0;
-                RecycleContainersForMove(1);
+                RecycleContainersForMove(VirtualizingPanel.ScrollQuantum);
             }
 
             InvalidateScroll();
@@ -252,12 +256,20 @@ namespace Avalonia.Controls.Presenters
                 case NavigationDirection.Up:
                     if (vertical)
                     {
+                        newItemIndex = itemIndex - panel.ScrollQuantum;
+                    }
+                    else if (panel.ScrollQuantum > 1)
+                    {
                         newItemIndex = itemIndex - 1;
                     }
 
                     break;
                 case NavigationDirection.Down:
                     if (vertical)
+                    {
+                        newItemIndex = itemIndex + panel.ScrollQuantum;
+                    }
+                    else if(panel.ScrollQuantum>1)
                     {
                         newItemIndex = itemIndex + 1;
                     }
@@ -267,12 +279,20 @@ namespace Avalonia.Controls.Presenters
                 case NavigationDirection.Left:
                     if (!vertical)
                     {
+                        newItemIndex = itemIndex - panel.ScrollQuantum;
+                    }
+                    else if (panel.ScrollQuantum > 1)
+                    {
                         newItemIndex = itemIndex - 1;
                     }
                     break;
 
                 case NavigationDirection.Right:
                     if (!vertical)
+                    {
+                        newItemIndex = itemIndex + panel.ScrollQuantum;
+                    }
+                    else if (panel.ScrollQuantum > 1)
                     {
                         newItemIndex = itemIndex + 1;
                     }
@@ -286,7 +306,6 @@ namespace Avalonia.Controls.Presenters
                     newItemIndex = Math.Min(ItemCount - 1, itemIndex + (int)ViewportValue);
                     break;
             }
-
             return ScrollIntoView(newItemIndex);
         }
 
@@ -310,53 +329,85 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var panel = VirtualizingPanel;
 
-            if (!panel.IsFull && Items != null && panel.IsAttachedToVisualTree)
+            if (Items != null && panel.IsAttachedToVisualTree)
             {
                 var memberSelector = Owner.MemberSelector;
-                var index = NextIndex;
+                var index = FirstIndex - 1;
                 var step = 1;
 
-                while (!panel.IsFull && index >= 0)
+                // check scroll alignment - add to start until aligned
+                var toAdd = FirstIndex % panel.ScrollQuantum;
+                
+                // add to start of panel
+                for (int i = 0; i < toAdd; i++)
                 {
-                    if (index >= ItemCount)
+                    var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
+                    panel.Children.Insert(0, materialized.ContainerControl);
+                    --index;
+                    --FirstIndex;
+                }
+                index = NextIndex;
+                    
+                if (!panel.IsFull)
+                {
+                    while (!panel.IsFull && index >= 0)
                     {
-                        // We can fit more containers in the panel, but we're at the end of the
-                        // items. If we're scrolled to the top (FirstIndex == 0), then there are
-                        // no more items to create. Otherwise, go backwards adding containers to
-                        // the beginning of the panel.
-                        if (FirstIndex == 0)
+                        if (index >= ItemCount)
                         {
-                            break;
+                            // We can fit more containers in the panel, but we're at the end of the
+                            // items. If we're scrolled to the top (FirstIndex == 0), then there are
+                            // no more items to create. Otherwise, go backwards adding containers to
+                            // the beginning of the panel.
+                            if (FirstIndex == 0)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                index = FirstIndex - 1;
+                                step = -1;
+                            }
                         }
-                        else
+                        //make sure first is scroll quantum
+                        //allow panel to be partially empty on last line
+                        toAdd = 1;
+                        if (step < 0)
                         {
-                            index = FirstIndex - 1;
-                            step = -1;
+                            if (panel.PixelOverflow > 0)
+                            {
+                                break;
+                            }
+                            toAdd = (index + 1) % panel.ScrollQuantum == 0 ? panel.ScrollQuantum : (index + 1) % panel.ScrollQuantum;
+                        }
+
+                        for (int i = 0; i < toAdd; i++)
+                        {
+
+                            var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
+
+                            if (step == 1)
+                            {
+                                panel.Children.Add(materialized.ContainerControl);
+                            }
+                            else
+                            {
+
+                                panel.Children.Insert(0, materialized.ContainerControl);
+                            }
+
+                            index += step;
                         }
                     }
-
-                    var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
 
                     if (step == 1)
                     {
-                        panel.Children.Add(materialized.ContainerControl);
+                        NextIndex = index;
                     }
                     else
                     {
-                        panel.Children.Insert(0, materialized.ContainerControl);
+                        NextIndex = ItemCount;
+                        FirstIndex = index + 1;
                     }
-
-                    index += step;
-                }
-
-                if (step == 1)
-                {
-                    NextIndex = index;
-                }
-                else
-                {
-                    NextIndex = ItemCount;
-                    FirstIndex = index + 1;
                 }
             }
 
@@ -417,25 +468,45 @@ namespace Avalonia.Controls.Presenters
             var generator = Owner.ItemContainerGenerator;
             var selector = Owner.MemberSelector;
 
-            //validate delta it should never overflow last index or generate index < 0 
-            delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
+            // validate delta it should never overflow last index or generate index < 0 
+            var clampedDelta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
+            if (clampedDelta == 0)
+                return;
 
             var sign = delta < 0 ? -1 : 1;
             var count = Math.Min(Math.Abs(delta), panel.Children.Count);
             var move = count < panel.Children.Count;
             var first = delta < 0 && move ? panel.Children.Count + delta : 0;
-
-            for (var i = 0; i < count; ++i)
+            //adjust recycle count if not enough
+            int toAdd = 0;
+            if (delta < 0)
             {
-                var oldItemIndex = FirstIndex + first + i;
-                var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
+                toAdd = panel.Children.Count - panel.Children.Count / panel.ScrollQuantum * panel.ScrollQuantum;
+                toAdd = (panel.ScrollQuantum - toAdd) % panel.ScrollQuantum;
+                first += toAdd;
+                count -= toAdd;
+            }
+            
+            var oldItemIndex = FirstIndex + first;
+            var newItemIndex = oldItemIndex + delta + ((panel.Children.Count - count) * sign);
 
+            for (var i = 0; i < count- (delta - clampedDelta); ++i)
+            {        
                 var item = Items.ElementAt(newItemIndex);
 
                 if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
                 {
                     throw new NotImplementedException();
                 }
+                
+                oldItemIndex++;
+                newItemIndex++;
+            }
+            for (var i = 0; i < toAdd; i++)
+            {
+                var materialized = generator.Materialize(newItemIndex, Items.ElementAt(newItemIndex), selector);
+                panel.Children.Add(materialized.ContainerControl);
+                newItemIndex++;
             }
 
             if (move)
@@ -446,12 +517,18 @@ namespace Avalonia.Controls.Presenters
                 }
                 else
                 {
-                    panel.Children.MoveRange(first, count, 0);
+                    panel.Children.MoveRange(first, count + toAdd, 0);
                 }
             }
 
+            if (clampedDelta < delta)
+            {
+                panel.Children.RemoveRange(panel.Children.Count - (delta - clampedDelta), (delta - clampedDelta));
+                Owner.ItemContainerGenerator.Dematerialize(oldItemIndex, (delta - clampedDelta));
+            }
+
             FirstIndex += delta;
-            NextIndex += delta;
+            NextIndex = FirstIndex+ panel.Children.Count;
         }
 
         /// <summary>
@@ -473,6 +550,7 @@ namespace Avalonia.Controls.Presenters
                 // the item bounds. Remove any excess containers, try to scroll up and then recycle
                 // the containers to make sure they point to the correct item.
                 var newFirstIndex = Math.Max(0, FirstIndex - (NextIndex - ItemCount));
+                newFirstIndex += newFirstIndex % panel.ScrollQuantum;
                 var delta = newFirstIndex - FirstIndex;
                 var newNextIndex = NextIndex + delta;
 
@@ -517,7 +595,9 @@ namespace Avalonia.Controls.Presenters
 
             if (index >= 0 && index < ItemCount)
             {
-                if (index < FirstIndex)
+                var offset = panel.PixelOffset > 0 ? VirtualizingPanel.ScrollQuantum : 0;
+
+                if (index <= FirstIndex+offset)
                 {
                     newOffset = index;
                 }
@@ -525,14 +605,10 @@ namespace Avalonia.Controls.Presenters
                 {
                     newOffset = index - Math.Ceiling(ViewportValue - 1);
                 }
-                else if (OffsetValue + ViewportValue >= ItemCount)
-                {
-                    newOffset = OffsetValue - 1;
-                }
-
+                
                 if (newOffset != -1)
                 {
-                    OffsetValue = newOffset;
+                    OffsetValue = newOffset/panel.ScrollQuantum;
                 }
 
                 var container = generator.ContainerFromIndex(index);
@@ -575,7 +651,7 @@ namespace Avalonia.Controls.Presenters
         /// <returns>The coerced value.</returns>
         private double CoerceOffset(double value)
         {
-            var max = Math.Max(ExtentValue - ViewportValue, 0);
+            var max = Math.Max(ExtentValue - ViewportValue, 0);           
             return MathUtilities.Clamp(value, 0, max);
         }
     }

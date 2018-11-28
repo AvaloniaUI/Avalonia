@@ -73,6 +73,8 @@ namespace Avalonia.Controls
             }
         }
 
+        int IVirtualizingPanel.ScrollQuantum => 1;
+
         private IVirtualizingController Controller => ((IVirtualizingPanel)this).Controller;
 
         void IVirtualizingPanel.ForceInvalidateMeasure()
