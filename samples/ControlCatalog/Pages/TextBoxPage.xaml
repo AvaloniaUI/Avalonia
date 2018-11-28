@@ -46,8 +46,8 @@
             <TextBlock Classes="h2">res fonts</TextBlock>
             <TextBox Width="200" Text="Custom font regular" FontWeight="Normal" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
             <TextBox Width="200" Text="Custom font bold" FontWeight="Bold" FontStyle="Normal" FontFamily="avares://ControlCatalog/Assets/Fonts#Source Sans Pro"/>
-            <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="avares://ControlCatalog/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"/>
-            <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="avares://ControlCatalog/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>
+            <TextBox Width="200" Text="Custom font italic" FontWeight="Normal" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-Italic.ttf#Source Sans Pro"/>
+            <TextBox Width="200" Text="Custom font italic bold" FontWeight="Bold" FontStyle="Italic" FontFamily="/Assets/Fonts/SourceSansPro-*.ttf#Source Sans Pro"/>
         </StackPanel>
       </StackPanel>
   </StackPanel>
