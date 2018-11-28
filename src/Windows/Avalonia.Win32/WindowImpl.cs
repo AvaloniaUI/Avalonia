@@ -269,6 +269,17 @@ namespace Avalonia.Win32
 
             style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
 
+            if (!value)
+            {
+                style ^= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU);
+                
+                if (!_resizable)
+                {
+                    style ^= (UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+                }
+            }
+
+
             UnmanagedMethods.RECT windowRect;
 
             UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
@@ -916,17 +927,14 @@ namespace Avalonia.Win32
                 return;
             }
 
-            if (_decorated)
-            {
-                var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
 
-                if (value)
-                    style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
-                else
-                    style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+            if (value)
+                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
 
-                UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
-            }
+            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
 
             _resizable = value;
         }
