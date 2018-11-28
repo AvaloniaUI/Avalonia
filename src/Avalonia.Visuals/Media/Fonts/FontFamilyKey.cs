@@ -95,7 +95,7 @@ namespace Avalonia.Media.Fonts
         {
             if (!Source.IsAbsoluteUri && BaseUri != null)
             {
-                return string.Empty + BaseUri + Source;
+                return BaseUri.Authority + Source;
             }
 
             return Source.ToString();

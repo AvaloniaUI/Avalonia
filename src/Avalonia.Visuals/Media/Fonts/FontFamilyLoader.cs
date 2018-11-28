@@ -19,8 +19,10 @@ namespace Avalonia.Media.Fonts
 
         public static IEnumerable<Uri> LoadFontAssets(FontFamilyKey fontFamilyKey)
         {
-            if (fontFamilyKey.Source.OriginalString.Contains(".ttf")
-                || fontFamilyKey.Source.OriginalString.Contains(".otf"))
+            var sourceWithoutArguments = fontFamilyKey.Source.OriginalString.Split('?').First();
+
+            if (sourceWithoutArguments.EndsWith(".ttf")
+                || sourceWithoutArguments.EndsWith(".otf"))
             {
                 return GetFontAssetsByExpression(fontFamilyKey);
             }
