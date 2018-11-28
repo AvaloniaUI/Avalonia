@@ -71,7 +71,7 @@ namespace Avalonia.Media.Fonts
             else
             {
                 compareTo = location.AbsolutePath + fileName.Split('*').First();
-            }             
+            }
 
             var matchingResources = availableResources.Where(
                 x => x.AbsolutePath.Contains(compareTo)
@@ -95,7 +95,7 @@ namespace Avalonia.Media.Fonts
 
             var pathSegments = fontFamilyKey.Source.OriginalString.Split('/');
 
-            var fileNameWithExtension = pathSegments.Last().Split('#').First();
+            var fileNameWithExtension = pathSegments.Last();
 
             var fileNameSegments = fileNameWithExtension.Split('.');
 
@@ -103,11 +103,10 @@ namespace Avalonia.Media.Fonts
 
             if (fontFamilyKey.BaseUri != null)
             {
-                location = new Uri(
-                    fontFamilyKey.BaseUri,
-                    fontFamilyKey.Source.OriginalString.Split('#')
-                        .First()
-                        .Replace(fileNameWithExtension, string.Empty));
+                var relativePath = fontFamilyKey.Source.OriginalString
+                    .Replace(fileNameWithExtension, string.Empty);
+
+                location = new Uri(fontFamilyKey.BaseUri, relativePath);
             }
             else
             {

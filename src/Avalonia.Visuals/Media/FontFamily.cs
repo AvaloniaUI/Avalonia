@@ -114,9 +114,9 @@ namespace Avalonia.Media
 
                 case 2:
                     {
-                        var uri = s.StartsWith("/")
-                                      ? new Uri(s, UriKind.Relative)
-                                      : new Uri(s, UriKind.RelativeOrAbsolute);
+                        var uri = segments[0].StartsWith("/")
+                                      ? new Uri(segments[0], UriKind.Relative)
+                                      : new Uri(segments[0], UriKind.RelativeOrAbsolute);
 
                         return uri.IsAbsoluteUri
                                    ? new FontFamily(segments[1], uri)

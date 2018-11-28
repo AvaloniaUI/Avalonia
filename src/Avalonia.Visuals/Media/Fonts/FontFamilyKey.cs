@@ -28,7 +28,7 @@ namespace Avalonia.Media.Fonts
         public Uri Source { get; }
 
         /// <summary>
-        /// 
+        /// A base URI to use if <see cref="Source"/> is relative
         /// </summary>
         public Uri BaseUri { get; }
 
@@ -93,14 +93,9 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override string ToString()
         {
-            if (Source.IsAbsoluteUri)
+            if (!Source.IsAbsoluteUri && BaseUri != null)
             {
-                return Source.ToString();
-            }
-
-            if (BaseUri != null)
-            {
-                return BaseUri + "/" + Source;
+                return string.Empty + BaseUri + Source;
             }
 
             return Source.ToString();
