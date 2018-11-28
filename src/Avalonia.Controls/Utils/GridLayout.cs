@@ -22,6 +22,7 @@ namespace Avalonia.Controls.Utils
         internal GridLayout([NotNull] ColumnDefinitions columns)
         {
             if (columns == null) throw new ArgumentNullException(nameof(columns));
+            _isWidth = true;
             _conventions = columns.Count == 0
                 ? new List<LengthConvention> { new LengthConvention() }
                 : columns.Select(x => new LengthConvention(x.Width, x.MinWidth, x.MaxWidth)).ToList();
@@ -35,6 +36,7 @@ namespace Avalonia.Controls.Utils
         internal GridLayout([NotNull] RowDefinitions rows)
         {
             if (rows == null) throw new ArgumentNullException(nameof(rows));
+            _isWidth = false;
             _conventions = rows.Count == 0
                 ? new List<LengthConvention> { new LengthConvention() }
                 : rows.Select(x => new LengthConvention(x.Height, x.MinHeight, x.MaxHeight)).ToList();
@@ -43,7 +45,7 @@ namespace Avalonia.Controls.Utils
         /// <summary>
         /// Gets the layout tolerance. If any length offset is less than this value, we will treat them the same.
         /// </summary>
-        private const double LayoutTolerance = 1.0 / 256.0;
+        internal const double LayoutTolerance = 1.0 / 256.0;
 
         /// <summary>
         /// Gets all the length conventions that come from column/row definitions.
@@ -51,6 +53,12 @@ namespace Avalonia.Controls.Utils
         /// </summary>
         [NotNull]
         private readonly List<LengthConvention> _conventions;
+
+        /// <summary>
+        /// true -> _conventions are width
+        /// false -> _conventions are height
+        /// </summary>
+        private readonly bool _isWidth;
 
         /// <summary>
         /// Gets all the length conventions that come from the grid children.
@@ -74,12 +82,14 @@ namespace Avalonia.Controls.Utils
         /// Notice that we will not verify whether the range is in the column/row count,
         /// so you should get the safe column/row info first.
         /// </param>
+        /// <param name="constraint">
         /// <param name="getDesiredLength">
         /// This callback will be called if the <see cref="GridLayout"/> thinks that a child should be
         /// measured first. Usually, these are the children that have the * or Auto length.
         /// </param>
         internal void AppendMeasureConventions<T>([NotNull] IDictionary<T, (int index, int span)> source,
-            [NotNull] Func<T, double> getDesiredLength)
+            Size constraint,
+            [NotNull] Func<T, Size, double> getDesiredLength)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (getDesiredLength == null) throw new ArgumentNullException(nameof(getDesiredLength));
@@ -109,6 +119,8 @@ namespace Avalonia.Controls.Utils
             // - 而对于 * 长度，只有 Grid.DesiredSize 会受到子元素布局影响，而行列长度不会受影响。
 
             // Find all the Auto and * length columns/rows.
+            double starsTotal = 0;
+            int starsLengthCount = 0;
             var found = new Dictionary<T, (int index, int span)>();
             for (var i = 0; i < _conventions.Count; i++)
             {
@@ -121,15 +133,35 @@ namespace Avalonia.Controls.Utils
                     {
                         found[pair.Key] = pair.Value;
                     }
+
+                    if (convention.Length.IsStar)
+                    {
+                        starsTotal += convention.Length.Value;
+                        starsLengthCount++;
+                    }
                 }
             }
+
+            double totalLength = _isWidth ? constraint.Width : constraint.Height;
 
             // Append these layout into the additional convention list.
             foreach (var pair in found)
             {
                 var t = pair.Key;
                 var (index, span) = pair.Value;
-                var desiredLength = getDesiredLength(t);
+                var currConstraint = constraint;
+
+                bool hasAuto = Enumerable.Range(index, span).Any(i => _conventions[i].Length.IsAuto);
+
+                if (!hasAuto && !double.IsInfinity(totalLength) && starsLengthCount > 1)
+                {
+                    double stars = Enumerable.Range(index, span).Sum(i => _conventions[i].Length.Value);
+                    currConstraint = _isWidth ?
+                        currConstraint.WithWidth(currConstraint.Width * stars / starsTotal) :
+                        currConstraint.WithHeight(currConstraint.Height * stars / starsTotal);
+                }
+
+                var desiredLength = getDesiredLength(t, currConstraint);
                 if (Math.Abs(desiredLength) > LayoutTolerance)
                 {
                     _additionalConventions.Add(new AdditionalLengthConvention(index, span, desiredLength));

@@ -177,7 +177,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             target.Measure(new Size(200, 200));
-            target.Arrange(new Rect(target.DesiredSize));
+            target.Arrange(new Rect(new Size(200, 200)));
 
             Assert.Equal(target.ColumnDefinitions[0].ActualWidth, 100);
             Assert.Equal(target.ColumnDefinitions[1].ActualWidth, 100);

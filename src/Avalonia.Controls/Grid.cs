@@ -277,8 +277,8 @@ namespace Avalonia.Controls
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
             // Note: If a child stays in a * or Auto column/row, use constraint to measure it.
-            columnLayout.AppendMeasureConventions(safeColumns, child => MeasureOnce(child, constraint).Width);
-            rowLayout.AppendMeasureConventions(safeRows, child => MeasureOnce(child, constraint).Height);
+            columnLayout.AppendMeasureConventions(safeColumns, constraint, (child, s) => MeasureOnce(child, s).Width);
+            rowLayout.AppendMeasureConventions(safeRows, constraint, (child, s) => MeasureOnce(child, s).Height);
 
             // Calculate measurement.
             var columnResult = columnLayout.Measure(constraint.Width);
@@ -308,13 +308,15 @@ namespace Avalonia.Controls
 
             return new Size(columnResult.DesiredLength, rowResult.DesiredLength);
 
-            // Measure each child only once.
-            // If a child has been measured, it will just return the desired size.
+            // Try Measure each child only once.
+            // If a child has been measured and have valid measure, it will just return the desired size.
             Size MeasureOnce(Control child, Size size)
             {
                 if (measureCache.TryGetValue(child, out var desiredSize))
                 {
-                    if (!(desiredSize.Width > size.Width) && !(desiredSize.Height > size.Height))
+                    if (child.IsMeasureValid &&
+                        (desiredSize.Width - size.Width) < GridLayout.LayoutTolerance && 
+                        (desiredSize.Height - size.Height) < GridLayout.LayoutTolerance)
                     {
                         return desiredSize;
                     }

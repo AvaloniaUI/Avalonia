@@ -125,7 +125,8 @@ namespace Avalonia.Controls.UnitTests
             var layout = new GridLayout(lengthList);
             layout.AppendMeasureConventions(
                 Enumerable.Range(0, lengthList.Count).ToDictionary(x => x, x => (x, 1)),
-                x => childLengthList[x]);
+                Size.Infinity,
+                (x, s) => childLengthList[x]);
 
             // Measure - Action & Assert
             var measure = layout.Measure(containerLength);
@@ -156,7 +157,8 @@ namespace Avalonia.Controls.UnitTests
             var layout = new GridLayout(lengthList);
             layout.AppendMeasureConventions(
                 Enumerable.Range(0, lengthList.Count).ToDictionary(x => x, x => (x, spans[x])),
-                x => childLengthList[x]);
+                Size.Infinity,
+                (x, s) => childLengthList[x]);
 
             // Measure - Action & Assert
             var measure = layout.Measure(containerLength);
