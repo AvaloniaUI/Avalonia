@@ -146,6 +146,26 @@ namespace Avalonia.Markup.UnitTests.Parsers
             Assert.IsType<StreamNode>(result[1]);
         }
 
+        [Fact]
+        public void PropertyAccessorNode_Should_Not_Throw_Exception_On_Unsubscribe_When_Already_Unsubscribed()
+        {
+            var target = ExpressionObserverBuilder.Parse("Foo").Node as PropertyAccessorNode;
+
+            Assert.NotNull(target);
+
+            var foo = new { Foo = "Foo" };
+
+            target.Target = new System.WeakReference(foo);
+
+            target.Subscribe(v => { });
+
+            target.Unsubscribe();
+
+            target.Unsubscribe();
+
+            Assert.True(true);
+        }
+
         private void AssertIsProperty(ExpressionNode node, string name)
         {
             Assert.IsType<PropertyAccessorNode>(node);
@@ -166,7 +186,7 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var (node, _) = parsed;
             var result = new List<ExpressionNode>();
-            
+
             while (node != null)
             {
                 result.Add(node);
