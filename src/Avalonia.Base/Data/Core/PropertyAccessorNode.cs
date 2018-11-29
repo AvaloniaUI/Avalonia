@@ -65,7 +65,7 @@ namespace Avalonia.Data.Core
 
         protected override void StopListeningCore()
         {
-            _accessor.Dispose();
+            _accessor?.Dispose();
             _accessor = null;
         }
     }
