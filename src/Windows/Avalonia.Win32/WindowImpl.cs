@@ -455,21 +455,6 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCCALCSIZE:
                     if (ToInt32(wParam) == 1 && !_decorated)
                     {
-
-                        // Calculate new NCCALCSIZE_PARAMS based on custom NCA inset.
-                        var pncsp = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
-
-                        pncsp.rgrc[0].left = pncsp.rgrc[0].left + 0;
-                        pncsp.rgrc[0].top = pncsp.rgrc[0].top + 0;
-                        pncsp.rgrc[0].right = pncsp.rgrc[0].right - 0;
-                        pncsp.rgrc[0].bottom = pncsp.rgrc[0].bottom - 0;
-
-                        //lRet = 0;
-
-                        // No need to pass the message on to the DefWindowProc.
-                        //fCallDWP = false;
-
-
                         return IntPtr.Zero;
                     }
                 break;
@@ -915,7 +900,7 @@ namespace Avalonia.Win32
 
             if (!_decorated)
             {
-                style ^= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU);
+                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
             }
 
             if (_resizable)
