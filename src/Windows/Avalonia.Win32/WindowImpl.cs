@@ -35,6 +35,7 @@ namespace Avalonia.Win32
         private bool _decorated = true;
         private bool _resizable = true;
         private bool _topmost = false;
+        private bool _taskbarIcon = true;
         private double _scaling = 1;
         private WindowState _showWindowState;
         private WindowState _lastWindowState;
@@ -96,7 +97,8 @@ namespace Avalonia.Win32
             {
                 var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
                 var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
-                var padding = new UnmanagedMethods.RECT();
+
+                var padding = new RECT();
 
                 if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
                 {
@@ -265,66 +267,27 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);            
+            _decorated = value;
 
-            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
-
-            if (!value)
-            {
-                style ^= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU);
-                
-                if (!_resizable)
-                {
-                    style ^= (UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
-                }
-            }
-
-
-            UnmanagedMethods.RECT windowRect;
-
-            UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
-
-            Rect newRect;
+            UpdateWMStyles();
+            
+            UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
+            
             var oldThickness = BorderThickness;
-
-            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
             
             var thickness = BorderThickness;
             
             _decorated = value;
 
-            newRect = new Rect(
+            var newRect = new Rect(
                 windowRect.left - thickness.Left,
                 windowRect.top - thickness.Top,
                 (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
                 (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
 
-            if(!value)
-            {
-                RECT rc = new RECT();
-                uint style1 = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-                uint styleEx1 = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
-                 UnmanagedMethods.AdjustWindowRectEx(ref rc, style1, false, styleEx1);
-            }
-
             UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
                 (int)newRect.Height,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
-
-            if(_decorated)
-            {
-                if (_resizable)
-                {
-                    // If we switch decorations back on we need to restore WS_SizeFrame.
-                    _resizable = false;
-                    CanResize(true);
-                }
-                else
-                {
-                    _resizable = true;
-                    CanResize(false);
-                }
-            }
         }
 
         public void Invalidate(Rect rect)
@@ -490,8 +453,23 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case WindowsMessage.WM_NCCALCSIZE:
-                    if (!_decorated)
+                    if (ToInt32(wParam) == 1 && !_decorated)
                     {
+
+                        // Calculate new NCCALCSIZE_PARAMS based on custom NCA inset.
+                        var pncsp = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+
+                        pncsp.rgrc[0].left = pncsp.rgrc[0].left + 0;
+                        pncsp.rgrc[0].top = pncsp.rgrc[0].top + 0;
+                        pncsp.rgrc[0].right = pncsp.rgrc[0].right - 0;
+                        pncsp.rgrc[0].bottom = pncsp.rgrc[0].bottom - 0;
+
+                        //lRet = 0;
+
+                        // No need to pass the message on to the DefWindowProc.
+                        //fCallDWP = false;
+
+
                         return IntPtr.Zero;
                     }
                 break;
@@ -897,14 +875,23 @@ namespace Avalonia.Win32
 
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
+        
 
         public void ShowTaskbarIcon(bool value)
         {
+            if(_taskbarIcon == value)
+            {
+                return;
+            }
+
+            _taskbarIcon = value;
+            
             var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
 
             style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);
 
             style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
+
             if (value)
                 style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
             else
@@ -920,6 +907,31 @@ namespace Avalonia.Win32
             }
         }
 
+        private void UpdateWMStyles()
+        {
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+
+            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+
+            if (!_decorated)
+            {
+                style ^= (WindowStyles.WS_CAPTION & WindowStyles.WS_MINIMIZEBOX & WindowStyles.WS_MAXIMIZEBOX & WindowStyles.WS_SYSMENU);
+            }
+
+            if (_resizable)
+            {
+                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+            }
+            else
+            {
+                style ^= (UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+            }
+
+            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+
+            var thickness = BorderThickness;
+        }
+
         public void CanResize(bool value)
         {
             if (value == _resizable)
@@ -927,16 +939,9 @@ namespace Avalonia.Win32
                 return;
             }
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-
-            if (value)
-                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
-            else
-                style &= ~(UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
-
-            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
-
             _resizable = value;
+
+            UpdateWMStyles();
         }
 
         public void SetTopmost(bool value)
