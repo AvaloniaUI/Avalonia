@@ -279,23 +279,36 @@ namespace Avalonia.Win32
             
             var oldThickness = BorderThickness;
             
-            var thickness = BorderThickness;
-            
             _decorated = value;
 
-            var newRect = new Rect(
-                windowRect.left - thickness.Left,
-                windowRect.top - thickness.Top,
-                (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
-                (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+            Rect newRect;
+
+            if (value)
+            {
+                var thickness = BorderThickness;
+
+                newRect = new Rect(
+                    windowRect.left - thickness.Left,
+                    windowRect.top - thickness.Top,
+                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+            }
+            else
+            {
+                newRect = new Rect(
+                    windowRect.left + oldThickness.Left,
+                    windowRect.top + oldThickness.Top,
+                    (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
+                    (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
+            }
 
             UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
                 (int)newRect.Height,
-                UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
+                UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
         }
 
         public void Invalidate(Rect rect)
-        {
+        {   
             var f = Scaling;
             var r = new UnmanagedMethods.RECT
             {

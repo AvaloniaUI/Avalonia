@@ -3,7 +3,7 @@
         x:Class="ControlCatalog.DecoratedWindow"
         Title="Avalonia Control Gallery"
         Icon="/Assets/test_icon.ico"
-        xmlns:local="clr-namespace:ControlCatalog" HasSystemDecorations="False">
+        xmlns:local="clr-namespace:ControlCatalog" HasSystemDecorations="False" Name="Window">
     <Grid RowDefinitions="5,*,5" ColumnDefinitions="5,*,5">
         <DockPanel  Grid.Column="1"  Grid.Row="1" >
             <Grid Name="TitleBar" Background="LightBlue" DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto">
@@ -20,7 +20,11 @@
                 </StackPanel>
             </Grid>
             <Border Background="White" Margin="5">
+                <StackPanel>
                 <TextBlock>Hello world!</TextBlock>
+
+                <CheckBox IsChecked="{Binding ElementName=Window, Path=HasSystemDecorations}">Decorated</CheckBox>
+                </StackPanel>
             </Border>
         </DockPanel>
         <Border Name="TopLeft" Background="Red"/>
