@@ -149,7 +149,11 @@ namespace Avalonia.Win32
             if (value != ClientSize)
             {
                 value *= Scaling;
-                value += BorderThickness;
+
+                if (_decorated)
+                {
+                    value += BorderThickness;
+                }
 
                 UnmanagedMethods.SetWindowPos(
                     _hwnd,
