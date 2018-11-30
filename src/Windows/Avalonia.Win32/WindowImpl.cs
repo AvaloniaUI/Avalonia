@@ -619,6 +619,14 @@ namespace Avalonia.Win32
                         new Point(0, 0), GetMouseModifiers(wParam));
                     break;
 
+                case WindowsMessage.WM_NCPAINT:
+                case WindowsMessage.WM_NCACTIVATE:
+                    if (!_decorated)
+                    {
+                        return IntPtr.Zero;
+                    }
+                    break;
+
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
                     UnmanagedMethods.PAINTSTRUCT ps;
                     if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
