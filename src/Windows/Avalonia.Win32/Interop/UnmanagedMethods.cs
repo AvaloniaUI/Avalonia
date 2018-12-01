@@ -1172,12 +1172,22 @@ namespace Avalonia.Win32.Interop
             public int right;
             public int bottom;
 
+            public int Width => right - left;
+            public int Height => bottom - top;
             public RECT(Rect rect)
             {
                 left = (int)rect.X;
                 top = (int)rect.Y;
                 right = (int)(rect.X + rect.Width);
                 bottom = (int)(rect.Y + rect.Height);
+            }
+
+            public void Offset(POINT pt)
+            {
+                left += pt.X;
+                right += pt.X;
+                top += pt.Y;
+                bottom += pt.Y;
             }
         }
 

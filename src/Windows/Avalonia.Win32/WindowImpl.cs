@@ -888,7 +888,7 @@ namespace Avalonia.Win32
 
         private void UpdateWMStyles(Action change)
         {
-            var decorated = _decorated;
+            var oldDecorated = _decorated;
 
             var oldThickness = BorderThickness;
 
@@ -912,37 +912,33 @@ namespace Avalonia.Win32
                 style ^= (WindowStyles.WS_SIZEFRAME);
             }
 
+            GetClientRect(_hwnd, out var oldClientRect);
+            var oldClientRectOrigin = new UnmanagedMethods.POINT();
+            ClientToScreen(_hwnd, ref oldClientRectOrigin);
+            oldClientRect.Offset(oldClientRectOrigin);
+            
+            
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
             UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
-
-            if (decorated != _decorated)
+            bool frameUpdated = false;
+            if (oldDecorated != _decorated)
             {
-                Rect newRect;
-
+                var newRect = oldClientRect;
                 if (_decorated)
-                {
-                    var thickness = BorderThickness;
-
-                    newRect = new Rect(
-                        windowRect.left - thickness.Left,
-                        windowRect.top - thickness.Top,
-                        (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
-                        (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
-                }
-                else
-                {
-                    newRect = new Rect(
-                        windowRect.left + oldThickness.Left,
-                        windowRect.top + oldThickness.Top,
-                        (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
-                        (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
-                }
-
-                UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
-                    (int)newRect.Height,
-                    UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                    AdjustWindowRectEx(ref newRect, (uint)style, false,
+                        GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
+                _changingDecorations = true;
+                SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
+                    SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+                frameUpdated = true;
             }
+
+            if (!frameUpdated)
+                SetWindowPos(_hwnd, IntPtr.Zero, 0, 0, 0, 0,
+                    SetWindowPosFlags.SWP_FRAMECHANGED | SetWindowPosFlags.SWP_NOZORDER |
+                    SetWindowPosFlags.SWP_NOACTIVATE
+                    | SetWindowPosFlags.SWP_NOMOVE | SetWindowPosFlags.SWP_NOSIZE);
         }
 
         public void CanResize(bool value)
