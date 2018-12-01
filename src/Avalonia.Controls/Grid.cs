@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -41,9 +42,39 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<int> RowSpanProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
+        public static readonly AttachedProperty<bool> IsSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
+
+        protected override void OnMeasureInvalidated()
+        {
+            base.OnMeasureInvalidated();
+            _sharedSizeHost?.InvalidateMeasure(this);
+        }
+
+        private SharedSizeScopeHost _sharedSizeHost;
+
+        /// <summary>
+        /// Defines the SharedSizeScopeHost private property. 
+        /// The ampersands are used to make accessing the property via xaml inconvenient.
+        /// </summary>
+        internal static readonly AttachedProperty<SharedSizeScopeHost> s_sharedSizeScopeHostProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScopeHost>("&&SharedSizeScopeHost");
+
         private ColumnDefinitions _columnDefinitions;
 
         private RowDefinitions _rowDefinitions;
+
+        static Grid()
+        {
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(IsSharedSizeScopeChanged);
+        }
+
+        public Grid()
+        {
+            this.AttachedToVisualTree += Grid_AttachedToVisualTree;
+            this.DetachedFromVisualTree += Grid_DetachedFromVisualTree;
+        }
 
         private Segment[,] _rowMatrix;
 
@@ -610,6 +641,42 @@ namespace Avalonia.Controls
             return value;
         }
 
+        /// <summary>
+        /// Called when the value of <see cref="Grid.IsSharedSizeScopeProperty"/> changes for a control.
+        /// </summary>
+        /// <param name="source">The control that triggered the change.</param>
+        /// <param name="arg2">Change arguments.</param>
+        private static void IsSharedSizeScopeChanged(Control source, AvaloniaPropertyChangedEventArgs arg2)
+        {
+            var shouldDispose = (arg2.OldValue is bool d) && d;
+            if (shouldDispose)
+            {
+                var host = source.GetValue(s_sharedSizeScopeHostProperty) as SharedSizeScopeHost;
+                if (host == null)
+                    throw new AvaloniaInternalException("SharedScopeHost wasn't set when IsSharedSizeScope was true!");
+                host.Dispose();
+                source.ClearValue(s_sharedSizeScopeHostProperty);
+            }
+
+            var shouldAssign = (arg2.NewValue is bool a) && a;
+            if (shouldAssign)
+            {
+                if (source.GetValue(s_sharedSizeScopeHostProperty) != null)
+                    throw new AvaloniaInternalException("SharedScopeHost was already set when IsSharedSizeScope is only now being set to true!");
+                source.SetValue(s_sharedSizeScopeHostProperty, new SharedSizeScopeHost());
+            }
+
+            // if the scope has changed, notify the descendant grids that they need to update.
+            if (source.GetVisualRoot() != null && shouldAssign || shouldDispose)
+            {
+                var participatingGrids = new[] { source }.Concat(source.GetVisualDescendants()).OfType<Grid>();
+
+                foreach (var grid in participatingGrids)
+                    grid.SharedScopeChanged();
+
+            }
+        }
+
         private void CreateMatrices(int rowCount, int colCount)
         {
             if (_rowMatrix == null || _colMatrix == null ||
@@ -866,10 +933,72 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Tests whether this grid belongs to a shared size scope.
+        /// </summary>
+        /// <returns>True if the grid is registered in a shared size scope.</returns>
+        internal bool HasSharedSizeScope()
+        {
+            return _sharedSizeHost != null;
+        }
+
+        /// <summary>
+        /// Called when the SharedSizeScope for a given grid has changed.
+        /// Unregisters the grid from it's current scope and finds a new one (if any) 
+        /// </summary>
+        /// <remarks>
+        /// This method, while not efficient, correctly handles nested scopes, with any order of scope changes.
+        /// </remarks>
         internal void SharedScopeChanged()
         {
-            //TODO: add support for shared size
+            _sharedSizeHost?.UnegisterGrid(this);
+
+            _sharedSizeHost = null;
+            var scope = this.GetVisualAncestors().OfType<Control>()
+                .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
+
+            if (scope != null)
+            {
+                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
+                _sharedSizeHost.RegisterGrid(this);
+            }
+
+            InvalidateMeasure();
         }
+
+        /// <summary>
+        /// Callback when a grid is attached to the visual tree. Finds the innermost SharedSizeScope and registers the grid 
+        /// in it.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Grid_AttachedToVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            var scope =
+                new Control[] { this }.Concat(this.GetVisualAncestors().OfType<Control>())
+                    .FirstOrDefault(c => c.GetValue(IsSharedSizeScopeProperty));
+
+            if (_sharedSizeHost != null)
+                throw new AvaloniaInternalException("Shared size scope already present when attaching to visual tree!");
+
+            if (scope != null)
+            {
+                _sharedSizeHost = scope.GetValue(s_sharedSizeScopeHostProperty);
+                _sharedSizeHost.RegisterGrid(this);
+            }
+        }
+
+        /// <summary>
+        /// Callback when a grid is detached from the visual tree. Unregisters the grid from its SharedSizeScope if any.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The event arguments.</param>
+        private void Grid_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        {
+            _sharedSizeHost?.UnegisterGrid(this);
+            _sharedSizeHost = null;
+        }
+
 
         /// <summary>
         /// Stores the layout values of of <see cref="RowDefinitions"/> of <see cref="ColumnDefinitions"/>.
