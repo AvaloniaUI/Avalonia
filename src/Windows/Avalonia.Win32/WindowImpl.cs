@@ -887,7 +887,6 @@ namespace Avalonia.Win32
         private void UpdateWMStyles(Action change)
         {
             var decorated = _decorated;
-            var resizable = _resizable;
 
             change();
 
