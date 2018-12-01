@@ -13,7 +13,7 @@ dotnet: 2.1.200
 script:
   - sudo apt-get update
   - sudo apt-get install castxml
-  - ./build.sh --target "Travis" --configuration "Release"
+  - ./build.sh --target "CiTravis" --configuration "Release"
 notifications:
   email: false
   webhooks:

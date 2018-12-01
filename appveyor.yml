@@ -14,7 +14,7 @@ init:
 before_build:
 - git submodule update --init
 build_script:
-- ps: .\build.ps1 -Target "AppVeyor" -Configuration "$env:configuration"
+- ps: .\build.ps1 --target "CiAppVeyor" --configuration "$env:configuration"
 
 test: off
 artifacts:
