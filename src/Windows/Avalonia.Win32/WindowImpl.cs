@@ -95,18 +95,25 @@ namespace Avalonia.Win32
         {
             get
             {
-                var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
-                var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
-
-                var padding = new RECT();
-
-                if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
+                if (_decorated)
                 {
-                    return new Thickness(-padding.left, -padding.top, padding.right, padding.bottom);
+                    var style = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+                    var exStyle = UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
+
+                    var padding = new RECT();
+
+                    if (UnmanagedMethods.AdjustWindowRectEx(ref padding, style, false, exStyle))
+                    {
+                        return new Thickness(-padding.left, -padding.top, padding.right, padding.bottom);
+                    }
+                    else
+                    {
+                        throw new Win32Exception();
+                    }
                 }
                 else
                 {
-                    throw new Win32Exception();
+                    return new Thickness();
                 }
             }
         }
@@ -149,12 +156,7 @@ namespace Avalonia.Win32
             if (value != ClientSize)
             {
                 value *= Scaling;
-
-                if (_decorated)
-                {
-                    value += BorderThickness;
-                }
-
+                
                 UnmanagedMethods.SetWindowPos(
                     _hwnd,
                     IntPtr.Zero,
@@ -888,6 +890,8 @@ namespace Avalonia.Win32
         {
             var decorated = _decorated;
 
+            var oldThickness = BorderThickness;
+
             change();
 
             var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
@@ -907,8 +911,6 @@ namespace Avalonia.Win32
             {
                 style ^= (WindowStyles.WS_SIZEFRAME);
             }
-
-            var oldThickness = BorderThickness;
 
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
