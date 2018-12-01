@@ -892,23 +892,14 @@ namespace Avalonia.Win32
 
             changer();
 
-            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE) | WindowStyles.WS_OVERLAPPEDWINDOW;
 
-            if (decorated != _decorated)
+            if (!_decorated)
             {
-                style |= WindowStyles.WS_OVERLAPPEDWINDOW;
-
-                if (!_decorated)
-                {
-                    style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
-                }
+                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
             }
 
-            if (_resizable)
-            {
-                style |= WindowStyles.WS_SIZEFRAME;
-            }
-            else
+            if (!_resizable)
             {
                 style ^= (WindowStyles.WS_SIZEFRAME);
             }
