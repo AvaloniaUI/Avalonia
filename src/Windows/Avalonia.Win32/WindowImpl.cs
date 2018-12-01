@@ -906,13 +906,11 @@ namespace Avalonia.Win32
                 style ^= (WindowStyles.WS_SIZEFRAME);
             }
 
-            UnmanagedMethods.GetWindowRect(_hwnd, out var oldRect);
+            var oldThickness = BorderThickness;
 
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
             UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
-
-            var oldThickness = BorderThickness;
 
             Rect newRect;
 
