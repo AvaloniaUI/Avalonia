@@ -1172,6 +1172,8 @@ namespace Avalonia.Win32.Interop
             public int right;
             public int bottom;
 
+            public int Width => right - left;
+            public int Height => bottom - top;
             public RECT(Rect rect)
             {
                 left = (int)rect.X;
@@ -1179,6 +1181,34 @@ namespace Avalonia.Win32.Interop
                 right = (int)(rect.X + rect.Width);
                 bottom = (int)(rect.Y + rect.Height);
             }
+
+            public void Offset(POINT pt)
+            {
+                left += pt.X;
+                right += pt.X;
+                top += pt.Y;
+                bottom += pt.Y;
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WINDOWPOS
+        {
+            public IntPtr hwnd;
+            public IntPtr hwndInsertAfter;
+            public int x;
+            public int y;
+            public int cx;
+            public int cy;
+            public uint flags;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct NCCALCSIZE_PARAMS
+        {
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+            public RECT[] rgrc;
+            public WINDOWPOS lppos;
         }
 
         public struct TRACKMOUSEEVENT
