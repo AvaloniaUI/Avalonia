@@ -271,44 +271,11 @@ namespace Avalonia.Win32
                 return;
             }
 
-            _decorated = value;
-
-            UpdateWMStyles();
-            
-            UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
-            
-            var oldThickness = BorderThickness;
-            
-            _decorated = value;
-
-            Rect newRect;
-
-            if (value)
-            {
-                var thickness = BorderThickness;
-
-                newRect = new Rect(
-                    windowRect.left - thickness.Left,
-                    windowRect.top - thickness.Top,
-                    (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
-                    (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
-            }
-            else
-            {
-                newRect = new Rect(
-                    windowRect.left + oldThickness.Left,
-                    windowRect.top + oldThickness.Top,
-                    (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
-                    (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
-            }
-
-            UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
-                (int)newRect.Height,
-                UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+            UpdateWMStyles(() => _decorated = value);
         }
 
         public void Invalidate(Rect rect)
-        {   
+        {
             var f = Scaling;
             var r = new UnmanagedMethods.RECT
             {
@@ -474,7 +441,7 @@ namespace Avalonia.Win32
                     {
                         return IntPtr.Zero;
                     }
-                break;
+                    break;
 
                 case UnmanagedMethods.WindowsMessage.WM_CLOSE:
                     bool? preventClosing = Closing?.Invoke();
@@ -686,7 +653,7 @@ namespace Avalonia.Win32
 
                     MINMAXINFO mmi = Marshal.PtrToStructure<UnmanagedMethods.MINMAXINFO>(lParam);
 
-                    if  (_minSize.Width > 0)
+                    if (_minSize.Width > 0)
                         mmi.ptMinTrackSize.X = (int)((_minSize.Width * Scaling) + BorderThickness.Left + BorderThickness.Right);
 
                     if (_minSize.Height > 0)
@@ -857,7 +824,7 @@ namespace Avalonia.Win32
             {
                 MONITORINFO monitorInfo = MONITORINFO.Create();
 
-                if (GetMonitorInfo(monitor,ref monitorInfo))
+                if (GetMonitorInfo(monitor, ref monitorInfo))
                 {
                     RECT rcMonitorArea = monitorInfo.rcMonitor;
 
@@ -885,17 +852,17 @@ namespace Avalonia.Win32
 
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
-        
+
 
         public void ShowTaskbarIcon(bool value)
         {
-            if(_taskbarIcon == value)
+            if (_taskbarIcon == value)
             {
                 return;
             }
 
             _taskbarIcon = value;
-            
+
             var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
 
             style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);
@@ -917,29 +884,69 @@ namespace Avalonia.Win32
             }
         }
 
-        private void UpdateWMStyles()
+        private void UpdateWMStyles(Action changer)
         {
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE);
+            var decorated = _decorated;
 
-            style |= UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW;
+            var resizable = _resizable;
 
-            if (!_decorated)
+            changer();
+
+            var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
+
+            if (decorated != _decorated)
             {
-                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_MINIMIZEBOX | WindowStyles.WS_MAXIMIZEBOX | WindowStyles.WS_SYSMENU);
+                style |= WindowStyles.WS_OVERLAPPEDWINDOW;
+
+                if (!_decorated)
+                {
+                    style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
+                }
             }
 
             if (_resizable)
             {
-                style |= UnmanagedMethods.WindowStyles.WS_SIZEFRAME;
+                style |= WindowStyles.WS_SIZEFRAME;
             }
             else
             {
-                style ^= (UnmanagedMethods.WindowStyles.WS_SIZEFRAME);
+                style ^= (WindowStyles.WS_SIZEFRAME);
             }
 
-            UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_STYLE, (uint)style);
+            SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
-            var thickness = BorderThickness;
+            if (decorated != _decorated)
+            {
+                UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
+
+                var oldThickness = BorderThickness;
+
+                Rect newRect;
+
+                if (_decorated)
+                {
+                    var thickness = BorderThickness;
+
+                    newRect = new Rect(
+                        windowRect.left - thickness.Left,
+                        windowRect.top - thickness.Top,
+                        (windowRect.right - windowRect.left) + (thickness.Left + thickness.Right),
+                        (windowRect.bottom - windowRect.top) + (thickness.Top + thickness.Bottom));
+                }
+                else
+                {
+                    newRect = new Rect(
+                        windowRect.left + oldThickness.Left,
+                        windowRect.top + oldThickness.Top,
+                        (windowRect.right - windowRect.left) - (oldThickness.Left + oldThickness.Right),
+                        (windowRect.bottom - windowRect.top) - (oldThickness.Top + oldThickness.Bottom));
+                }
+
+                UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
+                    (int)newRect.Height,
+                    UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+
+            }
         }
 
         public void CanResize(bool value)
@@ -949,9 +956,7 @@ namespace Avalonia.Win32
                 return;
             }
 
-            _resizable = value;
-
-            UpdateWMStyles();
+            UpdateWMStyles(() => _resizable = value);
         }
 
         public void SetTopmost(bool value)
