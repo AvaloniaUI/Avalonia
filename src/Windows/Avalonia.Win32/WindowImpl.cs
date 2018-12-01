@@ -928,7 +928,6 @@ namespace Avalonia.Win32
                 if (_decorated)
                     AdjustWindowRectEx(ref newRect, (uint)style, false,
                         GetWindowLong(_hwnd, (int)WindowLongParam.GWL_EXSTYLE));
-                _changingDecorations = true;
                 SetWindowPos(_hwnd, IntPtr.Zero, newRect.left, newRect.top, newRect.Width, newRect.Height,
                     SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
                 frameUpdated = true;
