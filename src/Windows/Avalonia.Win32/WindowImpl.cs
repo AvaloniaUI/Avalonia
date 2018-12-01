@@ -606,10 +606,16 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_NCPAINT:
-                case WindowsMessage.WM_NCACTIVATE:
                     if (!_decorated)
                     {
                         return IntPtr.Zero;
+                    }
+                    break;
+
+                case WindowsMessage.WM_NCACTIVATE:
+                    if (!_decorated)
+                    {
+                        return new IntPtr(1);
                     }
                     break;
 
