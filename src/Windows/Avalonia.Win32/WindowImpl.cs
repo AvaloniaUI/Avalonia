@@ -894,20 +894,16 @@ namespace Avalonia.Win32
 
             style = style | controlledFlags ^ controlledFlags;
 
-            style |= WindowStyles.WS_OVERLAPPED |
-                       WindowStyles.WS_MINIMIZEBOX |
-                       WindowStyles.WS_MAXIMIZEBOX;
+            style |= WindowStyles.WS_OVERLAPPEDWINDOW;
 
-            if (_decorated)
+            if (!_decorated)
             {
-                style |= 
-                    WindowStyles.WS_CAPTION |
-                    WindowStyles.WS_SYSMENU;
+                style ^= (WindowStyles.WS_CAPTION | WindowStyles.WS_SYSMENU);
             }
 
-            if (_resizable)
+            if (!_resizable)
             {
-                style |= WindowStyles.WS_SIZEFRAME;
+                style ^= (WindowStyles.WS_SIZEFRAME);
             }
 
             var oldThickness = BorderThickness;
@@ -940,6 +936,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.SetWindowPos(_hwnd, IntPtr.Zero, (int)newRect.X, (int)newRect.Y, (int)newRect.Width,
                 (int)newRect.Height,
                 UnmanagedMethods.SetWindowPosFlags.SWP_NOZORDER | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
+
         }
 
         public void CanResize(bool value)
