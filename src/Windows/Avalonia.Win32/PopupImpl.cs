@@ -24,7 +24,7 @@ namespace Avalonia.Win32
                 UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW |
                 UnmanagedMethods.WindowStyles.WS_EX_TOPMOST;
 
-            return UnmanagedMethods.CreateWindowEx(
+            var result = UnmanagedMethods.CreateWindowEx(
                 (int)exStyle,
                 atom,
                 null,
@@ -37,6 +37,14 @@ namespace Avalonia.Win32
                 IntPtr.Zero,
                 IntPtr.Zero,
                 IntPtr.Zero);
+
+            var classes = (int)UnmanagedMethods.GetClassLongPtr(result, (int)UnmanagedMethods.ClassLongIndex.GCL_STYLE);
+
+            classes |= (int)UnmanagedMethods.ClassStyles.CS_DROPSHADOW;
+
+            UnmanagedMethods.SetClassLong(result, UnmanagedMethods.ClassLongIndex.GCL_STYLE, new IntPtr(classes));
+
+            return result;
         }
 
         protected override IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
