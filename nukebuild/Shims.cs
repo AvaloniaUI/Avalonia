@@ -40,7 +40,6 @@ public partial class Build
                 
                 foreach (var path in paths)
                 {
-                    
                     if (Directory.Exists(path))
                     {
                         var dirInfo = new DirectoryInfo(path);

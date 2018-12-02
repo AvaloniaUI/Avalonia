@@ -48,13 +48,11 @@ partial class Build : NukeBuild
         Information("IsLocalBuild: " + Parameters.IsLocalBuild);
         Information("IsRunningOnUnix: " + Parameters.IsRunningOnUnix);
         Information("IsRunningOnWindows: " + Parameters.IsRunningOnWindows);
-        Information("IsRunningOnAppVeyor: " + Parameters.IsRunningOnAppVeyor);
-        Information("IsRunnongOnAzure:" + Parameters.IsRunningOnAzure);
+        Information("IsRunningOnAzure:" + Parameters.IsRunningOnAzure);
         Information("IsPullRequest: " + Parameters.IsPullRequest);
         Information("IsMainRepo: " + Parameters.IsMainRepo);
         Information("IsMasterBranch: " + Parameters.IsMasterBranch);
         Information("IsReleaseBranch: " + Parameters.IsReleaseBranch);
-        Information("IsTagged: " + Parameters.IsTagged);
         Information("IsReleasable: " + Parameters.IsReleasable);
         Information("IsMyGetRelease: " + Parameters.IsMyGetRelease);
         Information("IsNuGetRelease: " + Parameters.IsNuGetRelease);
@@ -62,29 +60,37 @@ partial class Build : NukeBuild
 
     Target Clean => _ => _.Executes(() =>
     {
-        var data = Parameters;
-        DeleteDirectories(data.BuildDirs);
-        EnsureCleanDirectories(data.BuildDirs);
-        EnsureCleanDirectory(data.ArtifactsDir);
-        EnsureCleanDirectory(data.NugetRoot);
-        EnsureCleanDirectory(data.ZipRoot);
-        EnsureCleanDirectory(data.TestResultsRoot);
+        DeleteDirectories(Parameters.BuildDirs);
+        EnsureCleanDirectories(Parameters.BuildDirs);
+        EnsureCleanDirectory(Parameters.ArtifactsDir);
+        EnsureCleanDirectory(Parameters.NugetRoot);
+        EnsureCleanDirectory(Parameters.ZipRoot);
+        EnsureCleanDirectory(Parameters.TestResultsRoot);
     });
 
-
+    [Serializable]
+    class MsBuildSettingsWithRestore : MSBuildSettings
+    {
+        protected override Arguments ConfigureArguments(Arguments arguments)
+        {
+            arguments.Add("/restore");
+            return base.ConfigureArguments(arguments);
+        }
+    }
+    
     Target Compile => _ => _
         .DependsOn(Clean)
         .Executes(() =>
         {
-            var data = Parameters;
-            if (data.IsRunningOnWindows)
-                MSBuild(data.MSBuildSolution, c => c
-                    .SetConfiguration(data.Configuration)
+
+            if (Parameters.IsRunningOnWindows)
+                MSBuild(Parameters.MSBuildSolution, c => new MsBuildSettingsWithRestore()
+                    .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)
                     .AddProperty("PackageVersion", Parameters.Version)
                     .AddProperty("iOSRoslynPathHackRequired", "true")
                     .SetToolsVersion(MSBuildToolsVersion._15_0)
-                    .AddTargets("Restore", "Build")
+                    .AddTargets("Build")
                 );
 
             else
@@ -126,7 +132,6 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            
             RunCoreTest("./tests/Avalonia.Base.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Controls.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Input.UnitTests", false);
@@ -138,7 +143,6 @@ partial class Build : NukeBuild
             RunCoreTest("./tests/Avalonia.Visuals.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Skia.UnitTests", false);
             RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests", false);
-
         });
 
     Target RunRenderTests => _ => _
@@ -165,39 +169,6 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-
-            var dotMemoryUnitPath =
-                ToolPathResolver.GetPackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe");
-            var xunitRunnerPath =
-                ToolPathResolver.GetPackageExecutable("xunit.runner.console", "xunit.console.x86.exe");
-            var args = new[]
-            {
-                Path.GetFullPath(xunitRunnerPath),
-                "--propagate-exit-code",
-                "--",
-                "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll"
-            };
-            var cargs = string.Join(" ", args.Select(a => '"' + a + '"'));
-
-            var proc = Process.Start(new ProcessStartInfo(dotMemoryUnitPath, cargs)
-            {
-                UseShellExecute = false
-            });
-
-            if (!proc.WaitForExit(120000))
-            {
-                proc.Kill();
-                throw new Exception("Leak tests timed out");
-            }
-
-            var leakTestsExitCode = proc.ExitCode;
-            
-            if (leakTestsExitCode != 0)
-            {
-                throw new Exception("Leak Tests failed");
-            }
-            
-
             var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
             DotMemoryUnit(
                 $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
@@ -210,9 +181,7 @@ partial class Build : NukeBuild
         {
             var data = Parameters;
             Zip(data.ZipCoreArtifacts, data.BinRoot);
-
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-
             Zip(data.ZipTargetControlCatalogDesktopDir,
                 GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.dll").Concat(
                     GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.config")).Concat(
@@ -234,7 +203,7 @@ partial class Build : NukeBuild
                     .AddProperty("PackageVersion", Parameters.Version)
                     .AddProperty("iOSRoslynPathHackRequired", "true")
                     .SetToolsVersion(MSBuildToolsVersion._15_0)
-                    .AddTargets("Restore", "Pack"));
+                    .AddTargets("Pack"));
             else
                 DotNetPack(Parameters.MSBuildSolution, c =>
                     c.SetConfiguration(Parameters.Configuration)
@@ -251,21 +220,14 @@ partial class Build : NukeBuild
         .DependsOn(RunTests)
         .DependsOn(CreateNugetPackages);
     
-    Target CiAppVeyor => _ => _
+    Target CiAzureLinux => _ => _
+        .DependsOn(RunTests);
+    
+    Target CiAzureOSX => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
     
-    Target CiTravis => _ => _
-        .DependsOn(RunTests);
-    
-    Target CiAsuzeLinux => _ => _
-        .DependsOn(RunTests);
-    
-    Target CiAsuzeOSX => _ => _
-        .DependsOn(Package)
-        .DependsOn(ZipFiles);
-    
-    Target CiAsuzeWindows => _ => _
+    Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
 

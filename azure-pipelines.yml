@@ -22,7 +22,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        nuke --target="CiAzureLinux" --configuration="Release"
+        nuke --target CiAzureLinux --configuration=Release
 
   - task: PublishTestResults@2
     inputs:
@@ -71,7 +71,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        nuke --target="CiAzureOSX" --configuration="Release"
+        nuke --target CiAzureOSX --configuration Release
 
   - task: PublishTestResults@2
     inputs:
@@ -106,7 +106,7 @@ jobs:
     inputs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
-        nuke --target="CiAzureWindows" --configuration="Release"
+        nuke --target CiAzureWindows --configuration Release
       
   - task: PublishTestResults@2
     inputs:

@@ -36,13 +36,11 @@ public partial class Build
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
         public bool IsRunningOnWindows { get; }
-        public bool IsRunningOnAppVeyor { get; }
         public bool IsRunningOnAzure { get; }
         public bool IsPullRequest { get; }
         public bool IsMainRepo { get; }
         public bool IsMasterBranch { get; }
         public bool IsReleaseBranch { get; }
-        public bool IsTagged { get; }
         public bool IsReleasable { get; }
         public bool IsMyGetRelease { get; }
         public bool IsNuGetRelease { get; }
@@ -64,9 +62,6 @@ public partial class Build
 
        public BuildParameters(Build b)
         {
-            var buildSystem = Host;
-            
-
             // ARGUMENTS
             Configuration = b.NukeArgConfiguration ?? "Release";
             SkipTests = b.NukeArgSkipTests;
@@ -79,77 +74,36 @@ public partial class Build
             MSBuildSolution = RootDirectory / "dirs.proj";
 
             // PARAMETERS
-            IsLocalBuild = buildSystem == HostType.Console;
+            IsLocalBuild = Host == HostType.Console;
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAppVeyor = buildSystem == HostType.AppVeyor;
-            IsRunningOnAzure = buildSystem == HostType.TeamServices ||
+            IsRunningOnAzure = Host == HostType.TeamServices ||
                                Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
 
-            string tagName = null;
-            if (IsRunningOnAppVeyor)
-            {
-                IsPullRequest = AppVeyor.Instance.PullRequestNumber != 0;
-                RepositoryName = Environment.GetEnvironmentVariable("BUILD_REPOSITORY_URI");
-                RepositoryBranch = Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCH");
-                
-                IsReleaseBranch =
-                    (Environment.GetEnvironmentVariable("BUILD_SOURCEBRANCH") ?? "").StartsWith(ReleaseBranchPrefix,
-                        StringComparison.OrdinalIgnoreCase);
-                IsTagged = AppVeyor.Instance.RepositoryTag
-                           && !string.IsNullOrWhiteSpace(AppVeyor.Instance.RepositoryTagName);
-                
-                tagName = AppVeyor.Instance.RepositoryTagName;
-            }
-            else if (IsRunningOnAzure)
+            if (IsRunningOnAzure)
             {
                 RepositoryName = TeamServices.Instance.RepositoryUri;
                 RepositoryBranch = TeamServices.Instance.SourceBranch;
                 IsPullRequest = TeamServices.Instance.PullRequestId.HasValue;
                 IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, TeamServices.Instance.RepositoryUri);
-                
-                // TODO???
-                IsTagged = false;
-                tagName = null;
             }
             IsMainRepo =
                 StringComparer.OrdinalIgnoreCase.Equals(MainRepo,
                     RepositoryName);
             IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch,
                 RepositoryBranch);
+            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) ==
+                              true;
 
-            
             IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
-            IsMyGetRelease = !IsTagged && IsReleasable;
+            IsMyGetRelease = IsReleasable;
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
             Version = b.NukeArgForceNugetVersion ?? GetVersion();
 
-            if (IsRunningOnAppVeyor)
-            {
-                string tagVersion = null;
-                if (IsTagged)
-                {
-                    var tag = tagName;
-                    var nugetReleasePrefix = "nuget-release-";
-                    IsNuGetRelease = IsTagged && IsReleasable && tag.StartsWith(nugetReleasePrefix);
-                    if (IsNuGetRelease)
-                        tagVersion = tag.Substring(nugetReleasePrefix.Length);
-                }
-
-                if (tagVersion != null)
-                {
-                    Version = tagVersion;
-                }
-                else
-                {
-                    // Use AssemblyVersion with Build as version
-                    Version += "-build" + Environment.GetEnvironmentVariable("APPVEYOR_BUILD_NUMBER") + "-beta";
-                }
-            }
-            else if (IsRunningOnAzure)
+            if (IsRunningOnAzure)
             {
                 if (!IsNuGetRelease)
                 {
