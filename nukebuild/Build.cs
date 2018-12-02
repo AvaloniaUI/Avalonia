@@ -68,23 +68,14 @@ partial class Build : NukeBuild
         EnsureCleanDirectory(Parameters.TestResultsRoot);
     });
 
-    [Serializable]
-    class MsBuildSettingsWithRestore : MSBuildSettings
-    {
-        protected override Arguments ConfigureArguments(Arguments arguments)
-        {
-            arguments.Add("/restore");
-            return base.ConfigureArguments(arguments);
-        }
-    }
-    
     Target Compile => _ => _
         .DependsOn(Clean)
         .Executes(() =>
         {
 
             if (Parameters.IsRunningOnWindows)
-                MSBuild(Parameters.MSBuildSolution, c => new MsBuildSettingsWithRestore()
+                MSBuild(Parameters.MSBuildSolution, c => c
+                    .SetArgumentConfigurator(a => a.Add("/r"))
                     .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)
                     .AddProperty("PackageVersion", Parameters.Version)
