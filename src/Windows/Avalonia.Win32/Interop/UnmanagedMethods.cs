@@ -909,8 +909,17 @@ namespace Avalonia.Win32.Interop
 
         public enum ClassLongIndex : int
         {
-            GCL_HCURSOR = -12,
-            GCL_HICON = -14
+            GCLP_MENUNAME = -8,
+            GCLP_HBRBACKGROUND = -10,
+            GCLP_HCURSOR = -12,
+            GCLP_HICON = -14,
+            GCLP_HMODULE = -16,
+            GCL_CBWNDEXTRA = -18,
+            GCL_CBCLSEXTRA = -20,
+            GCLP_WNDPROC = -24,
+            GCL_STYLE = -26,
+            GCLP_HICONSM = -34,
+            GCW_ATOM = -32
         }
 
         [DllImport("user32.dll", EntryPoint = "SetClassLongPtr")]
@@ -928,6 +937,20 @@ namespace Avalonia.Win32.Interop
 
             return SetClassLong64(hWnd, nIndex, dwNewLong);
         }
+
+        public static IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex)
+        {
+            if (IntPtr.Size > 4)
+                return GetClassLongPtr64(hWnd, nIndex);
+            else
+                return new IntPtr(GetClassLongPtr32(hWnd, nIndex));
+        }
+
+        [DllImport("user32.dll", EntryPoint = "GetClassLong")]
+        public static extern uint GetClassLongPtr32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
+        public static extern IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
 
         [DllImport("user32.dll", EntryPoint = "SetCursor")]
         internal static extern IntPtr SetCursor(IntPtr hCursor);

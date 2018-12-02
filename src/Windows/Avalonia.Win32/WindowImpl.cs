@@ -384,7 +384,7 @@ namespace Avalonia.Win32
         public void SetCursor(IPlatformHandle cursor)
         {
             var hCursor = cursor?.Handle ?? DefaultCursor;
-            UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCL_HCURSOR, hCursor);
+            UnmanagedMethods.SetClassLong(_hwnd, UnmanagedMethods.ClassLongIndex.GCLP_HCURSOR, hCursor);
 
             if (_owner.IsPointerOver)
                 UnmanagedMethods.SetCursor(hCursor);
