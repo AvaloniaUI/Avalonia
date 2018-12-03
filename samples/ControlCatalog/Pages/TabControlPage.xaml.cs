@@ -26,13 +26,13 @@ namespace ControlCatalog.Pages
                     {
                         Header = "Arch",
                         Text = "This is the first templated tab page.",
-                        Image = LoadBitmap("resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg?assembly=ControlCatalog"),
+                        Image = LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg"),
                     },
                     new TabItemViewModel
                     {
                         Header = "Leaf",
                         Text = "This is the second templated tab page.",
-                        Image = LoadBitmap("resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg?assembly=ControlCatalog"),
+                        Image = LoadBitmap("avares://ControlCatalog/Assets/maple-leaf-888807_640.jpg"),
                     },
                     new TabItemViewModel
                     {

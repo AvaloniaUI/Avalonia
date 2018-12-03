@@ -1,5 +1,6 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NumericUpDownPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>

@@ -1,4 +1,7 @@
-<UserControl xmlns="https://github.com/avaloniaui">
+<UserControl
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="ControlCatalog.Pages.TabControlPage"
+    xmlns="https://github.com/avaloniaui">
     <DockPanel>
         <TextBlock 
             DockPanel.Dock="Top" 
@@ -29,13 +32,13 @@
                     <TabItem Header="Arch">
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the first page in the TabControl.</TextBlock>
-                            <Image Source="resm:ControlCatalog.Assets.delicate-arch-896885_640.jpg" Width="300"/>
+                            <Image Source="/Assets/delicate-arch-896885_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
                     <TabItem Header="Leaf">                       
                         <StackPanel Orientation="Vertical" Spacing="8">
                             <TextBlock>This is the second page in the TabControl.</TextBlock>
-                            <Image Source="resm:ControlCatalog.Assets.maple-leaf-888807_640.jpg" Width="300"/>
+                            <Image Source="/Assets/maple-leaf-888807_640.jpg" Width="300"/>
                         </StackPanel>
                     </TabItem>
                     <TabItem Header="Disabled" IsEnabled="False">
