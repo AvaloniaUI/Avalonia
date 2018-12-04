@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Converters;
@@ -10,6 +11,8 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml
 {
+    using Avalonia.Media;
+
     /// <summary>
     /// Maintains a repository of <see cref="TypeConverter"/>s for XAML parsing on top of those
     /// maintained by <see cref="TypeDescriptor"/>.
@@ -36,6 +39,9 @@ namespace Avalonia.Markup.Xaml
             { typeof(Selector), typeof(SelectorTypeConverter) },
             { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
+            { typeof(CultureInfo), typeof(CultureInfoConverter) },
+            { typeof(Uri), typeof(AvaloniaUriTypeConverter) },
+            { typeof(FontFamily), typeof(FontFamilyTypeConverter) }
         };
 
         /// <summary>

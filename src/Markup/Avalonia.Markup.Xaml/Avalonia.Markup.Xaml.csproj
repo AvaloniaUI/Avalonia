@@ -9,6 +9,8 @@
   </PropertyGroup>
     <ItemGroup>
         <Compile Include="AvaloniaXamlLoader.cs" />
+        <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
+        <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
@@ -18,6 +20,7 @@
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="Parsers\PropertyParser.cs" />
+        <Compile Include="PortableXaml\AvaloniaResourceXamlInfo.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />

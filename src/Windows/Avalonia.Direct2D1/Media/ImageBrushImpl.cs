@@ -20,7 +20,8 @@ namespace Avalonia.Direct2D1.Media
             BitmapImpl bitmap,
             Size targetSize)
         {
-            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSize(96), targetSize);
+            var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
+            var calc = new TileBrushCalculator(brush, bitmap.PixelSize.ToSize(dpi), targetSize);
 
             if (!calc.NeedsIntermediate)
             {
@@ -99,7 +100,8 @@ namespace Avalonia.Direct2D1.Media
 
             using (var context = new RenderTarget(result).CreateDrawingContext(null))
             {
-                var rect = new Rect(0, 0, bitmap.PixelSize.Width, bitmap.PixelSize.Height);
+                var dpi = new Vector(target.DotsPerInch.Width, target.DotsPerInch.Height);
+                var rect = new Rect(bitmap.PixelSize.ToSize(dpi));
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);

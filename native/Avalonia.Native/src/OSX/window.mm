@@ -109,6 +109,7 @@ public:
             if(Window != nullptr)
             {
                 [Window orderOut:Window];
+                [Window restoreParentWindow];
             }
             
             return S_OK;
@@ -392,30 +393,6 @@ protected:
     }
 };
 
-class ModalDisposable : public ComUnknownObject
-{
-    NSModalSession _session;
-    AvnWindow* _window;
-    
-    void Dispose ()
-    {
-        [_window orderOut:_window];
-        [NSApp endModalSession:_session];
-    }
-    
-public:
-    ModalDisposable(AvnWindow* window, NSModalSession session)
-    {
-        _session = session;
-        _window = window;
-    }
-    
-    virtual ~ModalDisposable()
-    {
-        Dispose();
-    }
-};
-
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
 private:
@@ -444,32 +421,27 @@ private:
     {
         @autoreleasepool
         {
+            if([Window parentWindow] != nil)
+                [[Window parentWindow] removeChildWindow:Window];
             WindowBaseImpl::Show();
             
             return SetWindowState(_lastWindowState);
         }
     }
     
-    virtual HRESULT ShowDialog (IUnknown**ppv) override
+    virtual HRESULT ShowDialog (IAvnWindow* parent) override
     {
         @autoreleasepool
         {
-            if(ppv == nullptr)
-            {
+            if(parent == nullptr)
                 return E_POINTER;
-            }
+
+            auto cparent = dynamic_cast<WindowImpl*>(parent);
+            if(cparent == nullptr)
+                return E_INVALIDARG;
             
-            auto session = [NSApp beginModalSessionForWindow:Window];
-            auto disposable = new ModalDisposable(Window, session);
-            *ppv = disposable;
-            
-            SetPosition(lastPositionSet);
-            UpdateStyle();
-            
-            [Window setTitle:_lastTitle];
-            [Window setTitleVisibility:NSWindowTitleVisible];
-            
-            [Window pollModalSession:session];
+            [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
+            WindowBaseImpl::Show();
             
             return S_OK;
         }
@@ -843,8 +815,19 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     [super viewDidChangeBackingProperties];
 }
 
+- (bool) ignoreUserInput
+{
+    auto parentWindow = objc_cast<AvnWindow>([self window]);
+    if(parentWindow == nil || ![parentWindow shouldTryToHandleEvents])
+        return TRUE;
+    return FALSE;
+}
+
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
+    if([self ignoreUserInput])
+        return;
+    
     [self becomeFirstResponder];
     auto localPoint = [self convertPoint:[event locationInWindow] toView:self];
     auto avnPoint = [self toAvnPoint:localPoint];
@@ -952,7 +935,9 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
 } 
 
 - (void) keyboardEvent: (NSEvent *) event withType: (AvnRawKeyEventType)type
-{ 
+{
+    if([self ignoreUserInput])
+        return;
     auto key = s_KeyMap[[event keyCode]];
     
     auto timestamp = [event timestamp] * 1000;
@@ -1125,12 +1110,14 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     {
         ComPtr<WindowBaseImpl> parent = _parent;
         _parent = NULL;
+        [self restoreParentWindow];
         parent->BaseEvents->Closed();
         [parent->View onClosed];
-        [self setContentView: nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self setContentView: nil];
+        });
     }
 }
-
 
 -(BOOL)canBecomeKeyWindow
 {
@@ -1142,11 +1129,61 @@ NSArray* AllLoopModes = [NSArray arrayWithObjects: NSDefaultRunLoopMode, NSEvent
     return _canBecomeKeyAndMain;
 }
 
+-(bool) activateAppropriateChild: (bool)activating
+{
+    for(NSWindow* uch in [self childWindows])
+    {
+        auto ch = objc_cast<AvnWindow>(uch);
+        if(ch == nil)
+            continue;
+        [ch activateAppropriateChild:false];
+        return FALSE;
+    }
+    
+    if(!activating)
+        [self makeKeyAndOrderFront:self];
+    return TRUE;
+}
+
+-(bool)shouldTryToHandleEvents
+{
+    for(NSWindow* uch in [self childWindows])
+    {
+        auto ch = objc_cast<AvnWindow>(uch);
+        if(ch == nil)
+            continue;
+        return FALSE;
+    }
+    return TRUE;
+}
+
+-(void)makeKeyWindow
+{
+    if([self activateAppropriateChild: true])
+    {
+        [super makeKeyWindow];
+    }
+}
+
 -(void)becomeKeyWindow
 {
-    _parent->BaseEvents->Activated();
-    [super becomeKeyWindow];
+    if([self activateAppropriateChild: true])
+    {
+        _parent->BaseEvents->Activated();
+        [super becomeKeyWindow];
+    }
 }
+
+-(void) restoreParentWindow;
+{
+    auto parent = objc_cast<AvnWindow>([self parentWindow]);
+    if(parent != nil)
+    {
+        [parent removeChildWindow:self];
+        [parent activateAppropriateChild: false];
+    }
+}
+
 
 - (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
 {
