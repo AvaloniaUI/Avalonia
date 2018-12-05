@@ -542,6 +542,11 @@ namespace Avalonia.Controls.Presenters
                 {
                     layoutManager.ExecuteLayoutPass();
 
+                    if (newOffset != -1 && newOffset != OffsetValue)
+                    {
+                        OffsetValue = newOffset;
+                    }
+
                     if (panel.ScrollDirection == Orientation.Vertical)
                     {
                         if (container.Bounds.Y < panel.Bounds.Y || container.Bounds.Bottom > panel.Bounds.Bottom)
