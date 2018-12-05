@@ -9,14 +9,21 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
 using Avalonia.Collections;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Tracks the progress of an animation.
     /// </summary>
-    public class Animation : AvaloniaList<KeyFrame>, IAnimation
+    public class Animation : AvaloniaObject, IAnimation
     {
+        /// <summary>
+        /// Gets the children of the <see cref="Animation"/>.
+        /// </summary>
+        [Content]
+        public KeyFrames Children { get; } = new KeyFrames();
+
         /// <summary>
         /// Gets or sets the active time of this animation.
         /// </summary>
@@ -42,10 +49,6 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
 
-        /// <summary>
-        /// Gets or sets the speed multiple for this animation.
-        /// </summary>
-        public double SpeedRatio { get; set; } = 1d;
 
         /// <summary> 
         /// Gets or sets the delay time for this animation. 
@@ -60,6 +63,24 @@ namespace Avalonia.Animation
         /// Gets or sets the amount of delay time between iterations.
         /// </summary> 
         public TimeSpan DelayBetweenIterations { get; set; } = TimeSpan.Zero;
+
+        public static readonly DirectProperty<Animation, double> SpeedRatioProperty =
+                                AvaloniaProperty.RegisterDirect<Animation, double>(
+                                    nameof(_speedRatio),
+                                    o => o._speedRatio,
+                                    (o, v) => o._speedRatio = v,
+                                    1d);
+
+        private double _speedRatio = 1d;
+
+        /// <summary>
+        /// Gets or sets the speed multiple for this animation.
+        /// </summary> 
+        public double SpeedRatio
+        {
+            get { return _speedRatio; }
+            set { SetAndRaise(SpeedRatioProperty, ref _speedRatio, value); }
+        }
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
@@ -90,7 +111,7 @@ namespace Avalonia.Animation
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
 
-            foreach (var keyframe in this)
+            foreach (var keyframe in Children)
             {
                 foreach (var setter in keyframe)
                 {

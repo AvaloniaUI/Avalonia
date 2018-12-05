@@ -30,7 +30,7 @@ namespace Avalonia.Animation
         private Easings.Easing _easeFunc;
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
-        private IDisposable _timerSubscription;
+        private IDisposable _timerSub, _speedRatioSub;
         private readonly IClock _baseClock;
         private IClock _clock;
 
@@ -47,7 +47,8 @@ namespace Avalonia.Animation
             _targetControl = control;
             _neutralValue = (T)_targetControl.GetValue(_parent.Property);
 
-            _speedRatio = animation.SpeedRatio;
+            _speedRatioSub = animation.GetObservable(Animation.SpeedRatioProperty)
+                                      .Subscribe(p => _speedRatio = p);
 
             _initialDelay = animation.Delay;
             _duration = animation.Duration;
@@ -57,7 +58,7 @@ namespace Avalonia.Animation
             {
                 case RepeatType.None:
                     _iterationCount = 1;
-                    break; 
+                    break;
                 case RepeatType.Repeat:
                     _iterationCount = animation.RepeatCount.Value;
                     break;
@@ -75,14 +76,15 @@ namespace Avalonia.Animation
             // Animation may have been stopped before it has finished.
             ApplyFinalFill();
 
-            _timerSubscription?.Dispose();
+            _timerSub?.Dispose();
+            _speedRatioSub?.Dispose();
             _clock.PlayState = PlayState.Stop;
         }
 
         protected override void Subscribed()
         {
             _clock = new Clock(_baseClock);
-            _timerSubscription = _clock.Subscribe(Step);
+            _timerSub = _clock.Subscribe(Step);
         }
 
         public void Step(TimeSpan frameTick)
@@ -134,7 +136,7 @@ namespace Avalonia.Animation
         private void InternalStep(TimeSpan time)
         {
             DoPlayStates();
-            
+
             // Scale timebases according to speedratio.
             var indexTime = time.Ticks;
             var iterDuration = _duration.Ticks * _speedRatio;
@@ -153,7 +155,7 @@ namespace Avalonia.Animation
                 var playbackTime = opsTime % iterationTime;
 
                 _currentIteration = (ulong)(opsTime / iterationTime);
-                
+
                 // Stop animation when the current iteration is beyond the iteration count.
                 if ((_currentIteration + 1) > _iterationCount)
                     DoComplete();
@@ -178,7 +180,7 @@ namespace Avalonia.Animation
                     PublishNext(_lastInterpValue);
                 }
                 else if (playbackTime > iterDuration &
-                         playbackTime <= iterationTime & 
+                         playbackTime <= iterationTime &
                          iterDelay > 0 &
                          // The last iteration's trailing delay should be skipped.
                          (_currentIteration + 1) < _iterationCount)
