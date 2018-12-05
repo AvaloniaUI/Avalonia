@@ -14,13 +14,13 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 public partial class Build
 {
     [Parameter("configuration")]
-    public string NukeArgConfiguration { get; set; }
+    public string Configuration { get; set; }
     
     [Parameter("skip-tests")]
-    public bool NukeArgSkipTests { get; set; }
+    public bool SkipTests { get; set; }
     
     [Parameter("force-nuget-version")]
-    public string NukeArgForceNugetVersion { get; set; }
+    public string ForceNugetVersion { get; set; }
     
     public class BuildParameters
     {
@@ -63,8 +63,8 @@ public partial class Build
        public BuildParameters(Build b)
         {
             // ARGUMENTS
-            Configuration = b.NukeArgConfiguration ?? "Release";
-            SkipTests = b.NukeArgSkipTests;
+            Configuration = b.Configuration ?? "Release";
+            SkipTests = b.SkipTests;
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaUI/Avalonia";
@@ -101,7 +101,7 @@ public partial class Build
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            Version = b.NukeArgForceNugetVersion ?? GetVersion();
+            Version = b.ForceNugetVersion ?? GetVersion();
 
             if (IsRunningOnAzure)
             {
