@@ -54,17 +54,12 @@ namespace Avalonia.Animation
         /// Describes a delay to be added before the animation starts, and optionally between 
         /// repeats of the animation if <see cref="DelayBetweenIterations"/> is set. 
         /// </remarks> 
-        public TimeSpan Delay { get; set; }
+        public TimeSpan Delay { get; set; } = TimeSpan.Zero;
 
         /// <summary> 
-        /// Gets or sets a value indicating whether <see cref="Delay"/> will be applied between 
-        /// iterations of the animation.
+        /// Gets or sets the amount of delay time between iterations.
         /// </summary> 
-        /// <remarks>
-        /// If this property is not set, then <see cref="Delay"/> will only be applied to the first 
-        /// iteration of the animation. 
-        /// </remarks> 
-        public bool DelayBetweenIterations { get; set; }
+        public TimeSpan DelayBetweenIterations { get; set; } = TimeSpan.Zero;
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {

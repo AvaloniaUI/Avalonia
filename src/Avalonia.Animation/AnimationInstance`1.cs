@@ -15,18 +15,18 @@ namespace Avalonia.Animation
     {
         private T _lastInterpValue;
         private T _firstKFValue;
-        private long _repeatCount;
+        private float _iterationCount;
         private long _currentIteration;
         private bool _isLooping;
         private bool _gotFirstKFValue;
-        private bool _iterationDelay;
         private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
         private Animator<T> _parent;
         private Animatable _targetControl;
         private T _neutralValue;
         private double _speedRatio;
-        private TimeSpan _delay;
+        private TimeSpan _initialDelay;
+        private TimeSpan _iterationDelay;
         private TimeSpan _duration;
         private Easings.Easing _easeFunc;
         private Action _onCompleteAction;
@@ -50,20 +50,20 @@ namespace Avalonia.Animation
 
             _speedRatio = animation.SpeedRatio;
 
-            _delay = animation.Delay;
+            _initialDelay = animation.Delay;
             _duration = animation.Duration;
             _iterationDelay = animation.DelayBetweenIterations;
 
             switch (animation.RepeatCount.RepeatType)
             {
                 case RepeatType.None:
-                    _repeatCount = 1;
+                    _iterationCount = 1;
                     break;
                 case RepeatType.Loop:
-                    _isLooping = true;
+                    _iterationCount = float.PositiveInfinity;
                     break;
                 case RepeatType.Repeat:
-                    _repeatCount = (long)animation.RepeatCount.Value;
+                    _iterationCount = animation.RepeatCount.Value;
                     break;
             }
 
@@ -76,7 +76,7 @@ namespace Avalonia.Animation
 
         protected override void Unsubscribed()
         {
-            //Animation may have been stopped before it has finished
+            // Animation may have been stopped before it has finished.
             ApplyFinalFill();
 
             _timerSubscription?.Dispose();
@@ -138,82 +138,50 @@ namespace Avalonia.Animation
         private void InternalStep(TimeSpan time)
         {
             DoPlayStates();
-            var delayEndpoint = _delay;
-            var iterationEndpoint = delayEndpoint + _duration;
-            var iterationTime = time;
 
-            //determine if time is currently in the first iteration.
-            if (time >= TimeSpan.Zero & time <= iterationEndpoint)
-            {
-                _currentIteration = 1;
-            }
-            // time is currently the second to nth iteration.
-            else if (time > iterationEndpoint)
-            {
-                // Subtract first iteration to properly get the subsequent iteration time.
-                iterationTime -= iterationEndpoint;
+            var indexTime = time.Ticks;
+            var iterDuration = _duration.Ticks * _speedRatio;
+            var iterDelay = _iterationDelay.Ticks * _speedRatio;
+            var initDelay = _initialDelay.Ticks * _speedRatio;
 
-                // Ignore delays on subsequent iterations if it's not the initial 
-                // iteration unless _iterationDelay is enabled.
-                if (!_iterationDelay & delayEndpoint > TimeSpan.Zero)
-                {
-                    delayEndpoint = TimeSpan.Zero;
-                    iterationEndpoint = _duration;
-                }
-
-                // Calculate the current iteration number 
-                _currentIteration = (iterationTime.Ticks / iterationEndpoint.Ticks) + 2;
-            }
-            else
-            {
-                return;
-            }
-
-            // Determine if the current iteration should have its normalized time reversed.
-            bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
-                                    _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
-                                    _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
-                                    _animationDirection == PlaybackDirection.Reverse ? true : false;
-
-            if (!_isLooping)
-            {
-                var totalTime = _iterationDelay ? _repeatCount * (_duration.Ticks + _delay.Ticks) : _repeatCount * _duration.Ticks + _delay.Ticks;
-
-                // Clamp value when animations ends.
-                if (time.Ticks >= totalTime)
-                {
-                    var easedTime = _easeFunc.Ease(isCurIterReverse ? 0.0 : 1.0);
-                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
-
-                    DoComplete();
-                    return;
-                }
-            }
-
-            iterationTime = TimeSpan.FromTicks(iterationTime.Ticks % iterationEndpoint.Ticks);
-
-            if (delayEndpoint > TimeSpan.Zero & iterationTime < delayEndpoint)
+            if (indexTime > 0 & indexTime <= initDelay)
             {
                 DoDelay();
             }
             else
             {
-                // Offset the delay time            
-                iterationTime -= delayEndpoint;
-                iterationEndpoint -= delayEndpoint;
+                var fullIterationTime = iterDuration + iterDelay;
+                var opsTime = indexTime - initDelay;
+                var playbackTime = opsTime % fullIterationTime;
 
-                // Normalize time
-                var interpVal = (double)iterationTime.Ticks / iterationEndpoint.Ticks;
+                _currentIteration = (long)Math.Floor(opsTime / fullIterationTime);
+                
+                if ((_currentIteration + 1) > _iterationCount)
+                    DoComplete();
 
-                // Check if normalized time needs to be reversed.
-                if (isCurIterReverse)
-                    interpVal = 1 - interpVal;
+                if (playbackTime <= iterDuration)
+                {
+                    var normalizedTime = playbackTime / iterDuration;
 
-                // Ease and interpolate
-                var easedTime = _easeFunc.Ease(interpVal);
-                _lastInterpValue = _interpolator(easedTime, _neutralValue);
+                    bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
+                                            _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
+                                            _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
+                                            _animationDirection == PlaybackDirection.Reverse ? true : false;
 
-                PublishNext(_lastInterpValue);
+                    // Check if normalized time needs to be reversed.
+                    if (isCurIterReverse)
+                        normalizedTime = 1 - normalizedTime;
+
+                    // Ease and interpolate
+                    var easedTime = _easeFunc.Ease(normalizedTime);
+                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
+
+                    PublishNext(_lastInterpValue);
+                }
+                else if (playbackTime > iterDuration & playbackTime <= fullIterationTime & iterDelay > 0)
+                {
+                    DoDelay();
+                }
             }
         }
     }
