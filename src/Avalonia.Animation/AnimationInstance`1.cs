@@ -16,7 +16,7 @@ namespace Avalonia.Animation
         private T _lastInterpValue;
         private T _firstKFValue;
         private long _repeatCount;
-        private double _currentIteration;
+        private long _currentIteration;
         private bool _isLooping;
         private bool _gotFirstKFValue;
         private bool _iterationDelay;
@@ -72,7 +72,7 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-          }
+        }
 
         protected override void Unsubscribed()
         {
@@ -147,45 +147,51 @@ namespace Avalonia.Animation
             {
                 _currentIteration = 1;
             }
+            // time is currently the second to nth iteration.
             else if (time > iterationEndpoint)
             {
-                //Subtract first iteration to properly get the subsequent iteration time
+                // Subtract first iteration to properly get the subsequent iteration time.
                 iterationTime -= iterationEndpoint;
 
+                // Ignore delays on subsequent iterations if it's not the initial 
+                // iteration unless _iterationDelay is enabled.
                 if (!_iterationDelay & delayEndpoint > TimeSpan.Zero)
                 {
                     delayEndpoint = TimeSpan.Zero;
                     iterationEndpoint = _duration;
                 }
 
-                //Calculate the current iteration number
-                _currentIteration = Math.Min(_repeatCount,(int)Math.Floor((double)((double)iterationTime.Ticks / iterationEndpoint.Ticks)) + 2);
+                // Calculate the current iteration number 
+                _currentIteration = (iterationTime.Ticks / iterationEndpoint.Ticks) + 2;
             }
             else
             {
                 return;
             }
 
-             // Determine if the current iteration should have its normalized time inverted.
+            // Determine if the current iteration should have its normalized time reversed.
             bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
                                     _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
                                     _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
                                     _animationDirection == PlaybackDirection.Reverse ? true : false;
-   
+
             if (!_isLooping)
             {
-                var totalTime = _iterationDelay ? _repeatCount * ( _duration.Ticks + _delay.Ticks) : _repeatCount * _duration.Ticks + _delay.Ticks;
+                var totalTime = _iterationDelay ? _repeatCount * (_duration.Ticks + _delay.Ticks) : _repeatCount * _duration.Ticks + _delay.Ticks;
+
+                // Clamp value when animations ends.
                 if (time.Ticks >= totalTime)
                 {
                     var easedTime = _easeFunc.Ease(isCurIterReverse ? 0.0 : 1.0);
                     _lastInterpValue = _interpolator(easedTime, _neutralValue);
-                   
+
                     DoComplete();
                     return;
                 }
             }
-            iterationTime = TimeSpan.FromTicks((long)(iterationTime.Ticks % iterationEndpoint.Ticks));
-        
+
+            iterationTime = TimeSpan.FromTicks(iterationTime.Ticks % iterationEndpoint.Ticks);
+
             if (delayEndpoint > TimeSpan.Zero & iterationTime < delayEndpoint)
             {
                 DoDelay();
@@ -199,6 +205,7 @@ namespace Avalonia.Animation
                 // Normalize time
                 var interpVal = (double)iterationTime.Ticks / iterationEndpoint.Ticks;
 
+                // Check if normalized time needs to be reversed.
                 if (isCurIterReverse)
                     interpVal = 1 - interpVal;
 
