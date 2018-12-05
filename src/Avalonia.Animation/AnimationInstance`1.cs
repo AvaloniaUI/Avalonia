@@ -15,9 +15,8 @@ namespace Avalonia.Animation
     {
         private T _lastInterpValue;
         private T _firstKFValue;
-        private float _iterationCount;
-        private long _currentIteration;
-        private bool _isLooping;
+        private ulong? _iterationCount;
+        private ulong _currentIteration;
         private bool _gotFirstKFValue;
         private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
@@ -58,10 +57,7 @@ namespace Avalonia.Animation
             {
                 case RepeatType.None:
                     _iterationCount = 1;
-                    break;
-                case RepeatType.Loop:
-                    _iterationCount = float.PositiveInfinity;
-                    break;
+                    break; 
                 case RepeatType.Repeat:
                     _iterationCount = animation.RepeatCount.Value;
                     break;
@@ -138,7 +134,8 @@ namespace Avalonia.Animation
         private void InternalStep(TimeSpan time)
         {
             DoPlayStates();
-
+            
+            // Scale timebases according to speedratio.
             var indexTime = time.Ticks;
             var iterDuration = _duration.Ticks * _speedRatio;
             var iterDelay = _iterationDelay.Ticks * _speedRatio;
@@ -150,25 +147,27 @@ namespace Avalonia.Animation
             }
             else
             {
-                var fullIterationTime = iterDuration + iterDelay;
+                // Calculate timebases.
+                var iterationTime = iterDuration + iterDelay;
                 var opsTime = indexTime - initDelay;
-                var playbackTime = opsTime % fullIterationTime;
+                var playbackTime = opsTime % iterationTime;
 
-                _currentIteration = (long)Math.Floor(opsTime / fullIterationTime);
+                _currentIteration = (ulong)(opsTime / iterationTime);
                 
+                // Stop animation when the current iteration is beyond the iteration count.
                 if ((_currentIteration + 1) > _iterationCount)
                     DoComplete();
 
                 if (playbackTime <= iterDuration)
                 {
+                    // Normalize time for interpolation.
                     var normalizedTime = playbackTime / iterDuration;
 
+                    // Check if normalized time needs to be reversed.
                     bool isCurIterReverse = _animationDirection == PlaybackDirection.Normal ? false :
                                             _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
                                             _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
                                             _animationDirection == PlaybackDirection.Reverse ? true : false;
-
-                    // Check if normalized time needs to be reversed.
                     if (isCurIterReverse)
                         normalizedTime = 1 - normalizedTime;
 
@@ -178,7 +177,11 @@ namespace Avalonia.Animation
 
                     PublishNext(_lastInterpValue);
                 }
-                else if (playbackTime > iterDuration & playbackTime <= fullIterationTime & iterDelay > 0)
+                else if (playbackTime > iterDuration &
+                         playbackTime <= iterationTime & 
+                         iterDelay > 0 &
+                         // The last iteration's trailing delay should be skipped.
+                         (_currentIteration + 1) < _iterationCount)
                 {
                     DoDelay();
                 }
