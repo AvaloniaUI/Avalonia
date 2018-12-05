@@ -43,7 +43,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
       <Style Selector="Border.Rect1:pointerover">
         <Style.Animations>
           <Animation Duration="0:0:2.5"
-                     RepeatCount="4"
+                     IterationCount="4"
                      FillMode="None"
                      PlaybackDirection="AlternateReverse"
                      Easing="SineEaseInOut">
@@ -73,7 +73,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Style.Animations>
           <Animation Duration="0:0:0.5"
                      Easing="QuadraticEaseInOut"
-                     RepeatCount="Loop">
+                     IterationCount="Loop">
             <KeyFrame Cue="50%">
               <Setter Property="ScaleTransform.ScaleX" Value="0.8"/>
               <Setter Property="ScaleTransform.ScaleY" Value="0.8"/>

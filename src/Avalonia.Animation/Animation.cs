@@ -32,7 +32,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets or sets the repeat count for this animation.
         /// </summary>
-        public RepeatCount RepeatCount { get; set; }
+        public IterationCount IterationCount { get; set; } = new IterationCount(1);
 
         /// <summary>
         /// Gets or sets the playback direction for this animation.
@@ -195,7 +195,7 @@ namespace Avalonia.Animation
         {
             var run = new TaskCompletionSource<object>();
 
-            if (this.RepeatCount == RepeatCount.Loop)
+            if (this.IterationCount == IterationCount.Loop)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
             IDisposable subscriptions = null;

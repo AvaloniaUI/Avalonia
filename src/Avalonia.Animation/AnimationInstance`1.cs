@@ -54,16 +54,9 @@ namespace Avalonia.Animation
             _duration = animation.Duration;
             _iterationDelay = animation.DelayBetweenIterations;
 
-            switch (animation.RepeatCount.RepeatType)
-            {
-                case RepeatType.None:
-                    _iterationCount = 1;
-                    break;
-                case RepeatType.Repeat:
-                    _iterationCount = animation.RepeatCount.Value;
-                    break;
-            }
-
+            if (animation.IterationCount.RepeatType == IterationType.Many)
+                _iterationCount = animation.IterationCount.Value;
+                
             _animationDirection = animation.PlaybackDirection;
             _fillMode = animation.FillMode;
             _onCompleteAction = OnComplete;
