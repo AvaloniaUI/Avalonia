@@ -995,14 +995,7 @@ namespace Avalonia.Skia.Text
                     next = ~next;
                 }
 
-                var width = 0f;
-
-                var length = next - current;
-
-                if (current == lastIndex)
-                {
-                    length = text.Length - current;
-                }
+                var width = 0f;               
 
                 for (var index = current; index < next; index++)
                 {
@@ -1026,7 +1019,20 @@ namespace Avalonia.Skia.Text
 
                 var rect = new SKRect(point.X, point.Y, point.X + width, point.Y + height);
 
-                glyphClusters.Add(new SKGlyphCluster(current, length, rect));
+                var length = 0;
+
+                if (current == lastIndex)
+                {
+                    length = text.Length - ((int)clusters[current]);
+                }
+                else
+                {
+                    length = (int)(clusters[next] - clusters[current]);
+                }
+
+                var textPosition = (int)clusters[current];
+
+                glyphClusters.Add(new SKGlyphCluster(textPosition, length, rect));
 
                 current = next;
             }
@@ -1068,26 +1074,26 @@ namespace Avalonia.Skia.Text
                         switch (c)
                         {
                             case '\r':
-                            {
-                                if (runText[glyphCount] == '\n')
                                 {
-                                    glyphCount++;
-                                }
+                                    if (runText[glyphCount] == '\n')
+                                    {
+                                        glyphCount++;
+                                    }
 
-                                break;
-                            }
+                                    break;
+                                }
 
                             case '\n':
-                            {
-                                if (runText[glyphCount] == '\r')
                                 {
-                                    glyphCount++;
-                                }
+                                    if (runText[glyphCount] == '\r')
+                                    {
+                                        glyphCount++;
+                                    }
 
-                                break;
-                            }
+                                    break;
+                                }
                         }
-                    }                   
+                    }
                 }
                 else
                 {

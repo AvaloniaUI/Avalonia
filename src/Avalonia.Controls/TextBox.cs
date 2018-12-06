@@ -98,6 +98,8 @@ namespace Avalonia.Controls
         private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
 
+        private int _currentOffset;
+
         static TextBox()
         {
             FocusableProperty.OverrideDefaultValue(typeof(TextBox), true);
@@ -568,21 +570,7 @@ namespace Avalonia.Controls
 
                         if (!DeleteSelection() && caretIndex < text.Length)
                         {
-                            var removedCharacters = 1;
-                            // handle deleting /r/n
-                            // you don't ever want to leave a dangling /r around. So, if deleting /n, check to see if 
-                            // a /r should also be deleted.
-                            if (CaretIndex < text.Length - 1 &&
-                                text[caretIndex + 1] == '\n' &&
-                                text[caretIndex] == '\r')
-                            {
-                                removedCharacters = 2;
-                            }
-
-                            if (caretIndex + 1 < text.Length && char.IsSurrogatePair(text[caretIndex], text[caretIndex + 1]))
-                            {
-                                removedCharacters = 2;
-                            }
+                            var removedCharacters = 1 + _currentOffset;
 
                             SetTextInternal(text.Substring(0, caretIndex) +
                                             text.Substring(caretIndex + removedCharacters));
@@ -637,7 +625,18 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             var point = e.GetPosition(_presenter);
-            var index = CaretIndex = _presenter.GetCaretIndex(point);
+
+            var hitTestResult = _presenter.FormattedText.HitTestPoint(point);
+
+            _currentOffset = hitTestResult.Length - 1;
+
+            var index = CaretIndex = hitTestResult.TextPosition;
+
+            if (hitTestResult.IsTrailing)
+            {
+                index += hitTestResult.Length;
+            }
+
             var text = Text;
 
             if (text != null && e.MouseButton == MouseButton.Left)
@@ -743,6 +742,7 @@ namespace Avalonia.Controls
         private void MoveHorizontal(int direction, bool wholeWord)
         {
             var text = Text ?? string.Empty;
+
             var caretIndex = CaretIndex;
 
             if (!wholeWord)
@@ -756,6 +756,7 @@ namespace Avalonia.Controls
                 else if (index == text.Length)
                 {
                     CaretIndex = index;
+
                     return;
                 }
 
@@ -763,25 +764,16 @@ namespace Avalonia.Controls
 
                 if (direction > 0)
                 {
-                    if (char.IsHighSurrogate(text[caretIndex]))
-                    {
-                        CaretIndex += 2;
-                    }
-                    else
-                    {
-                        CaretIndex += (c == '\r' && index < text.Length - 1 && text[index + 1] == '\n') ? 2 : 1;
-                    }
+                    CaretIndex += 1 + _currentOffset;
                 }
                 else
                 {
-                    if (char.IsLowSurrogate(c))
-                    {
-                        CaretIndex -= 2;
-                    }
-                    else
-                    {
-                        CaretIndex -= (c == '\n' && index > 0 && text[index - 1] == '\r') ? 2 : 1;
-                    }
+                    var rect = _presenter.FormattedText.HitTestTextPosition(CaretIndex - 1);
+
+                    var hitTestResult = _presenter.FormattedText.HitTestPoint(
+                        new Point(rect.X, rect.Y));
+
+                    CaretIndex = hitTestResult.TextPosition;
                 }
             }
             else
