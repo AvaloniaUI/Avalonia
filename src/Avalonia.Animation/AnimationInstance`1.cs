@@ -56,7 +56,7 @@ namespace Avalonia.Animation
 
             if (animation.IterationCount.RepeatType == IterationType.Many)
                 _iterationCount = animation.IterationCount.Value;
-                
+
             _animationDirection = animation.PlaybackDirection;
             _fillMode = animation.FillMode;
             _onCompleteAction = OnComplete;
@@ -174,11 +174,13 @@ namespace Avalonia.Animation
                 }
                 else if (playbackTime > iterDuration &
                          playbackTime <= iterationTime &
-                         iterDelay > 0 &
-                         // The last iteration's trailing delay should be skipped.
-                         (_currentIteration + 1) < _iterationCount)
+                         iterDelay > 0)
                 {
-                    DoDelay();
+                    // The last iteration's trailing delay should be skipped.
+                    if ((_currentIteration + 1) < _iterationCount)
+                        DoDelay();
+                    else
+                        DoComplete();
                 }
             }
         }
