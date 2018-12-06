@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj" EmbedReference="false" />
+      <ProjectReference Include="../../src/Avalonia.Remote.Protocol/Avalonia.Remote.Protocol.csproj"/>
       <ProjectReference Include="../../src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
 
   </ItemGroup>
