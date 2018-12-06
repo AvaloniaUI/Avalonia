@@ -1,4 +1,4 @@
-﻿<Project Sdk="AggregatePackage.NuGet.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
@@ -39,10 +39,6 @@
     <Content Include="*.targets">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
-    </Content>
-    <Content Include="../../src/Avalonia.Build.Tasks/bin/$(Configuration)/netstandard2.0/Avalonia.Build.Tasks.dll">
-      <Pack>true</Pack>
-      <PackagePath>tools\</PackagePath>
     </Content>
   </ItemGroup>
   <Import Project="..\..\build\SharedVersion.props" />
