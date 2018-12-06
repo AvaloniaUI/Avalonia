@@ -84,7 +84,7 @@ namespace Avalonia.Skia.Text
                     continue;
                 }
 
-                if (currentLength + currentTextLine.Length < span.StartIndex)
+                if (currentLength + currentTextLine.Length - 1 < span.StartIndex)
                 {
                     currentLength += currentTextLine.Length;
 
@@ -99,7 +99,12 @@ namespace Avalonia.Skia.Text
 
                     var currentTextRun = textRuns[runIndex];
 
-                    if (currentLength + currentTextRun.Text.Length < span.StartIndex)
+                    if (currentTextRun.Text.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (currentLength + currentTextRun.Text.Length - 1 < span.StartIndex)
                     {
                         currentLength += currentTextRun.Text.Length;
 
@@ -824,42 +829,38 @@ namespace Avalonia.Skia.Text
                 {
                     var c = _text[index];
 
+                    if (!IsBreakChar(c)) continue;
+
                     switch (c)
                     {
                         case '\r':
+                        {
+                            if (index < _text.Length - 1 && _text[index + 1] == '\n')
                             {
-                                if (index < _text.Length - 1 && _text[index + 1] == '\n')
-                                {
-                                    index++;
-                                }
-
-                                var length = index - currentPosition + 1;
-
-                                var breakLines = PerformLineBreak(_text, currentPosition, length);
-
-                                textLines.AddRange(breakLines);
-
-                                currentPosition = index + 1;
-                                break;
+                                index++;
                             }
+
+                            break;
+                        }
 
                         case '\n':
+                        {
+                            if (index < _text.Length - 1 && _text[index + 1] == '\r')
                             {
-                                if (index < _text.Length - 1 && _text[index + 1] == '\r')
-                                {
-                                    index++;
-                                }
-
-                                var length = index - currentPosition + 1;
-
-                                var breakLines = PerformLineBreak(_text, currentPosition, length);
-
-                                textLines.AddRange(breakLines);
-
-                                currentPosition = index + 1;
-                                break;
+                                index++;
                             }
+
+                            break;
+                        }
                     }
+
+                    var length = index - currentPosition + 1;
+
+                    var breakLines = PerformLineBreak(_text, currentPosition, length);
+
+                    textLines.AddRange(breakLines);
+
+                    currentPosition = index + 1;
                 }
             }
             else

@@ -14,10 +14,28 @@ namespace Avalonia.Skia.Text
             Bounds = bounds;
         }
 
+        /// <summary>
+        /// Gets the text position.
+        /// </summary>
+        /// <value>
+        /// The text position.
+        /// </value>
         public int TextPosition { get; }
 
+        /// <summary>
+        /// Gets the length.
+        /// </summary>
+        /// <value>
+        /// The length.
+        /// </value>
         public int Length { get; }
 
+        /// <summary>
+        /// Gets the bounds.
+        /// </summary>
+        /// <value>
+        /// The bounds.
+        /// </value>
         public SKRect Bounds { get; }
     }
 }

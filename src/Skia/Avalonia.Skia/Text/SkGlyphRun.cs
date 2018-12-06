@@ -16,10 +16,28 @@ namespace Avalonia.Skia.Text
             GlyphClusters = glyphClusters;
         }
 
+        /// <summary>
+        /// Gets the glyph ids.
+        /// </summary>
+        /// <value>
+        /// The glyph ids.
+        /// </value>
         public byte[] GlyphIds { get; }
 
+        /// <summary>
+        /// Gets the glyph positions.
+        /// </summary>
+        /// <value>
+        /// The glyph positions.
+        /// </value>
         public SKPoint[] GlyphPositions { get; }
 
+        /// <summary>
+        /// Gets the glyph clusters.
+        /// </summary>
+        /// <value>
+        /// The glyph clusters.
+        /// </value>
         public IReadOnlyList<SKGlyphCluster> GlyphClusters { get; }
     }
 }
