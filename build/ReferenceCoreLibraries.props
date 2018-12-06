@@ -1,5 +1,5 @@
 <Project>
   <ItemGroup>
-      <ProjectReference Include="$(MSBuildThisFileDirectory)../packages/Avalonia/Avalonia.csproj" />
+      <ProjectReference Include="$(MSBuildThisFileDirectory)../packages/Avalonia/Avalonia.csproj" ExcludeAssets="None" />
   </ItemGroup>
 </Project>
