@@ -45,17 +45,10 @@ namespace Avalonia.Animation
             return match.Subscribe(subject);
         }
 
-        /// <summary>
-        /// Get the nearest pair of cue-time ordered keyframes 
-        /// according to the given time parameter that is relative to the
-        /// total animation time and the normalized intra-keyframe pair time 
-        /// (i.e., the normalized time between the selected keyframes, relative to the
-        /// time parameter).
-        /// </summary>
-        /// <param name="animationTime">The time parameter, relative to the total animation time</param>
-        protected (double IntraKFTime, KeyFramePair<T> KFPair) GetKFPairAndIntraKFTime(double animationTime)
+        protected T InterpolationHandler(double animationTime, T neutralValue)
         {
             AnimatorKeyFrame firstKeyframe, lastKeyframe;
+
             int kvCount = _convertedKeyframes.Count;
             if (kvCount > 2)
             {
@@ -84,10 +77,22 @@ namespace Avalonia.Animation
 
             double t0 = firstKeyframe.Cue.CueValue;
             double t1 = lastKeyframe.Cue.CueValue;
-            var intraframeTime = (animationTime - t0) / (t1 - t0);
-            var firstFrameData = (firstKeyframe.GetTypedValue<T>(), firstKeyframe.isNeutral);
-            var lastFrameData = (lastKeyframe.GetTypedValue<T>(), lastKeyframe.isNeutral);
-            return (intraframeTime, new KeyFramePair<T>(firstFrameData, lastFrameData));
+
+            double fraction = (animationTime - t0) / (t1 - t0); 
+
+            T from, to;
+
+            if (firstKeyframe.isNeutral)
+                from = neutralValue;
+            else
+                from = (T)firstKeyframe.Value;
+
+            if (lastKeyframe.isNeutral)
+                to = neutralValue;
+            else
+                to = (T)lastKeyframe.Value;
+
+            return Interpolate(fraction, from, to);
         }
 
         private int FindClosestBeforeKeyFrame(double time)
@@ -129,14 +134,14 @@ namespace Avalonia.Animation
                 this,
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
-                DoInterpolation);
+                InterpolationHandler);
             return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
         }
 
         /// <summary>
         /// Interpolates a value given the desired time.
         /// </summary>
-        protected abstract T DoInterpolation(double time, T neutralValue);
+        protected abstract T Interpolate(double fraction, T start, T end);
 
         /// <summary>
         /// Verifies, converts and sorts keyframe values according to this class's target type.

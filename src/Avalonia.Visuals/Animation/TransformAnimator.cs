@@ -73,6 +73,10 @@ namespace Avalonia.Animation
             return null;
         }
 
+
+        /// <inheritdocs/> 
+        protected override double Interpolate(double fraction, double start, double end) => 0;
+
         void InitializeChildAnimator()
         {
             childAnimator = new DoubleAnimator();
@@ -85,7 +89,5 @@ namespace Avalonia.Animation
             childAnimator.Property = Property;
         }
 
-        /// <inheritdocs/>
-        protected override double DoInterpolation(double time, double neutralValue) => 0;
     }
 }

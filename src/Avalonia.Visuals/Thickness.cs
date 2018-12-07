@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -12,6 +13,11 @@ namespace Avalonia
     /// </summary>
     public readonly struct Thickness
     {
+        static Thickness()
+        {
+            Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// The thickness on the left.
         /// </summary>
@@ -169,7 +175,7 @@ namespace Avalonia
         {
             using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Thickness"))
             {
-                if(tokenizer.TryReadDouble(out var a))
+                if (tokenizer.TryReadDouble(out var a))
                 {
                     if (tokenizer.TryReadDouble(out var b))
                     {
