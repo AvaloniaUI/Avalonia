@@ -13,7 +13,7 @@ namespace Avalonia.Animation
     public enum IterationType
     {
         Many,
-        Loop
+        Infinite
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ namespace Avalonia.Animation
         /// <param name="type">The unit of the IterationCount.</param>
         public IterationCount(ulong value, IterationType type)
         {
-            if (type > IterationType.Loop)
+            if (type > IterationType.Infinite)
             {
                 throw new ArgumentException("Invalid value", "type");
             }
@@ -55,7 +55,7 @@ namespace Avalonia.Animation
         /// Gets an instance of <see cref="IterationCount"/> that indicates that an animation
         /// should repeat forever.
         /// </summary>
-        public static IterationCount Loop => new IterationCount(0, IterationType.Loop);
+        public static IterationCount Loop => new IterationCount(0, IterationType.Infinite);
 
         /// <summary>
         /// Gets the unit of the <see cref="IterationCount"/>.
@@ -65,7 +65,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Gets a value that indicates whether the <see cref="IterationCount"/> is set to loop.
         /// </summary>
-        public bool IsLoop => _type == IterationType.Loop;
+        public bool IsInfinite => _type == IterationType.Infinite;
 
         /// <summary>
         /// Gets the number of repeat iterations.
@@ -80,7 +80,7 @@ namespace Avalonia.Animation
         /// <returns>True if the structures are equal, otherwise false.</returns>
         public static bool operator ==(IterationCount a, IterationCount b)
         {
-            return (a.IsLoop && b.IsLoop)
+            return (a.IsInfinite && b.IsInfinite)
                 || (a._value == b._value && a._type == b._type);
         }
 
@@ -140,9 +140,9 @@ namespace Avalonia.Animation
         /// <returns>The string representation.</returns>
         public override string ToString()
         {
-            if (IsLoop)
+            if (IsInfinite)
             {
-                return "Loop";
+                return "Infinite";
             }
 
             string s = _value.ToString();
@@ -158,7 +158,7 @@ namespace Avalonia.Animation
         {
             s = s.ToUpperInvariant().Trim();
 
-            if (s.EndsWith("LOOP"))
+            if (s.EndsWith("INFINITE"))
             {
                 return Loop;
             }

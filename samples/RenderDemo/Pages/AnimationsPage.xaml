@@ -73,7 +73,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Style.Animations>
           <Animation Duration="0:0:0.5"
                      Easing="QuadraticEaseInOut"
-                     IterationCount="Loop">
+                     IterationCount="Infinite">
             <KeyFrame Cue="50%">
               <Setter Property="ScaleTransform.ScaleX" Value="0.8"/>
               <Setter Property="ScaleTransform.ScaleY" Value="0.8"/>
