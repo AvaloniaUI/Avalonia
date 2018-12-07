@@ -113,7 +113,7 @@ namespace Avalonia.Animation
 
             foreach (var keyframe in Children)
             {
-                foreach (var setter in keyframe)
+                foreach (var setter in keyframe.Setters)
                 {
                     var handler = GetAnimatorType(setter.Property);
 

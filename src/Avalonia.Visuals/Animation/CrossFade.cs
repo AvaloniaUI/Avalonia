@@ -33,36 +33,40 @@ namespace Avalonia.Animation
         {
             _fadeOutAnimation = new Animation
             {
-                Children  = 
+                Children =
                 {
-                    new KeyFrame
-                    (
-                        new Setter
-                        {
-                            Property = Visual.OpacityProperty,
-                            Value = 0d
-                        }
-                    )
+                    new KeyFrame()
                     {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
                         Cue = new Cue(1d)
                     }
+
                 }
             };
             _fadeInAnimation = new Animation
             {
-                Children = 
+                Children =
                 {
-                    new KeyFrame
-                    (
-                        new Setter
-                        {
-                            Property = Visual.OpacityProperty,
-                            Value = 0d
-                        }
-                    )
+                    new KeyFrame()
                     {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
                         Cue = new Cue(0d)
                     }
+
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;

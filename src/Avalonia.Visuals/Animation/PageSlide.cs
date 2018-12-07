@@ -81,27 +81,29 @@ namespace Avalonia.Animation
                     Children = 
                     {
                         new KeyFrame
-                        (
-                            new Setter
-                            {
-                                Property = translateProperty,
-                                Value = 0d
-                            }
-                        )
                         {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                Value = 0d
+                                }
+                            },
                             Cue = new Cue(0d)
                         },
                         new KeyFrame
-                        (
-                            new Setter
-                            {
-                                Property = translateProperty,
-                                Value = forward ? -distance : distance
-                            }
-                        )
                         {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = forward ? -distance : distance
+                                }
+                            },
                             Cue = new Cue(1d)
-                        }
+                        }                       
                     }
                 };
                 animation.Duration = Duration;
@@ -115,28 +117,31 @@ namespace Avalonia.Animation
                 {
                     Children =
                     {
+
                         new KeyFrame
-                        (
-                            new Setter
-                            {
-                                Property = translateProperty,
-                                Value = forward ? distance : -distance
-                            }
-                        )
                         {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = forward ? distance : -distance
+                                }
+                            },
                             Cue = new Cue(0d)
                         },
                         new KeyFrame
-                        (
-                            new Setter
-                            {
-                                Property = translateProperty,
-                                Value = 0d
-                            }
-                        )
                         {
+                            Setters =
+                            {
+                                new Setter
+                                {
+                                    Property = translateProperty,
+                                    Value = 0d
+                                }
+                            },
                             Cue = new Cue(1d)
-                        },
+                        }
                     }
                 };
                 animation.Duration = Duration;
