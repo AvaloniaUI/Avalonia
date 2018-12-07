@@ -57,10 +57,10 @@ namespace Avalonia.Animation
             var b = startB + fraction * (endB - startB);
 
             // convert back to sRGB in the [0..255] range
-            a = a * 255.0d;
-            r = OECF_sRGB(r) * 255.0d;
-            g = OECF_sRGB(g) * 255.0d;
-            b = OECF_sRGB(b) * 255.0d;
+            a = a * 255d;
+            r = OECF_sRGB(r) * 255d;
+            g = OECF_sRGB(g) * 255d;
+            b = OECF_sRGB(b) * 255d;
 
             return new Color((byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b), (byte)Math.Round(a));
         }

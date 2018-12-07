@@ -55,7 +55,7 @@ namespace Avalonia.Animation
         /// Gets an instance of <see cref="IterationCount"/> that indicates that an animation
         /// should repeat forever.
         /// </summary>
-        public static IterationCount Loop => new IterationCount(0, IterationType.Infinite);
+        public static IterationCount Infinite => new IterationCount(0, IterationType.Infinite);
 
         /// <summary>
         /// Gets the unit of the <see cref="IterationCount"/>.
@@ -160,7 +160,7 @@ namespace Avalonia.Animation
 
             if (s.EndsWith("INFINITE"))
             {
-                return Loop;
+                return Infinite;
             }
             else
             {

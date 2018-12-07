@@ -195,7 +195,7 @@ namespace Avalonia.Animation
         {
             var run = new TaskCompletionSource<object>();
 
-            if (this.IterationCount == IterationCount.Loop)
+            if (this.IterationCount == IterationCount.Infinite)
                 run.SetException(new InvalidOperationException("Looping animations must not use the Run method."));
 
             IDisposable subscriptions = null;
