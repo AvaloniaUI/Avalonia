@@ -23,7 +23,7 @@ namespace Avalonia.Animation
         private Animator<T> _parent;
         private Animatable _targetControl;
         private T _neutralValue;
-        private double _speedRatio;
+        private double _speedRatioConv;
         private TimeSpan _initialDelay;
         private TimeSpan _iterationDelay;
         private TimeSpan _duration;
@@ -36,9 +36,6 @@ namespace Avalonia.Animation
 
         public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator)
         {
-            if (animation.SpeedRatio <= 0)
-                throw new InvalidOperationException("Speed ratio cannot be negative or zero.");
-
             if (animation.Duration.TotalSeconds <= 0)
                 throw new InvalidOperationException("Duration cannot be negative or zero.");
 
@@ -48,7 +45,7 @@ namespace Avalonia.Animation
             _neutralValue = (T)_targetControl.GetValue(_parent.Property);
 
             _speedRatioSub = animation.GetObservable(Animation.SpeedRatioProperty)
-                                      .Subscribe(p => _speedRatio = p);
+                                      .Subscribe(p => SetSpeedRatio(p));
 
             _initialDelay = animation.Delay;
             _duration = animation.Duration;
@@ -62,6 +59,14 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
+        }
+
+        private void SetSpeedRatio(double inputRatio)
+        {
+            if (inputRatio < 0d)
+                throw new ArgumentOutOfRangeException("SpeedRatio should not be negative.");
+
+            _speedRatioConv = (1d / inputRatio);
         }
 
         protected override void Unsubscribed()
@@ -132,9 +137,9 @@ namespace Avalonia.Animation
 
             // Scale timebases according to speedratio.
             var indexTime = time.Ticks;
-            var iterDuration = _duration.Ticks * _speedRatio;
-            var iterDelay = _iterationDelay.Ticks * _speedRatio;
-            var initDelay = _initialDelay.Ticks * _speedRatio;
+            var iterDuration = _duration.Ticks * _speedRatioConv;
+            var iterDelay = _iterationDelay.Ticks * _speedRatioConv;
+            var initDelay = _initialDelay.Ticks * _speedRatioConv;
 
             if (indexTime > 0 & indexTime <= initDelay)
             {
