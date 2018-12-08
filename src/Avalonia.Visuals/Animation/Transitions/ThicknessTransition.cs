@@ -14,20 +14,11 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public override IObservable<Thickness> DoTransition(IObservable<double> progress, Thickness oldValue, Thickness newValue)
         {
-            var deltaL = newValue.Left - oldValue.Left;
-            var deltaT = newValue.Top - oldValue.Top;
-            var deltaR = newValue.Right - oldValue.Right;
-            var deltaB = newValue.Bottom - oldValue.Bottom;
-
             return progress
-                .Select(p => 
+                .Select(p =>
                 {
                     var f = Easing.Ease(p);
-                    var nL = f * deltaL + oldValue.Left;
-                    var nT = f * deltaT + oldValue.Right;
-                    var nR = f * deltaR + oldValue.Top;
-                    var nB = f * deltaB + oldValue.Bottom;
-                    return new Thickness(nL, nT, nR, nB);
+                    return ((newValue - oldValue) * f) + oldValue;
                 });
         }
     }

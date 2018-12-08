@@ -5,12 +5,12 @@ using Avalonia.Media;
 namespace Avalonia.Animation.Animators
 {
     /// <summary>
-    /// Animator that handles <see cref="Point"/> properties.
+    /// Animator that handles <see cref="Size"/> properties.
     /// </summary>
-    public class PointAnimator : Animator<Point>
+    public class SizeAnimator : Animator<Size>
     {
-        public override Point Interpolate(double progress, Point oldValue, Point newValue)
-        { 
+        public override Size Interpolate(double progress, Size oldValue, Size newValue)
+        {
             return ((newValue - oldValue) * progress) + oldValue;
         }
     }

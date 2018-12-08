@@ -14,16 +14,11 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public override IObservable<Point> DoTransition(IObservable<double> progress, Point oldValue, Point newValue)
         {
-            var deltaX = newValue.X - oldValue.Y;
-            var deltaY = newValue.X - oldValue.Y;
-
             return progress
                 .Select(p =>
                 {
                     var f = Easing.Ease(p);
-                    var nX = f * deltaX + oldValue.X;
-                    var nY = f * deltaY + oldValue.Y;
-                    return new Point(nX, nY);
+                    return ((newValue - oldValue) * f) + oldValue;
                 });
         }
     }

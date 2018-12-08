@@ -78,21 +78,21 @@ namespace Avalonia.Animation.Animators
             double t0 = firstKeyframe.Cue.CueValue;
             double t1 = lastKeyframe.Cue.CueValue;
 
-            double fraction = (animationTime - t0) / (t1 - t0); 
+            double progress = (animationTime - t0) / (t1 - t0); 
 
-            T from, to;
+            T oldValue, newValue;
 
             if (firstKeyframe.isNeutral)
-                from = neutralValue;
+                oldValue = neutralValue;
             else
-                from = (T)firstKeyframe.Value;
+                oldValue = (T)firstKeyframe.Value;
 
             if (lastKeyframe.isNeutral)
-                to = neutralValue;
+                newValue = neutralValue;
             else
-                to = (T)lastKeyframe.Value;
+                newValue = (T)lastKeyframe.Value;
 
-            return Interpolate(fraction, from, to);
+            return Interpolate(progress, oldValue, newValue);
         }
 
         private int FindClosestBeforeKeyFrame(double time)

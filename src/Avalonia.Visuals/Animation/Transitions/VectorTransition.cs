@@ -7,12 +7,12 @@ using System.Reactive.Linq;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="double"/> types.
+    /// Transition class that handles <see cref="AvaloniaProperty"/> with <see cref="Vector"/> type.
     /// </summary>  
-    public class DoubleTransition : Transition<double>
+    public class VectorTransition : Transition<Vector>
     {
         /// <inheritdocs/>
-        public override IObservable<double> DoTransition(IObservable<double> progress, double oldValue, double newValue)
+        public override IObservable<Vector> DoTransition(IObservable<double> progress, Vector oldValue, Vector newValue)
         {
             return progress
                 .Select(p =>

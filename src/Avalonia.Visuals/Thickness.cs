@@ -142,6 +142,36 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Subtracts two Thicknesses.
+        /// </summary>
+        /// <param name="a">The first thickness.</param>
+        /// <param name="b">The second thickness.</param>
+        /// <returns>The equality.</returns>
+        public static Thickness operator -(Thickness a, Thickness b)
+        {
+            return new Thickness(
+                a.Left - b.Left,
+                a.Top - b.Top,
+                a.Right - b.Right,
+                a.Bottom - b.Bottom);
+        }
+
+        /// <summary>
+        /// Multiplies a Thickness to a scalar.
+        /// </summary>
+        /// <param name="a">The thickness.</param>
+        /// <param name="b">The scalar.</param>
+        /// <returns>The equality.</returns>
+        public static Thickness operator *(Thickness a, double b)
+        {
+            return new Thickness(
+                a.Left * b,
+                a.Top * b,
+                a.Right * b,
+                a.Bottom * b);
+        }
+
+        /// <summary>
         /// Adds a Thickness to a Size.
         /// </summary>
         /// <param name="size">The size.</param>
