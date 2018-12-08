@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Metadata;
@@ -49,27 +50,22 @@ namespace Avalonia.Animation
         /// </summary>
         public Easing Easing { get; set; } = new LinearEasing();
 
-
         /// <summary> 
-        /// Gets or sets the delay time for this animation. 
+        /// Gets or sets the initial delay time for this animation. 
         /// </summary> 
-        /// <remarks>
-        /// Describes a delay to be added before the animation starts, and optionally between 
-        /// repeats of the animation if <see cref="DelayBetweenIterations"/> is set. 
-        /// </remarks> 
         public TimeSpan Delay { get; set; } = TimeSpan.Zero;
 
         /// <summary> 
-        /// Gets or sets the amount of delay time between iterations.
+        /// Gets or sets the delay time in between iterations.
         /// </summary> 
         public TimeSpan DelayBetweenIterations { get; set; } = TimeSpan.Zero;
 
         public static readonly DirectProperty<Animation, double> SpeedRatioProperty =
-                                AvaloniaProperty.RegisterDirect<Animation, double>(
-                                    nameof(_speedRatio),
-                                    o => o._speedRatio,
-                                    (o, v) => o._speedRatio = v,
-                                    1d);
+            AvaloniaProperty.RegisterDirect<Animation, double>(
+                nameof(_speedRatio),
+                o => o._speedRatio,
+                (o, v) => o._speedRatio = v,
+                1d);
 
         private double _speedRatio = 1d;
 

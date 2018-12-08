@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Animation;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
 {

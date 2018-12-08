@@ -1,7 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Animators
 {
     /// <summary>
     /// Animator that handles <see cref="double"/> properties.
@@ -9,9 +9,9 @@ namespace Avalonia.Animation
     public class DoubleAnimator : Animator<double>
     {
         /// <inheritdocs/>
-        protected override double Interpolate(double fraction, double start, double end)
+        public override double Interpolate(double progress, double oldValue, double newValue)
         {
-            return start + (fraction) * (end - start);
+            return oldValue + (progress) * (newValue - oldValue);
         }
     }
 }

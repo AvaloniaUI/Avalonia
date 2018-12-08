@@ -10,10 +10,10 @@ using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Reactive;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Animators
 {
     /// <summary>
-    /// Base class for KeyFrames objects
+    /// Base class for <see cref="Animator{T}"/> objects
     /// </summary>
     public abstract class Animator<T> : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
@@ -141,7 +141,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// Interpolates a value given the desired time.
         /// </summary>
-        protected abstract T Interpolate(double fraction, T start, T end);
+        public abstract T Interpolate(double progress, T oldValue, T newValue);
 
         /// <summary>
         /// Verifies, converts and sorts keyframe values according to this class's target type.

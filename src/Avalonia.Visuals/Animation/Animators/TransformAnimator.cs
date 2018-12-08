@@ -2,7 +2,7 @@
 using Avalonia.Logging;
 using Avalonia.Media;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Animators
 {
     /// <summary>
     /// Animator that handles <see cref="Transform"/> properties.
@@ -73,9 +73,8 @@ namespace Avalonia.Animation
             return null;
         }
 
-
         /// <inheritdocs/> 
-        protected override double Interpolate(double fraction, double start, double end) => 0;
+        public override double Interpolate(double p, double o, double n) => 0;
 
         void InitializeChildAnimator()
         {
@@ -88,6 +87,5 @@ namespace Avalonia.Animation
 
             childAnimator.Property = Property;
         }
-
     }
 }

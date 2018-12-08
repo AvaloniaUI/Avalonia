@@ -5,7 +5,7 @@ using System;
 using Avalonia.Logging;
 using Avalonia.Media;
 
-namespace Avalonia.Animation
+namespace Avalonia.Animation.Animators
 {
     /// <summary>
     /// Animator that interpolates <see cref="Color"/> through 
@@ -29,32 +29,32 @@ namespace Avalonia.Animation
             return srgb <= 0.04045d ? srgb / 12.92d : (double)Math.Pow((srgb + 0.055d) / 1.055d, 2.4d);
         }
 
-        protected override Color Interpolate(double fraction, Color start, Color end)
+        public override Color Interpolate(double progress, Color oldValue, Color newValue)
         {
-            var startA = start.A / 255d;
-            var startR = start.R / 255d;
-            var startG = start.G / 255d;
-            var startB = start.B / 255d;
+            var oldA = oldValue.A / 255d;
+            var oldR = oldValue.R / 255d;
+            var oldG = oldValue.G / 255d;
+            var oldB = oldValue.B / 255d;
 
-            var endA = end.A / 255d;
-            var endR = end.R / 255d;
-            var endG = end.G / 255d;
-            var endB = end.B / 255d;
+            var newA = newValue.A / 255d;
+            var newR = newValue.R / 255d;
+            var newG = newValue.G / 255d;
+            var newB = newValue.B / 255d;
 
             // convert from sRGB to linear
-            startR = EOCF_sRGB(startR);
-            startG = EOCF_sRGB(startG);
-            startB = EOCF_sRGB(startB);
+            oldR = EOCF_sRGB(oldR);
+            oldG = EOCF_sRGB(oldG);
+            oldB = EOCF_sRGB(oldB);
 
-            endR = EOCF_sRGB(endR);
-            endG = EOCF_sRGB(endG);
-            endB = EOCF_sRGB(endB);
+            newR = EOCF_sRGB(newR);
+            newG = EOCF_sRGB(newG);
+            newB = EOCF_sRGB(newB);
 
             // compute the interpolated color in linear space
-            var a = startA + fraction * (endA - startA);
-            var r = startR + fraction * (endR - startR);
-            var g = startG + fraction * (endG - startG);
-            var b = startB + fraction * (endB - startB);
+            var a = oldA + progress * (newA - oldA);
+            var r = oldR + progress * (newR - oldR);
+            var g = oldG + progress * (newG - oldG);
+            var b = oldB + progress * (newB - oldB);
 
             // convert back to sRGB in the [0..255] range
             a = a * 255d;
