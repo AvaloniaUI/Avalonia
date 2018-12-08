@@ -21,7 +21,8 @@ namespace Avalonia.Animation
         private bool _gotFirstKFValue;
         private FillMode _fillMode;
         private PlaybackDirection _animationDirection;
-        private Animator<T> _parent;
+        private Animator<T> _animator;
+        private Animation _animation;
         private Animatable _targetControl;
         private T _neutralValue;
         private double _speedRatioConv;
@@ -31,43 +32,46 @@ namespace Avalonia.Animation
         private Easings.Easing _easeFunc;
         private Action _onCompleteAction;
         private Func<double, T, T> _interpolator;
-        private IDisposable _timerSub, _speedRatioSub;
+        private IDisposable _timerSub;
         private readonly IClock _baseClock;
         private IClock _clock;
 
         public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator)
         {
-            if (animation.Duration.TotalSeconds <= 0)
-                throw new InvalidOperationException("Duration cannot be negative or zero.");
-
-            _parent = animator;
-            _easeFunc = animation.Easing;
+            _animator = animator;
+            _animation = animation;
             _targetControl = control;
-            _neutralValue = (T)_targetControl.GetValue(_parent.Property);
-
-            _speedRatioSub = animation.GetObservable(Animation.SpeedRatioProperty)
-                                      .Subscribe(p => SetSpeedRatio(p));
-
-            _initialDelay = animation.Delay;
-            _duration = animation.Duration;
-            _iterationDelay = animation.DelayBetweenIterations;
-
-            if (animation.IterationCount.RepeatType == IterationType.Many)
-                _iterationCount = animation.IterationCount.Value;
-
-            _animationDirection = animation.PlaybackDirection;
-            _fillMode = animation.FillMode;
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
+            _neutralValue = (T)_targetControl.GetValue(_animator.Property);
+
+            FetchProperties();
         }
 
-        private void SetSpeedRatio(double inputRatio)
+        private void FetchProperties()
         {
-            if (inputRatio < 0d)
-                throw new ArgumentOutOfRangeException("SpeedRatio should not be negative.");
+            if (_animation.SpeedRatio < 0d)
+                throw new ArgumentOutOfRangeException("SpeedRatio value should not be negative.");
+                
+            if (_animation.Duration.TotalSeconds <= 0)
+                throw new InvalidOperationException("Duration value cannot be negative or zero.");
 
-            _speedRatioConv = (1d / inputRatio);
+            _easeFunc = _animation.Easing;
+
+            _speedRatioConv = 1d / _animation.SpeedRatio;
+
+            _initialDelay = _animation.Delay;
+            _duration = _animation.Duration;
+            _iterationDelay = _animation.DelayBetweenIterations;
+
+            if (_animation.IterationCount.RepeatType == IterationType.Many)
+                _iterationCount = _animation.IterationCount.Value;
+            else
+                _iterationCount = null;
+
+            _animationDirection = _animation.PlaybackDirection;
+            _fillMode = _animation.FillMode;
         }
 
         protected override void Unsubscribed()
@@ -76,7 +80,6 @@ namespace Avalonia.Animation
             ApplyFinalFill();
 
             _timerSub?.Dispose();
-            _speedRatioSub?.Dispose();
             _clock.PlayState = PlayState.Stop;
         }
 
@@ -101,7 +104,7 @@ namespace Avalonia.Animation
         private void ApplyFinalFill()
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
-                _targetControl.SetValue(_parent.Property, _lastInterpValue, BindingPriority.LocalValue);
+                _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
         }
 
         private void DoComplete()
@@ -127,7 +130,7 @@ namespace Avalonia.Animation
 
             if (!_gotFirstKFValue)
             {
-                _firstKFValue = (T)_parent.First().Value;
+                _firstKFValue = (T)_animator.First().Value;
                 _gotFirstKFValue = true;
             }
         }
@@ -135,6 +138,8 @@ namespace Avalonia.Animation
         private void InternalStep(TimeSpan time)
         {
             DoPlayStates();
+
+            FetchProperties();
 
             // Scale timebases according to speedratio.
             var indexTime = time.Ticks;
@@ -169,6 +174,7 @@ namespace Avalonia.Animation
                                             _animationDirection == PlaybackDirection.Alternate ? (_currentIteration % 2 == 0) ? false : true :
                                             _animationDirection == PlaybackDirection.AlternateReverse ? (_currentIteration % 2 == 0) ? true : false :
                                             _animationDirection == PlaybackDirection.Reverse ? true : false;
+                    
                     if (isCurIterReverse)
                         normalizedTime = 1 - normalizedTime;
 
