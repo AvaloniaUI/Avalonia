@@ -1,7 +1,8 @@
-﻿// Original source was written by Romain Guy and Francois Blavoet 
+﻿// Original color interpolation code was written by Romain Guy and Francois Blavoet 
 // and adopted from LottieSharp Project (https://github.com/ascora/LottieSharp).
 
 using System;
+using System.Reactive.Disposables;
 using Avalonia.Logging;
 using Avalonia.Media;
 
@@ -45,7 +46,6 @@ namespace Avalonia.Animation.Animators
             oldR = EOCF_sRGB(oldR);
             oldG = EOCF_sRGB(oldG);
             oldB = EOCF_sRGB(oldB);
-
             newR = EOCF_sRGB(newR);
             newG = EOCF_sRGB(newG);
             newB = EOCF_sRGB(newB);
