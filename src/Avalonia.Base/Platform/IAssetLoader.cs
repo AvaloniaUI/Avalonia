@@ -66,6 +66,6 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="uri">The URI.</param>
         /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
-        IEnumerable<(string absolutePath, Assembly assembly)> GetAssets(Uri uri);
+        IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri);
     }
 }

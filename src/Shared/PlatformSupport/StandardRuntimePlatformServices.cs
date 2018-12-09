@@ -10,6 +10,7 @@ namespace Avalonia.Shared.PlatformSupport
         public static void Register(Assembly assembly = null)
         {
             var standardPlatform = new StandardRuntimePlatform();
+            AssetLoader.RegisterResUriParsers();
             AvaloniaLocator.CurrentMutable
                 .Bind<IRuntimePlatform>().ToConstant(standardPlatform)
                 .Bind<IAssetLoader>().ToConstant(new AssetLoader(assembly))
