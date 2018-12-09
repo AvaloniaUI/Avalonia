@@ -63,6 +63,7 @@ partial class Build : NukeBuild
         DeleteDirectories(Parameters.BuildDirs);
         EnsureCleanDirectories(Parameters.BuildDirs);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
+        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
         EnsureCleanDirectory(Parameters.ZipRoot);
         EnsureCleanDirectory(Parameters.TestResultsRoot);
@@ -181,7 +182,7 @@ partial class Build : NukeBuild
                     GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
         });
 
-    Target CreateNugetPackages => _ => _
+    Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
         .After(RunTests)
         .Executes(() =>
@@ -199,6 +200,17 @@ partial class Build : NukeBuild
                 DotNetPack(Parameters.MSBuildSolution, c =>
                     c.SetConfiguration(Parameters.Configuration)
                         .AddProperty("PackageVersion", Parameters.Version));
+        });
+
+    Target CreateNugetPackages => _ => _
+        .DependsOn(CreateIntermediateNugetPackages)
+        .Executes(() =>
+        {
+            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
+            EnsureCleanDirectory(Parameters.NugetRoot);
+            if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
+                new NumergeNukeLogger()))
+                throw new Exception("Package merge failed");
         });
     
     Target RunTests => _ => _

@@ -47,6 +47,7 @@ public partial class Build
         public bool PublishTestResults { get; }
         public string Version { get; }
         public AbsolutePath ArtifactsDir { get; }
+        public AbsolutePath NugetIntermediateRoot { get; }
         public AbsolutePath NugetRoot { get; }
         public AbsolutePath ZipRoot { get; }
         public AbsolutePath BinRoot { get; }
@@ -117,6 +118,7 @@ public partial class Build
             // DIRECTORIES
             ArtifactsDir = RootDirectory / "artifacts";
             NugetRoot = ArtifactsDir / "nuget";
+            NugetIntermediateRoot = RootDirectory / "build-intermediate" / "nuget";
             ZipRoot = ArtifactsDir / "zip";
             BinRoot = ArtifactsDir / "bin";
             TestResultsRoot = ArtifactsDir / "test-results";
@@ -130,9 +132,9 @@ public partial class Build
             ZipTargetControlCatalogDesktopDir = ZipRoot / ("ControlCatalog.Desktop-" + FileZipSuffix);
         }
 
-        private static string GetVersion()
+        string GetVersion()
         {
-            var xdoc = XDocument.Load("./build/SharedVersion.props");
+            var xdoc = XDocument.Load(RootDirectory / "build/SharedVersion.props");
             return xdoc.Descendants().First(x => x.Name.LocalName == "Version").Value;
         }
     }
