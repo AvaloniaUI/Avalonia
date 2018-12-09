@@ -14,54 +14,53 @@ namespace Avalonia.Animation.Animators
     {
         ColorAnimator colorAnimator;
 
-        void InitializeColorAnimator()
-        {
-            colorAnimator = new ColorAnimator();
-
-            foreach (AnimatorKeyFrame keyframe in this)
-            {
-                colorAnimator.Add(keyframe);
-            }
-        }
-
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
             var ctrl = (Visual)control;
 
             foreach (var keyframe in this)
             {
+                // Return if the keyframe value is not a SolidColorBrush
                 if (keyframe.Value as ISolidColorBrush == null)
+                {
                     return Disposable.Empty;
+                }
+
+                // Preprocess values to Color if the xaml parser converts them to ISCB
+                if (keyframe.Value.GetType() == typeof(ImmutableSolidColorBrush))
+                {
+                    keyframe.Value = ((ImmutableSolidColorBrush)keyframe.Value).Color;
+                }
             }
 
-            if (control.GetValue(Property) == null)
-                control.SetValue(Property, new SolidColorBrush(Colors.Transparent));
+            // Make sure that the target property has SCB instead of the immutable one nor null.
 
             var targetVal = control.GetValue(Property);
 
-            if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
+            SolidColorBrush targetSCB = null;
+
+            if (targetVal == null)
+                targetSCB = new SolidColorBrush(Colors.Transparent);
+            else if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
+                targetSCB = new SolidColorBrush(((ISolidColorBrush)targetVal).Color);
+            else
+                return Disposable.Empty;
+
+            control.SetValue(Property, targetSCB);
+
+            if (colorAnimator == null)
             {
-                if (colorAnimator == null)
-                    InitializeColorAnimator();
+                colorAnimator = new ColorAnimator();
 
-                SolidColorBrush finalTarget = new SolidColorBrush();
-
-                if (targetVal.GetType() == typeof(ImmutableSolidColorBrush))
+                foreach (AnimatorKeyFrame keyframe in this)
                 {
-                    var k = (ImmutableSolidColorBrush)targetVal;
-                    finalTarget.Color = k.Color;
-                }
-                else
-                {
-                    finalTarget = targetVal as SolidColorBrush;
+                    colorAnimator.Add(keyframe);
                 }
 
                 colorAnimator.Property = SolidColorBrush.ColorProperty;
-
-                return colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
             }
 
-            return Disposable.Empty;
+            return colorAnimator.Apply(animation, targetSCB, clock ?? control.Clock, match, onComplete);
         }
 
         public override SolidColorBrush Interpolate(double p, SolidColorBrush o, SolidColorBrush n) => null;
