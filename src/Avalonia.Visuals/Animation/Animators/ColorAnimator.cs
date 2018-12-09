@@ -46,6 +46,7 @@ namespace Avalonia.Animation.Animators
             oldR = EOCF_sRGB(oldR);
             oldG = EOCF_sRGB(oldG);
             oldB = EOCF_sRGB(oldB);
+
             newR = EOCF_sRGB(newR);
             newG = EOCF_sRGB(newG);
             newB = EOCF_sRGB(newB);
@@ -62,7 +63,7 @@ namespace Avalonia.Animation.Animators
             g = OECF_sRGB(g) * 255d;
             b = OECF_sRGB(b) * 255d;
 
-            return new Color((byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b), (byte)Math.Round(a));
+            return new Color((byte)Math.Round(a), (byte)Math.Round(r), (byte)Math.Round(g), (byte)Math.Round(b));
         }
     }
 }
