@@ -7,8 +7,7 @@ using Avalonia.Media.Immutable;
 namespace Avalonia.Animation.Animators
 {
     /// <summary>
-    /// Animator that interpolates <see cref="Color"/> through 
-    /// gamma sRGB color space for better visual result.
+    /// Animator that handles <see cref="SolidColorBrush"/>. 
     /// </summary>
     public class SolidColorBrushAnimator : Animator<SolidColorBrush>
     {

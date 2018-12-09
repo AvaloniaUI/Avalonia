@@ -149,7 +149,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
         <Border Classes="Test Rect3"/>
         <Border Classes="Test Rect4" Background="Navy"/>
         <Border Classes="Test Rect5" Background="SeaGreen"/>
-        <Border Classes="Test Rect6"/>
+        <Border Classes="Test Rect6" Background="Red"/>
       </WrapPanel>
     </StackPanel>
   </Grid>
