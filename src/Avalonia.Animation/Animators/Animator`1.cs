@@ -78,7 +78,7 @@ namespace Avalonia.Animation.Animators
             double t0 = firstKeyframe.Cue.CueValue;
             double t1 = lastKeyframe.Cue.CueValue;
 
-            double progress = (animationTime - t0) / (t1 - t0); 
+            double progress = (animationTime - t0) / (t1 - t0);
 
             T oldValue, newValue;
 
@@ -97,30 +97,11 @@ namespace Avalonia.Animation.Animators
 
         private int FindClosestBeforeKeyFrame(double time)
         {
-            int FindClosestBeforeKeyFrame(int startIndex, int length)
-            {
-                if (length == 0 || length == 1)
-                {
-                    return startIndex;
-                }
+            for (int i = 0; i < _convertedKeyframes.Count; i++)
+                if (_convertedKeyframes[i].Cue.CueValue > time)
+                    return i - 1;
 
-                int middle = startIndex + (length / 2);
-
-                if (_convertedKeyframes[middle].Cue.CueValue < time)
-                {
-                    return FindClosestBeforeKeyFrame(middle, length - middle);
-                }
-                else if (_convertedKeyframes[middle].Cue.CueValue > time)
-                {
-                    return FindClosestBeforeKeyFrame(startIndex, middle - startIndex);
-                }
-                else
-                {
-                    return middle;
-                }
-            }
-
-            return FindClosestBeforeKeyFrame(0, _convertedKeyframes.Count);
+            throw new Exception("Index time is out of keyframe time range.");
         }
 
         /// <summary>
@@ -139,13 +120,10 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <summary>
-        /// Interpolates a value given the desired time.
+        /// Interpolates in-between two key values given the desired progress time.
         /// </summary>
         public abstract T Interpolate(double progress, T oldValue, T newValue);
 
-        /// <summary>
-        /// Verifies, converts and sorts keyframe values according to this class's target type.
-        /// </summary>
         private void VerifyConvertKeyFrames()
         {
             foreach (AnimatorKeyFrame keyframe in this)
