@@ -199,7 +199,17 @@ namespace Avalonia.Animation
 
         private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
         {
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) )
+            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
+            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator) ),
+            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator) ),
+            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator) ),
+            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator) ),
+            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator) ),
+            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator) ),
+            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator) ),
+            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator) ),
+            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) ),
+            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
         };
 
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
