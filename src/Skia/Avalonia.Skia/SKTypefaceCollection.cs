@@ -10,7 +10,7 @@ using Avalonia.Media;
 using SkiaSharp;
 
 namespace Avalonia.Skia
-{    
+{
     internal class SKTypefaceCollection
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<FontKey, SKTypeface>> _fontFamilies =
