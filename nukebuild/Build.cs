@@ -138,12 +138,13 @@ partial class Build : NukeBuild
         });
 
     Target RunRenderTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhen(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
             RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", true);
-            RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
         });
     
     Target RunDesignerTests => _ => _
