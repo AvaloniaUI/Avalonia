@@ -281,10 +281,10 @@ namespace Avalonia.Win32
             var f = Scaling;
             var r = new UnmanagedMethods.RECT
             {
-                left = (int)(rect.X * f),
-                top = (int)(rect.Y * f),
-                right = (int)(rect.Right * f),
-                bottom = (int)(rect.Bottom * f),
+                left = (int)Math.Floor(rect.X * f),
+                top = (int)Math.Floor(rect.Y * f),
+                right = (int)Math.Ceiling(rect.Right * f),
+                bottom = (int)Math.Ceiling(rect.Bottom * f),
             };
 
             UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);
