@@ -41,7 +41,7 @@ namespace Avalonia.Skia
                 var nfo = new SKImageInfo(size.Width, size.Height, colorType, SKAlphaType.Premul);
                 var blob = runtimePlatform.AllocBlob(nfo.BytesSize);
 
-                _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, null, s_releaseDelegate, blob);
+                _bitmap.InstallPixels(nfo, blob.Address, nfo.RowBytes, s_releaseDelegate, blob);
             }
             else
             {

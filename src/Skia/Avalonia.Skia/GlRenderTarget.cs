@@ -31,24 +31,18 @@ namespace Avalonia.Skia
             var size = session.Size;
             var scaling = session.Scaling;
 
-            GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc
-            {
-                Width = size.Width,
-                Height = size.Height,
-                SampleCount = disp.SampleCount,
-                StencilBits = disp.StencilSize,
-                Config = GRPixelConfig.Rgba8888,
-                Origin=GRSurfaceOrigin.BottomLeft,
-                RenderTargetHandle = new IntPtr(fb)
-            };
-
-            gl.Viewport(0, 0, desc.Width, desc.Height);
+            gl.Viewport(0, 0, size.Width, size.Height);
             gl.ClearStencil(0);
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            var surface = SKSurface.Create(_grContext, desc);
-
+            GRBackendRenderTarget renderTarget =
+                new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
+                    new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+            var surface = SKSurface.Create(_grContext, renderTarget,
+                GRSurfaceOrigin.BottomLeft,
+                GRPixelConfig.Rgba8888.ToColorType());
+            
             var nfo = new DrawingContextImpl.CreateInfo
             {
                 GrContext = _grContext,
@@ -62,6 +56,7 @@ namespace Avalonia.Skia
             {
                 surface.Canvas.Flush();
                 surface.Dispose();
+                renderTarget.Dispose();
                 session.Dispose();
             }));
         }
