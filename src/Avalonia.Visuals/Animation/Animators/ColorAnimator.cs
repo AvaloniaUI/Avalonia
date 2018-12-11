@@ -32,6 +32,7 @@ namespace Avalonia.Animation.Animators
 
         public override Color Interpolate(double progress, Color oldValue, Color newValue)
         {
+            // normalize sRGB values.
             var oldA = oldValue.A / 255d;
             var oldR = oldValue.R / 255d;
             var oldG = oldValue.G / 255d;

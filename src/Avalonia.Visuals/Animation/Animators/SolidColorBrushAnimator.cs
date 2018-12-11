@@ -27,8 +27,6 @@ namespace Avalonia.Animation.Animators
 
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
-            var ctrl = (Visual)control;
-
             foreach (var keyframe in this)
             {
                 if (keyframe.Value as ISolidColorBrush == null)
