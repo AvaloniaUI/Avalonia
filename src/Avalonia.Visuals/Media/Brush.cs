@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using Avalonia.Animation;
 
 namespace Avalonia.Media
 {
@@ -10,7 +11,7 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : AvaloniaObject, IMutableBrush
+    public abstract class Brush : Animatable, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.

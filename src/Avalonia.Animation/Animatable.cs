@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Animation.Animators; 
 
 namespace Avalonia.Animation
 {
