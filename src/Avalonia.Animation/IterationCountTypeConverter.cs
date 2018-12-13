@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace Avalonia.Animation
 {
-    public class RepeatCountTypeConverter : TypeConverter
+    public class IterationCountTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -16,7 +16,7 @@ namespace Avalonia.Animation
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
-            return RepeatCount.Parse((string)value);
+            return IterationCount.Parse((string)value);
         }
     }
 }
