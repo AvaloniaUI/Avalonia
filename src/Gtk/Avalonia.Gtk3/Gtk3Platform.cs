@@ -50,7 +50,7 @@ namespace Avalonia.Gtk3
         {
             Resolver.Custom = options.CustomResolver;
             UseDeferredRendering = EnvOption("USE_DEFERRED_RENDERING", true, options.UseDeferredRendering);
-            var useGpu = EnvOption("USE_GPU", false, options.UseGpuAcceleration);
+            var useGpu = EnvOption("USE_GPU", true, options.UseGpuAcceleration);
             if (!s_gtkInitialized)
             {
                 try
