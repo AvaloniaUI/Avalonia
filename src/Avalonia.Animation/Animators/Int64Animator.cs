@@ -10,7 +10,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class Int64Animator : Animator<Int64>
     {
-        static double maxVal = (double)Int64.MaxValue;
+        const double maxVal = (double)Int64.MaxValue;
 
         /// <inheritdocs/>
         public override Int64 Interpolate(double progress, Int64 oldValue, Int64 newValue)

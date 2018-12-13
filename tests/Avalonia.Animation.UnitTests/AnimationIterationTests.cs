@@ -18,15 +18,17 @@ namespace Avalonia.Animation.UnitTests
         {
             var keyframe1 = new KeyFrame()
             {
-                Setters = {
+                Setters =
+                {
                     new Setter(Border.WidthProperty, 200d),
                 },
                 Cue = new Cue(1d)
             };
-  
+
             var keyframe2 = new KeyFrame()
             {
-                Setters = {
+                Setters =
+                {
                     new Setter(Border.WidthProperty, 100d),
                 },
                 Cue = new Cue(0d)

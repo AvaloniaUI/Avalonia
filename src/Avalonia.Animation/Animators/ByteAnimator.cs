@@ -10,7 +10,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class ByteAnimator : Animator<byte>
     {
-        static double maxVal = (double)byte.MaxValue;
+        const double maxVal = (double)byte.MaxValue;
 
         /// <inheritdocs/>
         public override byte Interpolate(double progress, byte oldValue, byte newValue)

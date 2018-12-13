@@ -11,7 +11,7 @@ namespace Avalonia.Animation.Animators
         /// <inheritdocs/>
         public override float Interpolate(double progress, float oldValue, float newValue)
         {
-            return ((newValue - oldValue) * (float)progress) + oldValue;
+            return (float)(((newValue - oldValue) * progress) + oldValue);
         }
     }
 }

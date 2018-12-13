@@ -10,7 +10,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class UInt32Animator : Animator<UInt32>
     {
-        static double maxVal = (double)UInt32.MaxValue;
+        const double maxVal = (double)UInt32.MaxValue;
 
         /// <inheritdocs/>
         public override UInt32 Interpolate(double progress, UInt32 oldValue, UInt32 newValue)

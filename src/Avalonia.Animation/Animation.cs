@@ -175,18 +175,18 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Obselete: Do not use this property, use <see cref="IterationCount"/> instead.
+        /// Obsolete: Do not use this property, use <see cref="IterationCount"/> instead.
         /// </summary>
         /// <value></value>
-        [Obsolete]
+        [Obsolete("This property has been superceded by IterationCount.")]
         public string RepeatCount
         {
             get { return IterationCount.ToString(); }
             set
             {
                 var val = value.ToUpper();
-                val = val .Replace("LOOP", "INFINITE");
-                val = val .Replace("NONE", "1");
+                val = val.Replace("LOOP", "INFINITE");
+                val = val.Replace("NONE", "1");
                 IterationCount = IterationCount.Parse(val);
             }
         }

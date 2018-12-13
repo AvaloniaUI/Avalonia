@@ -9,7 +9,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class TransformAnimator : Animator<double>
     {
-        DoubleAnimator childAnimator;
+        DoubleAnimator _doubleAnimator;
 
         /// <inheritdoc/>
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> obsMatch, Action onComplete)
@@ -27,7 +27,7 @@ namespace Avalonia.Animation.Animators
                     // default RenderTransform order.
 
                     normalTransform.Children.Add(new ScaleTransform());
-                    normalTransform.Children.Add(new SkewTransform()); 
+                    normalTransform.Children.Add(new SkewTransform());
                     normalTransform.Children.Add(new RotateTransform());
                     normalTransform.Children.Add(new TranslateTransform());
 
@@ -36,15 +36,22 @@ namespace Avalonia.Animation.Animators
 
                 var renderTransformType = ctrl.RenderTransform.GetType();
 
-                if (childAnimator == null)
+                if (_doubleAnimator == null)
                 {
-                    InitializeChildAnimator();
+                    _doubleAnimator = new DoubleAnimator();
+
+                    foreach (AnimatorKeyFrame keyframe in this)
+                    {
+                        _doubleAnimator.Add(keyframe);
+                    }
+
+                    _doubleAnimator.Property = Property;
                 }
 
                 // It's a transform object so let's target that.
                 if (renderTransformType == Property.OwnerType)
                 {
-                    return childAnimator.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
+                    return _doubleAnimator.Apply(animation, ctrl.RenderTransform, clock ?? control.Clock, obsMatch, onComplete);
                 }
                 // It's a TransformGroup and try finding the target there.
                 else if (renderTransformType == typeof(TransformGroup))
@@ -53,7 +60,7 @@ namespace Avalonia.Animation.Animators
                     {
                         if (transform.GetType() == Property.OwnerType)
                         {
-                            return childAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
+                            return _doubleAnimator.Apply(animation, transform, clock ?? control.Clock, obsMatch, onComplete);
                         }
                     }
                 }
@@ -75,17 +82,5 @@ namespace Avalonia.Animation.Animators
 
         /// <inheritdocs/> 
         public override double Interpolate(double p, double o, double n) => 0;
-
-        void InitializeChildAnimator()
-        {
-            childAnimator = new DoubleAnimator();
-
-            foreach (AnimatorKeyFrame keyframe in this)
-            {
-                childAnimator.Add(keyframe);
-            }
-
-            childAnimator.Property = Property;
-        }
     }
 }
