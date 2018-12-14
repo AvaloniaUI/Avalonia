@@ -1,5 +1,5 @@
 <Project>
   <PropertyGroup>
-      <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)artifacts/nuget</PackageOutputPath>
+      <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)build-intermediate/nuget</PackageOutputPath>
   </PropertyGroup>
 </Project>

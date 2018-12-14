@@ -1,7 +1,9 @@
-<Application xmlns="https://github.com/avaloniaui">
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.App">
   <Application.Styles>
-    <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
-    <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
+      <StyleInclude Source="avares://Avalonia.Themes.Default/DefaultTheme.xaml"/>
+      <StyleInclude Source="avares://Avalonia.Themes.Default/Accents/BaseLight.xaml"/>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}"/>
       <Setter Property="FontWeight" Value="Medium"/>
@@ -12,6 +14,6 @@
     <Style Selector="TextBlock.h3">
       <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}"/>
     </Style>
-    <StyleInclude Source="resm:ControlCatalog.SideBar.xaml"/>
+    <StyleInclude Source="/SideBar.xaml"/>
   </Application.Styles>
 </Application>

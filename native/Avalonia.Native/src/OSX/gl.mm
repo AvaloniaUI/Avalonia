@@ -208,9 +208,8 @@ public:
     
     virtual ~AvnGlRenderingSession()
     {
-        glFlush();
         [_context flushBuffer];
-        [_context setView:nil];
+        [NSOpenGLContext clearCurrentContext];
         CGLUnlockContext([_context CGLContextObj]);
         [_view unlockFocus];
     }
@@ -241,9 +240,8 @@ public:
         auto gl = _context;
         CGLLockContext([_context CGLContextObj]);
         [gl setView: _view];
+        [gl update];
         [gl makeCurrentContext];
-        auto frame = [_view frame];
-        
         *ret = new AvnGlRenderingSession(_window, _view, gl);
         return S_OK;
     }

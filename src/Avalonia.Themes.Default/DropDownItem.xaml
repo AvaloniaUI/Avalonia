@@ -18,7 +18,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-
+    
   <Style Selector="DropDownItem:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
   </Style>
