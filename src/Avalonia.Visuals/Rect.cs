@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -12,6 +13,11 @@ namespace Avalonia
     /// </summary>
     public readonly struct Rect
     {
+        static Rect()
+        {
+            Animation.Animation.RegisterAnimator<RectAnimator>(prop => typeof(Rect).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// An empty rectangle.
         /// </summary>

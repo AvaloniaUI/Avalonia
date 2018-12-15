@@ -46,6 +46,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
+            outputPath = outputPath.Replace('\\', Path.DirectorySeparatorChar);
             var testPath = GetTestsDirectory();
             var testFiles = Path.Combine(testPath, "TestFiles");
 #if AVALONIA_SKIA
