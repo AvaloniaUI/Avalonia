@@ -137,7 +137,7 @@ namespace Avalonia.Skia
         {
             var colorType = PixelFormatHelper.ResolveColorType(format);
 
-            return new SKImageInfo(width, height, colorType, SKAlphaType.Premul);
+            return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), colorType, SKAlphaType.Premul);
         }
 
         /// <summary>
