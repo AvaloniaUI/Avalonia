@@ -396,7 +396,7 @@ namespace Avalonia.Rendering.SceneGraph
                 }
             }
         }
-
+        
         // HACK: Disabled layers because they're broken in current renderer. See #2244.
         private static bool ShouldStartLayer(IVisual visual) => false;
 

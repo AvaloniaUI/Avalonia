@@ -113,5 +113,11 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="context">The context.</param>
         void Render(DrawingContext context);
+            
+            
+        /// <summary>
+        /// Allows to explicitly force a rendering layer for a particular visual. Use with caution.
+        /// </summary>
+        bool WantsLayer { get; } 
     }
 }
