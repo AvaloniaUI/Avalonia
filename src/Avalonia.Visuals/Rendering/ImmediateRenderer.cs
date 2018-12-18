@@ -64,7 +64,9 @@ namespace Avalonia.Rendering
 
                     using (context.PushTransformContainer())
                     {
-                        _lastRenderPassInfo = Render(context, _root, _root.Bounds, scaling);
+                        var info = new RenderPassInfo();
+                        Render(context, _root, _root.Bounds, scaling, info);
+                        _lastRenderPassInfo = info;
                     }
 
                     if (DrawDirtyRects)
@@ -251,23 +253,18 @@ namespace Avalonia.Rendering
             }
         }
 
-        struct RenderPassInfo
+        class RenderPassInfo
         {
-            public bool HasRenderTimeCriticalVisuals { get; set; }
-            public static RenderPassInfo operator + (RenderPassInfo left, RenderPassInfo right)
-            {
-                var rv = left;
-                rv.HasRenderTimeCriticalVisuals |= right.HasRenderTimeCriticalVisuals;
-                return rv;
-            }
+            public List<IRenderTimeCriticalVisual> RenderTimeCriticalVisuals { get; } =
+                new List<IRenderTimeCriticalVisual>();
         }
         
-        private RenderPassInfo Render(DrawingContext context, IVisual visual, Rect clipRect, double scaling)
+        private void Render(DrawingContext context, IVisual visual, Rect clipRect,
+            double scaling, RenderPassInfo info = null)
         {
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
-            var info = new RenderPassInfo();
 
             if (visual.IsVisible && opacity > 0)
             {
@@ -306,7 +303,7 @@ namespace Avalonia.Rendering
                     if (visual is IRenderTimeCriticalVisual critical)
                     {
                         critical.ThreadSafeRender(context, bounds.Size, scaling);
-                        info.HasRenderTimeCriticalVisuals = true;
+                        info?.RenderTimeCriticalVisuals.Add(critical);
                     }
                     visual.Render(context);
 
@@ -324,7 +321,7 @@ namespace Avalonia.Rendering
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
                             var childClipRect = clipRect.Translate(-childBounds.Position);
-                            info += Render(context, child, childClipRect, scaling);
+                            Render(context, child, childClipRect, scaling, info);
                         }
                         else
                         {
@@ -338,11 +335,9 @@ namespace Avalonia.Rendering
             {
                 ClearTransformedBounds(visual);
             }
-
-            return info;
         }
 
-        public bool NeedsUpdate => _lastRenderPassInfo.HasRenderTimeCriticalVisuals;
+        public bool NeedsUpdate => _lastRenderPassInfo?.RenderTimeCriticalVisuals.Any(v => v.HasNewFrame) == true;
         public void Update(TimeSpan time) => _root.InvalidateVisual();
         public void Render()
         {
