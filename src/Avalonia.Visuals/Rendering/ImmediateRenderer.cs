@@ -18,21 +18,26 @@ namespace Avalonia.Rendering
     /// The immediate renderer supports only clip-bound-based hit testing; a control's geometry is
     /// not taken into account.
     /// </remarks>
-    public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer
+    public class ImmediateRenderer : RendererBase, IRenderer, IVisualBrushRenderer,
+        IRenderLoopTask
     {
         private readonly IVisual _root;
+        private readonly IRenderLoop _loop;
         private readonly IRenderRoot _renderRoot;
         private IRenderTarget _renderTarget;
+        private RenderPassInfo _lastRenderPassInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
         /// </summary>
         /// <param name="root">The control to render.</param>
-        public ImmediateRenderer(IVisual root)
+        /// <param name="loop">Render loop</param>
+        public ImmediateRenderer(IVisual root, IRenderLoop loop = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
             _root = root;
+            _loop = loop;
             _renderRoot = root as IRenderRoot;
         }
 
@@ -50,6 +55,7 @@ namespace Avalonia.Rendering
                 _renderTarget = ((IRenderRoot)_root).CreateRenderTarget();
             }
 
+            var scaling = (_root as IRenderRoot)?.RenderScaling ?? 1;
             try
             {
                 using (var context = new DrawingContext(_renderTarget.CreateDrawingContext(this)))
@@ -58,7 +64,7 @@ namespace Avalonia.Rendering
 
                     using (context.PushTransformContainer())
                     {
-                        Render(context, _root, _root.Bounds);
+                        _lastRenderPassInfo = Render(context, _root, _root.Bounds, scaling);
                     }
 
                     if (DrawDirtyRects)
@@ -95,10 +101,10 @@ namespace Avalonia.Rendering
         /// <param name="target">The render target.</param>
         public static void Render(IVisual visual, IRenderTarget target)
         {
-            using (var renderer = new ImmediateRenderer(visual))
+            using (var renderer = new ImmediateRenderer(visual, null))
             using (var context = new DrawingContext(target.CreateDrawingContext(renderer)))
             {
-                renderer.Render(context, visual, visual.Bounds);
+                renderer.Render(context, visual, visual.Bounds, 1);
             }
         }
 
@@ -107,11 +113,11 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <param name="context">The drawing context.</param>
-        public static void Render(IVisual visual, DrawingContext context)
+        public static void Render(IVisual visual, DrawingContext context, double scaling = 1)
         {
-            using (var renderer = new ImmediateRenderer(visual))
+            using (var renderer = new ImmediateRenderer(visual, null))
             {
-                renderer.Render(context, visual, visual.Bounds);
+                renderer.Render(context, visual, visual.Bounds, scaling);
             }
         }
 
@@ -161,11 +167,13 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void Start()
         {
+            _loop?.Add(this);
         }
 
         /// <inheritdoc/>
         public void Stop()
         {
+            _loop?.Remove(this);
         }
 
         /// <inheritdoc/>
@@ -179,7 +187,7 @@ namespace Avalonia.Rendering
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
             var visual = brush.Visual;
-            Render(new DrawingContext(context), visual, visual.Bounds);
+            Render(new DrawingContext(context), visual, visual.Bounds, 1);
         }
 
         private static void ClearTransformedBounds(IVisual visual)
@@ -243,11 +251,23 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void Render(DrawingContext context, IVisual visual, Rect clipRect)
+        struct RenderPassInfo
+        {
+            public bool HasRenderTimeCriticalVisuals { get; set; }
+            public static RenderPassInfo operator + (RenderPassInfo left, RenderPassInfo right)
+            {
+                var rv = left;
+                rv.HasRenderTimeCriticalVisuals |= right.HasRenderTimeCriticalVisuals;
+                return rv;
+            }
+        }
+        
+        private RenderPassInfo Render(DrawingContext context, IVisual visual, Rect clipRect, double scaling)
         {
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
+            var info = new RenderPassInfo();
 
             if (visual.IsVisible && opacity > 0)
             {
@@ -283,6 +303,11 @@ namespace Avalonia.Rendering
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
                 {
+                    if (visual is IRenderTimeCriticalVisual critical)
+                    {
+                        critical.ThreadSafeRender(context, bounds.Size, scaling);
+                        info.HasRenderTimeCriticalVisuals = true;
+                    }
                     visual.Render(context);
 
 #pragma warning disable 0618
@@ -299,7 +324,7 @@ namespace Avalonia.Rendering
                         if (!child.ClipToBounds || clipRect.Intersects(childBounds))
                         {
                             var childClipRect = clipRect.Translate(-childBounds.Position);
-                            Render(context, child, childClipRect);
+                            info += Render(context, child, childClipRect, scaling);
                         }
                         else
                         {
@@ -313,6 +338,14 @@ namespace Avalonia.Rendering
             {
                 ClearTransformedBounds(visual);
             }
+
+            return info;
+        }
+
+        public bool NeedsUpdate => _lastRenderPassInfo.HasRenderTimeCriticalVisuals;
+        public void Update(TimeSpan time) => _root.InvalidateVisual();
+        public void Render()
+        {
         }
     }
 }

@@ -148,7 +148,9 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return Win32Platform.UseDeferredRendering ? (IRenderer)new DeferredRenderer(root, loop) : new ImmediateRenderer(root);
+            return Win32Platform.UseDeferredRendering
+                ? (IRenderer)new DeferredRenderer(root, loop)
+                : new ImmediateRenderer(root, loop);
         }
 
         public void Resize(Size value)

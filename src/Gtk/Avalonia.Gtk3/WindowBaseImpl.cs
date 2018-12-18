@@ -509,7 +509,7 @@ namespace Avalonia.Gtk3
             var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
             return Gtk3Platform.UseDeferredRendering
                 ? (IRenderer) new DeferredRenderer(root, loop)
-                : new ImmediateRenderer(root);
+                : new ImmediateRenderer(root, loop);
         }
 
         PixelSize EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Size

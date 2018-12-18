@@ -240,11 +240,12 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
             if (_deferredRendering)
-                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
+                return new DeferredRenderer(root, loop,
                     rendererLock:
                     _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
-            return new ImmediateRenderer(root);
+            return new ImmediateRenderer(root, loop);
         }
 
         public virtual void Dispose()
