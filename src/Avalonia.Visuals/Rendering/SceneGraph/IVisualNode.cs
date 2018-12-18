@@ -43,6 +43,11 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the layout bounds for the node in global coordinates.
         /// </summary>
         Rect LayoutBounds { get; }
+        
+        /// <summary>
+        /// Gets the original visual size before transformations
+        /// </summary>
+        Size VisualSize { get; }
 
         /// <summary>
         /// Whether the node is clipped to <see cref="ClipBounds"/>.

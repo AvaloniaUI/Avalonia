@@ -181,6 +181,7 @@ namespace Avalonia.Rendering.SceneGraph
                     node.ClipBounds = clipBounds;
                     node.ClipToBounds = clipToBounds;
                     node.LayoutBounds = globalBounds;
+                    node.VisualSize = visual.Bounds.Size;
                     node.GeometryClip = visual.Clip?.PlatformImpl;
                     node.Opacity = opacity;
 

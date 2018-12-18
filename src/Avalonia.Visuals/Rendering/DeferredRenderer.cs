@@ -326,11 +326,8 @@ namespace Avalonia.Rendering
             using (var fullCtx = new DrawingContext(context, false))
             using (fullCtx.PushPostTransform(node.Transform))
             using (fullCtx.PushTransformContainer())
-                critical.ThreadSafeRender(fullCtx, node.Bounds.Size, scaling);
+                critical.ThreadSafeRender(fullCtx, node.VisualSize, scaling);
             context.Transform = savedTransform;
-
-            //critical.ThreadSafeRender()
-
         }
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
