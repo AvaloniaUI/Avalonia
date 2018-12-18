@@ -60,6 +60,9 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public Rect LayoutBounds { get; set; }
+        
+        /// <inheritdoc/>
+        public Size VisualSize { get; set; }
 
         /// <inheritdoc/>
         public bool ClipToBounds { get; set; }
@@ -268,6 +271,7 @@ namespace Avalonia.Rendering.SceneGraph
                 ClipToBoundsRadius =  ClipToBoundsRadius,
                 ClipToBounds = ClipToBounds,
                 LayoutBounds = LayoutBounds,
+                VisualSize = VisualSize,
                 GeometryClip = GeometryClip,
                 _opacity = Opacity,
                 OpacityMask = OpacityMask,
