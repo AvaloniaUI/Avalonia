@@ -207,7 +207,7 @@ namespace Avalonia.Rendering
         internal void UnitTestUpdateScene() => UpdateScene();
 
         internal void UnitTestRender() => Render(false);
-
+       
         private void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
@@ -272,7 +272,7 @@ namespace Avalonia.Rendering
                     var context = contextFactory();
                     Layers.Update(scene, context);
 
-                    RenderToLayers(scene);
+                    RenderToLayers(scene, false);
 
                     if (DebugFramesPath != null)
                     {
@@ -297,13 +297,41 @@ namespace Avalonia.Rendering
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
                 }
-                
-                // Just return scene, layers weren't updated
+
+                var hasCriticalRenderTimeVisualUpdates = Layers.Any(l =>
+                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.HasNewFrame);
+                if (hasCriticalRenderTimeVisualUpdates)
+                {
+                    Layers.Update(scene, contextFactory());
+                    // Render only layers with critical-time visual roots
+                    RenderToLayers(scene, true);
+                    if (DebugFramesPath != null)
+                    {
+                        SaveDebugFrames(scene.Generation);
+                    }
+                    // Indicate that we have updated the layers
+                    return (sceneRef.Clone(), true);
+                }
+
                 return (sceneRef.Clone(), false);
             }
             
         }
 
+
+        private void RenderTimeCriticalVisual(IDrawingContextImpl context,  VisualNode node,
+            IRenderTimeCriticalVisual critical, double scaling)
+        {
+            var savedTransform = context.Transform;
+            using (var fullCtx = new DrawingContext(context, false))
+            using (fullCtx.PushPostTransform(node.Transform))
+            using (fullCtx.PushTransformContainer())
+                critical.ThreadSafeRender(fullCtx, node.Bounds.Size, scaling);
+            context.Transform = savedTransform;
+
+            //critical.ThreadSafeRender()
+
+        }
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
@@ -334,30 +362,47 @@ namespace Avalonia.Rendering
             }
         }
 
-        private void RenderToLayers(Scene scene)
+        private void RenderToLayers(Scene scene,  bool criticalTimeRenderOnly)
         {
+            var hasUpdates = false;
             if (scene.Layers.HasDirty)
             {
                 foreach (var layer in scene.Layers)
                 {
-                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
+                    var renderLayer = Layers[layer.LayerRoot];
+                    var renderTarget = renderLayer.Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
-
+                    var critical = node.Visual as IRenderTimeCriticalVisual;
+                    if (criticalTimeRenderOnly && critical?.HasNewFrame != true)
+                        continue;
+                    
                     if (node != null)
                     {
                         using (var context = renderTarget.Item.CreateDrawingContext(this))
                         {
-                            foreach (var rect in layer.Dirty)
+                            if (critical != null)
                             {
                                 context.Transform = Matrix.Identity;
-                                context.PushClip(rect);
                                 context.Clear(Colors.Transparent);
-                                Render(context, node, layer.LayerRoot, rect);
-                                context.PopClip();
-
+                                RenderTimeCriticalVisual(context, node, critical, scene.Scaling);
+                                Render(context, node, layer.LayerRoot, node.Bounds);
                                 if (DrawDirtyRects)
+                                    _dirtyRectsDisplay.Add(node.Bounds);
+                            }
+                            else
+                            {
+                                foreach (var rect in layer.Dirty)
                                 {
-                                    _dirtyRectsDisplay.Add(rect);
+                                    context.Transform = Matrix.Identity;
+                                    context.PushClip(rect);
+                                    context.Clear(Colors.Transparent);
+                                    Render(context, node, layer.LayerRoot, rect);
+                                    context.PopClip();
+
+                                    if (DrawDirtyRects)
+                                    {
+                                        _dirtyRectsDisplay.Add(rect);
+                                    }
                                 }
                             }
                         }

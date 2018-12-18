@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj"/>
+    <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />

@@ -37,6 +37,7 @@
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>
+      <TabItem Header="Time critical render"><pages:TimeCriticalRenderPage/></TabItem>
     </TabControl>
   </Grid>
 </UserControl>
