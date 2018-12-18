@@ -127,5 +127,10 @@ namespace Avalonia.VisualTree
         /// common ancestor.
         /// </returns>
         Matrix? TransformToVisual(IVisual visual);
+        
+        /// <summary>
+        /// Allows to explicitly force a rendering layer for a particular visual. Use with caution.
+        /// </summary>
+        bool WantsLayer { get; }
     }
 }
