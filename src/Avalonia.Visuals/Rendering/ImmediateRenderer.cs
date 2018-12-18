@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
@@ -46,9 +48,6 @@ namespace Avalonia.Rendering
         public bool DrawDirtyRects { get; set; }
 
         /// <inheritdoc/>
-        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
-
-        /// <inheritdoc/>
         public void Paint(Rect rect)
         {
             if (_renderTarget == null)
@@ -65,7 +64,9 @@ namespace Avalonia.Rendering
 
                     using (context.PushTransformContainer())
                     {
-                        _lastRenderPassInfo = Render(context, _root, _root.Bounds, scaling);
+                        var info = new RenderPassInfo();
+                        Render(context, _root, _root.Bounds, scaling, info);
+                        _lastRenderPassInfo = info;
                     }
 
                     if (DrawDirtyRects)
@@ -84,12 +85,10 @@ namespace Avalonia.Rendering
             }
             catch (RenderTargetCorruptedException ex)
             {
-                Logger.TryGet(LogEventLevel.Information, LogArea.Animations)?.Log(this, "Render target was corrupted. Exception: {0}", ex);
+                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }
-
-            SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
         }
 
         /// <inheritdoc/>
@@ -166,14 +165,6 @@ namespace Avalonia.Rendering
         {
             return HitTest(root, p, filter);
         }
-
-        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter)
-        {
-            return HitTest(root, p, filter).FirstOrDefault();
-        }
-
-        /// <inheritdoc/>
-        public void RecalculateChildren(IVisual visual) => AddDirty(visual);
 
         /// <inheritdoc/>
         public void Start()
@@ -262,23 +253,18 @@ namespace Avalonia.Rendering
             }
         }
 
-        struct RenderPassInfo
+        class RenderPassInfo
         {
-            public bool HasRenderTimeCriticalVisuals { get; set; }
-            public static RenderPassInfo operator + (RenderPassInfo left, RenderPassInfo right)
-            {
-                var rv = left;
-                rv.HasRenderTimeCriticalVisuals |= right.HasRenderTimeCriticalVisuals;
-                return rv;
-            }
+            public List<IRenderTimeCriticalVisual> RenderTimeCriticalVisuals { get; } =
+                new List<IRenderTimeCriticalVisual>();
         }
         
-        private RenderPassInfo Render(DrawingContext context, IVisual visual, Rect clipRect, double scaling)
+        private void Render(DrawingContext context, IVisual visual, Rect clipRect,
+            double scaling, RenderPassInfo info = null)
         {
             var opacity = visual.Opacity;
             var clipToBounds = visual.ClipToBounds;
             var bounds = new Rect(visual.Bounds.Size);
-            var info = new RenderPassInfo();
 
             if (visual.IsVisible && opacity > 0)
             {
@@ -309,11 +295,7 @@ namespace Avalonia.Rendering
 
                 using (context.PushPostTransform(m))
                 using (context.PushOpacity(opacity))
-                using (clipToBounds 
-                    ? visual is IVisualWithRoundRectClip roundClipVisual 
-                        ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
-                        : context.PushClip(bounds) 
-                    : default(DrawingContext.PushedState))
+                using (clipToBounds ? context.PushClip(bounds) : default(DrawingContext.PushedState))
                 using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
@@ -321,7 +303,7 @@ namespace Avalonia.Rendering
                     if (visual is IRenderTimeCriticalVisual critical)
                     {
                         critical.ThreadSafeRender(context, bounds.Size, scaling);
-                        info.HasRenderTimeCriticalVisuals = true;
+                        info?.RenderTimeCriticalVisuals.Add(critical);
                     }
                     visual.Render(context);
 
@@ -341,7 +323,7 @@ namespace Avalonia.Rendering
                             var childClipRect = child.RenderTransform == null
                                 ? clipRect.Translate(-childBounds.Position)
                                 : clipRect;
-                            Render(context, child, childClipRect);
+                            Render(context, child, childClipRect, scaling, info);
                         }
                         else
                         {
@@ -355,11 +337,9 @@ namespace Avalonia.Rendering
             {
                 ClearTransformedBounds(visual);
             }
-
-            return info;
         }
 
-        public bool NeedsUpdate => _lastRenderPassInfo.HasRenderTimeCriticalVisuals;
+        public bool NeedsUpdate => _lastRenderPassInfo?.RenderTimeCriticalVisuals.Any(v => v.HasNewFrame) == true;
         public void Update(TimeSpan time) => _root.InvalidateVisual();
         public void Render()
         {
