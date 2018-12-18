@@ -62,6 +62,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var renderTarget = visual.As<IRenderTarget>();
 
             renderRoot.Setup(r => r.CreateRenderTarget()).Returns(renderTarget.Object);
+            renderRoot.SetupGet(r => r.RenderScaling).Returns(1);
             renderTarget.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>())).Returns(Mock.Of<IDrawingContextImpl>());
 
             visual.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(0, 0, 400, 400));
