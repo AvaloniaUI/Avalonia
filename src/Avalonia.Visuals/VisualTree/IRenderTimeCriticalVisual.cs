@@ -4,7 +4,8 @@ namespace Avalonia.VisualTree
 {
     public interface IRenderTimeCriticalVisual
     {
-        bool HasNewFrame { get; }
+        bool HasRenderTimeCriticalContent { get; }
+        bool ThreadSafeHasNewFrame { get; }
         void ThreadSafeRender(DrawingContext context, Size logicalSize, double scaling);
     }
 }

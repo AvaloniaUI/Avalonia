@@ -389,7 +389,7 @@ namespace Avalonia.Rendering
                 }
  
                 var hasCriticalRenderTimeVisualUpdates = Layers.Any(l =>
-                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.HasNewFrame);
+                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.ThreadSafeHasNewFrame);
                 if (hasCriticalRenderTimeVisualUpdates)
                 {
                     Layers.Update(scene, contextFactory());
@@ -471,6 +471,8 @@ namespace Avalonia.Rendering
                 if (node != null)
                 {
                     using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        if (criticalTimeRenderOnly && critical?.ThreadSafeHasNewFrame != true)
+                            continue; 
                     {
                         if (renderLayer.IsEmpty)
                         { 

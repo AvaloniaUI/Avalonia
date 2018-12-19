@@ -396,11 +396,10 @@ namespace Avalonia.Rendering.SceneGraph
                     PropagateLayer(child, layer, oldLayer);
                 }
             }
-        } 
-        
+            
         // HACK: Disabled layers because they're broken in current renderer. See #2244.
-        private static bool ShouldStartLayer(IVisual visual) => false;
-
+        private static bool ShouldStartLayer(IVisual visual) => false; 
+        
         private static IGeometryImpl CreateLayerGeometryClip(VisualNode node)
         {
             IGeometryImpl result = null;
