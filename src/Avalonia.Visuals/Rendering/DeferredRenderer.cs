@@ -231,6 +231,8 @@ namespace Avalonia.Rendering
                         }
 
                         var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
+                        if (scene == null)
+                            return;
                         using (scene)
                         {
                             var overlay = DrawDirtyRects || DrawFps;
