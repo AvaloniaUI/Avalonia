@@ -301,7 +301,7 @@ namespace Avalonia.Rendering
                 }
 
                 var hasCriticalRenderTimeVisualUpdates = Layers.Any(l =>
-                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.HasNewFrame);
+                    l.LayerRoot is IRenderTimeCriticalVisual critical && critical.ThreadSafeHasNewFrame);
                 if (hasCriticalRenderTimeVisualUpdates)
                 {
                     Layers.Update(scene, contextFactory());
@@ -372,7 +372,7 @@ namespace Avalonia.Rendering
                     var renderTarget = renderLayer.Bitmap;
                     var node = (VisualNode)scene.FindNode(layer.LayerRoot);
                     var critical = node.Visual as IRenderTimeCriticalVisual;
-                    if (criticalTimeRenderOnly && critical?.HasNewFrame != true)
+                    if (criticalTimeRenderOnly && critical?.ThreadSafeHasNewFrame != true)
                         continue;
                     
                     if (node != null)

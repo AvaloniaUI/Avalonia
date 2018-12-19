@@ -15,7 +15,8 @@ namespace ControlCatalog.Pages
         private TimeSpan _lastFps;
         private int _lastFpsFrame;
         private double _fps;
-        public bool HasNewFrame => true;
+        public bool HasRenderTimeCriticalContent => true;
+        public bool ThreadSafeHasNewFrame => true;
         Stopwatch _st = Stopwatch.StartNew();
 
         private Typeface _typeface = Typeface.Default;

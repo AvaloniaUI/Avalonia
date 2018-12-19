@@ -368,7 +368,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         private static bool ShouldStartLayer(IVisual visual)
         {
-            if (visual is IRenderTimeCriticalVisual)
+            if (visual is IRenderTimeCriticalVisual critical && critical.HasRenderTimeCriticalContent)
                 return true;
             if (visual.WantsLayer)
                 return true;

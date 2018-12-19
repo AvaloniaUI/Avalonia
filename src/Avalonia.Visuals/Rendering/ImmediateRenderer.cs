@@ -300,7 +300,7 @@ namespace Avalonia.Rendering
                 using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
                 using (context.PushTransformContainer())
                 {
-                    if (visual is IRenderTimeCriticalVisual critical)
+                    if (visual is IRenderTimeCriticalVisual critical && critical.HasRenderTimeCriticalContent)
                     {
                         critical.ThreadSafeRender(context, bounds.Size, scaling);
                         info?.RenderTimeCriticalVisuals.Add(critical);
@@ -337,7 +337,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        public bool NeedsUpdate => _lastRenderPassInfo?.RenderTimeCriticalVisuals.Any(v => v.HasNewFrame) == true;
+        public bool NeedsUpdate => _lastRenderPassInfo?.RenderTimeCriticalVisuals.Any(v => v.ThreadSafeHasNewFrame) == true;
         public void Update(TimeSpan time) => _root.InvalidateVisual();
         public void Render()
         {
