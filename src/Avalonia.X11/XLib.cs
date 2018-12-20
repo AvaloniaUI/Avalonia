@@ -203,7 +203,7 @@ namespace Avalonia.X11
         public static extern int XAllocColor(IntPtr display, IntPtr Colormap, ref XColor colorcell_def);
 
         [DllImport(libX11)]
-        public static extern int XSetTransientForHint(IntPtr display, IntPtr window, IntPtr prop_window);
+        public static extern int XSetTransientForHint(IntPtr display, IntPtr window, IntPtr parent);
 
         [DllImport(libX11)]
         public static extern int XChangeProperty(IntPtr display, IntPtr window, IntPtr property, IntPtr type,

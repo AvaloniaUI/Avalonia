@@ -32,6 +32,8 @@ namespace Avalonia.X11
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private bool _mapped;
+        private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
+        private X11Window _transientParent;
 
         class InputEventContainer
         {
@@ -218,7 +220,11 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.Expose)
                 DoPaint();
             else if (ev.type == XEventName.FocusIn)
+            {
+                if (ActivateTransientChildIfNeeded())
+                    return;
                 Activated?.Invoke();
+            }
             else if (ev.type == XEventName.FocusOut)
                 Deactivated?.Invoke();
             else if (ev.type == XEventName.MotionNotify)
@@ -229,6 +235,8 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.ButtonPress)
             {
+                if (ActivateTransientChildIfNeeded())
+                    return;
                 if (ev.ButtonEvent.button < 4)
                     MouseEvent(ev.ButtonEvent.button == 1 ? RawMouseEventType.LeftButtonDown
                         : ev.ButtonEvent.button == 2 ? RawMouseEventType.MiddleButtonDown
@@ -299,6 +307,8 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.KeyPress || ev.type == XEventName.KeyRelease)
             {
+                if (ActivateTransientChildIfNeeded())
+                    return;
                 var buffer = stackalloc byte[40];
 
                 var latinKeysym = XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, 0);
@@ -485,6 +495,7 @@ namespace Avalonia.X11
 
         void Cleanup()
         {
+            SetTransientParent(null, false);
             if (_xic != IntPtr.Zero)
             {
                 XDestroyIC(_xic);
@@ -505,9 +516,33 @@ namespace Avalonia.X11
                 _renderHandle = IntPtr.Zero;
             }
         }
+
+        bool ActivateTransientChildIfNeeded()
+        {
+            if (_transientChildren.Count == 0)
+                return false;
+            var child = _transientChildren.First();
+            if (!child.ActivateTransientChildIfNeeded())
+                child.Activate();
+            return true;
+        }
         
-        
+        void SetTransientParent(X11Window window, bool informServer = true)
+        {
+            _transientParent?._transientChildren.Remove(this);
+            _transientParent = window;
+            _transientParent?._transientChildren.Add(this);
+            if (informServer)
+                XSetTransientForHint(_x11.Display, _handle, _transientParent?._handle ?? IntPtr.Zero);
+        }
+
         public void Show()
+        {
+            SetTransientParent(null);
+            ShowCore();
+        }
+        
+        void ShowCore()
         {
             XMapWindow(_x11.Display, _handle);
             XFlush(_x11.Display);
@@ -690,10 +725,10 @@ namespace Avalonia.X11
                 (IntPtr)(value ? 1 : 0), _x11.Atoms._NET_WM_STATE_ABOVE, IntPtr.Zero);
         }
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl parent)
         {
-            // TODO
-            return Disposable.Empty;
+            SetTransientParent((X11Window)parent);
+            ShowCore();
         }
 
         public void SetIcon(IWindowIconImpl icon)
