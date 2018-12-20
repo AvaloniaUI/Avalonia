@@ -1,0 +1,6 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="Tmds.DBus" Version="0.7.0" />
+    <DotNetCliToolReference Include="Tmds.DBus.Tool" Version="0.7.0" />
+  </ItemGroup>
+</Project>
