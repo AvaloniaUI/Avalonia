@@ -399,7 +399,7 @@ private:
     bool _canResize = true;
     bool _hasDecorations = true;
     CGRect _lastUndecoratedFrame;
-    AvnWindowState _lastWindowState;
+    AvnWindowState _lastWindowState = Normal;
     
     FORWARD_IUNKNOWN()
     BEGIN_INTERFACE_MAP()
@@ -425,7 +425,7 @@ private:
                 [[Window parentWindow] removeChildWindow:Window];
             WindowBaseImpl::Show();
             
-            return SetWindowState(Normal);
+            return SetWindowState(_lastWindowState);
         }
     }
     
