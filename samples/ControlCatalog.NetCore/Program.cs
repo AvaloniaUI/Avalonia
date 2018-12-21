@@ -57,6 +57,7 @@ namespace ControlCatalog.NetCore
             };
             async void InitializeMenu()
             {
+                DBusHelper.TryInitialize();
                 var exporter = new DBusExportedMenu(list);
                 await exporter.RegisterAsync(w.PlatformImpl.Handle.Handle.ToInt32());
             }

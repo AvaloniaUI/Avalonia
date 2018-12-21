@@ -12,9 +12,7 @@ namespace Avalonia.FreeDesktop
 {
     public class DBusExportedMenu : IDBusObject, IDisposable, IDBusMenu
     {
-        private static readonly IRegistrar s_registar = Connection.Session.CreateProxy<IRegistrar>(
-            "com.canonical.AppMenu.Registrar",
-            "/com/canonical/AppMenu/Registrar");
+        private IRegistrar _registar;
         private readonly AvaloniaList<SimpleMenuItem> _items;
         private int? _xid;
         public ObjectPath ObjectPath { get; }
@@ -22,6 +20,9 @@ namespace Avalonia.FreeDesktop
         public DBusExportedMenu(AvaloniaList<SimpleMenuItem> items)
         {
             _items = items;
+            _registar = DBusHelper.Connection.CreateProxy<IRegistrar>(
+                "com.canonical.AppMenu.Registrar",
+                "/com/canonical/AppMenu/Registrar");
             ObjectPath = new ObjectPath("/net/avaloniaui/dbusmenu/"
                                         + Guid.NewGuid().ToString().Replace("-", ""));
         }
@@ -31,13 +32,13 @@ namespace Avalonia.FreeDesktop
             _xid = xid;
             await DBusHelper.Connection.RegisterObjectAsync(this);
             if (xid.HasValue)
-                await s_registar.RegisterWindowAsync((uint)xid.Value, ObjectPath);
+                await _registar.RegisterWindowAsync((uint)xid.Value, ObjectPath);
         }
         
         public async void Dispose()
         {
             if (_xid.HasValue)
-                await s_registar.UnregisterWindowAsync((uint)_xid.Value);
+                await _registar.UnregisterWindowAsync((uint)_xid.Value);
             DBusHelper.Connection.UnregisterObject(this);
         }
 
@@ -84,19 +85,19 @@ namespace Avalonia.FreeDesktop
         }
 
 
-        Task<object> IDBusMenu.GetAsync(string prop)
+        Task<object> IFreeDesktopDBusProperties.GetAsync(string prop)
         {
             Console.WriteLine();
             throw new NotImplementedException();
         }
 
-        Task<DBusMenuProperties> IDBusMenu.GetAllAsync()
+        Task<DBusMenuProperties> IFreeDesktopDBusProperties.GetAllAsync()
         {
             Console.WriteLine();
             throw new NotImplementedException();
         }
 
-        Task IDBusMenu.SetAsync(string prop, object val)
+        Task IFreeDesktopDBusProperties.SetAsync(string prop, object val)
         {
             Console.WriteLine();
             throw new NotImplementedException();
@@ -127,7 +128,7 @@ namespace Avalonia.FreeDesktop
             return Disposable.Create(() => ItemActivationRequested -= handler);
         }
 
-        async Task<IDisposable> IDBusMenu.WatchPropertiesAsync(Action<PropertyChanges> handler)
+        async Task<IDisposable> IFreeDesktopDBusProperties.WatchPropertiesAsync(Action<PropertyChanges> handler)
         {
             PropertiesChanged += handler;
             return Disposable.Create(() => PropertiesChanged -= handler);

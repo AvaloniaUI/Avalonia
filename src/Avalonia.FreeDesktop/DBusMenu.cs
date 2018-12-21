@@ -7,8 +7,18 @@ using Tmds.DBus;
 [assembly: InternalsVisibleTo(Tmds.DBus.Connection.DynamicAssemblyName)]
 namespace Avalonia.FreeDesktop.DBusMenu
 {
+
+    [DBusInterface("org.freedesktop.DBus.Properties")]
+    interface IFreeDesktopDBusProperties : IDBusObject
+    {
+        Task<object> GetAsync(string prop);
+        Task<DBusMenuProperties> GetAllAsync();
+        Task SetAsync(string prop, object val);
+        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
+    }
+    
     [DBusInterface("com.canonical.DBusMenu")]
-    interface IDBusMenu : IDBusObject
+    interface IDBusMenu : IFreeDesktopDBusProperties
     {
         Task<(uint revision, (int, IDictionary<string, object>, object[])layout)> GetLayoutAsync(int ParentId, int RecursionDepth, string[] PropertyNames);
         Task<(int, IDictionary<string, object>)[]> GetGroupPropertiesAsync(int[] Ids, string[] PropertyNames);
@@ -20,10 +30,6 @@ namespace Avalonia.FreeDesktop.DBusMenu
         Task<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception> onError = null);
         Task<IDisposable> WatchLayoutUpdatedAsync(Action<(uint revision, int parent)> handler, Action<Exception> onError = null);
         Task<IDisposable> WatchItemActivationRequestedAsync(Action<(int id, uint timestamp)> handler, Action<Exception> onError = null);
-        Task<object> GetAsync(string prop);
-        Task<DBusMenuProperties> GetAllAsync();
-        Task SetAsync(string prop, object val);
-        Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
 
     [Dictionary]
