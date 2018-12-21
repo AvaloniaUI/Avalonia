@@ -220,6 +220,7 @@ namespace Avalonia.Rendering.SceneGraph
                 Transform = Transform,
                 ClipBounds = ClipBounds,
                 ClipToBounds = ClipToBounds,
+                LayoutBounds = LayoutBounds,
                 GeometryClip = GeometryClip,
                 _opacity = Opacity,
                 OpacityMask = OpacityMask,
