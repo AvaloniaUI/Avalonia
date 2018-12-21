@@ -13,10 +13,10 @@ namespace Avalonia.Media
         private int _currentLevel;
 
 
-        private static readonly ThreadSafeObjectPool<Stack<PushedState>> StateStackPool =
+        private static ThreadSafeObjectPool<Stack<PushedState>> StateStackPool { get; } =
             ThreadSafeObjectPool<Stack<PushedState>>.Default;
 
-        private static readonly ThreadSafeObjectPool<Stack<TransformContainer>> TransformStackPool =
+        private static ThreadSafeObjectPool<Stack<TransformContainer>> TransformStackPool { get; } =
             ThreadSafeObjectPool<Stack<TransformContainer>>.Default;
 
         private Stack<PushedState> _states = StateStackPool.Get();
