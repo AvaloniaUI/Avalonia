@@ -131,7 +131,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextSpanToUnicodeStringInBetween()
         {
-            const string Text = "😀😀😀😀";
+            const string Text = "😀 😀 😀 😀";
 
             var layout = new SKTextLayout(
                 Text,
