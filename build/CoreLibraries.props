@@ -13,6 +13,7 @@
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Styling/Avalonia.Styling.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Default/Avalonia.Themes.Default.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
+      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DesktopRuntime/Avalonia.DesktopRuntime.csproj" Condition="'$(TargetFramework)' != 'netstandard2.0'" />

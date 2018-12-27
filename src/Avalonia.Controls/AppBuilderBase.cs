@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using Avalonia.Platform;
@@ -61,6 +62,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Action<TAppBuilder> BeforeStartCallback { get; private set; } = builder => { };
 
+        public Action<TAppBuilder> AfterPlatformServicesSetupCallback { get; private set; } = builder => { };
+        
         protected AppBuilderBase(IRuntimePlatform platform, Action<TAppBuilder> platformServices)
         {
             RuntimePlatform = platform;
@@ -108,6 +111,13 @@ namespace Avalonia.Controls
         public TAppBuilder AfterSetup(Action<TAppBuilder> callback)
         {
             AfterSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterSetupCallback, callback);
+            return Self;
+        }
+        
+        
+        public TAppBuilder AfterPlatformServicesSetup(Action<TAppBuilder> callback)
+        {
+            AfterPlatformServicesSetupCallback = (Action<TAppBuilder>)Delegate.Combine(AfterPlatformServicesSetupCallback, callback);
             return Self;
         }
 
@@ -275,6 +285,7 @@ namespace Avalonia.Controls
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
+            AfterPlatformServicesSetupCallback(Self);
             Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
