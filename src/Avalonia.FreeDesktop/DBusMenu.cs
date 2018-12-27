@@ -17,7 +17,7 @@ namespace Avalonia.FreeDesktop.DBusMenu
         Task<IDisposable> WatchPropertiesAsync(Action<PropertyChanges> handler);
     }
     
-    [DBusInterface("com.canonical.DBusMenu")]
+    [DBusInterface("com.canonical.dbusmenu")]
     interface IDBusMenu : IFreeDesktopDBusProperties
     {
         Task<(uint revision, (int, IDictionary<string, object>, object[])layout)> GetLayoutAsync(int ParentId, int RecursionDepth, string[] PropertyNames);

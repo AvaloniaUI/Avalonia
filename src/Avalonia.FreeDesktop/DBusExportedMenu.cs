@@ -85,23 +85,25 @@ namespace Avalonia.FreeDesktop
         }
 
 
-        Task<object> IFreeDesktopDBusProperties.GetAsync(string prop)
+        async Task<object> IFreeDesktopDBusProperties.GetAsync(string prop)
         {
-            Console.WriteLine();
-            throw new NotImplementedException();
+            if (prop == "Version")
+                return 2;
+            if (prop == "Status")
+                return "normal";
+            return null;
         }
 
-        Task<DBusMenuProperties> IFreeDesktopDBusProperties.GetAllAsync()
+        async Task<DBusMenuProperties> IFreeDesktopDBusProperties.GetAllAsync()
         {
-            Console.WriteLine();
-            throw new NotImplementedException();
+            return new DBusMenuProperties
+            {
+                Version = 2,
+                Status = "normal"
+            };
         }
 
-        Task IFreeDesktopDBusProperties.SetAsync(string prop, object val)
-        {
-            Console.WriteLine();
-            throw new NotImplementedException();
-        }
+        Task IFreeDesktopDBusProperties.SetAsync(string prop, object val) => throw new NotSupportedException();
 
         #region Events
 
