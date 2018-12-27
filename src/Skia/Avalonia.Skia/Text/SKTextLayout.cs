@@ -829,29 +829,32 @@ namespace Avalonia.Skia.Text
                 {
                     var c = _text[index];
 
-                    if (!IsBreakChar(c)) continue;
+                    if (!IsBreakChar(c))
+                    {
+                        continue;
+                    }
 
                     switch (c)
                     {
                         case '\r':
-                        {
-                            if (index < _text.Length - 1 && _text[index + 1] == '\n')
                             {
-                                index++;
-                            }
+                                if (index < _text.Length - 1 && _text[index + 1] == '\n')
+                                {
+                                    index++;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
 
                         case '\n':
-                        {
-                            if (index < _text.Length - 1 && _text[index + 1] == '\r')
                             {
-                                index++;
-                            }
+                                if (index < _text.Length - 1 && _text[index + 1] == '\r')
+                                {
+                                    index++;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                     }
 
                     var length = index - currentPosition + 1;
@@ -934,6 +937,8 @@ namespace Avalonia.Skia.Text
 
             _paint.TextSize = textFormat.FontSize;
 
+            _paint.TextEncoding = SKTextEncoding.Utf16;
+
             var fontMetrics = _paint.FontMetrics;
 
             using (var shaper = new SKShaper(textFormat.Typeface))
@@ -969,7 +974,7 @@ namespace Avalonia.Skia.Text
             return new SKTextRun(text, glyphs, textFormat, fontMetrics, 0);
         }
 
-        private List<SKGlyphCluster> CreateGlyphClusters(
+        private unsafe List<SKGlyphCluster> CreateGlyphClusters(
             string text,
             SKFontMetrics fontMetrics,
             byte[] glyphsIds,
@@ -982,54 +987,64 @@ namespace Avalonia.Skia.Text
 
             var height = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
 
-            var current = 0;
+            var currentCluster = 0;
 
-            var lastIndex = clusters.Length - 1;
+            var lastCluster = clusters.Length - 1;
 
-            while (current <= lastIndex)
+            while (currentCluster <= lastCluster)
             {
-                // ToDo: Need a custom implementation that searches for the next cluster.
-                var next = Array.BinarySearch(clusters, clusters[current] + 1);
+                var currentPosition = (int)clusters[currentCluster];
 
-                if (next < 0)
+                // ToDo: Need a custom implementation that searches for the next cluster.
+                var nextCluster = Array.BinarySearch(clusters, (uint)(currentPosition + 1));
+
+                if (nextCluster < 0)
                 {
-                    next = ~next;
-                }
+                    nextCluster = ~nextCluster;
+                }               
 
                 var width = 0f;
 
-                var length = next - current;
+                int length;
 
-                if (current == lastIndex)
+                if (currentCluster != lastCluster)
                 {
-                    length = text.Length - current;
+                    var nextPosition = (int)clusters[nextCluster];
+
+                    length = nextPosition - currentPosition;                  
+                }
+                else
+                {
+                    length = text.Length - currentPosition;
                 }
 
-                for (var index = current; index < next; index++)
+                for (var index = currentCluster; index < nextCluster; index++)
                 {
-                    var byteIndex = index * 2;
+                    var offset = index * 2;
 
-                    var bufferHandle = GCHandle.Alloc(glyphsIds, GCHandleType.Pinned);
-                    var bufferPtr = Marshal.UnsafeAddrOfPinnedArrayElement(glyphsIds, byteIndex);
-
-                    var measuredWidth = _paint.MeasureText(bufferPtr, new IntPtr(2));
-
-                    bufferHandle.Free();
-
-                    // ToDo: proper width calculation of clusters with diacritics
-                    if (width < measuredWidth)
+                    fixed (byte* p = glyphsIds)
                     {
-                        width = measuredWidth;
-                    }
+                        var ptr = (IntPtr)p;
+
+                        ptr = IntPtr.Add(ptr, offset);
+
+                        var measuredWidth = _paint.MeasureText(ptr, new IntPtr(2));
+
+                        // ToDo: proper width calculation of clusters with diacritics
+                        if (width < measuredWidth)
+                        {
+                            width = measuredWidth;
+                        }
+                    }                   
                 }
 
-                var point = points[current];
+                var point = points[currentCluster];
 
                 var rect = new SKRect(point.X, point.Y, point.X + width, point.Y + height);
 
-                glyphClusters.Add(new SKGlyphCluster(current, length, rect));
+                glyphClusters.Add(new SKGlyphCluster(currentPosition, length, rect));
 
-                current = next;
+                currentCluster = nextCluster;
             }
 
             return glyphClusters;
@@ -1043,7 +1058,7 @@ namespace Avalonia.Skia.Text
         /// <param name="length">The length.</param>
         /// <param name="textLineMetrics">The text line metrics.</param>
         /// <returns></returns>
-        private List<SKTextRun> CreateTextRuns(
+        private unsafe List<SKTextRun> CreateTextRuns(
             string text,
             int startingIndex,
             int length,
@@ -1136,40 +1151,45 @@ namespace Avalonia.Skia.Text
                                 continue;
                             }
 
+                            var isSurrogatePair = false;
+                            char[] chars;
+
                             if (char.IsHighSurrogate(c))
                             {
+                                isSurrogatePair = true;
+
                                 var lowSurrogate = runText[glyphCount + 1];
 
-                                var bytes = Encoding.Unicode.GetBytes(new[] { c, lowSurrogate });
+                                chars = new[] { c, lowSurrogate };
+                            }
+                            else
+                            {
+                                chars = new[] { c };
+                            }
 
-                                var symbol = Encoding.Unicode.GetString(bytes);
+                            var bytes = Encoding.Unicode.GetBytes(chars);
 
-                                if (typeface.CountGlyphs(symbol) == 0)
+                            fixed (byte* p = bytes)
+                            {
+                                var ptr = (IntPtr)p;
+
+                                if (typeface.CountGlyphs(ptr, bytes.Length, SKEncoding.Utf16) == 0)
                                 {
                                     break;
                                 }
 
-                                if (_typeface.CountGlyphs(symbol) != 0)
+                                if (_typeface.CountGlyphs(ptr, bytes.Length, SKEncoding.Utf16) != 0)
                                 {
                                     break;
                                 }
+                            }
 
+                            if (isSurrogatePair)
+                            {
                                 glyphCount += 2;
                             }
                             else
                             {
-                                var symbol = c.ToString();
-
-                                if (typeface.CountGlyphs(symbol) == 0)
-                                {
-                                    break;
-                                }
-
-                                if (_typeface.CountGlyphs(symbol) != 0)
-                                {
-                                    break;
-                                }
-
                                 glyphCount++;
                             }
                         }
