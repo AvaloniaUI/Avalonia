@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation.Animators;
 using JetBrains.Annotations;
 
 namespace Avalonia
@@ -12,6 +13,11 @@ namespace Avalonia
     /// </summary>
     public readonly struct Vector
     {
+        static Vector()
+        {
+            Animation.Animation.RegisterAnimator<VectorAnimator>(prop => typeof(Vector).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// The X vector.
         /// </summary>
@@ -60,7 +66,7 @@ namespace Avalonia
         /// <returns>The dot product</returns>
         public static double operator *(Vector a, Vector b)
         {
-            return a.X*b.X + a.Y*b.Y;
+            return a.X * b.X + a.Y * b.Y;
         }
 
         /// <summary>
@@ -88,7 +94,7 @@ namespace Avalonia
         /// <summary>
         /// Length of the vector
         /// </summary>
-        public double Length => Math.Sqrt(X*X + Y*Y);
+        public double Length => Math.Sqrt(X * X + Y * Y);
 
         /// <summary>
         /// Negates a vector.

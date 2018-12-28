@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>false</IsPackable>
     <!-- WARNING! The designer support version number needs to be frozen 
          To allow projects that implement designer functionality to still
          work with newer versions of Avalonia. This version number only

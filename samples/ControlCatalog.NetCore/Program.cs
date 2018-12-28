@@ -23,6 +23,7 @@ namespace ControlCatalog.NetCore
                         break;
                 }
             }
+
             if (args.Contains("--fbdev"))
                 AppBuilder.Configure<App>().InitializeWithLinuxFramebuffer(tl =>
                 {
@@ -30,7 +31,12 @@ namespace ControlCatalog.NetCore
                     System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 });
             else
-                BuildAvaloniaApp().Start<MainWindow>();
+                BuildAvaloniaApp().Start(AppMain, args);
+        }
+
+        static void AppMain(Application app, string[] args)
+        {
+            app.Run(new MainWindow());
         }
 
         /// <summary>
