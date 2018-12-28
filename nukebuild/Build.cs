@@ -63,6 +63,7 @@ partial class Build : NukeBuild
         DeleteDirectories(Parameters.BuildDirs);
         EnsureCleanDirectories(Parameters.BuildDirs);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
+        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
         EnsureCleanDirectory(Parameters.ZipRoot);
         EnsureCleanDirectory(Parameters.TestResultsRoot);
@@ -123,6 +124,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
+            RunCoreTest("./tests/Avalonia.Animation.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Base.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Controls.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Input.UnitTests", false);
@@ -137,12 +139,13 @@ partial class Build : NukeBuild
         });
 
     Target RunRenderTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhen(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
             RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", true);
-            RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
         });
     
     Target RunDesignerTests => _ => _
@@ -181,7 +184,7 @@ partial class Build : NukeBuild
                     GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
         });
 
-    Target CreateNugetPackages => _ => _
+    Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
         .After(RunTests)
         .Executes(() =>
@@ -199,6 +202,17 @@ partial class Build : NukeBuild
                 DotNetPack(Parameters.MSBuildSolution, c =>
                     c.SetConfiguration(Parameters.Configuration)
                         .AddProperty("PackageVersion", Parameters.Version));
+        });
+
+    Target CreateNugetPackages => _ => _
+        .DependsOn(CreateIntermediateNugetPackages)
+        .Executes(() =>
+        {
+            var config = Numerge.MergeConfiguration.LoadFile(RootDirectory / "nukebuild" / "numerge.config");
+            EnsureCleanDirectory(Parameters.NugetRoot);
+            if(!Numerge.NugetPackageMerger.Merge(Parameters.NugetIntermediateRoot, Parameters.NugetRoot, config,
+                new NumergeNukeLogger()))
+                throw new Exception("Package merge failed");
         });
     
     Target RunTests => _ => _

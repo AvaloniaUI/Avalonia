@@ -8,7 +8,7 @@ xmlns="https://github.com/avaloniaui">
         </Style>
         <Style Selector="Border#clipChild">
           <Style.Animations>
-            <Animation Duration="0:0:2" RepeatCount="Loop">
+            <Animation Duration="0:0:2" IterationCount="Infinite">
               <KeyFrame Cue="100%">
                 <Setter Property="RotateTransform.Angle" Value="360"/>
               </KeyFrame>

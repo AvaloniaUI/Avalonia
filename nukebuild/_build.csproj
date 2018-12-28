@@ -30,6 +30,8 @@
     <None Include="..\appveyor.yml" Condition="Exists('..\appveyor.yml')" />
     <None Include="..\.travis.yml" Condition="Exists('..\.travis.yml')" />
     <None Include="..\GitVersion.yml" Condition="Exists('..\GitVersion.yml')" />
+    <Compile Remove="Numerge/**/*.*" />
+    <Compile Include="Numerge/Numerge/**/*.cs" />
   </ItemGroup>
 
 </Project>

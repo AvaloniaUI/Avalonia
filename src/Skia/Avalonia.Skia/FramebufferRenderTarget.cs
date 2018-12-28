@@ -42,7 +42,8 @@ namespace Avalonia.Skia
         {
             var framebuffer = _platformSurface.Lock();
             var framebufferImageInfo = new SKImageInfo(framebuffer.Size.Width, framebuffer.Size.Height,
-                framebuffer.Format.ToSkColorType(), SKAlphaType.Premul);
+                framebuffer.Format.ToSkColorType(),
+                framebuffer.Format == PixelFormat.Rgb565 ? SKAlphaType.Opaque : SKAlphaType.Premul);
 
             CreateSurface(framebufferImageInfo, framebuffer);
 
