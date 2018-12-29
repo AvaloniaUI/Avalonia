@@ -14,7 +14,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-         dotnet tool install --global Nuke.GlobalTool --version 0.12.3
+         dotnet tool install --global Nuke.GlobalTool --version 0.13.0
   - task: CmdLine@2
     displayName: 'Run Nuke'
     inputs:
@@ -57,7 +57,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
+       dotnet tool install --global Nuke.GlobalTool --version 0.13.0 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
@@ -99,7 +99,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
+       dotnet tool install --global Nuke.GlobalTool --version 0.13.0 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

@@ -76,7 +76,7 @@ partial class Build : NukeBuild
 
             if (Parameters.IsRunningOnWindows)
                 MSBuild(Parameters.MSBuildSolution, c => c
-                    .SetArgumentConfigurator(a => a.Add("/r"))
+                    .EnableRestore()
                     .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)
                     .AddProperty("PackageVersion", Parameters.Version)
