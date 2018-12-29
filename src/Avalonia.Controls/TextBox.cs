@@ -768,7 +768,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    var rect = _presenter.FormattedText.HitTestTextPosition(CaretIndex - 1);
+                    var rect = _presenter.FormattedText.HitTestTextPosition(CaretIndex);
 
                     var hitTestResult = _presenter.FormattedText.HitTestPoint(
                         new Point(rect.X, rect.Y));
