@@ -1,0 +1,22 @@
+parameters:
+    target: ''
+
+steps:
+  - task: DotNetCoreInstaller@0
+    inputs:
+      version: '2.1.403'
+  - task: CmdLine@2
+    displayName: 'Install Nuke'
+    inputs:
+      script: |
+       dotnet tool install --global Nuke.GlobalTool --version 0.13.0 
+  - task: CmdLine@2
+    displayName: 'Run Nuke'
+    inputs:
+      script: |
+        nuke --target ${{ parameters.target }} --configuration Release
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
+    condition: not(canceled())
