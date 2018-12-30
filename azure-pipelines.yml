@@ -1,3 +1,6 @@
+variables:
+- group: BuildCrossCheck
+
 jobs:
 - job: Linux
   pool:
@@ -57,6 +60,24 @@ jobs:
   - template: build/managed-build-and-test.yml
       inputs:
         target: CiAzureWindows
+  - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
+    displayName: 'Install BuildCrossCheck'
+    inputs:
+      command: install
+      installPackageId: 'BCC-MSBuildLog BCC-Submission'
+      installInstallArgs: '--no-progress '
+
+  - task: CmdLine@2
+    displayName: 'Upload MSBuild Log to BuildCrossCheck'
+    inputs:
+      env: 
+        SOURCE_FOLDER: $(Build.SourcesDirectory)
+        REPO_NAME: 'AvaloniaUI/Avalonia'
+        COMMIT_ID: $(Build.SourceVersion)
+        BCC_TOKEN: $(BCC-Key-Avalonia)
+      script: |
+        BCCMSBuildLog --input avalonia.binlog --output artifacts/checkrun.json --cloneRoot "%SOURCE_FOLDER%" --ownerRepo %REPO_NAME% --hash %COMMIT_ID%
+        BCCSubmission -i artifacts/checkrun.json -h %COMMIT_ID% -t %BCC_TOKEN%
 
   - task: PublishBuildArtifacts@1
     inputs:

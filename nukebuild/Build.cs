@@ -76,6 +76,7 @@ partial class Build : NukeBuild
 
             if (Parameters.IsRunningOnWindows)
                 MSBuild(Parameters.MSBuildSolution, c => c
+                    .SetArgumentConfigurator(a => Parameters.GenerateBinaryLog ? a.Add($"/bl:avalonia.binlog") : a)
                     .EnableRestore()
                     .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)

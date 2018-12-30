@@ -45,6 +45,7 @@ public partial class Build
         public bool IsMyGetRelease { get; }
         public bool IsNuGetRelease { get; }
         public bool PublishTestResults { get; }
+        public bool GenerateBinaryLog { get; }
         public string Version { get; }
         public AbsolutePath ArtifactsDir { get; }
         public AbsolutePath NugetIntermediateRoot { get; }
@@ -113,6 +114,7 @@ public partial class Build
                 }
 
                 PublishTestResults = true;
+                GenerateBinaryLog = true;
             }
 
             // DIRECTORIES
