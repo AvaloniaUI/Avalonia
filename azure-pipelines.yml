@@ -13,6 +13,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install castxml
 
+  - script: echo '$(Build.Repository.Name)'
+
   - template: build/managed-build-and-test.yml
     parameters:
       target: CiAzureLinux
