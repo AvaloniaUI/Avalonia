@@ -1,6 +1,10 @@
 parameters:
     target: ''
 
+variables:
+  - name: target
+    value: ${{ parameters.target }}
+
 steps:
   - task: DotNetCoreInstaller@0
     inputs:
@@ -14,7 +18,7 @@ steps:
     displayName: 'Run Nuke'
     inputs:
       script: |
-        nuke --target ${{ parameters.target }} --configuration Release
+        nuke --target $(target) --configuration Release
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'VSTest'
