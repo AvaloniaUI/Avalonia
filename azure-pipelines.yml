@@ -14,9 +14,9 @@ jobs:
         sudo apt-get install castxml
 
   - template: build/managed-build-and-test.yml
-      inputs:
-        target: CiAzureLinux
-     
+    parameters:
+      target: CiAzureLinux
+
 - job: macOS
   pool:
     vmImage: 'xcode9-macos10.13'
@@ -37,8 +37,8 @@ jobs:
       script: brew install castxml
 
   - template: build/managed-build-and-test.yml
-      inputs:
-        target: CiAzureOSX
+    parameters:
+      target: CiAzureOSX
   
   - task: PublishBuildArtifacts@1
     inputs:
@@ -58,8 +58,8 @@ jobs:
   steps:
   
   - template: build/managed-build-and-test.yml
-      inputs:
-        target: CiAzureWindows
+    parameters:
+      target: CiAzureWindows
   - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
     displayName: 'Install BuildCrossCheck'
     inputs:
