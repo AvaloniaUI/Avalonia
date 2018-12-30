@@ -124,6 +124,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
+            RunCoreTest("./tests/Avalonia.Animation.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Base.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Controls.UnitTests", false);
             RunCoreTest("./tests/Avalonia.Input.UnitTests", false);

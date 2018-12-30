@@ -35,6 +35,7 @@ namespace Avalonia.Skia
             gl.ClearStencil(0);
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            _grContext.ResetContext();
 
             GRBackendRenderTarget renderTarget =
                 new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
