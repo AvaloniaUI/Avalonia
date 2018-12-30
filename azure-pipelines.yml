@@ -13,8 +13,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install castxml
 
-  - script: echo '$(Build.Repository.Name)'
-
   - template: build/managed-build-and-test.yml
     parameters:
       target: CiAzureLinux
@@ -63,17 +61,22 @@ jobs:
     parameters:
       target: CiAzureWindows
   - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
-    displayName: 'Install BuildCrossCheck'
+    displayName: 'Install BuildCrossCheck Submission'
     inputs:
       command: install
-      installPackageId: 'BCC-MSBuildLog BCC-Submission'
-      installInstallArgs: '--no-progress '
+      installPackageId: 'BCC-Submission'
+
+  - task: gep13.chocolatey-azuredevops.chocolatey-azuredevops.ChocolateyCommand@0
+    displayName: 'Install BuildCrossCheck MSBuildLog'
+    inputs:
+      command: install
+      installPackageId: 'BCC-MSBuildLog'
 
   - task: CmdLine@2
     displayName: 'Upload MSBuild Log to BuildCrossCheck'
     inputs:
       script: |
-        BCCMSBuildLog --input avalonia.binlog --output artifacts/checkrun.json --cloneRoot "$(Build.SourcesDirectory)" --ownerRepo "AvaloniaUI/Avalonia" --hash $(Build.SourceVersion)
+        BCCMSBuildLog --input avalonia.binlog --output artifacts/checkrun.json --cloneRoot "$(Build.SourcesDirectory)" --ownerRepo "$(Build.Repository.Name)" --hash $(Build.SourceVersion)
         BCCSubmission -i artifacts/checkrun.json -h $(Build.SourceVersion) -t $(BCC-Key-Avalonia)
     condition: not(canceled())
 
