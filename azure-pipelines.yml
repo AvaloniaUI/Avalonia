@@ -71,10 +71,10 @@ jobs:
     displayName: 'Upload MSBuild Log to BuildCrossCheck'
     inputs:
       env: 
-        SOURCE_FOLDER: $(Build.SourcesDirectory)
+        SOURCE_FOLDER: '$(Build.SourcesDirectory)'
         REPO_NAME: 'AvaloniaUI/Avalonia'
-        COMMIT_ID: $(Build.SourceVersion)
-        BCC_TOKEN: $(BCC-Key-Avalonia)
+        COMMIT_ID: '$(Build.SourceVersion)'
+        BCC_TOKEN: '$(BCC-Key-Avalonia)'
       script: |
         BCCMSBuildLog --input avalonia.binlog --output artifacts/checkrun.json --cloneRoot "%SOURCE_FOLDER%" --ownerRepo %REPO_NAME% --hash %COMMIT_ID%
         BCCSubmission -i artifacts/checkrun.json -h %COMMIT_ID% -t %BCC_TOKEN%
