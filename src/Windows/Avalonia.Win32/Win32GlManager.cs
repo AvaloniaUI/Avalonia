@@ -1,3 +1,5 @@
+using System;
+using Avalonia.Logging;
 using Avalonia.OpenGL;
 
 namespace Avalonia.Win32
@@ -9,14 +11,31 @@ namespace Avalonia.Win32
 
         private static bool s_attemptedToInitialize;
 
-        public static void Initialize()
+        public static void Initialize(bool throwIfUnavailable = false)
         {
             AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToFunc(() =>
             {
                 if (!s_attemptedToInitialize)
                 {
-                    EglFeature = EglGlPlatformFeature.TryCreate();
+                    try
+                    {
+                        EglFeature = EglGlPlatformFeature.Create();
+                    }
+                    catch (Exception e)
+                    {
+                        if (throwIfUnavailable)
+                        {
+                            throw;
+                        }
+
+                        Logger.Error("OpenGL", null, "Unable to initialize EGL-based rendering: {0}", e);
+                    }
+                    
                     s_attemptedToInitialize = true;
+                }
+                else if (throwIfUnavailable && EglFeature == null)
+                {
+                    throw new InvalidOperationException("Unable to initialize EGL-based rendering.");
                 }
 
                 return EglFeature;

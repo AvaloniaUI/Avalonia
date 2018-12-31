@@ -15,21 +15,26 @@ namespace Avalonia.OpenGL
             if (feature != null)
                 AvaloniaLocator.CurrentMutable.Bind<IWindowingPlatformGlFeature>().ToConstant(feature);
         }
-        
+
+        public static EglGlPlatformFeature Create()
+        {
+            var disp = new EglDisplay();
+            var ctx = disp.CreateContext(null);
+            return new EglGlPlatformFeature
+            {
+                Display = disp,
+                ImmediateContext = ctx,
+                DeferredContext = (EglContext)disp.CreateContext(ctx)
+            };
+        }
+
         public static EglGlPlatformFeature TryCreate()
         {
             try
             {
-                var disp = new EglDisplay();
-                var ctx = disp.CreateContext(null);
-                return new EglGlPlatformFeature
-                {
-                    Display = disp,
-                    ImmediateContext = ctx,
-                    DeferredContext = (EglContext)disp.CreateContext(ctx)
-                };
+                return Create();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.Error("OpenGL", null, "Unable to initialize EGL-based rendering: {0}", e);
                 return null;
