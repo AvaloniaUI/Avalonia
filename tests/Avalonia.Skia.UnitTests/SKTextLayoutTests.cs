@@ -13,6 +13,14 @@ namespace Avalonia.Skia.UnitTests
     {
         private static readonly string SingleLineText = "0123456789";
         private static readonly string MultiLineText = "123456789\r123456789\r123456789\r123456789\r";
+        private static readonly SKTypeface _typeface;
+
+        static SKTextLayoutTests()
+        {
+            var stream = typeof(SKTextLayoutTests).Assembly.GetManifestResourceStream("Avalonia.Skia.UnitTests.Assets.NotoEmoji-Regular.ttf");
+
+            _typeface = SKTypeface.FromStream(stream);
+        }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
@@ -21,7 +29,7 @@ namespace Avalonia.Skia.UnitTests
 
             var layout = new SKTextLayout(
                 Text,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -49,7 +57,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 SingleLineText,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -77,7 +85,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 SingleLineText,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -105,7 +113,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 "0",
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -135,7 +143,7 @@ namespace Avalonia.Skia.UnitTests
 
             var layout = new SKTextLayout(
                 Text,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -163,7 +171,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 MultiLineText,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -177,7 +185,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 MultiLineText,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -193,7 +201,7 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 MultiLineText,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -215,7 +223,7 @@ namespace Avalonia.Skia.UnitTests
 
             var layout = new SKTextLayout(
                 Text,
-                SKTypeface.FromFamilyName(null),
+                _typeface,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
