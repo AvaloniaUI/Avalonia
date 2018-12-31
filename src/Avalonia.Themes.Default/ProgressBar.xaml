@@ -33,7 +33,7 @@
   <Style Selector="ProgressBar:horizontal:indeterminate /template/ Border#PART_Indicator">
       <Style.Animations>
           <Animation Duration="0:0:3"
-                     RepeatCount="Loop"
+                     IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
                   <Setter Property="TranslateTransform.X"
@@ -49,7 +49,7 @@
   <Style Selector="ProgressBar:vertical:indeterminate /template/ Border#PART_Indicator">
       <Style.Animations>
           <Animation Duration="0:0:3"
-                     RepeatCount="Loop"
+                     IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
                   <Setter Property="TranslateTransform.Y"
