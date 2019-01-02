@@ -416,7 +416,7 @@ namespace Avalonia.Skia.Text
 
                         if (glyphCluster != null)
                         {
-                            textPosition += glyphCluster.TextPosition;
+                            textPosition += glyphCluster.TextPosition + glyphCluster.Length - 1;
 
                             isTrailing = _text.Length == textPosition + 1;
 
