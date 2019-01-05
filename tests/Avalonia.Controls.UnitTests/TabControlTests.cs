@@ -267,26 +267,46 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(page.Content);
         }
 
+        [Fact]
+        public void DataTemplate_Created_Content_Should_Be_Logical_Child_After_ApplyTemplate()
+        {
+            TabControl target = new TabControl
+            {
+                Template = TabControlTemplate(),
+                ContentTemplate = new FuncDataTemplate<string>(x =>
+                    new TextBlock { Tag = "bar", Text = x }),
+                Items = new[] { "Foo" },
+            };
+
+            ApplyTemplate(target);
+            target.ContentPart.UpdateChild();
+
+            var content = Assert.IsType<TextBlock>(target.ContentPart.Child);
+            Assert.Equal("bar", content.Tag);
+            Assert.Same(target, content.GetLogicalParent());
+            Assert.Single(target.GetLogicalChildren(), content);
+        }
+
         private IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>(parent =>
-
                 new StackPanel
                 {
-                    Children = {
-                                   new ItemsPresenter
-                                   {
-                                       Name = "PART_ItemsPresenter",
-                                       [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
-                                       [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
-                                   },
-                                   new ContentPresenter
-                                   {
-                                       Name = "PART_Content",
-                                       [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
-                                       [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
-                                   }
-                               }
+                    Children =
+                    {
+                        new ItemsPresenter
+                        {
+                            Name = "PART_ItemsPresenter",
+                            [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
+                            [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
+                        },
+                        new ContentPresenter
+                        {
+                            Name = "PART_Content",
+                            [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
+                            [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
+                        }
+                    }
                 });
         }
 
