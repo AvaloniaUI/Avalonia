@@ -302,7 +302,7 @@ namespace Avalonia.Controls.UnitTests
                         },
                         new ContentPresenter
                         {
-                            Name = "PART_Content",
+                            Name = "PART_SelectedContentHost",
                             [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
                             [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
                         }

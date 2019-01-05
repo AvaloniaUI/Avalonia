@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -65,6 +66,10 @@ namespace Avalonia.Controls
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
             ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
+            ContentControlMixin.Attach<TabControl>(
+                SelectedContentProperty,
+                x => x.LogicalChildren,
+                "PART_SelectedContentHost");
         }
 
         /// <summary>
@@ -142,7 +147,7 @@ namespace Avalonia.Controls
 
             ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
 
-            ContentPart = e.NameScope.Get<ContentPresenter>("PART_Content");
+            ContentPart = e.NameScope.Get<ContentPresenter>("PART_SelectedContentHost");
         }
 
         /// <inheritdoc/>
