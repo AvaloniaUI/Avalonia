@@ -163,6 +163,7 @@ namespace Avalonia.UnitTests
                 x.CreateFormattedText(
                     It.IsAny<string>(),
                     It.IsAny<Typeface>(),
+                    It.IsAny<double>(),
                     It.IsAny<TextAlignment>(),
                     It.IsAny<TextWrapping>(),
                     It.IsAny<Size>(),

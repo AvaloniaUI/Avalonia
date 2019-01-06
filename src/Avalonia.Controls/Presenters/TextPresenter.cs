@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result.Spans = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, foregroundBrush: Brushes.White),
+                    new FormattedTextStyleSpan(start, length, drawingEffect: Brushes.White),
                 };
             }
 
@@ -272,7 +272,8 @@ namespace Avalonia.Controls.Presenters
                 return new FormattedText
                 {
                     Text = "X",
-                    Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
+                    Typeface = new Typeface(FontFamily, FontStyle, FontWeight),
+                    FontSize = FontSize,
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,
                 }.Measure();

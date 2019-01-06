@@ -14,6 +14,7 @@ namespace Avalonia.Direct2D1.Media
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -21,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
+            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface, fontSize))
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
@@ -97,10 +98,10 @@ namespace Avalonia.Direct2D1.Media
         {
             if (span.Length > 0)
             {
-                if (span.ForegroundBrush != null)
+                if (span.DrawingEffect != null)
                 {
                     TextLayout.SetDrawingEffect(
-                        new BrushWrapper(span.ForegroundBrush.ToImmutable()),
+                        new BrushWrapper(span.DrawingEffect.ToImmutable()),
                         new DWrite.TextRange(span.StartIndex, span.Length));
                 }
             }

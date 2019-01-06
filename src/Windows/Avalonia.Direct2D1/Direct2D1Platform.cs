@@ -118,6 +118,7 @@ namespace Avalonia.Direct2D1
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -126,6 +127,7 @@ namespace Avalonia.Direct2D1
             return new FormattedTextImpl(
                 text,
                 typeface,
+                fontSize,
                 textAlignment,
                 wrapping,
                 constraint,

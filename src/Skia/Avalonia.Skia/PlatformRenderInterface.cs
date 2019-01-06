@@ -32,17 +32,18 @@ namespace Avalonia.Skia
                 GrContext = GRContext.Create(GRBackend.OpenGL, iface);
             }
         }
-        
+
         /// <inheritdoc />
         public IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
+            return new FormattedTextImpl(text, typeface, fontSize, textAlignment, wrapping, constraint, spans);
         }
 
         /// <inheritdoc />
@@ -93,7 +94,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = false,
                 GrContext = GrContext
             };
-            
+
             return new SurfaceRenderTarget(createInfo);
         }
 

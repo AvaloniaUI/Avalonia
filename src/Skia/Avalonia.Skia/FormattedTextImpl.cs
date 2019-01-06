@@ -19,6 +19,7 @@ namespace Avalonia.Skia
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping textWrapping,
             Size constraint,
@@ -60,19 +61,11 @@ namespace Avalonia.Skia
                 }
             }
 
-            TextLayout = new SKTextLayout(text, skiaTypeface, (float)typeface.FontSize, textAlignment, textWrapping, constraint);
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, constraint, spans);
 
             foreach (var textLine in TextLayout.TextLines)
             {
                 _lines.Add(new FormattedTextLine(textLine.Length, textLine.LineMetrics.Size.Height));
-            }
-
-            if (spans != null)
-            {
-                foreach (var span in spans)
-                {
-                    TextLayout.ApplyTextSpan(span);
-                }
             }
 
             Size = TextLayout.Size;
