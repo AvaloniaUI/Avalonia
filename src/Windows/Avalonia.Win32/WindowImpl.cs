@@ -153,17 +153,20 @@ namespace Avalonia.Win32
 
         public void Resize(Size value)
         {
-            if (value != ClientSize)
+            var clientRect = ClientSize;
+            if (value != clientRect)
             {
                 value *= Scaling;
-                
+                UnmanagedMethods.RECT windowRect;
+                UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
+
                 UnmanagedMethods.SetWindowPos(
                     _hwnd,
                     IntPtr.Zero,
                     0,
                     0,
-                    (int)value.Width,
-                    (int)value.Height,
+                    (int)(value.Width + (windowRect.Width - clientRect.Width)),
+                    (int)(value.Height + (windowRect.Height - clientRect.Height)),
                     UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
@@ -281,10 +284,10 @@ namespace Avalonia.Win32
             var f = Scaling;
             var r = new UnmanagedMethods.RECT
             {
-                left = (int)(rect.X * f),
-                top = (int)(rect.Y * f),
-                right = (int)(rect.Right * f),
-                bottom = (int)(rect.Bottom * f),
+                left = (int)Math.Floor(rect.X * f),
+                top = (int)Math.Floor(rect.Y * f),
+                right = (int)Math.Ceiling(rect.Right * f),
+                bottom = (int)Math.Ceiling(rect.Bottom * f),
             };
 
             UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);

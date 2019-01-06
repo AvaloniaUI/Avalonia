@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -12,6 +13,11 @@ namespace Avalonia
     /// </summary>
     public readonly struct Size
     {
+        static Size()
+        {
+            Animation.Animation.RegisterAnimator<SizeAnimator>(prop => typeof(Size).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// A size representing infinity.
         /// </summary>
