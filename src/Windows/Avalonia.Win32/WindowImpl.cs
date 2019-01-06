@@ -119,7 +119,7 @@ namespace Avalonia.Win32
         }
 
         public Size ClientSize
-        { 
+        {
             get
             {
                 UnmanagedMethods.RECT rect;
