@@ -252,7 +252,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result.Spans = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, drawingEffect: Brushes.White),
+                    new FormattedTextStyleSpan(start, length, foreground: Brushes.White),
                 };
             }
 

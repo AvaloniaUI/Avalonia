@@ -32,6 +32,16 @@ namespace Avalonia.Skia.Text
 
         private readonly List<SKTextLine> _textLines;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SKTextLayout"/> class.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="typeface">The typeface.</param>
+        /// <param name="fontSize">Size of the font.</param>
+        /// <param name="textAlignment">The text alignment.</param>
+        /// <param name="textWrapping">The text wrapping.</param>
+        /// <param name="constraint">The constraint.</param>
+        /// <param name="spans">The spans.</param>
         public SKTextLayout(
             string text,
             SKTypeface typeface,
@@ -51,6 +61,12 @@ namespace Avalonia.Skia.Text
             _textLines = CreateTextLines(spans);
         }
 
+        /// <summary>
+        /// Gets the text lines.
+        /// </summary>
+        /// <value>
+        /// The text lines.
+        /// </value>
         public IReadOnlyList<SKTextLine> TextLines => _textLines;
 
         /// <summary>
@@ -224,7 +240,7 @@ namespace Avalonia.Skia.Text
                         {
                             textPosition += glyphCluster.TextPosition;
 
-                            isTrailing = _text.Length == textPosition + glyphCluster.Length;
+                            isTrailing = _text.Length == textPosition + 1;
 
                             return new TextHitTestResult
                             {
@@ -442,17 +458,6 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        /// Creates a new text line of a specified text runs.
-        /// </summary>
-        /// <returns></returns>
-        private static SKTextLine CreateTextLine(IReadOnlyList<SKTextRun> textRuns, int startingIndex)
-        {
-            var lineMetrics = CreateTextLineMetrics(textRuns, out var length);
-
-            return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
-        }
-
-        /// <summary>
         /// Creates the paint.
         /// </summary>
         /// <param name="typeface">The default typeface.</param>
@@ -479,11 +484,8 @@ namespace Avalonia.Skia.Text
         private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns, out int length)
         {
             var width = 0.0f;
-
             var ascent = 0.0f;
-
             var descent = 0.0f;
-
             var leading = 0.0f;
 
             length = 0;
@@ -532,14 +534,14 @@ namespace Avalonia.Skia.Text
 
             paint.TextSize = textRun.TextFormat.FontSize;
 
-            if (textRun.DrawingEffect == null)
+            if (textRun.Foreground == null)
             {
                 foregroundWrapper.ApplyTo(paint);
             }
             else
             {
                 using (var effectWrapper = context.CreatePaint(
-                    textRun.DrawingEffect,
+                    textRun.Foreground,
                     new Size(textRun.Width, textLine.LineMetrics.Size.Height)))
                 {
                     effectWrapper.ApplyTo(paint);
@@ -612,38 +614,55 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        /// Creates a new text line of a specified text range.
+        /// Creates a new text line of a specified text runs.
         /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="startingIndex">Text starting index.</param>
-        /// <param name="length">The text length.</param>
         /// <returns></returns>
-        private SKTextLine CreateTextLine(string text, int startingIndex, int length)
+        private SKTextLine CreateShapedTextLine(IReadOnlyList<SKTextRun> textRuns, int startingIndex)
         {
-            if (length == 0)
+            var shapedTextRuns = new List<SKTextRun>();
+
+            foreach (var textRun in textRuns)
             {
-                _paint.Typeface = _typeface;
+                if (textRun.GlyphRun == null)
+                {
+                    var shapedRun = CreateTextRun(textRun.Text, textRun.TextFormat, textRun.Foreground, true);
 
-                _paint.TextSize = _fontSize;
-
-                var fontMetrics = _paint.FontMetrics;
-
-                var textLineMetrics = new SKTextLineMetrics(0, fontMetrics.Ascent, fontMetrics.Descent, fontMetrics.Leading);
-
-                return new SKTextLine(startingIndex, length, new List<SKTextRun>(), textLineMetrics);
+                    shapedTextRuns.Add(shapedRun);
+                }
+                else
+                {
+                    shapedTextRuns.Add(textRun);
+                }
             }
 
-            var textRuns = CreateTextRuns(text, startingIndex, length, out var lineMetrics);
+            var lineMetrics = CreateTextLineMetrics(shapedTextRuns, out var length);
 
-            return new SKTextLine(startingIndex, length, textRuns, lineMetrics);
+            return new SKTextLine(startingIndex, length, shapedTextRuns, lineMetrics);
         }
 
         /// <summary>
-        /// Applies a text style span to the a sequence of text runs.
+        /// Creates a empty text line.
         /// </summary>
-        /// <param name="textRuns">The text runs</param>
-        /// <param name="span">The span.</param>
-        private void ApplyTextStyleSpan(IList<SKTextRun> textRuns, FormattedTextStyleSpan span)
+        /// <returns></returns>
+        private SKTextLine CreateEmptyTextLine()
+        {
+            _paint.Typeface = _typeface;
+
+            _paint.TextSize = _fontSize;
+
+            var fontMetrics = _paint.FontMetrics;
+
+            var textLineMetrics = new SKTextLineMetrics(0, fontMetrics.Ascent, fontMetrics.Descent, fontMetrics.Leading);
+
+            return new SKTextLine(0, 0, new List<SKTextRun>(), textLineMetrics);
+        }
+
+        /// <summary>
+        /// Applies a text style span to the layout.
+        /// </summary>
+        /// <param name="textLines">The text lines to apply the text style span to.</param>
+        /// <param name="span">The text style span.</param>
+        private void ApplyTextStyleSpan(IList<SKTextLine> textLines, FormattedTextStyleSpan span)
         {
             if (span.Length < 1)
             {
@@ -653,92 +672,60 @@ namespace Avalonia.Skia.Text
             var currentLength = 0;
             var appliedLength = 0;
 
-            for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
+            for (var lineIndex = 0; lineIndex < textLines.Count; lineIndex++)
             {
-                var currentTextRun = textRuns[runIndex];
+                var currentTextLine = textLines[lineIndex];
 
-                if (currentTextRun.Text.Length == 0)
+                if (currentTextLine.Length == 0)
                 {
                     continue;
                 }
 
-                if (currentLength + currentTextRun.Text.Length - 1 < span.StartIndex)
+                if (currentLength + currentTextLine.Length - 1 < span.StartIndex)
                 {
-                    currentLength += currentTextRun.Text.Length;
+                    currentLength += currentTextLine.Length;
 
                     continue;
                 }
 
-                if (currentLength == span.StartIndex + appliedLength)
+                var textRuns = new List<SKTextRun>(currentTextLine.TextRuns);
+
+                for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
                 {
-                    var splitLength = span.Length - appliedLength;
+                    bool needsUpdate;
 
-                    // Make sure we don't split a surrogate pair
-                    if (splitLength < currentTextRun.Text.Length && char.IsSurrogatePair(
-                            currentTextRun.Text[splitLength - 1],
-                            currentTextRun.Text[splitLength]))
+                    var currentTextRun = textRuns[runIndex];
+
+                    if (currentTextRun.Text.Length == 0)
                     {
-                        splitLength++;
+                        continue;
                     }
 
-                    if (splitLength >= currentTextRun.Text.Length)
+                    if (currentLength + currentTextRun.Text.Length - 1 < span.StartIndex)
                     {
-                        // Apply to the whole run 
-                        textRuns.RemoveAt(runIndex);
+                        currentLength += currentTextRun.Text.Length;
 
-                        var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
-
-                        appliedLength += updatedTextRun.Text.Length;
-
-                        textRuns.Insert(runIndex, updatedTextRun);
-                    }
-                    else
-                    {
-                        // Apply at start of the run 
-                        var start = SplitTextRun(currentTextRun, 0, splitLength);
-
-                        textRuns.RemoveAt(runIndex);
-
-                        var updatedTextRun = ApplyTextStyleSpan(span, start.FirstTextRun);
-
-                        appliedLength += updatedTextRun.Text.Length;
-
-                        textRuns.Insert(runIndex, updatedTextRun);
-
-                        runIndex++;
-
-                        textRuns.Insert(runIndex, start.SecondTextRun);
-                    }
-                }
-                else
-                {
-                    var splitLength = Math.Min(
-                        span.StartIndex + appliedLength - currentLength,
-                        currentTextRun.Text.Length);
-
-                    var splitWithinSurrogatePair = false;
-
-                    // Make sure we don't split a surrogate pair
-                    if (char.IsHighSurrogate(currentTextRun.Text[splitLength - 1]))
-                    {
-                        splitWithinSurrogatePair = true;
-                        splitLength--;
+                        continue;
                     }
 
-                    if (splitLength > 0)
+                    if (currentLength == span.StartIndex + appliedLength)
                     {
-                        var start = SplitTextRun(currentTextRun, 0, splitLength);
+                        var splitLength = span.Length - appliedLength;
 
-                        if (splitLength + span.Length - appliedLength >= currentTextRun.Text.Length)
+                        // Make sure we don't split a surrogate pair
+                        if (splitLength < currentTextRun.Text.Length && char.IsSurrogatePair(
+                                currentTextRun.Text[splitLength - 1],
+                                currentTextRun.Text[splitLength]))
                         {
-                            // Apply at the end of the run      
+                            splitLength++;
+                        }
+
+                        if (splitLength >= currentTextRun.Text.Length)
+                        {
+                            // Apply to the whole run 
                             textRuns.RemoveAt(runIndex);
 
-                            textRuns.Insert(runIndex, start.FirstTextRun);
-
-                            runIndex++;
-
-                            var updatedTextRun = ApplyTextStyleSpan(span, start.SecondTextRun);
+                            var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun, out needsUpdate);
 
                             appliedLength += updatedTextRun.Text.Length;
 
@@ -746,27 +733,12 @@ namespace Avalonia.Skia.Text
                         }
                         else
                         {
-                            // Make sure we don't split a surrogate pair
-                            if ((splitWithinSurrogatePair && span.Length < 2)
-                                || char.IsHighSurrogate(start.SecondTextRun.Text[span.Length - 1]))
-                            {
-                                splitLength = 2;
-                            }
-                            else
-                            {
-                                splitLength = span.Length;
-                            }
-
-                            // Apply in between the run
-                            var end = SplitTextRun(start.SecondTextRun, 0, splitLength);
+                            // Apply at start of the run 
+                            var start = SplitTextRun(currentTextRun, 0, splitLength);
 
                             textRuns.RemoveAt(runIndex);
 
-                            textRuns.Insert(runIndex, start.FirstTextRun);
-
-                            runIndex++;
-
-                            var updatedTextRun = ApplyTextStyleSpan(span, end.FirstTextRun);
+                            var updatedTextRun = ApplyTextStyleSpan(span, start.FirstTextRun, out needsUpdate);
 
                             appliedLength += updatedTextRun.Text.Length;
 
@@ -774,25 +746,110 @@ namespace Avalonia.Skia.Text
 
                             runIndex++;
 
-                            textRuns.Insert(runIndex, end.SecondTextRun);
+                            textRuns.Insert(runIndex, start.SecondTextRun);
                         }
                     }
                     else
                     {
-                        textRuns.RemoveAt(runIndex);
+                        var splitLength = Math.Min(
+                            span.StartIndex + appliedLength - currentLength,
+                            currentTextRun.Text.Length);
 
-                        var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun);
+                        var splitWithinSurrogatePair = false;
 
-                        textRuns.Insert(runIndex, updatedTextRun);
+                        // Make sure we don't split a surrogate pair
+                        if (char.IsHighSurrogate(currentTextRun.Text[splitLength - 1]))
+                        {
+                            splitWithinSurrogatePair = true;
+                            splitLength--;
+                        }
+
+                        if (splitLength > 0)
+                        {
+                            var start = SplitTextRun(currentTextRun, 0, splitLength);
+
+                            if (splitLength + span.Length - appliedLength >= currentTextRun.Text.Length)
+                            {
+                                // Apply at the end of the run      
+                                textRuns.RemoveAt(runIndex);
+
+                                textRuns.Insert(runIndex, start.FirstTextRun);
+
+                                runIndex++;
+
+                                var updatedTextRun = ApplyTextStyleSpan(span, start.SecondTextRun, out needsUpdate);
+
+                                appliedLength += updatedTextRun.Text.Length;
+
+                                textRuns.Insert(runIndex, updatedTextRun);
+                            }
+                            else
+                            {
+                                // Make sure we don't split a surrogate pair
+                                if ((splitWithinSurrogatePair && span.Length < 2)
+                                    || char.IsHighSurrogate(start.SecondTextRun.Text[span.Length - 1]))
+                                {
+                                    splitLength = 2;
+                                }
+                                else
+                                {
+                                    splitLength = span.Length;
+                                }
+
+                                // Apply in between the run
+                                var end = SplitTextRun(start.SecondTextRun, 0, splitLength);
+
+                                textRuns.RemoveAt(runIndex);
+
+                                textRuns.Insert(runIndex, start.FirstTextRun);
+
+                                runIndex++;
+
+                                var updatedTextRun = ApplyTextStyleSpan(span, end.FirstTextRun, out needsUpdate);
+
+                                appliedLength += updatedTextRun.Text.Length;
+
+                                textRuns.Insert(runIndex, updatedTextRun);
+
+                                runIndex++;
+
+                                textRuns.Insert(runIndex, end.SecondTextRun);
+                            }
+                        }
+                        else
+                        {
+                            textRuns.RemoveAt(runIndex);
+
+                            var updatedTextRun = ApplyTextStyleSpan(span, currentTextRun, out needsUpdate);
+
+                            textRuns.Insert(runIndex, updatedTextRun);
+                        }
                     }
-                }
 
-                if (appliedLength >= span.Length)
-                {
-                    return;
-                }
+                    textLines.RemoveAt(lineIndex);
 
-                currentLength += currentTextRun.Text.Length;
+                    if (needsUpdate)
+                    {
+                        currentTextLine = CreateShapedTextLine(textRuns, currentTextLine.StartingIndex);
+                    }
+                    else
+                    {
+                        currentTextLine = new SKTextLine(
+                            currentTextLine.StartingIndex,
+                            currentTextLine.Length,
+                            textRuns,
+                            currentTextLine.LineMetrics);
+
+                        textLines.Insert(lineIndex, currentTextLine);
+                    }
+
+                    if (appliedLength >= span.Length)
+                    {
+                        return;
+                    }
+
+                    currentLength += currentTextRun.Text.Length;
+                }
             }
         }
 
@@ -801,15 +858,16 @@ namespace Avalonia.Skia.Text
         /// </summary>
         /// <param name="span">The text span.</param>
         /// <param name="textRun">The text run.</param>
+        /// <param name="needsUpdate">Indicates whether the layout needs to update measures.</param>
         /// <returns></returns>
-        private SKTextRun ApplyTextStyleSpan(FormattedTextStyleSpan span, SKTextRun textRun)
+        private SKTextRun ApplyTextStyleSpan(FormattedTextStyleSpan span, SKTextRun textRun, out bool needsUpdate)
         {
             var text = textRun.Text;
             var textFormat = textRun.TextFormat;
             var glyphRun = textRun.GlyphRun;
             var fontMetrics = textRun.FontMetrics;
             var width = textRun.Width;
-            var drawingEffect = span.DrawingEffect ?? textRun.DrawingEffect;
+            var drawingEffect = span.Foreground ?? textRun.Foreground;
 
             if (span.FontSize != null || span.Typeface != null)
             {
@@ -821,8 +879,12 @@ namespace Avalonia.Skia.Text
 
                 textFormat = new SKTextFormat(typeFace, (float)fontSize);
 
-                return CreateTextRun(text, textFormat, drawingEffect);
+                needsUpdate = true;
+
+                return CreateTextRun(text, textFormat, drawingEffect, true);
             }
+
+            needsUpdate = false;
 
             return new SKTextRun(
                 text,
@@ -867,26 +929,14 @@ namespace Avalonia.Skia.Text
         {
             if (string.IsNullOrEmpty(_text))
             {
-                var emptyTextLine = CreateTextLine(string.Empty, 0, 0);
+                var emptyTextLine = CreateEmptyTextLine();
 
                 Size = new Size(emptyTextLine.LineMetrics.Size.Width, emptyTextLine.LineMetrics.Size.Height);
 
                 return new List<SKTextLine> { emptyTextLine };
             }
 
-            var currentTextRuns = CreateTextRuns(_text, 0, _text.Length, out _);
-
-            if (spans != null)
-            {
-                var updatedTextRuns = new List<SKTextRun>(currentTextRuns);
-
-                foreach (var textStyleSpan in spans)
-                {                    
-                    ApplyTextStyleSpan(updatedTextRuns, textStyleSpan);                   
-                }
-
-                currentTextRuns = updatedTextRuns;
-            }
+            var currentTextRuns = CreateTextRuns(_text, 0, _text.Length);
 
             var textLines = new List<SKTextLine>();
 
@@ -902,9 +952,13 @@ namespace Avalonia.Skia.Text
 
                     if (lineBreakPosition == -1)
                     {
-                        if (_text.Length - currentPosition - length == textRun.Text.Length)
+                        if (currentPosition + length + textRun.Text.Length == _text.Length)
                         {
-                            textLines.Add(CreateTextLine(currentTextRuns, currentPosition));
+                            var textLine = CreateShapedTextLine(currentTextRuns, currentPosition);
+
+                            var textWrappingResult = PerformTextWrapping(textLine);
+
+                            textLines.AddRange(textWrappingResult);
 
                             currentTextRuns = null;
 
@@ -912,40 +966,34 @@ namespace Avalonia.Skia.Text
                         }
 
                         length += textRun.Text.Length;
-
-                        continue;
                     }
+                    else
+                    {
+                        length += lineBreakPosition + 1;
 
-                    length += lineBreakPosition + 1;
+                        var splitResult = SplitTextRuns(currentTextRuns, length);
 
-                    var splitResult = SplitTextRuns(currentTextRuns, length);
+                        var textLine = CreateShapedTextLine(splitResult.FirstTextRuns, currentPosition);
 
-                    var textLine = CreateTextLine(splitResult.FirstTextRuns, currentPosition);
+                        var textWrappingResult = PerformTextWrapping(textLine);
 
-                    textLines.Add(textLine);
+                        textLines.AddRange(textWrappingResult);
 
-                    currentTextRuns = splitResult.SecondTextRuns;
+                        currentTextRuns = splitResult.SecondTextRuns;
 
-                    currentPosition += textLine.Length;
+                        currentPosition += textLine.Length;
 
-                    break;
+                        break;
+                    }
                 }
             }
 
-            for (var lineIndex = 0; lineIndex < textLines.Count;)
+            if (spans != null)
             {
-                var textLine = textLines[lineIndex];
-
-                var lineBreakResult = PerformLineBreak(textLine);
-
-                if (lineBreakResult.Count > 1)
+                foreach (var textStyleSpan in spans)
                 {
-                    textLines.RemoveAt(lineIndex);
-
-                    textLines.InsertRange(lineIndex, lineBreakResult);
+                    ApplyTextStyleSpan(textLines, textStyleSpan);
                 }
-
-                lineIndex += lineBreakResult.Count;
             }
 
             var sizeX = 0.0f;
@@ -967,13 +1015,14 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        /// Creates text run with a specific text format.
+        /// Creates a text run with a specific text format.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="textFormat">The text format.</param>
-        /// <param name="drawingEffect">The drawing effect.</param>
+        /// <param name="foregroundBrush">The foreground brush.</param>
+        /// <param name="shapeRun">Indicates whether the run should get shaped or not.</param>
         /// <returns></returns>
-        private SKTextRun CreateTextRun(string text, SKTextFormat textFormat, IBrush drawingEffect = null)
+        private SKTextRun CreateTextRun(string text, SKTextFormat textFormat, IBrush foregroundBrush = null, bool shapeRun = false)
         {
             _paint.Typeface = textFormat.Typeface;
 
@@ -986,6 +1035,11 @@ namespace Avalonia.Skia.Text
             if (string.IsNullOrEmpty(text))
             {
                 return CreateEmptyTextRun(textFormat);
+            }
+
+            if (!shapeRun)
+            {
+                return new SKTextRun(text, null, textFormat, fontMetrics, 0, foregroundBrush);
             }
 
             using (var shaper = new SKShaper(textFormat.Typeface))
@@ -1004,7 +1058,7 @@ namespace Avalonia.Skia.Text
 
                 var width = glyphs.GlyphClusters.Sum(x => x.Bounds.Width);
 
-                return new SKTextRun(text, glyphs, textFormat, fontMetrics, width, drawingEffect);
+                return new SKTextRun(text, glyphs, textFormat, fontMetrics, width, foregroundBrush);
             }
         }
 
@@ -1128,13 +1182,11 @@ namespace Avalonia.Skia.Text
         /// <param name="text">The text.</param>
         /// <param name="startingIndex">Index of the starting.</param>
         /// <param name="length">The length.</param>
-        /// <param name="textLineMetrics">The text line metrics.</param>
         /// <returns></returns>
         private unsafe IReadOnlyList<SKTextRun> CreateTextRuns(
             string text,
             int startingIndex,
-            int length,
-            out SKTextLineMetrics textLineMetrics)
+            int length)
         {
             var textRuns = new List<SKTextRun>();
             var textPosition = 0;
@@ -1258,103 +1310,102 @@ namespace Avalonia.Skia.Text
                 }
             }
 
-            textLineMetrics = CreateTextLineMetrics(textRuns, out _);
-
             return textRuns;
         }
 
         /// <summary>
-        /// Performs line breaks if needed and returns a list of text lines.
+        /// Performs text wrapping if needed and returns a list of text lines.
         /// </summary>
-        /// <param name="textLine">The text.</param>
+        /// <param name="textLine">The text line.</param>
         /// <returns></returns>
-        private IReadOnlyList<SKTextLine> PerformLineBreak(SKTextLine textLine)
-        {
-            var textLines = new List<SKTextLine>();
-
-            if (textLine.LineMetrics.Size.Width > _constraint.Width && _textWrapping == TextWrapping.Wrap)
+        private IReadOnlyList<SKTextLine> PerformTextWrapping(SKTextLine textLine)
+        {        
+            if (_textWrapping != TextWrapping.Wrap || textLine.LineMetrics.Size.Width <= _constraint.Width)
             {
-                var availableLength = (float)_constraint.Width;
-                var currentWidth = 0.0f;
-                var runIndex = 0;
-                var currentPosition = textLine.StartingIndex;
+                return new[] { textLine };
+            }
 
-                while (runIndex < textLine.TextRuns.Count)
+            var textLines = new List<SKTextLine>();
+            var availableLength = (float)_constraint.Width;
+            var currentWidth = 0.0f;
+            var runIndex = 0;
+            var currentPosition = textLine.StartingIndex;
+
+            while (runIndex < textLine.TextRuns.Count)
+            {
+                var currentRun = textLine.TextRuns[runIndex];
+
+                currentWidth += currentRun.Width;
+
+                if (currentWidth > availableLength)
                 {
-                    var textRun = textLine.TextRuns[runIndex];
+                    var measuredLength = BreakGlyphs(currentRun.GlyphRun, availableLength);
 
-                    currentWidth += textRun.Width;
-
-                    if (currentWidth > availableLength)
+                    if (measuredLength < currentRun.Text.Length)
                     {
-                        var measuredLength = BreakGlyphs(textRun.GlyphRun, availableLength);
-
-                        if (measuredLength < textRun.Text.Length)
+                        for (var i = measuredLength; i >= 0; i--)
                         {
-                            for (var i = measuredLength; i > 0; i--)
+                            var c = currentRun.Text[i];
+
+                            if (!char.IsWhiteSpace(c))
                             {
-                                var c = textRun.Text[i];
-
-                                if (!char.IsWhiteSpace(c))
-                                {
-                                    continue;
-                                }
-
-                                measuredLength = ++i;
-
-                                break;
+                                continue;
                             }
+
+                            measuredLength = ++i;
+
+                            break;
                         }
-
-                        var splitResult = SplitTextRun(textLine.TextRuns[runIndex], 0, measuredLength);
-
-                        var textRuns = new List<SKTextRun>();
-
-                        if (runIndex > 0)
-                        {
-                            textRuns.AddRange(textLine.TextRuns.Take(runIndex));
-                        }
-
-                        if (splitResult.SecondTextRun != null)
-                        {
-                            textRuns.Add(splitResult.FirstTextRun);
-                        }
-
-                        var textLineMetrics = CreateTextLineMetrics(textRuns, out measuredLength);
-
-                        textLines.Add(new SKTextLine(currentPosition, measuredLength, textRuns, textLineMetrics));
-
-                        currentPosition += measuredLength;
-
-                        var remainingTextRuns = new List<SKTextRun>(textLine.TextRuns);
-
-                        var runCount = runIndex + 1;
-
-                        while (runCount > 0)
-                        {
-                            remainingTextRuns.RemoveAt(0);
-
-                            runCount--;
-                        }
-
-                        remainingTextRuns.Insert(0, splitResult.SecondTextRun ?? splitResult.FirstTextRun);
-
-                        textLineMetrics = CreateTextLineMetrics(remainingTextRuns, out measuredLength);
-
-                        textLine = new SKTextLine(currentPosition, measuredLength, remainingTextRuns, textLineMetrics);
-
-                        availableLength = (float)_constraint.Width;
-
-                        currentWidth = 0.0f;
-
-                        runIndex = 0;
                     }
-                    else
+
+                    var splitResult = SplitTextRun(currentRun, 0, measuredLength);
+
+                    var textRuns = new List<SKTextRun>();
+
+                    if (runIndex > 0)
                     {
-                        availableLength -= textRun.Width;
-
-                        runIndex++;
+                        textRuns.AddRange(textLine.TextRuns.Take(runIndex));
                     }
+
+                    if (splitResult.SecondTextRun != null)
+                    {
+                        textRuns.Add(splitResult.FirstTextRun);
+                    }
+
+                    var textLineMetrics = CreateTextLineMetrics(textRuns, out measuredLength);
+
+                    textLines.Add(new SKTextLine(currentPosition, measuredLength, textRuns, textLineMetrics));
+
+                    currentPosition += measuredLength;
+
+                    var remainingTextRuns = new List<SKTextRun>(textLine.TextRuns);
+
+                    var runCount = runIndex + 1;
+
+                    while (runCount > 0)
+                    {
+                        remainingTextRuns.RemoveAt(0);
+
+                        runCount--;
+                    }
+
+                    remainingTextRuns.Insert(0, splitResult.SecondTextRun ?? splitResult.FirstTextRun);
+
+                    textLineMetrics = CreateTextLineMetrics(remainingTextRuns, out measuredLength);
+
+                    textLine = new SKTextLine(currentPosition, measuredLength, remainingTextRuns, textLineMetrics);
+
+                    availableLength = (float)_constraint.Width;
+
+                    currentWidth = 0.0f;
+
+                    runIndex = 0;
+                }
+                else
+                {
+                    availableLength -= currentRun.Width;
+
+                    runIndex++;
                 }
             }
 
@@ -1377,12 +1428,14 @@ namespace Avalonia.Skia.Text
                 return new SplitTextRunResult(textRun, null);
             }
 
-            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat, textRun.DrawingEffect);
+            // ToDo: Split existing glyph run to avoid reshaping
+            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat, textRun.Foreground, true);
 
             var secondTextRun = CreateTextRun(
                 textRun.Text.Substring(length, textRun.Text.Length - length),
-                textRun.TextFormat, 
-                textRun.DrawingEffect);
+                textRun.TextFormat,
+                textRun.Foreground,
+                true);
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
@@ -1435,7 +1488,7 @@ namespace Avalonia.Skia.Text
                         firstTextRuns.AddRange(textRuns.Take(runIndex));
                     }
 
-                    var splitResult = SplitTextRun(currentRun, currentPosition, length);
+                    var splitResult = SplitTextRun(currentRun, 0, length - currentPosition);
 
                     firstTextRuns.Add(splitResult.FirstTextRun);
 

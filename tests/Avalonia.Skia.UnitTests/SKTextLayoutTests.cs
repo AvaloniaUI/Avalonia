@@ -13,7 +13,7 @@ namespace Avalonia.Skia.UnitTests
     public class SKTextLayoutTests
     {
         private static readonly string s_singleLineText = "0123456789";
-        private static readonly string s_multiLineText = "123456789\r123456789\r123456789\r123456789\r";
+        private static readonly string s_multiLineText = "012345678\r\r0123456789";
         private static readonly SKTypeface s_emojiTypeface;
 
         static SKTextLayoutTests()
@@ -29,15 +29,15 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
         {
-            const string text = "012345";
-
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(1, 2, drawingEffect: drawingEffect)};
+                        {
+                            new FormattedTextStyleSpan(1, 2, foreground: foreground)
+                        };
 
             var layout = new SKTextLayout(
-                text,
+                s_multiLineText,
                 SKTypeface.Default,
                 12.0f,
                 TextAlignment.Left,
@@ -55,17 +55,17 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal("12", textRun.Text);
 
-            Assert.Equal(drawingEffect, textRun.DrawingEffect);
+            Assert.Equal(foreground, textRun.Foreground);
         }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtStart()
         {
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
                         {
-                            new FormattedTextStyleSpan(0, 2, drawingEffect: drawingEffect)
+                            new FormattedTextStyleSpan(0, 2, foreground: foreground)
                         };
 
             var layout = new SKTextLayout(
@@ -87,16 +87,18 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal("01", textRun.Text);
 
-            Assert.Equal(drawingEffect, textRun.DrawingEffect);
+            Assert.Equal(foreground, textRun.Foreground);
         }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtEnd()
         {
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(8, 2, drawingEffect: drawingEffect)};
+                        {
+                            new FormattedTextStyleSpan(8, 2, foreground: foreground)
+                        };
 
             var layout = new SKTextLayout(
                 s_singleLineText,
@@ -117,16 +119,18 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal("89", textRun.Text);
 
-            Assert.Equal(drawingEffect, textRun.DrawingEffect);
+            Assert.Equal(foreground, textRun.Foreground);
         }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToSingleCharacter()
         {
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(0, 1, drawingEffect: drawingEffect)};
+                        {
+                            new FormattedTextStyleSpan(0, 1, foreground: foreground)
+                        };
 
             var layout = new SKTextLayout(
                 "0",
@@ -147,21 +151,21 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal("0", textRun.Text);
 
-            Assert.Equal(drawingEffect, textRun.DrawingEffect);
+            Assert.Equal(foreground, textRun.Foreground);
         }
 
         [Fact]
         public void ShouldApplyTextSpanToUnicodeStringInBetween()
         {
-            const string text = "😀 😀 😀 😀";
+            const string Text = "😀😀😀😀";
 
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(4, 1, drawingEffect: drawingEffect)};
+                {new FormattedTextStyleSpan(4, 1, foreground: foreground)};
 
             var layout = new SKTextLayout(
-                text,
+                Text,
                 s_emojiTypeface,
                 12.0f,
                 TextAlignment.Left,
@@ -179,7 +183,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal("😀", textRun.Text);
 
-            Assert.Equal(drawingEffect, textRun.DrawingEffect);
+            Assert.Equal(foreground, textRun.Foreground);
         }
 
         [Fact]
@@ -215,10 +219,10 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToMultiLine()
         {
-            var drawingEffect = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(5, 20, drawingEffect: drawingEffect)};
+                {new FormattedTextStyleSpan(5, 20, foreground: foreground)};
 
             var layout = new SKTextLayout(
                 s_multiLineText,
@@ -229,9 +233,9 @@ namespace Avalonia.Skia.UnitTests
                 new Size(200, 125),
                 spans);
 
-            Assert.Equal(drawingEffect, layout.TextLines[0].TextRuns[1].DrawingEffect);
-            Assert.Equal(drawingEffect, layout.TextLines[1].TextRuns[0].DrawingEffect);
-            Assert.Equal(drawingEffect, layout.TextLines[2].TextRuns[0].DrawingEffect);
+            Assert.Equal(foreground, layout.TextLines[0].TextRuns[1].Foreground);
+            Assert.Equal(foreground, layout.TextLines[1].TextRuns[0].Foreground);
+            Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Foreground);
         }
 
         [Fact]

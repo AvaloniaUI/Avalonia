@@ -9,14 +9,14 @@ namespace Avalonia.Skia.Text
 {
     public class SKTextRun
     {
-        public SKTextRun(string text, SKGlyphRun glyphRun, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush drawingEffect = null)
+        public SKTextRun(string text, SKGlyphRun glyphRun, SKTextFormat textFormat, SKFontMetrics fontMetrics, float width, IBrush foreground = null)
         {
             Text = text;
             GlyphRun = glyphRun;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
             Width = width;
-            DrawingEffect = drawingEffect;
+            Foreground = foreground;
         }
 
         /// <summary>
@@ -60,12 +60,12 @@ namespace Avalonia.Skia.Text
         public float Width { get; }
 
         /// <summary>
-        /// Gets the drawing effect.
+        /// Gets the foreground.
         /// </summary>
         /// <value>
         /// The drawing effect.
         /// </value>
-        public IBrush DrawingEffect { get; }
+        public IBrush Foreground { get; }
 
         public override string ToString()
         {

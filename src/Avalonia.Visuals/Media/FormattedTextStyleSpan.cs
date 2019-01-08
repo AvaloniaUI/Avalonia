@@ -14,7 +14,7 @@
         /// <param name="fontSize">The span's font size.</param>
         /// <param name="fontStyle">The span's font style.</param>
         /// <param name="fontWeight">The span's font weight</param>
-        /// <param name="drawingEffect">The span's foreground brush.</param>
+        /// <param name="foreground">The span's foreground brush.</param>
         public FormattedTextStyleSpan(
             int startIndex,
             int length,
@@ -22,13 +22,13 @@
             double? fontSize = null,
             FontStyle? fontStyle = null,
             FontWeight? fontWeight = null,
-            IBrush drawingEffect = null)
+            IBrush foreground = null)
         {
             StartIndex = startIndex;
             Length = length;
             Typeface = GetTypeface(fontFamily, fontWeight, fontStyle);
             FontSize = fontSize;
-            DrawingEffect = drawingEffect;
+            Foreground = foreground;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@
         /// <summary>
         /// Gets the span's foreground brush.
         /// </summary>
-        public IBrush DrawingEffect { get; }
+        public IBrush Foreground { get; }
 
         private static Typeface GetTypeface(FontFamily fontFamily, FontWeight? fontWeight, FontStyle? fontStyle)
         {

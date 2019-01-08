@@ -98,10 +98,10 @@ namespace Avalonia.Direct2D1.Media
         {
             if (span.Length > 0)
             {
-                if (span.DrawingEffect != null)
+                if (span.Foreground != null)
                 {
                     TextLayout.SetDrawingEffect(
-                        new BrushWrapper(span.DrawingEffect.ToImmutable()),
+                        new BrushWrapper(span.Foreground.ToImmutable()),
                         new DWrite.TextRange(span.StartIndex, span.Length));
                 }
             }

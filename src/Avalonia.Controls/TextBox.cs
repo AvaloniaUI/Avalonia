@@ -696,24 +696,17 @@ namespace Avalonia.Controls
 
         private int CoerceCaretIndex(int value, int length)
         {
-            var text = Text;
-
             if (value < 0)
             {
                 return 0;
             }
-            else if (value > length)
+
+            if (value > length)
             {
                 return length;
             }
-            else if (value > 0 && text[value - 1] == '\r' && text[value] == '\n')
-            {
-                return value + 1;
-            }
-            else
-            {
-                return value;
-            }
+
+            return value;
         }
 
         private int DeleteCharacter(int index)
