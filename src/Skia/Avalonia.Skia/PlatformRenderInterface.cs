@@ -19,6 +19,8 @@ namespace Avalonia.Skia
     {
         private GRContext GrContext { get; }
 
+        public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
+
         public PlatformRenderInterface()
         {
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();

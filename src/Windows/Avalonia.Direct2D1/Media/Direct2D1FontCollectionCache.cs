@@ -7,7 +7,7 @@ namespace Avalonia.Direct2D1.Media
     internal static class Direct2D1FontCollectionCache
     {
         private static readonly ConcurrentDictionary<FontFamilyKey, SharpDX.DirectWrite.FontCollection> s_cachedCollections;
-        private static readonly SharpDX.DirectWrite.FontCollection s_installedFontCollection;
+        internal static readonly SharpDX.DirectWrite.FontCollection s_installedFontCollection;
 
         static Direct2D1FontCollectionCache()
         {
