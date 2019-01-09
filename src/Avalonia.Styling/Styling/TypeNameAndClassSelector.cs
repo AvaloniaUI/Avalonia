@@ -68,6 +68,9 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override Type TargetType => _targetType ?? _previous?.TargetType;
 
+        /// <inheritdoc/>
+        public override bool IsCombinator => false;
+
         /// <summary>
         /// Whether the selector matches the concrete <see cref="TargetType"/> or any object which
         /// implements <see cref="TargetType"/>.
@@ -101,21 +104,23 @@ namespace Avalonia.Styling
                 {
                     if (controlType != TargetType)
                     {
-                        return SelectorMatch.False;
+                        return SelectorMatch.NeverThisType;
                     }
                 }
                 else
                 {
                     if (!TargetType.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()))
                     {
-                        return SelectorMatch.False;
+                        return SelectorMatch.NeverThisType;
                     }
                 }
             }
 
-            if (Name != null && control.Name != Name)
+            if (Name != null)
             {
-                return SelectorMatch.False;
+                return control.Name == Name ? 
+                    SelectorMatch.AlwaysThisInstance :
+                    SelectorMatch.NeverThisInstance;
             }
 
             if (_classes.IsValueCreated && _classes.Value.Count > 0)
@@ -127,12 +132,14 @@ namespace Avalonia.Styling
                 }
                 else
                 {
-                    return new SelectorMatch(Matches(control.Classes));
+                    return Matches(control.Classes) ?
+                        SelectorMatch.AlwaysThisInstance :
+                        SelectorMatch.NeverThisInstance;
                 }
             }
             else
             {
-                return SelectorMatch.True;
+                return SelectorMatch.AlwaysThisType;
             }
         }
 
