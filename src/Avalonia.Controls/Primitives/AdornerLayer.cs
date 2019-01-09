@@ -13,7 +13,7 @@ namespace Avalonia.Controls.Primitives
     // TODO: Need to track position of adorned elements and move the adorner if they move.
     public class AdornerLayer : Panel, ICustomSimpleHitTest
     {
-        public static AttachedProperty<Visual> AdornedElementProperty =
+        public static readonly AttachedProperty<Visual> AdornedElementProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
 
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
