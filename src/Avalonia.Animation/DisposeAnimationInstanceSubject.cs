@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Animation.Animators;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
@@ -33,8 +34,6 @@ namespace Avalonia.Animation
             this._onComplete = onComplete;
             this._clock = clock;
         }
-
-
         public void Dispose()
         {
             _lastInstance?.Dispose();

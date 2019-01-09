@@ -87,7 +87,9 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IDisposable ShowDialog() => Disposable.Empty;
+        public void ShowDialog(IWindowImpl parent)
+        {
+        }
 
         public void SetSystemDecorations(bool enabled)
         {

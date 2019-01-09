@@ -62,9 +62,11 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = new Window();
+                parent.Show();
                 var window = new Window();
 
-                var task = window.ShowDialog();
+                var task = window.ShowDialog(parent);
 
                 Assert.True(window.IsVisible);
             }
@@ -258,12 +260,13 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = new Mock<IWindowImpl>();
                 var windowImpl = new Mock<IWindowImpl>();
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.Scaling).Returns(1);
 
                 var target = new Window(windowImpl.Object);
-                var task = target.ShowDialog<bool>();
+                var task = target.ShowDialog<bool>(parent.Object);
 
                 windowImpl.Object.Closed();
 
