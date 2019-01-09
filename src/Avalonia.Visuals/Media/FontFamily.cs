@@ -53,7 +53,7 @@ namespace Avalonia.Media
         public static FontFamily Default => new FontFamily(String.Empty);
 
         /// <summary>
-        /// Represents all font families in the system
+        /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
         /// </summary>
         public static IEnumerable<FontFamily> SystemFontFamilies =>
             AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().InstalledFontNames.Select(name => new FontFamily(name));
