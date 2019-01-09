@@ -7,7 +7,7 @@ namespace Avalonia
 {
     internal class ValueStore : IPriorityValueOwner
     {
-        struct Entry
+        private struct Entry
         {
             internal int PropertyId;
             internal object Value;
@@ -238,7 +238,7 @@ namespace Avalonia
 
         private (int, bool) TryFindEntry(int propertyId)
         {
-            if (_entries.Length <= 20)
+            if (_entries.Length <= 16)
             {
                 // For small lists, we use an optimized linear search. Since the last item in the list
                 // is always int.MaxValue, we can skip a conditional branch in each iteration.
@@ -259,10 +259,6 @@ namespace Avalonia
                 if (_entries[12].PropertyId >= propertyId) return (12, _entries[12].PropertyId == propertyId);
                 if (_entries[13].PropertyId >= propertyId) return (13, _entries[13].PropertyId == propertyId);
                 if (_entries[14].PropertyId >= propertyId) return (14, _entries[14].PropertyId == propertyId);
-                if (_entries[15].PropertyId >= propertyId) return (15, _entries[15].PropertyId == propertyId);
-                if (_entries[16].PropertyId >= propertyId) return (16, _entries[16].PropertyId == propertyId);
-                if (_entries[17].PropertyId >= propertyId) return (17, _entries[17].PropertyId == propertyId);
-                if (_entries[18].PropertyId >= propertyId) return (18, _entries[18].PropertyId == propertyId);
             }
             else
             {

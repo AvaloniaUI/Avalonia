@@ -155,7 +155,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="id">The property Id.</param>
         /// <returns>The registered property or null if no matching property found.</returns>
-        public AvaloniaProperty FindRegistered(int id)
+        internal AvaloniaProperty FindRegistered(int id)
         {
             return _allProperties.TryGetValue(id, out var value) ? value : null;
         }
