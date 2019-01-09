@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11
@@ -17,6 +18,12 @@ namespace Avalonia.X11
         public IntPtr DefaultCursor { get; }
         public X11Atoms Atoms { get; }
         public IntPtr Xim { get; }
+        
+        public int RandrEventBase { get; }
+        public int RandrErrorBase { get; }
+        
+        public Version RandrVersion { get; }
+        
 
         public IntPtr LastActivityTimestamp { get; set; }
         
@@ -33,6 +40,22 @@ namespace Avalonia.X11
             //TODO: Open an actual XIM once we get support for preedit in our textbox
             XSetLocaleModifiers("@im=none");
             Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+            try
+            {
+                if (XRRQueryExtension(display, out int randrEventBase, out var randrErrorBase) != 0)
+                {
+                    RandrEventBase = randrEventBase;
+                    RandrErrorBase = randrErrorBase;
+                    if (XRRQueryVersion(display, out var major, out var minor) != 0)
+                        RandrVersion = new Version(major, minor);
+                }
+            }
+            catch
+            {
+                //Ignore, randr is not supported
+            }
+
         }
     }
 }

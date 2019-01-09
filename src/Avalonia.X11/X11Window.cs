@@ -636,8 +636,8 @@ namespace Avalonia.X11
             }
         }
 
-        
-        public IScreenImpl Screen { get; } = new ScreenStub();
+
+        public IScreenImpl Screen { get; } = AvaloniaLocator.CurrentMutable.GetService<IScreenImpl>();
         public Size MaxClientSize { get; } = new Size(1920, 1280);
 
 

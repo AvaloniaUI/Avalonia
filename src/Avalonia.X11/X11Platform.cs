@@ -41,6 +41,7 @@ namespace Avalonia.X11
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub());
+            X11Screens.Init(this);
             EglGlPlatformFeature.TryInitialize();
 
         }

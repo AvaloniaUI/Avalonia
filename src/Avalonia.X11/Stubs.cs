@@ -63,12 +63,4 @@ namespace Avalonia.X11
             return new FakeIcon(ms.ToArray());
         }
     }
-
-    class ScreenStub : IScreenImpl
-    {
-        public int ScreenCount { get; } = 1;
-
-        public Screen[] AllScreens { get; } =
-            {new Screen(new Rect(0, 0, 1920, 1280), new Rect(0, 0, 1920, 1280), true)};
-    }
 }

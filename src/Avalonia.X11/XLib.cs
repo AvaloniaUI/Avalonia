@@ -14,7 +14,8 @@ namespace Avalonia.X11
 {
     internal unsafe static class XLib
     {
-        const string libX11 = "X11";
+        const string libX11 = "libX11.so.6";
+        const string libX11Randr = "libXrandr.so.2";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -450,6 +451,22 @@ namespace Avalonia.X11
 
         [DllImport (libX11)]
         public static extern void XDestroyIC (IntPtr xic);
+        
+        [DllImport(libX11Randr)]
+        public static extern int XRRQueryExtension (IntPtr dpy,
+            out int event_base_return,
+            out int error_base_return);
+
+        [DllImport(libX11Randr)]
+        public static extern int XRRQueryVersion(IntPtr dpy,
+            out int major_version_return,
+            out int minor_version_return);
+
+        [DllImport(libX11Randr)]
+        public static extern XRRMonitorInfo*
+            XRRGetMonitors(IntPtr dpy, IntPtr window, bool get_active, out int nmonitors);
+        [DllImport(libX11Randr)]
+        public static extern void XRRSelectInput(IntPtr dpy, IntPtr window, RandrEventMask mask);
         
         public struct XGeometry
         {

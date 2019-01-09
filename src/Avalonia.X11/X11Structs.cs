@@ -849,7 +849,43 @@ namespace Avalonia.X11 {
 		OwnerGrabButtonMask	= 1<<24
 	}
 
-	internal enum GrabMode {
+    [Flags]
+    internal enum RandrEventMask
+    {
+        RRScreenChangeNotify = 1 << 0,
+
+/* V1.2 additions */
+        RRCrtcChangeNotifyMask = 1 << 1,
+        RROutputChangeNotifyMask = 1 << 2,
+        RROutputPropertyNotifyMask = 1 << 3,
+
+/* V1.4 additions */
+        RRProviderChangeNotifyMask = 1 << 4,
+        RRProviderPropertyNotifyMask = 1 << 5,
+        RRResourceChangeNotifyMask = 1 << 6,
+
+/* V1.6 additions */
+        RRLeaseNotifyMask = 1 << 7
+    }
+
+    internal enum RandrEvent
+    {
+        RRScreenChangeNotify = 0,
+
+        /* V1.2 additions */
+        RRNotify = 1
+    }
+
+    internal enum RandrRotate
+    {
+        /* used in the rotation field; rotation and reflection in 0.1 proto. */
+        RR_Rotate_0 = 1,
+        RR_Rotate_90 = 2,
+        RR_Rotate_180 = 4,
+        RR_Rotate_270 = 8
+    }
+
+    internal enum GrabMode {
 		GrabModeSync		= 0,
 		GrabModeAsync		= 1
 	}
@@ -1812,4 +1848,18 @@ namespace Avalonia.X11 {
 		public const string XNSpotLocation = "spotLocation";
 		public const string XNFontSet = "fontSet";
 	}
+	
+    struct XRRMonitorInfo {
+        public IntPtr Name;
+        public int Primary;
+        public int Automatic;
+        public int NOutput;
+        public int X;
+        public int Y;
+        public int Width;
+        public int Height;
+        public int MWidth;
+        public int MHeight;
+        public IntPtr Outputs;
+    } 
 }
