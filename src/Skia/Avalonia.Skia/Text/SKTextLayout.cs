@@ -84,7 +84,7 @@ namespace Avalonia.Skia.Text
         /// <param name="foreground">The default foreground.</param>
         /// <param name="canvas">The canvas.</param>
         /// <param name="origin">The origin.</param>
-        public void Draw(DrawingContextImpl context, IBrush foreground, SKCanvas canvas, SKPoint origin)
+        public unsafe void Draw(DrawingContextImpl context, IBrush foreground, SKCanvas canvas, SKPoint origin)
         {
             if (!TextLines.Any())
             {
@@ -138,7 +138,12 @@ namespace Avalonia.Skia.Text
                         {
                             InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                            canvas.DrawPositionedText(textRun.GlyphRun.GlyphIds, textRun.GlyphRun.GlyphPositions, _paint);
+                            fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
+                            {
+                                var p = (IntPtr)buffer;
+
+                                canvas.DrawPositionedText(p, textRun.GlyphRun.GlyphIndices.Length * 2, textRun.GlyphRun.GlyphOffsets, _paint);
+                            }
                         }
 
                         canvas.Translate(textRun.Width, 0);
@@ -1015,6 +1020,20 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
+        /// Creates a text run.
+        /// </summary>
+        /// <param name="textRun">The text run.</param>
+        /// <param name="startingIndex">Index of the starting.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        private SKTextRun CreateTextRun(SKTextRun textRun, int startingIndex, int length)
+        {
+            var text = textRun.Text.Substring(startingIndex, length);
+
+            return CreateTextRun(text, textRun.TextFormat, textRun.Foreground, true);
+        }
+
+        /// <summary>
         /// Creates a text run with a specific text format.
         /// </summary>
         /// <param name="text">The text.</param>
@@ -1046,7 +1065,7 @@ namespace Avalonia.Skia.Text
             {
                 var result = shaper.Shape(text, _paint);
 
-                var glyphsIds = result.Codepoints.SelectMany(cp => BitConverter.GetBytes((ushort)cp)).ToArray();
+                var glyphsIds = result.Codepoints.Select(x => (ushort)x).ToArray();
 
                 var points = result.Points;
 
@@ -1062,6 +1081,11 @@ namespace Avalonia.Skia.Text
             }
         }
 
+        /// <summary>
+        /// Creates the empty text run.
+        /// </summary>
+        /// <param name="textFormat">The text format.</param>
+        /// <returns></returns>
         private SKTextRun CreateEmptyTextRun(SKTextFormat textFormat)
         {
             _paint.Typeface = textFormat.Typeface;
@@ -1074,17 +1098,26 @@ namespace Avalonia.Skia.Text
 
             var glyphClusters = new[] { new SKGlyphCluster(0, 0, new SKRect(0, 0, 0, height)) };
 
-            var glyphs = new SKGlyphRun(Array.Empty<byte>(), Array.Empty<SKPoint>(), glyphClusters);
+            var glyphs = new SKGlyphRun(Array.Empty<ushort>(), Array.Empty<SKPoint>(), glyphClusters);
 
             return new SKTextRun(string.Empty, glyphs, textFormat, fontMetrics, 0);
         }
 
-        private unsafe List<SKGlyphCluster> CreateGlyphClusters(
+        /// <summary>
+        /// Creates the glyph clusters.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="fontMetrics">The font metrics.</param>
+        /// <param name="glyphsIndices">The glyphs indices.</param>
+        /// <param name="clusters">The clusters.</param>
+        /// <param name="glyphOffsets">The glyph offsets.</param>
+        /// <returns></returns>
+        private IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             string text,
             SKFontMetrics fontMetrics,
-            byte[] glyphsIds,
+            ushort[] glyphsIndices,
             uint[] clusters,
-            IReadOnlyList<SKPoint> points)
+            SKPoint[] glyphOffsets)
         {
             var glyphClusters = new List<SKGlyphCluster>();
 
@@ -1147,24 +1180,20 @@ namespace Avalonia.Skia.Text
                     }
                     else
                     {
-                        fixed (byte* p = glyphsIds)
+                        var bytes = BitConverter.GetBytes(glyphsIndices[index]);
+
+                        // https://github.com/google/skia/blob/master/include/core/SkFont.h#L407
+                        var measuredWidth = _paint.MeasureText(bytes);
+
+                        // ToDo: proper width calculation of clusters with diacritics
+                        if (width < measuredWidth)
                         {
-                            var ptr = (IntPtr)p;
-
-                            ptr = IntPtr.Add(ptr, index * 2);
-
-                            var measuredWidth = _paint.MeasureText(ptr, new IntPtr(2));
-
-                            // ToDo: proper width calculation of clusters with diacritics
-                            if (width < measuredWidth)
-                            {
-                                width = measuredWidth;
-                            }
+                            width = measuredWidth;
                         }
                     }
                 }
 
-                var point = points[currentCluster];
+                var point = glyphOffsets[currentCluster];
 
                 var rect = new SKRect(point.X, point.Y, point.X + width, point.Y + height);
 
@@ -1222,6 +1251,7 @@ namespace Avalonia.Skia.Text
 
                 if (glyphCount == 0)
                 {
+                    // ToDo: Custom implementation that uses a Span<char>
                     var codePoint = char.ConvertToUtf32(runText, 0);
 
                     typeface = SKFontManager.Default.MatchCharacter(codePoint);
@@ -1319,7 +1349,7 @@ namespace Avalonia.Skia.Text
         /// <param name="textLine">The text line.</param>
         /// <returns></returns>
         private IReadOnlyList<SKTextLine> PerformTextWrapping(SKTextLine textLine)
-        {        
+        {
             if (_textWrapping != TextWrapping.Wrap || textLine.LineMetrics.Size.Width <= _constraint.Width)
             {
                 return new[] { textLine };
@@ -1429,13 +1459,9 @@ namespace Avalonia.Skia.Text
             }
 
             // ToDo: Split existing glyph run to avoid reshaping
-            var firstTextRun = CreateTextRun(textRun.Text.Substring(startingIndex, length), textRun.TextFormat, textRun.Foreground, true);
+            var firstTextRun = CreateTextRun(textRun, startingIndex, length);
 
-            var secondTextRun = CreateTextRun(
-                textRun.Text.Substring(length, textRun.Text.Length - length),
-                textRun.TextFormat,
-                textRun.Foreground,
-                true);
+            var secondTextRun = CreateTextRun(textRun, length, textRun.Text.Length - length);
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
