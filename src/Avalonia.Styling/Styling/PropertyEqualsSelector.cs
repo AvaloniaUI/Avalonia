@@ -72,11 +72,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
         {
-            if (!AvaloniaPropertyRegistry.Instance.IsRegistered(control, _property))
-            {
-                return SelectorMatch.False;
-            }
-            else if (subscribe)
+            if (subscribe)
             {
                 return new SelectorMatch(control.GetObservable(_property).Select(v => Equals(v ?? string.Empty, _value)));
             }
