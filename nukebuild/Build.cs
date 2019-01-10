@@ -57,6 +57,17 @@ partial class Build : NukeBuild
         Information("IsReleasable: " + Parameters.IsReleasable);
         Information("IsMyGetRelease: " + Parameters.IsMyGetRelease);
         Information("IsNuGetRelease: " + Parameters.IsNuGetRelease);
+
+        void ExecWait(string preamble, string command, string args)
+        {
+            Console.WriteLine(preamble);
+            Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
+        }
+        ExecWait("dotnet version:", "dotnet", "--version");
+        if (Parameters.IsRunningOnUnix)
+            ExecWait("Mono version:", "mono", "--version");
+
+
     }
 
     Target Clean => _ => _.Executes(() =>
