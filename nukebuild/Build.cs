@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.Git;
 using Nuke.Common.ProjectModel;
@@ -92,16 +93,24 @@ partial class Build : NukeBuild
                 );
         });
     
-    void RunCoreTest(string project, bool coreOnly = false)
+    void RunCoreTest(string project)
     {
         if(!project.EndsWith(".csproj"))
             project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
         Information("Running tests from " + project);
-        var frameworks = new List<string>(){"netcoreapp2.0"};
+        XDocument xdoc;
+        using (var s = File.OpenRead(project))
+            xdoc = XDocument.Load(s);
+
+        List<string> frameworks = null;
+        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
+        if (targets != null)
+            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
+        else 
+            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
+        
         foreach(var fw in frameworks)
         {
-            if(!fw.StartsWith("netcoreapp") && coreOnly)
-                continue;
             Information("Running for " + fw);
             DotNetTest(c =>
             {
@@ -124,18 +133,18 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Animation.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Base.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Controls.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Input.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Interactivity.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Layout.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Markup.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Styling.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Visuals.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.Skia.UnitTests", false);
-            RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests", false);
+            RunCoreTest("./tests/Avalonia.Animation.UnitTests");
+            RunCoreTest("./tests/Avalonia.Base.UnitTests");
+            RunCoreTest("./tests/Avalonia.Controls.UnitTests");
+            RunCoreTest("./tests/Avalonia.Input.UnitTests");
+            RunCoreTest("./tests/Avalonia.Interactivity.UnitTests");
+            RunCoreTest("./tests/Avalonia.Layout.UnitTests");
+            RunCoreTest("./tests/Avalonia.Markup.UnitTests");
+            RunCoreTest("./tests/Avalonia.Markup.Xaml.UnitTests");
+            RunCoreTest("./tests/Avalonia.Styling.UnitTests");
+            RunCoreTest("./tests/Avalonia.Visuals.UnitTests");
+            RunCoreTest("./tests/Avalonia.Skia.UnitTests");
+            RunCoreTest("./tests/Avalonia.ReactiveUI.UnitTests");
         });
 
     Target RunRenderTests => _ => _
@@ -143,9 +152,9 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj", true);
+            RunCoreTest("./tests/Avalonia.Skia.RenderTests/Avalonia.Skia.RenderTests.csproj");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj", true);
+                RunCoreTest("./tests/Avalonia.Direct2D1.RenderTests/Avalonia.Direct2D1.RenderTests.csproj");
         });
     
     Target RunDesignerTests => _ => _
@@ -153,7 +162,7 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("./tests/Avalonia.DesignerSupport.Tests", false);
+            RunCoreTest("./tests/Avalonia.DesignerSupport.Tests");
         });
 
     [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
