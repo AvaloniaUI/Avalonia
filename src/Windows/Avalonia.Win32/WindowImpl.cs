@@ -153,10 +153,14 @@ namespace Avalonia.Win32
 
         public void Resize(Size value)
         {
-            var clientRect = ClientSize;
-            if (value != clientRect)
+            int requestedClientWidth = (int)(value.Width * Scaling);
+            int requestedClientHeight = (int)(value.Height * Scaling);
+            UnmanagedMethods.RECT clientRect;
+            UnmanagedMethods.GetClientRect(_hwnd, out clientRect);
+           
+            // do comparison after scaling to avoid rounding issues
+            if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
             {
-                value *= Scaling;
                 UnmanagedMethods.RECT windowRect;
                 UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
 
@@ -165,8 +169,8 @@ namespace Avalonia.Win32
                     IntPtr.Zero,
                     0,
                     0,
-                    (int)(value.Width + (windowRect.Width - clientRect.Width)),
-                    (int)(value.Height + (windowRect.Height - clientRect.Height)),
+                    requestedClientWidth + (windowRect.Width - clientRect.Width),
+                    requestedClientHeight + (windowRect.Height - clientRect.Height),
                     UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
