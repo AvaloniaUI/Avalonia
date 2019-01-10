@@ -26,7 +26,7 @@ namespace Avalonia.Styling.UnitTests
 
             var selector = default(Selector).OfType<TestLogical1>().Descendant().OfType<TestLogical2>();
 
-            Assert.True(selector.Match(child).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(child).Result);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Avalonia.Styling.UnitTests
 
             var selector = default(Selector).OfType<TestLogical1>().Descendant().OfType<TestLogical3>();
 
-            Assert.True(selector.Match(child).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(child).Result);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).ObservableResult;
+            var activator = selector.Match(child).Activator;
 
             Assert.True(await activator.Take(1));
         }
@@ -74,7 +74,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).ObservableResult;
+            var activator = selector.Match(child).Activator;
 
             Assert.False(await activator.Take(1));
         }
@@ -90,7 +90,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Descendant().OfType<TestLogical3>();
-            var activator = selector.Match(child).ObservableResult;
+            var activator = selector.Match(child).Activator;
 
             Assert.False(await activator.Take(1));
             parent.Classes.Add("foo");

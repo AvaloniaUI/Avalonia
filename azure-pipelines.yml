@@ -51,7 +51,9 @@ jobs:
   - task: CmdLine@2
     displayName: 'Install CastXML'
     inputs:
-      script: brew install castxml
+      script: |
+        brew update
+        brew install castxml
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
