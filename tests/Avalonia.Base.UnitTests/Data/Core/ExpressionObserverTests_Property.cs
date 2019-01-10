@@ -568,6 +568,19 @@ namespace Avalonia.Base.UnitTests.Data.Core
             Assert.Null(result.Item2.Target);
         }
 
+        [Fact]
+        public void Should_Not_Throw_Exception_On_Unsubscribe_When_Already_Unsubscribed()
+        {
+            var source = new Class1 { Foo = "foo" };
+            var target = new PropertyAccessorNode("Foo", false);
+            Assert.NotNull(target);
+            target.Target = new WeakReference(source);
+            target.Subscribe(_ => { });
+            target.Unsubscribe();
+            target.Unsubscribe();
+            Assert.True(true);
+        }
+
         private interface INext
         {
             int PropertyChangedSubscriptionCount { get; }

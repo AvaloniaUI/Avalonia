@@ -40,9 +40,10 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.True(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.True(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -54,9 +55,10 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.False(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.False(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -69,9 +71,10 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var match = target.Match(control);
 
-            Assert.True(await activator.Take(1));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            Assert.True(await match.Activator.Take(1));
         }
 
         [Fact]
@@ -80,7 +83,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1();
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator;
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -96,7 +99,7 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator;
 
             Assert.True(await activator.Take(1));
             control.Classes.Remove("foo");
@@ -108,7 +111,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var control = new Control1();
             var target = default(Selector).Class("foo").Class("bar");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator;
 
             Assert.False(await activator.Take(1));
             control.Classes.Add("foo");
@@ -129,7 +132,7 @@ namespace Avalonia.Styling.UnitTests
             };
 
             var target = default(Selector).Class("foo");
-            var activator = target.Match(control).ObservableResult;
+            var activator = target.Match(control).Activator;
             var result = new List<bool>();
 
             using (activator.Subscribe(x => result.Add(x)))
