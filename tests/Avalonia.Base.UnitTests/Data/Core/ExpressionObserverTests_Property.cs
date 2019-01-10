@@ -558,7 +558,12 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var result = run();
             result.Item1.Subscribe(x => { });
 
-            GC.Collect();
+            // Mono trickery
+            GC.Collect(2);
+            GC.WaitForPendingFinalizers();
+            GC.WaitForPendingFinalizers();
+            GC.Collect(2);
+            
 
             Assert.Null(result.Item2.Target);
         }
