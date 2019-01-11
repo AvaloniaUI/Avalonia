@@ -38,6 +38,13 @@ jobs:
     inputs:
       version: '2.1.403'
 
+  - task: CmdLine@2
+    displayName: 'Install Mono 5.18'
+    inputs:
+      script: |
+        curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
+        sudo installer -verbose -pkg ./mono.pkg -target /
+
   - task: Xcode@5
     inputs:
       actions: 'build'
