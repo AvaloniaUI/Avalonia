@@ -3,4 +3,9 @@
     <FrameworkPathOverride>/usr/lib/mono/4.6.1-api</FrameworkPathOverride>
     <FrameworkPathOverride Condition="$([MSBuild]::IsOsPlatform('OSX'))">/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/4.6.1-api</FrameworkPathOverride>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net47' and '$(OS)' == 'Unix' ">
+    <FrameworkPathOverride>/usr/lib/mono/4.7-api/</FrameworkPathOverride>
+    <FrameworkPathOverride Condition="$([MSBuild]::IsOsPlatform('OSX'))">/Library/Frameworks/Mono.framework/Versions/Current/lib/mono/4.7-api</FrameworkPathOverride>
+  </PropertyGroup>
+
 </Project>

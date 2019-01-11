@@ -27,7 +27,7 @@ namespace Avalonia.Styling.UnitTests
 
             var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical2>();
 
-            Assert.True(selector.Match(child).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, selector.Match(child).Result);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Avalonia.Styling.UnitTests
 
             var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical3>();
 
-            Assert.False(selector.Match(child).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, selector.Match(child).Result);
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Avalonia.Styling.UnitTests
             child.LogicalParent = parent;
 
             var selector = default(Selector).OfType<TestLogical1>().Class("foo").Child().OfType<TestLogical2>();
-            var activator = selector.Match(child).ObservableResult;
+            var activator = selector.Match(child).Activator;
             var result = new List<bool>();
 
             Assert.False(await activator.Take(1));
@@ -70,7 +70,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new TestLogical3();
             var selector = default(Selector).OfType<TestLogical1>().Child().OfType<TestLogical3>();
 
-            Assert.False(selector.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, selector.Match(control).Result);
         }
 
         [Fact]
