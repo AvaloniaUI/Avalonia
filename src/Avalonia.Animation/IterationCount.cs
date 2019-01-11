@@ -44,7 +44,7 @@ namespace Avalonia.Animation
         {
             if (type > IterationType.Infinite)
             {
-                throw new ArgumentException("Invalid value", "type");
+                throw new ArgumentException("Invalid value", nameof(type));
             }
 
             _type = type;
