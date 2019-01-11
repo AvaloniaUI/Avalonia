@@ -23,7 +23,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         private const double FontSize = 12;
         private const double MediumFontSize = 18;
         private const double BigFontSize = 32;
-        private const double FontSizeHeight = 13.594;//real value 13.59375
+        private const double FontSizeHeight = 14.062;//real value 14.0625
         private const string stringword = "word";
         private const string stringmiddle = "The quick brown fox jumps over the lazy dog";
         private const string stringmiddle2lines = "The quick brown fox\njumps over the lazy dog";
@@ -95,11 +95,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData("x", FontSize, 7.20, FontSizeHeight)]
         [InlineData(stringword, FontSize, 28.80, FontSizeHeight)]
         [InlineData(stringmiddle, FontSize, 309.65, FontSizeHeight)]
-        [InlineData(stringmiddle, MediumFontSize, 464.48, 20.391)]
-        [InlineData(stringmiddle, BigFontSize, 825.73, 36.25)]
+        [InlineData(stringmiddle, MediumFontSize, 464.48, 21.093)]
+        [InlineData(stringmiddle, BigFontSize, 825.73, 37.5)]
         [InlineData(stringmiddle2lines, FontSize, 165.63, 2 * FontSizeHeight)]
-        [InlineData(stringmiddle2lines, MediumFontSize, 248.44, 2 * 20.391)]
-        [InlineData(stringmiddle2lines, BigFontSize, 441.67, 2 * 36.25)]
+        [InlineData(stringmiddle2lines, MediumFontSize, 248.44, 2 * 21.093)]
+        [InlineData(stringmiddle2lines, BigFontSize, 441.67, 2 * 37.5)]
         [InlineData(stringlong, FontSize, 2160.35, FontSizeHeight)]
         [InlineData(stringmiddlenewlines, FontSize, 72.01, 4 * FontSizeHeight)]
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
@@ -235,12 +235,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
         
         [Theory]
-        [InlineData("x", 0, 1, "0,0,7.20,13.59")]
-        [InlineData(stringword, 0, 4, "0,0,28.80,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 10, "0,13.59,57.61,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 20, "0,13.59,57.61,13.59;0,27.19,64.81,13.59")]
-        [InlineData(stringmiddlenewlines, 10, 15, "0,13.59,57.61,13.59;0,27.19,36.01,13.59")]
-        [InlineData(stringmiddlenewlines, 15, 15, "36.01,13.59,21.60,13.59;0,27.19,64.81,13.59")]
+        [InlineData("x", 0, 1, "0,0,7.20,14.06")]
+        [InlineData(stringword, 0, 4, "0,0,28.80,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 10, "0,14.06,57.61,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 20, "0,14.06,57.61,14.06;0,28.12,64.81,14.06")]
+        [InlineData(stringmiddlenewlines, 10, 15, "0,14.06,57.61,14.06;0,28.12,36.01,14.06")]
+        [InlineData(stringmiddlenewlines, 15, 15, "36.01,14.06,21.60,14.06;0,28.12,64.81,14.06")]
         public void Should_HitTestRange_Correctly(string input,
                             int index, int length,
                             string expectedRects)
