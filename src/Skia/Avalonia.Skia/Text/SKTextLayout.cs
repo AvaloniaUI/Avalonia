@@ -1276,7 +1276,7 @@ namespace Avalonia.Skia.Text
 
                     typeface = SKFontManager.Default.MatchCharacter(codePoint);
 
-                    if (codePoint > sizeof(short))
+                    if (codePoint > short.MaxValue)
                     {
                         glyphCount += 2;
                     }
