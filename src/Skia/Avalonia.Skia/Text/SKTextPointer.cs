@@ -1,37 +1,35 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using SkiaSharp;
-
 namespace Avalonia.Skia.Text
 {
-    public class SKTextFormat
+    public struct SKTextPointer
     {
-        public SKTextFormat(SKTypeface typeface, float fontSize)
+        public SKTextPointer(int startingIndex, int length)
         {
-            Typeface = typeface;
-            FontSize = fontSize;
+            StartingIndex = startingIndex;
+            Length = length;
         }
 
         /// <summary>
-        /// Gets the typeface.
+        /// Gets the starting index.
         /// </summary>
         /// <value>
-        /// The typeface.
+        /// The starting index.
         /// </value>
-        public SKTypeface Typeface { get; }
+        public int StartingIndex { get; }
 
         /// <summary>
-        /// Gets the font size.
+        /// Gets the length.
         /// </summary>
         /// <value>
-        /// The size of the font.
+        /// The length.
         /// </value>
-        public float FontSize { get; }
+        public int Length { get; }
 
         public override string ToString()
         {
-            return $"{Typeface.FamilyName} : {FontSize}";
+            return $"({StartingIndex}:{Length})";
         }
     }
 }

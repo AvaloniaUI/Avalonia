@@ -53,7 +53,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(2, textRun.Text.Length);
 
-            Assert.Equal("12", textRun.Text);
+            Assert.Equal("12", textRun.ToString());
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -85,7 +85,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(2, textRun.Text.Length);
 
-            Assert.Equal("01", textRun.Text);
+            Assert.Equal("01", textRun.ToString());
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -117,7 +117,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(2, textRun.Text.Length);
 
-            Assert.Equal("89", textRun.Text);
+            Assert.Equal("89", textRun.ToString());
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -149,7 +149,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(1, textRun.Text.Length);
 
-            Assert.Equal("0", textRun.Text);
+            Assert.Equal("0", textRun.ToString());
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -162,7 +162,9 @@ namespace Avalonia.Skia.UnitTests
             var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(4, 1, foreground: foreground)};
+                        {
+                            new FormattedTextStyleSpan(4, 1, foreground: foreground)
+                        };
 
             var layout = new SKTextLayout(
                 Text,
@@ -179,9 +181,9 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(2, textRun.Text.Length);
+            Assert.Equal(2, textRun.Text.Length);         
 
-            Assert.Equal("😀", textRun.Text);
+            Assert.Equal("😀", textRun.ToString());
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -191,13 +193,13 @@ namespace Avalonia.Skia.UnitTests
         {
             var layout = new SKTextLayout(
                 s_multiLineText,
-                SKTypeface.Default, 
+                SKTypeface.Default,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
                 new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.Length));
+            Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.TextPointer.Length));
         }
 
         [Fact]
@@ -222,7 +224,9 @@ namespace Avalonia.Skia.UnitTests
             var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
-                {new FormattedTextStyleSpan(5, 20, foreground: foreground)};
+                        {
+                            new FormattedTextStyleSpan(5, 20, foreground: foreground)
+                        };
 
             var layout = new SKTextLayout(
                 s_multiLineText,
@@ -241,10 +245,10 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldHitTestSurrogatePair()
         {
-            const string text = "😀";
+            const string Text = "😀";
 
             var layout = new SKTextLayout(
-                text,
+                Text,
                 s_emojiTypeface,
                 12.0f,
                 TextAlignment.Left,

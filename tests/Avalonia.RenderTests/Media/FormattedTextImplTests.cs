@@ -20,7 +20,6 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 {
     public class FormattedTextImplTests : TestBase
     {
-        private const string FontName = "Courier New";
         private const double FontSize = 12;
         private const double MediumFontSize = 18;
         private const double BigFontSize = 32;
@@ -36,6 +35,12 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 "aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero" +
 " at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus " +
 "pretium ornare est.";
+#if AVALONIA_SKIA
+        private static Uri s_fontUri = new Uri("resm:Avalonia.Skia.RenderTests.Assets?assembly=Avalonia.Skia.RenderTests", UriKind.RelativeOrAbsolute);
+#else
+        private static Uri s_fontUri = new Uri("resm:Avalonia.Direct2D1.RenderTests.Assets?assembly=Avalonia.Direct2D1.RenderTests", UriKind.RelativeOrAbsolute);
+#endif
+        private static FontFamily s_testFontFamily = new FontFamily("Noto Mono", s_fontUri);
 
         public FormattedTextImplTests()
             : base(@"Media\FormattedText")
@@ -43,7 +48,6 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         }
 
         private IFormattedTextImpl Create(string text,
-            string fontFamily,
             double fontSize,
             FontStyle fontStyle,
             TextAlignment textAlignment,
@@ -53,7 +57,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var r = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             return r.CreateFormattedText(text,
-                new Typeface(fontFamily, fontStyle, fontWeight),
+                new Typeface(s_testFontFamily, fontStyle, fontWeight),
                 fontSize,
                 textAlignment,
                 wrapping,
@@ -63,7 +67,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private IFormattedTextImpl Create(string text, double fontSize)
         {
-            return Create(text, FontName, fontSize,
+            return Create(text, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
                 FontWeight.Normal, TextWrapping.NoWrap,
                 -1);
@@ -71,7 +75,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private IFormattedTextImpl Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
         {
-            return Create(text, FontName, fontSize,
+            return Create(text, fontSize,
                 FontStyle.Normal, alignment,
                 FontWeight.Normal, TextWrapping.NoWrap,
                 widthConstraint);
@@ -79,7 +83,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
         private IFormattedTextImpl Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
         {
-            return Create(text, FontName, fontSize,
+            return Create(text, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
                 FontWeight.Normal, wrap,
                 widthConstraint);

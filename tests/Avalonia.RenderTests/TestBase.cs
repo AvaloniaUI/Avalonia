@@ -26,10 +26,14 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
+    using Avalonia.Shared.PlatformSupport;
+
     public class TestBase
     {
         private static readonly TestThreadingInterface threadingInterface =
             new TestThreadingInterface();
+
+        private static readonly AssetLoader assetLoader = new AssetLoader();
 
         static TestBase()
         {
@@ -42,6 +46,9 @@ namespace Avalonia.Direct2D1.RenderTests
                 .Bind<IPlatformThreadingInterface>()
                 .ToConstant(threadingInterface);
 
+            AvaloniaLocator.CurrentMutable
+                .Bind<IAssetLoader>()
+                .ToConstant(assetLoader);
         }
 
         public TestBase(string outputPath)

@@ -8,29 +8,20 @@ namespace Avalonia.Skia.Text
 {
     public class SKTextLine
     {
-        public SKTextLine(int startingIndex, int length, IReadOnlyList<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
+        public SKTextLine(SKTextPointer textPointer, IReadOnlyList<SKTextRun> textRuns, SKTextLineMetrics lineMetrics)
         {
-            StartingIndex = startingIndex;
-            Length = length;
+            TextPointer = textPointer;
             TextRuns = textRuns;
             LineMetrics = lineMetrics;
         }
 
         /// <summary>
-        /// Gets the starting index.
+        /// Gets the text pointer.
         /// </summary>
         /// <value>
-        /// The starting index.
+        /// The text pointer.
         /// </value>
-        public int StartingIndex { get; }
-
-        /// <summary>
-        /// Gets the text line length.
-        /// </summary>
-        /// <value>
-        /// The text line length.
-        /// </value>
-        public int Length { get; }
+        public SKTextPointer TextPointer { get; }
 
         /// <summary>
         /// Gets the text runs.
