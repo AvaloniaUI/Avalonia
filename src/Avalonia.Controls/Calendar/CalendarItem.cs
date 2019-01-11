@@ -52,7 +52,7 @@ namespace Avalonia.Controls.Primitives
         internal Calendar Owner { get; set; }
         internal CalendarDayButton CurrentButton { get; set; }
 
-        public static StyledProperty<IBrush> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
+        public static readonly StyledProperty<IBrush> HeaderBackgroundProperty = Calendar.HeaderBackgroundProperty.AddOwner<CalendarItem>();
         public IBrush HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
