@@ -123,6 +123,7 @@ namespace Avalonia.Skia
             /// <summary>
             /// Create framebuffer from given bitmap.
             /// </summary>
+            /// <param name="parent">Parent bitmap impl.</param>
             /// <param name="bitmap">Bitmap.</param>
             public BitmapFramebuffer(WriteableBitmapImpl parent, SKBitmap bitmap)
             {
