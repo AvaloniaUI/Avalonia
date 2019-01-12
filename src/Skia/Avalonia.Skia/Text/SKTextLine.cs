@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.Text;
 
 namespace Avalonia.Skia.Text
 {
@@ -41,19 +40,7 @@ namespace Avalonia.Skia.Text
 
         public override string ToString()
         {
-            if (TextRuns == null)
-            {
-                return string.Empty;
-            }
-
-            var textBuilder = new StringBuilder();
-
-            foreach (var textRun in TextRuns)
-            {
-                textBuilder.Append(textRun.Text);
-            }
-
-            return textBuilder.ToString();
+            return $"{TextPointer.StartingIndex}:{TextPointer.Length}";
         }
     }
 }

@@ -51,9 +51,11 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(2, textRun.Text.Length);
+            Assert.Equal(2, textRun.TextPointer.Length);
 
-            Assert.Equal("12", textRun.ToString());
+            var actual = s_multiLineText.Substring(textRun.TextPointer.StartingIndex, textRun.TextPointer.Length);
+
+            Assert.Equal("12", actual);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -83,9 +85,11 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[0];
 
-            Assert.Equal(2, textRun.Text.Length);
+            Assert.Equal(2, textRun.TextPointer.Length);
 
-            Assert.Equal("01", textRun.ToString());
+            var actual = s_singleLineText.Substring(textRun.TextPointer.StartingIndex, textRun.TextPointer.Length);
+
+            Assert.Equal("01", actual);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -115,9 +119,11 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(2, textRun.Text.Length);
+            Assert.Equal(2, textRun.TextPointer.Length);
 
-            Assert.Equal("89", textRun.ToString());
+            var actual = s_singleLineText.Substring(textRun.TextPointer.StartingIndex, textRun.TextPointer.Length);
+
+            Assert.Equal("89", actual);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -147,9 +153,7 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[0];
 
-            Assert.Equal(1, textRun.Text.Length);
-
-            Assert.Equal("0", textRun.ToString());
+            Assert.Equal(1, textRun.TextPointer.Length);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -168,7 +172,7 @@ namespace Avalonia.Skia.UnitTests
 
             var layout = new SKTextLayout(
                 Text,
-                s_emojiTypeface,
+                SKTypeface.Default, 
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -181,9 +185,11 @@ namespace Avalonia.Skia.UnitTests
 
             var textRun = textLine.TextRuns[1];
 
-            Assert.Equal(2, textRun.Text.Length);         
+            Assert.Equal(2, textRun.TextPointer.Length);
 
-            Assert.Equal("😀", textRun.ToString());
+            var actual = Text.Substring(textRun.TextPointer.StartingIndex, textRun.TextPointer.Length);
+
+            Assert.Equal("😀", actual);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -215,7 +221,7 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(
                 s_multiLineText.Length,
-                layout.TextLines.Select(textLine => textLine.TextRuns.Sum(textRun => textRun.Text.Length)).Sum());
+                layout.TextLines.Select(textLine => textLine.TextRuns.Sum(textRun => textRun.TextPointer.Length)).Sum());
         }
 
         [Fact]

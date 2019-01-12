@@ -1,8 +1,6 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-
 using Avalonia.Media;
 
 using SkiaSharp;
@@ -12,14 +10,14 @@ namespace Avalonia.Skia.Text
     public class SKTextRun
     {
         public SKTextRun(
-            ReadOnlyMemory<char> text,
+            SKTextPointer textPointer,
             SKGlyphRun glyphRun,
             SKTextFormat textFormat,
             SKFontMetrics fontMetrics,
             float width,
             IBrush foreground = null)
         {
-            Text = text;
+            TextPointer = textPointer;
             GlyphRun = glyphRun;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
@@ -28,12 +26,12 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        /// Gets the text.
+        /// Gets the text pointer.
         /// </summary>
         /// <value>
-        /// The text.
+        /// The text pointer.
         /// </value>
-        public ReadOnlyMemory<char> Text { get; }
+        public SKTextPointer TextPointer { get; }
 
         /// <summary>
         /// Gets the glyph run.
@@ -74,10 +72,5 @@ namespace Avalonia.Skia.Text
         /// The drawing effect.
         /// </value>
         public IBrush Foreground { get; }
-
-        public override string ToString()
-        {
-            return Text.ToString();
-        }
     }
 }
