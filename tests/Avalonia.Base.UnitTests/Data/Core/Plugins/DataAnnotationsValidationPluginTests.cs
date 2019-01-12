@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.UnitTests;
@@ -86,17 +87,18 @@ namespace Avalonia.Markup.UnitTests.Data.Plugins
             validator.SetValue("123456", BindingPriority.LocalValue);
             validator.SetValue("abcdefghijklm", BindingPriority.LocalValue);
 
-            Assert.Equal(new[]
-            {
-                new BindingNotification(null),
-                new BindingNotification("123456"),
-                new BindingNotification(
-                    new AggregateException(
-                        new ValidationException("The PhoneNumber field is not a valid phone number."),
-                        new ValidationException("The field PhoneNumber must be a string or array type with a maximum length of '10'.")),
-                    BindingErrorType.DataValidationError,
-                    "abcdefghijklm"),
-            }, result);
+            Assert.Equal(3, result.Count);
+            Assert.Equal(new BindingNotification(null), result[0]);
+            Assert.Equal(new BindingNotification("123456"), result[1]);
+            var errorResult = (BindingNotification)result[2];
+            Assert.Equal(BindingErrorType.DataValidationError, errorResult.ErrorType);
+            Assert.Equal("abcdefghijklm", errorResult.Value);
+            var exceptions = ((AggregateException)(errorResult.Error)).InnerExceptions;
+            Assert.True(exceptions.Any(ex =>
+                ex.Message.Contains("The PhoneNumber field is not a valid phone number.")));
+            Assert.True(exceptions.Any(ex =>
+                ex.Message.Contains("The field PhoneNumber must be a string or array type with a maximum length of '10'.")));
+
         }
 
         private class Data
