@@ -1,7 +1,7 @@
 {
     "msbuild-sdks": {
         "Microsoft.Build.Traversal": "1.0.43",
-        "MSBuild.Sdk.Extras": "1.6.46",
+        "MSBuild.Sdk.Extras": "1.6.65",
         "AggregatePackage.NuGet.Sdk" : "0.1.12"
     }
 }
