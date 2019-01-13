@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Gtk3;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
@@ -41,7 +42,8 @@ namespace Avalonia.X11
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub());
+                .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub())
+                .Bind<ISystemDialogImpl>().ToConstant(new Gtk3ForeignX11SystemDialog());
             X11Screens.Init(this);
             if (Info.XInputVersion != null)
             {

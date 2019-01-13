@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+        <ProjectReference Include="..\Gtk\Avalonia.Gtk3\Avalonia.Gtk3.csproj" />
     </ItemGroup>
 
 </Project>

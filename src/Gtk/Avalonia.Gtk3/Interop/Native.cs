@@ -50,6 +50,9 @@ namespace Avalonia.Gtk3.Interop
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
             public delegate IntPtr gtk_init(int argc, IntPtr argv);
             
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gtk)]
+            public delegate bool gtk_init_check(int argc, IntPtr argv);
+            
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk, optional: true)]
             public delegate IntPtr gdk_set_allowed_backends (Utf8Buffer backends);
 
@@ -288,6 +291,12 @@ namespace Avalonia.Gtk3.Interop
             
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_window_end_paint(IntPtr window);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk, optional: true)]
+            public delegate IntPtr gdk_x11_window_foreign_new_for_display(IntPtr display, IntPtr xid);
+            
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
+            public delegate void gdk_window_set_transient_for(IntPtr window, IntPtr parent);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl), GtkImport(GtkDll.Gdk)]
             public delegate void gdk_event_request_motions(IntPtr ev);
@@ -414,6 +423,7 @@ namespace Avalonia.Gtk3.Interop
         public static D.gtk_window_set_transient_for GtkWindowSetTransientFor;
         public static D.gdk_set_allowed_backends GdkSetAllowedBackends;
         public static D.gtk_init GtkInit;
+        public static D.gtk_init_check GtkInitCheck;
         public static D.gtk_window_present GtkWindowPresent;
         public static D.gtk_widget_hide GtkWidgetHide;
         public static D.gtk_widget_show GtkWidgetShow;
@@ -483,8 +493,9 @@ namespace Avalonia.Gtk3.Interop
         public static D.gdk_window_process_updates GdkWindowProcessUpdates;
         public static D.gdk_window_begin_paint_rect GdkWindowBeginPaintRect;
         public static D.gdk_window_end_paint GdkWindowEndPaint;
+        public static D.gdk_x11_window_foreign_new_for_display GdkWindowForeignNewForDisplay;
+        public static D.gdk_window_set_transient_for GdkWindowSetTransientFor;
         
-
         public static D.gdk_pixbuf_new_from_file GdkPixbufNewFromFile;
         public static D.gtk_icon_theme_get_default GtkIconThemeGetDefault;
         public static D.gtk_icon_theme_load_icon GtkIconThemeLoadIcon;
