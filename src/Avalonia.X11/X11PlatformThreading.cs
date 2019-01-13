@@ -11,6 +11,7 @@ namespace Avalonia.X11
 {
     unsafe class X11PlatformThreading : IPlatformThreadingInterface
     {
+        private readonly AvaloniaX11Platform _platform;
         private readonly IntPtr _display;
         private readonly Dictionary<IntPtr, Action<XEvent>> _eventHandlers;
         private Thread _mainThread;
@@ -103,12 +104,13 @@ namespace Avalonia.X11
 
         List<X11Timer> _timers = new List<X11Timer>();
         
-        public X11PlatformThreading(IntPtr display, Dictionary<IntPtr, Action<XEvent>> eventHandlers)
+        public X11PlatformThreading(AvaloniaX11Platform platform)
         {
-            _display = display;
-            _eventHandlers = eventHandlers;
+            _platform = platform;
+            _display = platform.Display;
+            _eventHandlers = platform.Windows;
             _mainThread = Thread.CurrentThread;
-            var fd = XLib.XConnectionNumber(display);
+            var fd = XLib.XConnectionNumber(_display);
             var ev = new epoll_event()
             {
                 events = EPOLLIN,
@@ -214,9 +216,27 @@ namespace Avalonia.X11
                                 if (cancellationToken.IsCancellationRequested)
                                     return;
                                 XNextEvent(_display, out var xev);
+                                if (xev.type == XEventName.GenericEvent)
+                                    XGetEventData(_display, &xev.GenericEventCookie);
                                 pending--;
-                                if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                                    handler(xev);
+                                try
+                                {
+                                    if (xev.type == XEventName.GenericEvent)
+                                    {
+                                        if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
+                                            xev.GenericEventCookie.extension)
+                                        {
+                                            _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
+                                        }
+                                    }
+                                    else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                                        handler(xev);
+                                }
+                                finally
+                                {
+                                    if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
+                                        XFreeEventData(_display, &xev.GenericEventCookie);
+                                }
                             }
                         }
                         Dispatcher.UIThread.RunJobs();

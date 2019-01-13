@@ -18,6 +18,7 @@ namespace Avalonia.X11
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public MouseDevice MouseDevice => _mouseDevice.Value;
         public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
+        public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public void Initialize()
         {
@@ -31,7 +32,7 @@ namespace Avalonia.X11
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(Display, Windows))
+                .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Control))
@@ -42,6 +43,12 @@ namespace Avalonia.X11
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub());
             X11Screens.Init(this);
+            if (Info.XInputVersion != null)
+            {
+                var xi2 = new XI2Manager();
+                if (xi2.Init(this))
+                    XI2 = xi2;
+            }
             EglGlPlatformFeature.TryInitialize();
 
         }

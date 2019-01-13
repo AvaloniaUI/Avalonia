@@ -17,7 +17,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe class X11Window : IWindowImpl, IPopupImpl
+    unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -81,11 +81,13 @@ namespace Avalonia.X11
             Handle = new PlatformHandle(_handle, "XID");
             ClientSize = new Size(400, 400);
             platform.Windows[_handle] = OnEvent;
-            XSelectInput(_x11.Display, _handle,
-                new IntPtr(0xffffff 
-                           ^ (int)XEventMask.SubstructureRedirectMask 
-                           ^ (int)XEventMask.ResizeRedirectMask
-                           ^ (int)XEventMask.PointerMotionHintMask));
+            XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
+                                     | XEventMask.ResizeRedirectMask
+                                     | XEventMask.PointerMotionHintMask;
+            if (platform.XI2 != null)
+                ignoredMask |= platform.XI2.AddWindow(_handle, this);
+            var mask = new IntPtr(0xffffff ^ (int)ignoredMask);
+            XSelectInput(_x11.Display, _handle, mask);
             var protocols = new[]
             {
                 _x11.Atoms.WM_DELETE_WINDOW
@@ -229,6 +231,8 @@ namespace Avalonia.X11
                 Deactivated?.Invoke();
             else if (ev.type == XEventName.MotionNotify)
                 MouseEvent(RawMouseEventType.Move, ref ev, ev.MotionEvent.state);
+            else if (ev.type == XEventName.LeaveNotify)
+                MouseEvent(RawMouseEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -431,6 +435,12 @@ namespace Avalonia.X11
         void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
+            ScheduleInput(args);
+        }
+
+        public void ScheduleInput(RawInputEventArgs args)
+        {
+            
             _lastEvent = new InputEventContainer() {Event = args};
             _inputQueue.Enqueue(_lastEvent);
             if (_inputQueue.Count == 1)
@@ -479,6 +489,8 @@ namespace Avalonia.X11
             });
         }
 
+        public IInputRoot InputRoot => _inputRoot;
+        
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _inputRoot = inputRoot;
@@ -506,6 +518,7 @@ namespace Avalonia.X11
             {
                 XDestroyWindow(_x11.Display, _handle);
                 _platform.Windows.Remove(_handle);
+                _platform.XI2?.OnWindowDestroyed(_handle);
                 _handle = IntPtr.Zero;
                 Closed?.Invoke();
             }

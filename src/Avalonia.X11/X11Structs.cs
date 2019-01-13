@@ -133,7 +133,7 @@ namespace Avalonia.X11 {
 		internal NotifyDetail	detail;
 		internal bool		same_screen;
 		internal bool		focus;
-		internal int		state;
+		internal XModifierMask		state;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -520,7 +520,27 @@ namespace Avalonia.X11 {
 		internal IntPtr pad23;
 	}
 
-	[StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct XGenericEventCookie
+    {
+        internal int type; /* of event. Always GenericEvent */
+        internal IntPtr serial; /* # of last request processed */
+        internal bool send_event; /* true if from SendEvent request */
+        internal IntPtr display; /* Display the event was read from */
+        internal int extension; /* major opcode of extension that caused the event */
+        internal int evtype; /* actual event type. */
+        internal uint cookie;
+        internal void* data;
+
+        public T GetEvent<T>() where T : unmanaged
+        {
+            if (data == null)
+                throw new InvalidOperationException();
+            return *(T*)data;
+        }
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
 	internal struct XEvent {
 		[ FieldOffset(0) ] internal XEventName type;
 		[ FieldOffset(0) ] internal XAnyEvent AnyEvent;
@@ -554,6 +574,7 @@ namespace Avalonia.X11 {
 		[ FieldOffset(0) ] internal XMappingEvent MappingEvent;
 		[ FieldOffset(0) ] internal XErrorEvent ErrorEvent;
 		[ FieldOffset(0) ] internal XKeymapEvent KeymapEvent;
+		[ FieldOffset(0) ] internal XGenericEventCookie GenericEventCookie;
 
 		//[MarshalAs(System.Runtime.InteropServices.UnmanagedType.ByValArray, SizeConst=24)]
 		//[ FieldOffset(0) ] internal int[] pad;
@@ -738,7 +759,7 @@ namespace Avalonia.X11 {
 		ColormapNotify          = 32,
 		ClientMessage		= 33,
 		MappingNotify		= 34,
-
+        GenericEvent = 35,
 		LASTEvent
 	}
 

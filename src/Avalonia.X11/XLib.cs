@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -16,6 +17,8 @@ namespace Avalonia.X11
     {
         const string libX11 = "libX11.so.6";
         const string libX11Randr = "libXrandr.so.2";
+        const string libX11Ext = "libXext.so.6";
+        const string libXInput = "libXi.so.6";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
@@ -451,6 +454,16 @@ namespace Avalonia.X11
 
         [DllImport (libX11)]
         public static extern void XDestroyIC (IntPtr xic);
+
+        [DllImport(libX11)]
+        public static extern bool XQueryExtension(IntPtr display, [MarshalAs(UnmanagedType.LPStr)] string name,
+            out int majorOpcode, out int firstEvent, out int firstError);
+
+        [DllImport(libX11)]
+        public static extern bool XGetEventData(IntPtr display, void* cookie);
+
+        [DllImport(libX11)]
+        public static extern void XFreeEventData(IntPtr display, void* cookie);
         
         [DllImport(libX11Randr)]
         public static extern int XRRQueryExtension (IntPtr dpy,
@@ -467,7 +480,57 @@ namespace Avalonia.X11
             XRRGetMonitors(IntPtr dpy, IntPtr window, bool get_active, out int nmonitors);
         [DllImport(libX11Randr)]
         public static extern void XRRSelectInput(IntPtr dpy, IntPtr window, RandrEventMask mask);
+
+        [DllImport(libXInput)]
+        public static extern Status XIQueryVersion(IntPtr dpy, ref int major, ref int minor);
+
+        [DllImport(libXInput)]
+        public static extern IntPtr XIQueryDevice(IntPtr dpy, int deviceid, out int ndevices_return);
+
+        [DllImport(libXInput)]
+        public static extern void XIFreeDeviceInfo(XIDeviceInfo* info);
+
+        public static void XISetMask(ref int mask, XiEventType ev)
+        {
+            mask |= (1 << (int)ev);
+        }
         
+        public static int XiEventMaskLen { get; } = 4;
+
+        public static bool XIMaskIsSet(void* ptr, int shift) =>
+            (((byte*)(ptr))[(shift) >> 3] & (1 << (shift & 7))) != 0;
+
+        [DllImport(libXInput)]
+        public static extern Status XISelectEvents(
+            IntPtr dpy,
+            IntPtr win,
+            XIEventMask* masks,
+            int num_masks
+        );
+
+        public static Status XiSelectEvents(IntPtr display, IntPtr window, Dictionary<int, List<XiEventType>> devices)
+        {
+            var masks = stackalloc int[devices.Count];
+            var emasks = stackalloc XIEventMask[devices.Count];
+            int c = 0;
+            foreach (var d in devices)
+            {
+                foreach (var ev in d.Value)
+                    XISetMask(ref masks[c], ev);
+                emasks[c] = new XIEventMask
+                {
+                    Mask = &masks[c],
+                    Deviceid = d.Key,
+                    MaskLen = XiEventMaskLen
+                };
+                c++;
+            }
+
+
+            return XISelectEvents(display, window, emasks, devices.Count);
+
+        }
+
         public struct XGeometry
         {
             public IntPtr root;
@@ -541,6 +604,13 @@ namespace Avalonia.X11
             }
         }
 
+        public static IntPtr CreateEventWindow(AvaloniaX11Platform plat, Action<XEvent> handler)
+        {
+            var win = XCreateSimpleWindow(plat.Display, plat.Info.DefaultRootWindow, 
+                0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);
+            plat.Windows[win] = handler;
+            return win;
+        }
 
 
     }

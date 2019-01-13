@@ -20,9 +20,9 @@ namespace Avalonia.X11
         public X11Clipboard(AvaloniaX11Platform platform)
         {
             _x11 = platform.Info;
+            _handle = CreateEventWindow(platform, OnEvent);
             _handle = XCreateSimpleWindow(_x11.Display, _x11.DefaultRootWindow, 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);
             _avaloniaSaveTargetsAtom = XInternAtom(_x11.Display, "AVALONIA_SAVE_TARGETS_PROPERTY_ATOM", false);
-            platform.Windows[_handle] = OnEvent;
             _textAtoms = new[]
             {
                 _x11.Atoms.XA_STRING,

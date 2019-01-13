@@ -67,8 +67,7 @@ namespace Avalonia.X11
             {
                 _settings = settings;
                 _x11 = platform.Info;
-                _window =  XCreateSimpleWindow(_x11.Display, _x11.DefaultRootWindow, 0, 0, 1, 1, 0, IntPtr.Zero, IntPtr.Zero);
-                platform.Windows[_window] = OnEvent;
+                _window = CreateEventWindow(platform, OnEvent);
                 XRRSelectInput(_x11.Display, _window, RandrEventMask.RRScreenChangeNotify);
             }
 

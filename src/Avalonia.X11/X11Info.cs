@@ -24,6 +24,11 @@ namespace Avalonia.X11
         
         public Version RandrVersion { get; }
         
+        public int XInputOpcode { get; }
+        public int XInputEventBase { get; }
+        public int XInputErrorBase { get; }
+        
+        public Version XInputVersion { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
         
@@ -55,7 +60,26 @@ namespace Avalonia.X11
             {
                 //Ignore, randr is not supported
             }
-
+            
+            try
+            {
+                if (XQueryExtension(display, "XInputExtension",
+                        out var xiopcode, out var xievent, out var xierror))
+                {
+                    int major = 2, minor = 2;
+                    if (XIQueryVersion(display, ref major, ref minor) == Status.Success)
+                    {
+                        XInputVersion = new Version(major, minor);
+                        XInputOpcode = xiopcode;
+                        XInputEventBase = xievent;
+                        XInputErrorBase = xierror;
+                    }
+                }
+            }
+            catch
+            {
+                //Ignore, XI is not supported
+            }
         }
     }
 }
