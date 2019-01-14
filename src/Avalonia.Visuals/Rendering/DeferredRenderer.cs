@@ -336,16 +336,34 @@ namespace Avalonia.Rendering
 
         private void RenderToLayers(Scene scene)
         {
-            if (scene.Layers.HasDirty)
+            foreach (var layer in scene.Layers)
             {
-                foreach (var layer in scene.Layers)
-                {
-                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
-                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                var renderLayer = Layers[layer.LayerRoot];
+                if (layer.Dirty.IsEmpty && !renderLayer.IsEmpty)
+                    continue;
+                var renderTarget = renderLayer.Bitmap;
+                var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    if (node != null)
+                if (node != null)
+                {
+                    using (var context = renderTarget.Item.CreateDrawingContext(this))
                     {
-                        using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        if (renderLayer.IsEmpty)
+                        {
+                            // Render entire layer root node
+                            context.Clear(Colors.Transparent);
+                            context.Transform = Matrix.Identity;
+                            context.PushClip(node.ClipBounds);
+                            Render(context, node, layer.LayerRoot, node.ClipBounds);
+                            context.PopClip();
+                            if (DrawDirtyRects)
+                            {
+                                _dirtyRectsDisplay.Add(node.ClipBounds);
+                            }
+
+                            renderLayer.IsEmpty = false;
+                        }
+                        else
                         {
                             foreach (var rect in layer.Dirty)
                             {
@@ -364,6 +382,7 @@ namespace Avalonia.Rendering
                     }
                 }
             }
+
         }
 
         private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
