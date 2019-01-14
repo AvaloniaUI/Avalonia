@@ -69,7 +69,7 @@ namespace Avalonia.Styling
                 {
                     throw new ArgumentException(
                         "Cannot assign a control to Setter.Value. Wrap the control in a <Template>.",
-                        "value");
+                        nameof(value));
                 }
 
                 _value = value;

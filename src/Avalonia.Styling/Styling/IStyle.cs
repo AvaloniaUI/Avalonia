@@ -17,7 +17,12 @@ namespace Avalonia.Styling
         /// <param name="container">
         /// The control that contains this style. May be null.
         /// </param>
-        void Attach(IStyleable control, IStyleHost container);
+        /// <returns>
+        /// True if the style can match a control of type <paramref name="control"/>
+        /// (even if it does not match this control specifically); false if the style
+        /// can never match.
+        /// </returns>
+        bool Attach(IStyleable control, IStyleHost container);
 
         void Detach();
     }

@@ -5,11 +5,11 @@
         /// <summary>
         /// Dataformat for plaintext
         /// </summary>
-        public static string Text = nameof(Text);
+        public static readonly string Text = nameof(Text);
 
         /// <summary>
         /// Dataformat for one or more filenames
         /// </summary>
-        public static string FileNames = nameof(FileNames);
+        public static readonly string FileNames = nameof(FileNames);
     }
 }

@@ -487,7 +487,7 @@ namespace Avalonia.Controls
         {
             if (e == null)
             {
-                throw new ArgumentNullException("e");
+                throw new ArgumentNullException(nameof(e));
             }
 
             var handler = Spinned;

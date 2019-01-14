@@ -11,6 +11,7 @@
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
+        <Compile Include="Converters\NullableTypeConverter.cs" />
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
