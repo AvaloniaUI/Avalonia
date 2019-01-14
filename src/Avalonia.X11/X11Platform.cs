@@ -43,8 +43,7 @@ namespace Avalonia.X11
                 .Bind<IStandardCursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub())
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
                 .Bind<ISystemDialogImpl>().ToConstant(new Gtk3ForeignX11SystemDialog());
             
             X11Screens = Avalonia.X11.X11Screens.Init(this);

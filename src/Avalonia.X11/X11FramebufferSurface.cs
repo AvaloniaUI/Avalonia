@@ -23,7 +23,7 @@ namespace Avalonia.X11
             XGetGeometry(_display, _xid, out var root, out var x, out var y, out var width, out var height,
                 out var bw, out var d);
             XUnlockDisplay(_display);
-            return new X11Framebuffer(_display, _xid, width, height, _scaling());
+            return new X11Framebuffer(_display, _xid, 24,width, height, _scaling());
         }
     }
 }

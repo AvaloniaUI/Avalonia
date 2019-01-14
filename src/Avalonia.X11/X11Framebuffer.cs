@@ -9,12 +9,14 @@ namespace Avalonia.X11
     {
         private readonly IntPtr _display;
         private readonly IntPtr _xid;
+        private readonly int _depth;
         private IUnmanagedBlob _blob;
 
-        public X11Framebuffer(IntPtr display, IntPtr xid, int width, int height, double factor)
+        public X11Framebuffer(IntPtr display, IntPtr xid, int depth, int width, int height, double factor)
         {
             _display = display;
             _xid = xid;
+            _depth = depth;
             Size = new PixelSize(width, height);
             RowBytes = width * 4;
             Dpi = new Vector(96, 96) * factor;
@@ -35,7 +37,7 @@ namespace Avalonia.X11
             image.bitmap_unit = bitsPerPixel;
             image.bitmap_bit_order = 0;// LSBFirst;
             image.bitmap_pad = bitsPerPixel;
-            image.depth = 24;
+            image.depth = _depth;
             image.bytes_per_line = RowBytes;
             image.bits_per_pixel = bitsPerPixel;
             XLockDisplay(_display);
