@@ -13,7 +13,7 @@ namespace Avalonia.X11
     {
         private IX11Screens _impl;
 
-        private X11Screens(IX11Screens impl)
+        public X11Screens(IX11Screens impl)
         {
             _impl = impl;
         }
@@ -141,16 +141,15 @@ namespace Avalonia.X11
             public X11Screen[] Screens { get; }
         }
         
-        public static void Init(AvaloniaX11Platform platform)
+        public static IX11Screens Init(AvaloniaX11Platform platform)
         {
             var info = platform.Info;
             var settings = X11ScreensUserSettings.Detect();
             var impl = (info.RandrVersion != null && info.RandrVersion >= new Version(1, 5))
                 ? new Randr15ScreensImpl(platform, settings)
                 : (IX11Screens)new FallbackScreensImpl(info, settings);
-            
-            AvaloniaLocator.CurrentMutable.Bind<IX11Screens>().ToConstant(impl);
-            AvaloniaLocator.CurrentMutable.Bind<IScreenImpl>().ToConstant(new X11Screens(impl));
+
+            return impl;
 
         }
 
@@ -207,7 +206,7 @@ namespace Avalonia.X11
                     //Ignore
                 }
 
-                return null;  
+                return rv;  
             }
 
 

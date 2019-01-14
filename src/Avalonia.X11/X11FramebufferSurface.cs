@@ -8,11 +8,13 @@ namespace Avalonia.X11
     {
         private readonly IntPtr _display;
         private readonly IntPtr _xid;
+        private readonly Func<double> _scaling;
 
-        public X11FramebufferSurface(IntPtr display, IntPtr xid)
+        public X11FramebufferSurface(IntPtr display, IntPtr xid, Func<double> scaling)
         {
             _display = display;
             _xid = xid;
+            _scaling = scaling;
         }
         
         public ILockedFramebuffer Lock()
@@ -21,7 +23,7 @@ namespace Avalonia.X11
             XGetGeometry(_display, _xid, out var root, out var x, out var y, out var width, out var height,
                 out var bw, out var d);
             XUnlockDisplay(_display);
-            return new X11Framebuffer(_display, _xid, width, height, 1);
+            return new X11Framebuffer(_display, _xid, width, height, _scaling());
         }
     }
 }

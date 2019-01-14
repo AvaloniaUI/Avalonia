@@ -27,13 +27,15 @@ namespace Avalonia.X11
         private IInputRoot _inputRoot;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
-        private Point _position;
+        private Point? _position;
+        private PixelSize _realSize;
         private IntPtr _handle;
         private IntPtr _xic;
         private IntPtr _renderHandle;
         private bool _mapped;
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
         private X11Window _transientParent;
+        public object SyncRoot { get; } = new object();
 
         class InputEventContainer
         {
@@ -79,7 +81,7 @@ namespace Avalonia.X11
                                    SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
                 
             Handle = new PlatformHandle(_handle, "XID");
-            ClientSize = new Size(400, 400);
+            _realSize = new PixelSize(300, 200);
             platform.Windows[_handle] = OnEvent;
             XEventMask ignoredMask = XEventMask.SubstructureRedirectMask
                                      | XEventMask.ResizeRedirectMask
@@ -96,12 +98,12 @@ namespace Avalonia.X11
             var feature = (EglGlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             var surfaces = new List<object>
             {
-                new X11FramebufferSurface(_x11.DeferredDisplay, _handle)
+                new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, () => Scaling)
             };
             if (feature != null)
                 surfaces.Insert(0,
                     new EglGlPlatformSurface((EglDisplay)feature.Display, feature.DeferredContext,
-                        new SurfaceInfo(_x11.DeferredDisplay, _handle, _renderHandle)));
+                        new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             Surfaces = surfaces.ToArray();
             UpdateMotifHits();
             XFlush(_x11.Display);
@@ -109,11 +111,13 @@ namespace Avalonia.X11
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
+            private readonly X11Window _window;
             private readonly IntPtr _display;
             private readonly IntPtr _parent;
 
-            public SurfaceInfo(IntPtr display, IntPtr parent, IntPtr xid)
+            public SurfaceInfo(X11Window window, IntPtr display, IntPtr parent, IntPtr xid)
             {
+                _window = window;
                 _display = display;
                 _parent = parent;
                 Handle = xid;
@@ -134,7 +138,7 @@ namespace Avalonia.X11
                 }
             }
 
-            public double Scaling { get; } = 1;
+            public double Scaling => _window.Scaling;
         }
 
         void UpdateMotifHits()
@@ -188,10 +192,20 @@ namespace Avalonia.X11
 
             XSetWMNormalHints(_x11.Display, _handle, ref hints);
         }
-        
-        public Size ClientSize { get; private set; }
-        //TODO
-        public double Scaling { get; } = 1;
+
+        public Size ClientSize => new Size(_realSize.Width / Scaling, _realSize.Height / Scaling);
+
+        public double Scaling
+        {
+            get
+            {
+                lock (SyncRoot)
+                    return _scaling;
+
+            }
+            private set => _scaling = value;
+        }
+
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -209,6 +223,11 @@ namespace Avalonia.X11
             new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
 
         void OnEvent(XEvent ev)
+        {
+            lock (SyncRoot)
+                OnEventSync(ev);
+        }
+        void OnEventSync(XEvent ev)
         {
             if(XFilterEvent(ref ev, _handle))
                 return;
@@ -269,6 +288,8 @@ namespace Avalonia.X11
             }
             else if (ev.type == XEventName.ConfigureNotify)
             {
+                if (ev.ConfigureEvent.window != _handle)
+                    return;
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
                 if (needEnqueue)
@@ -278,22 +299,27 @@ namespace Avalonia.X11
                             return;
                         var cev = _configure.Value;
                         _configure = null;
-                        var nsize = new Size(cev.width, cev.height);
-                        XTranslateCoordinates(_x11.Display, _handle, _x11.DefaultRootWindow, 0, 0, out var xret,
-                            out var yret, out var _);
-                        var npos = new Point(xret, yret);
-                        var changedSize = ClientSize != nsize;
-                        var changedPos = npos != _position;
-                        ClientSize = nsize;
+                        var nsize = new PixelSize(cev.width, cev.height);
+                        var npos = new Point(cev.x, cev.y);
+                        var changedSize = _realSize != nsize;
+                        var changedPos = _position == null || npos != _position;
+                        _realSize = nsize;
                         _position = npos;
-                        if (changedSize)
-                            Resized?.Invoke(nsize);
+                        bool updatedSizeViaScaling = false;
                         if (changedPos)
+                        {
                             PositionChanged?.Invoke(npos);
+                            updatedSizeViaScaling = UpdateScaling();
+                        }
+
+                        if (changedSize && !updatedSizeViaScaling)
+                            Resized?.Invoke(ClientSize);
+
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
+                XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width, ev.ConfigureEvent.height);
             }
-            else if (ev.type == XEventName.DestroyNotify)
+            else if (ev.type == XEventName.DestroyNotify && ev.AnyEvent.window == _handle)
             {
                 Cleanup();
             }
@@ -335,6 +361,28 @@ namespace Avalonia.X11
                             ref ev);
                     }
                 }
+            }
+        }
+
+        private bool UpdateScaling()
+        {
+            lock (SyncRoot)
+            {
+                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                    .FirstOrDefault(m => m.Bounds.Contains(Position));
+                var newScaling = monitor?.PixelDensity ?? Scaling;
+                if (Scaling != newScaling)
+                {
+                    Console.WriteLine(
+                        $"Updating scaling from {Scaling} to {newScaling} as a response to position change to {Position}");
+                    var oldScaledSize = ClientSize;
+                    Scaling = newScaling;
+                    ScalingChanged?.Invoke(Scaling);
+                    Resize(oldScaledSize, true);
+                    return true;
+                }
+
+                return false;
             }
         }
 
@@ -431,6 +479,7 @@ namespace Avalonia.X11
         private bool _systemDecorations = true;
         private bool _canResize = true;
         private (Size minSize, Size maxSize) _minMaxSize;
+        private double _scaling = 1;
 
         void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
@@ -440,6 +489,10 @@ namespace Avalonia.X11
 
         public void ScheduleInput(RawInputEventArgs args)
         {
+            if (args is RawMouseEventArgs mouse)
+                mouse.Position = mouse.Position / Scaling;
+            if (args is RawDragEvent drag)
+                drag.Location = drag.Location / Scaling;
             
             _lastEvent = new InputEventContainer() {Event = args};
             _inputQueue.Enqueue(_lastEvent);
@@ -564,35 +617,35 @@ namespace Avalonia.X11
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
         
         
-        public Point PointToClient(Point point) => new Point(point.X - _position.X, point.Y - _position.Y);
+        public Point PointToClient(Point point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
 
-        public Point PointToScreen(Point point) => new Point(point.X + _position.X, point.Y + _position.Y);
+        public Point PointToScreen(Point point) => new Point(point.X * Scaling + Position.X, point.Y * Scaling + Position.Y);
         
         public void SetSystemDecorations(bool enabled)
         {
             _systemDecorations = enabled;
             UpdateMotifHits();
         }
+
+
+        public void Resize(Size clientSize) => Resize(clientSize, false);
         
-                
-        public void Resize(Size clientSize)
+        void Resize(Size clientSize, bool force)
         {
-            if (clientSize == ClientSize)
+            if (!force && clientSize == ClientSize)
                 return;
-            var changes = new XWindowChanges
-            {
-                width = (int)clientSize.Width,
-                height = (int)clientSize.Height
-            };
-            var needResize = clientSize != ClientSize;
-            XConfigureWindow(_x11.Display, _handle, ChangeWindowFlags.CWHeight | ChangeWindowFlags.CWWidth,
-                ref changes);
+            
+            var needImmediatePopupResize = clientSize != ClientSize;
+
+            var pixelSize = new PixelSize((int)(clientSize.Width * Scaling), (int)(clientSize.Height * Scaling));
+            XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
+            XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
 
-            if (_popup && needResize)
+            if (force || (_popup && needImmediatePopupResize))
             {
-                ClientSize = clientSize;
-                Resized?.Invoke(clientSize);
+                _realSize = pixelSize;
+                Resized?.Invoke(ClientSize);
             }
         }
         
@@ -618,7 +671,7 @@ namespace Avalonia.X11
         
         public Point Position
         {
-            get => _position;
+            get => _position ?? default;
             set
             {
                 var changes = new XWindowChanges
@@ -650,9 +703,10 @@ namespace Avalonia.X11
         }
 
 
-        public IScreenImpl Screen { get; } = AvaloniaLocator.CurrentMutable.GetService<IScreenImpl>();
-        public Size MaxClientSize { get; } = new Size(1920, 1280);
+        public IScreenImpl Screen => _platform.Screens;
 
+        public Size MaxClientSize => _platform.X11Screens.Screens.Select(s => s.Bounds.Size / s.PixelDensity)
+            .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 
         void SendNetWMMessage(IntPtr message_type, IntPtr l0,

@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using Avalonia.Platform;
+using SkiaSharp;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
@@ -9,11 +11,11 @@ namespace Avalonia.X11
         private readonly IntPtr _xid;
         private IUnmanagedBlob _blob;
 
-        public X11Framebuffer(IntPtr display, IntPtr xid, int width, int height, int factor)
+        public X11Framebuffer(IntPtr display, IntPtr xid, int width, int height, double factor)
         {
             _display = display;
             _xid = xid;
-            Size = new PixelSize(width * factor, height * factor);
+            Size = new PixelSize(width, height);
             RowBytes = width * 4;
             Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Bgra8888;
@@ -34,7 +36,7 @@ namespace Avalonia.X11
             image.bitmap_bit_order = 0;// LSBFirst;
             image.bitmap_pad = bitsPerPixel;
             image.depth = 24;
-            image.bytes_per_line = RowBytes - Size.Width * 4;
+            image.bytes_per_line = RowBytes;
             image.bits_per_pixel = bitsPerPixel;
             XLockDisplay(_display);
             XInitImage(ref image);

@@ -21,6 +21,8 @@ namespace Avalonia.X11
         public Dictionary<IntPtr, Action<XEvent>> Windows = new Dictionary<IntPtr, Action<XEvent>>();
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
+        public IX11Screens X11Screens { get; private set; }
+        public IScreenImpl Screens { get; private set; }
         public void Initialize()
         {
             XInitThreads();
@@ -44,7 +46,9 @@ namespace Avalonia.X11
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new IconLoaderStub())
                 .Bind<ISystemDialogImpl>().ToConstant(new Gtk3ForeignX11SystemDialog());
-            X11Screens.Init(this);
+            
+            X11Screens = Avalonia.X11.X11Screens.Init(this);
+            Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
             {
                 var xi2 = new XI2Manager();
