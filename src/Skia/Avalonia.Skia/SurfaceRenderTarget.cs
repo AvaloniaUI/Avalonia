@@ -45,6 +45,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create backing Skia surface.
         /// </summary>
+        /// <param name="gpu">GPU.</param>
         /// <param name="width">Width.</param>
         /// <param name="height">Height.</param>
         /// <param name="format">Format.</param>
