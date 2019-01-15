@@ -1,0 +1,15 @@
+﻿namespace Avalonia.OpenGL
+{
+    public enum GlErrors
+    {
+        GL_NO_ERROR = GlConsts.GL_NO_ERROR,
+        GL_INVALID_ENUM = GlConsts.GL_INVALID_ENUM,
+        GL_INVALID_VALUE = GlConsts.GL_INVALID_VALUE,
+        GL_INVALID_OPERATION = GlConsts.GL_INVALID_OPERATION,
+        GL_INVALID_FRAMEBUFFER_OPERATION = GlConsts.GL_INVALID_FRAMEBUFFER_OPERATION,
+        GL_STACK_OVERFLOW = GlConsts.GL_STACK_OVERFLOW,
+        GL_STACK_UNDERFLOW = GlConsts.GL_STACK_UNDERFLOW,
+        GL_OUT_OF_MEMORY = GlConsts.GL_OUT_OF_MEMORY,
+        GL_CONTEXT_LOST = GlConsts.GL_CONTEXT_LOST
+    }
+}
