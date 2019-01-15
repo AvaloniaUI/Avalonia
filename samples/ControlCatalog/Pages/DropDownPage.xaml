@@ -27,6 +27,15 @@
           <TextBox Text="TextBox"/>
         </DropDownItem>
       </DropDown>
+
+
+       <DropDown x:Name="fontDropDown"  SelectedIndex="0">
+            <DropDown.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
+                </DataTemplate>
+            </DropDown.ItemTemplate>
+       </DropDown>
     </StackPanel>
 
   </StackPanel>
