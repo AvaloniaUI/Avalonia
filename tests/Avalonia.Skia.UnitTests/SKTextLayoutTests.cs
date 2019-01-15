@@ -14,17 +14,6 @@ namespace Avalonia.Skia.UnitTests
     {
         private static readonly string s_singleLineText = "0123456789";
         private static readonly string s_multiLineText = "012345678\r\r0123456789";
-        private static readonly SKTypeface s_emojiTypeface;
-
-        static SKTextLayoutTests()
-        {
-            using (var stream =
-                typeof(SKTextLayoutTests).Assembly.GetManifestResourceStream(
-                    "Avalonia.Skia.UnitTests.Assets.NotoEmoji-Regular.ttf"))
-            {
-                s_emojiTypeface = SKTypeface.FromStream(stream);
-            }
-        }
 
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
@@ -161,18 +150,18 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextSpanToUnicodeStringInBetween()
         {
-            const string Text = "😀😀😀😀";
+            const string Text = "😄😄😄😄";
 
             var foreground = new SolidColorBrush(Colors.Red);
 
             var spans = new List<FormattedTextStyleSpan>
                         {
-                            new FormattedTextStyleSpan(4, 1, foreground: foreground)
+                            new FormattedTextStyleSpan(4, 2, foreground: foreground)
                         };
 
             var layout = new SKTextLayout(
                 Text,
-                SKTypeface.Default, 
+                SKTypeface.Default,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
@@ -189,7 +178,7 @@ namespace Avalonia.Skia.UnitTests
 
             var actual = Text.Substring(textRun.TextPointer.StartingIndex, textRun.TextPointer.Length);
 
-            Assert.Equal("😀", actual);
+            Assert.Equal("😄", actual);
 
             Assert.Equal(foreground, textRun.Foreground);
         }
@@ -251,11 +240,11 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldHitTestSurrogatePair()
         {
-            const string Text = "😀";
+            const string Text = "😄";
 
             var layout = new SKTextLayout(
                 Text,
-                s_emojiTypeface,
+                SKTypeface.Default,
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
