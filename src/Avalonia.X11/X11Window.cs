@@ -24,6 +24,7 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private bool _invalidated;
         private XConfigureEvent? _configure;
+        private Point? _configurePoint;
         private IInputRoot _inputRoot;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -296,15 +297,27 @@ namespace Avalonia.X11
                     return;
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
+                if (ev.ConfigureEvent.override_redirect || ev.ConfigureEvent.send_event)
+                    _configurePoint = new Point(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
+                else
+                {
+                    XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
+                        _configure.Value.x, _configure.Value.y,
+                        out var tx, out var ty, out _);
+                    _configurePoint = new Point(tx, ty);
+                }
+
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
                     {
                         if (_configure == null)
                             return;
                         var cev = _configure.Value;
+                        var npos = _configurePoint.Value;
                         _configure = null;
+                        _configurePoint = null;
+                        
                         var nsize = new PixelSize(cev.width, cev.height);
-                        var npos = new Point(cev.x, cev.y);
                         var changedSize = _realSize != nsize;
                         var changedPos = _position == null || npos != _position;
                         _realSize = nsize;
