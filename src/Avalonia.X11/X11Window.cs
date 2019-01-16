@@ -25,6 +25,7 @@ namespace Avalonia.X11
         private bool _invalidated;
         private XConfigureEvent? _configure;
         private Point? _configurePoint;
+        private bool _triggeredExpose;
         private IInputRoot _inputRoot;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -244,7 +245,17 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
             else if (ev.type == XEventName.Expose)
-                DoPaint();
+            {
+                if (!_triggeredExpose)
+                {
+                    _triggeredExpose = true;
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _triggeredExpose = false;
+                        DoPaint();
+                    }, DispatcherPriority.Render);
+                }
+            }
             else if (ev.type == XEventName.FocusIn)
             {
                 if (ActivateTransientChildIfNeeded())
