@@ -160,8 +160,8 @@ namespace Avalonia.X11
 
             if (!_canResize)
             {
-                functions ^= MotifFunctions.Resize | MotifFunctions.Maximize;
-                decorations ^= MotifDecorations.Maximize | MotifDecorations.ResizeH;
+                functions &= ~(MotifFunctions.Resize | MotifFunctions.Maximize);
+                decorations &= ~(MotifDecorations.Maximize | MotifDecorations.ResizeH);
             }
 
             var hints = new MotifWmHints
@@ -176,21 +176,32 @@ namespace Avalonia.X11
                 PropertyMode.Replace, ref hints, 5);
         }
 
-        void UpdateSizeHits()
+        void UpdateSizeHints(PixelSize? preResize)
         {
+            var min = _minMaxSize.minSize;
+            var max = _minMaxSize.maxSize;
+
+            if (!_canResize)
+                max = min = _realSize;
+            
+            if (preResize.HasValue)
+            {
+                max = new PixelSize(Math.Max(_realSize.Width, max.Width), Math.Max(_realSize.Height, max.Height));
+                min = new PixelSize(Math.Min(_realSize.Width, min.Width), Math.Min(_realSize.Height, min.Height));
+            }
+
             var hints = new XSizeHints
             {
-                min_width = (int)_minMaxSize.minSize.Width,
-                min_height = (int)_minMaxSize.minSize.Height
+                min_width = min.Width,
+                min_height = min.Height
             };
             hints.height_inc = hints.width_inc = 1;
             var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
             // People might be passing double.MaxValue
-            if (_minMaxSize.maxSize.Width < 100000 && _minMaxSize.maxSize.Height < 100000)
+            if (max.Width < 100000 && max.Height < 100000)
             {
-
-                hints.max_width = (int)Math.Max(100000, _minMaxSize.maxSize.Width);
-                hints.max_height = (int)Math.Max(100000, _minMaxSize.maxSize.Height);
+                hints.max_width = (int)Math.Max(100000, max.Width);
+                hints.max_height = (int)Math.Max(100000, max.Height);
                 flags |= XSizeHintsFlags.PMaxSize;
             }
 
@@ -508,7 +519,8 @@ namespace Avalonia.X11
         
         private bool _systemDecorations = true;
         private bool _canResize = true;
-        private (Size minSize, Size maxSize) _minMaxSize;
+        private (Size minSize, Size maxSize) _scaledMinMaxSize;
+        private (PixelSize minSize, PixelSize maxSize) _minMaxSize;
         private double _scaling = 1;
 
         void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
@@ -659,6 +671,8 @@ namespace Avalonia.X11
 
 
         public void Resize(Size clientSize) => Resize(clientSize, false);
+
+        PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * Scaling), (int)(size.Height * Scaling));
         
         void Resize(Size clientSize, bool force)
         {
@@ -667,7 +681,8 @@ namespace Avalonia.X11
             
             var needImmediatePopupResize = clientSize != ClientSize;
 
-            var pixelSize = new PixelSize((int)(clientSize.Width * Scaling), (int)(clientSize.Height * Scaling));
+            var pixelSize = ToPixelSize(clientSize);
+            UpdateSizeHints(pixelSize);
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
             XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
@@ -683,6 +698,7 @@ namespace Avalonia.X11
         {
             _canResize = value;
             UpdateMotifHints();
+            UpdateSizeHints(null);
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -812,8 +828,8 @@ namespace Avalonia.X11
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
-            _minMaxSize = (minSize, maxSize);
-            UpdateSizeHits();
+            _scaledMinMaxSize = (minSize, maxSize);
+            _minMaxSize = (ToPixelSize(minSize), ToPixelSize(maxSize));
         }
 
         public void SetTopmost(bool value)
