@@ -19,6 +19,7 @@ namespace Avalonia.Animation
         private ulong? _iterationCount;
         private ulong _currentIteration;
         private bool _gotFirstKFValue;
+        private bool _playbackReversed;
         private FillMode _fillMode;
         private PlaybackDirection _playbackDirection;
         private Animator<T> _animator;
@@ -160,9 +161,14 @@ namespace Avalonia.Animation
 
                 _currentIteration = (ulong)(opsTime / iterationTime);
 
-                // Stop animation when the current iteration is beyond the iteration count.
+                // Stop animation when the current iteration is beyond the iteration count
+                // and snap the last iteration value to exact values.
                 if ((_currentIteration + 1) > _iterationCount)
+                {
+                    var easedTime = _easeFunc.Ease(_playbackReversed ? 0.0 : 1.0);
+                    _lastInterpValue = _interpolator(easedTime, _neutralValue);
                     DoComplete();
+                }
 
                 if (playbackTime <= iterDuration)
                 {
@@ -170,27 +176,26 @@ namespace Avalonia.Animation
                     var normalizedTime = playbackTime / iterDuration;
 
                     // Check if normalized time needs to be reversed according to PlaybackDirection
-                    
-                    bool playbackReversed;
+
                     switch (_playbackDirection)
                     {
                         case PlaybackDirection.Normal:
-                            playbackReversed = false;
+                            _playbackReversed = false;
                             break;
                         case PlaybackDirection.Reverse:
-                            playbackReversed = true;
+                            _playbackReversed = true;
                             break;
                         case PlaybackDirection.Alternate:
-                            playbackReversed = (_currentIteration % 2 == 0) ? false : true;
+                            _playbackReversed = (_currentIteration % 2 == 0) ? false : true;
                             break;
                         case PlaybackDirection.AlternateReverse:
-                            playbackReversed = (_currentIteration % 2 == 0) ? true : false;
+                            _playbackReversed = (_currentIteration % 2 == 0) ? true : false;
                             break;
                         default:
                             throw new InvalidOperationException($"Animation direction value is unknown: {_playbackDirection}");
                     }
 
-                    if (playbackReversed)
+                    if (_playbackReversed)
                         normalizedTime = 1 - normalizedTime;
 
                     // Ease and interpolate

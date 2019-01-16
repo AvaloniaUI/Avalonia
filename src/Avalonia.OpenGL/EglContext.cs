@@ -31,14 +31,14 @@ namespace Avalonia.OpenGL
         public void MakeCurrent()
         {
             if (!_egl.MakeCurrent(_disp.Handle, IntPtr.Zero, IntPtr.Zero, Context))
-                throw new OpenGlException("eglMakeCurrent failed");
+                throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
         }
         
         public void MakeCurrent(EglSurface surface)
         {
-            var surf = ((EglSurface)surface)?.DangerousGetHandle() ?? OffscreenSurface;
+            var surf = surface?.DangerousGetHandle() ?? OffscreenSurface;
             if (!_egl.MakeCurrent(_disp.Handle, surf, surf, Context))
-                throw new OpenGlException("eglMakeCurrent failed");
+                throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
         }
     }
 }
