@@ -14,7 +14,7 @@ namespace Avalonia.Styling.UnitTests
     public class SelectorTests_Multiple
     {
         [Fact]
-        public void Template_Child_Of_Control_With_Two_Classes()
+        public void Named_Template_Child_Of_Control_With_Two_Classes()
         {
             var template = new FuncControlTemplate(parent =>
             {
@@ -40,15 +40,49 @@ namespace Avalonia.Styling.UnitTests
 
             var border = (Border)((IVisual)control).VisualChildren.Single();
             var values = new List<bool>();
-            var activator = selector.Match(border).ObservableResult;
+            var match = selector.Match(border);
 
-            activator.Subscribe(x => values.Add(x));
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            match.Activator.Subscribe(x => values.Add(x));
 
             Assert.Equal(new[] { false }, values);
             control.Classes.AddRange(new[] { "foo", "bar" });
             Assert.Equal(new[] { false, true }, values);
             control.Classes.Remove("foo");
             Assert.Equal(new[] { false, true, false }, values);
+        }
+
+        [Fact]
+        public void Named_OfType_Template_Child_Of_Control_With_Two_Classes_Wrong_Type()
+        {
+            var template = new FuncControlTemplate(parent =>
+            {
+                return new Border
+                {
+                    Name = "border",
+                };
+            });
+
+            var control = new Button
+            {
+                Template = template,
+            };
+
+            control.ApplyTemplate();
+
+            var selector = default(Selector)
+                .OfType<Button>()
+                .Class("foo")
+                .Class("bar")
+                .Template()
+                .OfType<TextBlock>()
+                .Name("baz");
+
+            var border = (Border)((IVisual)control).VisualChildren.Single();
+            var values = new List<bool>();
+            var match = selector.Match(border);
+
+            Assert.Equal(SelectorMatchResult.NeverThisType, match.Result);
         }
 
         [Fact]

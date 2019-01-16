@@ -30,6 +30,9 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override bool InTemplate => _previous?.InTemplate ?? false;
 
+        /// <inheritdoc/>
+        public override bool IsCombinator => false;
+
         /// <summary>
         /// Gets the name of the control to match.
         /// </summary>
@@ -78,7 +81,8 @@ namespace Avalonia.Styling
             }
             else
             {
-                return new SelectorMatch((control.GetValue(_property) ?? string.Empty).Equals(_value));
+                var result = (control.GetValue(_property) ?? string.Empty).Equals(_value);
+                return result ? SelectorMatch.AlwaysThisInstance : SelectorMatch.NeverThisInstance;
             }
         }
 
