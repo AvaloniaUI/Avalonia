@@ -106,7 +106,7 @@ namespace Avalonia.X11
                         density *= _settings.GlobalScaleFactor;
                         
                         var bounds = new Rect(mon.X, mon.Y, mon.Width, mon.Height);
-                        screens[0] = new X11Screen(bounds, 
+                        screens[c] = new X11Screen(bounds, 
                             mon.Primary != 0, 
                             name,
                             (mon.MWidth == 0 || mon.MHeight == 0) ? (Size?)null : new Size(mon.MWidth, mon.MHeight),
