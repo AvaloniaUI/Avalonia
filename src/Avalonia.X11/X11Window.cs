@@ -200,8 +200,8 @@ namespace Avalonia.X11
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
-                hints.max_width = (int)Math.Max(100000, max.Width);
-                hints.max_height = (int)Math.Max(100000, max.Height);
+                hints.max_width = max.Width;
+                hints.max_height = max.Height;
                 flags |= XSizeHintsFlags.PMaxSize;
             }
 
@@ -417,6 +417,7 @@ namespace Avalonia.X11
                     var oldScaledSize = ClientSize;
                     Scaling = newScaling;
                     ScalingChanged?.Invoke(Scaling);
+                    SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
                     Resize(oldScaledSize, true);
                     return true;
                 }
@@ -829,7 +830,16 @@ namespace Avalonia.X11
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _scaledMinMaxSize = (minSize, maxSize);
-            _minMaxSize = (ToPixelSize(minSize), ToPixelSize(maxSize));
+            var min = new PixelSize(
+                (int)(minSize.Width < 1 ? 1 : minSize.Width * Scaling),
+                (int)(minSize.Height < 1 ? 1 : minSize.Height * Scaling));
+
+            const int maxDim = 100000;
+            var max = new PixelSize(
+                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, minSize.Width * Scaling)),
+                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, minSize.Height * Scaling)));
+            
+            _minMaxSize = (min, max);
         }
 
         public void SetTopmost(bool value)
