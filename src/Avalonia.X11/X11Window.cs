@@ -186,8 +186,9 @@ namespace Avalonia.X11
             
             if (preResize.HasValue)
             {
-                max = new PixelSize(Math.Max(_realSize.Width, max.Width), Math.Max(_realSize.Height, max.Height));
-                min = new PixelSize(Math.Min(_realSize.Width, min.Width), Math.Min(_realSize.Height, min.Height));
+                var desired = preResize.Value;
+                max = new PixelSize(Math.Max(desired.Width, max.Width), Math.Max(desired.Height, max.Height));
+                min = new PixelSize(Math.Min(desired.Width, min.Width), Math.Min(desired.Height, min.Height));
             }
 
             var hints = new XSizeHints
@@ -324,11 +325,10 @@ namespace Avalonia.X11
                 else
                 {
                     XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
-                        _configure.Value.x, _configure.Value.y,
+                        0, 0,
                         out var tx, out var ty, out _);
                     _configurePoint = new Point(tx, ty);
                 }
-
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
                     {
@@ -840,6 +840,7 @@ namespace Avalonia.X11
                 (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, minSize.Height * Scaling)));
             
             _minMaxSize = (min, max);
+            UpdateSizeHints(null);
         }
 
         public void SetTopmost(bool value)
