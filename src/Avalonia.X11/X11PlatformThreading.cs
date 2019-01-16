@@ -176,6 +176,8 @@ namespace Avalonia.X11
 
                 if (cancellationToken.IsCancellationRequested)
                     return;
+                //Flush whatever requests were made to XServer
+                XFlush(_display);
                 epoll_event ev;
                 var len = epoll_wait(_epoll, &ev, 1,
                     nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));

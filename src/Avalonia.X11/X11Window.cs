@@ -95,6 +95,9 @@ namespace Avalonia.X11
                 _x11.Atoms.WM_DELETE_WINDOW
             };
             XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
+            XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
+                32, PropertyMode.Replace, new[] {_x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL}, 1);
+            
             var feature = (EglGlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             var surfaces = new List<object>
             {
@@ -105,7 +108,7 @@ namespace Avalonia.X11
                     new EglGlPlatformSurface((EglDisplay)feature.Display, feature.DeferredContext,
                         new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             Surfaces = surfaces.ToArray();
-            UpdateMotifHits();
+            UpdateMotifHints();
             XFlush(_x11.Display);
         }
 
@@ -141,10 +144,12 @@ namespace Avalonia.X11
             public double Scaling => _window.Scaling;
         }
 
-        void UpdateMotifHits()
+        void UpdateMotifHints()
         {
-            var functions = MotifFunctions.All;
-            var decorations = MotifDecorations.All;
+            var functions = MotifFunctions.Move | MotifFunctions.Close | MotifFunctions.Resize |
+                            MotifFunctions.Minimize | MotifFunctions.Maximize;
+            var decorations = MotifDecorations.Menu | MotifDecorations.Title | MotifDecorations.Border |
+                              MotifDecorations.Maximize | MotifDecorations.Minimize | MotifDecorations.ResizeH;
 
             if (_popup || !_systemDecorations)
             {
@@ -163,7 +168,6 @@ namespace Avalonia.X11
                 decorations = new IntPtr((int)decorations),
                 functions = new IntPtr((int)functions)
             };
-
 
             XChangeProperty(_x11.Display, _handle,
                 _x11.Atoms._MOTIF_WM_HINTS, _x11.Atoms._MOTIF_WM_HINTS, 32,
@@ -392,6 +396,8 @@ namespace Avalonia.X11
             get => _lastWindowState;
             set
             {
+                if(_lastWindowState == value)
+                    return;
                 _lastWindowState = value;
                 if (value == WindowState.Minimized)
                 {
@@ -624,7 +630,7 @@ namespace Avalonia.X11
         public void SetSystemDecorations(bool enabled)
         {
             _systemDecorations = enabled;
-            UpdateMotifHits();
+            UpdateMotifHints();
         }
 
 
@@ -652,7 +658,7 @@ namespace Avalonia.X11
         public void CanResize(bool value)
         {
             _canResize = value;
-            UpdateMotifHits();
+            UpdateMotifHints();
         }
 
         public void SetCursor(IPlatformHandle cursor)
