@@ -152,7 +152,8 @@ namespace Avalonia.Rendering
             var t = (IRenderLoopTask)this;
             if(t.NeedsUpdate)
                 UpdateScene();
-            Render(true);
+            if(_scene.Item != null)
+                Render(true);
         }
 
         /// <inheritdoc/>

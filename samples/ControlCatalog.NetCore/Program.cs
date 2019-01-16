@@ -43,7 +43,7 @@ namespace ControlCatalog.NetCore
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().UsePlatformDetect().UseSkia().UseReactiveUI();
+            => AppBuilder.Configure<App>().UseX11().UseSkia().UseReactiveUI();
 
         static void ConsoleSilencer()
         {
