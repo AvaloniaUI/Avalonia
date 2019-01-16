@@ -736,7 +736,7 @@ namespace Avalonia.X11
         void BeginMoveResize(NetWmMoveResize side)
         {
             var pos = GetCursorPos(_x11);
-            XUngrabPointer(_x11.Display, _x11.LastActivityTimestamp);
+            XUngrabPointer(_x11.Display, new IntPtr(0));
             SendNetWMMessage (_x11.Atoms._NET_WM_MOVERESIZE, (IntPtr) pos.x, (IntPtr) pos.y,
                 (IntPtr) side,
                 (IntPtr) 1, (IntPtr)1); // left button
