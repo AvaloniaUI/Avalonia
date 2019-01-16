@@ -141,6 +141,64 @@ namespace Avalonia.X11
         {
             return t2.Priority - t1.Priority;
         }
+
+        void CheckSignaled()
+        {
+            int buf = 0;
+            while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
+            {
+            }
+
+            DispatcherPriority prio;
+            lock (_lock)
+            {
+                if (!_signaled)
+                    return;
+                _signaled = false;
+                prio = _signaledPriority;
+                _signaledPriority = DispatcherPriority.MinValue;
+            }
+
+            Signaled?.Invoke(prio);
+        }
+
+        void HandleX11(CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var pending = XPending(_display);
+                if (pending == 0)
+                    break;
+                while (pending > 0)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+                    XNextEvent(_display, out var xev);
+                    if (xev.type == XEventName.GenericEvent)
+                        XGetEventData(_display, &xev.GenericEventCookie);
+                    pending--;
+                    try
+                    {
+                        if (xev.type == XEventName.GenericEvent)
+                        {
+                            if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
+                                xev.GenericEventCookie.extension)
+                            {
+                                _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
+                            }
+                        }
+                        else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                            handler(xev);
+                    }
+                    finally
+                    {
+                        if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
+                            XFreeEventData(_display, &xev.GenericEventCookie);
+                    }
+                }
+            }
+            Dispatcher.UIThread.RunJobs();
+        }
         
         public void RunLoop(CancellationToken cancellationToken)
         {
@@ -179,71 +237,13 @@ namespace Avalonia.X11
                 //Flush whatever requests were made to XServer
                 XFlush(_display);
                 epoll_event ev;
-                var len = epoll_wait(_epoll, &ev, 1,
-                    nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));
+                if (XPending(_display) == 0)
+                    epoll_wait(_epoll, &ev, 1,
+                        nextTick == null ? -1 : Math.Max(1, (int)(nextTick.Value - _clock.Elapsed).TotalMilliseconds));
                 if (cancellationToken.IsCancellationRequested)
                     return;
-                if (len == 0)
-                {
-                    // We handle timer-related stuff at the beginning of the loop
-                    continue;
-                }
-                else
-                {
-                    if (ev.data.u32 == (int)EventCodes.Signal)
-                    {
-                        int buf = 0;
-                        while (read(_sigread, &buf, new IntPtr(4)).ToInt64() > 0)
-                        {
-                        }
-
-                        DispatcherPriority prio;
-                        lock (_lock)
-                        {
-                            _signaled = false;
-                            prio = _signaledPriority;
-                            _signaledPriority = DispatcherPriority.MinValue;
-                        }
-                        Signaled?.Invoke(prio);
-                    }
-                    else
-                    {
-                        while (true)
-                        {
-                            var pending = XPending(_display);
-                            if (pending == 0)
-                                break;
-                            while (pending > 0)
-                            {
-                                if (cancellationToken.IsCancellationRequested)
-                                    return;
-                                XNextEvent(_display, out var xev);
-                                if (xev.type == XEventName.GenericEvent)
-                                    XGetEventData(_display, &xev.GenericEventCookie);
-                                pending--;
-                                try
-                                {
-                                    if (xev.type == XEventName.GenericEvent)
-                                    {
-                                        if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
-                                            xev.GenericEventCookie.extension)
-                                        {
-                                            _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
-                                        }
-                                    }
-                                    else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                                        handler(xev);
-                                }
-                                finally
-                                {
-                                    if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
-                                        XFreeEventData(_display, &xev.GenericEventCookie);
-                                }
-                            }
-                        }
-                        Dispatcher.UIThread.RunJobs();
-                    }
-                }
+                CheckSignaled();
+                HandleX11(cancellationToken);
             }
         }
 
