@@ -13,8 +13,8 @@ namespace Avalonia
     /// </summary>
     public class AvaloniaPropertyRegistry
     {
-        private readonly Dictionary<int, AvaloniaProperty> _allProperties =
-            new Dictionary<int, AvaloniaProperty>();
+        private readonly IList<AvaloniaProperty> _properties =
+            new List<AvaloniaProperty>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _registered =
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _attached =
@@ -157,7 +157,7 @@ namespace Avalonia
         /// <returns>The registered property or null if no matching property found.</returns>
         internal AvaloniaProperty FindRegistered(int id)
         {
-            return _allProperties.TryGetValue(id, out var value) ? value : null;
+            return id < _properties.Count ? _properties[id] : null;
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Avalonia
                 inner.Add(property.Id, property);
             }
 
-            _allProperties[property.Id] = property;
+            _properties.Add(property);
             _registeredCache.Clear();
         }
 
@@ -251,7 +251,7 @@ namespace Avalonia
                 inner.Add(property.Id, property);
             }
 
-            _allProperties[property.Id] = property;
+            _properties.Add(property);
             _attachedCache.Clear();
         }
     }

@@ -238,7 +238,7 @@ namespace Avalonia
 
         private (int, bool) TryFindEntry(int propertyId)
         {
-            if (_entries.Length <= 16)
+            if (_entries.Length <= 12)
             {
                 // For small lists, we use an optimized linear search. Since the last item in the list
                 // is always int.MaxValue, we can skip a conditional branch in each iteration.
@@ -255,10 +255,6 @@ namespace Avalonia
                 if (_entries[8].PropertyId >= propertyId) return (8, _entries[8].PropertyId == propertyId);
                 if (_entries[9].PropertyId >= propertyId) return (9, _entries[9].PropertyId == propertyId);
                 if (_entries[10].PropertyId >= propertyId) return (10, _entries[10].PropertyId == propertyId);
-                if (_entries[11].PropertyId >= propertyId) return (11, _entries[11].PropertyId == propertyId);
-                if (_entries[12].PropertyId >= propertyId) return (12, _entries[12].PropertyId == propertyId);
-                if (_entries[13].PropertyId >= propertyId) return (13, _entries[13].PropertyId == propertyId);
-                if (_entries[14].PropertyId >= propertyId) return (14, _entries[14].PropertyId == propertyId);
             }
             else
             {
@@ -266,36 +262,33 @@ namespace Avalonia
                 int high = _entries.Length;
                 int id;
 
-                if (high > 0)
+                while (high - low > 3)
                 {
-                    while (high - low > 3)
-                    {
-                        int pivot = (high + low) / 2;
-                        id = _entries[pivot].PropertyId;
+                    int pivot = (high + low) / 2;
+                    id = _entries[pivot].PropertyId;
 
-                        if (propertyId == id)
-                            return (pivot, true);
+                    if (propertyId == id)
+                        return (pivot, true);
 
-                        if (propertyId <= id)
-                            high = pivot;
-                        else
-                            low = pivot + 1;
-                    }
-
-                    do
-                    {
-                        id = _entries[low].PropertyId;
-
-                        if (id == propertyId)
-                            return (low, true);
-
-                        if (id > propertyId)
-                            break;
-
-                        ++low;
-                    }
-                    while (low < high);
+                    if (propertyId <= id)
+                        high = pivot;
+                    else
+                        low = pivot + 1;
                 }
+
+                do
+                {
+                    id = _entries[low].PropertyId;
+
+                    if (id == propertyId)
+                        return (low, true);
+
+                    if (id > propertyId)
+                        break;
+
+                    ++low;
+                }
+                while (low < high);
             }
 
             return (0, false);
