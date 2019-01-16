@@ -23,9 +23,6 @@ namespace PlatformSanityChecks
             AvaloniaX11PlatformExtensions.InitializeX11Platform();
 
             CheckPlatformThreading();
-
-
-
         }
 
         static bool CheckAccess() => UiThread == Thread.CurrentThread;
@@ -110,10 +107,7 @@ namespace PlatformSanityChecks
 
                 return true;
             }, TimeSpan.FromSeconds(1));
-
-
         });
-
 
         static void CheckSignaling() => EnterLoop(cts =>
         {
@@ -133,8 +127,6 @@ namespace PlatformSanityChecks
             CheckSignaling();
             CheckTimerOrdering();
             CheckTimerTicking();
-
         }
-
     }
 }
