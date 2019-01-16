@@ -394,14 +394,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
+        /// <param name="owner">The dialog's owner window.</param>
         /// <returns>
         /// A task that can be used to track the lifetime of the dialog.
         /// </returns>
-        public Task ShowDialog(Window parent)
+        public Task ShowDialog(Window owner)
         {
-            return ShowDialog<object>(parent);
+            return ShowDialog<object>(owner);
         }
-
 
         /// <summary>
         /// Shows the window as a dialog.
@@ -409,10 +409,11 @@ namespace Avalonia.Controls
         /// <typeparam name="TResult">
         /// The type of the result produced by the dialog.
         /// </typeparam>
+        /// <param name="owner">The dialog's owner window.</param>
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(Window parent) => ShowDialog<TResult>(parent.PlatformImpl);
+        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowDialog<TResult>(owner.PlatformImpl);
         
         /// <summary>
         /// Shows the window as a dialog.
@@ -420,13 +421,15 @@ namespace Avalonia.Controls
         /// <typeparam name="TResult">
         /// The type of the result produced by the dialog.
         /// </typeparam>
+        /// <param name="owner">The dialog's owner window.</param>
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>(IWindowImpl parent)
+        public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(parent == null)
-                throw new ArgumentNullException(nameof(parent));
+            if(owner == null)
+                throw new ArgumentNullException(nameof(owner));
+
             if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
@@ -435,15 +438,15 @@ namespace Avalonia.Controls
             AddWindow(this);
 
             EnsureInitialized();
-            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.ExecuteInitialLayoutPass(this);
+
+            var result = new TaskCompletionSource<TResult>();
 
             using (BeginAutoSizing())
             {
 
-                PlatformImpl?.ShowDialog(parent);
-                var result = new TaskCompletionSource<TResult>();
+                PlatformImpl?.ShowDialog(owner);
 
                 Renderer?.Start();
                 Observable.FromEventPattern<EventHandler, EventArgs>(
@@ -452,29 +455,31 @@ namespace Avalonia.Controls
                     .Take(1)
                     .Subscribe(_ =>
                     {
-                        parent.Activate();
+                        owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
-
-                return result.Task;
             }
+
+
+            SetWindowStartupLocation(owner);
+            return result.Task;
         }
 
-        void SetWindowStartupLocation()
+        void SetWindowStartupLocation(IWindowImpl owner = null)
         {
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
-                var screen = Screens.ScreenFromPoint(Bounds.Position);
+                var screen = Screens.ScreenFromPoint(owner?.Position ?? PlatformImpl.Position);
 
                 if (screen != null)
                     Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
             }
             else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (Owner != null)
+                if (owner != null)
                 {
-                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
-                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                    var positionAsSize = owner.ClientSize / 2 - ClientSize / 2;
+                    Position = owner.Position + new Point(positionAsSize.Width, positionAsSize.Height) * owner.Scaling;
                 }
             }
         }
