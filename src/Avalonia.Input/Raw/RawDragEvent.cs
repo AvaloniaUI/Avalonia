@@ -3,7 +3,7 @@
     public class RawDragEvent : RawInputEventArgs
     {
         public IInputElement InputRoot { get; }
-        public Point Location { get; }
+        public Point Location { get; set; }
         public IDataObject Data { get; }
         public DragDropEffects Effects { get; set; }
         public RawDragEventType Type { get; }

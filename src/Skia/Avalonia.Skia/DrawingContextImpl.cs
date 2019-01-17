@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -20,7 +21,7 @@ namespace Avalonia.Skia
     /// </summary>
     public class DrawingContextImpl : IDrawingContextImpl
     {
-        private readonly IDisposable[] _disposables;
+        private IDisposable[] _disposables;
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
@@ -30,7 +31,7 @@ namespace Avalonia.Skia
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private GRContext _grContext;
-
+        private bool _disposed;
         /// <summary>
         /// Context create info.
         /// </summary>
@@ -74,6 +75,8 @@ namespace Avalonia.Skia
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
+            if (_grContext != null)
+                Monitor.Enter(_grContext);
             
             Canvas = createInfo.Canvas;
 
@@ -257,14 +260,26 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public virtual void Dispose()
         {
-            if (_disposables == null)
-            {
+            if(_disposed)
                 return;
-            }
-
-            foreach (var disposable in _disposables)
+            try
             {
-                disposable?.Dispose();
+                if (_grContext != null)
+                {
+                    Monitor.Exit(_grContext);
+                    _grContext = null;
+                }
+
+                if (_disposables != null)
+                {
+                    foreach (var disposable in _disposables)
+                        disposable?.Dispose();
+                    _disposables = null;
+                }
+            }
+            finally
+            {
+                _disposed = true;
             }
         }
 

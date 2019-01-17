@@ -18,7 +18,7 @@ namespace Avalonia.Input
     {
         private int _clickCount;
         private Rect _lastClickRect;
-        private uint _lastClickTime;
+        private ulong _lastClickTime;
         private IInputElement _captured;
         private IDisposable _capturedSubscription;
        
@@ -169,7 +169,7 @@ namespace Avalonia.Input
             ClearPointerOver(this, root);
         }
 
-        private bool MouseDown(IMouseDevice device, uint timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
+        private bool MouseDown(IMouseDevice device, ulong timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
