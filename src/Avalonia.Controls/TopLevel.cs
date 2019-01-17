@@ -97,6 +97,7 @@ namespace Avalonia.Controls
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
+            Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
 
@@ -230,7 +231,6 @@ namespace Avalonia.Controls
         void IRenderRoot.Invalidate(Rect rect)
         {
             PlatformImpl?.Invalidate(rect);
-            UpdatePointerOver(rect);
         }
         
         /// <inheritdoc/>
@@ -351,9 +351,9 @@ namespace Avalonia.Controls
             _inputManager.ProcessInput(e);
         }
 
-        private void UpdatePointerOver(Rect rect)
+        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
-            (this as IInputRoot).MouseDevice.SceneInvalidated(this, rect);
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
         }
     }
 }
