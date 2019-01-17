@@ -39,7 +39,7 @@ namespace Avalonia.X11
             DefaultScreen = XDefaultScreen(display);
             BlackPixel = XBlackPixel(display, DefaultScreen);
             RootWindow = XRootWindow(display, DefaultScreen);
-            DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_arrow);
+            DefaultCursor = XCreateFontCursor(display, CursorFontShape.XC_top_left_arrow);
             DefaultRootWindow = XDefaultRootWindow(display);
             Atoms = new X11Atoms(display);
             //TODO: Open an actual XIM once we get support for preedit in our textbox
