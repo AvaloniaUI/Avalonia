@@ -86,6 +86,44 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
+        public void Named_Class_Template_Child_Of_Control()
+        {
+            var template = new FuncControlTemplate(parent =>
+            {
+                return new Border
+                {
+                    Name = "border",
+                };
+            });
+
+            var control = new Button
+            {
+                Template = template,
+            };
+
+            control.ApplyTemplate();
+
+            var selector = default(Selector)
+                .OfType<Button>()
+                .Template()
+                .Name("border")
+                .Class("foo");
+
+            var border = (Border)((IVisual)control).VisualChildren.Single();
+            var values = new List<bool>();
+            var match = selector.Match(border);
+
+            Assert.Equal(SelectorMatchResult.Sometimes, match.Result);
+            match.Activator.Subscribe(x => values.Add(x));
+
+            Assert.Equal(new[] { false }, values);
+            border.Classes.AddRange(new[] { "foo" });
+            Assert.Equal(new[] { false, true }, values);
+            border.Classes.Remove("foo");
+            Assert.Equal(new[] { false, true, false }, values);
+        }
+
+        [Fact]
         public void TargetType_OfType()
         {
             var selector = default(Selector).OfType<Button>();
