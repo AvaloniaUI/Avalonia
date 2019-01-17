@@ -61,7 +61,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = true
             };
 
-            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, framebuffer);
+            return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
         /// <summary>
@@ -119,11 +119,7 @@ namespace Avalonia.Skia
             _conversionShim = null;
             _preFramebufferCopyHandler = null;
 
-            if (_conversionShim != null)
-            {
-                _framebufferSurface?.Dispose();
-            }
-
+            _framebufferSurface?.Dispose();
             _framebufferSurface = null;
             _currentFramebufferAddress = IntPtr.Zero;
         }

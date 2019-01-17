@@ -19,7 +19,12 @@ namespace Avalonia.X11
             _x11 = x11;
         }
         
-        IWindowIconImpl LoadIcon(Bitmap bitmap) => new X11IconData(bitmap);
+        IWindowIconImpl LoadIcon(Bitmap bitmap)
+        {
+            var rv = new X11IconData(bitmap);
+            bitmap.Dispose();
+            return rv;
+        }
 
         public IWindowIconImpl LoadIcon(string fileName) => LoadIcon(new Bitmap(fileName));
 
@@ -36,17 +41,15 @@ namespace Avalonia.X11
     
     unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
     {
-        private readonly Bitmap _bitmap;
         private int _width;
         private int _height;
         private uint[] _bdata;
-        public IntPtr[]  Data { get; }
+        public UIntPtr[]  Data { get; }
         
         public X11IconData(Bitmap bitmap)
         {
-            _bitmap = bitmap;
-            _width = Math.Min(_bitmap.PixelSize.Width, 128);
-            _height = Math.Min(_bitmap.PixelSize.Height, 128);
+            _width = Math.Min(bitmap.PixelSize.Width, 128);
+            _height = Math.Min(bitmap.PixelSize.Height, 128);
             _bdata = new uint[_width * _height];
             fixed (void* ptr = _bdata)
             {
@@ -58,20 +61,37 @@ namespace Avalonia.X11
             using (var ctx = rt.CreateDrawingContext(null))
                 ctx.DrawImage(bitmap.PlatformImpl, 1, new Rect(bitmap.Size),
                     new Rect(0, 0, _width, _height));
-            Data = new IntPtr[_width * _height + 2];
-            Data[0] = new IntPtr(_width);
-            Data[1] = new IntPtr(_height);
+            Data = new UIntPtr[_width * _height + 2];
+            Data[0] = new UIntPtr((uint)_width);
+            Data[1] = new UIntPtr((uint)_height);
             for (var y = 0; y < _height; y++)
             {
                 var r = y * _width;
                 for (var x = 0; x < _width; x++)
-                    Data[r + x] = new IntPtr(_bdata[r + x]);
+                    Data[r + x] = new UIntPtr(_bdata[r + x]);
             }
+
+            _bdata = null;
         }
 
         public void Save(Stream outputStream)
         {
-            _bitmap.Save(outputStream);
+            using (var wr =
+                new WriteableBitmap(new PixelSize(_width, _height), new Vector(96, 96), PixelFormat.Bgra8888))
+            {
+                using (var fb = wr.Lock())
+                {
+                    var fbp = (uint*)fb.Address;
+                    for (var y = 0; y < _height; y++)
+                    {
+                        var r = y * _width;
+                        var fbr = y * fb.RowBytes / 4;
+                        for (var x = 0; x < _width; x++)
+                            fbp[fbr + x] = Data[r + x].ToUInt32();
+                    }
+                }
+                wr.Save(outputStream);
+            }
         }
 
         public ILockedFramebuffer Lock()
