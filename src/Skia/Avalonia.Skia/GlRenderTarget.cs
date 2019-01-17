@@ -30,6 +30,11 @@ namespace Avalonia.Skia
 
             var size = session.Size;
             var scaling = session.Scaling;
+            if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Can't create drawing context for surface with {size} size and {scaling} scaling");
+            }
 
             gl.Viewport(0, 0, size.Width, size.Height);
             gl.ClearStencil(0);
