@@ -128,9 +128,25 @@ namespace Avalonia.Rendering
             }
 
             Stop();
+            DisposeRenderTarget();
+        }
 
-            Layers.Clear();
-            RenderTarget?.Dispose();
+        void DisposeRenderTarget()
+        {
+            using (var l = _lock.TryLock())
+            {
+                if(l == null)
+                {
+                    // We are still trying to render on the render thread, try again a bit later
+                    DispatcherTimer.RunOnce(DisposeRenderTarget, TimeSpan.FromMilliseconds(50),
+                        DispatcherPriority.Background);
+                    return;
+                }
+
+                Layers.Clear();
+                RenderTarget?.Dispose();
+                RenderTarget = null;
+            }
         }
 
         /// <inheritdoc/>
