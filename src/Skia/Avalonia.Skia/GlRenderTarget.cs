@@ -35,31 +35,36 @@ namespace Avalonia.Skia
             gl.ClearStencil(0);
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _grContext.ResetContext();
-
-            GRBackendRenderTarget renderTarget =
-                new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
-                    new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
-            var surface = SKSurface.Create(_grContext, renderTarget,
-                GRSurfaceOrigin.BottomLeft,
-                GRPixelConfig.Rgba8888.ToColorType());
-            
-            var nfo = new DrawingContextImpl.CreateInfo
+            lock (_grContext)
             {
-                GrContext = _grContext,
-                Canvas = surface.Canvas,
-                Dpi = SkiaPlatform.DefaultDpi * scaling,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
-            };
+                _grContext.ResetContext();
 
-            return new DrawingContextImpl(nfo, Disposable.Create(() =>
-            {
-                surface.Canvas.Flush();
-                surface.Dispose();
-                renderTarget.Dispose();
-                session.Dispose();
-            }));
+                GRBackendRenderTarget renderTarget =
+                    new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
+                        new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+                var surface = SKSurface.Create(_grContext, renderTarget,
+                    GRSurfaceOrigin.BottomLeft,
+                    GRPixelConfig.Rgba8888.ToColorType());
+
+                var nfo = new DrawingContextImpl.CreateInfo
+                {
+                    GrContext = _grContext,
+                    Canvas = surface.Canvas,
+                    Dpi = SkiaPlatform.DefaultDpi * scaling,
+                    VisualBrushRenderer = visualBrushRenderer,
+                    DisableTextLcdRendering = true
+                };
+
+                return new DrawingContextImpl(nfo, Disposable.Create(() =>
+                {
+                    
+                    surface.Canvas.Flush();
+                    surface.Dispose();
+                    renderTarget.Dispose();
+                    _grContext.Flush();
+                    session.Dispose();
+                }));
+            }
         }
     }
 }
