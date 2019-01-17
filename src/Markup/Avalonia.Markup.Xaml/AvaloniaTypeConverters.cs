@@ -44,6 +44,12 @@ namespace Avalonia.Markup.Xaml
             { typeof(FontFamily), typeof(FontFamilyTypeConverter) }
         };
 
+        internal static Type GetBuiltinTypeConverter(Type type)
+        {
+            _converters.TryGetValue(type, out var result);
+            return result;
+        }
+
         /// <summary>
         /// Tries to lookup a <see cref="TypeConverter"/> for a type.
         /// </summary>
@@ -51,6 +57,14 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The type converter.</returns>
         public static Type GetTypeConverter(Type type)
         {
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var inner = GetTypeConverter(type.GetGenericArguments()[0]);
+                if (inner == null)
+                    return null;
+                return typeof(NullableTypeConverter<>).MakeGenericType(inner);
+            }
+            
             if (_converters.TryGetValue(type, out var result))
             {
                 return result;

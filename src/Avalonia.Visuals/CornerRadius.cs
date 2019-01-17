@@ -3,12 +3,18 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
 {
     public struct CornerRadius
     {
+        static CornerRadius()
+        {
+            Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(prop => typeof(CornerRadius).IsAssignableFrom(prop.PropertyType));
+        }
+
         public CornerRadius(double uniformRadius)
         {
             TopLeft = TopRight = BottomLeft = BottomRight = uniformRadius;

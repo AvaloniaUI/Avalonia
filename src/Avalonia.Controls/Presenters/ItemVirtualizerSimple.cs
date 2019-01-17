@@ -517,17 +517,13 @@ namespace Avalonia.Controls.Presenters
 
             if (index >= 0 && index < ItemCount)
             {
-                if (index < FirstIndex)
+                if (index <= FirstIndex)
                 {
                     newOffset = index;
                 }
                 else if (index >= NextIndex)
                 {
                     newOffset = index - Math.Ceiling(ViewportValue - 1);
-                }
-                else if (OffsetValue + ViewportValue >= ItemCount)
-                {
-                    newOffset = OffsetValue - 1;
                 }
 
                 if (newOffset != -1)
@@ -545,6 +541,11 @@ namespace Avalonia.Controls.Presenters
                 if (container != null && layoutManager != null)
                 {
                     layoutManager.ExecuteLayoutPass();
+
+                    if (newOffset != -1 && newOffset != OffsetValue)
+                    {
+                        OffsetValue = newOffset;
+                    }
 
                     if (panel.ScrollDirection == Orientation.Vertical)
                     {

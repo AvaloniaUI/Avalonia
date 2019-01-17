@@ -717,6 +717,45 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(10, target.Panel.Children.Count);
         }
 
+        [Fact]
+        public void Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
+        [Fact]
+        public void Second_Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
         public class Vertical
         {
             [Fact]

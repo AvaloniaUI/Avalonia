@@ -24,6 +24,9 @@ namespace Avalonia.Styling
         public override bool InTemplate => true;
 
         /// <inheritdoc/>
+        public override bool IsCombinator => true;
+
+        /// <inheritdoc/>
         public override Type TargetType => null;
 
         public override string ToString()
@@ -46,7 +49,7 @@ namespace Avalonia.Styling
                     "Cannot call Template selector on control with null TemplatedParent.");
             }
 
-            return _parent.Match(templatedParent, subscribe) ?? SelectorMatch.True;
+            return _parent.Match(templatedParent, subscribe);
         }
 
         protected override Selector MovePrevious() => null;
