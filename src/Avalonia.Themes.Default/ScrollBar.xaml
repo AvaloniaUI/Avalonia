@@ -3,7 +3,7 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid RowDefinitions="10,*,10">
+                    <Grid RowDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
@@ -53,12 +53,11 @@
         </Setter>
     </Style>
     <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height"
-                Value="10" />
+        <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid ColumnDefinitions="10,*,10">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
@@ -108,22 +107,17 @@
         </Setter>
     </Style>
     <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
-        <Setter Property="MinWidth"
-                Value="10" />
+        <Setter Property="MinWidth" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width"
-                Value="10" />
+        <Setter Property="Width" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
-        <Setter Property="MinHeight"
-                Value="10" />
+        <Setter Property="MinHeight" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar /template/ RepeatButton.repeat">
-        <Setter Property="Padding"
-                Value="2" />
-        <Setter Property="BorderThickness"
-                Value="0" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
     <Style Selector="ScrollBar /template/ RepeatButton.repeattrack">
         <Setter Property="Template">

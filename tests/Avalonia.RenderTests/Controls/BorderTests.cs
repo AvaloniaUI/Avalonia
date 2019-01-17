@@ -188,7 +188,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         }
 
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Centers_Content_Horizontally()
         {
             Decorator target = new Decorator
@@ -215,7 +215,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Centers_Content_Vertically()
         {
             Decorator target = new Decorator
@@ -296,7 +296,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Left_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -323,7 +323,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Right_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -350,7 +350,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Top_Aligns_Content()
         {
             Decorator target = new Decorator
@@ -377,7 +377,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("Has text")]
         public async Task Border_Bottom_Aligns_Content()
         {
             Decorator target = new Decorator

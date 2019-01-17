@@ -1,6 +1,4 @@
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Shapes;
-using Avalonia.Controls.Templates;
 using Avalonia.Media;
 using Xunit;
 
@@ -311,20 +309,10 @@ namespace Avalonia.Controls.UnitTests
         {
             var lt = new LayoutTransformControl()
             {
-                LayoutTransform = transform,
-                Template = new FuncControlTemplate<LayoutTransformControl>(
-                                p => new ContentPresenter() { Content = p.Content })
+                LayoutTransform = transform
             };
 
-            lt.Content = new Rectangle() { Width = width, Height = height };
-
-            lt.ApplyTemplate();
-
-            //we need to force create visual child
-            //so the measure after is correct
-            (lt.Presenter as ContentPresenter).UpdateChild();
-
-            Assert.NotNull(lt.Presenter?.Child);
+            lt.Child = new Rectangle() { Width = width, Height = height };
 
             lt.Measure(Size.Infinity);
             lt.Arrange(new Rect(lt.DesiredSize));

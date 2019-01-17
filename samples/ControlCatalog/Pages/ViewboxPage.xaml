@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.ViewboxPage">
+    <UserControl.Resources>
+        <StreamGeometry x:Key="Acorn">
+            F1 M 16.6309,18.6563C 17.1309,
+            8.15625 29.8809,14.1563 29.8809,
+            14.1563C 30.8809,11.1563 34.1308,
+            11.4063 34.1308,11.4063C 33.5,12
+            34.6309,13.1563 34.6309,13.1563C
+            32.1309,13.1562 31.1309,14.9062
+            31.1309,14.9062C 41.1309,23.9062
+            32.6309,27.9063 32.6309,27.9062C
+            24.6309,24.9063 21.1309,22.1562
+            16.6309,18.6563 Z M 16.6309,19.9063C
+            21.6309,24.1563 25.1309,26.1562
+            31.6309,28.6562C 31.6309,28.6562
+            26.3809,39.1562 18.3809,36.1563C
+            18.3809,36.1563 18,38 16.3809,36.9063C
+            15,36 16.3809,34.9063 16.3809,34.9063C
+            16.3809,34.9063 10.1309,30.9062 16.6309,19.9063 Z
+        </StreamGeometry>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Orientation="Vertical" Spacing="4">
+            <TextBlock Classes="h1">Viewbox</TextBlock>
+            <TextBlock Classes="h2">A control used to scale single child.</TextBlock>
+        </StackPanel>
+        <Grid ColumnDefinitions="Auto,*,*"
+              RowDefinitions="*,*,*,*"
+              Grid.Row="1" Margin="48"
+              MaxWidth="400">
+            <TextBlock Grid.Row="0" VerticalAlignment="Center">None</TextBlock>
+            <TextBlock Grid.Row="1" VerticalAlignment="Center">Fill</TextBlock>
+            <TextBlock Grid.Row="2" VerticalAlignment="Center">Uniform</TextBlock>
+            <TextBlock Grid.Row="3" VerticalAlignment="Center">UniformToFill</TextBlock>
+
+            <Viewbox Grid.Row="0" Grid.Column="1" Stretch="None">
+                <TextBlock>Hello World!</TextBlock>
+            </Viewbox>
+            <Viewbox Grid.Row="1" Grid.Column="1" Stretch="Fill">
+                <TextBlock>Hello World!</TextBlock>
+            </Viewbox>
+            <Viewbox Grid.Row="2" Grid.Column="1" Stretch="Uniform">
+                <TextBlock>Hello World!</TextBlock>
+            </Viewbox>
+            <Viewbox Grid.Row="3" Grid.Column="1" Stretch="UniformToFill">
+                <TextBlock>Hello World!</TextBlock>
+            </Viewbox>
+
+            <Viewbox Grid.Row="0" Grid.Column="2" Stretch="None">
+                <Path Fill="Blue" Data="{StaticResource Acorn}"/>
+            </Viewbox>
+            <Viewbox Grid.Row="1" Grid.Column="2" Stretch="Fill">
+                <Path Fill="Blue" Data="{StaticResource Acorn}"/>
+            </Viewbox>
+            <Viewbox Grid.Row="2" Grid.Column="2" Stretch="Uniform">
+                <Path Fill="Blue" Data="{StaticResource Acorn}"/>
+            </Viewbox>
+            <Viewbox Grid.Row="3" Grid.Column="2" Stretch="UniformToFill">
+                <Path Fill="Blue" Data="{StaticResource Acorn}"/>
+            </Viewbox>
+        </Grid>
+    </Grid>
+</UserControl>

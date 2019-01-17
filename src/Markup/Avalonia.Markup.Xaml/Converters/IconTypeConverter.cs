@@ -36,20 +36,16 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotSupportedException();
         }
 
-        private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string path)
+        private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
         {
-            var uri = new Uri(path, UriKind.RelativeOrAbsolute);
-            var scheme = uri.IsAbsoluteUri ? uri.Scheme : "file";
-
-            switch (scheme)
-            {
-                case "file":
-                    return new WindowIcon(path);
-
-                default:
-                    var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-                    return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
-            }
+            var uri = s.StartsWith("/")
+                ? new Uri(s, UriKind.Relative)
+                : new Uri(s, UriKind.RelativeOrAbsolute);
+            
+            if(uri.IsAbsoluteUri && uri.IsFile)
+                return new WindowIcon(uri.LocalPath);
+            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
         }
     }
 }

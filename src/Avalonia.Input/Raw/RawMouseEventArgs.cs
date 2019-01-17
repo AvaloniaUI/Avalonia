@@ -35,7 +35,7 @@ namespace Avalonia.Input.Raw
         /// <param name="inputModifiers">The input modifiers.</param>
         public RawMouseEventArgs(
             IInputDevice device,
-            uint timestamp,
+            ulong timestamp,
             IInputRoot root,
             RawMouseEventType type,
             Point position, 

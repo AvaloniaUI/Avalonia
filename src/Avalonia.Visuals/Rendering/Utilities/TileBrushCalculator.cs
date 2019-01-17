@@ -116,8 +116,8 @@ namespace Avalonia.Rendering.Utilities
                     return true;
                 if (SourceRect.Size.AspectRatio == _imageSize.AspectRatio)
                     return false;
-                if ((int)SourceRect.Width != _imageSize.Width ||
-                    (int)SourceRect.Height != _imageSize.Height)
+                if (SourceRect.Width != _imageSize.Width ||
+                    SourceRect.Height != _imageSize.Height)
                     return true;
                 return false;
             }

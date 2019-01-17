@@ -1,5 +1,4 @@
 <Project>
-  <Import Condition="'$(TargetFramework)' == 'netcoreapp2.0'" Project="CoreLibraries.props" />
   <ItemGroup>
       <ProjectReference Include="$(MSBuildThisFileDirectory)../packages/Avalonia/Avalonia.csproj" />
   </ItemGroup>

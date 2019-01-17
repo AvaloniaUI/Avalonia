@@ -11,6 +11,8 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml
 {
+    using Avalonia.Media;
+
     /// <summary>
     /// Maintains a repository of <see cref="TypeConverter"/>s for XAML parsing on top of those
     /// maintained by <see cref="TypeDescriptor"/>.
@@ -37,8 +39,16 @@ namespace Avalonia.Markup.Xaml
             { typeof(Selector), typeof(SelectorTypeConverter) },
             { typeof(TimeSpan), typeof(TimeSpanTypeConverter) },
             { typeof(WindowIcon), typeof(IconTypeConverter) },
-            { typeof(CultureInfo), typeof(CultureInfoConverter)}
+            { typeof(CultureInfo), typeof(CultureInfoConverter) },
+            { typeof(Uri), typeof(AvaloniaUriTypeConverter) },
+            { typeof(FontFamily), typeof(FontFamilyTypeConverter) }
         };
+
+        internal static Type GetBuiltinTypeConverter(Type type)
+        {
+            _converters.TryGetValue(type, out var result);
+            return result;
+        }
 
         /// <summary>
         /// Tries to lookup a <see cref="TypeConverter"/> for a type.
@@ -47,6 +57,14 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The type converter.</returns>
         public static Type GetTypeConverter(Type type)
         {
+            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                var inner = GetTypeConverter(type.GetGenericArguments()[0]);
+                if (inner == null)
+                    return null;
+                return typeof(NullableTypeConverter<>).MakeGenericType(inner);
+            }
+            
             if (_converters.TryGetValue(type, out var result))
             {
                 return result;

@@ -293,12 +293,12 @@ namespace Avalonia
         /// <returns>The inverted matrix.</returns>
         public Matrix Invert()
         {
-            if (GetDeterminant() == 0)
+            double d = GetDeterminant();
+
+            if (d == 0)
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
-
-            double d = GetDeterminant();
 
             return new Matrix(
                 _m22 / d,
