@@ -97,7 +97,11 @@ namespace Avalonia.Controls
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
-            Renderer.SceneInvalidated += SceneInvalidated;
+
+            if (Renderer != null)
+            {
+                Renderer.SceneInvalidated += SceneInvalidated;
+            }
 
             impl.SetInputRoot(this);
 
