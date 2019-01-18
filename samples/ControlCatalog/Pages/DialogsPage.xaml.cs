@@ -44,7 +44,7 @@ namespace ControlCatalog.Pages
                     window.Height = 200;
                     window.Width = 200;
                     window.Content = new TextBlock { Text = "Hello world!" };
-                    window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                     window.ShowDialog(GetWindow());
                 };
         }
