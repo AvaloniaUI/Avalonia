@@ -236,7 +236,6 @@ namespace Avalonia.Controls
 
             _popup = new PopupRoot { Content = this,  };
             ((ISetLogicalParent)_popup).SetParent(control);
-
             _popup.Position = Popup.GetPosition(control, GetPlacement(control), _popup,
                 GetHorizontalOffset(control), GetVerticalOffset(control));
             _popup.Show();
