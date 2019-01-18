@@ -22,9 +22,7 @@ namespace Avalonia
         {
             var (root, offset) = GetRootAndPosition(visual);
             var screenOffset = PixelPoint.FromPoint((Point)offset, root.RenderScaling);
-            var screenPoint = PixelPoint.FromPoint(
-                new Point(point.X - screenOffset.X, point.Y - screenOffset.Y),
-                root.RenderScaling);
+            var screenPoint = new PixelPoint(point.X - screenOffset.X, point.Y - screenOffset.Y);
             return root.PointToClient(screenPoint);
         }
 
