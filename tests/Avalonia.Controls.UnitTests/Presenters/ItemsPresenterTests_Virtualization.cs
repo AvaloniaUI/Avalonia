@@ -336,25 +336,11 @@ namespace Avalonia.Controls.UnitTests.Presenters
             public double LayoutScaling => 1;
 
             public ILayoutManager LayoutManager { get; } = new LayoutManager();
-            public IRenderTarget CreateRenderTarget()
-            {
-                throw new NotImplementedException();
-            }
 
-            public void Invalidate(Rect rect)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToClient(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point point)
-            {
-                throw new NotImplementedException();
-            }
+            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
+            public void Invalidate(Rect rect) => throw new NotImplementedException();
+            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
+            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private class TestItemsPresenter : ItemsPresenter
