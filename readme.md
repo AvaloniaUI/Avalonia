@@ -1,9 +1,9 @@
-﻿<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
+<img src='https://avatars2.githubusercontent.com/u/14075148?s=200&v=4' width='100' />
 
 # Avalonia
 
 | Gitter Chat | Build Status (Win, Linux, OSX) | Open Collective | NuGet | MyGet |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 |  [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) | [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) | [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) | [![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) | [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) |
 
 ## About
