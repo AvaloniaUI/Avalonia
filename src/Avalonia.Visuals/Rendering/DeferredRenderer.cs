@@ -99,6 +99,9 @@ namespace Avalonia.Rendering
         /// </summary>
         public string DebugFramesPath { get; set; }
 
+        /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+
         /// <summary>
         /// Gets the render layers.
         /// </summary>
@@ -504,6 +507,21 @@ namespace Avalonia.Rendering
                     var oldScene = _scene;
                     _scene = sceneRef;
                     oldScene?.Dispose();
+                }
+
+                if (SceneInvalidated != null)
+                {
+                    var rect = new Rect();
+
+                    foreach (var layer in scene.Layers)
+                    {
+                        foreach (var dirty in layer.Dirty)
+                        {
+                            rect = rect.Union(dirty);
+                        }
+                    }
+
+                    SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
 
                 _dirty.Clear();

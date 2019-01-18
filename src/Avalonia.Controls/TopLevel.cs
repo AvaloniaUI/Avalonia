@@ -98,6 +98,11 @@ namespace Avalonia.Controls
 
             Renderer = impl.CreateRenderer(this);
 
+            if (Renderer != null)
+            {
+                Renderer.SceneInvalidated += SceneInvalidated;
+            }
+
             impl.SetInputRoot(this);
 
             impl.Closed = HandleClosed;
@@ -231,7 +236,7 @@ namespace Avalonia.Controls
         {
             PlatformImpl?.Invalidate(rect);
         }
-
+        
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
@@ -348,6 +353,11 @@ namespace Avalonia.Controls
         private void HandleInput(RawInputEventArgs e)
         {
             _inputManager.ProcessInput(e);
+        }
+
+        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
+        {
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
         }
     }
 }
