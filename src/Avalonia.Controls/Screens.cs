@@ -18,7 +18,7 @@ namespace Avalonia.Controls
             _iScreenImpl = iScreenImpl;
         }
 
-        public Screen ScreenFromBounds(Rect bounds){
+        public Screen ScreenFromBounds(PixelRect bounds){
         
             Screen currMaxScreen = null;
             double maxAreaSize = 0;
@@ -39,16 +39,16 @@ namespace Avalonia.Controls
             return currMaxScreen;
         }
         
-        public Screen ScreenFromPoint(Point point)
+        public Screen ScreenFromPoint(PixelPoint point)
         {
-            return All.FirstOrDefault(x=>x.Bounds.Contains(point));        
+            return All.FirstOrDefault(x => x.Bounds.Contains(point));        
         }
 
         public Screen ScreenFromVisual(IVisual visual)
         {
-            Point tl = visual.PointToScreen(visual.Bounds.TopLeft);
-            Point br = visual.PointToScreen(visual.Bounds.BottomRight);
-            return ScreenFromBounds(new Rect(tl,br));
+            var tl = visual.PointToScreen(visual.Bounds.TopLeft);
+            var br = visual.PointToScreen(visual.Bounds.BottomRight);
+            return ScreenFromBounds(new PixelRect(tl, br));
         }
     }
 }

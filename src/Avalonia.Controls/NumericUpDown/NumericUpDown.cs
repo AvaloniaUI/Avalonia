@@ -487,7 +487,7 @@ namespace Avalonia.Controls
         {
             if (e == null)
             {
-                throw new ArgumentNullException("e");
+                throw new ArgumentNullException(nameof(e));
             }
 
             var handler = Spinned;
@@ -812,7 +812,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="Value"/> changes.
         /// </summary>
-        public event EventHandler<SpinEventArgs> ValueChanged
+        public event EventHandler<NumericUpDownValueChangedEventArgs> ValueChanged
         {
             add { AddHandler(ValueChangedEvent, value); }
             remove { RemoveHandler(ValueChangedEvent, value); }

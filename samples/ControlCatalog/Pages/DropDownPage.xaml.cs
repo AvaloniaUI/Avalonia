@@ -13,6 +13,9 @@ namespace ControlCatalog.Pages
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+            var fontDropDown = this.Find<DropDown>("fontDropDown");
+            fontDropDown.Items = Avalonia.Media.FontFamily.SystemFontFamilies;
+            fontDropDown.SelectedIndex = 0;
         }
     }
 }

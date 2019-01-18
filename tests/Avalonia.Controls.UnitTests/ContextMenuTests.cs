@@ -160,7 +160,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IDisposable Application()
         {
-            var screen = new Rect(new Point(), new Size(100, 100));
+            var screen = new PixelRect(new PixelPoint(), new PixelSize(100, 100));
             var screenImpl = new Mock<IScreenImpl>();
             screenImpl.Setup(x => x.ScreenCount).Returns(1);
             screenImpl.Setup(X => X.AllScreens).Returns( new[] { new Screen(screen, screen, true) });

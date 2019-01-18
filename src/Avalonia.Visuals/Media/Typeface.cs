@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// </summary>
     public class Typeface
     {
-        public static Typeface Default = new Typeface(FontFamily.Default);
+        public static readonly Typeface Default = new Typeface(FontFamily.Default);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Typeface"/> class.

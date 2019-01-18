@@ -87,7 +87,7 @@ namespace Avalonia.Win32
 
         public Action<double> ScalingChanged { get; set; }
 
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<WindowState> WindowStateChanged { get; set; }
 
@@ -153,10 +153,14 @@ namespace Avalonia.Win32
 
         public void Resize(Size value)
         {
-            var clientRect = ClientSize;
-            if (value != clientRect)
+            int requestedClientWidth = (int)(value.Width * Scaling);
+            int requestedClientHeight = (int)(value.Height * Scaling);
+            UnmanagedMethods.RECT clientRect;
+            UnmanagedMethods.GetClientRect(_hwnd, out clientRect);
+           
+            // do comparison after scaling to avoid rounding issues
+            if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
             {
-                value *= Scaling;
                 UnmanagedMethods.RECT windowRect;
                 UnmanagedMethods.GetWindowRect(_hwnd, out windowRect);
 
@@ -165,8 +169,8 @@ namespace Avalonia.Win32
                     IntPtr.Zero,
                     0,
                     0,
-                    (int)(value.Width + (windowRect.Width - clientRect.Width)),
-                    (int)(value.Height + (windowRect.Height - clientRect.Height)),
+                    requestedClientWidth + (windowRect.Width - clientRect.Width),
+                    requestedClientHeight + (windowRect.Height - clientRect.Height),
                     UnmanagedMethods.SetWindowPosFlags.SWP_RESIZE);
             }
         }
@@ -293,19 +297,19 @@ namespace Avalonia.Win32
             UnmanagedMethods.InvalidateRect(_hwnd, ref r, false);
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y) / Scaling;
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
             point *= Scaling;
             var p = new UnmanagedMethods.POINT { X = (int)point.X, Y = (int)point.Y };
             UnmanagedMethods.ClientToScreen(_hwnd, ref p);
-            return new Point(p.X, p.Y);
+            return new PixelPoint(p.X, p.Y);
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -353,21 +357,21 @@ namespace Avalonia.Win32
 #endif
         }
 
-        public Point Position
+        public PixelPoint Position
         {
             get
             {
                 UnmanagedMethods.RECT rc;
                 UnmanagedMethods.GetWindowRect(_hwnd, out rc);
-                return new Point(rc.left, rc.top);
+                return new PixelPoint(rc.left, rc.top);
             }
             set
             {
                 UnmanagedMethods.SetWindowPos(
                     Handle.Handle,
                     IntPtr.Zero,
-                    (int)value.X,
-                    (int)value.Y,
+                    value.X,
+                    value.Y,
                     0,
                     0,
                     UnmanagedMethods.SetWindowPosFlags.SWP_NOSIZE | UnmanagedMethods.SetWindowPosFlags.SWP_NOACTIVATE);
@@ -657,7 +661,7 @@ namespace Avalonia.Win32
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOVE:
-                    PositionChanged?.Invoke(new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
+                    PositionChanged?.Invoke(new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)));
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_GETMINMAXINFO:
@@ -781,9 +785,9 @@ namespace Avalonia.Win32
             return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / Scaling;
         }
 
-        private Point PointFromLParam(IntPtr lParam)
+        private PixelPoint PointFromLParam(IntPtr lParam)
         {
-            return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
+            return new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
         }
 
         private Point ScreenToClient(Point point)
