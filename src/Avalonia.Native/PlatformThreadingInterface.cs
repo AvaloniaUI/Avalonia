@@ -68,8 +68,6 @@ namespace Avalonia.Native
                     lock (l)
                     {
                         cancellation?.Cancel();
-                        cancellation?.Dispose();
-                        cancellation = null;
                     }
                 });
                 try

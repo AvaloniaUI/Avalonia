@@ -29,7 +29,7 @@ namespace Avalonia
             }
             else
             {
-                LoadGtk3(builder);
+                LoadX11(builder);
                 LoadSkia(builder);
             }
             return builder;
@@ -42,9 +42,9 @@ namespace Avalonia
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
              => builder.UseWin32();
 
-        static void LoadGtk3<TAppBuilder>(TAppBuilder builder)
+        static void LoadX11<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
-             => builder.UseGtk3();
+             => builder.UseX11();
 
         static void LoadDirect2D1<TAppBuilder>(TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new()

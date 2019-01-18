@@ -19,7 +19,10 @@ namespace Avalonia.OpenGL
         public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
-        
+        public delegate int GlGetError();
+        [EntryPoint("glGetError")]
+        public GlGetError GetError { get; }
+
         public delegate void GlClearStencil(int s);
         [EntryPoint("glClearStencil")]
         public GlClearStencil ClearStencil { get; }

@@ -1,72 +1,115 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+
 using Avalonia.Media;
+
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<FontKey, SKTypeface> _cachedTypefaces =
-            new ConcurrentDictionary<FontKey, SKTypeface>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<FontKey, SKTypeface>> _fontFamilies =
+            new ConcurrentDictionary<string, ConcurrentDictionary<FontKey, SKTypeface>>();
 
         public void AddTypeFace(SKTypeface typeface)
         {
-            var key = new FontKey(typeface.FamilyName, (SKFontStyleWeight)typeface.FontWeight, typeface.FontSlant);
+            var key = new FontKey((SKFontStyleWeight)typeface.FontWeight, typeface.FontSlant);
 
-            _cachedTypefaces.TryAdd(key, typeface);
+            if (!_fontFamilies.TryGetValue(typeface.FamilyName, out var fontFamily))
+            {
+                fontFamily = new ConcurrentDictionary<FontKey, SKTypeface>();
+
+                _fontFamilies.TryAdd(typeface.FamilyName, fontFamily);
+            }
+
+            fontFamily.TryAdd(key, typeface);
         }
 
         public SKTypeface GetTypeFace(Typeface typeface)
         {
-            SKFontStyleSlant skStyle = SKFontStyleSlant.Upright;
+            var styleSlant = SKFontStyleSlant.Upright;
 
             switch (typeface.Style)
             {
                 case FontStyle.Italic:
-                    skStyle = SKFontStyleSlant.Italic;
+                    styleSlant = SKFontStyleSlant.Italic;
                     break;
 
                 case FontStyle.Oblique:
-                    skStyle = SKFontStyleSlant.Oblique;
+                    styleSlant = SKFontStyleSlant.Oblique;
                     break;
             }
 
-            var key = new FontKey(typeface.FontFamily.Name, (SKFontStyleWeight)typeface.Weight, skStyle);
+            if (!_fontFamilies.TryGetValue(typeface.FontFamily.Name, out var fontFamily))
+            {
+                return TypefaceCache.Default;
+            }
 
-            return _cachedTypefaces.TryGetValue(key, out var skTypeface) ? skTypeface : TypefaceCache.Default;
+            var weight = (SKFontStyleWeight)typeface.Weight;
+
+            var key = new FontKey(weight, styleSlant);
+
+            return fontFamily.GetOrAdd(key, GetFallback(fontFamily, key));
+        }
+
+        private static SKTypeface GetFallback(IDictionary<FontKey, SKTypeface> fontFamily, FontKey key)
+        {
+            var keys = fontFamily.Keys.Where(
+                x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) && x.Slant == key.Slant).ToArray();
+
+            if (!keys.Any())
+            {
+                keys = fontFamily.Keys.Where(
+                    x => x.Weight == key.Weight && (x.Slant >= key.Slant || x.Slant < key.Slant)).ToArray();
+
+                if (!keys.Any())
+                {
+                    keys = fontFamily.Keys.Where(
+                        x => ((int)x.Weight <= (int)key.Weight || (int)x.Weight > (int)key.Weight) &&
+                             (x.Slant >= key.Slant || x.Slant < key.Slant)).ToArray();
+                }
+            }
+
+            key = keys.FirstOrDefault();
+
+            fontFamily.TryGetValue(key, out var typeface);
+
+            return typeface;
         }
 
         private struct FontKey
         {
-            public readonly string Name;
             public readonly SKFontStyleSlant Slant;
             public readonly SKFontStyleWeight Weight;
 
-            public FontKey(string name, SKFontStyleWeight weight, SKFontStyleSlant slant)
+            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant slant)
             {
-                Name = name;
                 Slant = slant;
                 Weight = weight;
             }
 
             public override int GetHashCode()
             {
-                int hash = 17;
-                hash = hash * 31 + Name.GetHashCode();
-                hash = hash * 31 + (int)Slant;
-                hash = hash * 31 + (int)Weight;
+                var hash = 17;
+                hash = (hash * 31) + (int)Slant;
+                hash = (hash * 31) + (int)Weight;
 
                 return hash;
             }
 
             public override bool Equals(object other)
             {
-                return other is FontKey ? Equals((FontKey)other) : false;
+                return other is FontKey key && this.Equals(key);
             }
 
             private bool Equals(FontKey other)
             {
-                return Name == other.Name && Slant == other.Slant &&
+                return Slant == other.Slant &&
                        Weight == other.Weight;
             }
         }

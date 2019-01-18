@@ -35,15 +35,21 @@
                    MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
                    PlacementTarget="{TemplateBinding}"
+                   ObeyScreenEdges="True"
                    StaysOpen="False">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
-                <ScrollViewer>
-                  <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  MemberSelector="{TemplateBinding MemberSelector}"/>
-                </ScrollViewer>
+                  <AdornerDecorator Margin="-1 -1 0 0">
+                      <ScrollViewer>
+                          <ItemsPresenter Name="PART_ItemsPresenter"
+                                          Items="{TemplateBinding Items}"
+                                          ItemsPanel="{TemplateBinding ItemsPanel}"
+                                          ItemTemplate="{TemplateBinding ItemTemplate}"
+                                          MemberSelector="{TemplateBinding MemberSelector}"
+                                          VirtualizationMode="{TemplateBinding VirtualizationMode}"
+                                  />
+                      </ScrollViewer>
+                  </AdornerDecorator>
               </Border>
             </Popup>
           </Grid>

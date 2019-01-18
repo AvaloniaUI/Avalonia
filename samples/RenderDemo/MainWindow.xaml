@@ -24,9 +24,6 @@
       </MenuItem>
     </Menu>
     <TabControl Classes="sidebar">
-      <TabControl.PageTransition>
-        <CrossFade Duration="0.25"/>
-      </TabControl.PageTransition>
       <TabItem Header="Animations">
         <pages:AnimationsPage/>
       </TabItem>

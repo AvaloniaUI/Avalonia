@@ -46,6 +46,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
         public TestBase(string outputPath)
         {
+            outputPath = outputPath.Replace('\\', Path.DirectorySeparatorChar);
             var testPath = GetTestsDirectory();
             var testFiles = Path.Combine(testPath, "TestFiles");
 #if AVALONIA_SKIA
@@ -63,7 +64,7 @@ namespace Avalonia.Direct2D1.RenderTests
             get;
         }
 
-        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "")
+        protected async Task RenderToFile(Control target, [CallerMemberName] string testName = "", double dpi = 96)
         {
             if (!Directory.Exists(OutputPath))
             {
@@ -75,9 +76,9 @@ namespace Avalonia.Direct2D1.RenderTests
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
             var size = new Size(target.Width, target.Height);
-            var dpi = new Vector(96, 96);
+            var dpiVector = new Vector(dpi, dpi);
 
-            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpi))
+            using (RenderTargetBitmap bitmap = new RenderTargetBitmap(pixelSize, dpiVector))
             {
                 target.Measure(size);
                 target.Arrange(new Rect(size));
@@ -85,7 +86,7 @@ namespace Avalonia.Direct2D1.RenderTests
                 bitmap.Save(immediatePath);
             }
 
-            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpi))
+            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
             using (var renderer = new DeferredRenderer(target, rtb))
             {
                 target.Measure(size);

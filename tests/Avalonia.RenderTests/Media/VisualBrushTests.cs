@@ -449,5 +449,281 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             await RenderToFile(target);
             CompareImages();
         }
+
+        [Fact]
+        public async Task VisualBrush_Grip_96_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 10,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Grip_144_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 7.5,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 144);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Grip_192_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 100,
+                Height = 10,
+                Background = new VisualBrush
+                {
+                    SourceRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    DestinationRect = new RelativeRect(0, 0, 4, 5, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Stretch = Stretch.UniformToFill,
+                    Visual = new Canvas
+                    {
+                        Width = 4,
+                        Height = 5,
+                        Background = Brushes.WhiteSmoke,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.TopProperty] = 2,
+                            },
+                            new Rectangle
+                            {
+                                Width = 1,
+                                Height = 1,
+                                Fill = Brushes.Red,
+                                [Canvas.LeftProperty] = 2,
+                                [Canvas.TopProperty] = 4,
+                            }
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 192);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Checkerboard_96_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = new VisualBrush
+                {
+                    DestinationRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Visual = new Canvas
+                    {
+                        Width = 16,
+                        Height= 16,
+                        Background = Brushes.Red,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                            },
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                                [Canvas.LeftProperty] = 8,
+                                [Canvas.TopProperty] = 8,
+                            },
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Checkerboard_144_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = new VisualBrush
+                {
+                    DestinationRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Visual = new Canvas
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Background = Brushes.Red,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                            },
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                                [Canvas.LeftProperty] = 8,
+                                [Canvas.TopProperty] = 8,
+                            },
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 144);
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task VisualBrush_Checkerboard_192_Dpi()
+        {
+            var target = new Border
+            {
+                Width = 200,
+                Height = 200,
+                Background = new VisualBrush
+                {
+                    DestinationRect = new RelativeRect(0, 0, 16, 16, RelativeUnit.Absolute),
+                    TileMode = TileMode.Tile,
+                    Visual = new Canvas
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Background = Brushes.Red,
+                        Children =
+                        {
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                            },
+                            new Rectangle
+                            {
+                                Width = 8,
+                                Height = 8,
+                                Fill = Brushes.Green,
+                                [Canvas.LeftProperty] = 8,
+                                [Canvas.TopProperty] = 8,
+                            },
+                        }
+                    }
+                }
+            };
+
+            await RenderToFile(target, dpi: 192);
+            CompareImages();
+        }
     }
 }
