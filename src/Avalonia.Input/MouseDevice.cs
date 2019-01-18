@@ -54,7 +54,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
-        public Point Position
+        public PixelPoint Position
         {
             get;
             protected set;

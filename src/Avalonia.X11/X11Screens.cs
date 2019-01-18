@@ -20,7 +20,7 @@ namespace Avalonia.X11
 
         static unsafe X11Screen[] UpdateWorkArea(X11Info info, X11Screen[] screens)
         {
-            var rect = default(Rect);
+            var rect = default(PixelRect);
             foreach (var s in screens)
             {
                 rect = rect.Union(s.Bounds);
@@ -46,7 +46,7 @@ namespace Avalonia.X11
                 return screens;
 
             var pwa = (IntPtr*)prop;
-            var wa = new Rect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
+            var wa = new PixelRect(pwa[0].ToInt32(), pwa[1].ToInt32(), pwa[2].ToInt32(), pwa[3].ToInt32());
 
             
             foreach (var s in screens) 
@@ -105,7 +105,7 @@ namespace Avalonia.X11
 
                         density *= _settings.GlobalScaleFactor;
                         
-                        var bounds = new Rect(mon.X, mon.Y, mon.Width, mon.Height);
+                        var bounds = new PixelRect(mon.X, mon.Y, mon.Width, mon.Height);
                         screens[c] = new X11Screen(bounds, 
                             mon.Primary != 0, 
                             name,
@@ -130,12 +130,12 @@ namespace Avalonia.X11
                     Screens = UpdateWorkArea(info,
                         new[]
                         {
-                            new X11Screen(new Rect(0, 0, geo.width, geo.height), true, "Default", null,
+                            new X11Screen(new PixelRect(0, 0, geo.width, geo.height), true, "Default", null,
                                 settings.GlobalScaleFactor)
                         });
                 }
 
-                Screens = new[] {new X11Screen(new Rect(0, 0, 1920, 1280), true, "Default", null, settings.GlobalScaleFactor)};
+                Screens = new[] {new X11Screen(new PixelRect(0, 0, 1920, 1280), true, "Default", null, settings.GlobalScaleFactor)};
             }
 
             public X11Screen[] Screens { get; }
@@ -220,12 +220,12 @@ namespace Avalonia.X11
     {
         public bool Primary { get; }
         public string Name { get; set; }
-        public Rect Bounds { get; set; }
+        public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }
         public double PixelDensity { get; set; }
-        public Rect WorkingArea { get; set; }
+        public PixelRect WorkingArea { get; set; }
 
-        public X11Screen(Rect bounds, bool primary,
+        public X11Screen(PixelRect bounds, bool primary,
             string name, Size? physicalSize, double? pixelDensity)
         {
             Primary = primary;

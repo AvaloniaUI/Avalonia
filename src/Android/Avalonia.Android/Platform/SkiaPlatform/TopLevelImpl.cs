@@ -99,14 +99,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (_view.Holder?.Surface?.IsValid == true) _view.Invalidate();
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
-            return point;
+            return point.ToPoint(1);
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
-            return point;
+            return PixelPoint.FromPoint(point, 1);
         }
 
         public void SetCursor(IPlatformHandle cursor)

@@ -24,12 +24,12 @@ namespace Avalonia.X11
         private readonly X11Info _x11;
         private bool _invalidated;
         private XConfigureEvent? _configure;
-        private Point? _configurePoint;
+        private PixelPoint? _configurePoint;
         private bool _triggeredExpose;
         private IInputRoot _inputRoot;
         private readonly IMouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
-        private Point? _position;
+        private PixelPoint? _position;
         private PixelSize _realSize;
         private IntPtr _handle;
         private IntPtr _xic;
@@ -235,7 +235,7 @@ namespace Avalonia.X11
         public Func<bool> Closing { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public Action Closed { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
@@ -321,13 +321,13 @@ namespace Avalonia.X11
                 var needEnqueue = (_configure == null);
                 _configure = ev.ConfigureEvent;
                 if (ev.ConfigureEvent.override_redirect || ev.ConfigureEvent.send_event)
-                    _configurePoint = new Point(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
+                    _configurePoint = new PixelPoint(ev.ConfigureEvent.x, ev.ConfigureEvent.y);
                 else
                 {
                     XTranslateCoordinates(_x11.Display, _handle, _x11.RootWindow,
                         0, 0,
                         out var tx, out var ty, out _);
-                    _configurePoint = new Point(tx, ty);
+                    _configurePoint = new PixelPoint(tx, ty);
                 }
                 if (needEnqueue)
                     Dispatcher.UIThread.Post(() =>
@@ -660,9 +660,11 @@ namespace Avalonia.X11
         public void Hide() => XUnmapWindow(_x11.Display, _handle);
         
         
-        public Point PointToClient(Point point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
+        public Point PointToClient(PixelPoint point) => new Point((point.X - Position.X) / Scaling, (point.Y - Position.Y) / Scaling);
 
-        public Point PointToScreen(Point point) => new Point(point.X * Scaling + Position.X, point.Y * Scaling + Position.Y);
+        public PixelPoint PointToScreen(Point point) => new PixelPoint(
+            (int)(point.X * Scaling + Position.X),
+            (int)(point.Y * Scaling + Position.Y));
         
         public void SetSystemDecorations(bool enabled)
         {
@@ -716,7 +718,7 @@ namespace Avalonia.X11
 
         public IPlatformHandle Handle { get; }
         
-        public Point Position
+        public PixelPoint Position
         {
             get => _position ?? default;
             set
@@ -752,7 +754,7 @@ namespace Avalonia.X11
 
         public IScreenImpl Screen => _platform.Screens;
 
-        public Size MaxClientSize => _platform.X11Screens.Screens.Select(s => s.Bounds.Size / s.PixelDensity)
+        public Size MaxClientSize => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 

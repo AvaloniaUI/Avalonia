@@ -18,10 +18,14 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in screen coordinates.</param>
         /// <returns>The point in client coordinates.</returns>
-        public static Point PointToClient(this IVisual visual, Point point)
+        public static Point PointToClient(this IVisual visual, PixelPoint point)
         {
-            var p = GetRootAndPosition(visual);
-            return p.Item1.PointToClient(point - p.Item2);
+            var (root, offset) = GetRootAndPosition(visual);
+            var screenOffset = PixelPoint.FromPoint((Point)offset, root.RenderScaling);
+            var screenPoint = PixelPoint.FromPoint(
+                new Point(point.X - screenOffset.X, point.Y - screenOffset.Y),
+                root.RenderScaling);
+            return root.PointToClient(screenPoint);
         }
 
         /// <summary>
@@ -30,7 +34,7 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen coordinates.</returns>
-        public static Point PointToScreen(this IVisual visual, Point point)
+        public static PixelPoint PointToScreen(this IVisual visual, Point point)
         {
             var p = GetRootAndPosition(visual);
             return p.Item1.PointToScreen(point + p.Item2);
