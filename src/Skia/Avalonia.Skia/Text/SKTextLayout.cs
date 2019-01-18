@@ -13,6 +13,10 @@ using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia.Text
 {
+    using HarfBuzzSharp;
+
+    using Buffer = System.Buffer;
+
     public class SKTextLayout
     {
         private readonly SKTypeface _typeface;
@@ -1022,24 +1026,45 @@ namespace Avalonia.Skia.Text
                 return new SKTextRun(textPointer, null, textFormat, fontMetrics, 0, foreground);
             }
 
-            using (var shaper = new SKShaper(textFormat.Typeface))
             using (var buffer = new HarfBuzzSharp.Buffer())
             {
-                buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length);
+                var hasBreakCharPair = false;
+
+                if (textPointer.Length >= 2)
+                {
+                    var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
+
+                    if (text[lastPosition] == '\r'
+                        && text[lastPosition - 1] == '\n')
+                    {
+                        hasBreakCharPair = true;
+                    }
+
+                    if (text[lastPosition] == '\n'
+                        && text[lastPosition - 1] == '\r')
+                    {
+                        hasBreakCharPair = true;
+                    }
+                }
+
+                if (hasBreakCharPair)
+                {
+                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length - 1);
+                }
+                else
+                {
+                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length);
+                }
 
                 buffer.GuessSegmentProperties();
 
-                var result = shaper.Shape(buffer, _paint);
+                buffer.UnicodeFunctions = UnicodeFunctions.Default;
 
-                var glyphsIds = result.Codepoints.Select(x => (ushort)x).ToArray();
+                buffer.ClusterLevel = ClusterLevel.MonotoneGraphemes;
 
-                var points = result.Points;
+                var glyphClusters = CreateGlyphClusters(buffer, textPointer, textFormat, fontMetrics, out var glyphIndices, out var glyphPositions, out var width);
 
-                var clusters = result.Clusters;
-
-                var glyphClusters = CreateGlyphClusters(text, textPointer, fontMetrics, glyphsIds, clusters, points, out var width);
-
-                var glyphs = new SKGlyphRun(glyphsIds, points, glyphClusters);
+                var glyphs = new SKGlyphRun(glyphIndices, glyphPositions, glyphClusters);
 
                 return new SKTextRun(textPointer, glyphs, textFormat, fontMetrics, width, foreground);
             }
@@ -1067,28 +1092,95 @@ namespace Avalonia.Skia.Text
             return new SKTextRun(new SKTextPointer(), glyphs, textFormat, fontMetrics, 0);
         }
 
+        private IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
+            HarfBuzzSharp.Buffer buffer,
+            SKTextPointer textPointer,
+            SKTextFormat textFormat,
+            SKFontMetrics fontMetrics,
+            out ushort[] glyphIndices,
+            out SKPoint[] glyphPositions,
+            out float width)
+        {
+            Font font;
+
+            using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
+            using (var face = new Face(blob, (uint)index))
+            {
+                face.Index = (uint)index;
+
+                face.UnitsPerEm = (uint)textFormat.Typeface.UnitsPerEm;
+
+                font = new Font(face);
+
+                font.SetScale(512, 512);
+
+                font.SetFunctionsOpenType();
+            }
+
+            font.Shape(buffer);
+
+            var len = buffer.Length;
+
+            var info = buffer.GlyphInfos;
+
+            var pos = buffer.GlyphPositions;
+
+            var textSizeY = _paint.TextSize / 512;
+
+            var textSizeX = textSizeY * _paint.TextScaleX;
+
+            glyphPositions = new SKPoint[len];
+
+            var glyphAdvances = new float[len];
+
+            var clusters = new uint[len];
+
+            glyphIndices = new ushort[len];
+
+            var currentX = 0.0f;
+            var currentY = 0.0f;
+
+            for (var i = 0; i < len; i++)
+            {
+                glyphIndices[i] = (ushort)info[i].Codepoint;
+
+                clusters[i] = info[i].Cluster;
+
+                var offsetX = pos[i].XOffset * textSizeX;
+                var offsetY = pos[i].YOffset * textSizeY;
+
+                glyphPositions[i] = new SKPoint(currentX + offsetX, currentY + offsetY);
+
+                var advanceX = pos[i].XAdvance * textSizeX;
+                var advanceY = pos[i].YAdvance * textSizeY;
+
+                glyphAdvances[i] = advanceX;
+
+                currentX += advanceX;
+                currentY += advanceY;
+            }
+
+            width = currentX;
+
+            return CreateGlyphClusters(textPointer, fontMetrics, clusters, glyphAdvances, glyphPositions);
+        }
+
         /// <summary>
         /// Creates the glyph clusters.
         /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="textPointer">The text pointer.</param>
-        /// <param name="fontMetrics">The font metrics.</param>
-        /// <param name="glyphsIndices">The glyphs indices.</param>
+        /// <param name="textPointer"></param>
+        /// <param name="fontMetrics"></param>
         /// <param name="clusters">The clusters.</param>
-        /// <param name="glyphOffsets">The glyph offsets.</param>
-        /// <param name="width">The total width of all glyph clusters.</param>
+        /// <param name="glyphAdvances"></param>
+        /// <param name="glyphPositions">The glyph offsets.</param>
         /// <returns></returns>
         private IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
-            ReadOnlySpan<char> text,
             SKTextPointer textPointer,
             SKFontMetrics fontMetrics,
-            ushort[] glyphsIndices,
             uint[] clusters,
-            IReadOnlyList<SKPoint> glyphOffsets,
-            out float width)
+            IReadOnlyList<float> glyphAdvances,
+            IReadOnlyList<SKPoint> glyphPositions)
         {
-            width = 0.0f;
-
             var glyphClusters = new List<SKGlyphCluster>();
 
             var height = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
@@ -1124,54 +1216,20 @@ namespace Avalonia.Skia.Text
                     length = nextPosition - currentPosition;
                 }
 
-                var glyphWidth = 0f;
+                var clusterWidth = 0f;
 
-                var c = text[currentPosition];
-
-                if (IsBreakChar(c))
+                for (var clusterIndex = currentCluster; clusterIndex < nextCluster; clusterIndex++)
                 {
-                    if (currentPosition < textPointer.Length - 1)
-                    {
-                        // Make sure pairs of \n\r and \n\r are properly handled.
-                        switch (c)
-                        {
-                            case '\r' when text[currentPosition + 1] == '\n':
-                            case '\n' when text[currentPosition + 1] == '\r':
-                                nextCluster++;
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    for (var clusterIndex = currentCluster; clusterIndex < nextCluster; clusterIndex++)
-                    {
-                        var bytes = BitConverter.GetBytes(glyphsIndices[clusterIndex]);
-
-                        // https://github.com/google/skia/blob/master/include/core/SkFont.h#L407
-                        var measuredWidth = _paint.MeasureText(bytes);
-
-                        if (clusterIndex != currentCluster)
-                        {
-                            measuredWidth += glyphOffsets[clusterIndex].X - glyphOffsets[currentCluster].X;
-                        }
-
-                        if (glyphWidth < measuredWidth)
-                        {
-                            glyphWidth = measuredWidth;
-                        }
-                    }
+                    clusterWidth += glyphAdvances[clusterIndex];
                 }
 
-                var point = glyphOffsets[currentCluster];
+                var point = glyphPositions[currentCluster];
 
-                var rect = new SKRect(point.X, point.Y, point.X + glyphWidth, point.Y + height);
+                var rect = new SKRect(point.X, point.Y, point.X + clusterWidth, point.Y + height);
 
                 glyphClusters.Add(new SKGlyphCluster(currentPosition, length, rect));
 
                 currentCluster = nextCluster;
-
-                width += glyphWidth;
             }
 
             return glyphClusters;
