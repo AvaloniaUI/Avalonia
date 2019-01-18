@@ -61,8 +61,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
                     dc.DrawImage(
                         RefCountable.CreateUnownedNotClonable(this),
                         1,
-                        new Rect(PixelSize.ToSize(Dpi.X)),
-                        new Rect(PixelSize.ToSize(Dpi.X)));
+                        new Rect(PixelSize.ToSizeWithDpi(Dpi.X)),
+                        new Rect(PixelSize.ToSizeWithDpi(Dpi.X)));
                 }
 
                 wic.Save(stream);

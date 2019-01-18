@@ -401,15 +401,15 @@ namespace Avalonia.Skia
         /// <param name="tileBrushImage">Tile brush image.</param>
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
-            var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSize(_dpi), targetSize);
+            var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_dpi), targetSize);
             var intermediate = CreateRenderTarget(calc.IntermediateSize);
 
             paintWrapper.AddDisposable(intermediate);
 
             using (var context = intermediate.CreateDrawingContext(null))
             {
-                var sourceRect = new Rect(tileBrushImage.PixelSize.ToSize(96));
-                var targetRect = new Rect(tileBrushImage.PixelSize.ToSize(_dpi));
+                var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
+                var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_dpi));
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
@@ -634,7 +634,7 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private SurfaceRenderTarget CreateRenderTarget(Size size, PixelFormat? format = null)
         {
-            var pixelSize = PixelSize.FromSize(size, _dpi);
+            var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
                 Width = pixelSize.Width,
