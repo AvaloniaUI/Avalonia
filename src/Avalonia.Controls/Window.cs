@@ -388,7 +388,7 @@ namespace Avalonia.Controls
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
-            SetWindowStartupLocation();
+            SetWindowStartupLocation(Owner?.PlatformImpl);
         }
 
         /// <summary>
@@ -464,7 +464,7 @@ namespace Avalonia.Controls
             return result.Task;
         }
 
-        private void SetWindowStartupLocation(IWindowImpl owner = null)
+        private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
         {
             var scaling = owner?.Scaling ?? PlatformImpl?.Scaling ?? 1;
 
