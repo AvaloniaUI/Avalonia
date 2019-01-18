@@ -238,15 +238,15 @@ namespace Avalonia.Controls
         }
         
         /// <inheritdoc/>
-        Point IRenderRoot.PointToClient(Point p)
+        Point IRenderRoot.PointToClient(PixelPoint p)
         {
-            return PlatformImpl?.PointToClient(p) ?? default(Point);
+            return PlatformImpl?.PointToClient(p) ?? default;
         }
 
         /// <inheritdoc/>
-        Point IRenderRoot.PointToScreen(Point p)
+        PixelPoint IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl?.PointToScreen(p) ?? default(Point);
+            return PlatformImpl?.PointToScreen(p) ?? default;
         }
         
         /// <summary>

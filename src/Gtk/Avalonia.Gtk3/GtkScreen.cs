@@ -6,7 +6,7 @@ namespace Avalonia.Gtk3
     {
         private readonly int _screenId;
         
-        public GtkScreen(Rect bounds, Rect workingArea, bool primary, int screenId) : base(bounds, workingArea, primary)
+        public GtkScreen(PixelRect bounds, PixelRect workingArea, bool primary, int screenId) : base(bounds, workingArea, primary)
         {
             this._screenId = screenId;
         }

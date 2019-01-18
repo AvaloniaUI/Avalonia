@@ -85,18 +85,18 @@ namespace Avalonia.Controls.Primitives
             if (screen != null)
             {
                 var scaling = VisualRoot.RenderScaling;
-
-                var screenX = Position.X + (Bounds.Width * scaling) - screen.Bounds.X;
-                var screenY = Position.Y + (Bounds.Height * scaling) - screen.Bounds.Y;
+                var bounds = PixelRect.FromRect(Bounds, scaling);
+                var screenX = Position.X + bounds.Width - screen.Bounds.X;
+                var screenY = Position.Y + bounds.Height - screen.Bounds.Y;
 
                 if (screenX > screen.Bounds.Width)
                 {
-                    Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
+                    Position = Position.WithX(Position.X - screenX - bounds.Width);
                 }
 
                 if (screenY > screen.Bounds.Height)
                 {
-                    Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
+                    Position = Position.WithY(Position.Y - screenY - bounds.Height);
                 }
             }
         }
