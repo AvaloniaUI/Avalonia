@@ -40,10 +40,13 @@ namespace ControlCatalog.Pages
             };
             this.FindControl<Button>("Dialog").Click += delegate
                 {
-                    new MainWindow().ShowDialog(GetWindow());
+                    var window = new Window();
+                    window.Height = 200;
+                    window.Width = 200;
+                    window.Content = new TextBlock { Text = "Hello world!" };
+                    window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                    window.ShowDialog(GetWindow());
                 };
-
-
         }
 
         Window GetWindow() => (Window)this.VisualRoot;
