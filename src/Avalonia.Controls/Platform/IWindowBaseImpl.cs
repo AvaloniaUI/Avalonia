@@ -27,7 +27,7 @@ namespace Avalonia.Platform
         void BeginResizeDrag(WindowEdge edge);
 
         /// <summary>
-        /// Gets the position of the window relative in device pixels.
+        /// Gets the position of the window in device pixels.
         /// </summary>
         PixelPoint Position { get; set; }
         
