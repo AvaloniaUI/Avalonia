@@ -86,18 +86,8 @@ namespace Avalonia.OpenGL
 
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
-            
-            GlInterface = new GlInterface((proc, optional) =>
-            {
 
-                using (var u = new Utf8Buffer(proc))
-                {
-                    var rv = _egl.GetProcAddress(u);
-                    if (rv == IntPtr.Zero && !optional)
-                        throw new OpenGlException("Missing function " + proc);
-                    return rv;
-                }
-            });
+            GlInterface = GlInterface.FromNativeUtf8GetProcAddress(b => _egl.GetProcAddress(b));
         }
 
         public EglDisplay() : this(new EglInterface())
