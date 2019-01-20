@@ -8,15 +8,13 @@ using System.Linq;
 
 using Avalonia.Media;
 
+using HarfBuzzSharp;
+
 using SkiaSharp;
 using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia.Text
 {
-    using HarfBuzzSharp;
-
-    using Buffer = System.Buffer;
-
     public class SKTextLayout
     {
         private readonly SKTypeface _typeface;
