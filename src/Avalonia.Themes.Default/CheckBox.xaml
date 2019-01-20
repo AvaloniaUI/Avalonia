@@ -1,9 +1,10 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="CheckBox">
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="Padding" Value="4,0,0,0"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
     <Setter Property="HorizontalContentAlignment" Value="Left"/>
     <Setter Property="Template">
@@ -38,16 +39,14 @@
                             TextBlock.Foreground="{TemplateBinding Foreground}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
                             Content="{TemplateBinding Content}"
-                            Margin="4,0,0,0"
+                            Margin="{TemplateBinding Padding}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
                             Grid.Column="1"/>
         </Grid>
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="CheckBox:invalid /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="IsVisible" Value="False"/>
   </Style>
   <Style Selector="CheckBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
