@@ -1058,10 +1058,6 @@ namespace Avalonia.Skia.Text
 
                 buffer.GuessSegmentProperties();
 
-                buffer.UnicodeFunctions = UnicodeFunctions.Default;
-
-                buffer.ClusterLevel = ClusterLevel.MonotoneGraphemes;
-
                 var glyphClusters = CreateGlyphClusters(buffer, textPointer, textFormat, fontMetrics, out var glyphIndices, out var glyphPositions, out var width);
 
                 var glyphs = new SKGlyphRun(glyphIndices, glyphPositions, glyphClusters);
