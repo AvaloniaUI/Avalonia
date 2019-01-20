@@ -22,27 +22,11 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
     {
-        /// <summary>
-        /// The parent object that inherited values are inherited from.
-        /// </summary>
         private IAvaloniaObject _inheritanceParent;
-
-        /// <summary>
-        /// Maintains a list of direct property binding subscriptions so that the binding source
-        /// doesn't get collected.
-        /// </summary>
         private List<DirectBindingSubscription> _directBindings;
-
-        /// <summary>
-        /// Event handler for <see cref="INotifyPropertyChanged"/> implementation.
-        /// </summary>
         private PropertyChangedEventHandler _inpcChanged;
-
-        /// <summary>
-        /// Event handler for <see cref="PropertyChanged"/> implementation.
-        /// </summary>
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
-
+        private EventHandler<AvaloniaPropertyChangedEventArgs> _inheritablePropertyChanged;
         private ValueStore _values;
         private ValueStore Values => _values ?? (_values = new ValueStore(this));
 
@@ -99,6 +83,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Raised when an inheritable <see cref="AvaloniaProperty"/> value changes on this object.
+        /// </summary>
+        event EventHandler<AvaloniaPropertyChangedEventArgs> IAvaloniaObject.InheritablePropertyChanged
+        {
+            add { _inheritablePropertyChanged += value; }
+            remove { _inheritablePropertyChanged -= value; }
+        }
+
+        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="AvaloniaProperty"/> values
         /// are inherited from.
         /// </summary>
@@ -118,8 +111,9 @@ namespace Avalonia
                 {
                     if (_inheritanceParent != null)
                     {
-                        _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
+                        _inheritanceParent.InheritablePropertyChanged -= ParentPropertyChanged;
                     }
+
                     var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
                         .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
                     var inherited = (from property in properties
@@ -144,7 +138,7 @@ namespace Avalonia
 
                     if (_inheritanceParent != null)
                     {
-                        _inheritanceParent.PropertyChanged += ParentPropertyChanged;
+                        _inheritanceParent.InheritablePropertyChanged += ParentPropertyChanged;
                     }
                 }
             }
@@ -508,6 +502,11 @@ namespace Avalonia
                 {
                     PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
                     _inpcChanged(this, e2);
+                }
+
+                if (property.Inherits)
+                {
+                    _inheritablePropertyChanged?.Invoke(this, e);
                 }
             }
             finally
