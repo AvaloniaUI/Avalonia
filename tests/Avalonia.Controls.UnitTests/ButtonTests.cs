@@ -238,9 +238,9 @@ namespace Avalonia.Controls.UnitTests
 
             public void Invalidate(Rect rect) => throw new NotImplementedException();
 
-            public Point PointToClient(Point point) => throw new NotImplementedException();
+            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
 
-            public Point PointToScreen(Point point) => throw new NotImplementedException();
+            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private void RaisePointerPressed(Button button, IMouseDevice device, int clickCount, MouseButton mouseButton)

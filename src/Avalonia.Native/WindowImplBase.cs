@@ -159,7 +159,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
             {
-                _parent.PositionChanged?.Invoke(position.ToAvaloniaPoint());
+                _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
             void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
@@ -275,20 +275,20 @@ namespace Avalonia.Native
         }
 
 
-        public Point Position
+        public PixelPoint Position
         {
-            get => _native.GetPosition().ToAvaloniaPoint();
+            get => _native.GetPosition().ToAvaloniaPixelPoint();
             set => _native.SetPosition(value.ToAvnPoint());
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
             return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
         }
 
         public void Hide()
@@ -320,7 +320,7 @@ namespace Avalonia.Native
             _native.Cursor = newCursor.Cursor;
         }
 
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 

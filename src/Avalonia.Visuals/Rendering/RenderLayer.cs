@@ -7,39 +7,39 @@ namespace Avalonia.Rendering
 {
     public class RenderLayer
     {
-        private readonly IDrawingContextImpl _drawingContext;
-
         public RenderLayer(
             IDrawingContextImpl drawingContext,
             Size size,
             double scaling,
             IVisual layerRoot)
         {
-            _drawingContext = drawingContext;
             Bitmap = RefCountable.Create(drawingContext.CreateLayer(size));
             Size = size;
             Scaling = scaling;
             LayerRoot = layerRoot;
+            IsEmpty = true;
         }
 
         public IRef<IRenderTargetBitmapImpl> Bitmap { get; private set; }
+        public bool IsEmpty { get; set; }
         public double Scaling { get; private set; }
         public Size Size { get; private set; }
         public IVisual LayerRoot { get; }
 
-        public void ResizeBitmap(Size size, double scaling)
+        public void RecreateBitmap(IDrawingContextImpl drawingContext, Size size, double scaling)
         {
             if (Size != size || Scaling != scaling)
             {
-                var resized = RefCountable.Create(_drawingContext.CreateLayer(size));
+                var resized = RefCountable.Create(drawingContext.CreateLayer(size));
 
                 using (var context = resized.Item.CreateDrawingContext(null))
                 {
                     context.Clear(Colors.Transparent);
-                    context.DrawImage(Bitmap, 1, new Rect(Size), new Rect(Size));
                     Bitmap.Dispose();
                     Bitmap = resized;
+                    Scaling = scaling;
                     Size = size;
+                    IsEmpty = true;
                 }
             }
         }

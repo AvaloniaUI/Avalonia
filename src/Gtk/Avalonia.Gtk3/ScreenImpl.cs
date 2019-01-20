@@ -27,8 +27,8 @@ namespace Avalonia.Gtk3
                         GdkRectangle workArea = new GdkRectangle(), geometry = new GdkRectangle();
                         Native.GdkScreenGetMonitorGeometry(screen, i, ref geometry);
                         Native.GdkScreenGetMonitorWorkarea(screen, i, ref workArea);
-                        Rect workAreaRect = new Rect(workArea.X, workArea.Y, workArea.Width, workArea.Height);
-                        Rect geometryRect = new Rect(geometry.X, geometry.Y, geometry.Width, geometry.Height);
+                        PixelRect workAreaRect = new PixelRect(workArea.X, workArea.Y, workArea.Width, workArea.Height);
+                        PixelRect geometryRect = new PixelRect(geometry.X, geometry.Y, geometry.Width, geometry.Height);
                         GtkScreen s = new GtkScreen(geometryRect, workAreaRect, i == primary, i);
                         screens[i] = s;
                     }

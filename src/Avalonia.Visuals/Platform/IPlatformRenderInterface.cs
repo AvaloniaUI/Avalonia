@@ -14,6 +14,11 @@ namespace Avalonia.Platform
     public interface IPlatformRenderInterface
     {
         /// <summary>
+        /// Get all installed fonts in the system
+        /// </summary>
+        IEnumerable<string> InstalledFontNames { get; }
+
+        /// <summary>
         /// Creates a formatted text implementation.
         /// </summary>
         /// <param name="text">The text.</param>

@@ -29,6 +29,7 @@ namespace Avalonia.Rendering
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
+        private bool _disposed;
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
@@ -99,6 +100,9 @@ namespace Avalonia.Rendering
         /// </summary>
         public string DebugFramesPath { get; set; }
 
+        /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+
         /// <summary>
         /// Gets the render layers.
         /// </summary>
@@ -122,15 +126,34 @@ namespace Avalonia.Rendering
         {
             lock (_sceneLock)
             {
+                if (_disposed)
+                    return;
+                _disposed = true;
                 var scene = _scene;
                 _scene = null;
                 scene?.Dispose();
             }
 
             Stop();
+            DisposeRenderTarget();
+        }
 
-            Layers.Clear();
-            RenderTarget?.Dispose();
+        void DisposeRenderTarget()
+        {
+            using (var l = _lock.TryLock())
+            {
+                if(l == null)
+                {
+                    // We are still trying to render on the render thread, try again a bit later
+                    DispatcherTimer.RunOnce(DisposeRenderTarget, TimeSpan.FromMilliseconds(50),
+                        DispatcherPriority.Background);
+                    return;
+                }
+
+                Layers.Clear();
+                RenderTarget?.Dispose();
+                RenderTarget = null;
+            }
         }
 
         /// <inheritdoc/>
@@ -152,7 +175,8 @@ namespace Avalonia.Rendering
             var t = (IRenderLoopTask)this;
             if(t.NeedsUpdate)
                 UpdateScene();
-            Render(true);
+            if(_scene?.Item != null)
+                Render(true);
         }
 
         /// <inheritdoc/>
@@ -336,16 +360,34 @@ namespace Avalonia.Rendering
 
         private void RenderToLayers(Scene scene)
         {
-            if (scene.Layers.HasDirty)
+            foreach (var layer in scene.Layers)
             {
-                foreach (var layer in scene.Layers)
-                {
-                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
-                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                var renderLayer = Layers[layer.LayerRoot];
+                if (layer.Dirty.IsEmpty && !renderLayer.IsEmpty)
+                    continue;
+                var renderTarget = renderLayer.Bitmap;
+                var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    if (node != null)
+                if (node != null)
+                {
+                    using (var context = renderTarget.Item.CreateDrawingContext(this))
                     {
-                        using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        if (renderLayer.IsEmpty)
+                        {
+                            // Render entire layer root node
+                            context.Clear(Colors.Transparent);
+                            context.Transform = Matrix.Identity;
+                            context.PushClip(node.ClipBounds);
+                            Render(context, node, layer.LayerRoot, node.ClipBounds);
+                            context.PopClip();
+                            if (DrawDirtyRects)
+                            {
+                                _dirtyRectsDisplay.Add(node.ClipBounds);
+                            }
+
+                            renderLayer.IsEmpty = false;
+                        }
+                        else
                         {
                             foreach (var rect in layer.Dirty)
                             {
@@ -364,6 +406,7 @@ namespace Avalonia.Rendering
                     }
                 }
             }
+
         }
 
         private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
@@ -442,6 +485,8 @@ namespace Avalonia.Rendering
             Dispatcher.UIThread.VerifyAccess();
             lock (_sceneLock)
             {
+                if (_disposed)
+                    return;
                 if (_scene?.Item.Generation > _lastSceneId)
                     return;
             }
@@ -468,6 +513,21 @@ namespace Avalonia.Rendering
                     var oldScene = _scene;
                     _scene = sceneRef;
                     oldScene?.Dispose();
+                }
+
+                if (SceneInvalidated != null)
+                {
+                    var rect = new Rect();
+
+                    foreach (var layer in scene.Layers)
+                    {
+                        foreach (var dirty in layer.Dirty)
+                        {
+                            rect = rect.Union(dirty);
+                        }
+                    }
+
+                    SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
 
                 _dirty.Clear();
