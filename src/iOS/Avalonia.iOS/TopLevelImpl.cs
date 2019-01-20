@@ -68,9 +68,9 @@ namespace Avalonia.iOS
 
         public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
-        public Point PointToClient(Point point) => point;
+        public Point PointToClient(PixelPoint point) => point.ToPoint(1);
 
-        public Point PointToScreen(Point point) => point;
+        public PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, 1);
 
         public void SetCursor(IPlatformHandle cursor)
         {

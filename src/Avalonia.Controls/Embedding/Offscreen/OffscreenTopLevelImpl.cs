@@ -49,9 +49,9 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public Action<double> ScalingChanged { get; set; }
         public void SetInputRoot(IInputRoot inputRoot) => InputRoot = inputRoot;
 
-        public virtual Point PointToClient(Point point) => point;
+        public virtual Point PointToClient(PixelPoint point) => point.ToPoint(1);
 
-        public virtual Point PointToScreen(Point point) => point;
+        public virtual PixelPoint PointToScreen(Point point) => PixelPoint.FromPoint(point, 1);
 
         public virtual void SetCursor(IPlatformHandle cursor)
         {

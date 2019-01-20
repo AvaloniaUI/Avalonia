@@ -1,7 +1,6 @@
 ﻿using System;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
-using static Avalonia.OpenGL.EglConsts;
 
 namespace Avalonia.OpenGL
 {
@@ -32,8 +31,12 @@ namespace Avalonia.OpenGL
             var lib = dyn.LoadLibrary(library);
             return (s, o) => dyn.GetProcAddress(lib, s, o);
         }
-        
+
         // ReSharper disable UnassignedGetOnlyAutoProperty
+        public delegate int EglGetError();
+        [EntryPoint("eglGetError")]
+        public EglGetError GetError { get; }
+
         public delegate IntPtr EglGetDisplay(IntPtr nativeDisplay);
         [EntryPoint("eglGetDisplay")]
         public EglGetDisplay GetDisplay { get; }

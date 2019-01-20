@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media.Fonts;
+using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
@@ -50,6 +51,12 @@ namespace Avalonia.Media
         /// Represents the default font family
         /// </summary>
         public static FontFamily Default => new FontFamily(String.Empty);
+
+        /// <summary>
+        /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
+        /// </summary>
+        public static IEnumerable<FontFamily> SystemFontFamilies =>
+            AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().InstalledFontNames.Select(name => new FontFamily(name));
 
         /// <summary>
         /// Gets the primary family name of the font family.

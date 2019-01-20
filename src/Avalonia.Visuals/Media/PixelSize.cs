@@ -72,7 +72,7 @@ namespace Avalonia
         /// <returns>The <see cref="PixelSize"/>.</returns>
         public static PixelSize Parse(string s)
         {
-            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Size"))
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid PixelSize"))
             {
                 return new PixelSize(
                     tokenizer.ReadInt32(),
@@ -128,11 +128,19 @@ namespace Avalonia
 
         /// <summary>
         /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
-        /// specified dots per inch (DPI).
+        /// specified scaling factor.
         /// </summary>
-        /// <param name="dpi">The dots per inch.</param>
+        /// <param name="scale">The scaling factor.</param>
         /// <returns>The device-independent size.</returns>
-        public Size ToSize(double dpi) => new Size(Width / (dpi / 96), Height / (dpi / 96));
+        public Size ToSize(double scale) => new Size(Width / scale, Height / scale);
+
+        /// <summary>
+        /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
+        /// specified scaling factor.
+        /// </summary>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The device-independent size.</returns>
+        public Size ToSize(Vector scale) => new Size(Width / scale.X, Height / scale.Y);
 
         /// <summary>
         /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
@@ -140,7 +148,35 @@ namespace Avalonia
         /// </summary>
         /// <param name="dpi">The dots per inch.</param>
         /// <returns>The device-independent size.</returns>
-        public Size ToSize(Vector dpi) => new Size(Width / (dpi.X / 96), Height / (dpi.Y / 96));
+        public Size ToSizeWithDpi(double dpi) => ToSize(dpi / 96);
+
+        /// <summary>
+        /// Converts the <see cref="PixelSize"/> to a device-independent <see cref="Size"/> using the
+        /// specified dots per inch (DPI).
+        /// </summary>
+        /// <param name="dpi">The dots per inch.</param>
+        /// <returns>The device-independent size.</returns>
+        public Size ToSizeWithDpi(Vector dpi) => ToSize(new Vector(dpi.X / 96, dpi.Y / 96));
+
+        /// <summary>
+        /// Converts a <see cref="Size"/> to device pixels using the specified scaling factor.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The device-independent size.</returns>
+        public static PixelSize FromSize(Size size, double scale) => new PixelSize(
+            (int)Math.Ceiling(size.Width * scale),
+            (int)Math.Ceiling(size.Height * scale));
+
+        /// <summary>
+        /// Converts a <see cref="Size"/> to device pixels using the specified scaling factor.
+        /// </summary>
+        /// <param name="size">The size.</param>
+        /// <param name="scale">The scaling factor.</param>
+        /// <returns>The device-independent size.</returns>
+        public static PixelSize FromSize(Size size, Vector scale) => new PixelSize(
+            (int)Math.Ceiling(size.Width * scale.X),
+            (int)Math.Ceiling(size.Height * scale.Y));
 
         /// <summary>
         /// Converts a <see cref="Size"/> to device pixels using the specified dots per inch (DPI).
@@ -148,9 +184,7 @@ namespace Avalonia
         /// <param name="size">The size.</param>
         /// <param name="dpi">The dots per inch.</param>
         /// <returns>The device-independent size.</returns>
-        public static PixelSize FromSize(Size size, double dpi) => new PixelSize(
-            (int)(size.Width * (dpi / 96)),
-            (int)(size.Height * (dpi / 96)));
+        public static PixelSize FromSizeWithDpi(Size size, double dpi) => FromSize(size, dpi / 96);
 
         /// <summary>
         /// Converts a <see cref="Size"/> to device pixels using the specified dots per inch (DPI).
@@ -158,9 +192,7 @@ namespace Avalonia
         /// <param name="size">The size.</param>
         /// <param name="dpi">The dots per inch.</param>
         /// <returns>The device-independent size.</returns>
-        public static PixelSize FromSize(Size size, Vector dpi) => new PixelSize(
-            (int)Math.Ceiling(size.Width * (dpi.X / 96)),
-            (int)Math.Ceiling(size.Height * (dpi.Y / 96)));
+        public static PixelSize FromSizeWithDpi(Size size, Vector dpi) => FromSize(size, new Vector(dpi.X / 96, dpi.Y / 96));
 
         /// <summary>
         /// Returns the string representation of the size.
