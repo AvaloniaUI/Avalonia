@@ -2,12 +2,12 @@ using System;
 
 namespace Avalonia.OpenGL
 {
-    class EntryPointAttribute : Attribute
+    public class GlEntryPointAttribute : Attribute
     {
         public string EntryPoint { get; }
         public bool Optional { get; }
 
-        public EntryPointAttribute(string entryPoint, bool optional = false)
+        public GlEntryPointAttribute(string entryPoint, bool optional = false)
         {
             EntryPoint = entryPoint;
             Optional = optional;

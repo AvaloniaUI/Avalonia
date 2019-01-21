@@ -164,39 +164,33 @@ namespace Avalonia.X11
 
         void HandleX11(CancellationToken cancellationToken)
         {
-            while (true)
+            while (XPending(_display) != 0)
             {
-                var pending = XPending(_display);
-                if (pending == 0)
-                    break;
-                while (pending > 0)
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+                XNextEvent(_display, out var xev);
+                if (xev.type == XEventName.GenericEvent)
+                    XGetEventData(_display, &xev.GenericEventCookie);
+                try
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                        return;
-                    XNextEvent(_display, out var xev);
                     if (xev.type == XEventName.GenericEvent)
-                        XGetEventData(_display, &xev.GenericEventCookie);
-                    pending--;
-                    try
                     {
-                        if (xev.type == XEventName.GenericEvent)
+                        if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
+                            xev.GenericEventCookie.extension)
                         {
-                            if (_platform.XI2 != null && _platform.Info.XInputOpcode ==
-                                xev.GenericEventCookie.extension)
-                            {
-                                _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
-                            }
+                            _platform.XI2.OnEvent((XIEvent*)xev.GenericEventCookie.data);
                         }
-                        else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
-                            handler(xev);
                     }
-                    finally
-                    {
-                        if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
-                            XFreeEventData(_display, &xev.GenericEventCookie);
-                    }
+                    else if (_eventHandlers.TryGetValue(xev.AnyEvent.window, out var handler))
+                        handler(xev);
+                }
+                finally
+                {
+                    if (xev.type == XEventName.GenericEvent && xev.GenericEventCookie.data != null)
+                        XFreeEventData(_display, &xev.GenericEventCookie);
                 }
             }
+
             Dispatcher.UIThread.RunJobs();
         }
         

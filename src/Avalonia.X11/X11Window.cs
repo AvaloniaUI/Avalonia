@@ -12,6 +12,7 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
+using Avalonia.X11.Glx;
 using static Avalonia.X11.XLib;
 // ReSharper disable IdentifierTypo
 // ReSharper disable StringLiteralTypo
@@ -45,7 +46,7 @@ namespace Avalonia.X11
         }
         private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
         private InputEventContainer _lastEvent;
-
+        private bool _useRenderWindow = false;
         public X11Window(AvaloniaX11Platform platform, bool popup)
         {
             _platform = platform;
@@ -55,7 +56,7 @@ namespace Avalonia.X11
             _keyboard = platform.KeyboardDevice;
             _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
                 XNames.XNClientWindow, _handle, IntPtr.Zero);
-            
+            var glfeature = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
 
@@ -71,16 +72,44 @@ namespace Avalonia.X11
                 attr.override_redirect = true;
                 valueMask |= SetWindowValuemask.OverrideRedirect;
             }
+
+            XVisualInfo? visualInfo = null;
+
+            // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
+            _useRenderWindow = glfeature != null;
             
+            var glx = glfeature as GlxGlPlatformFeature;
+            if (glx != null)
+                visualInfo = *glx.Display.VisualInfo;
+            else if (glfeature == null)
+                visualInfo = _x11.TransparentVisualInfo;
+
+            var egl = glfeature as EglGlPlatformFeature;
+            
+            var visual = IntPtr.Zero;
+            var depth = 24;
+            if (visualInfo != null)
+            {
+                visual = visualInfo.Value.visual;
+                depth = (int)visualInfo.Value.depth;
+                attr.colormap = XCreateColormap(_x11.Display, _x11.RootWindow, visualInfo.Value.visual, 0);
+                valueMask |= SetWindowValuemask.ColorMap;   
+            }
+
             _handle = XCreateWindow(_x11.Display, _x11.RootWindow, 10, 10, 300, 200, 0,
-                24,
-                (int)CreateWindowArgs.InputOutput, IntPtr.Zero, 
+                depth,
+                (int)CreateWindowArgs.InputOutput, 
+                visual,
                 new UIntPtr((uint)valueMask), ref attr);
-            _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, 300, 200, 0, 24,
-                (int)CreateWindowArgs.InputOutput,
-                IntPtr.Zero,
-                new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
-                                   SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+
+            if (_useRenderWindow)
+                _renderHandle = XCreateWindow(_x11.Display, _handle, 0, 0, 300, 200, 0, depth,
+                    (int)CreateWindowArgs.InputOutput,
+                    visual,
+                    new UIntPtr((uint)(SetWindowValuemask.BorderPixel | SetWindowValuemask.BitGravity |
+                                       SetWindowValuemask.WinGravity | SetWindowValuemask.BackingStore)), ref attr);
+            else
+                _renderHandle = _handle;
                 
             Handle = new PlatformHandle(_handle, "XID");
             _realSize = new PixelSize(300, 200);
@@ -99,16 +128,22 @@ namespace Avalonia.X11
             XSetWMProtocols(_x11.Display, _handle, protocols, protocols.Length);
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] {_x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL}, 1);
-            
-            var feature = (EglGlPlatformFeature)AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
+
+
             var surfaces = new List<object>
             {
-                new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, () => Scaling)
+                new X11FramebufferSurface(_x11.DeferredDisplay, _renderHandle, 
+                   depth, () => Scaling)
             };
-            if (feature != null)
+            
+            if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface((EglDisplay)feature.Display, feature.DeferredContext,
+                    new EglGlPlatformSurface((EglDisplay)egl.Display, egl.DeferredContext,
                         new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+            if (glx != null)
+                surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
+                    new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
+            
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
             XFlush(_x11.Display);
@@ -136,8 +171,6 @@ namespace Avalonia.X11
                     XLockDisplay(_display);
                     XGetGeometry(_display, _parent, out var geo);
                     XResizeWindow(_display, Handle, geo.width, geo.height);
-                    XFlush(_display);
-                    XSync(_display, true);
                     XUnlockDisplay(_display);
                     return new PixelSize(geo.width, geo.height);
                 }
@@ -252,7 +285,8 @@ namespace Avalonia.X11
             if (ev.type == XEventName.MapNotify)
             {
                 _mapped = true;
-                XMapWindow(_x11.Display, _renderHandle);
+                if (_useRenderWindow)
+                    XMapWindow(_x11.Display, _renderHandle);
             }
             else if (ev.type == XEventName.UnmapNotify)
                 _mapped = false;
@@ -356,7 +390,9 @@ namespace Avalonia.X11
 
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
-                XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width, ev.ConfigureEvent.height);
+                if (_useRenderWindow)
+                    XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
+                        ev.ConfigureEvent.height);
             }
             else if (ev.type == XEventName.DestroyNotify && ev.AnyEvent.window == _handle)
             {
@@ -619,7 +655,7 @@ namespace Avalonia.X11
                 Closed?.Invoke();
             }
             
-            if (_renderHandle != IntPtr.Zero)
+            if (_useRenderWindow && _renderHandle != IntPtr.Zero)
             {
                 XDestroyWindow(_x11.Display, _renderHandle);
                 _renderHandle = IntPtr.Zero;
@@ -687,7 +723,8 @@ namespace Avalonia.X11
             var pixelSize = ToPixelSize(clientSize);
             UpdateSizeHints(pixelSize);
             XConfigureResizeWindow(_x11.Display, _handle, pixelSize);
-            XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
+            if (_useRenderWindow)
+                XConfigureResizeWindow(_x11.Display, _renderHandle, pixelSize);
             XFlush(_x11.Display);
 
             if (force || (_popup && needImmediatePopupResize))
