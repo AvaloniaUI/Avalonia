@@ -74,7 +74,9 @@ namespace Avalonia.X11
             }
 
             XVisualInfo? visualInfo = null;
-            
+
+            // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
+            _useRenderWindow = glfeature != null;
             
             var glx = glfeature as GlxGlPlatformFeature;
             if (glx != null)
@@ -83,8 +85,6 @@ namespace Avalonia.X11
                 visualInfo = _x11.TransparentVisualInfo;
 
             var egl = glfeature as EglGlPlatformFeature;
-            if (egl != null)
-                _useRenderWindow = true;
             
             var visual = IntPtr.Zero;
             var depth = 24;
