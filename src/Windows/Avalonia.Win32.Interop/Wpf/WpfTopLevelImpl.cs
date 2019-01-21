@@ -135,9 +135,9 @@ namespace Avalonia.Win32.Interop.Wpf
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
-        Point ITopLevelImpl.PointToClient(Point point) => PointFromScreen(point.ToWpfPoint()).ToAvaloniaPoint();
+        Point ITopLevelImpl.PointToClient(PixelPoint point) => PointFromScreen(point.ToWpfPoint()).ToAvaloniaPoint();
 
-        Point ITopLevelImpl.PointToScreen(Point point) => PointToScreen(point.ToWpfPoint()).ToAvaloniaPoint();
+        PixelPoint ITopLevelImpl.PointToScreen(Point point) => PointToScreen(point.ToWpfPoint()).ToAvaloniaPixelPoint();
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 

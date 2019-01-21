@@ -31,15 +31,22 @@ namespace ControlCatalog.Pages
                 }.ShowAsync(GetWindow());
             };
             this.FindControl<Button>("DecoratedWindow").Click += delegate
-                {
-                    new DecoratedWindow().ShowDialog(GetWindow());
-                };
+            {
+                new DecoratedWindow().Show();
+            };
+            this.FindControl<Button>("DecoratedWindowDialog").Click += delegate
+            {
+                new DecoratedWindow().ShowDialog(GetWindow());
+            };
             this.FindControl<Button>("Dialog").Click += delegate
                 {
-                    new MainWindow().ShowDialog(GetWindow());
+                    var window = new Window();
+                    window.Height = 200;
+                    window.Width = 200;
+                    window.Content = new TextBlock { Text = "Hello world!" };
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    window.ShowDialog(GetWindow());
                 };
-
-
         }
 
         Window GetWindow() => (Window)this.VisualRoot;

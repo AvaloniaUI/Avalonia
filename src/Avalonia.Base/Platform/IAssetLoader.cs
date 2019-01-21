@@ -65,6 +65,7 @@ namespace Avalonia.Platform
         /// Gets all assets of a folder and subfolders that match specified uri.
         /// </summary>
         /// <param name="uri">The URI.</param>
+        /// <param name="baseUri">The base URI.</param>
         /// <returns>All matching assets as a tuple of the absolute path to the asset and the assembly containing the asset</returns>
         IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri);
     }

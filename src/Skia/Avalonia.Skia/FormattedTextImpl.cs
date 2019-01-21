@@ -272,7 +272,7 @@ namespace Avalonia.Skia
                             }
 
                             var textLine = Text.Substring(line.Start, line.Length);
-                            currX -= paint.MeasureText(textLine) * factor;
+                            currX -= textLine.Length == 0 ? 0 : paint.MeasureText(textLine) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {

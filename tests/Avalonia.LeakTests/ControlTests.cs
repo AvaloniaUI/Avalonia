@@ -348,6 +348,7 @@ namespace Avalonia.LeakTests
         {
             public bool DrawFps { get; set; }
             public bool DrawDirtyRects { get; set; }
+            public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 
             public void AddDirty(IVisual visual)
             {
