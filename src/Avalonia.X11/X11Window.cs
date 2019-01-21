@@ -171,8 +171,6 @@ namespace Avalonia.X11
                     XLockDisplay(_display);
                     XGetGeometry(_display, _parent, out var geo);
                     XResizeWindow(_display, Handle, geo.width, geo.height);
-                    XFlush(_display);
-                    XSync(_display, true);
                     XUnlockDisplay(_display);
                     return new PixelSize(geo.width, geo.height);
                 }
