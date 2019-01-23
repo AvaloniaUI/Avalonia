@@ -272,7 +272,7 @@ namespace Avalonia.Controls
             //     - GridLayout doesn't hold any state, so you can drag the debugger execution
             //       arrow back to any statements and re-run them without any side-effect.
 
-            var measureCache = new Dictionary<Control, Size>();
+            var measureCache = new Dictionary<(Control, Size), Size>();
             var (safeColumns, safeRows) = GetSafeColumnRows();
             var columnLayout = new GridLayout(ColumnDefinitions);
             var rowLayout = new GridLayout(RowDefinitions);
@@ -312,14 +312,14 @@ namespace Avalonia.Controls
             // If a child has been measured, it will just return the desired size.
             Size MeasureOnce(Control child, Size size)
             {
-                if (measureCache.TryGetValue(child, out var desiredSize))
+                if (measureCache.TryGetValue((child, size), out var desiredSize))
                 {
                     return desiredSize;
                 }
 
                 child.Measure(size);
                 desiredSize = child.DesiredSize;
-                measureCache[child] = desiredSize;
+                measureCache[(child, size)] = desiredSize;
                 return desiredSize;
             }
         }
