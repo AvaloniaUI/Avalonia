@@ -11,19 +11,18 @@ jobs:
         sudo apt-get install castxml
 
   - task: CmdLine@2
-    displayName: 'Install Cake'
+    displayName: 'Install Nuke'
     inputs:
       script: |
-        dotnet tool install -g Cake.Tool --version 0.30.0
-  
+         dotnet tool install --global Nuke.GlobalTool --version 0.12.3
   - task: CmdLine@2
-    displayName: 'Run Cake'
+    displayName: 'Run Nuke'
     inputs:
       script: |
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        dotnet cake build.cake -target="Azure-Linux" -configuration="Release"
+        nuke --target CiAzureLinux --configuration=Release
 
   - task: PublishTestResults@2
     inputs:
@@ -39,6 +38,13 @@ jobs:
     inputs:
       version: '2.1.403'
 
+  - task: CmdLine@2
+    displayName: 'Install Mono 5.18'
+    inputs:
+      script: |
+        curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
+        sudo installer -verbose -pkg ./mono.pkg -target /
+
   - task: Xcode@5
     inputs:
       actions: 'build'
@@ -52,16 +58,18 @@ jobs:
   - task: CmdLine@2
     displayName: 'Install CastXML'
     inputs:
-      script: brew install castxml
+      script: |
+        brew update
+        brew install castxml
 
   - task: CmdLine@2
-    displayName: 'Install Cake'
+    displayName: 'Install Nuke'
     inputs:
       script: |
-        dotnet tool install -g Cake.Tool --version 0.30.0
+       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
 
   - task: CmdLine@2
-    displayName: 'Run Cake'
+    displayName: 'Run Nuke'
     inputs:
       script: |
         export COREHOST_TRACE=0
@@ -72,7 +80,7 @@ jobs:
         export PATH="$PATH:$HOME/.dotnet/tools"
         dotnet --info
         printenv
-        dotnet cake build.cake -target="Azure-OSX" -configuration="Release"
+        nuke --target CiAzureOSX --configuration Release
 
   - task: PublishTestResults@2
     inputs:
@@ -84,30 +92,30 @@ jobs:
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/Build/Products/Release/'
       artifactName: 'Avalonia.Native.OSX'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+    condition: succeeded()
     
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
       artifactName: 'NuGetOSX'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+    condition: succeeded()
 
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
   - task: CmdLine@2
-    displayName: 'Install Cake'
+    displayName: 'Install Nuke'
     inputs:
       script: |
-        dotnet tool install -g Cake.Tool --version 0.30.0
+       dotnet tool install --global Nuke.GlobalTool --version 0.12.3 
 
   - task: CmdLine@2
-    displayName: 'Run Cake'
+    displayName: 'Run Nuke'
     inputs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
-        dotnet cake build.cake -target="Azure-Windows" -configuration="Release"
+        nuke --target CiAzureWindows --configuration Release
       
   - task: PublishTestResults@2
     inputs:
@@ -119,10 +127,10 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
       artifactName: 'NuGet'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+    condition: succeeded()
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
+    condition: succeeded()

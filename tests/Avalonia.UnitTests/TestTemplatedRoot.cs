@@ -57,9 +57,9 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public Point PointToClient(Point p) => p;
+        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public Point PointToScreen(Point p) => p;
+        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
         void INameScope.Register(string name, object element)
         {

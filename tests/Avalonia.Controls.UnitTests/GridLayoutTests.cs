@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Utils;
@@ -16,7 +17,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("100, 200, 300", 600d, 600d, new[] { 100d, 200d, 300d })]
         [InlineData("100, 200, 300", 400d, 400d, new[] { 100d, 200d, 100d })]
         public void MeasureArrange_AllPixelLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
@@ -25,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("*,2*,3*", 0d, 0d, new[] { 0d, 0d, 0d })]
         [InlineData("*,2*,3*", 600d, 0d, new[] { 100d, 200d, 300d })]
         public void MeasureArrange_AllStarLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
@@ -36,7 +37,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("100,2*,3*", 100d, 100d, new[] { 100d, 0d, 0d })]
         [InlineData("100,2*,3*", 50d, 50d, new[] { 50d, 0d, 0d })]
         public void MeasureArrange_MixStarPixelLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
@@ -49,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("100,200,Auto", 100d, 100d, new[] { 100d, 0d, 0d })]
         [InlineData("100,200,Auto", 50d, 50d, new[] { 50d, 0d, 0d })]
         public void MeasureArrange_MixAutoPixelLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
@@ -58,7 +59,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("*,2*,Auto", 0d, 0d, new[] { 0d, 0d, 0d })]
         [InlineData("*,2*,Auto", 600d, 0d, new[] { 200d, 400d, 0d })]
         public void MeasureArrange_MixAutoStarLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
@@ -69,14 +70,24 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("*,200,Auto", 200d, 200d, new[] { 0d, 200d, 0d })]
         [InlineData("*,200,Auto", 100d, 100d, new[] { 0d, 100d, 0d })]
         public void MeasureArrange_MixAutoStarPixelLength_Correct(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             TestRowDefinitionsOnly(length, containerLength, expectedDesiredLength, expectedLengthList);
         }
 
+        
+        /// <summary>
+        /// This is needed because Mono somehow converts double array to object array in attribute metadata
+        /// </summary>
+        static void AssertEqual(IList expected, IReadOnlyList<double> actual)
+        {
+            var conv = expected.Cast<double>().ToArray();
+            Assert.Equal(conv, actual);
+        }
+
         [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
         private static void TestRowDefinitionsOnly(string length, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            double expectedDesiredLength, IList expectedLengthList)
         {
             // Arrange
             var layout = new GridLayout(new RowDefinitions(length));
@@ -84,11 +95,11 @@ namespace Avalonia.Controls.UnitTests
             // Measure - Action & Assert
             var measure = layout.Measure(containerLength);
             Assert.Equal(expectedDesiredLength, measure.DesiredLength);
-            Assert.Equal(expectedLengthList, measure.LengthList);
+            AssertEqual(expectedLengthList, measure.LengthList);
 
             // Arrange - Action & Assert
             var arrange = layout.Arrange(containerLength, measure);
-            Assert.Equal(expectedLengthList, arrange.LengthList);
+            AssertEqual(expectedLengthList, arrange.LengthList);
         }
 
         [Theory]
@@ -99,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData("*,2*,Auto", 0d, new[] { Inf, Inf, 0d }, new[] { 0d, 0d, 0d })]
         [InlineData("*,200,Auto", 200d, new[] { Inf, 200d, 0d }, new[] { 0d, 200d, 0d })]
         public void MeasureArrange_InfiniteMeasure_Correct(string length, double expectedDesiredLength,
-            IList<double> expectedMeasureList, IList<double> expectedArrangeList)
+            IList expectedMeasureList, IList expectedArrangeList)
         {
             // Arrange
             var layout = new GridLayout(new RowDefinitions(length));
@@ -107,34 +118,34 @@ namespace Avalonia.Controls.UnitTests
             // Measure - Action & Assert
             var measure = layout.Measure(Inf);
             Assert.Equal(expectedDesiredLength, measure.DesiredLength);
-            Assert.Equal(expectedMeasureList, measure.LengthList);
+            AssertEqual(expectedMeasureList, measure.LengthList);
 
             // Arrange - Action & Assert
             var arrange = layout.Arrange(measure.DesiredLength, measure);
-            Assert.Equal(expectedArrangeList, arrange.LengthList);
+            AssertEqual(expectedArrangeList, arrange.LengthList);
         }
 
         [Theory]
         [InlineData("Auto,*,*", new[] { 100d, 100d, 100d }, 600d, 300d, new[] { 100d, 250d, 250d })]
         public void MeasureArrange_ChildHasSize_Correct(string length,
-            IList<double> childLengthList, double containerLength,
-            double expectedDesiredLength, IList<double> expectedLengthList)
+            IList childLengthList, double containerLength,
+            double expectedDesiredLength, IList expectedLengthList)
         {
             // Arrange
             var lengthList = new ColumnDefinitions(length);
             var layout = new GridLayout(lengthList);
             layout.AppendMeasureConventions(
                 Enumerable.Range(0, lengthList.Count).ToDictionary(x => x, x => (x, 1)),
-                x => childLengthList[x]);
+                x => (double)childLengthList[x]);
 
             // Measure - Action & Assert
             var measure = layout.Measure(containerLength);
             Assert.Equal(expectedDesiredLength, measure.DesiredLength);
-            Assert.Equal(expectedLengthList, measure.LengthList);
+            AssertEqual(expectedLengthList, measure.LengthList);
 
             // Arrange - Action & Assert
             var arrange = layout.Arrange(containerLength, measure);
-            Assert.Equal(expectedLengthList, arrange.LengthList);
+            AssertEqual(expectedLengthList, arrange.LengthList);
         }
 
         [Theory]
@@ -145,7 +156,7 @@ namespace Avalonia.Controls.UnitTests
         [InlineData(160d, 160d, new[] { 100d, 20d, 40d }, new[] { 100d, 20d, 40d })]
         public void MeasureArrange_ChildHasSizeAndHasMultiSpan_Correct(
             double containerLength, double expectedDesiredLength,
-            IList<double> expectedMeasureLengthList, IList<double> expectedArrangeLengthList)
+            IList expectedMeasureLengthList, IList expectedArrangeLengthList)
         {
             var length = "100,*,2*";
             var childLengthList = new[] { 150d, 150d, 150d };
@@ -161,13 +172,13 @@ namespace Avalonia.Controls.UnitTests
             // Measure - Action & Assert
             var measure = layout.Measure(containerLength);
             Assert.Equal(expectedDesiredLength, measure.DesiredLength);
-            Assert.Equal(expectedMeasureLengthList, measure.LengthList);
+            AssertEqual(expectedMeasureLengthList, measure.LengthList);
 
             // Arrange - Action & Assert
             var arrange = layout.Arrange(
                 double.IsInfinity(containerLength) ? measure.DesiredLength : containerLength,
                 measure);
-            Assert.Equal(expectedArrangeLengthList, arrange.LengthList);
+            AssertEqual(expectedArrangeLengthList, arrange.LengthList);
         }
     }
 }

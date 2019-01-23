@@ -68,6 +68,9 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override Type TargetType => _targetType ?? _previous?.TargetType;
 
+        /// <inheritdoc/>
+        public override bool IsCombinator => false;
+
         /// <summary>
         /// Whether the selector matches the concrete <see cref="TargetType"/> or any object which
         /// implements <see cref="TargetType"/>.
@@ -101,21 +104,21 @@ namespace Avalonia.Styling
                 {
                     if (controlType != TargetType)
                     {
-                        return SelectorMatch.False;
+                        return SelectorMatch.NeverThisType;
                     }
                 }
                 else
                 {
                     if (!TargetType.GetTypeInfo().IsAssignableFrom(controlType.GetTypeInfo()))
                     {
-                        return SelectorMatch.False;
+                        return SelectorMatch.NeverThisType;
                     }
                 }
             }
 
             if (Name != null && control.Name != Name)
             {
-                return SelectorMatch.False;
+                return SelectorMatch.NeverThisInstance;
             }
 
             if (_classes.IsValueCreated && _classes.Value.Count > 0)
@@ -125,15 +128,13 @@ namespace Avalonia.Styling
                     var observable = new ClassObserver(control.Classes, _classes.Value);
                     return new SelectorMatch(observable);
                 }
-                else
+                else if (!Matches(control.Classes))
                 {
-                    return new SelectorMatch(Matches(control.Classes));
+                    return SelectorMatch.NeverThisInstance;
                 }
             }
-            else
-            {
-                return SelectorMatch.True;
-            }
+
+            return Name == null ? SelectorMatch.AlwaysThisType : SelectorMatch.AlwaysThisInstance;
         }
 
         protected override Selector MovePrevious() => _previous;

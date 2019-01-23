@@ -147,6 +147,7 @@ namespace Avalonia.Data.Core
         private void StopListening()
         {
             StopListeningCore();
+            _listening = false;
         }
 
         private BindingNotification TargetNullNotification()

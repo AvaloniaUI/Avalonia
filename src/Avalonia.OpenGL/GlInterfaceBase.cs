@@ -10,7 +10,7 @@ namespace Avalonia.OpenGL
         {
             foreach (var prop in this.GetType().GetProperties())
             {
-                var a = prop.GetCustomAttribute<EntryPointAttribute>();
+                var a = prop.GetCustomAttribute<GlEntryPointAttribute>();
                 if (a != null)
                 {
                     var fieldName = $"<{prop.Name}>k__BackingField";

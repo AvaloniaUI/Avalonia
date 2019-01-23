@@ -24,7 +24,7 @@ namespace Avalonia.Gtk3
         private readonly EglGlPlatformSurface _egl;
         protected readonly List<IDisposable> Disposables = new List<IDisposable>();
         private Size _lastSize;
-        private Point _lastPosition;
+        private PixelPoint _lastPosition;
         private double _lastScaling;
         private uint _lastKbdEvent;
         private uint _lastSmoothScrollEvent;
@@ -383,7 +383,7 @@ namespace Avalonia.Gtk3
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; } //TODO
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public void Activate() => Native.GtkWidgetActivate(GtkWidget);
 
@@ -402,7 +402,7 @@ namespace Avalonia.Gtk3
             Dispatcher.UIThread.Post(() => Input?.Invoke(args), DispatcherPriority.Input);
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
             int x, y;
             Native.GdkWindowGetOrigin(Native.GtkWidgetGetWindow(GtkWidget), out x, out y);
@@ -410,11 +410,11 @@ namespace Avalonia.Gtk3
             return new Point(point.X - x, point.Y - y);
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
             int x, y;
             Native.GdkWindowGetOrigin(Native.GtkWidgetGetWindow(GtkWidget), out x, out y);
-            return new Point(point.X + x, point.Y + y);
+            return new PixelPoint((int)(point.X + x), (int)(point.Y + y));
         }
 
         public void SetCursor(IPlatformHandle cursor)
@@ -490,13 +490,13 @@ namespace Avalonia.Gtk3
             get;
         } = new ScreenImpl();
 
-        public Point Position
+        public PixelPoint Position
         {
             get
             {
                 int x, y;
                 Native.GtkWindowGetPosition(GtkWidget, out x, out y);
-                return new Point(x, y);
+                return new PixelPoint(x, y);
             }
             set { Native.GtkWindowMove(GtkWidget, (int)value.X, (int)value.Y); }
         }

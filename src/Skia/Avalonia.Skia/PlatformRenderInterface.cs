@@ -19,17 +19,22 @@ namespace Avalonia.Skia
     {
         private GRContext GrContext { get; }
 
+        public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
+
         public PlatformRenderInterface()
         {
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             if (gl != null)
             {
                 var display = gl.ImmediateContext.Display;
-                var iface = display.Type == GlDisplayType.OpenGL2
-                    ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
-                    : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc));
                 gl.ImmediateContext.MakeCurrent();
-                GrContext = GRContext.Create(GRBackend.OpenGL, iface);
+                using (var iface = display.Type == GlDisplayType.OpenGL2
+                    ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
+                    : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
+                {
+                    
+                    GrContext = GRContext.Create(GRBackend.OpenGL, iface);
+                }
             }
         }
         

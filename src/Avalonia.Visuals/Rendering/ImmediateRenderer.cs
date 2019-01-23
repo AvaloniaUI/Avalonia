@@ -43,6 +43,9 @@ namespace Avalonia.Rendering
         public bool DrawDirtyRects { get; set; }
 
         /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
+
+        /// <inheritdoc/>
         public void Paint(Rect rect)
         {
             if (_renderTarget == null)
@@ -81,6 +84,8 @@ namespace Avalonia.Rendering
                 _renderTarget.Dispose();
                 _renderTarget = null;
             }
+
+            SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
         }
 
         /// <inheritdoc/>

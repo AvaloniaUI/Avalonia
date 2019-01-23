@@ -3,6 +3,8 @@
 
 using System;
 using System.Globalization;
+using Avalonia.Animation;
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Media
 {
@@ -11,6 +13,11 @@ namespace Avalonia.Media
     /// </summary>
     public readonly struct Color
     {
+        static Color()
+        {
+            Animation.Animation.RegisterAnimator<ColorAnimator>(prop => typeof(Color).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// Gets or sets the Alpha component of the color.
         /// </summary>

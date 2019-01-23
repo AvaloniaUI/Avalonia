@@ -4,7 +4,6 @@
     <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <IsPackable>false</IsPackable>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
@@ -12,6 +11,7 @@
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
+        <Compile Include="Converters\NullableTypeConverter.cs" />
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />

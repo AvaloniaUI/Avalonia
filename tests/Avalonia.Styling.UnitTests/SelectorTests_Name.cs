@@ -14,7 +14,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1 { Name = "foo" };
             var target = default(Selector).Name("foo");
 
-            Assert.True(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.AlwaysThisInstance, target.Match(control).Result);
         }
 
         [Fact]
@@ -23,7 +23,7 @@ namespace Avalonia.Styling.UnitTests
             var control = new Control1 { Name = "foo" };
             var target = default(Selector).Name("bar");
 
-            Assert.False(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(control).Result);
         }
 
         [Fact]
@@ -33,7 +33,7 @@ namespace Avalonia.Styling.UnitTests
             var target = default(Selector).Name("foo");
             var activator = target.Match(control);
 
-            Assert.False(target.Match(control).ImmediateResult);
+            Assert.Equal(SelectorMatchResult.NeverThisInstance, target.Match(control).Result);
         }
 
         [Fact]

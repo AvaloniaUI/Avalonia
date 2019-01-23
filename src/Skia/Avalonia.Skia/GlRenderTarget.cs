@@ -30,40 +30,46 @@ namespace Avalonia.Skia
 
             var size = session.Size;
             var scaling = session.Scaling;
-
-            GRBackendRenderTargetDesc desc = new GRBackendRenderTargetDesc
+            if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
             {
-                Width = size.Width,
-                Height = size.Height,
-                SampleCount = disp.SampleCount,
-                StencilBits = disp.StencilSize,
-                Config = GRPixelConfig.Rgba8888,
-                Origin=GRSurfaceOrigin.BottomLeft,
-                RenderTargetHandle = new IntPtr(fb)
-            };
+                throw new InvalidOperationException(
+                    $"Can't create drawing context for surface with {size} size and {scaling} scaling");
+            }
 
-            gl.Viewport(0, 0, desc.Width, desc.Height);
+            gl.Viewport(0, 0, size.Width, size.Height);
             gl.ClearStencil(0);
             gl.ClearColor(0, 0, 0, 0);
             gl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            var surface = SKSurface.Create(_grContext, desc);
-
-            var nfo = new DrawingContextImpl.CreateInfo
+            lock (_grContext)
             {
-                GrContext = _grContext,
-                Canvas = surface.Canvas,
-                Dpi = SkiaPlatform.DefaultDpi * scaling,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = true
-            };
+                _grContext.ResetContext();
 
-            return new DrawingContextImpl(nfo, Disposable.Create(() =>
-            {
-                surface.Canvas.Flush();
-                surface.Dispose();
-                session.Dispose();
-            }));
+                GRBackendRenderTarget renderTarget =
+                    new GRBackendRenderTarget(size.Width, size.Height, disp.SampleCount, disp.StencilSize,
+                        new GRGlFramebufferInfo((uint)fb, GRPixelConfig.Rgba8888.ToGlSizedFormat()));
+                var surface = SKSurface.Create(_grContext, renderTarget,
+                    GRSurfaceOrigin.BottomLeft,
+                    GRPixelConfig.Rgba8888.ToColorType());
+
+                var nfo = new DrawingContextImpl.CreateInfo
+                {
+                    GrContext = _grContext,
+                    Canvas = surface.Canvas,
+                    Dpi = SkiaPlatform.DefaultDpi * scaling,
+                    VisualBrushRenderer = visualBrushRenderer,
+                    DisableTextLcdRendering = true
+                };
+
+                return new DrawingContextImpl(nfo, Disposable.Create(() =>
+                {
+                    
+                    surface.Canvas.Flush();
+                    surface.Dispose();
+                    renderTarget.Dispose();
+                    _grContext.Flush();
+                    session.Dispose();
+                }));
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System.Globalization;
+using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -11,6 +12,11 @@ namespace Avalonia
     /// </summary>
     public readonly struct Point
     {
+        static Point()
+        {
+            Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
+        }
+
         /// <summary>
         /// The X position.
         /// </summary>
@@ -133,7 +139,7 @@ namespace Avalonia
         /// <param name="p">Point to multiply</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates multiplied</returns>
-        public static Point operator *(Point p, double k) => new Point(p.X*k, p.Y*k);
+        public static Point operator *(Point p, double k) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
         /// Multiplies a point by a factor coordinate-wise
@@ -141,7 +147,7 @@ namespace Avalonia
         /// <param name="p">Point to multiply</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates multiplied</returns>
-        public static Point operator *(double k, Point p) => new Point(p.X*k, p.Y*k);
+        public static Point operator *(double k, Point p) => new Point(p.X * k, p.Y * k);
 
         /// <summary>
         /// Divides a point by a factor coordinate-wise
@@ -149,8 +155,8 @@ namespace Avalonia
         /// <param name="p">Point to divide by</param>
         /// <param name="k">Factor</param>
         /// <returns>Points having its coordinates divided</returns>
-        public static Point operator /(Point p, double k) => new Point(p.X/k, p.Y/k);
-         
+        public static Point operator /(Point p, double k) => new Point(p.X / k, p.Y / k);
+
         /// <summary>
         /// Applies a matrix to a point.
         /// </summary>

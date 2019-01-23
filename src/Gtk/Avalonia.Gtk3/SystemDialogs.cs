@@ -11,16 +11,17 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3
 {
-    class SystemDialog : ISystemDialogImpl
+    class SystemDialogBase
     {
 
-        unsafe static Task<string[]> ShowDialog(string title, GtkWindow parent, GtkFileChooserAction action,
-            bool multiselect, string initialFileName)
+        public unsafe static Task<string[]> ShowDialog(string title, GtkWindow parent, GtkFileChooserAction action,
+            bool multiselect, string initialFileName, Action<GtkFileChooser> modify)
         {
             GtkFileChooser dlg;
             parent = parent ?? GtkWindow.Null;
             using (var name = new Utf8Buffer(title))
                 dlg = Native.GtkFileChooserDialogNew(name, parent, action, IntPtr.Zero);
+            modify?.Invoke(dlg);
             if (multiselect)
                 Native.GtkFileChooserSetSelectMultiple(dlg, true);
 
@@ -42,7 +43,7 @@ namespace Avalonia.Gtk3
                     dispose();
                     return false;
                 }),
-                Signal.Connect<Native.D.signal_dialog_response>(dlg, "response", (_, resp, __)=>
+                Signal.Connect<Native.D.signal_dialog_response>(dlg, "response", (_, resp, __) =>
                 {
                     string[] result = null;
                     if (resp == GtkResponseType.Accept)
@@ -56,9 +57,11 @@ namespace Avalonia.Gtk3
                                 rlst.Add(Utf8Buffer.StringFromPtr(cgs->Data));
                             cgs = cgs->Next;
                         }
+
                         Native.GSlistFree(gs);
                         result = rlst.ToArray();
                     }
+
                     Native.GtkWidgetHide(dlg);
                     dispose();
                     tcs.TrySetResult(result);
@@ -70,27 +73,38 @@ namespace Avalonia.Gtk3
                 Native.GtkDialogAddButton(dlg, open, GtkResponseType.Accept);
             using (var open = new Utf8Buffer("Cancel"))
                 Native.GtkDialogAddButton(dlg, open, GtkResponseType.Cancel);
-            if(initialFileName!=null)
+            if (initialFileName != null)
                 using (var fn = new Utf8Buffer(initialFileName))
                     Native.GtkFileChooserSetFilename(dlg, fn);
             Native.GtkWindowPresent(dlg);
             return tcs.Task;
         }
 
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, GtkWindow parent,
+            Action<GtkFileChooser> modify = null)
         {
-            return ShowDialog(dialog.Title, ((WindowBaseImpl)parent)?.GtkWidget,
+            return ShowDialog(dialog.Title, parent,
                 dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                 (dialog as OpenFileDialog)?.AllowMultiple ?? false,
                 Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
-                string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName));
+                    string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), modify);
         }
 
-        public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+        public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, GtkWindow parent,
+            Action<GtkFileChooser> modify = null)
         {
-            var res = await ShowDialog(dialog.Title, ((WindowBaseImpl) parent)?.GtkWidget,
-                GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory);
+            var res = await ShowDialog(dialog.Title, parent,
+                GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory, modify);
             return res?.FirstOrDefault();
         }
+    }
+
+    class SystemDialog : SystemDialogBase, ISystemDialogImpl
+    {
+        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
+            => ShowFolderDialogAsync(dialog, ((WindowBaseImpl)parent)?.GtkWidget);
+
+        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, IWindowImpl parent)
+            => ShowFileDialogAsync(dialog, ((WindowBaseImpl)parent)?.GtkWidget);
     }
 }
