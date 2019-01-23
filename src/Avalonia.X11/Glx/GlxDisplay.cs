@@ -80,6 +80,8 @@ namespace Avalonia.X11.Glx
             ImmediateContext.MakeCurrent();
 
             GlInterface = GlInterface.FromNativeUtf8GetProcAddress(p => GlxGetProcAddress(p));
+            if (GlInterface.Version == null)
+                throw new OpenGlException("GL version string is null, aborting");
         }
         
         public void ClearContext() => GlxMakeCurrent(_x11.Display, IntPtr.Zero, IntPtr.Zero);
