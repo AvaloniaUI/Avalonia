@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -180,5 +181,48 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(target.IsMeasureValid);
         }
 
+        [Fact]
+        public void Does_Not_Cache_DesiredSize_For_Different_Constraint()
+        {
+            // Test for #2129.
+            WrappingControl child;
+            var target = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("*,*"),
+                Children =
+                {
+                    (child = new WrappingControl(220, 10)
+                    {
+                        [Grid.ColumnProperty] = 0,
+                    }),
+                }
+            };
+
+            // By measuring at 200 width, the column width will be 100.
+            target.Measure(new Size(200, 200));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            // A wrapping length of 220 == 3 lines * 10 line height.
+            Assert.Equal(30, child.DesiredSize.Height);
+        }
+
+        // Simulates a TextBlock with wrapping.
+        class WrappingControl : Control
+        {
+            private double _length;
+            private double _lineHeight;
+
+            public WrappingControl(double length, double lineHeight)
+            {
+                _length = length;
+                _lineHeight = lineHeight;
+            }
+
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                var lines = Math.Ceiling(_length / availableSize.Width);
+                return new Size(availableSize.Width, lines * _lineHeight);
+            }
+        }
     }
 }
