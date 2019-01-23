@@ -93,5 +93,14 @@ namespace Avalonia.X11.Glx
         public const int GLX_SAMPLES = 0x186a1 /*100001*/;
         public const int GLX_PbufferClobber = 0;
         public const int GLX_BufferSwapComplete = 1;
+        public const int GLX_CONTEXT_DEBUG_BIT_ARB = 0x00000001;
+        public const int GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x00000002;
+        public const int GLX_CONTEXT_MAJOR_VERSION_ARB = 0x2091;
+        public const int GLX_CONTEXT_MINOR_VERSION_ARB = 0x2092;
+        public const int GLX_CONTEXT_FLAGS_ARB = 0x2094;
+        public const int GLX_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
+        public const int GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+        public const int GLX_CONTEXT_PROFILE_MASK_ARB = 0x9126;
+
     }
 }

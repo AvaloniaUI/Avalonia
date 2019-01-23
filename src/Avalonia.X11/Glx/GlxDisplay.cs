@@ -89,10 +89,38 @@ namespace Avalonia.X11.Glx
         public GlxContext CreateContext(IGlContext share)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
-            var h = GlxCreateContext(_x11.Display, _visual, sharelist, true);
-            if (h == IntPtr.Zero)
+            IntPtr handle = default;
+            foreach (var ver in new[]
+            {
+                new Version(4, 0), new Version(3, 2),
+                new Version(3, 0), new Version(2, 0)
+            })
+            {
+
+                var attrs = new[]
+                {
+                    GLX_CONTEXT_MAJOR_VERSION_ARB, ver.Major,
+                    GLX_CONTEXT_MINOR_VERSION_ARB, ver.Minor,
+                    GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
+                    0
+                };
+                try
+                {
+                    handle = GlxCreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
+                    if (handle != IntPtr.Zero)
+                        break;
+                }
+                catch
+                {
+                    break;
+                }
+            }
+            
+            if(handle == IntPtr.Zero)
+                handle = GlxCreateContext(_x11.Display, _visual, sharelist, true);
+            if (handle == IntPtr.Zero)
                 throw new OpenGlException("Unable to create direct GLX context");
-            return new GlxContext(h, this, _x11);
+            return new GlxContext(handle, this, _x11);
         }
 
         public void SwapBuffers(IntPtr xid) => GlxSwapBuffers(_x11.Display, xid);

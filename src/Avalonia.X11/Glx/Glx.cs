@@ -18,7 +18,10 @@ namespace Avalonia.X11.Glx
         
         [DllImport(libGL, EntryPoint = "glXCreateContext")]
         public static extern  IntPtr GlxCreateContext(IntPtr dpy,  XVisualInfo* vis,  IntPtr shareList,  bool direct);
-        
+
+        [DllImport(libGL, EntryPoint = "glXCreateContextAttribsARB")]
+        public static extern IntPtr GlxCreateContextAttribsARB(IntPtr dpy, IntPtr fbconfig, IntPtr shareList,
+            bool direct, int[] attribs);
 
         [DllImport(libGL, EntryPoint = "glXGetProcAddress")]
         public static extern  IntPtr GlxGetProcAddress(Utf8Buffer buffer);
