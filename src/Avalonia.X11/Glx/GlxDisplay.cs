@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Avalonia.OpenGL;
 using static Avalonia.X11.Glx.GlxConsts;
-using static Avalonia.X11.Glx.Glx;
+
 namespace Avalonia.X11.Glx
 {
     unsafe class GlxDisplay : IGlDisplay
@@ -19,7 +19,7 @@ namespace Avalonia.X11.Glx
         
         public GlxContext ImmediateContext { get; }
         public GlxContext DeferredContext { get; }
-        
+        public GlxInterface Glx { get; } = new GlxInterface();
         public GlxDisplay(X11Info x11) 
         {
             _x11 = x11;
@@ -28,7 +28,7 @@ namespace Avalonia.X11.Glx
             {
                 GLX_X_RENDERABLE, 1,
                 GLX_RENDER_TYPE, GLX_RGBA_BIT,
-                GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+                GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PBUFFER_BIT,
                 GLX_DOUBLEBUFFER, 1,
                 GLX_RED_SIZE, 8,
                 GLX_GREEN_SIZE, 8,
@@ -45,12 +45,12 @@ namespace Avalonia.X11.Glx
                 baseAttribs,
             })
             {
-                var ptr = GlxChooseFBConfig(_x11.Display, x11.DefaultScreen,
+                var ptr = Glx.ChooseFBConfig(_x11.Display, x11.DefaultScreen,
                     attribs, out var count);
                 for (var c = 0 ; c < count; c++)
                 {
                     
-                    var visual = GlxGetVisualFromFBConfig(_x11.Display, ptr[c]);
+                    var visual = Glx.GetVisualFromFBConfig(_x11.Display, ptr[c]);
                     // We prefer 32 bit visuals
                     if (_fbconfig == IntPtr.Zero || visual->depth == 32)
                     {
@@ -70,23 +70,33 @@ namespace Avalonia.X11.Glx
             
             if (_visual == null)
                 throw new OpenGlException("Unable to get visual info from FBConfig");
-            if (GlxGetFBConfigAttrib(_x11.Display, _fbconfig, GLX_SAMPLES, out var samples) == 0)
+            if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_SAMPLES, out var samples) == 0)
                 SampleCount = samples;
-            if (GlxGetFBConfigAttrib(_x11.Display, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
+            if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
                 StencilSize = stencil;
 
-            ImmediateContext = CreateContext(null);
-            DeferredContext = CreateContext(ImmediateContext);
+            var pbuffers = Enumerable.Range(0, 2).Select(_ => Glx.CreatePbuffer(_x11.Display, _fbconfig, new[]
+            {
+                GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0
+            })).ToList();
+            
+            XLib.XFlush(_x11.Display);
+            
+            ImmediateContext = CreateContext(pbuffers[0],null);
+            DeferredContext = CreateContext(pbuffers[1], ImmediateContext);
             ImmediateContext.MakeCurrent();
-
-            GlInterface = GlInterface.FromNativeUtf8GetProcAddress(p => GlxGetProcAddress(p));
+            var err = Glx.GetError();
+            
+            GlInterface = new GlInterface(GlxInterface.GlxGetProcAddress);
             if (GlInterface.Version == null)
                 throw new OpenGlException("GL version string is null, aborting");
         }
-        
-        public void ClearContext() => GlxMakeCurrent(_x11.Display, IntPtr.Zero, IntPtr.Zero);
 
-        public GlxContext CreateContext(IGlContext share)
+        public void ClearContext() => Glx.MakeContextCurrent(_x11.Display,
+            IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+        public GlxContext CreateContext(IGlContext share) => CreateContext(IntPtr.Zero, share);
+        public GlxContext CreateContext(IntPtr defaultXid, IGlContext share)
         {
             var sharelist = ((GlxContext)share)?.Handle ?? IntPtr.Zero;
             IntPtr handle = default;
@@ -106,7 +116,7 @@ namespace Avalonia.X11.Glx
                 };
                 try
                 {
-                    handle = GlxCreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
+                    handle = Glx.CreateContextAttribsARB(_x11.Display, _fbconfig, sharelist, true, attrs);
                     if (handle != IntPtr.Zero)
                         break;
                 }
@@ -116,13 +126,11 @@ namespace Avalonia.X11.Glx
                 }
             }
             
-            if(handle == IntPtr.Zero)
-                handle = GlxCreateContext(_x11.Display, _visual, sharelist, true);
             if (handle == IntPtr.Zero)
                 throw new OpenGlException("Unable to create direct GLX context");
-            return new GlxContext(handle, this, _x11);
+            return new GlxContext(new GlxInterface(), handle, this, _x11, defaultXid);
         }
 
-        public void SwapBuffers(IntPtr xid) => GlxSwapBuffers(_x11.Display, xid);
+        public void SwapBuffers(IntPtr xid) => Glx.SwapBuffers(_x11.Display, xid);
     }
 }
