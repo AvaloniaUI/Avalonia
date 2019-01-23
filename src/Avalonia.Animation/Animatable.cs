@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Animation.Animators; 
 
 namespace Avalonia.Animation
 {
@@ -14,26 +15,14 @@ namespace Avalonia.Animation
     /// Base class for all animatable objects.
     /// </summary>
     public class Animatable : AvaloniaObject
-    { 
-        /// <summary>
-        /// Defines the <see cref="PlayState"/> property.
-        /// </summary>
-        public static readonly DirectProperty<Animatable, PlayState> PlayStateProperty =
-            AvaloniaProperty.RegisterDirect<Animatable, PlayState>(
-                nameof(PlayState),
-                o => o.PlayState,
-                (o, v) => o.PlayState = v);
+    {
+        public static readonly StyledProperty<IClock> ClockProperty =
+            AvaloniaProperty.Register<Animatable, IClock>(nameof(Clock), inherits: true);
 
-        private PlayState _playState = PlayState.Run;
-
-        /// <summary>
-        /// Gets or sets the state of the animation for this
-        /// control.
-        /// </summary>
-        public PlayState PlayState
+        public IClock Clock
         {
-            get { return _playState; }
-            set { SetAndRaise(PlayStateProperty, ref _playState, value); }
+            get => GetValue(ClockProperty);
+            set => SetValue(ClockProperty, value);
         }
 
         /// <summary>
@@ -69,7 +58,7 @@ namespace Avalonia.Animation
 
                 if (match != null)
                 {
-                    match.Apply(this, e.OldValue, e.NewValue);
+                    match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
                 }
             }
         }

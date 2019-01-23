@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reactive.Disposables;
@@ -20,7 +20,7 @@ namespace Avalonia.DesignerSupport.Remote
         public IPlatformHandle Handle { get; }
         public Size MaxClientSize { get; }
         public Size ClientSize { get; }
-        public double Scaling { get; }
+        public double Scaling { get; } = 1.0;
         public IEnumerable<object> Surfaces { get; }
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
@@ -29,8 +29,8 @@ namespace Avalonia.DesignerSupport.Remote
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
-        public Point Position { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public PixelPoint Position { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
@@ -45,9 +45,9 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public Point PointToClient(Point point) => point;
+        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public Point PointToScreen(Point point) => point;
+        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
         public void SetCursor(IPlatformHandle cursor)
         {
@@ -87,7 +87,9 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IDisposable ShowDialog() => Disposable.Empty;
+        public void ShowDialog(IWindowImpl parent)
+        {
+        }
 
         public void SetSystemDecorations(bool enabled)
         {
@@ -155,6 +157,6 @@ namespace Avalonia.DesignerSupport.Remote
         public int ScreenCount => 1;
 
         public Screen[] AllScreens { get; } =
-            {new Screen(new Rect(0, 0, 4000, 4000), new Rect(0, 0, 4000, 4000), true)};
+            {new Screen(new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true)};
     }
 }

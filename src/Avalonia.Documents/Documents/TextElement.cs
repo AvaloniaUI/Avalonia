@@ -51,7 +51,7 @@ namespace Avalonia.Documents
         public static readonly AttachedProperty<IBrush> ForegroundProperty =
             AvaloniaProperty.RegisterAttached<TextElement, AvaloniaObject, IBrush>(
                 nameof(Foreground),
-                new SolidColorBrush(0xff000000),
+                Brushes.Black,
                 inherits: true);
 
         /// <summary>

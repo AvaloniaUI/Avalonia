@@ -54,8 +54,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static ScrollBar()
         {
-            PseudoClass(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
+            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Vertical, ":vertical");
+            PseudoClass<ScrollBar, Orientation>(OrientationProperty, o => o == Orientation.Horizontal, ":horizontal");
 
             Thumb.DragDeltaEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<ScrollBar>(o => o.OnThumbDragComplete, RoutingStrategies.Bubble);
@@ -125,6 +125,20 @@ namespace Avalonia.Controls.Primitives
 
                 default:
                     throw new InvalidOperationException("Invalid value for ScrollBar.Visibility.");
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.PageUp)
+            {
+                LargeDecrement();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.PageDown)
+            {
+                LargeIncrement();
+                e.Handled = true;
             }
         }
 

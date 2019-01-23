@@ -145,6 +145,15 @@ namespace Avalonia.Controls
             Instance.Run(mainWindow);
         }
 
+        public delegate void AppMainDelegate(Application app, string[] args);
+
+        public void Start(AppMainDelegate main, string[] args)
+        {
+            Setup();
+            BeforeStartCallback(Self);
+            main(Instance, args);
+        }
+        
         /// <summary>
         /// Sets up the platform-specific services for the application, but does not run it.
         /// </summary>
@@ -222,7 +231,7 @@ namespace Avalonia.Controls
 
         private void SetupAvaloniaModules()
         {
-            var moduleInitializers = from assembly in AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetLoadedAssemblies()
+            var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                      from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
                                      where attribute.ForWindowingSubsystem == ""
                                       || attribute.ForWindowingSubsystem == WindowingSubsystemName
@@ -272,10 +281,10 @@ namespace Avalonia.Controls
 
             s_setupWasAlreadyCalled = true;
 
-            Instance.RegisterServices();
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
+            Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
         }

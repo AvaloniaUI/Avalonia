@@ -30,7 +30,7 @@ namespace Avalonia.Controls
         /// </summary>
         static Panel()
         {
-            ClipToBoundsProperty.OverrideDefaultValue<Panel>(true);
+            AffectsRender<Panel>(BackgroundProperty);
         }
 
         /// <summary>

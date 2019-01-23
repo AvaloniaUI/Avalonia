@@ -153,4 +153,5 @@
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
   <Import Project="..\..\..\build\AndroidWorkarounds.props" />
+  <Import Project="..\..\..\build\LegacyProject.targets" />
 </Project>

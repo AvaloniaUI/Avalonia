@@ -47,7 +47,7 @@ namespace Avalonia.Input
 
     public class Cursor
     {
-        public static Cursor Default = new Cursor(StandardCursorType.Arrow);
+        public static readonly Cursor Default = new Cursor(StandardCursorType.Arrow);
 
         internal Cursor(IPlatformHandle platformCursor)
         {

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 
 namespace Avalonia.Media.Fonts
 {
@@ -12,35 +11,26 @@ namespace Avalonia.Media.Fonts
     public class FontFamilyKey
     {
         /// <summary>
-        /// Creates a new instance of <see cref="FontFamilyKey"/> and extracts <see cref="Location"/> and <see cref="FileName"/> from given <see cref="Uri"/>
+        /// Creates a new instance of <see cref="FontFamilyKey"/>
         /// </summary>
         /// <param name="source"></param>
-        public FontFamilyKey(Uri source)
+        /// <param name="baseUri"></param>
+        public FontFamilyKey(Uri source, Uri baseUri = null)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
+            Source = source ?? throw new ArgumentNullException(nameof(source));
 
-            if (source.AbsolutePath.Contains(".ttf"))
-            {
-                var filePathWithoutExtension = source.AbsolutePath.Replace(".ttf", string.Empty);
-                var fileNameWithoutExtension = filePathWithoutExtension.Split('.').Last();
-                FileName = fileNameWithoutExtension + ".ttf";
-                Location = new Uri(source.OriginalString.Replace("." + FileName, string.Empty), UriKind.RelativeOrAbsolute);
-            }
-            else
-            {
-                Location = source;
-            }
+            BaseUri = baseUri;
         }
 
         /// <summary>
-        /// Location of stored font asset that belongs to a <see cref="FontFamily"/>
+        /// Source of stored font asset that belongs to a <see cref="FontFamily"/>
         /// </summary>
-        public Uri Location { get; }
+        public Uri Source { get; }
 
         /// <summary>
-        /// Optional filename for a font asset that belongs to a <see cref="FontFamily"/>
+        /// A base URI to use if <see cref="Source"/> is relative
         /// </summary>
-        public string FileName { get; }
+        public Uri BaseUri { get; }
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -54,14 +44,14 @@ namespace Avalonia.Media.Fonts
             {
                 var hash = (int)2166136261;
 
-                if (Location != null)
+                if (Source != null)
                 {
-                    hash = (hash * 16777619) ^ Location.GetHashCode();
+                    hash = (hash * 16777619) ^ Source.GetHashCode();
                 }
 
-                if (FileName != null)
+                if (BaseUri != null)
                 {
-                    hash = (hash * 16777619) ^ FileName.GetHashCode();
+                    hash = (hash * 16777619) ^ BaseUri.GetHashCode();
                 }
 
                 return hash;
@@ -77,11 +67,20 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is FontFamilyKey other)) return false;
+            if (!(obj is FontFamilyKey other))
+            {
+                return false;
+            }
 
-            if (Location != other.Location) return false;
+            if (Source != other.Source)
+            {
+                return false;
+            }
 
-            if (FileName != other.FileName) return false;
+            if (BaseUri != other.BaseUri)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -94,13 +93,12 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override string ToString()
         {
-            if (FileName == null) return Location.PathAndQuery;
+            if (!Source.IsAbsoluteUri && BaseUri != null)
+            {
+                return BaseUri.Authority + Source;
+            }
 
-            var builder = new UriBuilder(Location);
-
-            builder.Path += "." + FileName;
-
-            return builder.ToString();
+            return Source.ToString();
         }
     }
 }

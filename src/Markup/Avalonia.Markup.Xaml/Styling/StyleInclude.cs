@@ -62,11 +62,21 @@ namespace Avalonia.Markup.Xaml.Styling
         IResourceNode IResourceNode.ResourceParent => _parent;
 
         /// <inheritdoc/>
-        public void Attach(IStyleable control, IStyleHost container)
+        public bool Attach(IStyleable control, IStyleHost container)
         {
             if (Source != null)
             {
-                Loaded.Attach(control, container);
+                return Loaded.Attach(control, container);
+            }
+
+            return false;
+        }
+
+        public void Detach()
+        {
+            if (Source != null)
+            {
+                Loaded.Detach();
             }
         }
 

@@ -53,10 +53,9 @@ namespace Avalonia.Direct2D1.Media
 
         public ITransformedGeometryImpl WithTransform(Matrix transform)
         {
-            var factory = AvaloniaLocator.Current.GetService<Factory>();
             return new TransformedGeometryImpl(
                 new TransformedGeometry(
-                    factory,
+                    Direct2D1Platform.Direct2D1Factory,
                     GetSourceGeometry(),
                     transform.ToDirect2D()),
                 this);

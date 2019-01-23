@@ -17,12 +17,19 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
         /// </summary>
-        /// <param name="pixelWidth">The width of the bitmap in pixels.</param>
-        /// <param name="pixelHeight">The height of the bitmap in pixels.</param>
-        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
-        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
-        public RenderTargetBitmap(int pixelWidth, int pixelHeight, double dpiX = 96, double dpiY = 96)
-           : this(RefCountable.Create(CreateImpl(pixelWidth, pixelHeight, dpiX, dpiY)))
+        /// <param name="pixelSize">The size of the bitmap.</param>
+        public RenderTargetBitmap(PixelSize pixelSize)
+           : this(pixelSize, new Vector(96, 96))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RenderTargetBitmap"/> class.
+        /// </summary>
+        /// <param name="pixelSize">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
+        public RenderTargetBitmap(PixelSize pixelSize, Vector dpi)
+           : this(RefCountable.Create(CreateImpl(pixelSize, dpi)))
         {
         }
 
@@ -45,15 +52,13 @@ namespace Avalonia.Media.Imaging
         /// <summary>
         /// Creates a platform-specific implementation for a <see cref="RenderTargetBitmap"/>.
         /// </summary>
-        /// <param name="width">The width of the bitmap.</param>
-        /// <param name="height">The height of the bitmap.</param>
-        /// <param name="dpiX">The horizontal DPI of the bitmap.</param>
-        /// <param name="dpiY">The vertical DPI of the bitmap.</param>
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
         /// <returns>The platform-specific implementation.</returns>
-        private static IRenderTargetBitmapImpl CreateImpl(int width, int height, double dpiX, double dpiY)
+        private static IRenderTargetBitmapImpl CreateImpl(PixelSize size, Vector dpi)
         {
             IPlatformRenderInterface factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            return factory.CreateRenderTargetBitmap(width, height, dpiX, dpiY);
+            return factory.CreateRenderTargetBitmap(size, dpi);
         }
 
         /// <inheritdoc/>

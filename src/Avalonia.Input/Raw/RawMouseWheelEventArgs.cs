@@ -8,7 +8,7 @@ namespace Avalonia.Input.Raw
     {
         public RawMouseWheelEventArgs(
             IInputDevice device,
-            uint timestamp,
+            ulong timestamp,
             IInputRoot root,
             Point position,
             Vector delta, InputModifiers inputModifiers)

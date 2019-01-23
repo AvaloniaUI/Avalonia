@@ -4,10 +4,22 @@
 namespace Avalonia.Media
 {
     /// <summary>
-    /// GradientStop
+    /// Describes the location and color of a transition point in a gradient.
     /// </summary>
-    public sealed class GradientStop
+    public sealed class GradientStop : AvaloniaObject, IGradientStop
     {
+        /// <summary>
+        /// Describes the <see cref="Offset"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> OffsetProperty =
+            AvaloniaProperty.Register<GradientStop, double>(nameof(Offset));
+
+        /// <summary>
+        /// Describes the <see cref="Color"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Color> ColorProperty =
+            AvaloniaProperty.Register<GradientStop, Color>(nameof(Color));
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GradientStop"/> class.
         /// </summary>
@@ -24,16 +36,18 @@ namespace Avalonia.Media
             Offset = offset;
         }
 
-        // TODO: Make these dependency properties.
+        /// <inheritdoc/>
+        public double Offset
+        {
+            get => GetValue(OffsetProperty);
+            set => SetValue(OffsetProperty, value);
+        }
 
-        /// <summary>
-        /// The offset
-        /// </summary>
-        public double Offset { get; set; }
-
-        /// <summary>
-        /// The color
-        /// </summary>
-        public Color Color { get; set; }
+        /// <inheritdoc/>
+        public Color Color
+        {
+            get => GetValue(ColorProperty);
+            set => SetValue(ColorProperty, value);
+        }
     }
 }

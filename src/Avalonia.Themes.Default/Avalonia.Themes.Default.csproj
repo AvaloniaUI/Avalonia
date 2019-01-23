@@ -12,7 +12,10 @@
     <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
+    <AvaloniaResource Include="DefaultTheme.xaml"/>
+    <AvaloniaResource Include="Accents/*.xaml"/>
   </ItemGroup>  
   <Import Project="..\..\build\EmbedXaml.props" />
+  <Import Project="..\..\build\BuildTargets.targets"/>
   <Import Project="..\..\build\Rx.props" />
 </Project>

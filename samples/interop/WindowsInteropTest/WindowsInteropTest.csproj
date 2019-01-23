@@ -112,13 +112,13 @@
       <Project>{799a7bb5-3c2c-48b6-85a7-406a12c420da}</Project>
       <Name>Avalonia.DesignerSupport</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Avalonia.DesktopRuntime\Avalonia.DesktopRuntime.csproj">
+      <Project>{878fefe0-cd14-41cb-90b0-dbcb163e8f15}</Project>
+      <Name>Avalonia.DesktopRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj">
       <Project>{7062ae20-5dcc-4442-9645-8195bdece63e}</Project>
       <Name>Avalonia.Diagnostics</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Avalonia.DotNetFrameworkRuntime\Avalonia.DotNetFrameworkRuntime.csproj">
-      <Project>{4a1abb09-9047-4bd5-a4ad-a055e52c5ee0}</Project>
-      <Name>Avalonia.DotNetFrameworkRuntime</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\Avalonia.Input\Avalonia.Input.csproj">
       <Project>{62024b2d-53eb-4638-b26b-85eeaa54866e}</Project>
@@ -186,4 +186,5 @@
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\SkiaSharp.props" />
+  <Import Project="..\..\..\build\LegacyProject.targets" />
 </Project>

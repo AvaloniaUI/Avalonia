@@ -7,6 +7,7 @@ using Avalonia.Collections;
 using Avalonia.Documents;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -86,10 +87,12 @@ namespace Avalonia.Controls
         static TextBlock()
         {
             ClipToBoundsProperty.OverrideDefaultValue<TextBlock>(true);
-            AffectsRender(ForegroundProperty);
-            AffectsRender(FontWeightProperty);
-            AffectsRender(FontSizeProperty);
-            AffectsRender(FontStyleProperty);
+            AffectsRender<TextBlock>(
+                BackgroundProperty,
+                ForegroundProperty,
+                FontWeightProperty,
+                FontSizeProperty,
+                FontStyleProperty);
         }
 
         /// <summary>

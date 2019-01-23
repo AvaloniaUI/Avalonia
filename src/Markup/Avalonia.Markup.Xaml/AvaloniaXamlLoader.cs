@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 
 namespace Avalonia.Markup.Xaml
@@ -20,6 +22,12 @@ namespace Avalonia.Markup.Xaml
     public class AvaloniaXamlLoader
     {
         private readonly AvaloniaXamlSchemaContext _context = GetContext();
+
+        public bool IsDesignMode
+        {
+            get => _context.IsDesignMode;
+            set => _context.IsDesignMode = value;
+        }
 
         private static AvaloniaXamlSchemaContext GetContext()
         {
@@ -79,7 +87,7 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
-            foreach (var uri in GetUrisFor(type))
+            foreach (var uri in GetUrisFor(assetLocator, type))
             {
                 if (assetLocator.Exists(uri))
                 {
@@ -128,18 +136,14 @@ namespace Avalonia.Markup.Xaml
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
+                var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
                 try
                 {
-                    return Load(stream, asset.assembly, rootInstance, uri);
+                    return Load(stream, asset.assembly, rootInstance, absoluteUri);
                 }
                 catch (Exception e)
                 {
-                    var uriString = uri.ToString();
-                    if (!uri.IsAbsoluteUri)
-                    {
-                        uriString = new Uri(baseUri, uri).AbsoluteUri;
-                    }
-                    throw new XamlLoadException("Error loading xaml at " + uriString + ": " + e.Message, e);
+                    throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
                 }
             }
         }
@@ -200,7 +204,7 @@ namespace Avalonia.Markup.Xaml
         internal static object LoadFromReader(XamlReader reader, AvaloniaXamlContext context = null, IAmbientProvider parentAmbientProvider = null)
         {
             var writer = AvaloniaXamlObjectWriter.Create(
-                                    reader.SchemaContext,
+                                    (AvaloniaXamlSchemaContext)reader.SchemaContext,
                                     context,
                                     parentAmbientProvider);
 
@@ -215,15 +219,37 @@ namespace Avalonia.Markup.Xaml
             return LoadFromReader(reader, null);
         }
 
+
+        private static readonly DataContractSerializer s_xamlInfoSerializer =
+            new DataContractSerializer(typeof(AvaloniaResourceXamlInfo));
         /// <summary>
         /// Gets the URI for a type.
         /// </summary>
+        /// <param name="assetLocator"></param>
         /// <param name="type">The type.</param>
         /// <returns>The URI.</returns>
-        private static IEnumerable<Uri> GetUrisFor(Type type)
+        private static IEnumerable<Uri> GetUrisFor(IAssetLoader assetLocator, Type type)
         {
             var asm = type.GetTypeInfo().Assembly.GetName().Name;
+            var xamlInfoUri = new Uri($"avares://{asm}/!AvaloniaResourceXamlInfo");
             var typeName = type.FullName;
+            if (typeName == null)
+                throw new ArgumentException("Type doesn't have a FullName");
+            
+            if (assetLocator.Exists(xamlInfoUri))
+            {
+                using (var xamlInfoStream = assetLocator.Open(xamlInfoUri))
+                {
+                    var xamlInfo = (AvaloniaResourceXamlInfo)s_xamlInfoSerializer.ReadObject(xamlInfoStream);
+                    if (xamlInfo.ClassToResourcePathIndex.TryGetValue(typeName, out var rv) == true)
+                    {
+                        yield return new Uri($"avares://{asm}{rv}");
+                        yield break;
+                    }
+                }
+            }
+            
+            
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
         }

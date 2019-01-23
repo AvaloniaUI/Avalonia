@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         /// </summary>
         static TopLevel()
         {
-            AffectsMeasure(ClientSizeProperty);
+            AffectsMeasure<TopLevel>(ClientSizeProperty);
         }
 
         /// <summary>
@@ -96,8 +96,12 @@ namespace Avalonia.Controls
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
-            var renderLoop = TryGetService<IRenderLoop>(dependencyResolver);
             Renderer = impl.CreateRenderer(this);
+
+            if (Renderer != null)
+            {
+                Renderer.SceneInvalidated += SceneInvalidated;
+            }
 
             impl.SetInputRoot(this);
 
@@ -232,17 +236,17 @@ namespace Avalonia.Controls
         {
             PlatformImpl?.Invalidate(rect);
         }
-
+        
         /// <inheritdoc/>
-        Point IRenderRoot.PointToClient(Point p)
+        Point IRenderRoot.PointToClient(PixelPoint p)
         {
-            return PlatformImpl?.PointToClient(p) ?? default(Point);
+            return PlatformImpl?.PointToClient(p) ?? default;
         }
 
         /// <inheritdoc/>
-        Point IRenderRoot.PointToScreen(Point p)
+        PixelPoint IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl?.PointToScreen(p) ?? default(Point);
+            return PlatformImpl?.PointToScreen(p) ?? default;
         }
         
         /// <summary>
@@ -349,6 +353,11 @@ namespace Avalonia.Controls
         private void HandleInput(RawInputEventArgs e)
         {
             _inputManager.ProcessInput(e);
+        }
+
+        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
+        {
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
         }
     }
 }

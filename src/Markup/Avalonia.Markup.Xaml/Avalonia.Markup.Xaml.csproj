@@ -4,28 +4,14 @@
     <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>CS1591</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Avalonia.Markup.Xaml.xml</DocumentationFile>
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
         <Compile Include="AvaloniaXamlLoader.cs" />
+        <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
+        <Compile Include="Converters\FontFamilyTypeConverter.cs" />
         <Compile Include="Converters\MemberSelectorTypeConverter.cs" />
+        <Compile Include="Converters\NullableTypeConverter.cs" />
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
@@ -34,6 +20,7 @@
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
         <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="Parsers\PropertyParser.cs" />
+        <Compile Include="PortableXaml\AvaloniaResourceXamlInfo.cs" />
         <Compile Include="PortableXaml\AvaloniaXamlContext.cs" />
         <Compile Include="PortableXaml\AttributeExtensions.cs" />
         <Compile Include="PortableXaml\AvaloniaMemberAttributeProvider.cs" />

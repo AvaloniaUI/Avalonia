@@ -33,11 +33,12 @@ namespace Avalonia.Controls
 
         static ProgressBar()
         {
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
-            PseudoClass(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
-            PseudoClass(IsIndeterminateProperty, ":indeterminate");
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Vertical, ":vertical");
+            PseudoClass<ProgressBar, Orientation>(OrientationProperty, o => o == Avalonia.Controls.Orientation.Horizontal, ":horizontal");
+            PseudoClass<ProgressBar>(IsIndeterminateProperty, ":indeterminate");
 
-            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.ValueChanged);
+            ValueProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
+            IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>(x => x.UpdateIndicatorWhenPropChanged);
         }
 
         public bool IsIndeterminate
@@ -114,7 +115,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void ValueChanged(AvaloniaPropertyChangedEventArgs e)
+        private void UpdateIndicatorWhenPropChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateIndicator(Bounds.Size);
         }

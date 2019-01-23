@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 
 namespace Avalonia.Gtk3
 {
@@ -62,11 +63,18 @@ namespace Avalonia.Gtk3
 
         public Action<WindowState> WindowStateChanged { get; set; }
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl parent)
         {
             Native.GtkWindowSetModal(GtkWidget, true);
-            Show();
-            return new EmptyDisposable();
+            Native.GtkWindowSetTransientFor(GtkWidget, ((WindowImpl)parent).GtkWidget.DangerousGetHandle());
+            Native.GtkWindowPresent(GtkWidget);
+        }
+
+        public override void Show()
+        {
+            Native.GtkWindowSetModal(GtkWidget, false);
+            Native.GtkWindowSetTransientFor(GtkWidget, IntPtr.Zero);
+            Native.GtkWindowPresent(GtkWidget);
         }
 
         public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(GtkWidget, enabled);

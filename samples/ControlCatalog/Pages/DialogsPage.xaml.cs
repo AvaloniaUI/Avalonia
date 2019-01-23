@@ -34,9 +34,22 @@ namespace ControlCatalog.Pages
             {
                 new DecoratedWindow().Show();
             };
+            this.FindControl<Button>("DecoratedWindowDialog").Click += delegate
+            {
+                new DecoratedWindow().ShowDialog(GetWindow());
+            };
+            this.FindControl<Button>("Dialog").Click += delegate
+                {
+                    var window = new Window();
+                    window.Height = 200;
+                    window.Width = 200;
+                    window.Content = new TextBlock { Text = "Hello world!" };
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    window.ShowDialog(GetWindow());
+                };
         }
 
-        Window GetWindow() => this.FindControl<CheckBox>("IsModal").IsChecked.Value ? (Window)this.VisualRoot : null;
+        Window GetWindow() => (Window)this.VisualRoot;
 
         private void InitializeComponent()
         {

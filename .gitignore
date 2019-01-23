@@ -94,10 +94,6 @@ publish/
 *.Publish.xml
 *.pubxml
 
-# NuGet Packages Directory
-## TODO: If you have NuGet Package Restore enabled, uncomment the next line
-packages/
-
 # Windows Azure Build Output
 csx
 *.build.csdef
@@ -189,3 +185,14 @@ project.lock.json
 BenchmarkDotNet.Artifacts/
 
 dirs.sln
+
+
+##################
+# XCode
+##################
+Index/
+Logs/
+ModuleCache.noindex/
+Build/Intermediates.noindex/
+info.plist
+build-intermediate

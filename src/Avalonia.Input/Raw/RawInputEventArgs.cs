@@ -21,7 +21,7 @@ namespace Avalonia.Input.Raw
         /// </summary>
         /// <param name="device">The associated device.</param>
         /// <param name="timestamp">The event timestamp.</param>
-        public RawInputEventArgs(IInputDevice device, uint timestamp)
+        public RawInputEventArgs(IInputDevice device, ulong timestamp)
         {
             Contract.Requires<ArgumentNullException>(device != null);
 
@@ -47,6 +47,6 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the timestamp associated with the event.
         /// </summary>
-        public uint Timestamp { get; private set; }
+        public ulong Timestamp { get; private set; }
     }
 }

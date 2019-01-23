@@ -8,6 +8,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -176,6 +177,40 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(1, formattedText.Spans.Count);
                 Assert.Equal(FontWeight.Bold, formattedText.Spans[0].FontWeight);
             }
+        }
+
+        [Fact]
+        public void Changing_Background_Brush_Color_Should_Invalidate_Visual()
+        {
+            var target = new TextBlock()
+            {
+                Background = new SolidColorBrush(Colors.Red),
+            };
+
+            var root = new TestRoot(target);
+            var renderer = Mock.Get(root.Renderer);
+            renderer.ResetCalls();
+
+            ((SolidColorBrush)target.Background).Color = Colors.Green;
+
+            renderer.Verify(x => x.AddDirty(target), Times.Once);
+        }
+
+        [Fact]
+        public void Changing_Foreground_Brush_Color_Should_Invalidate_Visual()
+        {
+            var target = new TextBlock()
+            {
+                Foreground = new SolidColorBrush(Colors.Red),
+            };
+
+            var root = new TestRoot(target);
+            var renderer = Mock.Get(root.Renderer);
+            renderer.ResetCalls();
+
+            ((SolidColorBrush)target.Foreground).Color = Colors.Green;
+
+            renderer.Verify(x => x.AddDirty(target), Times.Once);
         }
     }
 }

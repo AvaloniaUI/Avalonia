@@ -21,7 +21,7 @@ namespace Avalonia.Animation
         /// Initializes a new instance of the <see cref="CrossFade"/> class.
         /// </summary>
         public CrossFade()
-            :this(TimeSpan.Zero)
+            : this(TimeSpan.Zero)
         {
         }
 
@@ -33,30 +33,40 @@ namespace Avalonia.Animation
         {
             _fadeOutAnimation = new Animation
             {
-                new KeyFrame
-                (
-                    new Setter
-                    {
-                        Property = Visual.OpacityProperty,
-                        Value = 0.0
-                    }
-                )
+                Children =
                 {
-                    Cue = new Cue(1.0)
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
+                        Cue = new Cue(1d)
+                    }
+
                 }
             };
             _fadeInAnimation = new Animation
             {
-                new KeyFrame
-                (
-                    new Setter
-                    {
-                        Property = Visual.OpacityProperty,
-                        Value = 0.0
-                    }
-                )
+                Children =
                 {
-                    Cue = new Cue(0.0)
+                    new KeyFrame()
+                    {
+                        Setters =
+                        {
+                            new Setter
+                            {
+                                Property = Visual.OpacityProperty,
+                                Value = 0d
+                            }
+                        },
+                        Cue = new Cue(0d)
+                    }
+
                 }
             };
             _fadeOutAnimation.Duration = _fadeInAnimation.Duration = duration;

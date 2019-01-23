@@ -1,17 +1,17 @@
 <Styles xmlns="https://github.com/avaloniaui">
   <Style Selector="ButtonSpinner">
-    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLightBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
     <Setter Property="VerticalContentAlignment" Value="Center"/>
   </Style>
   <Style Selector="ButtonSpinner /template/ RepeatButton">
-    <Setter Property="RepeatButton.Background" Value="Transparent"/>
-    <Setter Property="RepeatButton.BorderBrush" Value="Transparent"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
   </Style>
   <Style Selector="ButtonSpinner /template/ RepeatButton:pointerover">
-    <Setter Property="RepeatButton.Background" Value="{DynamicResource ThemeControlMidBrush}"/>
-    <Setter Property="RepeatButton.BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
   </Style>
   <Style Selector="ButtonSpinner /template/ RepeatButton#PART_IncreaseButton">
     <Setter Property="Content">
@@ -42,7 +42,8 @@
   <Style Selector="ButtonSpinner:right">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Margin="{TemplateBinding Padding}"
@@ -67,7 +68,8 @@
   <Style Selector="ButtonSpinner:left">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}"
+        <Border Name="border"
+                Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 Margin="{TemplateBinding Padding}"
@@ -88,5 +90,14 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="ButtonSpinner:pointerover /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+  </Style>
+  <Style Selector="ButtonSpinner:focus /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
+  </Style>
+  <Style Selector="ButtonSpinner:error /template/ Border#border">
+    <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
   </Style>
 </Styles>

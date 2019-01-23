@@ -28,7 +28,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         static AccessText()
         {
-            AffectsRender(ShowAccessKeyProperty);
+            AffectsRender<AccessText>(ShowAccessKeyProperty);
         }
 
         /// <summary>

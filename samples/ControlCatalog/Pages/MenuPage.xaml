@@ -1,4 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.MenuPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">Menu</TextBlock>
     <TextBlock Classes="h2">A window menu</TextBlock>
@@ -7,29 +9,46 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
-            <Menu>
-                <MenuItem Header="_First">
-                    <MenuItem Header="Standard _Menu Item"/>
-                    <Separator/>
-                    <MenuItem Header="Menu with _Submenu">
-                        <MenuItem Header="Submenu _1"/>
-                        <MenuItem Header="Submenu _2"/>
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Defined in XAML</TextBlock>
+                <Menu>
+                    <MenuItem Header="_First">
+                        <MenuItem Header="Standard _Menu Item"/>
+                        <Separator/>
+                        <MenuItem Header="Menu with _Submenu">
+                            <MenuItem Header="Submenu _1"/>
+                            <MenuItem Header="Submenu _2"/>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Icon">
+                            <MenuItem.Icon>
+                                <Image Source="/Assets/github_icon.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Menu Item with _Checkbox">
+                            <MenuItem.Icon>
+                                <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
-                    <MenuItem Header="Menu Item with _Icon">
-                        <MenuItem.Icon>
-                            <Image Source="resm:ControlCatalog.Assets.github_icon.png"/>
-                        </MenuItem.Icon>
+                    <MenuItem Header="_Second">
+                        <MenuItem Header="Second _Menu Item"/>
                     </MenuItem>
-                    <MenuItem Header="Menu Item with _Checkbox">
-                        <MenuItem.Icon>
-                            <CheckBox BorderThickness="0" IsHitTestVisible="False" IsChecked="True"/>
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </MenuItem>
-                <MenuItem Header="_Second">
-                    <MenuItem Header="Second _Menu Item"/>
-                </MenuItem>
-            </Menu>
+                </Menu>
+            </StackPanel>
+
+            <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
+                <Menu Items="{Binding MenuItems}">
+                    <Menu.Styles>
+                        <Style Selector="MenuItem">
+                            <Setter Property="Header" Value="{Binding Header}"/>
+                            <Setter Property="Items" Value="{Binding Items}"/>
+                            <Setter Property="Command" Value="{Binding Command}"/>
+                            <Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+                        </Style>
+                    </Menu.Styles>
+                </Menu>
+            </StackPanel>
         </StackPanel>
     </StackPanel>
 </UserControl>

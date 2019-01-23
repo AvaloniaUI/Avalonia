@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -15,6 +16,7 @@ namespace Avalonia.Styling
     {
         private IResourceNode _parent;
         private IResourceDictionary _resources;
+        private Dictionary<Type, List<IStyle>> _cache;
 
         public Styles()
         {
@@ -34,6 +36,7 @@ namespace Avalonia.Styling
                     }
 
                     x.ResourcesChanged += SubResourceChanged;
+                    _cache = null;
                 },
                 x =>
                 {
@@ -49,6 +52,7 @@ namespace Avalonia.Styling
                     }
 
                     x.ResourcesChanged -= SubResourceChanged;
+                    _cache = null;
                 },
                 () => { });
         }
@@ -97,11 +101,54 @@ namespace Avalonia.Styling
         /// <param name="container">
         /// The control that contains this style. May be null.
         /// </param>
-        public void Attach(IStyleable control, IStyleHost container)
+        public bool Attach(IStyleable control, IStyleHost container)
+        {
+            if (_cache == null)
+            {
+                _cache = new Dictionary<Type, List<IStyle>>();
+            }
+
+            if (_cache.TryGetValue(control.StyleKey, out var cached))
+            {
+                if (cached != null)
+                {
+                    foreach (var style in cached)
+                    {
+                        style.Attach(control, container);
+                    }
+
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                List<IStyle> result = null;
+
+                foreach (var style in this)
+                {
+                    if (style.Attach(control, container))
+                    {
+                        if (result == null)
+                        {
+                            result = new List<IStyle>();
+                        }
+
+                        result.Add(style);
+                    }
+                }
+
+                _cache.Add(control.StyleKey, result);
+                return result != null;
+            }
+        }
+
+        public void Detach()
         {
             foreach (IStyle style in this)
             {
-                style.Attach(control, container);
+                style.Detach();
             }
         }
 

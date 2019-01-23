@@ -29,11 +29,11 @@ namespace Avalonia.Rendering
                 }
                 else
                 {
-                    layer.ResizeBitmap(scene.Size, scene.Scaling);
+                    layer.RecreateBitmap(context, scene.Size, scene.Scaling);
                 }
             }
 
-            for (var i = _inner.Count - 1; i >= 0; --i)
+            for (var i = 0; i < _inner.Count;)
             {
                 var layer = _inner[i];
 
@@ -43,6 +43,8 @@ namespace Avalonia.Rendering
                     _inner.RemoveAt(i);
                     _index.Remove(layer.LayerRoot);
                 }
+                else
+                    i++;
             }
         }
 

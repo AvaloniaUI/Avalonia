@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.Platform.Interop;
 using CursorType = Avalonia.Gtk3.GdkCursorType;
 namespace Avalonia.Gtk3
 {

@@ -121,7 +121,7 @@ namespace Avalonia.Skia
 
                 int offset = 0;
 
-                if (point.X >= (rects[line.Start].X + line.Width) / 2 && line.Length > 0)
+                if (point.X >= (rects[line.Start].X + line.Width) && line.Length > 0)
                 {
                     offset = line.TextLength > line.Length ?
                                     line.Length : (line.Length - 1);
@@ -272,7 +272,7 @@ namespace Avalonia.Skia
                             }
 
                             var textLine = Text.Substring(line.Start, line.Length);
-                            currX -= paint.MeasureText(textLine) * factor;
+                            currX -= textLine.Length == 0 ? 0 : paint.MeasureText(textLine) * factor;
 
                             for (int i = line.Start; i < line.Start + line.Length;)
                             {

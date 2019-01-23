@@ -3,14 +3,15 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid RowDefinitions="10,*,10">
+                    <Grid RowDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
-                                      Grid.Column="0">
+                                      Grid.Column="0"
+                                      Focusable="False">
                             <Path Data="M 0,4 C0,4 0,6 0,6 0,6 3.5,2.5 3.5,2.5 3.5,2.5 7,6 7,6 7,6 7,4 7,4 7,4 3.5,0.5 3.5,0.5 3.5,0.5 0,4 0,4 z"
                                   Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLightBrush}" />
+                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
                         </RepeatButton>
                         <Track Grid.Row="1"
                                Grid.Column="1"
@@ -21,16 +22,18 @@
                                Orientation="{TemplateBinding Orientation}">
                             <Track.DecreaseButton>
                                 <RepeatButton Name="PART_PageUpButton"
-                                              Classes="repeattrack" />
+                                              Classes="repeattrack"
+                                              Focusable="False"/>
                             </Track.DecreaseButton>
                             <Track.IncreaseButton>
                                 <RepeatButton Name="PART_PageDownButton"
-                                              Classes="repeattrack" />
+                                              Classes="repeattrack"
+                                              Focusable="False"/>
                             </Track.IncreaseButton>
                             <Thumb Name="thumb">
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlDarkBrush}" />
+                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -38,10 +41,11 @@
                         <RepeatButton Name="PART_LineDownButton"
                                       Classes="repeat"
                                       Grid.Row="2"
-                                      Grid.Column="2">
+                                      Grid.Column="2"
+                                      Focusable="False">
                             <Path Data="M 0,2.5 C0,2.5 0,0.5 0,0.5 0,0.5 3.5,4 3.5,4 3.5,4 7,0.5 7,0.5 7,0.5 7,2.5 7,2.5 7,2.5 3.5,6 3.5,6 3.5,6 0,2.5 0,2.5 z"
                                   Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLightBrush}" />
+                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
                         </RepeatButton>
                     </Grid>
                 </Border>
@@ -49,19 +53,19 @@
         </Setter>
     </Style>
     <Style Selector="ScrollBar:horizontal">
-        <Setter Property="Height"
-                Value="10" />
+        <Setter Property="Height" Value="{DynamicResource ScrollBarThickness}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{DynamicResource ThemeControlMidBrush}">
-                    <Grid ColumnDefinitions="10,*,10">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
                         <RepeatButton Name="PART_LineUpButton"
                                       Classes="repeat"
                                       Grid.Row="0"
-                                      Grid.Column="0">
+                                      Grid.Column="0"
+                                      Focusable="False">
                             <Path Data="M 3.18,7 C3.18,7 5,7 5,7 5,7 1.81,3.5 1.81,3.5 1.81,3.5 5,0 5,0 5,0 3.18,0 3.18,0 3.18,0 0,3.5 0,3.5 0,3.5 3.18,7 3.18,7 z"
                                   Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLightBrush}" />
+                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
                         </RepeatButton>
                         <Track Grid.Row="1"
                                Grid.Column="1"
@@ -72,16 +76,18 @@
                                Orientation="{TemplateBinding Orientation}">
                             <Track.DecreaseButton>
                                 <RepeatButton Name="PART_PageUpButton"
-                                              Classes="repeattrack" />
+                                              Classes="repeattrack"
+                                              Focusable="False"/>
                             </Track.DecreaseButton>
                             <Track.IncreaseButton>
                                 <RepeatButton Name="PART_PageDownButton"
-                                              Classes="repeattrack" />
+                                              Classes="repeattrack"
+                                              Focusable="False"/>
                             </Track.IncreaseButton>
                             <Thumb Name="thumb">
                                 <Thumb.Template>
                                     <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlDarkBrush}" />
+                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
                                     </ControlTemplate>
                                 </Thumb.Template>
                             </Thumb>
@@ -89,10 +95,11 @@
                         <RepeatButton Name="PART_LineDownButton"
                                       Classes="repeat"
                                       Grid.Row="2"
-                                      Grid.Column="2">
+                                      Grid.Column="2"
+                                      Focusable="False">
                             <Path Data="M 1.81,7 C1.81,7 0,7 0,7 0,7 3.18,3.5 3.18,3.5 3.18,3.5 0,0 0,0 0,0 1.81,0 1.81,0 1.81,0 5,3.5 5,3.5 5,3.5 1.81,7 1.81,7 z"
                                   Stretch="Uniform"
-                                  Fill="{DynamicResource ThemeForegroundLightBrush}" />
+                                  Fill="{DynamicResource ThemeForegroundLowBrush}" />
                         </RepeatButton>
                     </Grid>
                 </Border>
@@ -100,22 +107,17 @@
         </Setter>
     </Style>
     <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">
-        <Setter Property="MinWidth"
-                Value="10" />
+        <Setter Property="MinWidth" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar:vertical">
-        <Setter Property="Width"
-                Value="10" />
+        <Setter Property="Width" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar:vertical /template/ Thumb#thumb">
-        <Setter Property="MinHeight"
-                Value="10" />
+        <Setter Property="MinHeight" Value="{DynamicResource ScrollBarThickness}" />
     </Style>
     <Style Selector="ScrollBar /template/ RepeatButton.repeat">
-        <Setter Property="Padding"
-                Value="2" />
-        <Setter Property="BorderThickness"
-                Value="0" />
+        <Setter Property="Padding" Value="2" />
+        <Setter Property="BorderThickness" Value="0" />
     </Style>
     <Style Selector="ScrollBar /template/ RepeatButton.repeattrack">
         <Setter Property="Template">

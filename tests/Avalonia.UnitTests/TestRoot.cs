@@ -19,6 +19,13 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
+            Renderer = Mock.Of<IRenderer>();
+        }
+
+        public TestRoot(IControl child)
+            : this()
+        {
+            Child = child;
         }
 
         event EventHandler<NameScopeEventArgs> INameScope.Registered
@@ -83,9 +90,9 @@ namespace Avalonia.UnitTests
         {
         }
 
-        public Point PointToClient(Point p) => p;
+        public Point PointToClient(PixelPoint p) => p.ToPoint(1);
 
-        public Point PointToScreen(Point p) => p;
+        public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
         void INameScope.Register(string name, object element)
         {
