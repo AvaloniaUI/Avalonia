@@ -14,7 +14,7 @@
         /// <param name="fontSize">The span's font size.</param>
         /// <param name="fontStyle">The span's font style.</param>
         /// <param name="fontWeight">The span's font weight</param>
-        /// <param name="foregroundBrush">The span's foreground brush.</param>
+        /// <param name="foreground">The span's foreground brush.</param>
         public FormattedTextStyleSpan(
             int startIndex,
             int length,
@@ -22,15 +22,13 @@
             double? fontSize = null,
             FontStyle? fontStyle = null,
             FontWeight? fontWeight = null,
-            IBrush foregroundBrush = null)
+            IBrush foreground = null)
         {
             StartIndex = startIndex;
             Length = length;
-            FontFamily = fontFamily;
+            Typeface = GetTypeface(fontFamily, fontWeight, fontStyle);
             FontSize = fontSize;
-            FontStyle = fontStyle;
-            FontWeight = fontWeight;
-            ForegroundBrush = foregroundBrush;
+            Foreground = foreground;
         }
 
         /// <summary>
@@ -44,9 +42,9 @@
         public int Length { get; }
 
         /// <summary>
-        /// Gets the font family.
+        /// Gets the typeface of the span.
         /// </summary>
-        public FontFamily FontFamily { get; }
+        public Typeface Typeface { get; }
 
         /// <summary>
         /// Gets the font size, in device independent pixels.
@@ -54,18 +52,33 @@
         public double? FontSize { get; }
 
         /// <summary>
-        /// Gets the font style.
-        /// </summary>
-        public FontStyle? FontStyle{ get; }
-
-        /// <summary>
-        /// Gets the font weight.
-        /// </summary>
-        public FontWeight? FontWeight { get; }
-
-        /// <summary>
         /// Gets the span's foreground brush.
         /// </summary>
-        public IBrush ForegroundBrush { get; }
+        public IBrush Foreground { get; }
+
+        private static Typeface GetTypeface(FontFamily fontFamily, FontWeight? fontWeight, FontStyle? fontStyle)
+        {
+            if (fontFamily == null && fontWeight == null && fontStyle == null)
+            {
+                return null;
+            }
+
+            if (fontFamily == null)
+            {
+                fontFamily = FontFamily.Default;
+            }
+
+            if (fontWeight == null)
+            {
+                fontWeight = FontWeight.Normal;
+            }
+
+            if (fontStyle == null)
+            {
+                fontStyle = FontStyle.Normal;
+            }
+
+            return new Typeface(fontFamily, fontStyle.Value, fontWeight.Value);
+        }
     }
 }

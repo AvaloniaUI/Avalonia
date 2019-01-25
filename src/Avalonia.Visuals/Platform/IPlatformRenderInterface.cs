@@ -23,6 +23,7 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="typeface">The base typeface.</param>
+        /// <param name="fontSize">The base font size.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="wrapping">The text wrapping mode.</param>
         /// <param name="constraint">The text layout constraints.</param>
@@ -31,6 +32,7 @@ namespace Avalonia.Platform
         IFormattedTextImpl CreateFormattedText(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,

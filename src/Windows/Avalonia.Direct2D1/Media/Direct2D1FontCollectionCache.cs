@@ -16,7 +16,7 @@ namespace Avalonia.Direct2D1.Media
             s_installedFontCollection = Direct2D1Platform.DirectWriteFactory.GetSystemFontCollection(false);
         }
 
-        public static SharpDX.DirectWrite.TextFormat GetTextFormat(Typeface typeface)
+        public static SharpDX.DirectWrite.TextFormat GetTextFormat(Typeface typeface, double fontSize)
         {
             var fontFamily = typeface.FontFamily;
             var fontCollection = GetOrAddFontCollection(fontFamily);
@@ -42,7 +42,7 @@ namespace Avalonia.Direct2D1.Media
                 (SharpDX.DirectWrite.FontWeight)typeface.Weight,
                 (SharpDX.DirectWrite.FontStyle)typeface.Style, 
                 SharpDX.DirectWrite.FontStretch.Normal, 
-                (float)typeface.FontSize);
+                (float)fontSize);
         }
 
         private static SharpDX.DirectWrite.FontCollection GetOrAddFontCollection(FontFamily fontFamily)

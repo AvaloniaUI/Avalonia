@@ -7,7 +7,7 @@ namespace Avalonia.Rendering
 {
     public class RendererBase
     {
-        private static readonly Typeface s_fpsTypeface = new Typeface("Arial", 18);
+        private static readonly Typeface s_fpsTypeface = new Typeface("Arial");
         private readonly Stopwatch _stopwatch = Stopwatch.StartNew();
         private int _framesThisSecond;
         private int _fps;
@@ -18,7 +18,8 @@ namespace Avalonia.Rendering
         {
             _fpsText = new FormattedText
             {
-                Typeface = s_fpsTypeface
+                Typeface = s_fpsTypeface,
+                FontSize = 18
             };
         }
 

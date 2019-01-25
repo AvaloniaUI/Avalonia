@@ -14,6 +14,7 @@ namespace Avalonia.Direct2D1.Media
         public FormattedTextImpl(
             string text,
             Typeface typeface,
+            double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
             Size constraint,
@@ -21,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         {
             Text = text;
 
-            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface))
+            using (var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface, fontSize))
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
@@ -32,9 +33,9 @@ namespace Avalonia.Direct2D1.Media
                                  textFormat,
                                  (float)constraint.Width,
                                  (float)constraint.Height)
-                             {
-                                 TextAlignment = textAlignment.ToDirect2D()
-                             };
+                {
+                    TextAlignment = textAlignment.ToDirect2D()
+                };
             }
 
             if (spans != null)
@@ -74,6 +75,8 @@ namespace Avalonia.Direct2D1.Media
             {
                 IsInside = isInside,
                 TextPosition = result.TextPosition,
+                Length = result.Length,
+                Bounds = new Rect(result.Left, result.Top, result.Width, result.Height),
                 IsTrailing = isTrailingHit,
             };
         }
