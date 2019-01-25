@@ -288,6 +288,13 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc />
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            CommitInput();
+            base.OnLostFocus(e);
+        }
+
+        /// <inheritdoc />
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             if (TextBox != null)

@@ -7,7 +7,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11
 {
-    class X11Info
+    unsafe class X11Info
     {
         public IntPtr Display { get; }
         public IntPtr DeferredDisplay { get; }
@@ -31,6 +31,7 @@ namespace Avalonia.X11
         public Version XInputVersion { get; }
 
         public IntPtr LastActivityTimestamp { get; set; }
+        public XVisualInfo? TransparentVisualInfo { get; set; }
         
         public unsafe X11Info(IntPtr display, IntPtr deferredDisplay)
         {
@@ -45,7 +46,10 @@ namespace Avalonia.X11
             //TODO: Open an actual XIM once we get support for preedit in our textbox
             XSetLocaleModifiers("@im=none");
             Xim = XOpenIM(display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-
+            XMatchVisualInfo(Display, DefaultScreen, 32, 4, out var visual);
+            if (visual.depth == 32)
+                TransparentVisualInfo = visual;
+            
             try
             {
                 if (XRRQueryExtension(display, out int randrEventBase, out var randrErrorBase) != 0)
