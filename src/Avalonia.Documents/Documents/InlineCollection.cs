@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections;
 using System.Text;
 using Avalonia.Collections;
@@ -12,7 +15,7 @@ namespace Avalonia.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>, IList
     {
-        bool _isNull;
+        private bool _isNull;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.

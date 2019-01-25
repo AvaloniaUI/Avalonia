@@ -1,4 +1,7 @@
-﻿namespace Avalonia.Media
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Describes the formatting for a span of text in a <see cref="FormattedText"/> object.

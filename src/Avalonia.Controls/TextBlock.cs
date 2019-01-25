@@ -382,7 +382,8 @@ namespace Avalonia.Controls
             var result = builder.ToFormattedText();
             result.Constraint = constraint;
             result.TextAlignment = TextAlignment;
-            result.Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight);
+            result.Typeface = new Typeface(FontFamily, FontStyle, FontWeight);
+            result.FontSize = FontSize;
             result.Wrapping = TextWrapping;
             return result;
         }

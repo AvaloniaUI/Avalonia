@@ -1,6 +1,7 @@
-﻿using System;
-using System.Reactive.Linq;
-using Avalonia.LogicalTree;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using Avalonia.Media;
 
 namespace Avalonia.Documents
@@ -61,9 +62,6 @@ namespace Avalonia.Documents
             AvaloniaProperty.RegisterAttached<TextElement, AvaloniaObject, TextDecorations>(
                 nameof(TextDecorations));
 
-        bool _isAttachedToLogicalTree;
-        ILogical _parent;
-
         static TextElement()
         {
             InvalidatesTextElement<TextElement>(
@@ -73,6 +71,11 @@ namespace Avalonia.Documents
                 ForegroundProperty,
                 TextDecorationsProperty);
         }
+
+        /// <summary>
+        /// Raised when the visual representation of the text element changes.
+        /// </summary>
+        public event EventHandler Invalidated;
 
         /// <summary>
         /// Gets or sets the font family.
@@ -127,11 +130,6 @@ namespace Avalonia.Documents
             get => GetValue(TextDecorationsProperty);
             set => SetValue(TextDecorationsProperty, value);
         }
-
-        /// <summary>
-        /// Raised when the visual representation of the text element changes.
-        /// </summary>
-        public event EventHandler Invalidated;
 
         /// <summary>
         /// Marks properties as invalidating the text element's visual representation.

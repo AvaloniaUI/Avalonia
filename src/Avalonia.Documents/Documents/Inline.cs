@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using Avalonia.Media;
 
 namespace Avalonia.Documents
 {
     /// <summary>
-    /// Base class for inline text elements such as <see cref="Span"/> and <see cref="Run"/>/
+    /// Base class for inline text elements such as <see cref="Run"/>/
     /// </summary>
     public abstract class Inline : TextElement
     {
@@ -37,13 +39,13 @@ namespace Avalonia.Documents
             var fontSize = IsSet(FontSizeProperty) ? (double?)FontSize : null;
             var fontStyle = IsSet(FontStyleProperty) ? (FontStyle?)FontStyle : null;
             var fontWeight = IsSet(FontWeightProperty) ? (FontWeight?)FontWeight : null;
-            var brush = IsSet(ForegroundProperty) ? Foreground : null;
+            var foreground = IsSet(ForegroundProperty) ? Foreground : null;
 
             if (fontFamily != null ||
                 fontSize != null ||
                 fontStyle != null ||
                 fontWeight != null ||
-                brush != null)
+                foreground != null)
             {
                 return new FormattedTextStyleSpan(
                     startIndex,
@@ -52,7 +54,7 @@ namespace Avalonia.Documents
                     fontSize: fontSize,
                     fontStyle: fontStyle,
                     fontWeight: fontWeight,
-                    foregroundBrush: brush);
+                    foreground: foreground);
             }
             else
             {

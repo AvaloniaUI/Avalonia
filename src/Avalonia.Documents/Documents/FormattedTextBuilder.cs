@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media;
@@ -10,8 +12,8 @@ namespace Avalonia.Documents
     /// </summary>
     public class FormattedTextBuilder
     {
-        private StringBuilder _builder = new StringBuilder();
-        private List<FormattedTextStyleSpan> _spans = new List<FormattedTextStyleSpan>();
+        private readonly StringBuilder _builder = new StringBuilder();
+        private readonly List<FormattedTextStyleSpan> _spans = new List<FormattedTextStyleSpan>();
 
         /// <summary>
         /// Gets the length of the current text.

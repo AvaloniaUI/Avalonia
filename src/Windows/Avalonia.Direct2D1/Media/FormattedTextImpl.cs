@@ -100,31 +100,23 @@ namespace Avalonia.Direct2D1.Media
             {
                 var range = new DWrite.TextRange(span.StartIndex, span.Length);
 
-                if (span.ForegroundBrush != null)
+                if (span.Foreground != null)
                 {
                     TextLayout.SetDrawingEffect(
-                        new BrushWrapper(span.ForegroundBrush.ToImmutable()),
+                        new BrushWrapper(span.Foreground.ToImmutable()),
                         range);
                 }
 
-                if (span.FontFamily != null)
+                if (span.Typeface != null)
                 {
-                    TextLayout.SetFontFamilyName(span.FontFamily.Name, range);
+                    TextLayout.SetFontFamilyName(span.Typeface.FontFamily.Name, range);
+                    TextLayout.SetFontStyle((DWrite.FontStyle)span.Typeface.Style, range);
+                    TextLayout.SetFontWeight((DWrite.FontWeight)span.Typeface.Weight, range);
                 }
 
                 if (span.FontSize != null)
                 {
                     TextLayout.SetFontSize((float)span.FontSize, range);
-                }
-
-                if (span.FontStyle != null)
-                {
-                    TextLayout.SetFontStyle((DWrite.FontStyle)span.FontStyle, range);
-                }
-
-                if (span.FontWeight != null)
-                {
-                    TextLayout.SetFontWeight((DWrite.FontWeight)span.FontWeight, range);
                 }
             }
         }
