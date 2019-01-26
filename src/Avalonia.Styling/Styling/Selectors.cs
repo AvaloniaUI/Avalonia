@@ -95,6 +95,17 @@ namespace Avalonia.Styling
         }
 
         /// <summary>
+        /// Returns a selector which inverts the results of selector argument.
+        /// </summary>
+        /// <param name="previous">The previous selector.</param>
+        /// <param name="argument">The selector to be not-ed.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Not(this Selector previous, Func<Selector, Selector> argument)
+        {
+            return new NotSelector(previous, argument(null));
+        }
+
+        /// <summary>
         /// Returns a selector which matches a type.
         /// </summary>
         /// <param name="previous">The previous selector.</param>
