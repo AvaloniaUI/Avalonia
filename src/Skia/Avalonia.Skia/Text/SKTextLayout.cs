@@ -853,9 +853,36 @@ namespace Avalonia.Skia.Text
 
                 if (span.Typeface != null)
                 {
-                    var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(span.Typeface.FontFamily);
-
-                    typeFace = typefaceCollection.GetTypeFace(span.Typeface);
+                    // ToDo: this is duplicate code that is already used in FormattedTextImpl
+                    if (span.Typeface.FontFamily.Key != null)
+                    {
+                        var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(span.Typeface.FontFamily);
+                        typeFace = typefaces.GetTypeFace(span.Typeface);
+                    }
+                    else
+                    {
+                        if (span.Typeface.FontFamily.FamilyNames.HasFallbacks)
+                        {
+                            foreach (var familyName in span.Typeface.FontFamily.FamilyNames)
+                            {
+                                typeFace = TypefaceCache.GetTypeface(
+                                    familyName,
+                                    span.Typeface.Style,
+                                    span.Typeface.Weight);
+                                if (typeFace != TypefaceCache.Default)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            typeFace = TypefaceCache.GetTypeface(
+                                span.Typeface.FontFamily.Name,
+                                span.Typeface.Style,
+                                span.Typeface.Weight);
+                        }
+                    }
                 }
 
                 textFormat = new SKTextFormat(typeFace, (float)fontSize);

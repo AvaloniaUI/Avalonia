@@ -30,7 +30,7 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
             AvaloniaProperty.RegisterAttached<TextBlock, Control, FontFamily>(
                 nameof(FontFamily),
-                defaultValue:  FontFamily.Default,
+                defaultValue: FontFamily.Default,
                 inherits: true);
 
         /// <summary>
@@ -379,13 +379,13 @@ namespace Avalonia.Controls
                 i.BuildFormattedText(builder);
             }
 
-            var result = builder.ToFormattedText();
-            result.Constraint = constraint;
-            result.TextAlignment = TextAlignment;
-            result.Typeface = new Typeface(FontFamily, FontStyle, FontWeight);
-            result.FontSize = FontSize;
-            result.Wrapping = TextWrapping;
-            return result;
+            builder.Typeface = new Typeface(FontFamily, FontStyle, FontWeight);
+            builder.FontSize = FontSize;
+            builder.TextAlignment = TextAlignment;
+            builder.TextWrapping = TextWrapping;
+            builder.Constraint = constraint;
+
+            return builder.Build();
         }
 
         /// <summary>
@@ -405,7 +405,7 @@ namespace Avalonia.Controls
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
+                TextWrapping = TextWrapping,
             };
         }
 

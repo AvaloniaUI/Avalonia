@@ -21,6 +21,46 @@ namespace Avalonia.Documents
         public int Length => _builder.Length;
 
         /// <summary>
+        /// Gets or sets the typeface.
+        /// </summary>
+        /// <value>
+        /// The typeface.
+        /// </value>
+        public Typeface Typeface { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the font.
+        /// </summary>
+        /// <value>
+        /// The size of the font.
+        /// </value>
+        public double FontSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text alignment.
+        /// </summary>
+        /// <value>
+        /// The text alignment.
+        /// </value>
+        public TextAlignment TextAlignment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text wrapping.
+        /// </summary>
+        /// <value>
+        /// The text wrapping.
+        /// </value>
+        public TextWrapping TextWrapping { get; set; }
+
+        /// <summary>
+        /// Gets or sets the constraint.
+        /// </summary>
+        /// <value>
+        /// The constraint.
+        /// </value>
+        public Size Constraint { get; set; }
+
+        /// <summary>
         /// Adds text and an option style span.
         /// </summary>
         /// <param name="text">The text to add.</param>
@@ -39,12 +79,17 @@ namespace Avalonia.Documents
         /// Returns the built formatted text.
         /// </summary>
         /// <returns>A <see cref="FormattedText"/> instance.</returns>
-        public FormattedText ToFormattedText()
+        public FormattedText Build()
         {
             return new FormattedText
-            {
-                Spans = _spans,
+            {               
                 Text = _builder.ToString(),
+                Typeface = Typeface,
+                FontSize = FontSize,
+                TextAlignment = TextAlignment,
+                TextWrapping = TextWrapping,
+                Constraint = Constraint,
+                Spans = _spans
             };
         }
     }
