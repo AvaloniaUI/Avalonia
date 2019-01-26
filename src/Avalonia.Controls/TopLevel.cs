@@ -137,6 +137,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Fired when the window is opened.
+        /// </summary>
+        public event EventHandler Opened;
+
+        /// <summary>
         /// Fired when the window is closed.
         /// </summary>
         public event EventHandler Closed;
@@ -310,6 +315,12 @@ namespace Avalonia.Controls
             throw new InvalidOperationException(
                 $"Control '{GetType().Name}' is a top level control and cannot be added as a child.");
         }
+
+        /// <summary>
+        /// Raises the <see cref="Opened"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
