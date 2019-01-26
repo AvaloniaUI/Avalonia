@@ -13,6 +13,8 @@ namespace Avalonia
     /// </summary>
     public class AvaloniaPropertyRegistry
     {
+        private readonly IList<AvaloniaProperty> _properties =
+            new List<AvaloniaProperty>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _registered =
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _attached =
@@ -149,6 +151,16 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Finds a registered property by Id.
+        /// </summary>
+        /// <param name="id">The property Id.</param>
+        /// <returns>The registered property or null if no matching property found.</returns>
+        internal AvaloniaProperty FindRegistered(int id)
+        {
+            return id < _properties.Count ? _properties[id] : null;
+        }
+
+        /// <summary>
         /// Checks whether a <see cref="AvaloniaProperty"/> is registered on a type.
         /// </summary>
         /// <param name="type">The type.</param>
@@ -202,7 +214,8 @@ namespace Avalonia
             {
                 inner.Add(property.Id, property);
             }
- 
+
+            _properties.Add(property);
             _registeredCache.Clear();
         }
 
@@ -238,6 +251,7 @@ namespace Avalonia
                 inner.Add(property.Id, property);
             }
 
+            _properties.Add(property);
             _attachedCache.Clear();
         }
     }
