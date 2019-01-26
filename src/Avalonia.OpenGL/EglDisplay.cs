@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 using static Avalonia.OpenGL.EglConsts;
@@ -34,11 +33,11 @@ namespace Avalonia.OpenGL
             if (_display == IntPtr.Zero)
                 _display = _egl.GetDisplay(IntPtr.Zero);
             
-            if(_display == IntPtr.Zero)
-                throw new OpenGlException("eglGetDisplay failed");
-            
+            if (_display == IntPtr.Zero)
+                throw OpenGlException.GetFormattedException("eglGetDisplay", _egl);
+
             if (!_egl.Initialize(_display, out var major, out var minor))
-                throw new OpenGlException("eglInitialize failed");
+                throw OpenGlException.GetFormattedException("eglInitialize", _egl);
 
             foreach (var cfg in new[]
             {
@@ -87,18 +86,8 @@ namespace Avalonia.OpenGL
 
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
-            
-            GlInterface = new GlInterface((proc, optional) =>
-            {
 
-                using (var u = new Utf8Buffer(proc))
-                {
-                    var rv = _egl.GetProcAddress(u);
-                    if (rv == IntPtr.Zero && !optional)
-                        throw new OpenGlException("Missing function " + proc);
-                    return rv;
-                }
-            });
+            GlInterface = GlInterface.FromNativeUtf8GetProcAddress(b => _egl.GetProcAddress(b));
         }
 
         public EglDisplay() : this(new EglInterface())
@@ -113,7 +102,7 @@ namespace Avalonia.OpenGL
             var shareCtx = (EglContext)share;
             var ctx = _egl.CreateContext(_display, _config, shareCtx?.Context ?? IntPtr.Zero, _contextAttributes);
             if (ctx == IntPtr.Zero)
-                throw new OpenGlException("eglCreateContext failed");
+                throw OpenGlException.GetFormattedException("eglCreateContext", _egl);
             var surf = _egl.CreatePBufferSurface(_display, _config, new[]
             {
                 EGL_WIDTH, 1,
@@ -121,7 +110,7 @@ namespace Avalonia.OpenGL
                 EGL_NONE
             });
             if (surf == IntPtr.Zero)
-                throw new OpenGlException("eglCreatePbufferSurface failed");
+                throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
             var rv = new EglContext(this, _egl, ctx, surf);
             rv.MakeCurrent(null);
             return rv;
@@ -130,14 +119,14 @@ namespace Avalonia.OpenGL
         public void ClearContext()
         {
             if (!_egl.MakeCurrent(_display, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
-                throw new OpenGlException("eglMakeCurrent failed");
+                throw OpenGlException.GetFormattedException("eglMakeCurrent", _egl);
         }
 
         public EglSurface CreateWindowSurface(IntPtr window)
         {
             var s = _egl.CreateWindowSurface(_display, _config, window, new[] {EGL_NONE, EGL_NONE});
             if (s == IntPtr.Zero)
-                throw new OpenGlException("eglCreateWindowSurface failed");
+                throw OpenGlException.GetFormattedException("eglCreateWindowSurface", _egl);
             return new EglSurface(this, _egl, s);
         }
 

@@ -16,7 +16,7 @@ namespace Avalonia
     public class ReactiveUserControl<TViewModel> : UserControl, IViewFor<TViewModel> where TViewModel : class
     {
         public static readonly AvaloniaProperty<TViewModel> ViewModelProperty = AvaloniaProperty
-            .Register<ReactiveWindow<TViewModel>, TViewModel>(nameof(ViewModel));
+            .Register<ReactiveUserControl<TViewModel>, TViewModel>(nameof(ViewModel));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReactiveUserControl{TViewModel}"/> class.

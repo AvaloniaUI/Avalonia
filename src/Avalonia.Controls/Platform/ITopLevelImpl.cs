@@ -82,14 +82,14 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="point">The point in screen coordinates.</param>
         /// <returns>The point in client coordinates.</returns>
-        Point PointToClient(Point point);
+        Point PointToClient(PixelPoint point);
 
         /// <summary>
         /// Converts a point from client to screen coordinates.
         /// </summary>
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen coordinates.</returns>
-        Point PointToScreen(Point point);
+        PixelPoint PointToScreen(Point point);
 
         /// <summary>
         /// Sets the cursor associated with the toplevel.
