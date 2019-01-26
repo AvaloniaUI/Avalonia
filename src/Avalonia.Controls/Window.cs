@@ -389,6 +389,7 @@ namespace Avalonia.Controls
                 Renderer?.Start();
             }
             SetWindowStartupLocation(Owner?.PlatformImpl);
+            OnOpened(EventArgs.Empty);
         }
 
         /// <summary>
@@ -458,6 +459,7 @@ namespace Avalonia.Controls
                         owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
+                OnOpened(EventArgs.Empty);
             }
 
             SetWindowStartupLocation(owner);

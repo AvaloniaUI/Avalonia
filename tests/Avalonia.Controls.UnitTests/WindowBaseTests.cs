@@ -200,6 +200,22 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Showing_Should_Raise_Opened()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TestWindowBase();
+                var raised = false;
+
+                target.Opened += (s, e) => raised = true;
+
+                target.Show();
+
+                Assert.True(raised);
+            }
+        }
+
+        [Fact]
         public void Hiding_Should_Stop_Renderer()
         {
 

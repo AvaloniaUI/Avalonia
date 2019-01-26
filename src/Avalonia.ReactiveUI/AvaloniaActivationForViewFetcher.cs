@@ -29,8 +29,8 @@ namespace Avalonia
         {
             var windowLoaded = Observable
                 .FromEventPattern(
-                    x => window.Initialized += x,
-                    x => window.Initialized -= x)
+                    x => window.Opened += x,
+                    x => window.Opened -= x)
                 .Select(args => true);
             var windowUnloaded = Observable
                 .FromEventPattern(
