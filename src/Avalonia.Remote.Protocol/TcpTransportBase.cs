@@ -46,7 +46,7 @@ namespace Avalonia.Remote.Protocol
             {
                 try
                 {
-                    var cl = await server.AcceptTcpClientAsync();
+                    var cl = await server.AcceptTcpClientAsync().ConfigureAwait(false);
                     AcceptNew();
                     await Task.Run(async () =>
                     {
@@ -54,7 +54,7 @@ namespace Avalonia.Remote.Protocol
                         var t = CreateTransport(_resolver, cl.GetStream(), () => tcs.TrySetResult(0));
                         cb(t);
                         await tcs.Task;
-                    });
+                    }).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -69,7 +69,7 @@ namespace Avalonia.Remote.Protocol
         public async Task<IAvaloniaRemoteTransportConnection> Connect(IPAddress address, int port)
         {
             var c = new TcpClient();
-            await c.ConnectAsync(address, port);
+            await c.ConnectAsync(address, port).ConfigureAwait(false);
             return CreateTransport(_resolver, c.GetStream(), ((IDisposable)c).Dispose);
         }
     }
