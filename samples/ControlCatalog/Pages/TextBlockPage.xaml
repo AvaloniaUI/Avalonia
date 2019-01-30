@@ -1,37 +1,55 @@
 <UserControl xmlns="https://github.com/avaloniaui"
 		     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.TextBlockPage">
-  <UserControl.Styles>
-    <Style Selector="Run.code">
-      <Setter Property="FontFamily" Value="Courier New"/>
-    </Style>
-  </UserControl.Styles>
+             x:Class="ControlCatalog.Pages.TextBlockPage"
+             xml:space="preserve">
+    <UserControl.Styles>
+        <Style Selector="Run.code">
+            <Setter Property="FontFamily" Value="Courier New"/>
+        </Style>
+    </UserControl.Styles>
 
-  <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h1">TextBlock</TextBlock>
-    <TextBlock Classes="h2">A control that displays a block of text</TextBlock>
+    <StackPanel Orientation="Vertical" Spacing="4">
+        <TextBlock Classes="h1">TextBlock</TextBlock>
+        <TextBlock Classes="h2">A control that displays a block of text</TextBlock>
 
-    <StackPanel Orientation="Horizontal"
-              Margin="0,16,0,0"
-              HorizontalAlignment="Center"
-              Spacing="16">
-      <StackPanel Orientation="Vertical" Spacing="8">
-        <TextBlock>A simple TextBlock with unformatted text.</TextBlock>
-        <TextBlock>
-          A <Run Classes="code">TextBlock</Run> with <Run FontWeight="Bold">differing</Run>
-          <Run FontStyle="Italic">styles</Run> <Run FontSize="24">and fonts</Run>.
-        </TextBlock>
-        <TextBlock>
-          A <Run Classes="code" Foreground="Gray">TextBlock</Run> with <Run Foreground="Red">differing</Run>
-          <Run Foreground="Green">colors</Run>.
-        </TextBlock>
-        <TextBlock>
-          A <Run Classes="code">TextBlock</Run> with <Run Foreground="Orange" FontStyle="Italic" Text="{Binding}"/>.
-        </TextBlock>
-        <TextBlock>
-          A <Run Classes="code">TextBlock</Run> with a <LineBreak/> line break.
-        </TextBlock>
-      </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                  Margin="0,16,0,0"
+                  HorizontalAlignment="Center"
+                  Spacing="16">
+            <StackPanel Orientation="Vertical" Spacing="8">
+                <TextBlock>A simple TextBlock with unformatted text.</TextBlock>
+                <TextBlock>
+                    <Run Text="A "></Run>
+                    <Run Classes="code">TextBlock</Run>
+                    <Run Text=" with "></Run>
+                    <Run FontWeight="Bold">differing</Run>
+                    <Run FontStyle="Italic" Text=" styles"></Run>
+                    <Run FontSize="24" Text=" and fonts"></Run>
+                    <Run>.</Run>
+                </TextBlock>
+                <TextBlock>
+                    <Run Text="A "></Run>
+                    <Run Classes="code" Foreground="Gray">TextBlock</Run>
+                    <Run Text=" with "></Run>
+                    <Run Foreground="Red">differing</Run>
+                    <Run Foreground="Green" Text=" colors"></Run>
+                    <Run>.</Run>
+                </TextBlock>
+                <TextBlock>
+                    <Run Text="A "></Run>
+                    <Run Classes="code">TextBlock</Run>
+                    <Run Text=" with "></Run>
+                    <Run Foreground="Orange" FontStyle="Italic" Text="{Binding}"></Run>
+                    <Run>.</Run>
+                </TextBlock>
+                <TextBlock>
+                    <Run Text="A "></Run>
+                    <Run Classes="code">TextBlock</Run>
+                    <Run Text=" with a "></Run>
+                    <LineBreak/>
+                    <Run>line break.</Run>
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
     </StackPanel>
-  </StackPanel>
 </UserControl>
