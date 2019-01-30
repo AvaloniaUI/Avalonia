@@ -1124,6 +1124,7 @@ namespace Avalonia.Skia.Text
         {
             Font font;
 
+            // ToDo: Cache this
             using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
             using (var face = new Face(blob, (uint)index))
             {

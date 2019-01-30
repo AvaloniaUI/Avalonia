@@ -29,37 +29,7 @@ namespace Avalonia.Skia
 
             Text = text ?? string.Empty;
 
-            var skiaTypeface = TypefaceCache.Default;
-
-            if (typeface.FontFamily.Key != null)
-            {
-                var typefaces = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-                skiaTypeface = typefaces.GetTypeFace(typeface);
-            }
-            else
-            {
-                if (typeface.FontFamily.FamilyNames.HasFallbacks)
-                {
-                    foreach (var familyName in typeface.FontFamily.FamilyNames)
-                    {
-                        skiaTypeface = TypefaceCache.GetTypeface(
-                            familyName,
-                            typeface.Style,
-                            typeface.Weight);
-                        if (skiaTypeface != TypefaceCache.Default)
-                        {
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    skiaTypeface = TypefaceCache.GetTypeface(
-                        typeface.FontFamily.Name,
-                        typeface.Style,
-                        typeface.Weight);
-                }
-            }
+            var skiaTypeface = TypefaceCache.GetSKTypeface(typeface);
 
             TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, constraint, spans);
 
