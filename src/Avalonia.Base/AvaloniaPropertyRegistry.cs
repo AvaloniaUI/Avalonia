@@ -13,7 +13,7 @@ namespace Avalonia
     /// </summary>
     public class AvaloniaPropertyRegistry
     {
-        private readonly IList<AvaloniaProperty> _properties =
+        private readonly List<AvaloniaProperty> _properties =
             new List<AvaloniaProperty>();
         private readonly Dictionary<Type, Dictionary<int, AvaloniaProperty>> _registered =
             new Dictionary<Type, Dictionary<int, AvaloniaProperty>>();
@@ -29,6 +29,11 @@ namespace Avalonia
         /// </summary>
         public static AvaloniaPropertyRegistry Instance { get; }
             = new AvaloniaPropertyRegistry();
+
+        /// <summary>
+        /// Gets a list of all registered properties.
+        /// </summary>
+        internal IReadOnlyList<AvaloniaProperty> Properties => _properties;
 
         /// <summary>
         /// Gets all non-attached <see cref="AvaloniaProperty"/>s registered on a type.
@@ -250,8 +255,7 @@ namespace Avalonia
             {
                 inner.Add(property.Id, property);
             }
-
-            _properties.Add(property);
+            
             _attachedCache.Clear();
         }
     }
