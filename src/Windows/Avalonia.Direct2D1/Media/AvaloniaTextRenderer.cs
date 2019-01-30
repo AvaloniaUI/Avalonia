@@ -8,6 +8,8 @@ using SharpDX.Mathematics.Interop;
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System.Linq;
+
     internal class AvaloniaTextRenderer : TextRendererBase
     {
         private readonly DrawingContextImpl _context;
@@ -37,10 +39,14 @@ namespace Avalonia.Direct2D1.Media
         {
             var wrapper = clientDrawingEffect as BrushWrapper;
 
-            // TODO: Work out how to get the size below rather than passing new Size().
+            var width = glyphRun.Advances.Sum();
+
+            var height = (glyphRun.FontFace.Metrics.Descent + glyphRun.FontFace.Metrics.Ascent
+                                                            + glyphRun.FontFace.Metrics.LineGap) / 96.0;
+
             var brush = (wrapper == null) ?
                 _foreground :
-                _context.CreateBrush(wrapper.Brush, new Size()).PlatformBrush;
+                _context.CreateBrush(wrapper.Brush, new Size(width, height)).PlatformBrush;
 
             _renderTarget.DrawGlyphRun(
                 new RawVector2 { X = baselineOriginX, Y = baselineOriginY },
