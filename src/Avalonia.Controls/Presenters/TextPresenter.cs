@@ -110,7 +110,7 @@ namespace Avalonia.Controls.Presenters
         public int GetCaretIndex(Point point)
         {
             var hit = FormattedText.HitTestPoint(point);
-            return hit.TextPosition + (hit.IsTrailing ? 1 : 0);
+            return hit.TextPosition + (hit.IsTrailing ? hit.Length : 0);
         }
 
         public override void Render(DrawingContext context)
