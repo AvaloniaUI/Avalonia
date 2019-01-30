@@ -852,10 +852,8 @@ namespace Avalonia.Skia.Text
                 var typeFace = _typeface;
 
                 if (span.Typeface != null)
-                {
-                    var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(span.Typeface.FontFamily);
-
-                    typeFace = typefaceCollection.GetTypeFace(span.Typeface);
+                {                   
+                    typeFace = TypefaceCache.GetSKTypeface(span.Typeface);
                 }
 
                 textFormat = new SKTextFormat(typeFace, (float)fontSize);
