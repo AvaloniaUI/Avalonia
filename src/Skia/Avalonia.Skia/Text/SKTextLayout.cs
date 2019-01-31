@@ -108,9 +108,39 @@ namespace Avalonia.Skia.Text
 
                     foreach (var textRun in textLine.TextRuns)
                     {
-#if LAYOUT_DEBUG
+#if DEBUG_TEXTLAYOUT
+                        //_paint.StrokeWidth = 0.5f;
+
+                        var posX = textLine.LineMetrics.BaselineOrigin.X;
+                        var posY = textLine.LineMetrics.BaselineOrigin.Y;
+
                         canvas.Translate(0, -textLine.LineMetrics.BaselineOrigin.Y);
 
+                        // Overline
+                        canvas.DrawLine(
+                            new SKPoint(posX, posY + textRun.FontMetrics.Ascent), 
+                            new SKPoint(posX + textRun.Width, posY + textRun.FontMetrics.Ascent),
+                            _paint);                      
+
+                        // Strikeout
+                        var strikeoutPosY = posY + textRun.FontMetrics.StrikeoutPosition ?? 0;
+                        var strikeoutRect = new SKRect(posX, strikeoutPosY, posX + textRun.Width, strikeoutPosY + textRun.FontMetrics.StrikeoutThickness ?? 1);
+
+                        canvas.DrawRect(strikeoutRect, _paint);
+
+                        // Base line
+                        canvas.DrawLine(
+                            textLine.LineMetrics.BaselineOrigin,
+                            new SKPoint(posX + textRun.Width, posY),
+                            _paint);
+
+                        // Underline
+                        var underlinePosY = posY + textRun.FontMetrics.UnderlinePosition ?? 0;
+                        var underlineRect = new SKRect(posX, underlinePosY, posX + textRun.Width, underlinePosY + textRun.FontMetrics.UnderlineThickness ?? 1);
+
+                        canvas.DrawRect(underlineRect, _paint);
+
+                        // Bounds
                         canvas.DrawRect(
                             new SKRect(
                                 0,
@@ -158,7 +188,7 @@ namespace Avalonia.Skia.Text
             canvas.SetMatrix(currentMatrix);
         }
 
-#if LAYOUT_DEBUG
+#if DEBUG_TEXTLAYOUT
         private static readonly Random s_random = new Random();
 
         private static Color GetRandomColor()
@@ -852,7 +882,7 @@ namespace Avalonia.Skia.Text
                 var typeFace = _typeface;
 
                 if (span.Typeface != null)
-                {                   
+                {
                     typeFace = TypefaceCache.GetSKTypeface(span.Typeface);
                 }
 
@@ -1024,7 +1054,7 @@ namespace Avalonia.Skia.Text
 
             using (var buffer = new HarfBuzzSharp.Buffer())
             {
-                var hasBreakCharPair = false;
+                var hasDoubleBreakChar = false;
 
                 if (textPointer.Length >= 2)
                 {
@@ -1033,17 +1063,17 @@ namespace Avalonia.Skia.Text
                     if (text[lastPosition] == '\r'
                         && text[lastPosition - 1] == '\n')
                     {
-                        hasBreakCharPair = true;
+                        hasDoubleBreakChar = true;
                     }
 
                     if (text[lastPosition] == '\n'
                         && text[lastPosition - 1] == '\r')
                     {
-                        hasBreakCharPair = true;
+                        hasDoubleBreakChar = true;
                     }
                 }
 
-                if (hasBreakCharPair)
+                if (hasDoubleBreakChar)
                 {
                     buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length - 1);
                 }
