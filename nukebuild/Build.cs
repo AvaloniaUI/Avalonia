@@ -16,6 +16,7 @@ using Nuke.Common.Utilities;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
+using static Nuke.Common.Tooling.ProcessTasks;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
@@ -57,14 +58,12 @@ partial class Build : NukeBuild
 
         void ExecWait(string preamble, string command, string args)
         {
-            Console.WriteLine(preamble);
-            Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
+            Logger.Info(preamble);
+            StartProcess(command, args).AssertWaitForExit();
         }
         ExecWait("dotnet version:", "dotnet", "--version");
         if (Parameters.IsRunningOnUnix)
             ExecWait("Mono version:", "mono", "--version");
-
-
     }
 
     Target Clean => _ => _.Executes(() =>
