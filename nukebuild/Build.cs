@@ -1,19 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Xml.Linq;
 using Nuke.Common;
-using Nuke.Common.Git;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Utilities;
-using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tooling.ProcessTasks;
@@ -66,22 +60,22 @@ partial class Build : NukeBuild
             ExecWait("Mono version:", "mono", "--version");
     }
 
-    Target Clean => _ => _.Executes(() =>
-    {
-        DeleteDirectories(Parameters.BuildDirs);
-        EnsureCleanDirectories(Parameters.BuildDirs);
-        EnsureCleanDirectory(Parameters.ArtifactsDir);
-        EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
-        EnsureCleanDirectory(Parameters.NugetRoot);
-        EnsureCleanDirectory(Parameters.ZipRoot);
-        EnsureCleanDirectory(Parameters.TestResultsRoot);
-    });
+    Target Clean => _ => _
+        .Executes(() =>
+        {
+            DeleteDirectories(Parameters.BuildDirs);
+            EnsureCleanDirectories(Parameters.BuildDirs);
+            EnsureCleanDirectory(Parameters.ArtifactsDir);
+            EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
+            EnsureCleanDirectory(Parameters.NugetRoot);
+            EnsureCleanDirectory(Parameters.ZipRoot);
+            EnsureCleanDirectory(Parameters.TestResultsRoot);
+        });
 
     Target Compile => _ => _
         .DependsOn(Clean)
         .Executes(() =>
         {
-
             if (Parameters.IsRunningOnWindows)
                 MSBuild(c => c
                     .SetSolutionFile(Parameters.MSBuildSolution)
@@ -93,7 +87,6 @@ partial class Build : NukeBuild
                     .SetToolsVersion(MSBuildToolsVersion._15_0)
                     .AddTargets("Build")
                 );
-
             else
                 DotNetBuild(c => c
                     .SetProjectFile(Parameters.MSBuildSolution)
@@ -105,7 +98,7 @@ partial class Build : NukeBuild
     void RunCoreTest(string project)
     {
         if(!project.EndsWith(".csproj"))
-            project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
+            project = Path.Combine(project, Path.GetFileName(project)+".csproj");
         Information("Running tests from " + project);
 
         var frameworks = ProjectModelTasks.ParseProject(project).GetTargetFrameworks();
