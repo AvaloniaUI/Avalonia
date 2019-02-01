@@ -83,18 +83,20 @@ partial class Build : NukeBuild
         {
 
             if (Parameters.IsRunningOnWindows)
-                MSBuild(Parameters.MSBuildSolution, c => c
+                MSBuild(c => c
+                    .SetSolutionFile(Parameters.MSBuildSolution)
                     .SetArgumentConfigurator(a => a.Add("/r"))
                     .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)
                     .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
+                    .AddProperty("iOSRoslynPathHackRequired", true)
                     .SetToolsVersion(MSBuildToolsVersion._15_0)
                     .AddTargets("Build")
                 );
 
             else
-                DotNetBuild(Parameters.MSBuildSolution, c => c
+                DotNetBuild(c => c
+                    .SetProjectFile(Parameters.MSBuildSolution)
                     .AddProperty("PackageVersion", Parameters.Version)
                     .SetConfiguration(Parameters.Configuration)
                 );
@@ -119,24 +121,21 @@ partial class Build : NukeBuild
         foreach(var fw in frameworks)
         {
             Information("Running for " + fw);
-            DotNetTest(c =>
-            {
-                c = c
-                    .SetProjectFile(project)
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetFramework(fw)
-                    .EnableNoBuild()
-                    .EnableNoRestore();
-                // NOTE: I can see that we could maybe add another extension method "Switch" or "If" to make this more  convenient
-                if (Parameters.PublishTestResults)
-                    c = c.SetLogger("trx").SetResultsDirectory(Parameters.TestResultsRoot);
-                return c;
-            });
+            DotNetTest(c => c
+                .SetProjectFile(project)
+                .SetConfiguration(Parameters.Configuration)
+                .SetFramework(fw)
+                .EnableNoBuild()
+                .EnableNoRestore()
+                .When(Parameters.PublishTestResults, cc => cc
+                    .SetLogger("trx")
+                    .SetResultsDirectory(Parameters.TestResultsRoot))
+            );
         }
     }
 
     Target RunCoreLibsTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests)
+        .OnlyWhenDynamic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -155,7 +154,7 @@ partial class Build : NukeBuild
         });
 
     Target RunRenderTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests)
+        .OnlyWhenDynamic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -165,7 +164,7 @@ partial class Build : NukeBuild
         });
     
     Target RunDesignerTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhenDynamic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -175,7 +174,7 @@ partial class Build : NukeBuild
     [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
 
     Target RunLeakTests => _ => _
-        .OnlyWhen(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+        .OnlyWhenDynamic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
         .Executes(() =>
         {
@@ -206,8 +205,8 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             if (Parameters.IsRunningOnWindows)
-
-                MSBuild(Parameters.MSBuildSolution, c => c
+                MSBuild(c => c
+                    .SetSolutionFile(Parameters.MSBuildSolution)
                     .SetConfiguration(Parameters.Configuration)
                     .SetVerbosity(MSBuildVerbosity.Minimal)
                     .AddProperty("PackageVersion", Parameters.Version)
@@ -215,9 +214,10 @@ partial class Build : NukeBuild
                     .SetToolsVersion(MSBuildToolsVersion._15_0)
                     .AddTargets("Pack"));
             else
-                DotNetPack(Parameters.MSBuildSolution, c =>
-                    c.SetConfiguration(Parameters.Configuration)
-                        .AddProperty("PackageVersion", Parameters.Version));
+                DotNetPack(c => c
+                    .SetProject(Parameters.MSBuildSolution)
+                    .SetConfiguration(Parameters.Configuration)
+                    .AddProperty("PackageVersion", Parameters.Version));
         });
 
     Target CreateNugetPackages => _ => _
