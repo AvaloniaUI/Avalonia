@@ -107,17 +107,8 @@ partial class Build : NukeBuild
         if(!project.EndsWith(".csproj"))
             project = System.IO.Path.Combine(project, System.IO.Path.GetFileName(project)+".csproj");
         Information("Running tests from " + project);
-        XDocument xdoc;
-        using (var s = File.OpenRead(project))
-            xdoc = XDocument.Load(s);
 
-        List<string> frameworks = null;
-        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
-        if (targets != null)
-            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-        else 
-            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
-        
+        var frameworks = ProjectModelTasks.ParseProject(project).GetTargetFrameworks();
         foreach(var fw in frameworks)
         {
             Information("Running for " + fw);
