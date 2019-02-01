@@ -20,14 +20,11 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 
-
-/*
- Before editing this file, install support plugin for your IDE,
- running and debugging a particular target (optionally without deps) would be way easier
- ReSharper/Rider - https://plugins.jetbrains.com/plugin/10803-nuke-support
- VSCode - https://marketplace.visualstudio.com/items?itemName=nuke.support
- 
- */
+/// Support plugins are available for:
+///   - JetBrains ReSharper        https://nuke.build/resharper
+///   - JetBrains Rider            https://nuke.build/rider
+///   - Microsoft VisualStudio     https://nuke.build/visualstudio
+///   - Microsoft VSCode           https://nuke.build/vscode
 
 partial class Build : NukeBuild
 {   
