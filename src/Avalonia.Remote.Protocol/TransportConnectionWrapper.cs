@@ -64,7 +64,7 @@ namespace Avalonia.Remote.Protocol
         
         public Task Send(object data)
         {
-            var tcs = new TaskCompletionSource<int>();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             lock (_lock)
             {
                 if (!_workerIsAlive)
@@ -79,8 +79,9 @@ namespace Avalonia.Remote.Protocol
                 });
                 if (_signal != null)
                 {
-                    _signal.SetResult(0);
+                    var signal = _signal;
                     _signal = null;
+                    signal.SetResult(0);
                 }
             }
             return tcs.Task;
