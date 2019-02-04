@@ -13,6 +13,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -240,15 +242,21 @@ namespace Avalonia.Markup.Xaml
             {
                 using (var xamlInfoStream = assetLocator.Open(xamlInfoUri))
                 {
-                    var xamlInfo = (AvaloniaResourceXamlInfo)s_xamlInfoSerializer.ReadObject(xamlInfoStream);
-                    if (xamlInfo.ClassToResourcePathIndex.TryGetValue(typeName, out var rv) == true)
+                    var assetDoc = XDocument.Load(xamlInfoStream);
+                    XNamespace assetNs = assetDoc.Root.Attribute("xmlns").Value;
+                    XNamespace arrayNs = "http://schemas.microsoft.com/2003/10/Serialization/Arrays";
+                    Dictionary<string,string> xamlInfo =
+                        assetDoc.Root.Element(assetNs + "ClassToResourcePathIndex").Elements(arrayNs + "KeyValueOfstringstring")
+                         .ToDictionary(entry =>entry.Element(arrayNs + "Key").Value,
+                                entry => entry.Element(arrayNs + "Value").Value);
+                    
+                    if (xamlInfo.TryGetValue(typeName, out var rv) == true)
                     {
                         yield return new Uri($"avares://{asm}{rv}");
                         yield break;
                     }
                 }
-            }
-            
+            }           
             
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
