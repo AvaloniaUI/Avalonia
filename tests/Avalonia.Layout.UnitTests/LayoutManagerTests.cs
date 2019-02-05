@@ -1,11 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
-using Avalonia.UnitTests;
-using System;
-using Xunit;
 using System.Collections.Generic;
+using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
+using Xunit;
 
 namespace Avalonia.Layout.UnitTests
 {
@@ -238,7 +237,63 @@ namespace Avalonia.Layout.UnitTests
             border.Height = 100;
 
             root.LayoutManager.ExecuteLayoutPass();
-            Assert.Equal(new Size(100, 100), panel.DesiredSize);             
+            Assert.Equal(new Size(100, 100), panel.DesiredSize);
+        }
+
+        [Fact]
+        public void Multiple_Shapes_When_Visibled_Should_Be_Arranged_Properly()
+        {
+            StackPanel panel;
+
+            var root = new LayoutTestRoot
+            {
+                Child = panel = new StackPanel(),
+                Width = 100,
+                Height = 100
+            };
+
+            for (int i = 0; i < 10; i++)
+            {
+                panel.Children.Add(new Border()
+                {
+                    Width = 10,
+                    Height = 10,
+                    //Rectangle or Ellipse shape should be the same result,
+                    //as they require 2 measure/arrange for the same layout pass
+                    Child = new Rectangle()
+                    {
+                        Height = 10,
+                        Width = 10,
+                        IsVisible = false
+                    }
+                });
+            }
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            //ensure we haven't measured/arranged the rectangle shapes as they are invisible
+            foreach (var child in panel.Children)
+            {
+                Assert.True((child as Border).Child.Bounds.IsEmpty);
+            }
+
+            //make visible all the shapes
+            foreach (var child in panel.Children)
+            {
+                (child as Border).Child.IsVisible = true;
+            }
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            foreach (var child in panel.Children)
+            {
+                Assert.True(child.IsMeasureValid);
+                Assert.True(child.IsArrangeValid);
+                var shapeChild = (child as Border).Child;
+                Assert.True(shapeChild.IsMeasureValid);
+                Assert.True(shapeChild.IsArrangeValid);
+                Assert.False(shapeChild.Bounds.IsEmpty);
+            }
         }
     }
 }
