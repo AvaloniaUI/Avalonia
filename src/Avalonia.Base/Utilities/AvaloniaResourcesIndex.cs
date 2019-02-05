@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Xml.Linq;
+using System.Linq;
 
 // ReSharper disable AssignNullToNotNullAttribute
 
@@ -19,10 +21,20 @@ namespace Avalonia.Utilities
         {
             var ver = new BinaryReader(stream).ReadInt32();
             if (ver > LastKnownVersion)
-                throw new Exception("Resources index format version is not known");            
-            var index = (AvaloniaResourcesIndex)
-                new DataContractSerializer(typeof(AvaloniaResourcesIndex)).ReadObject(stream);
-            return index.Entries;
+                throw new Exception("Resources index format version is not known");
+
+            var assetDoc = XDocument.Load(stream);
+            XNamespace assetNs = assetDoc.Root.Attribute("xmlns").Value;
+            List<AvaloniaResourcesIndexEntry> entries=         
+                (from entry in assetDoc.Root.Element(assetNs + "Entries").Elements(assetNs + "AvaloniaResourcesIndexEntry")
+                    select new AvaloniaResourcesIndexEntry
+                    {
+                        Path = entry.Element(assetNs + "Path").Value,
+                        Offset = int.Parse(entry.Element(assetNs + "Offset").Value),
+                        Size = int.Parse(entry.Element(assetNs + "Size").Value)                     
+                    }).ToList();
+
+            return entries;
         }
 
         public static void Write(Stream stream, List<AvaloniaResourcesIndexEntry> entries)

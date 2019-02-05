@@ -163,7 +163,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Shows the popup.
+        /// Shows the window.
         /// </summary>
         public virtual void Show()
         {
@@ -181,6 +181,7 @@ namespace Avalonia.Controls
                 }
                 PlatformImpl?.Show();
                 Renderer?.Start();
+                OnOpened(EventArgs.Empty);
             }
             finally
             {
