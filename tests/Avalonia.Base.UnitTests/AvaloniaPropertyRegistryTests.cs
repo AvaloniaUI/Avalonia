@@ -20,6 +20,18 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Registered_Properties_Count_Reflects_Newly_Added_Attached_Property()
+        {
+            var registry = new AvaloniaPropertyRegistry();
+            var metadata = new StyledPropertyMetadata<int>();
+            var property = new AttachedProperty<int>("test", typeof(object), metadata, true);
+            registry.Register(typeof(object), property);
+            registry.RegisterAttached(typeof(AvaloniaPropertyRegistryTests), property);
+
+            Assert.Equal(1, registry.Properties.Count);
+        }
+
+        [Fact]
         public void GetRegistered_Returns_Registered_Properties()
         {
             string[] names = AvaloniaPropertyRegistry.Instance.GetRegistered(typeof(Class1))
