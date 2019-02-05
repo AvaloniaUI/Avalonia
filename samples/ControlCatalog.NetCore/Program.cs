@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
-using Avalonia.Skia;
 
 namespace ControlCatalog.NetCore
 {
