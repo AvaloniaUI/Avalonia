@@ -1232,6 +1232,8 @@ namespace Avalonia.Skia.Text
 
             using (var buffer = new Buffer())
             {
+                buffer.Language = new Language(CultureInfo.CurrentCulture);
+
                 var hasDoubleBreakChar = false;
 
                 if (textPointer.Length >= 2)
