@@ -133,7 +133,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
-            while (_toArrange.Count > 0 && _toMeasure.Count == 0)
+            while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();
 
