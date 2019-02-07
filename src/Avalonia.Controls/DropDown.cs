@@ -150,16 +150,12 @@ namespace Avalonia.Controls
             {
                 if (e.Key == Key.Down)
                 {
-                    if (++SelectedIndex >= ItemCount)
-                        SelectedIndex = 0;
-
+                    SelectNext();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Up)
                 {
-                    if (--SelectedIndex < 0)
-                        SelectedIndex = ItemCount - 1;
-
+                    SelectPrev();
                     e.Handled = true;
                 }
             }
@@ -187,15 +183,10 @@ namespace Avalonia.Controls
                     if (IsFocused)
                     {
                         if (e.Delta.Y < 0)
-                        {
-                            if (++SelectedIndex >= ItemCount)
-                                SelectedIndex = 0;
-                        }
+                            SelectNext();
                         else
-                        {
-                            if (--SelectedIndex < 0)
-                                SelectedIndex = ItemCount - 1;
-                        }
+                            SelectPrev();
+
                         e.Handled = true;
                     }
                 }
@@ -357,6 +348,26 @@ namespace Avalonia.Controls
                     break;
                 }
             }
+        }
+
+        private void SelectNext()
+        {
+            int next = SelectedIndex + 1;
+
+            if (next >= ItemCount)
+                next = 0;
+
+            SelectedIndex = next;
+        }
+
+        private void SelectPrev()
+        {
+            int prev = SelectedIndex - 1;
+
+            if (prev < 0)
+                prev = ItemCount - 1;
+
+            SelectedIndex = prev;
         }
     }
 }
