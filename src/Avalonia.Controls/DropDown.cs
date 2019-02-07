@@ -56,6 +56,7 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
+        private IDisposable _subscriptionsOnOpen;
 
         /// <summary>
         /// Initializes static members of the <see cref="DropDown"/> class.
@@ -175,6 +176,37 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+
+            if (!e.Handled)
+            {
+                if (!IsDropDownOpen)
+                {
+                    if (IsFocused)
+                    {
+                        if (e.Delta.Y < 0)
+                        {
+                            if (++SelectedIndex >= ItemCount)
+                                SelectedIndex = 0;
+                        }
+                        else
+                        {
+                            if (--SelectedIndex < 0)
+                                SelectedIndex = ItemCount - 1;
+                        }
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
+                    e.Handled = true;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (!e.Handled)
@@ -223,6 +255,9 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
             if (CanFocus(this))
             {
                 Focus();
@@ -232,6 +267,22 @@ namespace Avalonia.Controls
         private void PopupOpened(object sender, EventArgs e)
         {
             TryFocusSelectedItem();
+
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
+            var toplevel = this.GetVisualRoot() as TopLevel;
+            if (toplevel != null)
+            {
+                _subscriptionsOnOpen = toplevel.AddHandler(PointerWheelChangedEvent, (s, ev) =>
+                {
+                    //eat wheel scroll event outside dropdown popup while it's open
+                    if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
+                    {
+                        ev.Handled = true;
+                    }
+                }, Interactivity.RoutingStrategies.Tunnel);
+            }
         }
 
         private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
@@ -247,7 +298,7 @@ namespace Avalonia.Controls
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
-                if(container == null && SelectedItems.Count > 0)
+                if (container == null && SelectedItems.Count > 0)
                 {
                     ScrollIntoView(SelectedItems[0]);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
