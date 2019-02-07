@@ -8,31 +8,24 @@ namespace Avalonia.OpenGL
     
     public class GlInterface : GlInterfaceBase
     {
-        private readonly Func<string, bool, IntPtr> _getProcAddress;
         public string Version { get; }
 
         public GlInterface(Func<string, bool, IntPtr> getProcAddress) : base(getProcAddress)
         {
-            _getProcAddress = getProcAddress;
             var versionPtr = GetString(GlConsts.GL_VERSION);
             if (versionPtr != IntPtr.Zero)
                 Version = Marshal.PtrToStringAnsi(versionPtr);
         }
 
+        public GlInterface(Func<Utf8Buffer, IntPtr> n) : this(ConvertNative(n))
+        {
+            
+        }
+
         public static GlInterface FromNativeUtf8GetProcAddress(Func<Utf8Buffer, IntPtr> getProcAddress) =>
-            new GlInterface((proc, optional) =>
-            {
-                using (var u = new Utf8Buffer(proc))
-                {
-                    var rv = getProcAddress(u);
-                    if (rv == IntPtr.Zero && !optional)
-                        throw new OpenGlException("Missing function " + proc);
-                    return rv;
-                }
-            });
+            new GlInterface(getProcAddress);
 
-        public IntPtr GetProcAddress(string proc) => _getProcAddress(proc, true);
-
+        
         public T GetProcAddress<T>(string proc) => Marshal.GetDelegateForFunctionPointer<T>(GetProcAddress(proc));
 
         // ReSharper disable UnassignedGetOnlyAutoProperty

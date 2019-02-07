@@ -70,9 +70,9 @@ namespace Avalonia.X11.Glx
                 public void Dispose()
                 {
                     _context.Display.GlInterface.Flush();
-                    Glx.GlxWaitGL();
+                    _context.Glx.WaitGL();
                     _context.Display.SwapBuffers(_info.Handle);
-                    Glx.GlxWaitX();
+                    _context.Glx.WaitX();
                     _context.Display.ClearContext();
                     _lock.Dispose();
                 }

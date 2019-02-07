@@ -2,6 +2,7 @@ using System;
 
 namespace Avalonia.OpenGL
 {
+    [AttributeUsage(AttributeTargets.Property)]
     public class GlEntryPointAttribute : Attribute
     {
         public string EntryPoint { get; }

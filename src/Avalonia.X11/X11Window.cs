@@ -54,8 +54,7 @@ namespace Avalonia.X11
             _x11 = platform.Info;
             _mouse = platform.MouseDevice;
             _keyboard = platform.KeyboardDevice;
-            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
-                XNames.XNClientWindow, _handle, IntPtr.Zero);
+
             var glfeature = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
@@ -146,6 +145,8 @@ namespace Avalonia.X11
             
             Surfaces = surfaces.ToArray();
             UpdateMotifHints();
+            _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
+                XNames.XNClientWindow, _handle, IntPtr.Zero);
             XFlush(_x11.Display);
         }
 

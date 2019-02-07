@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Styling;
 using Avalonia.Utilities;
@@ -25,7 +26,7 @@ namespace Avalonia.Markup.Parsers
         /// </param>
         public SelectorParser(Func<string, string, Type> typeResolver)
         {
-            this._typeResolver = typeResolver;
+            _typeResolver = typeResolver;
         }
 
         /// <summary>
@@ -36,6 +37,11 @@ namespace Avalonia.Markup.Parsers
         public Selector Parse(string s)
         {
             var syntax = SelectorGrammar.Parse(s);
+            return Create(syntax);
+        }
+
+        private Selector Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
+        {
             var result = default(Selector);
 
             foreach (var i in syntax)
@@ -97,6 +103,11 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.TemplateSyntax template:
                         result = result.Template();
                         break;
+                    case SelectorGrammar.NotSyntax not:
+                        result = result.Not(x => Create(not.Argument));
+                        break;
+                    default:
+                        throw new NotSupportedException($"Unsupported selector grammar '{i.GetType()}'.");
                 }
             }
 
