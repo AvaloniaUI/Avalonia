@@ -256,7 +256,7 @@ namespace Avalonia.Rendering
 
                         var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
 
-                        if (scene != null)
+                        if (scene?.Item != null)
                         {
                             using (scene)
                             {
