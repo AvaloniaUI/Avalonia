@@ -256,9 +256,9 @@ namespace Avalonia.Rendering
 
                         var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
 
-                        if (scene?.Item != null)
+                        using (scene)
                         {
-                            using (scene)
+                            if (scene?.Item != null)
                             {
                                 var overlay = DrawDirtyRects || DrawFps;
                                 if (DrawDirtyRects)
@@ -267,7 +267,7 @@ namespace Avalonia.Rendering
                                     RenderOverlay(scene.Item, GetContext());
                                 if (updated || forceComposite || overlay)
                                     RenderComposite(scene.Item, GetContext());
-                            }
+                             }
                         }
                     }
                     finally
