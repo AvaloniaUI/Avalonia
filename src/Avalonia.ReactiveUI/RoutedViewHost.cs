@@ -26,9 +26,20 @@ namespace Avalonia
         /// </summary> 
         public static readonly AvaloniaProperty<object> DefaultContentProperty =
             AvaloniaProperty.Register<RoutedViewHost, object>(nameof(DefaultContent));
-    
-        private readonly IAnimation _fadeOutAnimation = CreateOpacityAnimation(1d, 0d, TimeSpan.FromSeconds(0.25));
-        private readonly IAnimation _fadeInAnimation = CreateOpacityAnimation(0d, 1d, TimeSpan.FromSeconds(0.25));
+
+        /// <summary>
+        /// Fade in animation property.
+        /// </summary>
+        public static readonly AvaloniaProperty<IAnimation> FadeInAnimationProperty =
+            AvaloniaProperty.Register<RoutedViewHost, IAnimation>(nameof(DefaultContent),
+                CreateOpacityAnimation(0d, 1d, TimeSpan.FromSeconds(0.25)));
+
+        /// <summary>
+        /// Fade out animation property.
+        /// </summary>
+        public static readonly AvaloniaProperty<IAnimation> FadeOutAnimationProperty =
+            AvaloniaProperty.Register<RoutedViewHost, IAnimation>(nameof(DefaultContent),
+                CreateOpacityAnimation(1d, 0d, TimeSpan.FromSeconds(0.25)));
     
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
@@ -39,16 +50,11 @@ namespace Avalonia
             {
                 this.WhenAnyObservable(x => x.Router.CurrentViewModel)
                     .DistinctUntilChanged()
-                    .Subscribe(HandleViewModelChange)
+                    .Subscribe(NavigateToViewModel)
                     .DisposeWith(disposables);
             });
         }
         
-        /// <summary>
-        /// Gets or sets the ReactiveUI view locator used by this router.
-        /// </summary>
-        public IViewLocator ViewLocator { get; set; }
-    
         /// <summary>
         /// Gets or sets the <see cref="RoutingState"/> of the view model stack.
         /// </summary>
@@ -66,15 +72,38 @@ namespace Avalonia
             get => GetValue(DefaultContentProperty);
             set => SetValue(DefaultContentProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the animation played when page appears.
+        /// </summary>
+        public IAnimation FadeInAnimation
+        {
+            get => GetValue(FadeInAnimationProperty);
+            set => SetValue(FadeInAnimationProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the animation played when page disappears.
+        /// </summary>
+        public IAnimation FadeOutAnimation
+        {
+            get => GetValue(FadeOutAnimationProperty);
+            set => SetValue(FadeOutAnimationProperty, value);
+        }
     
         /// <summary>
         /// Duplicates the Content property with a private setter.
         /// </summary>
         public new object Content
         {
-            get => base.Content;
+            get => base.Content ?? DefaultContent;
             private set => base.Content = value;
         }
+
+        /// <summary>
+        /// Gets or sets the ReactiveUI view locator used by this router.
+        /// </summary>
+        public IViewLocator ViewLocator { get; set; }
     
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
@@ -83,12 +112,12 @@ namespace Avalonia
         /// <exception cref="Exception">
         /// Thrown when ViewLocator is unable to find the appropriate view.
         /// </exception>
-        private void HandleViewModelChange(IRoutableViewModel viewModel)
+        private void NavigateToViewModel(IRoutableViewModel viewModel)
         {
             if (viewModel == null)
             {
                 this.Log().Info("ViewModel is null, falling back to default content.");
-                UpdateContent(DefaultContent);
+                UpdateContent(null);
                 return;
             }
     
@@ -107,9 +136,11 @@ namespace Avalonia
         /// <param name="newContent">New content to set.</param>
         private async void UpdateContent(object newContent)
         {
-            await _fadeOutAnimation.RunAsync(this, null);
+            if (FadeOutAnimation != null)
+                await FadeOutAnimation.RunAsync(this, Clock);
             Content = newContent;
-            await _fadeInAnimation.RunAsync(this, null);
+            if (FadeInAnimation != null)
+                await FadeInAnimation.RunAsync(this, Clock);
         }
     
         /// <summary>
