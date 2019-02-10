@@ -10,9 +10,45 @@ using Splat;
 namespace Avalonia
 {
     /// <summary>
-    /// This control hosts the View associated with a Router, and will display
-    /// the View and wire up the ViewModel whenever a new ViewModel is navigated to.
+    /// This control hosts the View associated with ReactiveUI RoutingState,
+    /// and will display the View and wire up the ViewModel whenever a new
+    /// ViewModel is navigated to. Nested routing is also supported.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ReactiveUI routing consists of an IScreen that contains current
+    /// RoutingState, several IRoutableViewModels, and a platform-specific
+    /// XAML control called RoutedViewHost.
+    /// </para>
+    /// <para>
+    /// RoutingState manages the ViewModel navigation stack and allows
+    /// ViewModels to navigate to other ViewModels. IScreen is the root of
+    /// a navigation stack; despite the name, its views don't have to occupy
+    /// the whole screen. RoutedViewHost monitors an instance of RoutingState,
+    /// responding to any changes in the navigation stack by creating and
+    /// embedding the appropriate view.
+    /// </para>
+    /// <para>
+    /// Place this control to a view containing your ViewModel that implements
+    /// IScreen, and bind IScreen.Router property to RoutedViewHost.Router property.
+    /// <code>
+    /// <![CDATA[
+    /// <rxui:RoutedViewHost
+    ///     HorizontalAlignment="Stretch"
+    ///     VerticalAlignment="Stretch"
+    ///     Router="{Binding Router}">
+    ///     <rxui:RoutedViewHost.DefaultContent>
+    ///         <TextBlock Text="Default Content"/>
+    ///     </rxui:RoutedViewHost.DefaultContent>
+    /// </rxui:RoutedViewHost>
+    /// ]]>
+    /// </code>
+    /// </para>
+    /// <para>
+    /// See <see href="https://reactiveui.net/docs/handbook/routing/">
+    /// ReactiveUI routing documentation website</see> for more info.
+    /// </para>
+    /// </remarks>
     public class RoutedViewHost : UserControl, IActivatable, IEnableLogger
     {
         /// <summary>
@@ -96,7 +132,7 @@ namespace Avalonia
         /// </summary>
         public new object Content
         {
-            get => base.Content ?? DefaultContent;
+            get => base.Content;
             private set => base.Content = value;
         }
 
@@ -117,7 +153,7 @@ namespace Avalonia
             if (viewModel == null)
             {
                 this.Log().Info("ViewModel is null, falling back to default content.");
-                UpdateContent(null);
+                UpdateContent(DefaultContent);
                 return;
             }
     
