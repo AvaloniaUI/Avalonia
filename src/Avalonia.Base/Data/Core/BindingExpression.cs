@@ -177,7 +177,7 @@ namespace Avalonia.Data.Core
 
         protected override void Subscribed(IObserver<object> observer, bool first)
         {
-            if (!first && _value != null && _value.TryGetTarget(out var val) == true)
+            if (!first && _value != null && _value.TryGetTarget(out var val))
             {
                 observer.OnNext(val);
             }
