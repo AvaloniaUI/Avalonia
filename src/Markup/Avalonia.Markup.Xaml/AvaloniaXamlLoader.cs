@@ -250,7 +250,7 @@ namespace Avalonia.Markup.Xaml
                          .ToDictionary(entry =>entry.Element(arrayNs + "Key").Value,
                                 entry => entry.Element(arrayNs + "Value").Value);
                     
-                    if (xamlInfo.TryGetValue(typeName, out var rv) == true)
+                    if (xamlInfo.TryGetValue(typeName, out var rv))
                     {
                         yield return new Uri($"avares://{asm}{rv}");
                         yield break;
