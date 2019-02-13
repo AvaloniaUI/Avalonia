@@ -61,6 +61,11 @@ namespace Avalonia.Controls.Remote.Server
         {
             var result = InputModifiers.None;
 
+            if (modifiers == null)
+            {
+                return result;
+            }
+
             foreach(var modifier in modifiers)
             {
                 switch (modifier)
