@@ -331,8 +331,11 @@ namespace Avalonia.Controls.Remote.Server
 
         public override void Invalidate(Rect rect)
         {
-            _invalidated = true;
-            Dispatcher.UIThread.Post(RenderIfNeeded);
+            if (!IsDisposed)
+            {
+                _invalidated = true;
+                Dispatcher.UIThread.Post(RenderIfNeeded);
+            }
         }
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
