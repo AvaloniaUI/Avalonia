@@ -270,11 +270,15 @@ namespace Avalonia.Controls.Remote.Server
             var bpp = fmt == ProtocolPixelFormat.Rgb565 ? 2 : 4;
             var data = new byte[width * height * bpp];
             var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
             try
             {
-                _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
-                    null);
-                Paint?.Invoke(new Rect(0, 0, width, height));
+                if (width > 0 && height > 0)
+                {
+                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
+                        null);
+                    Paint?.Invoke(new Rect(0, 0, width, height));
+                }
             }
             finally
             {
@@ -306,8 +310,7 @@ namespace Avalonia.Controls.Remote.Server
                     return;
 
             }
-            if (ClientSize.Width < 1 || ClientSize.Height < 1)
-                return;
+
             var format = ProtocolPixelFormat.Rgba8888;
             foreach(var fmt in _supportedFormats)
                 if (fmt <= ProtocolPixelFormat.MaxValue)
