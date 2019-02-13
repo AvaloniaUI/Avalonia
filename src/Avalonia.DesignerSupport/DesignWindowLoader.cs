@@ -12,6 +12,11 @@ namespace Avalonia.DesignerSupport
 {
     public class DesignWindowLoader
     {
+        static DesignWindowLoader()
+        {
+            AvaloniaTypeConverters.Register(typeof(EventInfo), typeof(DesignerEventConverter));
+        }
+
         public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)
         {
             Window window;
