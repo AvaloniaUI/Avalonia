@@ -56,8 +56,8 @@ namespace Avalonia.DesignerSupport
                             {
                                 new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "before setters in your first Style"}
                             }
                         };
