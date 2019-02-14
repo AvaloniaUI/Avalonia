@@ -99,6 +99,8 @@ namespace Avalonia.X11
                         {
                             if (mon.MWidth == 0)
                                 density = 1;
+                            else if (mon.Width <= 1920)
+                                density = 1;
                             else
                                 density = X11Screen.GuessPixelDensity(mon.Width, mon.MWidth);
                         }
@@ -237,7 +239,14 @@ namespace Avalonia.X11
             }
             else if (pixelDensity == null)
             {
-                PixelDensity = GuessPixelDensity(bounds.Width, physicalSize.Value.Width);
+                if (bounds.Width <= 1920)
+                {
+                    PixelDensity = 1;
+                }
+                else
+                {
+                    PixelDensity = GuessPixelDensity(bounds.Width, physicalSize.Value.Width);
+                }
             }
             else
             {
