@@ -27,6 +27,7 @@ namespace Avalonia.Base.UnitTests
             var property = new AttachedProperty<int>("test", typeof(object), metadata, true);
             registry.Register(typeof(object), property);
             registry.RegisterAttached(typeof(AvaloniaPropertyRegistryTests), property);
+            property.AddOwner<Class4>();
 
             Assert.Equal(1, registry.Properties.Count);
         }
@@ -148,6 +149,10 @@ namespace Avalonia.Base.UnitTests
         }
 
         private class AttachedOwner2 : AttachedOwner
+        {
+        }
+
+        private class Class4 : AvaloniaObject
         {
         }
     }
