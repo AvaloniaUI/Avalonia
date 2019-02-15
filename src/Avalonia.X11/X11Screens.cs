@@ -11,6 +11,7 @@ namespace Avalonia.X11
 {
     class X11Screens  : IScreenImpl
     {
+        private const int FullHDWidth = 1920;
         private IX11Screens _impl;
 
         public X11Screens(IX11Screens impl)
@@ -98,8 +99,6 @@ namespace Avalonia.X11
                         if (_settings.NamedScaleFactors?.TryGetValue(name, out density) != true)
                         {
                             if (mon.MWidth == 0)
-                                density = 1;
-                            else if (mon.Width <= 1920)
                                 density = 1;
                             else
                                 density = X11Screen.GuessPixelDensity(mon.Width, mon.MWidth);
@@ -239,14 +238,7 @@ namespace Avalonia.X11
             }
             else if (pixelDensity == null)
             {
-                if (bounds.Width <= 1920)
-                {
-                    PixelDensity = 1;
-                }
-                else
-                {
-                    PixelDensity = GuessPixelDensity(bounds.Width, physicalSize.Value.Width);
-                }
+                PixelDensity = GuessPixelDensity(bounds.Width, physicalSize.Value.Width);
             }
             else
             {
@@ -256,6 +248,6 @@ namespace Avalonia.X11
         }
 
         public static double GuessPixelDensity(double pixelWidth, double mmWidth)
-            => Math.Max(1, Math.Round(pixelWidth / mmWidth * 25.4 / 96));
+            => pixelWidth <= FullHDWidth ? 1 : Math.Max(1, Math.Round(pixelWidth / mmWidth * 25.4 / 96));
     }
 }
