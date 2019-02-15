@@ -11,7 +11,6 @@ namespace Avalonia.X11
 {
     class X11Screens  : IScreenImpl
     {
-        private const int FullHDWidth = 1920;
         private IX11Screens _impl;
 
         public X11Screens(IX11Screens impl)
@@ -219,6 +218,7 @@ namespace Avalonia.X11
 
     class X11Screen
     {
+        private const int FullHDWidth = 1920;
         public bool Primary { get; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
