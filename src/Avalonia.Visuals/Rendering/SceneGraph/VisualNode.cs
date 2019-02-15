@@ -236,7 +236,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             foreach (var operation in DrawOperations)
             {
-                if (operation.Item.HitTest(p) == true)
+                if (operation.Item.HitTest(p))
                 {
                     return true;
                 }

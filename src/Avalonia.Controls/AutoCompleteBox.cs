@@ -1893,7 +1893,7 @@ namespace Avalonia.Controls
         {
             bool callTextChanged = false;
             // Update the Text dependency property
-            if ((userInitiated == null || userInitiated == true) && Text != value)
+            if ((userInitiated ?? true) && Text != value)
             {
                 _ignoreTextPropertyChange++;
                 Text = value;
