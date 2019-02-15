@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,31 +9,35 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Avalonia.Platform;
+using Mono.Cecil;
 using XamlIl.Ast;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace Avalonia.Markup.Xaml.XamlIl
 {
     public static class AvaloniaXamlIlRuntimeCompiler
     {
-        private static SreTypeSystem _typeSystem;
-        private static ModuleBuilder _builder;
-        private static XamlIlLanguageTypeMappings _mappings;
-        private static XamlIlXmlnsMappings _xmlns;
-        private static AssemblyBuilder _asm;
-        private static bool _canSave;
+        private static SreTypeSystem _sreTypeSystem;
+        private static ModuleBuilder _sreBuilder;
+        private static XamlIlLanguageTypeMappings _sreMappings;
+        private static XamlIlXmlnsMappings _sreXmlns;
+        private static AssemblyBuilder _sreAsm;
+        private static bool _sreCanSave;
 
         public static void DumpRuntimeCompilationResults()
         {
-            var saveMethod = _asm.GetType().GetMethods()
+            if (_sreBuilder == null)
+                return;
+            var saveMethod = _sreAsm.GetType().GetMethods()
                 .FirstOrDefault(m => m.Name == "Save" && m.GetParameters().Length == 1);
             if (saveMethod == null)
                 return;
             try
             {
-                _builder.CreateGlobalFunctions();
-                saveMethod.Invoke(_asm, new Object[] {"XamlIlLoader.ildump"});
+                _sreBuilder.CreateGlobalFunctions();
+                saveMethod.Invoke(_sreAsm, new Object[] {"XamlIlLoader.ildump"});
             }
             catch
             {
@@ -40,81 +45,92 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
         }
         
-        static void Initialize()
+        static void InitializeSre()
         {
-            if (_typeSystem == null)
-                _typeSystem = new SreTypeSystem();
-            if (_builder == null)
+            if (_sreTypeSystem == null)
+                _sreTypeSystem = new SreTypeSystem();
+            if (_sreBuilder == null)
             {
-                _canSave = !AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsCoreClr;
+                _sreCanSave = !AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsCoreClr;
                 var name = new AssemblyName(Guid.NewGuid().ToString("N"));
-                if (_canSave)
+                if (_sreCanSave)
                 {
                     var define = AppDomain.CurrentDomain.GetType().GetMethods()
                         .FirstOrDefault(m => m.Name == "DefineDynamicAssembly"
                                     && m.GetParameters().Length == 3 &&
                                     m.GetParameters()[2].ParameterType == typeof(string));
                     if (define != null)
-                        _asm = (AssemblyBuilder)define.Invoke(AppDomain.CurrentDomain, new object[]
+                        _sreAsm = (AssemblyBuilder)define.Invoke(AppDomain.CurrentDomain, new object[]
                         {
                             name, (AssemblyBuilderAccess)3,
                             Path.GetDirectoryName(typeof(AvaloniaXamlIlRuntimeCompiler).Assembly.GetModules()[0]
                                 .FullyQualifiedName)
                         });
                     else
-                        _canSave = false;
+                        _sreCanSave = false;
                 }
                 
-                if(_asm == null)
-                    _asm = AssemblyBuilder.DefineDynamicAssembly(name,
+                if(_sreAsm == null)
+                    _sreAsm = AssemblyBuilder.DefineDynamicAssembly(name,
                         AssemblyBuilderAccess.RunAndCollect);
                 
-                _builder = _asm.DefineDynamicModule("XamlIlLoader.ildump");
+                _sreBuilder = _sreAsm.DefineDynamicModule("XamlIlLoader.ildump");
                 
             }
 
-            if (_mappings == null)
-                _mappings = AvaloniaXamlIlLanguage.Configure(_typeSystem);
-            if (_xmlns == null)
-                _xmlns = XamlIlXmlnsMappings.Resolve(_typeSystem, _mappings);
+            if (_sreMappings == null)
+                _sreMappings = AvaloniaXamlIlLanguage.Configure(_sreTypeSystem);
+            if (_sreXmlns == null)
+                _sreXmlns = XamlIlXmlnsMappings.Resolve(_sreTypeSystem, _sreMappings);
         }
 
         public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri)
         {
+            string xaml;
+            using (var sr = new StreamReader(stream))
+                xaml = sr.ReadToEnd();
+            return LoadCecil(xaml, localAssembly, rootInstance, uri);
+        }
+
+        static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
+        {
             var success = false;
             try
             {
-                var rv = LoadCore(stream, localAssembly, rootInstance, uri);
+                var rv = LoadSreCore(xaml, localAssembly, rootInstance, uri);
                 success = true;
                 return rv;
             }
             finally
             {
-                if(!success && _canSave)
+                if(!success && _sreCanSave)
                     DumpRuntimeCompilationResults();
             }
         }
         
-        static object LoadCore(Stream stream, Assembly localAssembly, object rootInstance, Uri uri)
+        static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
         {
-            string xaml;
-            using (var sr = new StreamReader(stream))
-                xaml = sr.ReadToEnd();
-            Initialize();
-            var asm = localAssembly == null ? null : _typeSystem.GetAssembly(localAssembly);
-            var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_typeSystem, asm,
-                _mappings, _xmlns, CustomValueConverter));
-            var tb = _builder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
+
+            InitializeSre();
+            var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
+            var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
+                _sreMappings, _sreXmlns, CustomValueConverter));
+            var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
 
             IXamlIlType overrideType = null;
             if (rootInstance != null)
             {
-                overrideType = _typeSystem.GetType(rootInstance.GetType());
+                overrideType = _sreTypeSystem.GetType(rootInstance.GetType());
             }
 
-            compiler.ParseAndCompile(xaml, uri?.ToString(), _typeSystem.CreateTypeBuilder(tb), overrideType);
+            compiler.ParseAndCompile(xaml, uri?.ToString(), _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
 
+            return LoadOrPopulate(created, rootInstance);
+        }
+
+        static object LoadOrPopulate(Type created, object rootInstance)
+        {
             var isp = Expression.Parameter(typeof(IServiceProvider));
             if (rootInstance == null)
             {
@@ -134,6 +150,73 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 populateCb(null, rootInstance);
                 return rootInstance;
             }
+        }
+
+        private static Dictionary<string, (Action<IServiceProvider, object> populate, Func<IServiceProvider, object>
+                build)>
+            s_CecilCache =
+                new Dictionary<string, (Action<IServiceProvider, object> populate, Func<IServiceProvider, object> build)
+                >();
+
+
+        private static string _cecilEmitDir;
+        private static CecilTypeSystem _cecilTypeSystem;
+        private static XamlIlLanguageTypeMappings _cecilMappings;
+        private static XamlIlXmlnsMappings _cecilXmlns;
+        private static bool _cecilInitialized;
+
+        static void InitializeCecil()
+        {
+            if(_cecilInitialized)
+                return;
+            var path = Assembly.GetEntryAssembly().GetModules()[0].FullyQualifiedName;
+            _cecilEmitDir = Path.Combine(Path.GetDirectoryName(path), "emit");
+            Directory.CreateDirectory(_cecilEmitDir);
+            var refs = new[] {path}.Concat(File.ReadAllLines(path + ".refs"));
+            _cecilTypeSystem = new CecilTypeSystem(refs);
+            _cecilMappings = AvaloniaXamlIlLanguage.Configure(_cecilTypeSystem);
+            _cecilXmlns = XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings);
+            _cecilInitialized = true;
+        }
+        
+        static object LoadCecil(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
+        {
+            if (uri == null)
+                throw new InvalidOperationException("Please, go away");
+            InitializeCecil();
+                        IXamlIlType overrideType = null;
+            if (rootInstance != null)
+            {
+                overrideType = _cecilTypeSystem.GetType(rootInstance.GetType().FullName);
+            }
+
+            
+           
+            var safeUri = uri.ToString()
+                .Replace(":", "_")
+                .Replace("/", "_")
+                .Replace("?", "_")
+                .Replace("=", "_");
+            var asm = _cecilTypeSystem.CreateAndRegisterAssembly(safeUri, new Version(1, 0),
+                ModuleKind.Dll);            
+            var def = new TypeDefinition("XamlIlLoader", safeUri,
+                TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
+
+            asm.MainModule.Types.Add(def);
+
+            var tb = _cecilTypeSystem.CreateTypeBuilder(def);
+            
+            var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_cecilTypeSystem,
+                localAssembly == null ? null : _cecilTypeSystem.FindAssembly(localAssembly.GetName().Name),
+                _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings), CustomValueConverter));
+            compiler.ParseAndCompile(xaml, uri.ToString(), tb, overrideType);
+            var asmPath = Path.Combine(_cecilEmitDir, safeUri + ".dll");
+            using(var f = File.Create(asmPath))
+                asm.Write(f);
+            var loaded = Assembly.LoadFile(asmPath)
+                .GetTypes().First(x => x.Name == safeUri);
+
+            return LoadOrPopulate(loaded, rootInstance);
         }
 
         private static bool CustomValueConverter(XamlIlAstTransformationContext context,

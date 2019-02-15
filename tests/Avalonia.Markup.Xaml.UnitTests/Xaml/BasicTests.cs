@@ -518,7 +518,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:sys='clr-namespace:System;assembly=mscorlib'>
+        xmlns:sys='clr-namespace:System;assembly=netstandard'>
     <Style.Resources>
         <SolidColorBrush x:Key='Brush'>White</SolidColorBrush>
         <sys:Double x:Key='Double'>10</sys:Double>
