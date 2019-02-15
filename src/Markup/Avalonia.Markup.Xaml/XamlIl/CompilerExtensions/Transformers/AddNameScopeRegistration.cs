@@ -1,3 +1,4 @@
+using System;
 using XamlIl.Ast;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
@@ -35,44 +36,39 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
             {
+                var exts = context.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScopeExtensions");
+                var findNameScope = exts.FindMethod(m => m.Name == "FindNameScope");
+                var registerMethod = findNameScope.ReturnType.FindMethod(m => m.Name == "Register");
                 using (var nameLoc = context.GetLocal(context.Configuration.WellKnownTypes.String))
                 using (var targetLoc = context.GetLocal(context.Configuration.WellKnownTypes.Object))
-
+                using (var nameScopeLoc = context.GetLocal(findNameScope.ReturnType))
                 {
-                    var exts = context.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScopeExtensions");
-                    var findNameScope = exts.FindMethod(m => m.Name == "FindNameScope");
-                    var registerMethod = findNameScope.ReturnType.FindMethod(m => m.Name == "Register");
                     var exit = codeGen.DefineLabel();
-                    var call = codeGen.DefineLabel();
+
+                    // var target = {target}
+                    codeGen.Stloc(targetLoc.Local);
                     
+                    // var name = {EmitName()}
                     context.Emit(Value, codeGen, _property.PropertyType);
-                    
-                    codeGen
-                        // var name = {EmitName()}
-                        .Stloc(nameLoc.Local)
-                        // var target = {target}
-                        .Dup()
-                        .Stloc(targetLoc.Local)
-                        // {target}.Name = name
-                        .Dup()
+                    codeGen.Stloc(nameLoc.Local)
+                        // target.Name = name
+                        .Ldloc(targetLoc.Local)
                         .Ldloc(nameLoc.Local)
                         .EmitCall(_property.Setter)
-                        // var scope = {target}.FindNameScope()
+                        // var scope = target.FindNameScope()
+                        .Ldloc(targetLoc.Local)
                         .EmitCall(findNameScope)
+                        .Stloc(nameScopeLoc.Local)
                         // if({scope} != null) goto call;
-                        .Dup()
-                        .Brtrue(call)
-                        // goto: exit
-                        .Pop()
-                        .Br(exit)
-                        // call: {scope}.Register(name, target);
-                        .MarkLabel(call)
+                        .Ldloc(nameScopeLoc.Local)
+                        .Brfalse(exit)
+                        .Ldloc(nameScopeLoc.Local)
                         .Ldloc(nameLoc.Local)
                         .Ldloc(targetLoc.Local)
                         .EmitCall(registerMethod)
                         .MarkLabel(exit);
                 }
-                return XamlIlNodeEmitResult.Void;
+                return XamlIlNodeEmitResult.Void(1);
             }
         }
     }

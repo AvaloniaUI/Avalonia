@@ -48,7 +48,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 MarkupExtensionCustomResultTypes =
                 {
-                    bindingType
+                    bindingType,
+                    typeSystem.GetType("Avalonia.UnsetValueType")
                 },
                 MarkupExtensionCustomResultHandler =
                     runtimeHelpers.FindMethod(m => m.Name == "ApplyNonMatchingMarkupExtensionV1"),

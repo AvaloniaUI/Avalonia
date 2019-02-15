@@ -15,12 +15,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             if (node is XamlIlAstObjectNode on)
             {
-                foreach (var ch in on.Children)
+                for (var c =0; c< on.Children.Count;c++)
                 {
+                    var ch = on.Children[c];
                     if (ch is XamlIlAstXmlDirective d
                         && d.Namespace == XamlNamespaces.Xaml2006
                         && d.Name == "Name")
-                        return new XamlIlAstXamlPropertyValueNode(d,
+
+
+                        on.Children[c] = new XamlIlAstXamlPropertyValueNode(d,
                             new XamlIlAstNamePropertyReference(d, on.Type, "Name", on.Type),
                             d.Values);
                 }

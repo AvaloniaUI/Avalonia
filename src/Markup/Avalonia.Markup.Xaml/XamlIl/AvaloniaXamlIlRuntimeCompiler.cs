@@ -28,7 +28,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var saveMethod = _asm.GetType().GetMethods()
                 .FirstOrDefault(m => m.Name == "Save" && m.GetParameters().Length == 1);
             if (saveMethod == null)
-                throw new PlatformNotSupportedException();
+                return;
             try
             {
                 _builder.CreateGlobalFunctions();

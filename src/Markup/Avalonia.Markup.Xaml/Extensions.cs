@@ -1,14 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Portable.Xaml;
 using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml
 {
     internal static class Extensions
     {
-        public static T GetService<T>(this IServiceProvider sp) => (T)sp.GetService(typeof(T));
+        public static T GetService<T>(this IServiceProvider sp) => (T)sp?.GetService(typeof(T));
         
         
         public static Uri GetContextBaseUri(this IServiceProvider ctx)
@@ -35,6 +37,18 @@ namespace Avalonia.Markup.Xaml
                 return parentStack.Parents.OfType<T>().LastOrDefault();
             return Portable.Xaml.ComponentModel.TypeDescriptorExtensions.GetLastOrDefaultAmbientValue<T>(
                 (ITypeDescriptorContext)ctx);
+        }
+
+        public static IEnumerable<T> GetParents<T>(this IServiceProvider sp)
+        {
+            var stack = sp.GetService<IAvaloniaXamlIlParentStackProvider>();
+            if (stack != null)
+                return stack.Parents.OfType<T>();
+            
+            var context = (ITypeDescriptorContext)sp;
+            var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
+            var ambientProvider = context.GetService<IAmbientProvider>();
+            return ambientProvider.GetAllAmbientValues(schemaContext.GetXamlType(typeof(T))).OfType<T>();
         }
 
         public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
