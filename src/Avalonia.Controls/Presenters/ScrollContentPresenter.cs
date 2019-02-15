@@ -285,7 +285,7 @@ namespace Avalonia.Controls.Presenters
             {
                 scrollable.InvalidateScroll = () => UpdateFromScrollable(scrollable);
 
-                if (scrollable.IsLogicalScrollEnabled == true)
+                if (scrollable.IsLogicalScrollEnabled)
                 {
                     _logicalScrollSubscription = new CompositeDisposable(
                         this.GetObservable(CanHorizontallyScrollProperty)

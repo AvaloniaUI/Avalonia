@@ -13,7 +13,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="PixelPointEventArgs"/> class.
         /// </summary>
-        /// <param name="point">The <see cref=PixelPoint"/> data.</param>
+        /// <param name="point">The <see cref="PixelPoint"/> data.</param>
         public PixelPointEventArgs(PixelPoint point)
         {
             Point = point;
