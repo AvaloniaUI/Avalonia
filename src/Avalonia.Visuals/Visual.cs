@@ -9,6 +9,7 @@ using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -23,6 +24,7 @@ namespace Avalonia
     /// <see cref="IRenderer"/> to render the control. To traverse the visual tree, use the
     /// extension methods defined in <see cref="VisualExtensions"/>.
     /// </remarks>
+    [UsableDuringInitialization]
     public class Visual : StyledElement, IVisual
     {
         /// <summary>

@@ -15,6 +15,7 @@
         <Compile Include="Converters\ParseTypeConverter.cs" />
         <Compile Include="Converters\SetterValueTypeConverter.cs" />
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
+        <Compile Include="Extensions.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -50,8 +51,21 @@
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TemplateLoader.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\AvaloniaXamlIlRuntimeCompiler.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaPropertyDescriptorEmitter.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompiler.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlLanguage.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AddNameScopeRegistration.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\IgnoredDirectivesTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\KnownPseudoMarkupExtensionsTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
+        <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
+        <Compile Include="XamlIl\xamlil.github\src\XamlIl\**\*.cs" />
+        <Compile Remove="XamlIl\xamlil.github\**\obj\**\*.cs" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
@@ -63,6 +77,10 @@
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="XamlIl\CompilerExtensions\README.md" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
 </Project>

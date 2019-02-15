@@ -29,6 +29,7 @@ namespace Avalonia.Markup.Xaml
     /// </remarks>
     public static class AvaloniaTypeConverters
     {
+        // When adding item to that list make sure to modify AvaloniaXamlIlLanguage
         private static Dictionary<Type, Type> _converters = new Dictionary<Type, Type>()
         {
             { typeof(AvaloniaList<>), typeof(AvaloniaListConverter<>) },

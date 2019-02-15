@@ -71,10 +71,11 @@ namespace Avalonia.Controls
         {
             Contract.Requires<ArgumentNullException>(control != null);
 
-            return control.GetSelfAndLogicalAncestors()
+            var scope = control.GetSelfAndLogicalAncestors()
                 .OfType<StyledElement>()
                 .Select(x => (x as INameScope) ?? NameScope.GetNameScope(x))
                 .FirstOrDefault(x => x != null);
+            return scope;
         }
     }
 }

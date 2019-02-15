@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using Avalonia.Markup.Xaml.XamlIl;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -23,6 +24,8 @@ namespace Avalonia.Markup.Xaml
     {
         private readonly AvaloniaXamlSchemaContext _context = GetContext();
 
+        public bool EnforceCompilerForRuntimeXaml { get; set; } = true;
+        
         public bool IsDesignMode
         {
             get => _context.IsDesignMode;
@@ -137,13 +140,13 @@ namespace Avalonia.Markup.Xaml
             using (var stream = asset.stream)
             {
                 var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                try
+                //try
                 {
                     return Load(stream, asset.assembly, rootInstance, absoluteUri);
                 }
-                catch (Exception e)
+                //catch (Exception e)
                 {
-                    throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
+                    //throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
                 }
             }
         }
@@ -179,6 +182,12 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
         {
+            if (EnforceCompilerForRuntimeXaml)
+            {
+                return AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri);
+            }
+            
+            
             var readerSettings = new XamlXmlReaderSettings()
             {
                 BaseUri = uri,

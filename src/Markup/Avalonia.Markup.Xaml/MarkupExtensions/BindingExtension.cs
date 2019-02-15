@@ -30,6 +30,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
+            return ProvideTypedValue(serviceProvider);
+        }
+        
+        public IBinding ProvideTypedValue(IServiceProvider serviceProvider)
+        {
             var descriptorContext = (ITypeDescriptorContext)serviceProvider;
 
             return new Binding
@@ -49,18 +54,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
         }
 
-        private static object GetDefaultAnchor(ITypeDescriptorContext context)
+        private static object GetDefaultAnchor(IServiceProvider context)
         {
             // If the target is not a control, so we need to find an anchor that will let us look
             // up named controls and style resources. First look for the closest IControl in
             // the context.
-            object anchor = context.GetFirstAmbientValue<IControl>();
+            object anchor = context.GetFirstParent<IControl>();
 
             // If a control was not found, then try to find the highest-level style as the XAML
             // file could be a XAML file containing only styles.
             return anchor ??
                     context.GetService<IRootObjectProvider>()?.RootObject as IStyle ??
-                    context.GetLastOrDefaultAmbientValue<IStyle>();
+                    context.GetLastParent<IStyle>();
         }
 
         public IValueConverter Converter { get; set; }
