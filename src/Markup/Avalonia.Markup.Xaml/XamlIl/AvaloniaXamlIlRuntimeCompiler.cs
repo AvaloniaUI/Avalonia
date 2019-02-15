@@ -196,7 +196,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 .Replace(":", "_")
                 .Replace("/", "_")
                 .Replace("?", "_")
-                .Replace("=", "_");
+                .Replace("=", "_")
+                .Replace(".", "_");
             var asm = _cecilTypeSystem.CreateAndRegisterAssembly(safeUri, new Version(1, 0),
                 ModuleKind.Dll);            
             var def = new TypeDefinition("XamlIlLoader", safeUri,
