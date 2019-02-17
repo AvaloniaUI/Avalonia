@@ -61,5 +61,61 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(new Size(50, 50), target.DesiredSize);
         }
+
+        [Fact]
+        public void Arrange_Should_Return_Correct_Size_For_No_Stretch()
+        {
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
+            var target = new Image();
+            target.Stretch = Stretch.None;
+            target.Source = bitmap;
+
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 100, 400));
+
+            Assert.Equal(new Size(50, 100), target.Bounds.Size);
+        }
+
+        [Fact]
+        public void Arrange_Should_Return_Correct_Size_For_Fill_Stretch()
+        {
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
+            var target = new Image();
+            target.Stretch = Stretch.Fill;
+            target.Source = bitmap;
+
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 25, 100));
+
+            Assert.Equal(new Size(25, 100), target.Bounds.Size);
+        }
+
+        [Fact]
+        public void Arrange_Should_Return_Correct_Size_For_Uniform_Stretch()
+        {
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
+            var target = new Image();
+            target.Stretch = Stretch.Uniform;
+            target.Source = bitmap;
+
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 25, 100));
+
+            Assert.Equal(new Size(25, 50), target.Bounds.Size);
+        }
+
+        [Fact]
+        public void Arrange_Should_Return_Correct_Size_For_UniformToFill_Stretch()
+        {
+            var bitmap = Mock.Of<IBitmap>(x => x.PixelSize == new PixelSize(50, 100));
+            var target = new Image();
+            target.Stretch = Stretch.UniformToFill;
+            target.Source = bitmap;
+
+            target.Measure(new Size(50, 50));
+            target.Arrange(new Rect(0, 0, 25, 100));
+
+            Assert.Equal(new Size(25, 100), target.Bounds.Size);
+        }
     }
 }

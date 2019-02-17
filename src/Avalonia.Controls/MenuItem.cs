@@ -421,7 +421,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="Header"/> property changes.
+        /// Called when the <see cref="HeaderedSelectingItemsControl.Header"/> property changes.
         /// </summary>
         /// <param name="e">The property change event.</param>
         private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
