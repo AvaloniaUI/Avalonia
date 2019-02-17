@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -81,7 +82,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired when the window position is changed.
         /// </summary>
-        public event EventHandler<PointEventArgs> PositionChanged;
+        public event EventHandler<PixelPointEventArgs> PositionChanged;
 
         [CanBeNull]
         public new IWindowBaseImpl PlatformImpl => (IWindowBaseImpl) base.PlatformImpl;
@@ -98,9 +99,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the window position in screen coordinates.
         /// </summary>
-        public Point Position
+        public PixelPoint Position
         {
-            get { return PlatformImpl?.Position ?? default(Point); }
+            get { return PlatformImpl?.Position ?? PixelPoint.Origin; }
             set
             {
                 if (PlatformImpl is IWindowBaseImpl impl)
@@ -163,7 +164,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Shows the popup.
+        /// Shows the window.
         /// </summary>
         public virtual void Show()
         {
@@ -181,6 +182,7 @@ namespace Avalonia.Controls
                 }
                 PlatformImpl?.Show();
                 Renderer?.Start();
+                OnOpened(EventArgs.Empty);
             }
             finally
             {
@@ -267,9 +269,9 @@ namespace Avalonia.Controls
         /// <see cref="IWindowBaseImpl.PositionChanged"/>.
         /// </summary>
         /// <param name="pos">The window position.</param>
-        private void HandlePositionChanged(Point pos)
+        private void HandlePositionChanged(PixelPoint pos)
         {
-            PositionChanged?.Invoke(this, new PointEventArgs(pos));
+            PositionChanged?.Invoke(this, new PixelPointEventArgs(pos));
         }
 
         /// <summary>

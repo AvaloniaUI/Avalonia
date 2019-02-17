@@ -177,7 +177,7 @@ namespace Avalonia.Win32
             int x = (int)dragPoint;
             int y = (int)(dragPoint >> 32);
 
-            Point screenPt = new Point(x, y);
+            var screenPt = new PixelPoint(x, y);
             return _target.PointToClient(screenPt);
         }
     }

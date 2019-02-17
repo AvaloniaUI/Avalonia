@@ -26,7 +26,7 @@
                             </ItemsPresenter>
                         </ScrollViewer>
                         <ContentPresenter
-                            Name="PART_Content"
+                            Name="PART_SelectedContentHost"
                             Margin="{TemplateBinding Padding}"                           
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

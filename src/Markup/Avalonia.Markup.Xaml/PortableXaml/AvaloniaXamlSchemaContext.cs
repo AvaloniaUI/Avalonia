@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private IRuntimeTypeProvider _avaloniaTypeProvider;
 
-        protected internal override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
+        protected override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
         {
             XamlType type = null;
             try

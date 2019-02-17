@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Gtk3;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.X11;
+using Avalonia.X11.Glx;
+using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 namespace Avalonia.X11
 {
@@ -23,7 +24,7 @@ namespace Avalonia.X11
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public IScreenImpl Screens { get; private set; }
-        public void Initialize()
+        public void Initialize(X11PlatformOptions options)
         {
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
@@ -44,7 +45,7 @@ namespace Avalonia.X11
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
-                .Bind<ISystemDialogImpl>().ToConstant(new Gtk3ForeignX11SystemDialog());
+                .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog());
             
             X11Screens = Avalonia.X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
@@ -54,8 +55,14 @@ namespace Avalonia.X11
                 if (xi2.Init(this))
                     XI2 = xi2;
             }
-            EglGlPlatformFeature.TryInitialize();
 
+            if (options.UseGpu)
+            {
+                if (options.UseEGL)
+                    EglGlPlatformFeature.TryInitialize();
+                else
+                    GlxGlPlatformFeature.TryInitialize(Info);
+            }
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -79,15 +86,22 @@ namespace Avalonia.X11
 
 namespace Avalonia
 {
+
+    public class X11PlatformOptions
+    {
+        public bool UseEGL { get; set; }
+        public bool UseGpu { get; set; } = true;
+    }
     public static class AvaloniaX11PlatformExtensions
     {
-        public static T UseX11<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static T UseX11<T>(this T builder, X11PlatformOptions options = null) where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(() => new AvaloniaX11Platform().Initialize());
+            builder.UseWindowingSubsystem(() => new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions()));
             return builder;
         }
 
-        public static void InitializeX11Platform() => new AvaloniaX11Platform().Initialize();
+        public static void InitializeX11Platform(X11PlatformOptions options = null) =>
+            new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions());
     }
 
 }

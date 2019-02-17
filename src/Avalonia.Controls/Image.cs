@@ -99,5 +99,22 @@ namespace Avalonia.Controls
                 return new Size();
             }
         }
+
+        /// <inheritdoc/>
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            var source = Source;
+
+            if (source != null)
+            {
+                var sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
+                var result = Stretch.CalculateSize(finalSize, sourceSize);
+                return result;
+            }
+            else
+            {
+                return new Size();
+            }
+        }
     }
 }

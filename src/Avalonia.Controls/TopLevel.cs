@@ -98,6 +98,11 @@ namespace Avalonia.Controls
 
             Renderer = impl.CreateRenderer(this);
 
+            if (Renderer != null)
+            {
+                Renderer.SceneInvalidated += SceneInvalidated;
+            }
+
             impl.SetInputRoot(this);
 
             impl.Closed = HandleClosed;
@@ -130,6 +135,11 @@ namespace Avalonia.Controls
                     this);
             }
         }
+
+        /// <summary>
+        /// Fired when the window is opened.
+        /// </summary>
+        public event EventHandler Opened;
 
         /// <summary>
         /// Fired when the window is closed.
@@ -231,17 +241,17 @@ namespace Avalonia.Controls
         {
             PlatformImpl?.Invalidate(rect);
         }
-
+        
         /// <inheritdoc/>
-        Point IRenderRoot.PointToClient(Point p)
+        Point IRenderRoot.PointToClient(PixelPoint p)
         {
-            return PlatformImpl?.PointToClient(p) ?? default(Point);
+            return PlatformImpl?.PointToClient(p) ?? default;
         }
 
         /// <inheritdoc/>
-        Point IRenderRoot.PointToScreen(Point p)
+        PixelPoint IRenderRoot.PointToScreen(Point p)
         {
-            return PlatformImpl?.PointToScreen(p) ?? default(Point);
+            return PlatformImpl?.PointToScreen(p) ?? default;
         }
         
         /// <summary>
@@ -307,6 +317,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="Opened"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+
+        /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
         /// warning if not found.
         /// </summary>
@@ -348,6 +364,11 @@ namespace Avalonia.Controls
         private void HandleInput(RawInputEventArgs e)
         {
             _inputManager.ProcessInput(e);
+        }
+
+        private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
+        {
+            (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
         }
     }
 }

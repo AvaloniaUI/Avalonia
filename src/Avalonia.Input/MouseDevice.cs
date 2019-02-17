@@ -54,7 +54,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
-        public Point Position
+        public PixelPoint Position
         {
             get;
             protected set;
@@ -102,6 +102,23 @@ namespace Avalonia.Input
         {
             if (!e.Handled && e is RawMouseEventArgs margs)
                 ProcessRawEvent(margs);
+        }
+
+        public void SceneInvalidated(IInputRoot root, Rect rect)
+        {
+            var clientPoint = root.PointToClient(Position);
+
+            if (rect.Contains(clientPoint))
+            {
+                if (Captured == null)
+                {
+                    SetPointerOver(this, root, clientPoint);
+                }
+                else
+                {
+                    SetPointerOver(this, root, Captured);
+                }
+            }
         }
 
         private void ProcessRawEvent(RawMouseEventArgs e)
@@ -305,14 +322,39 @@ namespace Avalonia.Input
                 Device = device,
             };
 
+            if (element!=null && !element.IsAttachedToVisualTree)
+            {
+                // element has been removed from visual tree so do top down cleanup
+                if (root.IsPointerOver)
+                    ClearChildrenPointerOver(e, root,true);
+            }
             while (element != null)
             {
                 e.Source = element;
+                e.Handled = false;
                 element.RaiseEvent(e);
                 element = (IInputElement)element.VisualParent;
             }
-
+            
             root.PointerOverElement = null;
+        }
+
+        private void ClearChildrenPointerOver(PointerEventArgs e, IInputElement element,bool clearRoot)
+        {
+            foreach (IInputElement el in element.VisualChildren)
+            {
+                if (el.IsPointerOver)
+                {
+                    ClearChildrenPointerOver(e, el, true);
+                    break;
+                }
+            }
+            if(clearRoot)
+            {
+                e.Source = element;
+                e.Handled = false;
+                element.RaiseEvent(e);
+            }
         }
 
         private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p)
@@ -361,13 +403,18 @@ namespace Avalonia.Input
             el = root.PointerOverElement;
             e.RoutedEvent = InputElement.PointerLeaveEvent;
 
+            if (el!=null && branch!=null && !el.IsAttachedToVisualTree)
+            {
+                ClearChildrenPointerOver(e,branch,false);
+            }
+            
             while (el != null && el != branch)
             {
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
                 el = (IInputElement)el.VisualParent;
-            }
+            }            
 
             el = root.PointerOverElement = element;
             e.RoutedEvent = InputElement.PointerEnterEvent;
