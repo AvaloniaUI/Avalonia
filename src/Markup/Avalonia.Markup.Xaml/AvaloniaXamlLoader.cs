@@ -8,6 +8,7 @@ using Avalonia.Platform;
 using Portable.Xaml;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -250,7 +251,7 @@ namespace Avalonia.Markup.Xaml
                          .ToDictionary(entry =>entry.Element(arrayNs + "Key").Value,
                                 entry => entry.Element(arrayNs + "Value").Value);
                     
-                    if (xamlInfo.TryGetValue(typeName, out var rv) == true)
+                    if (xamlInfo.TryGetValue(typeName, out var rv))
                     {
                         yield return new Uri($"avares://{asm}{rv}");
                         yield break;

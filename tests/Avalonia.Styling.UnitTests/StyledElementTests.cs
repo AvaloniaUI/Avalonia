@@ -10,6 +10,7 @@ using Avalonia.UnitTests;
 using Xunit;
 using Avalonia.LogicalTree;
 using Avalonia.Controls;
+using System.ComponentModel;
 
 namespace Avalonia.Styling.UnitTests
 {

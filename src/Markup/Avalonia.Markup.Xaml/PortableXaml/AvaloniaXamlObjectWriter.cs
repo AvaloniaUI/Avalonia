@@ -77,40 +77,15 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             _delayedValuesHelper.ApplyAll();
         }
 
-        protected internal override void OnAfterBeginInit(object value)
-        {
-            //not called for avalonia objects
-            //as it's called inly for
-            //Portable.Xaml.ComponentModel.ISupportInitialize
-            base.OnAfterBeginInit(value);
-        }
-
-        protected internal override void OnAfterEndInit(object value)
-        {
-            //not called for avalonia objects
-            //as it's called inly for
-            //Portable.Xaml.ComponentModel.ISupportInitialize
-            base.OnAfterEndInit(value);
-        }
-
         protected internal override void OnAfterProperties(object value)
         {
             _delayedValuesHelper.EndInit(value);
 
             base.OnAfterProperties(value);
-
-            //AfterEndInit is not called as it supports only
-            //Portable.Xaml.ComponentModel.ISupportInitialize
-            //and we have Avalonia.ISupportInitialize so we need some hacks
-            HandleEndEdit(value);
         }
 
         protected internal override void OnBeforeProperties(object value)
         {
-            //OnAfterBeginInit is not called as it supports only
-            //Portable.Xaml.ComponentModel.ISupportInitialize
-            //and we have Avalonia.ISupportInitialize so we need some hacks
-            HandleBeginInit(value);
             if (value != null)
                 _delayedValuesHelper.BeginInit(value);
 
@@ -125,16 +100,6 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             }
 
             return base.OnSetValue(target, member, value);
-        }
-
-        private void HandleBeginInit(object value)
-        {
-            (value as Avalonia.ISupportInitialize)?.BeginInit();
-        }
-
-        private void HandleEndEdit(object value)
-        {
-            (value as Avalonia.ISupportInitialize)?.EndInit();
         }
 
         public override void WriteStartMember(XamlMember property)
