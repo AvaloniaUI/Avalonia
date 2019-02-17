@@ -217,7 +217,7 @@ namespace Avalonia.Controls
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
