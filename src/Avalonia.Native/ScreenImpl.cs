@@ -41,7 +41,7 @@ namespace Avalonia.Native
 
         public void Dispose ()
         {
-            _native.Dispose();
+            _native?.Dispose();
             _native = null;
         }
     }
