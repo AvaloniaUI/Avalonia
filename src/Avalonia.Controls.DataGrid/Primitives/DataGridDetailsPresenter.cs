@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
 
         public DataGridDetailsPresenter()
         {
-            AffectsMeasure(ContentHeightProperty);
+            AffectsMeasure<DataGridDetailsPresenter>(ContentHeightProperty);
         }
 
         /// <summary>

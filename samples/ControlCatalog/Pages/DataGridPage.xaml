@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:local="clr-namespace:ControlCatalog.Models;assembly=ControlCatalog"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DataGridPage">
   <UserControl.Resources>
     <local:GDPValueConverter x:Key="GDPConverter" />
   </UserControl.Resources>

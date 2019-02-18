@@ -340,7 +340,7 @@ namespace Avalonia.Controls
                 && OwningGrid.DataConnection.SortDescriptions != null)
             {
                 DataGrid owningGrid = OwningGrid;
-                bool desending;
+
                 AvaloniaSortDescription newSort;
 
                 KeyboardHelper.GetMetaKeyState(inputModifiers, out bool ctrl, out bool shift);

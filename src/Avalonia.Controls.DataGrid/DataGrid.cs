@@ -746,11 +746,12 @@ namespace Avalonia.Controls
 
         static DataGrid()
         {
-            AffectsMeasure(
+            AffectsMeasure<DataGrid>(
                 ColumnHeaderHeightProperty, 
                 HorizontalScrollBarVisibilityProperty,
                 VerticalScrollBarVisibilityProperty);
-            PseudoClass(IsValidProperty, x => !x, ":invalid");
+
+            PseudoClass<DataGrid, bool>(IsValidProperty, x => !x, ":invalid");
 
             ItemsProperty.Changed.AddClassHandler<DataGrid>(x => x.OnItemsPropertyChanged);
             CanUserResizeColumnsProperty.Changed.AddClassHandler<DataGrid>(x => x.OnCanUserResizeColumnsChanged);

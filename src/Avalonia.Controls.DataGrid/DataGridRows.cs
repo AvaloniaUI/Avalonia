@@ -2505,7 +2505,7 @@ namespace Avalonia.Controls
                     double indent;
                     for (int i = 0; i < groupLevelCount; i++)
                     {
-                        DataGridRowGroupHeader rowGroupHeader = null;
+                        //DataGridRowGroupHeader rowGroupHeader = null;
                         indent = DATAGRID_defaultRowGroupSublevelIndent;
                         //if (i < RowGroupHeaderStyles.Count && RowGroupHeaderStyles[i] != null)
                         //{

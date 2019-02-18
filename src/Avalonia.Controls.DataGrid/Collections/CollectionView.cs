@@ -3360,7 +3360,7 @@ namespace Avalonia.Collections
                 addIndex);
 
             // next check if we need to add an item into the current group
-            bool needsGrouping = false;
+            // bool needsGrouping = false;
             if (Count == 1 && GroupDescriptions.Count > 0)
             {
                 // if this is the first item being added
@@ -3387,7 +3387,7 @@ namespace Avalonia.Collections
                 // otherwise, we need to validate that it is within the current page.
                 if (PageSize == 0 || (PageIndex + 1) * PageSize > leafIndex)
                 {
-                    needsGrouping = true;
+                    //needsGrouping = true;
 
                     int pageStartIndex = PageIndex * PageSize;
 
