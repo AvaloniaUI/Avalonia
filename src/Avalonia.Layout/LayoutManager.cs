@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -13,8 +15,85 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
-        private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
+        private class LayoutQueue<T> : IReadOnlyCollection<T>
+        {
+            private class Info
+            {
+                public bool Active;
+                public int Count;
+            }
+
+            public LayoutQueue(Func<T, bool> shouldEnqueue)
+            {
+                _shouldEnqueue = shouldEnqueue;
+            }
+
+            private Func<T, bool> _shouldEnqueue;
+            private Queue<T> _inner = new Queue<T>();
+            private Dictionary<T, Info> _loopQueueInfo = new Dictionary<T, Info>();
+            private int _maxEnqueueCountPerLoop = 1;
+
+            public int Count => _inner.Count;
+
+            public IEnumerator<T> GetEnumerator() => (_inner as IEnumerable<T>).GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => _inner.GetEnumerator();
+
+            public T Dequeue()
+            {
+                var result = _inner.Dequeue();
+
+                if (_loopQueueInfo.TryGetValue(result, out var info))
+                {
+                    info.Active = false;
+                }
+
+                return result;
+            }
+
+            public void Enqueue(T item)
+            {
+                if (!_loopQueueInfo.TryGetValue(item, out var info))
+                {
+                    _loopQueueInfo[item] = info = new Info();
+                }
+
+                if (!info.Active && info.Count < _maxEnqueueCountPerLoop)
+                {
+                    _inner.Enqueue(item);
+                    info.Active = true;
+                    info.Count++;
+                }
+            }
+
+            public void BeginLoop(int maxEnqueueCountPerLoop)
+            {
+                _maxEnqueueCountPerLoop = maxEnqueueCountPerLoop;
+            }
+
+            public void EndLoop()
+            {
+                var notfinalized = _loopQueueInfo.Where(v => v.Value.Count == _maxEnqueueCountPerLoop).ToArray();
+
+                _loopQueueInfo.Clear();
+
+                //prevent layout cycle but add to next layout the non arranged/measured items that might have caused cycle
+                //one more time as a final attempt
+                foreach (var item in notfinalized)
+                {
+                    if (_shouldEnqueue(item.Key))
+                    {
+                        item.Value.Active = true;
+                        item.Value.Count++;
+                        _loopQueueInfo[item.Key] = item.Value;
+                        _inner.Enqueue(item.Key);
+                    }
+                }
+            }
+        }
+
+        private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
+        private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private bool _queued;
         private bool _running;
 
@@ -80,6 +159,9 @@ namespace Avalonia.Layout
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
 
+                _toMeasure.BeginLoop(MaxPasses);
+                _toArrange.BeginLoop(MaxPasses);
+
                 try
                 {
                     for (var pass = 0; pass < MaxPasses; ++pass)
@@ -98,6 +180,9 @@ namespace Avalonia.Layout
                     _running = false;
                 }
 
+                _toMeasure.EndLoop();
+                _toArrange.EndLoop();
+
                 stopwatch.Stop();
                 Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
             }
@@ -112,7 +197,7 @@ namespace Avalonia.Layout
             Arrange(root);
 
             // Running the initial layout pass may have caused some control to be invalidated
-            // so run a full layout pass now (this usually due to scrollbars; its not known 
+            // so run a full layout pass now (this usually due to scrollbars; its not known
             // whether they will need to be shown until the layout pass has run and if the
             // first guess was incorrect the layout will need to be updated).
             ExecuteLayoutPass();
@@ -133,7 +218,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
-            while (_toArrange.Count > 0 && _toMeasure.Count == 0)
+            while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();
 
