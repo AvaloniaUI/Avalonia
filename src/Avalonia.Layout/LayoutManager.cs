@@ -17,7 +17,7 @@ namespace Avalonia.Layout
     {
         private class LayoutQueue<T> : IReadOnlyCollection<T>
         {
-            private class Info
+            private struct Info
             {
                 public bool Active;
                 public int Count;
@@ -46,6 +46,7 @@ namespace Avalonia.Layout
                 if (_loopQueueInfo.TryGetValue(result, out var info))
                 {
                     info.Active = false;
+                    _loopQueueInfo[result] = info;
                 }
 
                 return result;
@@ -53,16 +54,12 @@ namespace Avalonia.Layout
 
             public void Enqueue(T item)
             {
-                if (!_loopQueueInfo.TryGetValue(item, out var info))
-                {
-                    _loopQueueInfo[item] = info = new Info();
-                }
+                _loopQueueInfo.TryGetValue(item, out var info);
 
                 if (!info.Active && info.Count < _maxEnqueueCountPerLoop)
                 {
                     _inner.Enqueue(item);
-                    info.Active = true;
-                    info.Count++;
+                    _loopQueueInfo[item] = new Info() { Active = true, Count = info.Count + 1 };
                 }
             }
 
@@ -83,9 +80,7 @@ namespace Avalonia.Layout
                 {
                     if (_shouldEnqueue(item.Key))
                     {
-                        item.Value.Active = true;
-                        item.Value.Count++;
-                        _loopQueueInfo[item.Key] = item.Value;
+                        _loopQueueInfo[item.Key] = new Info() { Active = true, Count = item.Value.Count + 1 };
                         _inner.Enqueue(item.Key);
                     }
                 }
