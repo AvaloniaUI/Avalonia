@@ -178,7 +178,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             _cecilXmlns = XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings);
             _cecilInitialized = true;
         }
-        
+
+        private static Dictionary<string, Type> _cecilGeneratedCache = new Dictionary<string, Type>();
         static object LoadCecil(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
         {
             if (uri == null)
@@ -198,6 +199,10 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 .Replace("?", "_")
                 .Replace("=", "_")
                 .Replace(".", "_");
+            if (_cecilGeneratedCache.TryGetValue(safeUri, out var cached))
+                return LoadOrPopulate(cached, rootInstance);
+            
+            
             var asm = _cecilTypeSystem.CreateAndRegisterAssembly(safeUri, new Version(1, 0),
                 ModuleKind.Dll);            
             var def = new TypeDefinition("XamlIlLoader", safeUri,
@@ -216,7 +221,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 asm.Write(f);
             var loaded = Assembly.LoadFile(asmPath)
                 .GetTypes().First(x => x.Name == safeUri);
-
+            _cecilGeneratedCache[safeUri] = loaded;
             return LoadOrPopulate(loaded, rootInstance);
         }
 
