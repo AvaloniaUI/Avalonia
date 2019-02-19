@@ -322,6 +322,9 @@ namespace Avalonia.Controls.UnitTests
                 items.Insert(2, "2+");
 
                 lm.ExecuteLayoutPass();
+                //after few more layout cycles layoutmanager shouldn't hold any more visual for measure/arrange
+                lm.ExecuteLayoutPass();
+                lm.ExecuteLayoutPass();
 
                 var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
                 var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
