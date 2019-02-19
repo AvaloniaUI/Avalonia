@@ -64,6 +64,7 @@ namespace Avalonia.Controls
         static ItemsControl()
         {
             ItemsProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemsChanged);
+            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemTemplateChanged);
         }
 
         /// <summary>
@@ -73,7 +74,6 @@ namespace Avalonia.Controls
         {
             PseudoClasses.Add(":empty");
             SubscribeToItems(_items);
-            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>(x => x.ItemTemplateChanged);
         }
 
         /// <summary>
