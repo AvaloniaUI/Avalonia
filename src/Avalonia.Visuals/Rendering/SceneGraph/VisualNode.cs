@@ -339,11 +339,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        public bool Disposed { get; }
+        public bool Disposed { get; private set; }
         
         public void Dispose()
         {
             _drawOperationsRefCounter?.Dispose();
+            Disposed = true;
+            _children?.Clear();
         }
 
         private void DisposeDrawOperations()
