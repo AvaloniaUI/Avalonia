@@ -241,7 +241,7 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
-        public void Multiple_Shapes_When_Visibled_Should_Be_Arranged_Properly()
+        public void Multiple_Shapes_When_Made_Visible_Should_Be_Arranged_Properly()
         {
             StackPanel panel;
 
