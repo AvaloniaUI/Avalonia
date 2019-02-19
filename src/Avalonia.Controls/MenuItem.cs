@@ -287,7 +287,7 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
@@ -421,7 +421,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Called when the <see cref="Header"/> property changes.
+        /// Called when the <see cref="HeaderedSelectingItemsControl.Header"/> property changes.
         /// </summary>
         /// <param name="e">The property change event.</param>
         private void HeaderChanged(AvaloniaPropertyChangedEventArgs e)
