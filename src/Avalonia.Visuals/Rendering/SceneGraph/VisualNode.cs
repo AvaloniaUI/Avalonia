@@ -345,7 +345,16 @@ namespace Avalonia.Rendering.SceneGraph
         {
             _drawOperationsRefCounter?.Dispose();
             Disposed = true;
-            _children?.Clear();
+
+            if (_children != null)
+            {
+                foreach(var child in _children)
+                {
+                    child.Dispose();
+                }
+
+                _children?.Clear();
+            }
         }
 
         private void DisposeDrawOperations()
