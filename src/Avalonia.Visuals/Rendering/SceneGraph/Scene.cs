@@ -102,6 +102,8 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 node.Dispose();
             }
+            
+            _index.Clear();
         }
 
         /// <summary>
