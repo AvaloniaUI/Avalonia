@@ -255,15 +255,19 @@ namespace Avalonia.Rendering
                         }
 
                         var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
+
                         using (scene)
                         {
-                            var overlay = DrawDirtyRects || DrawFps;
-                            if (DrawDirtyRects)
-                                _dirtyRectsDisplay.Tick();
-                            if (overlay)
-                                RenderOverlay(scene.Item, GetContext());
-                            if (updated || forceComposite || overlay)
-                                RenderComposite(scene.Item, GetContext());
+                            if (scene?.Item != null)
+                            {
+                                var overlay = DrawDirtyRects || DrawFps;
+                                if (DrawDirtyRects)
+                                    _dirtyRectsDisplay.Tick();
+                                if (overlay)
+                                    RenderOverlay(scene.Item, GetContext());
+                                if (updated || forceComposite || overlay)
+                                    RenderComposite(scene.Item, GetContext());
+                             }
                         }
                     }
                     finally

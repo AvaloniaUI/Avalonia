@@ -228,15 +228,32 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void ShowDialog_Should_Start_Renderer()
         {
-
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var parent = Mock.Of<IWindowImpl>();
                 var renderer = new Mock<IRenderer>();
                 var target = new Window(CreateImpl(renderer));
 
-                target.Show();
+                target.ShowDialog<object>(parent);
 
                 renderer.Verify(x => x.Start(), Times.Once);
+            }
+        }
+
+        [Fact]
+        public void ShowDialog_Should_Raise_Opened()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = Mock.Of<IWindowImpl>();
+                var target = new Window();
+                var raised = false;
+
+                target.Opened += (s, e) => raised = true;
+
+                target.ShowDialog<object>(parent);
+
+                Assert.True(raised);
             }
         }
 

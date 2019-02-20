@@ -150,6 +150,26 @@ namespace Avalonia.Base.UnitTests.Data.Core
             }
         }
 
+        [Fact]
+        public void Should_Work_With_Value_Type()
+        {
+            using (var sync = UnitTestSynchronizationContext.Begin())
+            {
+                var source = new BehaviorSubject<int>(1);
+                var data = new { Foo = source };
+                var target = ExpressionObserver.Create(data, o => o.Foo.StreamBinding());
+                var result = new List<int>();
+
+                var sub = target.Subscribe(x => result.Add((int)x));
+                source.OnNext(42);
+                sync.ExecutePostedCallbacks();
+
+                Assert.Equal(new[] { 1, 42 }, result);
+
+                GC.KeepAlive(data);
+            }
+        }
+
         private class Class1 : NotifyingBase
         {
             public Subject<Class2> Next { get; } = new Subject<Class2>();

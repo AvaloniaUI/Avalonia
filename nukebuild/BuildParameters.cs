@@ -109,7 +109,7 @@ public partial class Build
                 if (!IsNuGetRelease)
                 {
                     // Use AssemblyVersion with Build as version
-                    Version += "-build" + Environment.GetEnvironmentVariable("BUILD_BUILDID") + "-beta";
+                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
                 }
 
                 PublishTestResults = true;

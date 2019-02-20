@@ -36,32 +36,7 @@ namespace Avalonia
         public AvaloniaObject()
         {
             VerifyAccess();
-
-            void Notify(AvaloniaProperty property)
-            {
-                object value = property.IsDirect ?
-                    ((IDirectPropertyAccessor)property).GetValue(this) :
-                    ((IStyledPropertyAccessor)property).GetDefaultValue(GetType());
-
-                var e = new AvaloniaPropertyChangedEventArgs(
-                    this,
-                    property,
-                    AvaloniaProperty.UnsetValue,
-                    value,
-                    BindingPriority.Unset);
-
-                property.NotifyInitialized(e);
-            }
-
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegistered(this))
-            {
-                Notify(property);
-            }
-
-            foreach (var property in AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()))
-            {
-                Notify(property);
-            }
+            AvaloniaPropertyRegistry.Instance.NotifyInitialized(this);
         }
 
         /// <summary>
@@ -645,7 +620,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The default value.</returns>
-        internal object GetDefaultValue(AvaloniaProperty property)
+        private object GetDefaultValue(AvaloniaProperty property)
         {
             if (property.Inherits && InheritanceParent is AvaloniaObject aobj)
                 return aobj.GetValue(property);
