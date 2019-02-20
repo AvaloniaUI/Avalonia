@@ -29,7 +29,10 @@ namespace Avalonia.Native
                 {
                     var screen = _native.GetScreen(i);
 
-                    result[i] = new Screen(screen.Bounds.ToAvaloniaRect(), screen.WorkingArea.ToAvaloniaRect(), screen.Primary);
+                    result[i] = new Screen(
+                        screen.Bounds.ToAvaloniaPixelRect(),
+                        screen.WorkingArea.ToAvaloniaPixelRect(),
+                        screen.Primary);
                 }
 
                 return result;
@@ -38,7 +41,7 @@ namespace Avalonia.Native
 
         public void Dispose ()
         {
-            _native.Dispose();
+            _native?.Dispose();
             _native = null;
         }
     }

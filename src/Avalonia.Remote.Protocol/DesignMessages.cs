@@ -7,6 +7,7 @@ namespace Avalonia.Remote.Protocol.Designer
     {
         public string Xaml { get; set; }
         public string AssemblyPath { get; set; }
+        public string XamlFileProjectPath { get; set; }
     }
 
     [AvaloniaRemoteMessageGuid("B7A70093-0C5D-47FD-9261-22086D43A2E2")]

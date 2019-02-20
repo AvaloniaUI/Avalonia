@@ -159,7 +159,7 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.PositionChanged(AvnPoint position)
             {
-                _parent.PositionChanged?.Invoke(position.ToAvaloniaPoint());
+                _parent.PositionChanged?.Invoke(position.ToAvaloniaPixelPoint());
             }
 
             void IAvnWindowBaseEvents.RawMouseEvent(AvnRawMouseEventType type, uint timeStamp, AvnInputModifiers modifiers, AvnPoint point, AvnVector delta)
@@ -186,10 +186,6 @@ namespace Avalonia.Native
 
             void IAvnWindowBaseEvents.RunRenderPriorityJobs()
             {
-                if (_parent._deferredRendering
-                    && _parent._lastRenderedLogicalSize != _parent.ClientSize)
-                    // Hack to trigger Paint event on the renderer
-                    _parent.Paint?.Invoke(new Rect());
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Render);
             }
         }
@@ -245,7 +241,9 @@ namespace Avalonia.Native
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             if (_deferredRendering)
-                return new DeferredRendererProxy(root, _gpu ? _native : null);
+                return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>(),
+                    rendererLock:
+                    _gpu ? new AvaloniaNativeDeferredRendererLock(_native) : null);
             return new ImmediateRenderer(root);
         }
 
@@ -277,20 +275,20 @@ namespace Avalonia.Native
         }
 
 
-        public Point Position
+        public PixelPoint Position
         {
-            get => _native.GetPosition().ToAvaloniaPoint();
+            get => _native.GetPosition().ToAvaloniaPixelPoint();
             set => _native.SetPosition(value.ToAvnPoint());
         }
 
-        public Point PointToClient(Point point)
+        public Point PointToClient(PixelPoint point)
         {
             return _native.PointToClient(point.ToAvnPoint()).ToAvaloniaPoint();
         }
 
-        public Point PointToScreen(Point point)
+        public PixelPoint PointToScreen(Point point)
         {
-            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPoint();
+            return _native.PointToScreen(point.ToAvnPoint()).ToAvaloniaPixelPoint();
         }
 
         public void Hide()
@@ -322,7 +320,7 @@ namespace Avalonia.Native
             _native.Cursor = newCursor.Cursor;
         }
 
-        public Action<Point> PositionChanged { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
 
         public Action<RawInputEventArgs> Input { get; set; }
 

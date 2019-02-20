@@ -388,18 +388,20 @@ namespace Avalonia.Controls
                 PlatformImpl?.Show();
                 Renderer?.Start();
             }
-            SetWindowStartupLocation();
+            SetWindowStartupLocation(Owner?.PlatformImpl);
+            OnOpened(EventArgs.Empty);
         }
 
         /// <summary>
         /// Shows the window as a dialog.
         /// </summary>
+        /// <param name="owner">The dialog's owner window.</param>
         /// <returns>
         /// A task that can be used to track the lifetime of the dialog.
         /// </returns>
-        public Task ShowDialog()
+        public Task ShowDialog(Window owner)
         {
-            return ShowDialog<object>();
+            return ShowDialog<object>(owner);
         }
 
         /// <summary>
@@ -408,11 +410,27 @@ namespace Avalonia.Controls
         /// <typeparam name="TResult">
         /// The type of the result produced by the dialog.
         /// </typeparam>
+        /// <param name="owner">The dialog's owner window.</param>
         /// <returns>.
         /// A task that can be used to retrieve the result of the dialog when it closes.
         /// </returns>
-        public Task<TResult> ShowDialog<TResult>()
+        public Task<TResult> ShowDialog<TResult>(Window owner) => ShowDialog<TResult>(owner.PlatformImpl);
+
+        /// <summary>
+        /// Shows the window as a dialog.
+        /// </summary>
+        /// <typeparam name="TResult">
+        /// The type of the result produced by the dialog.
+        /// </typeparam>
+        /// <param name="owner">The dialog's owner window.</param>
+        /// <returns>.
+        /// A task that can be used to retrieve the result of the dialog when it closes.
+        /// </returns>
+        public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
+            if(owner == null)
+                throw new ArgumentNullException(nameof(owner));
+
             if (IsVisible)
             {
                 throw new InvalidOperationException("The window is already being shown.");
@@ -421,60 +439,60 @@ namespace Avalonia.Controls
             AddWindow(this);
 
             EnsureInitialized();
-            SetWindowStartupLocation();
             IsVisible = true;
             LayoutManager.ExecuteInitialLayoutPass(this);
 
+            var result = new TaskCompletionSource<TResult>();
+
             using (BeginAutoSizing())
             {
-                var affectedWindows = Application.Current.Windows.Where(w => w.IsEnabled && w != this).ToList();
-                var activated = affectedWindows.Where(w => w.IsActive).FirstOrDefault();
-                SetIsEnabled(affectedWindows, false);
 
-                var modal = PlatformImpl?.ShowDialog();
-                var result = new TaskCompletionSource<TResult>();
+                PlatformImpl?.ShowDialog(owner);
 
                 Renderer?.Start();
-
                 Observable.FromEventPattern<EventHandler, EventArgs>(
                     x => this.Closed += x,
                     x => this.Closed -= x)
                     .Take(1)
                     .Subscribe(_ =>
                     {
-                        modal?.Dispose();
-                        SetIsEnabled(affectedWindows, true);
-                        activated?.Activate();
+                        owner.Activate();
                         result.SetResult((TResult)(_dialogResult ?? default(TResult)));
                     });
-
-                return result.Task;
+                OnOpened(EventArgs.Empty);
             }
+
+            SetWindowStartupLocation(owner);
+            return result.Task;
         }
 
-        void SetIsEnabled(IEnumerable<Window> windows, bool isEnabled)
+        private void SetWindowStartupLocation(IWindowBaseImpl owner = null)
         {
-            foreach (var window in windows)
-            {
-                window.IsEnabled = isEnabled;
-            }
-        }
+            var scaling = owner?.Scaling ?? PlatformImpl?.Scaling ?? 1;
 
-        void SetWindowStartupLocation()
-        {
+            // TODO: We really need non-client size here.
+            var rect = new PixelRect(
+                PixelPoint.Origin,
+                PixelSize.FromSize(ClientSize, scaling));
+
             if (WindowStartupLocation == WindowStartupLocation.CenterScreen)
             {
-                var screen = Screens.ScreenFromPoint(Bounds.Position);
+                var screen = Screens.ScreenFromPoint(owner?.Position ?? Position);
 
                 if (screen != null)
-                    Position = screen.WorkingArea.CenterRect(new Rect(ClientSize)).Position;
+                {
+                    Position = screen.WorkingArea.CenterRect(rect).Position;
+                }
             }
             else if (WindowStartupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (Owner != null)
+                if (owner != null)
                 {
-                    var positionAsSize = Owner.ClientSize / 2 - ClientSize / 2;
-                    Position = Owner.Position + new Point(positionAsSize.Width, positionAsSize.Height);
+                    // TODO: We really need non-client size here.
+                    var ownerRect = new PixelRect(
+                        owner.Position,
+                        PixelSize.FromSize(owner.ClientSize, scaling));
+                    Position = ownerRect.CenterRect(rect).Position;
                 }
             }
         }

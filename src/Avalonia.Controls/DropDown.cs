@@ -2,9 +2,12 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -12,12 +15,17 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
-
     /// <summary>
     /// A drop-down list control.
     /// </summary>
     public class DropDown : SelectingItemsControl
     {
+        /// <summary>
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// </summary>
+        private static readonly FuncTemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
@@ -39,15 +47,23 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
             AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
+        /// <summary>
+        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<DropDown>();
+
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
+        private IDisposable _subscriptionsOnOpen;
 
         /// <summary>
         /// Initializes static members of the <see cref="DropDown"/> class.
         /// </summary>
         static DropDown()
         {
+            ItemsPanelProperty.OverrideDefaultValue<DropDown>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<DropDown>(true);
             SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
             KeyDownEvent.AddClassHandler<DropDown>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
@@ -78,6 +94,15 @@ namespace Avalonia.Controls
         {
             get { return _selectionBoxItem; }
             set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the virtualization mode for the items.
+        /// </summary>
+        public ItemVirtualizationMode VirtualizationMode
+        {
+            get { return GetValue(VirtualizationModeProperty); }
+            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <inheritdoc/>
@@ -125,16 +150,48 @@ namespace Avalonia.Controls
             {
                 if (e.Key == Key.Down)
                 {
-                    if (++SelectedIndex >= ItemCount)
-                        SelectedIndex = 0;
-
+                    SelectNext();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Up)
                 {
-                    if (--SelectedIndex < 0)
-                        SelectedIndex = ItemCount - 1;
+                    SelectPrev();
+                    e.Handled = true;
+                }
+            }
+            else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
+                      (e.Key == Key.Up || e.Key == Key.Down))
+            {
+                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
+                if (firstChild != null)
+                {
+                    FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
+                    e.Handled = true;
+                }
+            }
+        }
 
+        /// <inheritdoc/>
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+
+            if (!e.Handled)
+            {
+                if (!IsDropDownOpen)
+                {
+                    if (IsFocused)
+                    {
+                        if (e.Delta.Y < 0)
+                            SelectNext();
+                        else
+                            SelectPrev();
+
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
                     e.Handled = true;
                 }
             }
@@ -159,6 +216,7 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+
             base.OnPointerPressed(e);
         }
 
@@ -168,27 +226,83 @@ namespace Avalonia.Controls
             if (_popup != null)
             {
                 _popup.Opened -= PopupOpened;
+                _popup.Closed -= PopupClosed;
             }
 
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
+            _popup.Closed += PopupClosed;
+
+            base.OnTemplateApplied(e);
+        }
+
+        internal void ItemFocused(DropDownItem dropDownItem)
+        {
+            if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
+            {
+                dropDownItem.BringIntoView();
+            }
+        }
+
+        private void PopupClosed(object sender, EventArgs e)
+        {
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
+            if (CanFocus(this))
+            {
+                Focus();
+            }
         }
 
         private void PopupOpened(object sender, EventArgs e)
         {
-            var selectedIndex = SelectedIndex;
+            TryFocusSelectedItem();
 
-            if (selectedIndex != -1)
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
+            var toplevel = this.GetVisualRoot() as TopLevel;
+            if (toplevel != null)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
-                container?.Focus();
+                _subscriptionsOnOpen = toplevel.AddHandler(PointerWheelChangedEvent, (s, ev) =>
+                {
+                    //eat wheel scroll event outside dropdown popup while it's open
+                    if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
+                    {
+                        ev.Handled = true;
+                    }
+                }, Interactivity.RoutingStrategies.Tunnel);
             }
         }
 
         private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
         {
             UpdateSelectionBoxItem(e.NewValue);
+            TryFocusSelectedItem();
         }
+
+        private void TryFocusSelectedItem()
+        {
+            var selectedIndex = SelectedIndex;
+            if (IsDropDownOpen && selectedIndex != -1)
+            {
+                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+
+                if (container == null && SelectedItems.Count > 0)
+                {
+                    ScrollIntoView(SelectedItems[0]);
+                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                }
+
+                if (container != null && CanFocus(container))
+                {
+                    container.Focus();
+                }
+            }
+        }
+
+        private bool CanFocus(IControl control) => control.Focusable && control.IsEnabledCore && control.IsVisible;
 
         private void UpdateSelectionBoxItem(object item)
         {
@@ -219,7 +333,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                SelectionBoxItem = item;
+                var selector = MemberSelector;
+                SelectionBoxItem = selector != null ? selector.Select(item) : item;
             }
         }
 
@@ -233,6 +348,26 @@ namespace Avalonia.Controls
                     break;
                 }
             }
+        }
+
+        private void SelectNext()
+        {
+            int next = SelectedIndex + 1;
+
+            if (next >= ItemCount)
+                next = 0;
+
+            SelectedIndex = next;
+        }
+
+        private void SelectPrev()
+        {
+            int prev = SelectedIndex - 1;
+
+            if (prev < 0)
+                prev = ItemCount - 1;
+
+            SelectedIndex = prev;
         }
     }
 }

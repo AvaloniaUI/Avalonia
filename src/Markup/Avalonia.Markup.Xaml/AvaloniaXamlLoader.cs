@@ -8,9 +8,14 @@ using Avalonia.Platform;
 using Portable.Xaml;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -85,7 +90,7 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
-            foreach (var uri in GetUrisFor(type))
+            foreach (var uri in GetUrisFor(assetLocator, type))
             {
                 if (assetLocator.Exists(uri))
                 {
@@ -134,18 +139,14 @@ namespace Avalonia.Markup.Xaml
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
+                var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
                 try
                 {
-                    return Load(stream, asset.assembly, rootInstance, uri);
+                    return Load(stream, asset.assembly, rootInstance, absoluteUri);
                 }
                 catch (Exception e)
                 {
-                    var uriString = uri.ToString();
-                    if (!uri.IsAbsoluteUri)
-                    {
-                        uriString = new Uri(baseUri, uri).AbsoluteUri;
-                    }
-                    throw new XamlLoadException("Error loading xaml at " + uriString + ": " + e.Message, e);
+                    throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
                 }
             }
         }
@@ -221,15 +222,43 @@ namespace Avalonia.Markup.Xaml
             return LoadFromReader(reader, null);
         }
 
+
+        private static readonly DataContractSerializer s_xamlInfoSerializer =
+            new DataContractSerializer(typeof(AvaloniaResourceXamlInfo));
         /// <summary>
         /// Gets the URI for a type.
         /// </summary>
+        /// <param name="assetLocator"></param>
         /// <param name="type">The type.</param>
         /// <returns>The URI.</returns>
-        private static IEnumerable<Uri> GetUrisFor(Type type)
+        private static IEnumerable<Uri> GetUrisFor(IAssetLoader assetLocator, Type type)
         {
             var asm = type.GetTypeInfo().Assembly.GetName().Name;
+            var xamlInfoUri = new Uri($"avares://{asm}/!AvaloniaResourceXamlInfo");
             var typeName = type.FullName;
+            if (typeName == null)
+                throw new ArgumentException("Type doesn't have a FullName");
+            
+            if (assetLocator.Exists(xamlInfoUri))
+            {
+                using (var xamlInfoStream = assetLocator.Open(xamlInfoUri))
+                {
+                    var assetDoc = XDocument.Load(xamlInfoStream);
+                    XNamespace assetNs = assetDoc.Root.Attribute("xmlns").Value;
+                    XNamespace arrayNs = "http://schemas.microsoft.com/2003/10/Serialization/Arrays";
+                    Dictionary<string,string> xamlInfo =
+                        assetDoc.Root.Element(assetNs + "ClassToResourcePathIndex").Elements(arrayNs + "KeyValueOfstringstring")
+                         .ToDictionary(entry =>entry.Element(arrayNs + "Key").Value,
+                                entry => entry.Element(arrayNs + "Value").Value);
+                    
+                    if (xamlInfo.TryGetValue(typeName, out var rv))
+                    {
+                        yield return new Uri($"avares://{asm}{rv}");
+                        yield break;
+                    }
+                }
+            }           
+            
             yield return new Uri("resm:" + typeName + ".xaml?assembly=" + asm);
             yield return new Uri("resm:" + typeName + ".paml?assembly=" + asm);
         }

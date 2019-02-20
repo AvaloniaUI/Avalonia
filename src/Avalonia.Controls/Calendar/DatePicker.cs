@@ -954,7 +954,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    var dateValidationError = new DatePickerDateValidationErrorEventArgs(new ArgumentOutOfRangeException("text", "SelectedDate value is not valid."), text);
+                    var dateValidationError = new DatePickerDateValidationErrorEventArgs(new ArgumentOutOfRangeException(nameof(text), "SelectedDate value is not valid."), text);
                     OnDateValidationError(dateValidationError);
 
                     if (dateValidationError.ThrowException)

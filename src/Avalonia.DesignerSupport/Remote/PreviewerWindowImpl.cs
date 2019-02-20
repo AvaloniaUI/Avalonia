@@ -35,8 +35,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public Point Position { get; set; }
-        public Action<Point> PositionChanged { get; set; }
+        public PixelPoint Position { get; set; }
+        public Action<PixelPoint> PositionChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public Func<bool> Closing { get; set; }
@@ -86,9 +86,8 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
-        public IDisposable ShowDialog()
+        public void ShowDialog(IWindowImpl parent)
         {
-            return Disposable.Empty;
         }
 
         public void SetSystemDecorations(bool enabled)

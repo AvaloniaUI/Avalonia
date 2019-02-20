@@ -511,7 +511,7 @@ namespace Avalonia.Collections
         /// </summary>
         private void NotifyCountChanged()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Count"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
         }
 
         /// <summary>

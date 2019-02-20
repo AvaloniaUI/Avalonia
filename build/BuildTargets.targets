@@ -1,0 +1,8 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AvaloniaBuildTasksLocation>$(MSBuildThisFileDirectory)\..\src\Avalonia.Build.Tasks\bin\$(Configuration)\netstandard2.0\Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
+    <AvaloniaUseExternalMSBuild>true</AvaloniaUseExternalMSBuild>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.props"/>
+  <Import Project="$(MSBuildThisFileDirectory)\..\packages\Avalonia\AvaloniaBuildTasks.targets"/>
+</Project>

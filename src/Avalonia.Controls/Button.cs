@@ -217,7 +217,7 @@ namespace Avalonia.Controls
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
@@ -253,10 +253,8 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
 
-                var hittest = this.GetVisualsAt(e.GetPosition(this));
-
                 if (ClickMode == ClickMode.Release &&
-                    hittest.Any(c => c == this || (c as IStyledElement)?.TemplatedParent == this))
+                    this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
                     OnClick();
                 }

@@ -1,10 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Animation;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -14,28 +17,46 @@ namespace Avalonia.Controls
     public class TabControl : SelectingItemsControl
     {
         /// <summary>
-        /// Defines the <see cref="PageTransition"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
-            Avalonia.Controls.Carousel.PageTransitionProperty.AddOwner<TabControl>();
-
-        /// <summary>
-        /// Defines an <see cref="IMemberSelector"/> that selects the content of a <see cref="TabItem"/>.
-        /// </summary>
-        public static readonly IMemberSelector ContentSelector =
-            new FuncMemberSelector<object, object>(SelectContent);
-
-        /// <summary>
-        /// Defines an <see cref="IMemberSelector"/> that selects the header of a <see cref="TabItem"/>.
-        /// </summary>
-        public static readonly IMemberSelector HeaderSelector =
-            new FuncMemberSelector<object, object>(SelectHeader);
-
-        /// <summary>
         /// Defines the <see cref="TabStripPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<Dock> TabStripPlacementProperty =
             AvaloniaProperty.Register<TabControl, Dock>(nameof(TabStripPlacement), defaultValue: Dock.Top);
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
+            ContentControl.HorizontalContentAlignmentProperty.AddOwner<TabControl>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalContentAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
+            ContentControl.VerticalContentAlignmentProperty.AddOwner<TabControl>();
+
+        /// <summary>
+        /// Defines the <see cref="ContentTemplate"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+            ContentControl.ContentTemplateProperty.AddOwner<TabControl>();
+
+        /// <summary>
+        /// The selected content property
+        /// </summary>
+        public static readonly StyledProperty<object> SelectedContentProperty =
+            AvaloniaProperty.Register<TabControl, object>(nameof(SelectedContent));
+
+        /// <summary>
+        /// The selected content template property
+        /// </summary>
+        public static readonly StyledProperty<IDataTemplate> SelectedContentTemplateProperty =
+            AvaloniaProperty.Register<TabControl, IDataTemplate>(nameof(SelectedContentTemplate));
+
+        /// <summary>
+        /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
+        /// </summary>
+        private static readonly FuncTemplate<IPanel> DefaultPanel =
+            new FuncTemplate<IPanel>(() => new WrapPanel());
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
@@ -43,39 +64,34 @@ namespace Avalonia.Controls
         static TabControl()
         {
             SelectionModeProperty.OverrideDefaultValue<TabControl>(SelectionMode.AlwaysSelected);
-            FocusableProperty.OverrideDefaultValue<TabControl>(false);
+            ItemsPanelProperty.OverrideDefaultValue<TabControl>(DefaultPanel);
             AffectsMeasure<TabControl>(TabStripPlacementProperty);
+            ContentControlMixin.Attach<TabControl>(
+                SelectedContentProperty,
+                x => x.LogicalChildren,
+                "PART_SelectedContentHost");
         }
 
         /// <summary>
-        /// Gets the pages portion of the <see cref="TabControl"/>'s template.
+        /// Gets or sets the horizontal alignment of the content within the control.
         /// </summary>
-        public IControl Pages
+        public HorizontalAlignment HorizontalContentAlignment
         {
-            get;
-            private set;
+            get { return GetValue(HorizontalContentAlignmentProperty); }
+            set { SetValue(HorizontalContentAlignmentProperty, value); }
         }
 
         /// <summary>
-        /// Gets the tab strip portion of the <see cref="TabControl"/>'s template.
+        /// Gets or sets the vertical alignment of the content within the control.
         /// </summary>
-        public IControl TabStrip
+        public VerticalAlignment VerticalContentAlignment
         {
-            get;
-            private set;
+            get { return GetValue(VerticalContentAlignmentProperty); }
+            set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
         /// <summary>
-        /// Gets or sets the transition to use when switching tabs.
-        /// </summary>
-        public IPageTransition PageTransition
-        {
-            get { return GetValue(PageTransitionProperty); }
-            set { SetValue(PageTransitionProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the tabstrip placement of the tabcontrol.
+        /// Gets or sets the tabstrip placement of the TabControl.
         /// </summary>
         public Dock TabStripPlacement
         {
@@ -83,67 +99,76 @@ namespace Avalonia.Controls
             set { SetValue(TabStripPlacementProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the default data template used to display the content of the selected tab.
+        /// </summary>
+        public IDataTemplate ContentTemplate
+        {
+            get { return GetValue(ContentTemplateProperty); }
+            set { SetValue(ContentTemplateProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the content of the selected tab.
+        /// </summary>
+        /// <value>
+        /// The content of the selected tab.
+        /// </value>
+        public object SelectedContent
+        {
+            get { return GetValue(SelectedContentProperty); }
+            internal set { SetValue(SelectedContentProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the content template for the selected tab.
+        /// </summary>
+        /// <value>
+        /// The content template of the selected tab.
+        /// </value>
+        public IDataTemplate SelectedContentTemplate
+        {
+            get { return GetValue(SelectedContentTemplateProperty); }
+            internal set { SetValue(SelectedContentTemplateProperty, value); }
+        }
+
+        internal ItemsPresenter ItemsPresenterPart { get; private set; }
+
+        internal ContentPresenter ContentPart { get; private set; }
+
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            // TabControl doesn't actually create items - instead its TabStrip and Carousel
-            // children create the items. However we want it to be a SelectingItemsControl
-            // so that it has the Items/SelectedItem etc properties. In this case, we can
-            // return a null ItemContainerGenerator to disable the creation of item containers.
-            return null;
+            return new TabItemContainerGenerator(this);
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            TabStrip = e.NameScope.Find<IControl>("PART_TabStrip");
-            Pages = e.NameScope.Find<IControl>("PART_Content");
+            ItemsPresenterPart = e.NameScope.Get<ItemsPresenter>("PART_ItemsPresenter");
+
+            ContentPart = e.NameScope.Get<ContentPresenter>("PART_SelectedContentHost");
         }
 
-        /// <summary>
-        /// Selects the content of a tab item.
-        /// </summary>
-        /// <param name="o">The tab item.</param>
-        /// <returns>The content.</returns>
-        private static object SelectContent(object o)
+        /// <inheritdoc/>
+        protected override void OnGotFocus(GotFocusEventArgs e)
         {
-            var content = o as IContentControl;
+            base.OnGotFocus(e);
 
-            if (content != null)
+            if (e.NavigationMethod == NavigationMethod.Directional)
             {
-                return content.Content;
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
-            else
-            {
-                return o;
-            }       
         }
 
-        /// <summary>
-        /// Selects the header of a tab item.
-        /// </summary>
-        /// <param name="o">The tab item.</param>
-        /// <returns>The content.</returns>
-        private static object SelectHeader(object o)
+        /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            var headered = o as IHeadered;
-            var control = o as IControl;
+            base.OnPointerPressed(e);
 
-            if (headered != null)
+            if (e.MouseButton == MouseButton.Left)
             {
-                return headered.Header ?? string.Empty;
-            }
-            else if (control != null)
-            {
-                // Non-headered control items should result in TabStripItems with empty content.
-                // If a TabStrip is created with non IHeadered controls as its items, don't try to
-                // display the control in the TabStripItem: the content portion will also try to 
-                // display this control, resulting in dual-parentage breakage.
-                return string.Empty;
-            }
-            else
-            {
-                return o;
+                e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
         }
     }

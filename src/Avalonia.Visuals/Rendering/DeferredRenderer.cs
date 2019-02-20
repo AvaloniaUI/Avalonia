@@ -29,6 +29,7 @@ namespace Avalonia.Rendering
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
+        private bool _disposed;
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
@@ -36,6 +37,8 @@ namespace Avalonia.Rendering
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
+        private readonly IDeferredRendererLock _lock;
+        private readonly object _sceneLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -44,11 +47,13 @@ namespace Avalonia.Rendering
         /// <param name="renderLoop">The render loop.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
+        /// <param name="rendererLock">Lock object used before trying to access render target</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
             ISceneBuilder sceneBuilder = null,
-            IDispatcher dispatcher = null)
+            IDispatcher dispatcher = null,
+            IDeferredRendererLock rendererLock = null)
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
@@ -57,6 +62,7 @@ namespace Avalonia.Rendering
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
+            _lock = rendererLock ?? new ManagedDeferredRendererLock();
         }
 
         /// <summary>
@@ -80,6 +86,7 @@ namespace Avalonia.Rendering
             RenderTarget = renderTarget;
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
+            _lock = new ManagedDeferredRendererLock();
         }
 
         /// <inheritdoc/>
@@ -92,6 +99,9 @@ namespace Avalonia.Rendering
         /// Gets or sets a path to which rendered frame should be rendered for debugging.
         /// </summary>
         public string DebugFramesPath { get; set; }
+
+        /// <inheritdoc/>
+        public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 
         /// <summary>
         /// Gets the render layers.
@@ -114,12 +124,36 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Dispose()
         {
-            var scene = Interlocked.Exchange(ref _scene, null);
-            scene?.Dispose();
-            Stop();
+            lock (_sceneLock)
+            {
+                if (_disposed)
+                    return;
+                _disposed = true;
+                var scene = _scene;
+                _scene = null;
+                scene?.Dispose();
+            }
 
-            Layers.Clear();
-            RenderTarget?.Dispose();
+            Stop();
+            DisposeRenderTarget();
+        }
+
+        void DisposeRenderTarget()
+        {
+            using (var l = _lock.TryLock())
+            {
+                if(l == null)
+                {
+                    // We are still trying to render on the render thread, try again a bit later
+                    DispatcherTimer.RunOnce(DisposeRenderTarget, TimeSpan.FromMilliseconds(50),
+                        DispatcherPriority.Background);
+                    return;
+                }
+
+                Layers.Clear();
+                RenderTarget?.Dispose();
+                RenderTarget = null;
+            }
         }
 
         /// <inheritdoc/>
@@ -130,13 +164,19 @@ namespace Avalonia.Rendering
                 // When unit testing the renderLoop may be null, so update the scene manually.
                 UpdateScene();
             }
-
+            //It's safe to access _scene here without a lock since
+            //it's only changed from UI thread which we are currently on
             return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
         }
 
         /// <inheritdoc/>
         public void Paint(Rect rect)
         {
+            var t = (IRenderLoopTask)this;
+            if(t.NeedsUpdate)
+                UpdateScene();
+            if(_scene?.Item != null)
+                Render(true);
         }
 
         /// <inheritdoc/>
@@ -164,17 +204,12 @@ namespace Avalonia.Rendering
             }
         }
 
-        bool IRenderLoopTask.NeedsUpdate => _dirty == null || _dirty.Count > 0;
+        bool NeedsUpdate => _dirty == null || _dirty.Count > 0;
+        bool IRenderLoopTask.NeedsUpdate => NeedsUpdate;
 
         void IRenderLoopTask.Update(TimeSpan time) => UpdateScene();
 
-        void IRenderLoopTask.Render()
-        {
-            using (var scene = _scene?.Clone())
-            {
-                Render(scene?.Item);
-            }
-        }
+        void IRenderLoopTask.Render() => Render(false);
 
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
@@ -195,68 +230,108 @@ namespace Avalonia.Rendering
 
         internal void UnitTestUpdateScene() => UpdateScene();
 
-        internal void UnitTestRender() => Render(_scene.Item);
+        internal void UnitTestRender() => Render(false);
 
-        private void Render(Scene scene)
+        private void Render(bool forceComposite)
         {
-            bool renderOverlay = DrawDirtyRects || DrawFps;
-            bool composite = false;
-
-            if (RenderTarget == null)
+            using (var l = _lock.TryLock())
             {
-                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
-            }
+                if (l == null)
+                    return;
 
-            if (renderOverlay)
-            {
-                _dirtyRectsDisplay.Tick();
-            }
-
-            try
-            {
-                if (scene != null && scene.Size != Size.Empty)
+                IDrawingContextImpl context = null;
+                try
                 {
-                    IDrawingContextImpl context = null;
-
-                    if (scene.Generation != _lastSceneId)
+                    try
                     {
-                        context = RenderTarget.CreateDrawingContext(this);
-                        Layers.Update(scene, context);
-
-                        RenderToLayers(scene);
-
-                        if (DebugFramesPath != null)
+                        IDrawingContextImpl GetContext()
                         {
-                            SaveDebugFrames(scene.Generation);
+                            if (context != null)
+                                return context;
+                            if (RenderTarget == null)
+                                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                            return context = RenderTarget.CreateDrawingContext(this);
+
                         }
 
-                        _lastSceneId = scene.Generation;
+                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
 
-                        composite = true;
+                        using (scene)
+                        {
+                            if (scene?.Item != null)
+                            {
+                                var overlay = DrawDirtyRects || DrawFps;
+                                if (DrawDirtyRects)
+                                    _dirtyRectsDisplay.Tick();
+                                if (overlay)
+                                    RenderOverlay(scene.Item, GetContext());
+                                if (updated || forceComposite || overlay)
+                                    RenderComposite(scene.Item, GetContext());
+                             }
+                        }
                     }
-
-                    if (renderOverlay)
+                    finally
                     {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
-                        RenderOverlay(scene, context);
-                        RenderComposite(scene, context);
+                        context?.Dispose();
                     }
-                    else if (composite)
-                    {
-                        context = context ?? RenderTarget.CreateDrawingContext(this);
-                        RenderComposite(scene, context);
-                    }
-
-                    context?.Dispose();
+                }
+                catch (RenderTargetCorruptedException ex)
+                {
+                    Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
+                    RenderTarget?.Dispose();
+                    RenderTarget = null;
                 }
             }
-            catch (RenderTargetCorruptedException ex)
-            {
-                Logging.Logger.Information("Renderer", this, "Render target was corrupted. Exception: {0}", ex);
-                RenderTarget?.Dispose();
-                RenderTarget = null;
-            }
         }
+
+        private (IRef<Scene> scene, bool updated) UpdateRenderLayersAndConsumeSceneIfNeeded(Func<IDrawingContextImpl> contextFactory,
+            bool recursiveCall = false)
+        {
+            IRef<Scene> sceneRef;
+            lock (_sceneLock)
+                sceneRef = _scene?.Clone();
+            if (sceneRef == null)
+                return (null, false);
+            using (sceneRef)
+            {
+                var scene = sceneRef.Item;
+                if (scene.Generation != _lastSceneId)
+                {
+                    var context = contextFactory();
+                    Layers.Update(scene, context);
+
+                    RenderToLayers(scene);
+
+                    if (DebugFramesPath != null)
+                    {
+                        SaveDebugFrames(scene.Generation);
+                    }
+
+                    lock (_sceneLock)
+                        _lastSceneId = scene.Generation;
+
+
+                    // We have consumed the previously available scene, but there might be some dirty 
+                    // rects since the last update. *If* we are on UI thread, we can force immediate scene
+                    // rebuild before rendering anything on-screen
+                    // We are calling the same method recursively here 
+                    if (!recursiveCall && Dispatcher.UIThread.CheckAccess() && NeedsUpdate)
+                    {
+                        UpdateScene();
+                        var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(contextFactory, true);
+                        return (rs, true);
+                    }
+                    
+                    // Indicate that we have updated the layers
+                    return (sceneRef.Clone(), true);
+                }
+                
+                // Just return scene, layers weren't updated
+                return (sceneRef.Clone(), false);
+            }
+            
+        }
+
 
         private void Render(IDrawingContextImpl context, VisualNode node, IVisual layer, Rect clipBounds)
         {
@@ -289,16 +364,34 @@ namespace Avalonia.Rendering
 
         private void RenderToLayers(Scene scene)
         {
-            if (scene.Layers.HasDirty)
+            foreach (var layer in scene.Layers)
             {
-                foreach (var layer in scene.Layers)
-                {
-                    var renderTarget = Layers[layer.LayerRoot].Bitmap;
-                    var node = (VisualNode)scene.FindNode(layer.LayerRoot);
+                var renderLayer = Layers[layer.LayerRoot];
+                if (layer.Dirty.IsEmpty && !renderLayer.IsEmpty)
+                    continue;
+                var renderTarget = renderLayer.Bitmap;
+                var node = (VisualNode)scene.FindNode(layer.LayerRoot);
 
-                    if (node != null)
+                if (node != null)
+                {
+                    using (var context = renderTarget.Item.CreateDrawingContext(this))
                     {
-                        using (var context = renderTarget.Item.CreateDrawingContext(this))
+                        if (renderLayer.IsEmpty)
+                        {
+                            // Render entire layer root node
+                            context.Clear(Colors.Transparent);
+                            context.Transform = Matrix.Identity;
+                            context.PushClip(node.ClipBounds);
+                            Render(context, node, layer.LayerRoot, node.ClipBounds);
+                            context.PopClip();
+                            if (DrawDirtyRects)
+                            {
+                                _dirtyRectsDisplay.Add(node.ClipBounds);
+                            }
+
+                            renderLayer.IsEmpty = false;
+                        }
+                        else
                         {
                             foreach (var rect in layer.Dirty)
                             {
@@ -317,6 +410,7 @@ namespace Avalonia.Rendering
                     }
                 }
             }
+
         }
 
         private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
@@ -393,6 +487,13 @@ namespace Avalonia.Rendering
         private void UpdateScene()
         {
             Dispatcher.UIThread.VerifyAccess();
+            lock (_sceneLock)
+            {
+                if (_disposed)
+                    return;
+                if (_scene?.Item.Generation > _lastSceneId)
+                    return;
+            }
             if (_root.IsVisible)
             {
                 var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
@@ -411,16 +512,38 @@ namespace Avalonia.Rendering
                     }
                 }
 
-                var oldScene = Interlocked.Exchange(ref _scene, sceneRef);
-                oldScene?.Dispose();
+                lock (_sceneLock)
+                {
+                    var oldScene = _scene;
+                    _scene = sceneRef;
+                    oldScene?.Dispose();
+                }
+
+                if (SceneInvalidated != null)
+                {
+                    var rect = new Rect();
+
+                    foreach (var layer in scene.Layers)
+                    {
+                        foreach (var dirty in layer.Dirty)
+                        {
+                            rect = rect.Union(dirty);
+                        }
+                    }
+
+                    SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
+                }
 
                 _dirty.Clear();
-                (_root as IRenderRoot)?.Invalidate(new Rect(scene.Size));
             }
             else
             {
-                var oldScene = Interlocked.Exchange(ref _scene, null);
-                oldScene?.Dispose();
+                lock (_sceneLock)
+                {
+                    var oldScene = _scene;
+                    _scene = null;
+                    oldScene?.Dispose();
+                }
             }
         }
 

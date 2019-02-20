@@ -1,13 +1,12 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Data;
+using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    using Portable.Xaml.Markup;
-    using System;
-
     public class RelativeSourceExtension : MarkupExtension
     {
         public RelativeSourceExtension()
@@ -24,10 +23,19 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return new RelativeSource
             {
                 Mode = Mode,
+                AncestorType = AncestorType,
+                AncestorLevel = AncestorLevel,
+                Tree = Tree,
             };
         }
 
         [ConstructorArgument("mode")]
-        public RelativeSourceMode Mode { get; set; }
+        public RelativeSourceMode Mode { get; set; } = RelativeSourceMode.FindAncestor;
+
+        public Type AncestorType { get; set; }
+
+        public TreeType Tree { get; set; }
+
+        public int AncestorLevel { get; set; } = 1;
     }
 }

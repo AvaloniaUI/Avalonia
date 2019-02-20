@@ -12,7 +12,7 @@ namespace Avalonia.DesignerSupport
 {
     public class DesignWindowLoader
     {
-        public static Window LoadDesignerWindow(string xaml, string assemblyPath)
+        public static Window LoadDesignerWindow(string xaml, string assemblyPath, string xamlFileProjectPath)
         {
             Window window;
             Control control;
@@ -26,9 +26,11 @@ namespace Avalonia.DesignerSupport
                 Uri baseUri = null;
                 if (assemblyPath != null)
                 {
+                    if (xamlFileProjectPath == null)
+                        xamlFileProjectPath = "/Designer/Fake.xaml";
                     //Fabricate fake Uri
                     baseUri =
-                        new Uri("resm:Fake.xaml?assembly=" + Path.GetFileNameWithoutExtension(assemblyPath));
+                        new Uri($"avares://{Path.GetFileNameWithoutExtension(assemblyPath)}{xamlFileProjectPath}");
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;

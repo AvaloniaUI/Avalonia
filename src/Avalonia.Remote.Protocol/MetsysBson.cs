@@ -1190,10 +1190,6 @@ namespace Metsys.Bson
                 object container = null;
                 var property = typeHelper.FindProperty(name);
                 var propertyType = property != null ? property.Type : _typeMap.ContainsKey(storageType) ? _typeMap[storageType] : typeof(object);
-                if (property == null && typeHelper.Expando == null)
-                {
-                    throw new BsonException(string.Format("Deserialization failed: type {0} does not have a property named {1}", type.FullName, name));
-                }
                 if (property != null && property.Setter == null)
                 {
                     container = property.Getter(instance);
@@ -1201,7 +1197,8 @@ namespace Metsys.Bson
                 var value = isNull ? null : DeserializeValue(propertyType, storageType, container, options);
                 if (property == null)
                 {
-                    ((IDictionary<string, object>)typeHelper.Expando.Getter(instance))[name] = value;
+                    if (typeHelper.Expando != null)
+                        ((IDictionary<string, object>)typeHelper.Expando.Getter(instance))[name] = value;
                 }
                 else if (container == null && value != null && !property.Ignored)
                 {

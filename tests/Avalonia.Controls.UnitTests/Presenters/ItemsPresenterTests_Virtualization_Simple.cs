@@ -717,6 +717,45 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Equal(10, target.Panel.Children.Count);
         }
 
+        [Fact]
+        public void Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
+        [Fact]
+        public void Second_Scroll_To_Last_Should_Work()
+        {
+            var target = CreateTarget(itemCount: 11);
+            var scroller = (TestScroller)target.Parent;
+
+            scroller.Width = scroller.Height = 100;
+            scroller.LayoutManager.ExecuteInitialLayoutPass(scroller);
+
+            var last = (target.Items as IList)[10];
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+
+            target.ScrollIntoView(last);
+
+            Assert.Equal(new Vector(0, 1), ((ILogicalScrollable)target).Offset);
+            Assert.Same(target.Panel.Children[9].DataContext, last);
+        }
+
         public class Vertical
         {
             [Fact]
@@ -1038,30 +1077,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             public ILayoutManager LayoutManager { get; } = new LayoutManager();
 
-            public IRenderTarget CreateRenderTarget()
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Invalidate(Rect rect)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToClient(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Point PointToScreen(Point point)
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override Size MeasureOverride(Size availableSize)
-            {
-                return base.MeasureOverride(availableSize);
-            }
+            public IRenderTarget CreateRenderTarget() => throw new NotImplementedException();
+            public void Invalidate(Rect rect) => throw new NotImplementedException();
+            public Point PointToClient(PixelPoint p) => throw new NotImplementedException();
+            public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
         private class TestItemsPresenter : ItemsPresenter

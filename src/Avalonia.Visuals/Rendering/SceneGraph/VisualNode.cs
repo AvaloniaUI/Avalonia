@@ -220,6 +220,7 @@ namespace Avalonia.Rendering.SceneGraph
                 Transform = Transform,
                 ClipBounds = ClipBounds,
                 ClipToBounds = ClipToBounds,
+                LayoutBounds = LayoutBounds,
                 GeometryClip = GeometryClip,
                 _opacity = Opacity,
                 OpacityMask = OpacityMask,
@@ -235,7 +236,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             foreach (var operation in DrawOperations)
             {
-                if (operation.Item.HitTest(p) == true)
+                if (operation.Item.HitTest(p))
                 {
                     return true;
                 }

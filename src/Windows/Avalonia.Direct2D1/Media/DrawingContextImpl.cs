@@ -330,7 +330,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
-                var pixelSize = PixelSize.FromSize(size, dpi);
+                var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
                 return platform.CreateRenderTargetBitmap(pixelSize, dpi);
             }
         }
@@ -434,10 +434,16 @@ namespace Avalonia.Direct2D1.Media
 
                     if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
                     {
+                        // We need to ensure the size we're requesting is an integer pixel size, otherwise
+                        // D2D alters the DPI of the render target, which messes stuff up. PixelSize.FromSize
+                        // will do the rounding for us.
+                        var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
+                        var pixelSize = PixelSize.FromSizeWithDpi(intermediateSize, dpi);
+
                         using (var intermediate = new BitmapRenderTarget(
                             _deviceContext,
                             CompatibleRenderTargetOptions.None,
-                            intermediateSize.ToSharpDX()))
+                            pixelSize.ToSizeWithDpi(dpi).ToSharpDX()))
                         {
                             using (var ctx = new RenderTarget(intermediate).CreateDrawingContext(_visualBrushRenderer))
                             {

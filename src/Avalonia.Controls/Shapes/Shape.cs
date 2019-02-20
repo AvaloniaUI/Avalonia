@@ -20,7 +20,10 @@ namespace Avalonia.Controls.Shapes
             AvaloniaProperty.Register<Shape, IBrush>(nameof(Stroke));
 
         public static readonly StyledProperty<AvaloniaList<double>> StrokeDashArrayProperty =
-            AvaloniaProperty.Register<Shape, AvaloniaList<double>>("StrokeDashArray");
+            AvaloniaProperty.Register<Shape, AvaloniaList<double>>(nameof(StrokeDashArray));
+            
+        public static readonly StyledProperty<double> StrokeDashOffsetProperty =
+            AvaloniaProperty.Register<Shape, double>(nameof(StrokeDashOffset));
 
         public static readonly StyledProperty<double> StrokeThicknessProperty =
             AvaloniaProperty.Register<Shape, double>(nameof(StrokeThickness));
@@ -103,6 +106,12 @@ namespace Avalonia.Controls.Shapes
             get { return GetValue(StrokeDashArrayProperty); }
             set { SetValue(StrokeDashArrayProperty, value); }
         }
+        
+        public double StrokeDashOffset
+        {
+            get { return GetValue(StrokeDashOffsetProperty); }
+            set { SetValue(StrokeDashOffsetProperty, value); }
+        }
 
         public double StrokeThickness
         {
@@ -124,7 +133,7 @@ namespace Avalonia.Controls.Shapes
 
             if (geometry != null)
             {
-                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray), 
+                var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray, StrokeDashOffset), 
                     StrokeDashCap, StrokeStartLineCap, StrokeEndLineCap, StrokeJoin);
                 context.DrawGeometry(Fill, pen, geometry);
             }

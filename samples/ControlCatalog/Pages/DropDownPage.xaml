@@ -1,4 +1,6 @@
-<UserControl xmlns="https://github.com/avaloniaui">
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DropDownPage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h1">DropDown</TextBlock>
     <TextBlock Classes="h2">A drop-down list.</TextBlock>
@@ -25,6 +27,15 @@
           <TextBox Text="TextBox"/>
         </DropDownItem>
       </DropDown>
+
+
+       <DropDown x:Name="fontDropDown"  SelectedIndex="0">
+            <DropDown.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}" FontFamily="{Binding}" />
+                </DataTemplate>
+            </DropDown.ItemTemplate>
+       </DropDown>
     </StackPanel>
 
   </StackPanel>

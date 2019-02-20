@@ -46,22 +46,22 @@ namespace Avalonia.Styling
     public class SelectorMatch
     {
         /// <summary>
-        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisType"/>/
+        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisType"/>.
         /// </summary>
         public static readonly SelectorMatch NeverThisType = new SelectorMatch(SelectorMatchResult.NeverThisType);
 
         /// <summary>
-        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisInstance"/>/
+        /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisInstance"/>.
         /// </summary>
         public static readonly SelectorMatch NeverThisInstance = new SelectorMatch(SelectorMatchResult.NeverThisInstance);
 
         /// <summary>
-        /// A selector match with the result of <see cref="SelectorMatchResult.AlwaysThisType"/>/
+        /// A selector match with the result of <see cref="SelectorMatchResult.AlwaysThisType"/>.
         /// </summary>
         public static readonly SelectorMatch AlwaysThisType = new SelectorMatch(SelectorMatchResult.AlwaysThisType);
 
         /// <summary>
-        /// Gets a selector match with the result of <see cref="SelectorMatchResult.AlwaysThisInstance"/>/
+        /// Gets a selector match with the result of <see cref="SelectorMatchResult.AlwaysThisInstance"/>.
         /// </summary>
         public static readonly SelectorMatch AlwaysThisInstance = new SelectorMatch(SelectorMatchResult.AlwaysThisInstance);
 

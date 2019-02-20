@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -20,7 +21,7 @@ namespace Avalonia.Skia
     /// </summary>
     public class DrawingContextImpl : IDrawingContextImpl
     {
-        private readonly IDisposable[] _disposables;
+        private IDisposable[] _disposables;
         private readonly Vector _dpi;
         private readonly Stack<PaintWrapper> _maskStack = new Stack<PaintWrapper>();
         private readonly Stack<double> _opacityStack = new Stack<double>();
@@ -30,7 +31,7 @@ namespace Avalonia.Skia
         private readonly bool _canTextUseLcdRendering;
         private Matrix _currentTransform;
         private GRContext _grContext;
-
+        private bool _disposed;
         /// <summary>
         /// Context create info.
         /// </summary>
@@ -74,6 +75,8 @@ namespace Avalonia.Skia
             _disposables = disposables;
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
+            if (_grContext != null)
+                Monitor.Enter(_grContext);
             
             Canvas = createInfo.Canvas;
 
@@ -225,10 +228,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
-            var normalizedDpi = new Vector(_dpi.X / SkiaPlatform.DefaultDpi.X, _dpi.Y / SkiaPlatform.DefaultDpi.Y);
-            var pixelSize = size * normalizedDpi;
-
-            return CreateRenderTarget((int) pixelSize.Width, (int) pixelSize.Height, _dpi);
+            return CreateRenderTarget(size);
         }
 
         /// <inheritdoc />
@@ -260,14 +260,26 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public virtual void Dispose()
         {
-            if (_disposables == null)
-            {
+            if(_disposed)
                 return;
-            }
-
-            foreach (var disposable in _disposables)
+            try
             {
-                disposable?.Dispose();
+                if (_grContext != null)
+                {
+                    Monitor.Exit(_grContext);
+                    _grContext = null;
+                }
+
+                if (_disposables != null)
+                {
+                    foreach (var disposable in _disposables)
+                        disposable?.Dispose();
+                    _disposables = null;
+                }
+            }
+            finally
+            {
+                _disposed = true;
             }
         }
 
@@ -387,26 +399,27 @@ namespace Avalonia.Skia
         /// <param name="targetSize">Target size.</param>
         /// <param name="tileBrush">Tile brush to use.</param>
         /// <param name="tileBrushImage">Tile brush image.</param>
-        /// <param name="interpolationMode">The bitmap interpolation mode.</param>
         private void ConfigureTileBrush(ref PaintWrapper paintWrapper, Size targetSize, ITileBrush tileBrush, IDrawableBitmapImpl tileBrushImage)
         {
-            var calc = new TileBrushCalculator(tileBrush,
-                    new Size(tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height), targetSize);
-
-            var intermediate = CreateRenderTarget(
-                (int)calc.IntermediateSize.Width,
-                (int)calc.IntermediateSize.Height, _dpi);
+            var calc = new TileBrushCalculator(tileBrush, tileBrushImage.PixelSize.ToSizeWithDpi(_dpi), targetSize);
+            var intermediate = CreateRenderTarget(calc.IntermediateSize);
 
             paintWrapper.AddDisposable(intermediate);
 
             using (var context = intermediate.CreateDrawingContext(null))
             {
-                var rect = new Rect(0, 0, tileBrushImage.PixelSize.Width, tileBrushImage.PixelSize.Height);
+                var sourceRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(96));
+                var targetRect = new Rect(tileBrushImage.PixelSize.ToSizeWithDpi(_dpi));
 
                 context.Clear(Colors.Transparent);
                 context.PushClip(calc.IntermediateClip);
                 context.Transform = calc.IntermediateTransform;
-                context.DrawImage(RefCountable.CreateUnownedNotClonable(tileBrushImage), 1, rect, rect, tileBrush.BitmapInterpolationMode);
+                context.DrawImage(
+                    RefCountable.CreateUnownedNotClonable(tileBrushImage),
+                    1,
+                    sourceRect,
+                    targetRect,
+                    tileBrush.BitmapInterpolationMode);
                 context.PopClip();
             }
 
@@ -433,7 +446,14 @@ namespace Avalonia.Skia
             var image = intermediate.SnapshotImage();
             paintWrapper.AddDisposable(image);
 
-            using (var shader = image.ToShader(tileX, tileY, tileTransform))
+            var paintTransform = default(SKMatrix);
+
+            SKMatrix.Concat(
+                ref paintTransform,
+                tileTransform,
+                SKMatrix.MakeScale((float)(96.0 / _dpi.X), (float)(96.0 / _dpi.Y)));
+
+            using (var shader = image.ToShader(tileX, tileY, paintTransform))
             {
                 paintWrapper.Paint.Shader = shader;
             }
@@ -457,7 +477,7 @@ namespace Avalonia.Skia
 
             if (intermediateSize.Width >= 1 && intermediateSize.Height >= 1)
             {
-                var intermediate = CreateRenderTarget((int)intermediateSize.Width, (int)intermediateSize.Height, _dpi);
+                var intermediate = CreateRenderTarget(intermediateSize);
 
                 using (var ctx = intermediate.CreateDrawingContext(visualBrushRenderer))
                 {
@@ -609,18 +629,17 @@ namespace Avalonia.Skia
         /// <summary>
         /// Create new render target compatible with this drawing context.
         /// </summary>
-        /// <param name="width">Width.</param>
-        /// <param name="height">Height.</param>
-        /// <param name="dpi">Drawing dpi.</param>
+        /// <param name="size">The size of the render target in DIPs.</param>
         /// <param name="format">Pixel format.</param>
         /// <returns></returns>
-        private SurfaceRenderTarget CreateRenderTarget(int width, int height, Vector dpi, PixelFormat? format = null)
+        private SurfaceRenderTarget CreateRenderTarget(Size size, PixelFormat? format = null)
         {
+            var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
-                Width = width,
-                Height = height,
-                Dpi = dpi,
+                Width = pixelSize.Width,
+                Height = pixelSize.Height,
+                Dpi = _dpi,
                 Format = format,
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
                 GrContext = _grContext

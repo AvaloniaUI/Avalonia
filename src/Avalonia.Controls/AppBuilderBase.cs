@@ -145,6 +145,15 @@ namespace Avalonia.Controls
             Instance.Run(mainWindow);
         }
 
+        public delegate void AppMainDelegate(Application app, string[] args);
+
+        public void Start(AppMainDelegate main, string[] args)
+        {
+            Setup();
+            BeforeStartCallback(Self);
+            main(Instance, args);
+        }
+        
         /// <summary>
         /// Sets up the platform-specific services for the application, but does not run it.
         /// </summary>

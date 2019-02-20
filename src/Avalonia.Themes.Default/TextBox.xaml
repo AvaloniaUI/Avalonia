@@ -23,7 +23,7 @@
                            Path="UseFloatingWatermark"/>
                   <Binding RelativeSource="{RelativeSource TemplatedParent}"
                            Path="Text"
-                           Converter="{x:Static StringConverters.NotNullOrEmpty}"/>
+                           Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
                 </MultiBinding>
               </TextBlock.IsVisible>
             </TextBlock>
@@ -36,7 +36,7 @@
                   <TextBlock Name="watermark"
                              Opacity="0.5"
                              Text="{TemplateBinding Watermark}"
-                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.NullOrEmpty}}"/>
+                             IsVisible="{TemplateBinding Text, Converter={x:Static StringConverters.IsNullOrEmpty}}"/>
                   <TextPresenter Name="PART_TextPresenter"
                                  Text="{TemplateBinding Text, Mode=TwoWay}"
                                  CaretIndex="{TemplateBinding CaretIndex}"
@@ -61,5 +61,8 @@
   </Style>
   <Style Selector="TextBox:error /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+  </Style>
+  <Style Selector="TextBox">
+    <Setter Property="Cursor" Value="IBeam" />
   </Style>
 </Styles>

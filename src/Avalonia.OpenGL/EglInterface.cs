@@ -1,7 +1,6 @@
 ﻿using System;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
-using static Avalonia.OpenGL.EglConsts;
 
 namespace Avalonia.OpenGL
 {
@@ -32,60 +31,64 @@ namespace Avalonia.OpenGL
             var lib = dyn.LoadLibrary(library);
             return (s, o) => dyn.GetProcAddress(lib, s, o);
         }
-        
+
         // ReSharper disable UnassignedGetOnlyAutoProperty
+        public delegate int EglGetError();
+        [GlEntryPoint("eglGetError")]
+        public EglGetError GetError { get; }
+
         public delegate IntPtr EglGetDisplay(IntPtr nativeDisplay);
-        [EntryPoint("eglGetDisplay")]
+        [GlEntryPoint("eglGetDisplay")]
         public EglGetDisplay GetDisplay { get; }
         
         public delegate IntPtr EglGetPlatformDisplayEXT(int platform, IntPtr nativeDisplay, int[] attrs);
-        [EntryPoint("eglGetPlatformDisplayEXT", true)]
+        [GlEntryPoint("eglGetPlatformDisplayEXT", true)]
         public EglGetPlatformDisplayEXT GetPlatformDisplayEXT { get; }
 
         public delegate bool EglInitialize(IntPtr display, out int major, out int minor);
-        [EntryPoint("eglInitialize")]
+        [GlEntryPoint("eglInitialize")]
         public EglInitialize Initialize { get; }        
         
         public delegate IntPtr EglGetProcAddress(Utf8Buffer proc);
-        [EntryPoint("eglGetProcAddress")]
+        [GlEntryPoint("eglGetProcAddress")]
         public EglGetProcAddress GetProcAddress { get; }
 
         public delegate bool EglBindApi(int api);
-        [EntryPoint("eglBindAPI")]
+        [GlEntryPoint("eglBindAPI")]
         public EglBindApi BindApi { get; }
 
         public delegate bool EglChooseConfig(IntPtr display, int[] attribs,
             out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
-        [EntryPoint("eglChooseConfig")]
+        [GlEntryPoint("eglChooseConfig")]
         public EglChooseConfig ChooseConfig { get; }
 
         public delegate IntPtr EglCreateContext(IntPtr display, IntPtr config,
             IntPtr share, int[] attrs);
-        [EntryPoint("eglCreateContext")]
+        [GlEntryPoint("eglCreateContext")]
         public EglCreateContext CreateContext { get; }
 
         public delegate IntPtr EglCreatePBufferSurface(IntPtr display, IntPtr config, int[] attrs);
-        [EntryPoint("eglCreatePbufferSurface")]
+        [GlEntryPoint("eglCreatePbufferSurface")]
         public EglCreatePBufferSurface CreatePBufferSurface { get; }
 
         public delegate bool EglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
-        [EntryPoint("eglMakeCurrent")]
+        [GlEntryPoint("eglMakeCurrent")]
         public EglMakeCurrent MakeCurrent { get; }
 
         public delegate void EglDisplaySurfaceVoidDelegate(IntPtr display, IntPtr surface);
-        [EntryPoint("eglDestroySurface")]
+        [GlEntryPoint("eglDestroySurface")]
         public EglDisplaySurfaceVoidDelegate DestroySurface { get; }
         
-        [EntryPoint("eglSwapBuffers")]
+        [GlEntryPoint("eglSwapBuffers")]
         public EglDisplaySurfaceVoidDelegate SwapBuffers { get; }
         
         public delegate IntPtr
             EglCreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[] attrs);
-        [EntryPoint("eglCreateWindowSurface")]
+        [GlEntryPoint("eglCreateWindowSurface")]
         public EglCreateWindowSurface CreateWindowSurface { get; }
 
         public delegate bool EglGetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);
-        [EntryPoint("eglGetConfigAttrib")]
+        [GlEntryPoint("eglGetConfigAttrib")]
         public EglGetConfigAttrib GetConfigAttrib { get; }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty

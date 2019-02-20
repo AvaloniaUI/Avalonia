@@ -42,7 +42,10 @@ namespace Avalonia.Markup.Xaml.PortableXaml
             }
             else if (attributeType == typeof(TypeConverterAttribute))
             {
-                result = ti.GetCustomAttribute(attributeType, inherit);
+                var builtin = AvaloniaTypeConverters.GetBuiltinTypeConverter(_type);
+                if (builtin != null)
+                    result = new TypeConverterAttribute(builtin);
+                result = result ?? ti.GetCustomAttribute(attributeType, inherit);
 
                 if (result == null)
                 {

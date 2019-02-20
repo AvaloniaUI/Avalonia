@@ -21,7 +21,7 @@ namespace Avalonia
         /// </summary>
         public static readonly object UnsetValue = new Unset();
 
-        private static int s_nextId = 1;
+        private static int s_nextId;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _initialized;
         private readonly Subject<AvaloniaPropertyChangedEventArgs> _changed;
         private readonly PropertyMetadata _defaultMetadata;

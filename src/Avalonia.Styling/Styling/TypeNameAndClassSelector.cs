@@ -116,11 +116,9 @@ namespace Avalonia.Styling
                 }
             }
 
-            if (Name != null)
+            if (Name != null && control.Name != Name)
             {
-                return control.Name == Name ? 
-                    SelectorMatch.AlwaysThisInstance :
-                    SelectorMatch.NeverThisInstance;
+                return SelectorMatch.NeverThisInstance;
             }
 
             if (_classes.IsValueCreated && _classes.Value.Count > 0)
@@ -130,17 +128,13 @@ namespace Avalonia.Styling
                     var observable = new ClassObserver(control.Classes, _classes.Value);
                     return new SelectorMatch(observable);
                 }
-                else
+                else if (!Matches(control.Classes))
                 {
-                    return Matches(control.Classes) ?
-                        SelectorMatch.AlwaysThisInstance :
-                        SelectorMatch.NeverThisInstance;
+                    return SelectorMatch.NeverThisInstance;
                 }
             }
-            else
-            {
-                return SelectorMatch.AlwaysThisType;
-            }
+
+            return Name == null ? SelectorMatch.AlwaysThisType : SelectorMatch.AlwaysThisInstance;
         }
 
         protected override Selector MovePrevious() => _previous;
