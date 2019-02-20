@@ -415,6 +415,7 @@ namespace Avalonia
         
         internal void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
         {
+            LogIfError(property, notification);
             UpdateDataValidation(property, notification);
         }
 
@@ -444,6 +445,23 @@ namespace Avalonia
                     e.Sender.Revalidate(p);
                 }
             });
+        }
+
+        /// <summary>
+        /// Logs a binding error for a property.
+        /// </summary>
+        /// <param name="property">The property that the error occurred on.</param>
+        /// <param name="e">The binding error.</param>
+        protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
+        {
+            Logger.Log(
+                LogEventLevel.Warning,
+                LogArea.Binding,
+                this,
+                "Error in binding to {Target}.{Property}: {Message}",
+                this,
+                property,
+                e.Message);
         }
 
         /// <summary>
@@ -647,7 +665,7 @@ namespace Avalonia
 
                 if (notification != null)
                 {
-                    notification.LogIfError(this, property);
+                    LogIfError(property, notification);
                     value = notification.Value;
                 }
 
@@ -777,6 +795,29 @@ namespace Avalonia
         {
             var description = o as IDescription;
             return description?.Description ?? o.ToString();
+        }
+
+        /// <summary>
+        /// Logs a mesage if the notification represents a binding error.
+        /// </summary>
+        /// <param name="property">The property being bound.</param>
+        /// <param name="notification">The binding notification.</param>
+        private void LogIfError(AvaloniaProperty property, BindingNotification notification)
+        {
+            if (notification.ErrorType == BindingErrorType.Error)
+            {
+                if (notification.Error is AggregateException aggregate)
+                {
+                    foreach (var inner in aggregate.InnerExceptions)
+                    {
+                        LogBindingError(property, inner);
+                    }
+                }
+                else
+                {
+                    LogBindingError(property, notification.Error);
+                }
+            }
         }
 
         /// <summary>

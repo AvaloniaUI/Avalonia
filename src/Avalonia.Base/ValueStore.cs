@@ -100,6 +100,11 @@ namespace Avalonia
             _owner.PriorityValueChanged(property, priority, oldValue, newValue);
         }
 
+        public void LogError(AvaloniaProperty property, Exception e)
+        {
+            _owner.LogBindingError(property, e);
+        }
+
         public IDictionary<AvaloniaProperty, object> GetSetValues() => _values;
 
         public object GetValue(AvaloniaProperty property)
