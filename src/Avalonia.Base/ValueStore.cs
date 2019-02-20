@@ -123,8 +123,6 @@ namespace Avalonia
             _owner.LogBindingError(property, e);
         }
 
-        public IDictionary<AvaloniaProperty, object> GetSetValues() => _values;
-
         public object GetValue(AvaloniaProperty property)
         {
             var result = AvaloniaProperty.UnsetValue;
