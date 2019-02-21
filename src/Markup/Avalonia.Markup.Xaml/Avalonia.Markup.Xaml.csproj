@@ -56,8 +56,10 @@
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompiler.cs" />
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlLanguage.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AddNameScopeRegistration.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSetterTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\IgnoredDirectivesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\KnownPseudoMarkupExtensionsTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSelectorTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
@@ -67,6 +69,7 @@
         <Compile Include="XamlIl\xamlil.github\src\XamlIl\**\*.cs" />
         <Compile Include="XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs" />
         <Compile Remove="XamlIl\xamlil.github\**\obj\**\*.cs" />
+        <Compile Include="..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />

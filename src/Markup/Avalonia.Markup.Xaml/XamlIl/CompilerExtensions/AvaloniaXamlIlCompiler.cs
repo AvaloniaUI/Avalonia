@@ -23,7 +23,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             Transformers.Insert(Transformers.FindIndex(x => x is XamlIlXamlPropertyValueTransformer),
                 new KnownPseudoMarkupExtensionsTransformer());
-            
+
+            Transformers.InsertRange(Transformers.FindIndex(x => x is XamlIlNewObjectTransformer),
+                new IXamlIlAstTransformer[]
+                {
+                    new AvaloniaXamlIlSelectorTransformer(),
+                    new AvaloniaXamlIlSetterTransformer()
+                }
+            );
             // After everything else
             
             Transformers.Add(new AddNameScopeRegistration());

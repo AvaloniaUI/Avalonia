@@ -31,7 +31,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 Value = pa.Value;
             }
 
-            public override void VisitChildren(XamlIlAstVisitorDelegate visitor)
+            public override void VisitChildren(IXamlIlAstVisitor visitor)
                 => Value = (IXamlIlAstValueNode)Value.Visit(visitor);
 
             public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)

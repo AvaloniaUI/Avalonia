@@ -57,6 +57,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
                 ShouldIgnoreMarkupExtensionCustomResultForProperty = (prop, customType) =>
                 {
+                    if (prop.Name == "Value" && prop.Setter?.DeclaringType.FullName == "Avalonia.Styling.Setter")
+                        return true;
                     if (customType.Equals(bindingType) &&
                         prop.CustomAttributes.Any(a => a.Type.Equals(assignBindingAttribute)))
                         return true;

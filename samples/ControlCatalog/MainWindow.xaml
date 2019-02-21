@@ -5,35 +5,5 @@
         xmlns:local="clr-namespace:ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainWindow">
-    <!--<local:MainView/>-->
-    <ScrollViewer>
-        <StackPanel>
-            <pages:AutoCompleteBoxPage/>
-            <pages:BorderPage/>
-            <pages:ButtonPage/>
-            <pages:ButtonSpinnerPage/>
-            <pages:CalendarPage/>
-            <pages:CanvasPage/>
-            <pages:CarouselPage/>
-            <pages:CheckBoxPage/>
-            <pages:ContextMenuPage/>
-            <pages:DatePickerPage/>
-            <pages:DragAndDropPage/>
-            <pages:DropDownPage/>
-            <pages:ExpanderPage/>
-            <pages:ImagePage/>
-            <pages:LayoutTransformControlPage/>
-            <pages:ListBoxPage/>
-            <pages:MenuPage/>
-            <pages:NumericUpDownPage/>
-            <pages:ProgressBarPage/>
-            <pages:RadioButtonPage/>
-            <pages:SliderPage/>
-            <pages:TabControlPage/>
-            <pages:TextBoxPage/>
-            <pages:ToolTipPage/>
-            <pages:TreeViewPage/>
-            <pages:ViewboxPage/>
-        </StackPanel>
-    </ScrollViewer>
+    <local:MainView/>
 </Window>
