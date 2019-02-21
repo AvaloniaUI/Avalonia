@@ -253,7 +253,7 @@ namespace Avalonia.Layout.UnitTests
             {
                 //emulate a problem in the logic of a control that triggers
                 //invalidate measure during measure
-                //it can lead to infinity loop in layoutmanager
+                //it can lead to an infinite loop in layoutmanager
                 if (++cnt < maxcnt)
                 {
                     control.InvalidateMeasure();
