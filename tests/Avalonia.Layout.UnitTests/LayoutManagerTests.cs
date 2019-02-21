@@ -239,7 +239,7 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
-        public void LayoutManager_Should_Prevent_Infinity_Loop_On_Measure()
+        public void LayoutManager_Should_Prevent_Infinite_Loop_On_Measure()
         {
             var control = new LayoutTestControl();
             var root = new LayoutTestRoot { Child = control };
