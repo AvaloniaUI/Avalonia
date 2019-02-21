@@ -28,12 +28,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new IXamlIlAstTransformer[]
                 {
                     new AvaloniaXamlIlSelectorTransformer(),
-                    new AvaloniaXamlIlSetterTransformer()
+                    new AvaloniaXamlIlSetterTransformer(),
+                    new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(), 
                 }
             );
             // After everything else
             
             Transformers.Add(new AddNameScopeRegistration());
+            Transformers.Add(new AvaloniaXamlIlMetadataRemover());
 
         }
 

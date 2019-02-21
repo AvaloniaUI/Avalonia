@@ -1,5 +1,9 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
+using XamlIl;
+using XamlIl.Ast;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
 
@@ -64,7 +68,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         return true;
                     return false;
                 },
-                ProvideValueTargetPropertyEmitter = AvaloniaPropertyDescriptorEmitter.Emit,
+                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
             return rv;
@@ -92,7 +96,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
                 
-                Add("Avalonia.AvaloniaProperty","Avalonia.Markup.Xaml.Converters.AvaloniaPropertyTypeConverter");
+                //Add("Avalonia.AvaloniaProperty","Avalonia.Markup.Xaml.Converters.AvaloniaPropertyTypeConverter");
                 Add("Avalonia.Media.Imaging.IBitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
@@ -151,6 +155,38 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 return null;
             }
+        }
+
+        public static bool CustomValueConverter(XamlIlAstTransformationContext context,
+            IXamlIlAstValueNode node, IXamlIlType type, out IXamlIlAstValueNode result)
+        {
+            if (type.FullName == "System.TimeSpan" 
+                && node is XamlIlAstTextNode tn
+                && !tn.Text.Contains(":"))
+            {
+                var seconds = double.Parse(tn.Text, CultureInfo.InvariantCulture);
+                result = new XamlIlStaticOrTargetedReturnMethodCallNode(tn,
+                    type.FindMethod("FromSeconds", type, false, context.Configuration.WellKnownTypes.Double),
+                    new[]
+                    {
+                        new XamlIlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
+                    });
+                return true;
+            }
+
+            if (type.FullName == "Avalonia.AvaloniaProperty")
+            {
+                var scope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>().FirstOrDefault();
+                if (scope == null)
+                    throw new XamlIlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
+                if (!(node is XamlIlAstTextNode text))
+                    throw new XamlIlLoadException("Property should be a text node", node);
+                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text);
+                return true;
+            }
+
+            result = null;
+            return false;
         }
     }
 }

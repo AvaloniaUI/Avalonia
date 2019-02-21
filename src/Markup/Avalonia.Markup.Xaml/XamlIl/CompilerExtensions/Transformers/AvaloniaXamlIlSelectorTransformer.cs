@@ -15,14 +15,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
-            if (!(node is XamlIlAstXamlPropertyValueNode pn
-                  && pn.Property.GetClrProperty().PropertyType.FullName == "Avalonia.Styling.Selector"))
+            if (!(node is XamlIlAstObjectNode on && on.Type.GetClrType().FullName == "Avalonia.Styling.Style"))
+                return node;
+
+            var pn = on.Children.OfType<XamlIlAstXamlPropertyValueNode>()
+                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
+
+            if (pn == null)
                 return node;
 
             if (pn.Values.Count != 1)
                 throw new XamlIlParseException("Selector property should should have exactly one value", node);
-            if (!(pn.Values[0] is XamlIlAstTextNode tn))
+            
+            if (pn.Values[0] is XamlIlSelectorNode)
+                //Deja vu. I've just been in this place before
                 return node;
+            
+            if (!(pn.Values[0] is XamlIlAstTextNode tn))
+                throw new XamlIlParseException("Selector property should be a text node", node);
 
             var selectorType = pn.Property.GetClrProperty().PropertyType;
 
@@ -104,7 +114,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var selector = Create(parsed, (p, n) 
                 => XamlIlTypeReferenceResolver.ResolveType(context, $"{p}:{n}", node, true));
             pn.Values[0] = selector;
-            return node;
+
+            return new AvaloniaXamlIlTargetTypeMetadataNode(on,
+                new XamlIlAstClrTypeReference(selector, selector.TargetType),
+                AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Style);
         }
 
     }
@@ -263,7 +276,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public override IXamlIlType TargetType => Previous?.TargetType;
         protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
         {
-            if (!AvaloniaPropertyDescriptorEmitter.Emit(context, codeGen, Property))
+            if (!XamlIlAvaloniaPropertyHelper.Emit(context, codeGen, Property))
                 throw new XamlIlLoadException(
                     $"{Property.Name} of {(Property.Setter ?? Property.Getter).DeclaringType.GetFqn()} doesn't seem to be an AvaloniaProperty",
                     this);

@@ -114,7 +114,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
-                _sreMappings, _sreXmlns, CustomValueConverter));
+                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter));
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
 
             IXamlIlType overrideType = null;
@@ -214,7 +214,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_cecilTypeSystem,
                 localAssembly == null ? null : _cecilTypeSystem.FindAssembly(localAssembly.GetName().Name),
-                _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings), CustomValueConverter));
+                _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings), 
+                AvaloniaXamlIlLanguage.CustomValueConverter));
             compiler.ParseAndCompile(xaml, uri.ToString(), tb, overrideType);
             var asmPath = Path.Combine(_cecilEmitDir, safeUri + ".dll");
             using(var f = File.Create(asmPath))
@@ -223,27 +224,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 .GetTypes().First(x => x.Name == safeUri);
             _cecilGeneratedCache[safeUri] = loaded;
             return LoadOrPopulate(loaded, rootInstance);
-        }
-
-        private static bool CustomValueConverter(XamlIlAstTransformationContext context,
-            IXamlIlAstValueNode node, IXamlIlType type, out IXamlIlAstValueNode result)
-        {
-            if (type.FullName == "System.TimeSpan" 
-                && node is XamlIlAstTextNode tn
-                && !tn.Text.Contains(":"))
-            {
-                var seconds = double.Parse(tn.Text, CultureInfo.InvariantCulture);
-                result = new XamlIlStaticOrTargetedReturnMethodCallNode(tn,
-                    type.FindMethod("FromSeconds", type, false, context.Configuration.WellKnownTypes.Double),
-                    new[]
-                    {
-                        new XamlIlConstantNode(tn, context.Configuration.WellKnownTypes.Double, seconds)
-                    });
-                return true;
-            }
-
-            result = null;
-            return false;
         }
     }
 }
