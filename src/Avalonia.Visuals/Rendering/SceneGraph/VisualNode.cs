@@ -327,31 +327,36 @@ namespace Avalonia.Rendering.SceneGraph
             if (_drawOperations == null)
             {
                 _drawOperations = new List<IRef<IDrawOperation>>();
-                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
+                _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
             }
             else if (_drawOperationsCloned)
             {
                 _drawOperations = new List<IRef<IDrawOperation>>(_drawOperations.Select(op => op.Clone()));
                 _drawOperationsRefCounter.Dispose();
-                _drawOperationsRefCounter = RefCountable.Create(Disposable.Create(DisposeDrawOperations));
+                _drawOperationsRefCounter = RefCountable.Create(CreateDisposeDrawOperations(_drawOperations));
                 _drawOperationsCloned = false;
             }
         }
 
-        public bool Disposed { get; }
-        
+        private static IDisposable CreateDisposeDrawOperations(List<IRef<IDrawOperation>> drawOperations)
+        {
+            return Disposable.Create(() =>
+            {
+                foreach (var operation in drawOperations)
+                {
+                    operation.Dispose();
+                }
+            });
+        }
+
+        public bool Disposed { get; private set; }
+
         public void Dispose()
         {
             _drawOperationsRefCounter?.Dispose();
-        }
 
-        private void DisposeDrawOperations()
-        {
-            foreach (var operation in DrawOperations)
-            {
-                operation.Dispose();
-            }
+            Disposed = true;
         }
     }
 }
