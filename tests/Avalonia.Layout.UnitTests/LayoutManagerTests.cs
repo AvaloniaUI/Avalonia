@@ -301,7 +301,7 @@ namespace Avalonia.Layout.UnitTests
         }
 
         [Fact]
-        public void LayoutManager_Should_Properly_Arrange_Visuals_Even_There_Are_Issues_With_Previous_Arranged()
+        public void LayoutManager_Should_Properly_Arrange_Visuals_Even_When_There_Are_Issues_With_Previous_Arranged()
         {
             var nonArrageableTargets = Enumerable.Range(1, 10).Select(_ => new LayoutTestControl()).ToArray();
             var targets = Enumerable.Range(1, 10).Select(_ => new LayoutTestControl()).ToArray();
