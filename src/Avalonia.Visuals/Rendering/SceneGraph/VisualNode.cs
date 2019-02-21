@@ -322,6 +322,9 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <summary>
+        /// Ensures that this node draw operations have been created and are mutable (in case we are using cloned operations).
+        /// </summary>
         private void EnsureDrawOperationsCreated()
         {
             if (_drawOperations == null)
@@ -339,6 +342,13 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
+        /// <summary>
+        /// Creates disposable that will dispose all items in passed draw operations after being disposed.
+        /// It is crucial that we don't capture current <see cref="VisualNode"/> instance
+        /// as draw operations can be cloned and may persist across subsequent scenes.
+        /// </summary>
+        /// <param name="drawOperations">Draw operations that need to be disposed.</param>
+        /// <returns>Disposable for given draw operations.</returns>
         private static IDisposable CreateDisposeDrawOperations(List<IRef<IDrawOperation>> drawOperations)
         {
             return Disposable.Create(() =>
