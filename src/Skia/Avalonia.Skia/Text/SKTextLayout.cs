@@ -619,11 +619,11 @@ namespace Avalonia.Skia.Text
 
             // ToDo: Cache this
             using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
-            using (var face = new Face(blob, (uint)index))
+            using (var face = new Face(blob, index))
             {
-                face.Index = (uint)index;
+                face.Index = index;
 
-                face.UnitsPerEm = (uint)textFormat.Typeface.UnitsPerEm;
+                face.UnitsPerEm = textFormat.Typeface.UnitsPerEm;
 
                 font = new Font(face);
 
@@ -646,7 +646,7 @@ namespace Avalonia.Skia.Text
 
             var glyphAdvances = new float[len];
 
-            var clusters = new uint[len];
+            var clusters = new int[len];
 
             glyphIndices = new ushort[len];
 
@@ -690,7 +690,7 @@ namespace Avalonia.Skia.Text
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             SKTextPointer textPointer,
             SKFontMetrics fontMetrics,
-            uint[] clusters,
+            int[] clusters,
             IReadOnlyList<float> glyphAdvances,
             IReadOnlyList<SKPoint> glyphPositions)
         {
@@ -704,10 +704,10 @@ namespace Avalonia.Skia.Text
 
             while (currentCluster <= lastCluster)
             {
-                var currentPosition = (int)clusters[currentCluster];
+                var currentPosition = clusters[currentCluster];
 
                 // ToDo: Need a custom implementation that searches for the next cluster.
-                var nextCluster = Array.BinarySearch(clusters, (uint)(currentPosition + 1));
+                var nextCluster = Array.BinarySearch(clusters, currentPosition + 1);
 
                 if (nextCluster < 0)
                 {
@@ -722,7 +722,7 @@ namespace Avalonia.Skia.Text
                 }
                 else
                 {
-                    var nextPosition = (int)clusters[nextCluster];
+                    var nextPosition = clusters[nextCluster];
 
                     length = nextPosition - currentPosition;
                 }
@@ -1251,13 +1251,14 @@ namespace Avalonia.Skia.Text
                     }
                 }
 
+                // ToDo: Replace break char with zero width character
                 if (hasDoubleBreakChar)
                 {
-                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length - 1);
+                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - 1);
                 }
                 else
                 {
-                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length);
+                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length);
                 }
 
                 buffer.GuessSegmentProperties();
