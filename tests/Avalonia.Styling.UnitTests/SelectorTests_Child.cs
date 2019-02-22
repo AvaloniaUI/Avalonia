@@ -89,6 +89,7 @@ namespace Avalonia.Styling.UnitTests
             }
 
             public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
+            public event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
             public event EventHandler<LogicalTreeAttachmentEventArgs> AttachedToLogicalTree;
             public event EventHandler<LogicalTreeAttachmentEventArgs> DetachedFromLogicalTree;
 

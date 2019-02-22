@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
@@ -235,6 +236,51 @@ namespace Avalonia.Visuals.UnitTests
 
             //child is centered (400 - 100*2 scale)/2
             Assert.Equal(new Point(100, 100), point);
+        }
+
+        [Fact]
+        public void Should_Not_Log_Binding_Error_When_Not_Attached_To_Logical_Tree()
+        {
+            var target = new Decorator { DataContext = "foo" };
+            var called = false;
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level >= Logging.LogEventLevel.Warning)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Decorator.TagProperty, new Binding("Foo"));
+            }
+
+            Assert.False(called);
+        }
+
+        [Fact]
+        public void Should_Log_Binding_Error_When_Attached_To_Logical_Tree()
+        {
+            var target = new Decorator();
+            var root = new TestRoot { Child = target, DataContext = "foo" };
+            var called = false;
+
+            LogCallback checkLogMessage = (level, area, src, mt, pv) =>
+            {
+                if (level >= Logging.LogEventLevel.Warning)
+                {
+                    called = true;
+                }
+            };
+
+            using (TestLogSink.Start(checkLogMessage))
+            {
+                target.Bind(Decorator.TagProperty, new Binding("Foo"));
+            }
+
+            Assert.True(called);
         }
     }
 }

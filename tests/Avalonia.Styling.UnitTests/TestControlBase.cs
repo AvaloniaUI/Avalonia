@@ -19,6 +19,7 @@ namespace Avalonia.Styling.UnitTests
 
 #pragma warning disable CS0067 // Event not used
         public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
+        public event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
 #pragma warning restore CS0067
 
         public string Name { get; set; }
