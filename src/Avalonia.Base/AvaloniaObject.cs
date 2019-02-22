@@ -26,6 +26,7 @@ namespace Avalonia
         private List<DirectBindingSubscription> _directBindings;
         private PropertyChangedEventHandler _inpcChanged;
         private EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChanged;
+        private EventHandler<AvaloniaPropertyChangedEventArgs> _inheritablePropertyChanged;
         private ValueStore _values;
         private ValueStore Values => _values ?? (_values = new ValueStore(this));
 
@@ -57,6 +58,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Raised when an inheritable <see cref="AvaloniaProperty"/> value changes on this object.
+        /// </summary>
+        event EventHandler<AvaloniaPropertyChangedEventArgs> IAvaloniaObject.InheritablePropertyChanged
+        {
+            add { _inheritablePropertyChanged += value; }
+            remove { _inheritablePropertyChanged -= value; }
+        }
+
+        /// <summary>
         /// Gets or sets the parent object that inherited <see cref="AvaloniaProperty"/> values
         /// are inherited from.
         /// </summary>
@@ -76,8 +86,9 @@ namespace Avalonia
                 {
                     if (_inheritanceParent != null)
                     {
-                        _inheritanceParent.PropertyChanged -= ParentPropertyChanged;
+                        _inheritanceParent.InheritablePropertyChanged -= ParentPropertyChanged;
                     }
+
                     var properties = AvaloniaPropertyRegistry.Instance.GetRegistered(this)
                         .Concat(AvaloniaPropertyRegistry.Instance.GetRegisteredAttached(this.GetType()));
                     var inherited = (from property in properties
@@ -102,7 +113,7 @@ namespace Avalonia
 
                     if (_inheritanceParent != null)
                     {
-                        _inheritanceParent.PropertyChanged += ParentPropertyChanged;
+                        _inheritanceParent.InheritablePropertyChanged += ParentPropertyChanged;
                     }
                 }
             }
@@ -379,6 +390,7 @@ namespace Avalonia
         
         internal void BindingNotificationReceived(AvaloniaProperty property, BindingNotification notification)
         {
+            LogIfError(property, notification);
             UpdateDataValidation(property, notification);
         }
 
@@ -408,6 +420,23 @@ namespace Avalonia
                     e.Sender.Revalidate(p);
                 }
             });
+        }
+
+        /// <summary>
+        /// Logs a binding error for a property.
+        /// </summary>
+        /// <param name="property">The property that the error occurred on.</param>
+        /// <param name="e">The binding error.</param>
+        protected internal virtual void LogBindingError(AvaloniaProperty property, Exception e)
+        {
+            Logger.Log(
+                LogEventLevel.Warning,
+                LogArea.Binding,
+                this,
+                "Error in binding to {Target}.{Property}: {Message}",
+                this,
+                property,
+                e.Message);
         }
 
         /// <summary>
@@ -466,6 +495,11 @@ namespace Avalonia
                 {
                     PropertyChangedEventArgs e2 = new PropertyChangedEventArgs(property.Name);
                     _inpcChanged(this, e2);
+                }
+
+                if (property.Inherits)
+                {
+                    _inheritablePropertyChanged?.Invoke(this, e);
                 }
             }
             finally
@@ -606,7 +640,7 @@ namespace Avalonia
 
                 if (notification != null)
                 {
-                    notification.LogIfError(this, property);
+                    LogIfError(property, notification);
                     value = notification.Value;
                 }
 
@@ -736,6 +770,29 @@ namespace Avalonia
         {
             var description = o as IDescription;
             return description?.Description ?? o.ToString();
+        }
+
+        /// <summary>
+        /// Logs a mesage if the notification represents a binding error.
+        /// </summary>
+        /// <param name="property">The property being bound.</param>
+        /// <param name="notification">The binding notification.</param>
+        private void LogIfError(AvaloniaProperty property, BindingNotification notification)
+        {
+            if (notification.ErrorType == BindingErrorType.Error)
+            {
+                if (notification.Error is AggregateException aggregate)
+                {
+                    foreach (var inner in aggregate.InnerExceptions)
+                    {
+                        LogBindingError(property, inner);
+                    }
+                }
+                else
+                {
+                    LogBindingError(property, notification.Error);
+                }
+            }
         }
 
         /// <summary>
