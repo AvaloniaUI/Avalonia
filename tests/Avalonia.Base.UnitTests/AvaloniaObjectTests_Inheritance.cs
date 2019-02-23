@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -113,6 +114,21 @@ namespace Avalonia.Base.UnitTests
             parent.SetValue(AttachedOwner.AttachedProperty, "changed");
 
             Assert.True(raised);
+        }
+
+        [Fact]
+        public void PropertyChanged_Is_Raised_In_Parent_Before_Child()
+        {
+            var parent = new Class1();
+            var child = new Class2 { Parent = parent };
+            var result = new List<object>();
+
+            parent.PropertyChanged += (s, e) => result.Add(parent);
+            child.PropertyChanged += (s, e) => result.Add(child);
+
+            parent.SetValue(Class1.BazProperty, "changed");
+
+            Assert.Equal(new[] { parent, child }, result);
         }
 
         private class Class1 : AvaloniaObject

@@ -252,9 +252,9 @@ namespace Avalonia.Controls.Primitives
                 else
                 {
                     var parentPopuproot = _topLevel as PopupRoot;
-                    if (parentPopuproot != null && parentPopuproot.Parent != null)
+                    if (parentPopuproot?.Parent is Popup popup)
                     {
-                        ((Popup)(parentPopuproot.Parent)).Closed += ParentClosed;
+                        popup.Closed += ParentClosed;
                     }
                 }
                 _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
@@ -293,9 +293,9 @@ namespace Avalonia.Controls.Primitives
                     else
                     {
                         var parentPopuproot = _topLevel as PopupRoot;
-                        if (parentPopuproot != null && parentPopuproot.Parent != null)
+                        if (parentPopuproot?.Parent is Popup popup)
                         {
-                            ((Popup)parentPopuproot.Parent).Closed -= ParentClosed;
+                            popup.Closed -= ParentClosed;
                         }
                     }
                     _nonClientListener?.Dispose();
