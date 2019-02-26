@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -343,16 +344,17 @@ namespace Avalonia
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
+                
                 if (e.Sender is T sender)
                 {
                     if (e.OldValue is IAffectsRender oldValue)
                     {
-                        oldValue.Invalidated -= sender.AffectsRenderInvalidated;
+                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        newValue.Invalidated += sender.AffectsRenderInvalidated;
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
                     }
 
                     sender.InvalidateVisual();
