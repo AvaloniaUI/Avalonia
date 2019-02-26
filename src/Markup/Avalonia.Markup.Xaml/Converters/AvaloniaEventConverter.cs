@@ -4,11 +4,13 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.PortableXaml;
 using Portable.Xaml;
 
-namespace Avalonia.DesignerSupport
+namespace Avalonia.Markup.Xaml.Converters
 {
-    internal class DesignerEventConverter : TypeConverter
+    internal class AvaloniaEventConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
         {
@@ -72,13 +74,23 @@ namespace Avalonia.DesignerSupport
                         }
                     }
 
-                    // We want to ignore missing events in the designer, so if event handler
-                    // wasn't found create an empty delegate.
-                    var lambdaExpression = Expression.Lambda(
-                        eventType,
-                        Expression.Empty(),
-                        eventParameters.Select(x => Expression.Parameter(x.ParameterType)));
-                    return lambdaExpression.Compile();
+                    var contextProvider = (IXamlSchemaContextProvider)context.GetService(typeof(IXamlSchemaContextProvider));
+                    var avaloniaContext = (AvaloniaXamlSchemaContext)contextProvider.SchemaContext;
+
+                    if (avaloniaContext.IsDesignMode)
+                    {
+                        // We want to ignore missing events in the designer, so if event handler
+                        // wasn't found create an empty delegate.
+                        var lambdaExpression = Expression.Lambda(
+                            eventType,
+                            Expression.Empty(),
+                            eventParameters.Select(x => Expression.Parameter(x.ParameterType)));
+                        return lambdaExpression.Compile();
+                    }
+                    else
+                    {
+                        throw new XamlObjectWriterException($"Referenced value method {text} in type {target.GetType()} indicated by event {eventType.FullName} was not found");
+                    }
                 }
             }
             return base.ConvertFrom(context, culture, value);
