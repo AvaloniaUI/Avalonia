@@ -344,7 +344,6 @@ namespace Avalonia
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
-                
                 if (e.Sender is T sender)
                 {
                     if (e.OldValue is IAffectsRender oldValue)
