@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -119,6 +120,11 @@ namespace Avalonia.Controls
 
             SelectedIndex = -1;
             IsOpen = false;
+        }
+
+        protected override IItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new MenuItemContainerGenerator(this);
         }
 
         private void PopupClosed(object sender, EventArgs e)
