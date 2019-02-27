@@ -23,13 +23,7 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public class AvaloniaXamlLoader
     {
-        private readonly AvaloniaXamlSchemaContext _context = AvaloniaXamlSchemaContext.Create();
-
-        public bool IsDesignMode
-        {
-            get => _context.IsDesignMode;
-            set => _context.IsDesignMode = value;
-        }
+        public bool IsDesignMode { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
@@ -171,7 +165,8 @@ namespace Avalonia.Markup.Xaml
                 LocalAssembly = localAssembly
             };
 
-            var reader = new XamlXmlReader(stream, _context, readerSettings);
+            var context = IsDesignMode ? AvaloniaXamlSchemaContext.DesignInstance : AvaloniaXamlSchemaContext.Instance;
+            var reader = new XamlXmlReader(stream, context, readerSettings);
 
             object result = LoadFromReader(
                 reader,
