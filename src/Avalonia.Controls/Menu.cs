@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level menu control.
     /// </summary>
-    public class Menu : MenuBase, IFocusScope, IMainMenu
+    public class Menu : MenuBase, IMainMenu
     {
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });

@@ -24,6 +24,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="ContextMenu"/> class.
         /// </summary>
         public ContextMenu()
+            : this(new DefaultMenuInteractionHandler(true))
         {
         }
 
@@ -99,6 +100,7 @@ namespace Avalonia.Controls
                     ObeyScreenEdges = true
                 };
 
+                _popup.Opened += PopupOpened;
                 _popup.Closed += PopupClosed;
             }
 
@@ -125,6 +127,11 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
+        }
+
+        private void PopupOpened(object sender, EventArgs e)
+        {
+            Focus();
         }
 
         private void PopupClosed(object sender, EventArgs e)

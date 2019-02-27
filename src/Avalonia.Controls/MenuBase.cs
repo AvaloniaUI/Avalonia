@@ -17,7 +17,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for menu controls.
     /// </summary>
-    public abstract class MenuBase : SelectingItemsControl, IMenu
+    public abstract class MenuBase : SelectingItemsControl, IFocusScope, IMenu
     {
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
@@ -46,8 +46,7 @@ namespace Avalonia.Controls
         /// </summary>
         public MenuBase()
         {
-            InteractionHandler = AvaloniaLocator.Current.GetService<IMenuInteractionHandler>() ?? 
-                new DefaultMenuInteractionHandler();
+            InteractionHandler = new DefaultMenuInteractionHandler(false);
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Up_Opens_MenuItem_With_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var e = new KeyEventArgs { Key = Key.Up, Source = item };
 
@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Down_Opens_MenuItem_With_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var e = new KeyEventArgs { Key = Key.Down, Source = item };
 
@@ -41,7 +41,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Right_Selects_Next_MenuItem()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>(x => x.MoveSelection(NavigationDirection.Right, true) == true);
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu);
                 var e = new KeyEventArgs { Key = Key.Right, Source = item };
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Left_Selects_Previous_MenuItem()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>(x => x.MoveSelection(NavigationDirection.Left, true) == true);
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu);
                 var e = new KeyEventArgs { Key = Key.Left, Source = item };
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Enter_On_Item_With_No_SubMenu_Causes_Click()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu);
                 var e = new KeyEventArgs { Key = Key.Enter, Source = item };
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Enter_On_Item_With_SubMenu_Opens_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var e = new KeyEventArgs { Key = Key.Enter, Source = item };
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Escape_Closes_Parent_Menu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu);
                 var e = new KeyEventArgs { Key = Key.Escape, Source = item };
@@ -113,7 +113,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerEnter_Opens_Item_When_Old_Item_Is_Open()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var item = Mock.Of<IMenuItem>(x =>
                     x.IsSubMenuOpen == true &&
@@ -141,7 +141,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerLeave_Deselects_Item_When_Menu_Not_Open()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu.Object);
                 var e = new PointerEventArgs { RoutedEvent = MenuItem.PointerLeaveItemEvent, Source = item };
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerLeave_Doesnt_Deselect_Item_When_Menu_Open()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var item = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.Parent == menu.Object);
                 var e = new PointerEventArgs { RoutedEvent = MenuItem.PointerLeaveItemEvent, Source = item };
@@ -175,7 +175,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Up_Selects_Previous_MenuItem()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var e = new KeyEventArgs { Key = Key.Up, Source = item };
@@ -189,7 +189,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Down_Selects_Next_MenuItem()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var e = new KeyEventArgs { Key = Key.Down, Source = item };
@@ -203,7 +203,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Left_Closes_Parent_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.HasSubMenu == true && x.IsSubMenuOpen == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var e = new KeyEventArgs { Key = Key.Left, Source = item };
@@ -218,7 +218,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Right_With_SubMenu_Items_Opens_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
                 var e = new KeyEventArgs { Key = Key.Right, Source = item };
@@ -233,7 +233,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Right_On_TopLevel_Child_Navigates_TopLevel_Selection()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = new Mock<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => 
                     x.IsSubMenuOpen == true &&
@@ -263,7 +263,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Enter_On_Item_With_No_SubMenu_Causes_Click()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -279,7 +279,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Enter_On_Item_With_SubMenu_Opens_SubMenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
                 var e = new KeyEventArgs { Key = Key.Enter, Source = item };
@@ -294,7 +294,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void Escape_Closes_Parent_MenuItem()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
                 var e = new KeyEventArgs { Key = Key.Escape, Source = item };
@@ -309,7 +309,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerEnter_Selects_Item()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -325,7 +325,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             public void PointerEnter_Opens_Submenu_After_Delay()
             {
                 var timer = new TestTimer();
-                var target = new DefaultMenuInteractionHandler(null, timer.RunOnce);
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
@@ -344,7 +344,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             public void PointerEnter_Closes_Sibling_Submenu_After_Delay()
             {
                 var timer = new TestTimer();
-                var target = new DefaultMenuInteractionHandler(null, timer.RunOnce);
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -365,7 +365,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerLeave_Deselects_Item()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -381,7 +381,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerLeave_Doesnt_Deselect_Sibling()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -398,7 +398,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerLeave_Doesnt_Deselect_Item_If_Pointer_Over_Submenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true && x.IsPointerOverSubMenu == true);
@@ -413,7 +413,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerReleased_On_Item_With_No_SubMenu_Causes_Click()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem);
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             public void Selection_Is_Correct_When_Pointer_Temporarily_Exits_Item_To_Select_SubItem()
             {
                 var timer = new TestTimer();
-                var target = new DefaultMenuInteractionHandler(null, timer.RunOnce);
+                var target = new DefaultMenuInteractionHandler(false, null, timer.RunOnce);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
@@ -467,7 +467,7 @@ namespace Avalonia.Controls.UnitTests.Platform
             [Fact]
             public void PointerPressed_On_Item_With_SubMenu_Causes_Opens_Submenu()
             {
-                var target = new DefaultMenuInteractionHandler();
+                var target = new DefaultMenuInteractionHandler(false);
                 var menu = Mock.Of<IMenu>();
                 var parentItem = Mock.Of<IMenuItem>(x => x.IsTopLevel == true && x.HasSubMenu == true && x.Parent == menu);
                 var item = Mock.Of<IMenuItem>(x => x.Parent == parentItem && x.HasSubMenu == true);
@@ -477,6 +477,23 @@ namespace Avalonia.Controls.UnitTests.Platform
 
                 Mock.Get(item).Verify(x => x.Open());
                 Mock.Get(item).Verify(x => x.MoveSelection(NavigationDirection.First, true), Times.Never);
+                Assert.True(e.Handled);
+            }
+        }
+
+        public class ContextMenu
+        {
+            [Fact]
+            public void Down_Selects_Selects_First_MenuItem_When_No_Selection()
+            {
+                var target = new DefaultMenuInteractionHandler(true);
+                var contextMenu = Mock.Of<IMenu>(x => x.MoveSelection(NavigationDirection.Down, true) == true);
+                var e = new KeyEventArgs { Key = Key.Down, Source = contextMenu };
+
+                target.Attach(contextMenu);
+                target.KeyDown(contextMenu, e);
+
+                Mock.Get(contextMenu).Verify(x => x.MoveSelection(NavigationDirection.Down, true));
                 Assert.True(e.Handled);
             }
         }
