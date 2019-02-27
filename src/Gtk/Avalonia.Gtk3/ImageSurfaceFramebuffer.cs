@@ -84,7 +84,7 @@ namespace Avalonia.Gtk3
             public RenderOp(GtkWidget widget, ManagedCairoSurface surface, double factor, int width, int height)
             {
                 _widget = widget;
-                _surface = surface ?? throw new ArgumentNullException();
+                _surface = surface ?? throw new ArgumentNullException(nameof(surface));
                 _factor = factor;
                 _width = width;
                 _height = height;

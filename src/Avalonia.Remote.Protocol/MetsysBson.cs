@@ -749,7 +749,7 @@ namespace Metsys.Bson
 
                         if (memberExpression.Expression.NodeType != ExpressionType.Parameter && memberExpression.Expression.NodeType != ExpressionType.Convert)
                         {
-                            throw new ArgumentException(string.Format("Expression '{0}' must resolve to top-level member.", lambdaExpression), "lambdaExpression");
+                            throw new ArgumentException(string.Format("Expression '{0}' must resolve to top-level member.", lambdaExpression), nameof(lambdaExpression));
                         }
                         return memberExpression.Member.Name;
                     default:
