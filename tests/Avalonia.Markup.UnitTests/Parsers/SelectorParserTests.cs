@@ -1,8 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Parsers;
-using Avalonia.Styling;
 using Xunit;
 
 namespace Avalonia.Markup.UnitTests.Parsers
@@ -14,6 +12,20 @@ namespace Avalonia.Markup.UnitTests.Parsers
         {
             var target = new SelectorParser((ns, type) => typeof(TextBlock));
             var result = target.Parse("TextBlock[IsPointerOver=True]");
+        }
+
+        [Fact]
+        public void Throws_If_OfType_Type_Not_Found()
+        {
+            var target = new SelectorParser((ns, type) => null);
+            Assert.Throws<InvalidOperationException>(() => target.Parse("NotFound"));
+        }
+
+        [Fact]
+        public void Throws_If_Is_Type_Not_Found()
+        {
+            var target = new SelectorParser((ns, type) => null);
+            Assert.Throws<InvalidOperationException>(() => target.Parse(":is(NotFound)"));
         }
     }
 }
