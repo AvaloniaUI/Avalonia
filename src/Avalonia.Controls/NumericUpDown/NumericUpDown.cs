@@ -965,11 +965,11 @@ namespace Avalonia.Controls
         {
             if (value < Minimum)
             {
-                throw new ArgumentOutOfRangeException(nameof(Minimum), string.Format("Value must be greater than Minimum value of {0}", Minimum));
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be greater than Minimum value of {0}", Minimum));
             }
             else if (value > Maximum)
             {
-                throw new ArgumentOutOfRangeException(nameof(Maximum), string.Format("Value must be less than Maximum value of {0}", Maximum));
+                throw new ArgumentOutOfRangeException(nameof(value), string.Format("Value must be less than Maximum value of {0}", Maximum));
             }
         }
 

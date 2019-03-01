@@ -35,13 +35,13 @@ namespace Avalonia.DesignerSupport
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
                 var loaded = loader.Load(stream, localAsm, null, baseUri);
-                var styles = loaded as Styles;
-                if (styles != null)
+                var style = loaded as IStyle;
+                if (style != null)
                 {
-                    var substitute = styles.OfType<Style>().Select(Design.GetPreviewWith).FirstOrDefault(s => s != null);
+                    var substitute = Design.GetPreviewWith((AvaloniaObject)style);
                     if (substitute != null)
                     {
-                        substitute.Styles.AddRange(styles);
+                        substitute.Styles.Add(style);
                         control = substitute;
                     }
                     else
@@ -51,8 +51,8 @@ namespace Avalonia.DesignerSupport
                             {
                                 new TextBlock {Text = "Styles can't be previewed without Design.PreviewWith. Add"},
                                 new TextBlock {Text = "<Design.PreviewWith>"},
-                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE--></Border>"},
-                                new TextBlock {Text = "<Design.PreviewWith>"},
+                                new TextBlock {Text = "    <Border Padding=20><!-- YOUR CONTROL FOR PREVIEW HERE --></Border>"},
+                                new TextBlock {Text = "</Design.PreviewWith>"},
                                 new TextBlock {Text = "before setters in your first Style"}
                             }
                         };

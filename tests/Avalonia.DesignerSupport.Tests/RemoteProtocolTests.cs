@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Remote.Protocol;
+using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
 using Xunit;
 
@@ -109,6 +110,16 @@ namespace Avalonia.DesignerSupport.Tests
                     return Guid.NewGuid().ToString();
                 if (t == typeof(Guid))
                     return Guid.NewGuid();
+                if (t == typeof(Exception))
+                    return new Exception("Here");
+                if (t == typeof(ExceptionDetails))
+                    return new ExceptionDetails
+                    {
+                        ExceptionType = "Exception",
+                        LineNumber = 5,
+                        LinePosition = 6,
+                        Message = "Here",
+                    };
                 throw new Exception($"Doesn't know how to fabricate a random value for {t}, path {pathInfo}");
             }
             
