@@ -132,6 +132,7 @@ namespace Avalonia.Utilities
 
             public void Add(EventHandler<T> s)
             {
+                Compact(true);
                 if (_count == _data.Length)
                 {
                     //Extend capacity
@@ -174,7 +175,7 @@ namespace Avalonia.Utilities
                 }
             }
 
-            void Compact()
+            void Compact(bool preventDestroy = false)
             {
                 int empty = -1;
                 for (int c = 0; c < _count; c++)
@@ -193,7 +194,7 @@ namespace Avalonia.Utilities
                 }
                 if (empty != -1)
                     _count = empty;
-                if (_count == 0)
+                if (_count == 0 && !preventDestroy)
                     Destroy();
             }
 
