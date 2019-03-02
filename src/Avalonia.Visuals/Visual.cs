@@ -552,7 +552,7 @@ namespace Avalonia
         {
             if (c == null)
             {
-                throw new ArgumentNullException("Cannot add null to VisualChildren.");
+                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
             }
 
             if (c.VisualParent != null)

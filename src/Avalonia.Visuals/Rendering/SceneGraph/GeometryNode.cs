@@ -89,9 +89,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// <inheritdoc/>
         public override bool HitTest(Point p)
         {
-            p *= Transform.Invert();
-            return (Brush != null && Geometry.FillContains(p)) || 
-                (Pen != null && Geometry.StrokeContains(Pen, p));
+            if (Transform.HasInverse)
+            {
+                p *= Transform.Invert();
+                return (Brush != null && Geometry.FillContains(p)) ||
+                    (Pen != null && Geometry.StrokeContains(Pen, p));
+            }
+
+            return false;
         }
     }
 }
