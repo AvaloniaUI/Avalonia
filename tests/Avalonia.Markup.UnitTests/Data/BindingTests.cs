@@ -273,6 +273,39 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal(42, target.Value);
         }
 
+        [Fact]
+        public void Null_Path_Should_Bind_To_DataContext()
+        {
+            var target = new TextBlock { DataContext = "foo" };
+            var binding = new Binding();
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("foo", target.Text);
+        }
+
+        [Fact]
+        public void Empty_Path_Should_Bind_To_DataContext()
+        {
+            var target = new TextBlock { DataContext = "foo" };
+            var binding = new Binding { Path = string.Empty };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("foo", target.Text);
+        }
+
+        [Fact]
+        public void Dot_Path_Should_Bind_To_DataContext()
+        {
+            var target = new TextBlock { DataContext = "foo" };
+            var binding = new Binding { Path = "." };
+
+            target.Bind(TextBlock.TextProperty, binding);
+
+            Assert.Equal("foo", target.Text);
+        }
+
         /// <summary>
         /// Tests a problem discovered with ListBox with selection.
         /// </summary>
