@@ -143,6 +143,7 @@ namespace Avalonia.Styling
                     }
 
                     controlSubscriptions.Add(subs);
+                    controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                     Subscriptions.Add(subs);
                 }
 
@@ -159,8 +160,9 @@ namespace Avalonia.Styling
                     var sub = setter.Apply(this, control, null);
                     subs.Add(sub);
                 }
-                
+
                 controlSubscriptions.Add(subs);
+                controlSubscriptions.Add(Disposable.Create(() => Subscriptions.Remove(subs)));
                 Subscriptions.Add(subs);
                 return true;
             }
@@ -223,7 +225,7 @@ namespace Avalonia.Styling
         {
             if (!_applied.TryGetValue(control, out var subscriptions))
             {
-                subscriptions = new CompositeDisposable(2);
+                subscriptions = new CompositeDisposable(3);
                 subscriptions.Add(control.StyleDetach.Subscribe(ControlDetach));
                 _applied.Add(control, subscriptions);
             }

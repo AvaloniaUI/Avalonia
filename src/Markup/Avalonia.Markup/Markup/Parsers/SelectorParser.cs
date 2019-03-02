@@ -50,10 +50,10 @@ namespace Avalonia.Markup.Parsers
                 {
 
                     case SelectorGrammar.OfTypeSyntax ofType:
-                        result = result.OfType(_typeResolver(ofType.Xmlns, ofType.TypeName));
+                        result = result.OfType(Resolve(ofType.Xmlns, ofType.TypeName));
                         break;
                     case SelectorGrammar.IsSyntax @is:
-                        result = result.Is(_typeResolver(@is.Xmlns, @is.TypeName));
+                        result = result.Is(Resolve(@is.Xmlns, @is.TypeName));
                         break;
                     case SelectorGrammar.ClassSyntax @class:
                         result = result.Class(@class.Class);
@@ -109,6 +109,19 @@ namespace Avalonia.Markup.Parsers
                     default:
                         throw new NotSupportedException($"Unsupported selector grammar '{i.GetType()}'.");
                 }
+            }
+
+            return result;
+        }
+
+        private Type Resolve(string xmlns, string typeName)
+        {
+            var result = _typeResolver(xmlns, typeName);
+
+            if (result == null)
+            {
+                var type = string.IsNullOrWhiteSpace(xmlns) ? typeName : xmlns + ':' + typeName;
+                throw new InvalidOperationException($"Could not resolve type '{type}'");
             }
 
             return result;

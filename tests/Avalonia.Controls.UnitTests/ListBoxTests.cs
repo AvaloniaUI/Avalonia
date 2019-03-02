@@ -267,6 +267,74 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(true);
         }
 
+        [Fact]
+        public void LayoutManager_Should_Measure_Arrange_All()
+        {
+            var virtualizationMode = ItemVirtualizationMode.Simple;
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new AvaloniaList<string>(Enumerable.Range(1, 7).Select(v => v.ToString()));
+
+                var wnd = new Window() { SizeToContent = SizeToContent.WidthAndHeight };
+
+                wnd.IsVisible = true;
+
+                var target = new ListBox();
+
+                wnd.Content = target;
+
+                var lm = wnd.LayoutManager;
+
+                target.Height = 110;
+                target.Width = 50;
+                target.DataContext = items;
+                target.VirtualizationMode = virtualizationMode;
+
+                target.ItemTemplate = new FuncDataTemplate<object>(c =>
+                {
+                    var tb = new TextBlock() { Height = 10, Width = 30 };
+                    tb.Bind(TextBlock.TextProperty, new Data.Binding());
+                    return tb;
+                }, true);
+
+                lm.ExecuteInitialLayoutPass(wnd);
+
+                target.Items = items;
+
+                lm.ExecuteLayoutPass();
+
+                items.Insert(3, "3+");
+                lm.ExecuteLayoutPass();
+
+                items.Insert(4, "4+");
+                lm.ExecuteLayoutPass();
+
+                //RESET
+                items.Clear();
+                foreach (var i in Enumerable.Range(1, 7))
+                {
+                    items.Add(i.ToString());
+                }
+
+                //working bit better with this line no outof memory or remaining to arrange/measure ???
+                //lm.ExecuteLayoutPass();
+
+                items.Insert(2, "2+");
+
+                lm.ExecuteLayoutPass();
+                //after few more layout cycles layoutmanager shouldn't hold any more visual for measure/arrange
+                lm.ExecuteLayoutPass();
+                lm.ExecuteLayoutPass();
+
+                var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
+                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
+
+                Assert.Equal(0, toMeasure.Count());
+                Assert.Equal(0, toArrange.Count());
+            }
+        }
+
         private FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>(parent =>

@@ -197,7 +197,7 @@ namespace Avalonia
         /// <param name="error">The binding error.</param>
         public void LevelError(PriorityLevel level, BindingNotification error)
         {
-            error.LogIfError(Owner, Property);
+            Owner.LogError(Property, error.Error);
         }
 
         /// <summary>

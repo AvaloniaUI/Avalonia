@@ -287,7 +287,7 @@ namespace Avalonia.Controls
         /// <param name="e">The click event args.</param>
         protected virtual void OnClick(RoutedEventArgs e)
         {
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
