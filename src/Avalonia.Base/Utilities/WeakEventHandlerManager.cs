@@ -121,7 +121,6 @@ namespace Avalonia.Utilities
                 var del = new Action<object, T>(OnEvent);
                 _delegate = del.GetMethodInfo().CreateDelegate(_info.EventHandlerType, del.Target);
                 _info.AddMethod.Invoke(target, new[] { _delegate });
-                
             }
 
             void Destroy()
