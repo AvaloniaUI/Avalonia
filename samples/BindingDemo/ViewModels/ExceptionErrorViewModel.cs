@@ -21,7 +21,7 @@ namespace BindingDemo.ViewModels
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException("Value must be less than 10.");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be less than 10.");
                 }
             }
         }

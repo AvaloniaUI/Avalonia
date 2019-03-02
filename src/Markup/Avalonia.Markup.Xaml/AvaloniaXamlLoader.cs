@@ -1,21 +1,20 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Xml.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
 using Portable.Xaml;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
-using System.Text;
-using System.Xml.Linq;
-using System.Linq;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -24,29 +23,7 @@ namespace Avalonia.Markup.Xaml
     /// </summary>
     public class AvaloniaXamlLoader
     {
-        private readonly AvaloniaXamlSchemaContext _context = GetContext();
-
-        public bool IsDesignMode
-        {
-            get => _context.IsDesignMode;
-            set => _context.IsDesignMode = value;
-        }
-
-        private static AvaloniaXamlSchemaContext GetContext()
-        {
-            var result = AvaloniaLocator.Current.GetService<AvaloniaXamlSchemaContext>();
-
-            if (result == null)
-            {
-                result = AvaloniaXamlSchemaContext.Create();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<AvaloniaXamlSchemaContext>()
-                    .ToConstant(result);
-            }
-
-            return result;
-        }
+        public bool IsDesignMode { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
@@ -188,7 +165,8 @@ namespace Avalonia.Markup.Xaml
                 LocalAssembly = localAssembly
             };
 
-            var reader = new XamlXmlReader(stream, _context, readerSettings);
+            var context = IsDesignMode ? AvaloniaXamlSchemaContext.DesignInstance : AvaloniaXamlSchemaContext.Instance;
+            var reader = new XamlXmlReader(stream, context, readerSettings);
 
             object result = LoadFromReader(
                 reader,

@@ -375,7 +375,7 @@ namespace Avalonia.Input
         /// </summary>
         public void Focus()
         {
-            FocusManager.Instance.Focus(this);
+            FocusManager.Instance?.Focus(this);
         }
 
         /// <inheritdoc/>

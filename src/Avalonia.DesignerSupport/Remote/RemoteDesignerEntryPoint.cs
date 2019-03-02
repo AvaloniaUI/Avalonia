@@ -8,6 +8,7 @@ using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
+using Portable.Xaml;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -204,9 +205,18 @@ namespace Avalonia.DesignerSupport.Remote
                 }
                 catch (Exception e)
                 {
+                    var xamlException = e as XamlException;
+
                     s_transport.Send(new UpdateXamlResultMessage
                     {
-                        Error = e.ToString()
+                        Error = e.ToString(),
+                        Exception = new ExceptionDetails
+                        {
+                            ExceptionType = e.GetType().FullName,
+                            Message = e.Message.ToString(),
+                            LineNumber = xamlException?.LineNumber,
+                            LinePosition = xamlException?.LinePosition,
+                        }
                     });
                 }
             }
