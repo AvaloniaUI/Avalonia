@@ -38,7 +38,7 @@ namespace Avalonia.Skia
                 _lines.Add(new FormattedTextLine(textLine.TextPointer.Length, textLine.LineMetrics.Size.Height));
             }
 
-            Size = TextLayout.Size;
+            Size = new Size(TextLayout.Size.Width, TextLayout.Size.Height);
         }
 
         public string Text { get; }

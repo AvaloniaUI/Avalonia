@@ -78,7 +78,7 @@ namespace Avalonia.Skia.Text
         /// <value>
         ///     The size.
         /// </value>
-        public Size Size { get; private set; }
+        public SKSize Size { get; private set; } // Todo: Introduce TextMetrics
 
         /// <summary>
         ///     Draws the layout.
@@ -100,13 +100,13 @@ namespace Avalonia.Skia.Text
 
             canvas.Translate(origin.X, origin.Y);
 
-            using (var foregroundWrapper = context.CreatePaint(foreground, Size))
+            using (var foregroundWrapper = context.CreatePaint(foreground, new Size(Size.Width, Size.Height)))
             {
                 foreach (var textLine in TextLines)
                 {
-                    var lineOffsetX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                    var baselineOrigin = textLine.LineMetrics.BaselineOrigin;
 
-                    canvas.Translate(lineOffsetX, textLine.LineMetrics.BaselineOrigin.Y);
+                    canvas.Translate(baselineOrigin.X, baselineOrigin.Y);
 
                     foreach (var textRun in textLine.TextRuns)
                     {
@@ -227,7 +227,7 @@ namespace Avalonia.Skia.Text
             {
                 if (pointY < currentY + textLine.LineMetrics.Size.Height)
                 {
-                    var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                    var currentX = textLine.LineMetrics.BaselineOrigin.X;
 
                     foreach (var textRun in textLine.TextRuns)
                     {
@@ -323,7 +323,7 @@ namespace Avalonia.Skia.Text
             {
                 var lastLine = TextLines.Last();
 
-                var offsetX = GetTextLineOffsetX(_textAlignment, lastLine.LineMetrics.Size.Width);
+                var offsetX = lastLine.LineMetrics.BaselineOrigin.X;
 
                 var lineX = offsetX + lastLine.LineMetrics.Size.Width;
 
@@ -343,7 +343,7 @@ namespace Avalonia.Skia.Text
                     continue;
                 }
 
-                var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var currentX = textLine.LineMetrics.BaselineOrigin.X;
 
                 foreach (var textRun in textLine.TextRuns)
                 {
@@ -393,7 +393,7 @@ namespace Avalonia.Skia.Text
                     continue;
                 }
 
-                var lineX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var lineX = textLine.LineMetrics.BaselineOrigin.X;
                 var startX = -1f;
 
                 foreach (var textRun in textLine.TextRuns)
@@ -466,47 +466,7 @@ namespace Avalonia.Skia.Text
                 Typeface = typeface,
                 TextSize = fontSize
             };
-        }
-
-        /// <summary>
-        ///     Creates the text line metrics.
-        /// </summary>
-        /// <param name="textRuns">The text runs.</param>
-        /// <param name="length">Text length</param>
-        /// <returns></returns>
-        private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns, out int length)
-        {
-            var width = 0.0f;
-            var ascent = 0.0f;
-            var descent = 0.0f;
-            var leading = 0.0f;
-
-            length = 0;
-
-            foreach (var textRun in textRuns)
-            {
-                length += textRun.TextPointer.Length;
-
-                width += textRun.Width;
-
-                if (ascent > textRun.FontMetrics.Ascent)
-                {
-                    ascent = textRun.FontMetrics.Ascent;
-                }
-
-                if (descent < textRun.FontMetrics.Descent)
-                {
-                    descent = textRun.FontMetrics.Descent;
-                }
-
-                if (leading < textRun.FontMetrics.Leading)
-                {
-                    leading = textRun.FontMetrics.Leading;
-                }
-            }
-
-            return new SKTextLineMetrics(width, ascent, descent, leading);
-        }
+        }       
 
         /// <summary>
         ///     Initializes the paint for text run.
@@ -601,7 +561,7 @@ namespace Avalonia.Skia.Text
                 currentWidth += cluster.Bounds.Width;
 
                 count += cluster.Length;
-            } 
+            }
 
             return count;
         }
@@ -617,7 +577,6 @@ namespace Avalonia.Skia.Text
         {
             Font font;
 
-            // ToDo: Cache this
             using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
             using (var face = new Face(blob, index))
             {
@@ -780,6 +739,48 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
+        ///     Creates the text line metrics.
+        /// </summary>
+        /// <param name="textRuns">The text runs.</param>
+        /// <param name="length">Text length</param>
+        /// <returns></returns>
+        private SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns, out int length)
+        {
+            var width = 0.0f;
+            var ascent = 0.0f;
+            var descent = 0.0f;
+            var leading = 0.0f;
+
+            length = 0;
+
+            foreach (var textRun in textRuns)
+            {
+                length += textRun.TextPointer.Length;
+
+                width += textRun.Width;
+
+                if (ascent > textRun.FontMetrics.Ascent)
+                {
+                    ascent = textRun.FontMetrics.Ascent;
+                }
+
+                if (descent < textRun.FontMetrics.Descent)
+                {
+                    descent = textRun.FontMetrics.Descent;
+                }
+
+                if (leading < textRun.FontMetrics.Leading)
+                {
+                    leading = textRun.FontMetrics.Leading;
+                }
+            }
+
+            var xOrigin = GetTextLineOffsetX(width);
+
+            return new SKTextLineMetrics(width, xOrigin, ascent, descent, leading);
+        }
+
+        /// <summary>
         ///     Creates a new text line of specified text runs.
         /// </summary>
         /// <param name="text">The text.</param>
@@ -830,7 +831,8 @@ namespace Avalonia.Skia.Text
             var fontMetrics = _paint.FontMetrics;
 
             var textLineMetrics = new SKTextLineMetrics(
-                0,
+                0f,
+                0f,
                 fontMetrics.Ascent,
                 fontMetrics.Descent,
                 fontMetrics.Leading);
@@ -1077,26 +1079,22 @@ namespace Avalonia.Skia.Text
         /// <summary>
         ///     Gets the text line offset x.
         /// </summary>
-        /// <param name="textAlignment">The text alignment.</param>
         /// <param name="lineWidth">The line width.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException">textAlignment - null</exception>
-        private double GetTextLineOffsetX(TextAlignment textAlignment, double lineWidth)
+        private float GetTextLineOffsetX(float lineWidth)
         {
             var availableWidth = _constraint.Width > 0 && !double.IsPositiveInfinity(_constraint.Width)
-                                     ? _constraint.Width
+                                     ? (float)_constraint.Width
                                      : Size.Width;
 
-            switch (textAlignment)
+            switch (_textAlignment)
             {
-                case TextAlignment.Left:
-                    return 0.0d;
                 case TextAlignment.Center:
                     return (availableWidth - lineWidth) / 2;
                 case TextAlignment.Right:
                     return availableWidth - lineWidth;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(textAlignment), textAlignment, null);
+                    return 0.0f;
             }
         }
 
@@ -1110,7 +1108,7 @@ namespace Avalonia.Skia.Text
             {
                 var emptyTextLine = CreateEmptyTextLine();
 
-                Size = new Size(emptyTextLine.LineMetrics.Size.Width, emptyTextLine.LineMetrics.Size.Height);
+                Size = new SKSize(emptyTextLine.LineMetrics.Size.Width, emptyTextLine.LineMetrics.Size.Height);
 
                 return new List<SKTextLine>
                        {
@@ -1191,7 +1189,7 @@ namespace Avalonia.Skia.Text
                 sizeY += textLine.LineMetrics.Size.Height;
             }
 
-            Size = new Size(sizeX, sizeY);
+            Size = new SKSize(sizeX, sizeY);
 
             return textLines;
         }
