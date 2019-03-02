@@ -5,6 +5,7 @@ using System;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -82,6 +83,7 @@ namespace Avalonia.Controls.Presenters
 
         private IControl _child;
         private bool _createdChild;
+        EventHandler<AvaloniaPropertyChangedEventArgs> _childChanging;
         private IDataTemplate _dataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
 
@@ -189,6 +191,13 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
+        event EventHandler<AvaloniaPropertyChangedEventArgs> IContentPresenter.ChildChanging
+        {
+            add => _childChanging += value;
+            remove => _childChanging -= value;
+        }
+
+        /// <inheritdoc/>
         public sealed override void ApplyTemplate()
         {
             if (!_createdChild && ((ILogical)this).IsAttachedToLogicalTree)
@@ -215,9 +224,30 @@ namespace Avalonia.Controls.Presenters
             var newChild = CreateChild();
 
             // Remove the old child if we're not recycling it.
-            if (oldChild != null && newChild != oldChild)
+            if (newChild != oldChild)
             {
-                VisualChildren.Remove(oldChild);
+                if (oldChild != null)
+                {
+                    VisualChildren.Remove(oldChild);
+                }
+
+                if (oldChild?.Parent == this)
+                {
+                    // If we're the child's parent then the presenter isn't in a ContentControl's
+                    // template.
+                    LogicalChildren.Remove(oldChild);
+                }
+                else
+                {
+                    // If we're in a ContentControl's template then invoke ChildChanging to let
+                    // ContentControlMixin handle removing the logical child.
+                    _childChanging?.Invoke(this, new AvaloniaPropertyChangedEventArgs(
+                        this,
+                        ChildProperty,
+                        oldChild,
+                        newChild,
+                        BindingPriority.LocalValue));
+                }
             }
 
             // Set the DataContext if the data isn't a control.
@@ -241,11 +271,9 @@ namespace Avalonia.Controls.Presenters
 
                 Child = newChild;
 
-                if (oldChild?.Parent == this)
-                {
-                    LogicalChildren.Remove(oldChild);
-                }
-
+                // If we're in a ContentControl's template then the child's parent will have been
+                // set by ContentControlMixin in response to Child changing. If not, then we're
+                // standalone and should make the control our own logical child.
                 if (newChild.Parent == null && TemplatedParent == null)
                 {
                     LogicalChildren.Add(newChild);

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -12,16 +14,17 @@ namespace Avalonia.Styling
     /// <summary>
     /// A style that consists of a number of child styles.
     /// </summary>
-    public class Styles : AvaloniaList<IStyle>, IStyle, ISetStyleParent
+    public class Styles : AvaloniaObject, IAvaloniaList<IStyle>, IStyle, ISetStyleParent
     {
         private IResourceNode _parent;
         private IResourceDictionary _resources;
+        private AvaloniaList<IStyle> _styles = new AvaloniaList<IStyle>();
         private Dictionary<Type, List<IStyle>> _cache;
 
         public Styles()
         {
-            ResetBehavior = ResetBehavior.Remove;
-            this.ForEachItem(
+            _styles.ResetBehavior = ResetBehavior.Remove;
+            _styles.ForEachItem(
                 x =>
                 {
                     if (x.ResourceParent == null && x is ISetStyleParent setParent)
@@ -57,8 +60,17 @@ namespace Avalonia.Styling
                 () => { });
         }
 
+        public event NotifyCollectionChangedEventHandler CollectionChanged
+        {
+            add => _styles.CollectionChanged += value;
+            remove => _styles.CollectionChanged -= value;
+        }
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
+
+        /// <inheritdoc/>
+        public int Count => _styles.Count;
 
         /// <inheritdoc/>
         public bool HasResources => _resources?.Count > 0 || this.Any(x => x.HasResources);
@@ -93,6 +105,19 @@ namespace Avalonia.Styling
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => _parent;
+
+        /// <inheritdoc/>
+        bool ICollection<IStyle>.IsReadOnly => false;
+
+        /// <inheritdoc/>
+        IStyle IReadOnlyList<IStyle>.this[int index] => _styles[index];
+
+        /// <inheritdoc/>
+        public IStyle this[int index]
+        {
+            get => _styles[index];
+            set => _styles[index] = value;
+        }
 
         /// <summary>
         /// Attaches the style to a control if the style's selector matches.
@@ -171,6 +196,54 @@ namespace Avalonia.Styling
             value = null;
             return false;
         }
+
+        /// <inheritdoc/>
+        public void AddRange(IEnumerable<IStyle> items) => _styles.AddRange(items);
+
+        /// <inheritdoc/>
+        public void InsertRange(int index, IEnumerable<IStyle> items) => _styles.InsertRange(index, items);
+
+        /// <inheritdoc/>
+        public void Move(int oldIndex, int newIndex) => _styles.Move(oldIndex, newIndex);
+
+        /// <inheritdoc/>
+        public void MoveRange(int oldIndex, int count, int newIndex) => _styles.MoveRange(oldIndex, count, newIndex);
+
+        /// <inheritdoc/>
+        public void RemoveAll(IEnumerable<IStyle> items) => _styles.RemoveAll(items);
+
+        /// <inheritdoc/>
+        public void RemoveRange(int index, int count) => _styles.RemoveRange(index, count);
+
+        /// <inheritdoc/>
+        public int IndexOf(IStyle item) => _styles.IndexOf(item);
+
+        /// <inheritdoc/>
+        public void Insert(int index, IStyle item) => _styles.Insert(index, item);
+
+        /// <inheritdoc/>
+        public void RemoveAt(int index) => _styles.RemoveAt(index);
+
+        /// <inheritdoc/>
+        public void Add(IStyle item) => _styles.Add(item);
+
+        /// <inheritdoc/>
+        public void Clear() => _styles.Clear();
+
+        /// <inheritdoc/>
+        public bool Contains(IStyle item) => _styles.Contains(item);
+
+        /// <inheritdoc/>
+        public void CopyTo(IStyle[] array, int arrayIndex) => _styles.CopyTo(array, arrayIndex);
+
+        /// <inheritdoc/>
+        public bool Remove(IStyle item) => _styles.Remove(item);
+
+        /// <inheritdoc/>
+        public IEnumerator<IStyle> GetEnumerator() => _styles.GetEnumerator();
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator() => _styles.GetEnumerator();
 
         /// <inheritdoc/>
         void ISetStyleParent.SetParent(IResourceNode parent)

@@ -195,7 +195,7 @@ namespace Avalonia.Controls.Shapes
             if (deferCalculateTransform)
             {
                 _calculateTransformOnArrange = true;
-                return DefiningGeometry.Bounds.Size;
+                return DefiningGeometry?.Bounds.Size ?? Size.Empty;
             }
             else
             {
@@ -217,17 +217,22 @@ namespace Avalonia.Controls.Shapes
 
         private Size CalculateShapeSizeAndSetTransform(Size availableSize)
         {
-            // This should probably use GetRenderBounds(strokeThickness) but then the calculations
-            // will multiply the stroke thickness as well, which isn't correct.
-            var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
-
-            if (_transform != transform)
+            if (DefiningGeometry != null)
             {
-                _transform = transform;
-                _renderedGeometry = null;
+                // This should probably use GetRenderBounds(strokeThickness) but then the calculations
+                // will multiply the stroke thickness as well, which isn't correct.
+                var (size, transform) = CalculateSizeAndTransform(availableSize, DefiningGeometry.Bounds, Stretch);
+
+                if (_transform != transform)
+                {
+                    _transform = transform;
+                    _renderedGeometry = null;
+                }
+
+                return size;
             }
 
-            return size;
+            return Size.Empty;
         }
 
         internal static (Size, Matrix) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

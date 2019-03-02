@@ -4,6 +4,7 @@
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -264,6 +265,31 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             target.Content = "bar";
             Assert.IsType<Canvas>(target.Child);
+        }
+
+
+        [Fact]
+        public void Should_Not_Bind_Old_Child_To_New_DataContext()
+        {
+            // Test for issue #1099.
+            var textBlock = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Binding(),
+            };
+
+            var (target, host) = CreateTarget();
+            host.DataTemplates.Add(new FuncDataTemplate<string>(x => textBlock));
+            host.DataTemplates.Add(new FuncDataTemplate<int>(x => new Canvas()));
+
+            target.Content = "foo";
+            Assert.Same(textBlock, target.Child);
+
+            textBlock.PropertyChanged += (s, e) =>
+            {
+                Assert.NotEqual(e.NewValue, "42");
+            };
+
+            target.Content = 42;
         }
 
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
