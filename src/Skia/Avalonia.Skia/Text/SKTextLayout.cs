@@ -225,7 +225,7 @@ namespace Avalonia.Skia.Text
 
             foreach (var textLine in TextLines)
             {
-                if (pointY <= currentY + textLine.LineMetrics.Size.Height)
+                if (pointY < currentY + textLine.LineMetrics.Size.Height)
                 {
                     var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
 
@@ -601,7 +601,7 @@ namespace Avalonia.Skia.Text
                 currentWidth += cluster.Bounds.Width;
 
                 count += cluster.Length;
-            }
+            } 
 
             return count;
         }
@@ -627,8 +627,6 @@ namespace Avalonia.Skia.Text
 
                 font = new Font(face);
 
-                font.SetScale(512, 512);
-
                 font.SetFunctionsOpenType();
             }
 
@@ -640,7 +638,7 @@ namespace Avalonia.Skia.Text
 
             var pos = buffer.GlyphPositions;
 
-            var textScale = textFormat.FontSize / 512;
+            var textScale = textFormat.FontSize / font.Scale.X;
 
             glyphPositions = new SKPoint[len];
 
@@ -657,7 +655,7 @@ namespace Avalonia.Skia.Text
             {
                 glyphIndices[i] = (ushort)info[i].Codepoint;
 
-                clusters[i] = info[i].Cluster;
+                clusters[i] = (int)info[i].Cluster;
 
                 var offsetX = pos[i].XOffset * textScale;
                 var offsetY = pos[i].YOffset * textScale;
@@ -1234,27 +1232,39 @@ namespace Avalonia.Skia.Text
             {
                 buffer.Language = new Language(CultureInfo.CurrentCulture);
 
-                var hasDoubleBreakChar = false;
+                var breakCharCount = 0;
 
                 if (textPointer.Length >= 2)
                 {
                     var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                    if (text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
+                    if (IsBreakChar(text[lastPosition]))
                     {
-                        hasDoubleBreakChar = true;
-                    }
-
-                    if (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r')
-                    {
-                        hasDoubleBreakChar = true;
+                        if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
+                            || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
+                        {
+                            breakCharCount = 2;
+                        }
+                        else
+                        {
+                            breakCharCount = 1;
+                        }
                     }
                 }
 
-                // ToDo: Replace break char with zero width character
-                if (hasDoubleBreakChar)
+                // Replace break char with zero width space
+                if (breakCharCount > 0)
                 {
-                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - 1);
+                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+
+                    var cluster = buffer.GlyphInfos.Length > 0
+                                      ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
+                                      : (uint)textPointer.StartingIndex;
+
+                    for (var i = 0; i < breakCharCount; i++)
+                    {
+                        buffer.Add('\u200C', cluster);
+                    }
                 }
                 else
                 {

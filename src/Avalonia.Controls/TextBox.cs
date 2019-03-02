@@ -748,10 +748,17 @@ namespace Avalonia.Controls
 
                 var rect = _presenter.FormattedText.HitTestTextPosition(caretIndex);
 
+                if (rect.Width == 0d)
+                {
+                    CaretIndex = index;
+
+                    return;
+                }
+
                 if (direction > 0)
                 {
                     var hitTestResult = _presenter.FormattedText.HitTestPoint(
-                        new Point(rect.X + rect.Width + float.Epsilon, rect.Y));
+                        new Point(rect.X + rect.Width, rect.Y));
 
                     CaretIndex = hitTestResult.TextPosition + hitTestResult.Length;
                 }
@@ -759,7 +766,7 @@ namespace Avalonia.Controls
                 {
                     var hitTestResult = _presenter.FormattedText.HitTestPoint(new Point(rect.X, rect.Y));
 
-                    CaretIndex = hitTestResult.TextPosition;
+                    CaretIndex = hitTestResult.TextPosition == CaretIndex ? index : hitTestResult.TextPosition;
                 }
             }
             else
