@@ -897,7 +897,7 @@ namespace Avalonia.Controls
 
                 // Wrap an IEnumerable in an ICollectionView if it's not already one
                 bool setDefaultSelection = false;
-                if (newItemsSource != null && !(newItemsSource is ICollectionView))
+                if (newItemsSource != null && !(newItemsSource is IDataGridCollectionView))
                 {
                     DataConnection.DataSource = DataGridDataConnection.CreateView(newItemsSource);
                 }
@@ -2050,7 +2050,7 @@ namespace Avalonia.Controls
             {
                 int slot = -1;
                 DataGridRowGroupInfo rowGroupInfo = null;
-                if (item is CollectionViewGroup collectionViewGroup)
+                if (item is DataGridCollectionViewGroup collectionViewGroup)
                 {
                     rowGroupInfo = RowGroupInfoFromCollectionViewGroup(collectionViewGroup);
                     if (rowGroupInfo == null)
@@ -2737,7 +2737,7 @@ namespace Avalonia.Controls
             try
             {
                 int slot = -1;
-                if (item is CollectionViewGroup group)
+                if (item is DataGridCollectionViewGroup group)
                 {
                     DataGridRowGroupInfo groupInfo = RowGroupInfoFromCollectionViewGroup(group);
                     if (groupInfo != null)
@@ -5940,7 +5940,7 @@ namespace Avalonia.Controls
         /// <param name="item">item</param>
         /// <param name="groupLevel">groupLevel</param>
         /// <returns>The group the given item falls under or null if the item is not in the ItemsSource</returns>
-        public CollectionViewGroup GetGroupFromItem(object item, int groupLevel)
+        public DataGridCollectionViewGroup GetGroupFromItem(object item, int groupLevel)
         {
             int itemIndex = DataConnection.IndexOf(item);
             if (itemIndex == -1)

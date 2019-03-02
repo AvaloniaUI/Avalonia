@@ -19,11 +19,11 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Collections
 {
-    public abstract class AvaloniaGroupDescription : INotifyPropertyChanged
+    public abstract class DataGridGroupDescription : INotifyPropertyChanged
     {
         public AvaloniaList<object> GroupKeys { get; }
 
-        public AvaloniaGroupDescription()
+        public DataGridGroupDescription()
         {
             GroupKeys = new AvaloniaList<object>();
             GroupKeys.CollectionChanged += (sender, e) => OnPropertyChanged(new PropertyChangedEventArgs(nameof(GroupKeys)));
@@ -54,14 +54,14 @@ namespace Avalonia.Collections
             return object.Equals(groupKey, itemKey);
         }
     }
-    public class PathGroupDescription : AvaloniaGroupDescription
+    public class DataGridPathGroupDescription : DataGridGroupDescription
     {
         private string _propertyPath;
         private Type _propertyType;
         private IValueConverter _valueConverter;
         private StringComparison _stringComparison = StringComparison.Ordinal;
 
-        public PathGroupDescription(string propertyPath)
+        public DataGridPathGroupDescription(string propertyPath)
         {
             _propertyPath = propertyPath;
         }
@@ -114,7 +114,7 @@ namespace Avalonia.Collections
         }
     }
 
-    public abstract class CollectionViewGroup : INotifyPropertyChanged
+    public abstract class DataGridCollectionViewGroup : INotifyPropertyChanged
     {
         private int _itemCount;
 
@@ -133,7 +133,7 @@ namespace Avalonia.Collections
             }
         }
 
-        protected CollectionViewGroup(object key)
+        protected DataGridCollectionViewGroup(object key)
         {
             Key = key;
             ProtectedItems = new AvaloniaList<object>();
@@ -159,24 +159,24 @@ namespace Avalonia.Collections
             PropertyChanged?.Invoke(this, e);
         }
     }
-    internal class CollectionViewGroupInternal : CollectionViewGroup
+    internal class DataGridCollectionViewGroupInternal : DataGridCollectionViewGroup
     {
         /// <summary>
         /// GroupDescription used to define how to group the items
         /// </summary>
-        private AvaloniaGroupDescription _groupBy;
+        private DataGridGroupDescription _groupBy;
 
         /// <summary>
         /// Parent group of this CollectionViewGroupInternal
         /// </summary>
-        private readonly CollectionViewGroupInternal _parentGroup;
+        private readonly DataGridCollectionViewGroupInternal _parentGroup;
 
         /// <summary>
         /// Used for detecting stale enumerators
         /// </summary>
         private int _version;
 
-        public CollectionViewGroupInternal(object key, CollectionViewGroupInternal parent)
+        public DataGridCollectionViewGroupInternal(object key, DataGridCollectionViewGroupInternal parent)
             : base(key)
         {
             _parentGroup = parent;
@@ -186,7 +186,7 @@ namespace Avalonia.Collections
 
         internal int FullCount { get; set; }
 
-        internal AvaloniaGroupDescription GroupBy
+        internal DataGridGroupDescription GroupBy
         {
             get { return _groupBy; }
             set
@@ -240,7 +240,7 @@ namespace Avalonia.Collections
                     // look for first item, child by child
                     for (int k = 0, n = Items.Count; k < n; ++k)
                     {
-                        if (!(Items[k] is CollectionViewGroupInternal subgroup))
+                        if (!(Items[k] is DataGridCollectionViewGroupInternal subgroup))
                         {
                             // child is an item - return it
                             return Items[k];
@@ -267,7 +267,7 @@ namespace Avalonia.Collections
             }
         }
 
-        private CollectionViewGroupInternal Parent => _parentGroup;
+        private DataGridCollectionViewGroupInternal Parent => _parentGroup;
 
         /// <summary>
         /// Adds the specified item to the collection
@@ -322,7 +322,7 @@ namespace Avalonia.Collections
 
                 for (index = low; index < high; ++index)
                 {
-                    object seed1 = (ProtectedItems[index] is CollectionViewGroupInternal subgroup) ? subgroup.SeedItem : ProtectedItems[index];
+                    object seed1 = (ProtectedItems[index] is DataGridCollectionViewGroupInternal subgroup) ? subgroup.SeedItem : ProtectedItems[index];
                     if (seed1 == AvaloniaProperty.UnsetValue)
                     {
                         continue;
@@ -383,7 +383,7 @@ namespace Avalonia.Collections
         {
             for (int k = 0, n = Items.Count; k < n; ++k)
             {
-                if (Items[k] is CollectionViewGroupInternal subgroup)
+                if (Items[k] is DataGridCollectionViewGroupInternal subgroup)
                 {
                     // current item is a group - either drill in, or skip over
                     if (index < subgroup.ItemCount)
@@ -426,7 +426,7 @@ namespace Avalonia.Collections
             int result = 0;
 
             // accumulate the number of predecessors at each level
-            for (CollectionViewGroupInternal group = this;
+            for (DataGridCollectionViewGroupInternal group = this;
                     group != null;
                     item = group, group = group.Parent, index = -1)
             {
@@ -441,7 +441,7 @@ namespace Avalonia.Collections
                     }
 
                     // accumulate leaf count
-                    CollectionViewGroupInternal subgroup = group.Items[k] as CollectionViewGroupInternal;
+                    DataGridCollectionViewGroupInternal subgroup = group.Items[k] as DataGridCollectionViewGroupInternal;
                     result += subgroup?.ItemCount ?? 1;
                 }
             }
@@ -460,7 +460,7 @@ namespace Avalonia.Collections
             int leaves = 0;         // number of leaves we've passed over so far
             for (int k = 0, n = Items.Count; k < n; ++k)
             {
-                if (Items[k] is CollectionViewGroupInternal subgroup)
+                if (Items[k] is DataGridCollectionViewGroupInternal subgroup)
                 {
                     int subgroupIndex = subgroup.LeafIndexOf(item);
                     if (subgroupIndex < 0)
@@ -519,13 +519,13 @@ namespace Avalonia.Collections
         /// Removes an empty group from the PagedCollectionView grouping
         /// </summary>
         /// <param name="group">Empty subgroup to remove</param>
-        private static void RemoveEmptyGroup(CollectionViewGroupInternal group)
+        private static void RemoveEmptyGroup(DataGridCollectionViewGroupInternal group)
         {
-            CollectionViewGroupInternal parent = group.Parent;
+            DataGridCollectionViewGroupInternal parent = group.Parent;
 
             if (parent != null)
             {
-                AvaloniaGroupDescription groupBy = parent.GroupBy;
+                DataGridGroupDescription groupBy = parent.GroupBy;
                 int index = parent.ProtectedItems.IndexOf(group);
 
                 // remove the subgroup unless it is one of the explicit groups
@@ -544,9 +544,9 @@ namespace Avalonia.Collections
         /// <param name="delta">Delta to change count by</param>
         protected void ChangeCounts(object item, int delta)
         {
-            bool changeLeafCount = !(item is CollectionViewGroup);
+            bool changeLeafCount = !(item is DataGridCollectionViewGroup);
 
-            for (CollectionViewGroupInternal group = this;
+            for (DataGridCollectionViewGroupInternal group = this;
                     group != null;
                     group = group._parentGroup)
             {
@@ -576,7 +576,7 @@ namespace Avalonia.Collections
         private class LeafEnumerator : IEnumerator
         {
             private object _current;   // current item
-            private CollectionViewGroupInternal _group; // parent group
+            private DataGridCollectionViewGroupInternal _group; // parent group
             private int _index;     // current index into Items
             private IEnumerator _subEnum;   // enumerator over current subgroup
             private int _version;   // parent group's version at ctor
@@ -585,7 +585,7 @@ namespace Avalonia.Collections
             /// Initializes a new instance of the LeafEnumerator class.
             /// </summary>
             /// <param name="group">CollectionViewGroupInternal that uses the enumerator</param>
-            public LeafEnumerator(CollectionViewGroupInternal group)
+            public LeafEnumerator(DataGridCollectionViewGroupInternal group)
             {
                 _group = group;
                 DoReset();  // don't call virtual Reset in ctor
@@ -636,7 +636,7 @@ namespace Avalonia.Collections
                         return false;
                     }
 
-                    CollectionViewGroupInternal subgroup = _group.Items[_index] as CollectionViewGroupInternal;
+                    DataGridCollectionViewGroupInternal subgroup = _group.Items[_index] as DataGridCollectionViewGroupInternal;
                     if (subgroup == null)
                     {
                         // current item is a leaf - it's the new Current
@@ -839,7 +839,7 @@ namespace Avalonia.Collections
 
     }
 
-    internal class CollectionViewGroupRoot : CollectionViewGroupInternal, INotifyCollectionChanged
+    internal class CollectionViewGroupRoot : DataGridCollectionViewGroupInternal, INotifyCollectionChanged
     {
         /// <summary>
         /// String constant used for the Root Name
@@ -854,12 +854,12 @@ namespace Avalonia.Collections
         /// <summary>
         /// Private accessor for the top level GroupDescription
         /// </summary>
-        private static AvaloniaGroupDescription topLevelGroupDescription;
+        private static DataGridGroupDescription topLevelGroupDescription;
 
         /// <summary>
         /// Private accessor for an ObservableCollection containing group descriptions
         /// </summary>
-        private readonly AvaloniaList<AvaloniaGroupDescription> _groupBy = new AvaloniaList<AvaloniaGroupDescription>();
+        private readonly AvaloniaList<DataGridGroupDescription> _groupBy = new AvaloniaList<DataGridGroupDescription>();
 
         /// <summary>
         /// Indicates whether the list of items (after applying the sort and filters, if any) 
@@ -870,7 +870,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Private accessor for the owning ICollectionView
         /// </summary>
-        private readonly ICollectionView _view;
+        private readonly IDataGridCollectionView _view;
 
         /// <summary>
         /// Raise this event when the (grouped) view changes
@@ -887,7 +887,7 @@ namespace Avalonia.Collections
         /// </summary>
         /// <param name="view">CollectionView that contains this grouping</param>
         /// <param name="isDataInGroupOrder">True if items are already in correct order for grouping</param>
-        internal CollectionViewGroupRoot(ICollectionView view, bool isDataInGroupOrder)
+        internal CollectionViewGroupRoot(IDataGridCollectionView view, bool isDataInGroupOrder)
             : base(RootName, null)
         {
             _view = view;
@@ -897,7 +897,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Gets the description of grouping, indexed by level.
         /// </summary>
-        public virtual AvaloniaList<AvaloniaGroupDescription> GroupDescriptions => _groupBy;
+        public virtual AvaloniaList<DataGridGroupDescription> GroupDescriptions => _groupBy;
 
         /// <summary>
         /// Gets or sets the current IComparer being used
@@ -938,7 +938,7 @@ namespace Avalonia.Collections
         protected override int FindIndex(object item, object seed, IComparer comparer, int low, int high)
         {
             // root group needs to adjust the bounds of the search to exclude the new item (if any)
-            if (_view is IEditableCollectionView iecv && iecv.IsAddingNew)
+            if (_view is IDataGridEditableCollectionView iecv && iecv.IsAddingNew)
             {
                 --high;
             }
@@ -1061,15 +1061,15 @@ namespace Avalonia.Collections
         /// <param name="level">The level of grouping.</param>
         /// <param name="key">Name of subgroup to add to</param>
         /// <param name="loading">Whether we are currently loading</param>
-        private void AddToSubgroup(object item, CollectionViewGroupInternal group, int level, object key, bool loading)
+        private void AddToSubgroup(object item, DataGridCollectionViewGroupInternal group, int level, object key, bool loading)
         {
-            CollectionViewGroupInternal subgroup;
+            DataGridCollectionViewGroupInternal subgroup;
             int index = (_isDataInGroupOrder) ? group.LastIndex : 0;
 
             // find the desired subgroup
             for (int n = group.Items.Count; index < n; ++index)
             {
-                subgroup = group.Items[index] as CollectionViewGroupInternal;
+                subgroup = group.Items[index] as DataGridCollectionViewGroupInternal;
                 if (subgroup == null)
                 {
                     continue;           // skip children that are not groups
@@ -1084,7 +1084,7 @@ namespace Avalonia.Collections
             }
 
             // the item didn't match any subgroups.  Create a new subgroup and add the item.
-            subgroup = new CollectionViewGroupInternal(key, group);
+            subgroup = new DataGridCollectionViewGroupInternal(key, group);
             InitializeGroup(subgroup, level + 1, item);
 
 
@@ -1112,7 +1112,7 @@ namespace Avalonia.Collections
         /// <param name="group">Group to add item to</param>
         /// <param name="level">The level of grouping</param>
         /// <param name="loading">Whether we are currently loading</param>
-        private void AddToSubgroups(object item, CollectionViewGroupInternal group, int level, bool loading)
+        private void AddToSubgroups(object item, DataGridCollectionViewGroupInternal group, int level, bool loading)
         {
             object key = GetGroupKey(item, group.GroupBy, level);
 
@@ -1145,7 +1145,7 @@ namespace Avalonia.Collections
             }
         }
 
-        public virtual Func<CollectionViewGroup, int, AvaloniaGroupDescription> GroupBySelector { get; set; }
+        public virtual Func<DataGridCollectionViewGroup, int, DataGridGroupDescription> GroupBySelector { get; set; }
 
         /// <summary>
         /// Returns the description of how to divide the given group into subgroups
@@ -1153,9 +1153,9 @@ namespace Avalonia.Collections
         /// <param name="group">CollectionViewGroup to get group description from</param>
         /// <param name="level">The level of grouping</param>
         /// <returns>GroupDescription of how to divide the given group</returns>
-        private AvaloniaGroupDescription GetGroupDescription(CollectionViewGroup group, int level)
+        private DataGridGroupDescription GetGroupDescription(DataGridCollectionViewGroup group, int level)
         {
-            AvaloniaGroupDescription result = null;
+            DataGridGroupDescription result = null;
             if (group == this)
             {
                 group = null;
@@ -1181,7 +1181,7 @@ namespace Avalonia.Collections
         /// <param name="groupDescription">GroupDescription for the group</param>
         /// <param name="level">The level of grouping</param>
         /// <returns>Group names for the specified item</returns>
-        private object GetGroupKey(object item, AvaloniaGroupDescription groupDescription, int level)
+        private object GetGroupKey(object item, DataGridGroupDescription groupDescription, int level)
         {
             if (groupDescription != null)
             {
@@ -1199,10 +1199,10 @@ namespace Avalonia.Collections
         /// <param name="group">Group to initialize</param>
         /// <param name="level">The level of grouping</param>
         /// <param name="seedItem">The seed item to compare with to see where to insert</param>
-        private void InitializeGroup(CollectionViewGroupInternal group, int level, object seedItem)
+        private void InitializeGroup(DataGridCollectionViewGroupInternal group, int level, object seedItem)
         {
             // set the group description for dividing the group into subgroups
-            AvaloniaGroupDescription groupDescription = GetGroupDescription(group, level);
+            DataGridGroupDescription groupDescription = GetGroupDescription(group, level);
             group.GroupBy = groupDescription;
 
             // create subgroups for each of the explicit names
@@ -1211,7 +1211,7 @@ namespace Avalonia.Collections
             {
                 for (int k = 0, n = keys.Count; k < n; ++k)
                 {
-                    CollectionViewGroupInternal subgroup = new CollectionViewGroupInternal(keys[k], group);
+                    DataGridCollectionViewGroupInternal subgroup = new DataGridCollectionViewGroupInternal(keys[k], group);
                     InitializeGroup(subgroup, level + 1, seedItem);
                     group.Add(subgroup);
                 }
@@ -1226,7 +1226,7 @@ namespace Avalonia.Collections
         /// <param name="group">Group to remove item from</param>
         /// <param name="item">Item to remove</param>
         /// <returns>True if item could not be removed</returns>
-        private bool RemoveFromGroupDirectly(CollectionViewGroupInternal group, object item)
+        private bool RemoveFromGroupDirectly(DataGridCollectionViewGroupInternal group, object item)
         {
             int leafIndex = group.Remove(item, true);
             if (leafIndex >= 0)
@@ -1248,15 +1248,15 @@ namespace Avalonia.Collections
         /// <param name="level">The level of grouping</param>
         /// <param name="key">Name of item to remove</param>
         /// <returns>Return true if the item was not in one of the subgroups it was supposed to be.</returns>
-        private bool RemoveFromSubgroup(object item, CollectionViewGroupInternal group, int level, object key)
+        private bool RemoveFromSubgroup(object item, DataGridCollectionViewGroupInternal group, int level, object key)
         {
             bool itemIsMissing = false;
-            CollectionViewGroupInternal subgroup;
+            DataGridCollectionViewGroupInternal subgroup;
 
             // find the desired subgroup
             for (int index = 0, n = group.Items.Count; index < n; ++index)
             {
-                subgroup = group.Items[index] as CollectionViewGroupInternal;
+                subgroup = group.Items[index] as DataGridCollectionViewGroupInternal;
                 if (subgroup == null)
                 {
                     continue;           // skip children that are not groups
@@ -1284,7 +1284,7 @@ namespace Avalonia.Collections
         /// <param name="group">Group to remove item from</param>
         /// <param name="level">The level of grouping</param>
         /// <returns>Return true if the item was not in one of the subgroups it was supposed to be.</returns>
-        private bool RemoveFromSubgroups(object item, CollectionViewGroupInternal group, int level)
+        private bool RemoveFromSubgroups(object item, DataGridCollectionViewGroupInternal group, int level)
         {
             bool itemIsMissing = false;
             object key = GetGroupKey(item, group.GroupBy, level);
@@ -1326,7 +1326,7 @@ namespace Avalonia.Collections
         /// </summary>
         /// <param name="group">Group to remove item from</param>
         /// <param name="item">Item to remove</param>
-        private void RemoveItemFromSubgroupsByExhaustiveSearch(CollectionViewGroupInternal group, object item)
+        private void RemoveItemFromSubgroupsByExhaustiveSearch(DataGridCollectionViewGroupInternal group, object item)
         {
             // try to remove the item from the direct children 
             // this function only returns true if it failed to remove from group directly
@@ -1337,7 +1337,7 @@ namespace Avalonia.Collections
                 // (loop runs backwards in case an entire group is deleted)
                 for (int k = group.Items.Count - 1; k >= 0; --k)
                 {
-                    if (group.Items[k] is CollectionViewGroupInternal subgroup)
+                    if (group.Items[k] is DataGridCollectionViewGroupInternal subgroup)
                     {
                         RemoveItemFromSubgroupsByExhaustiveSearch(subgroup, item);
                     }
@@ -1349,7 +1349,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// TopLevelGroupDescription class
         /// </summary>
-        private class TopLevelGroupDescription : AvaloniaGroupDescription
+        private class TopLevelGroupDescription : DataGridGroupDescription
         {
             /// <summary>
             /// Initializes a new instance of the TopLevelGroupDescription class.

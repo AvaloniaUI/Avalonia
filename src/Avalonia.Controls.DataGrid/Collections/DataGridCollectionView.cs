@@ -45,17 +45,17 @@ namespace Avalonia.Collections
     }
 
     /// <summary>Defines a method that enables a collection to provide a custom view for specialized sorting, filtering, grouping, and currency.</summary>
-    public interface ICollectionViewFactory
+    internal interface ICollectionViewFactory
     {
         /// <summary>Returns a custom view for specialized sorting, filtering, grouping, and currency.</summary>
         /// <returns>A custom view for specialized sorting, filtering, grouping, and currency.</returns>
-        ICollectionView CreateView();
+        IDataGridCollectionView CreateView();
     }
     
     /// <summary>
     /// PagedCollectionView view over an IEnumerable.
     /// </summary>
-    public sealed class CollectionViewBase : ICollectionView, IEditableCollectionView, INotifyPropertyChanged //IPagedCollectionView, 
+    public sealed class CollectionViewBase : IDataGridCollectionView, IDataGridEditableCollectionView, INotifyPropertyChanged //IPagedCollectionView, 
     {
         #region Static Fields and Constants
 
@@ -63,7 +63,7 @@ namespace Avalonia.Collections
         /// Since there's nothing in the un-cancelable event args that is mutable,
         /// just create one instance to be used universally.
         /// </summary>
-        private static readonly CurrentChangingEventArgs uncancelableCurrentChangingEventArgs = new CurrentChangingEventArgs(false);
+        private static readonly DataGridCurrentChangingEventArgs uncancelableCurrentChangingEventArgs = new DataGridCurrentChangingEventArgs(false);
 
         #endregion Static Fields and Constants
 
@@ -178,7 +178,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Private accessor for the SortDescriptions
         /// </summary>
-        private AvaloniaSortDescriptionCollection _sortDescriptions;
+        private DataGridSortDescriptionCollection _sortDescriptions;
 
         /// <summary>
         /// Private accessor for the SourceCollection
@@ -298,7 +298,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Raised when the CurrentItem property is changing
         /// </summary>
-        public event EventHandler<CurrentChangingEventArgs> CurrentChanging;
+        public event EventHandler<DataGridCurrentChangingEventArgs> CurrentChanging;
 
         /// <summary>
         /// Raised when a page index change completed
@@ -678,7 +678,7 @@ namespace Avalonia.Collections
         /// <summary>
         /// Gets the description of grouping, indexed by level.
         /// </summary>
-        public AvaloniaList<AvaloniaGroupDescription> GroupDescriptions
+        public AvaloniaList<DataGridGroupDescription> GroupDescriptions
         {
             get
             {
@@ -686,8 +686,8 @@ namespace Avalonia.Collections
             }
         }
 
-        int ICollectionView.GroupingDepth => GroupDescriptions?.Count ?? 0;
-        string ICollectionView.GetGroupingPropertyNameAtDepth(int level)
+        int IDataGridCollectionView.GroupingDepth => GroupDescriptions?.Count ?? 0;
+        string IDataGridCollectionView.GetGroupingPropertyNameAtDepth(int level)
         {
             var groups = GroupDescriptions;
             if(groups != null && level >= 0 && level < groups.Count)
@@ -971,13 +971,13 @@ namespace Avalonia.Collections
         /// Use <seealso cref="CanSort"/> property to test if sorting is supported before adding
         /// to SortDescriptions.
         /// </exception>
-        public AvaloniaSortDescriptionCollection SortDescriptions
+        public DataGridSortDescriptionCollection SortDescriptions
         {
             get
             {
                 if (_sortDescriptions == null)
                 {
-                    SetSortDescriptions(new AvaloniaSortDescriptionCollection());
+                    SetSortDescriptions(new DataGridSortDescriptionCollection());
                 }
 
                 return _sortDescriptions;
@@ -1089,7 +1089,7 @@ namespace Avalonia.Collections
             get { return _isGrouping; }
         }
 
-        bool ICollectionView.IsGrouping => IsGrouping;
+        bool IDataGridCollectionView.IsGrouping => IsGrouping;
 
         /// <summary>
         /// Gets a value indicating whether there
@@ -2379,7 +2379,7 @@ namespace Avalonia.Collections
         /// </summary>
         public void Refresh()
         {
-            if (this is IEditableCollectionView ecv && (ecv.IsAddingNew || ecv.IsEditingItem))
+            if (this is IDataGridEditableCollectionView ecv && (ecv.IsAddingNew || ecv.IsEditingItem))
             {
                 throw new InvalidOperationException(GetOperationNotAllowedDuringAddOrEditText(nameof(Refresh)));
             }
@@ -2970,7 +2970,7 @@ namespace Avalonia.Collections
         /// <returns>False if a listener cancels the change, True otherwise</returns>
         private bool OkToChangeCurrent()
         {
-            CurrentChangingEventArgs args = new CurrentChangingEventArgs();
+            DataGridCurrentChangingEventArgs args = new DataGridCurrentChangingEventArgs();
             OnCurrentChanging(args);
             return !args.Cancel;
         }
@@ -3060,7 +3060,7 @@ namespace Avalonia.Collections
         /// <exception cref="InvalidOperationException">
         ///     This CurrentChanging event cannot be canceled.
         /// </exception>
-        private void OnCurrentChanging(CurrentChangingEventArgs args)
+        private void OnCurrentChanging(DataGridCurrentChangingEventArgs args)
         {
             if (args == null)
             {
@@ -3153,19 +3153,19 @@ namespace Avalonia.Collections
         {
             if (groupRoot == _temporaryGroup || PageSize == 0)
             {
-                if (groupRoot.ActiveComparer is CollectionViewGroupInternal.ListComparer listComparer)
+                if (groupRoot.ActiveComparer is DataGridCollectionViewGroupInternal.ListComparer listComparer)
                 {
                     listComparer.ResetList(InternalList);
                 }
                 else
                 {
-                    groupRoot.ActiveComparer = new CollectionViewGroupInternal.ListComparer(InternalList);
+                    groupRoot.ActiveComparer = new DataGridCollectionViewGroupInternal.ListComparer(InternalList);
                 }
             }
             else if (groupRoot == _group)
             {
                 // create the new comparer based on the current _temporaryGroup
-                groupRoot.ActiveComparer = new CollectionViewGroupInternal.CollectionViewGroupComparer(_temporaryGroup);
+                groupRoot.ActiveComparer = new DataGridCollectionViewGroupInternal.CollectionViewGroupComparer(_temporaryGroup);
             }
         }
 
@@ -3965,7 +3965,7 @@ namespace Avalonia.Collections
         /// Set new SortDescription collection; re-hook collection change notification handler
         /// </summary>
         /// <param name="descriptions">SortDescriptionCollection to set the property value to</param>
-        private void SetSortDescriptions(AvaloniaSortDescriptionCollection descriptions)
+        private void SetSortDescriptions(DataGridSortDescriptionCollection descriptions)
         {
             if (_sortDescriptions != null)
             {
@@ -4028,7 +4028,7 @@ namespace Avalonia.Collections
             var itemType = ItemType;
 
 
-            foreach (AvaloniaSortDescription sort in SortDescriptions)
+            foreach (DataGridSortDescription sort in SortDescriptions)
             {
                 sort.Initialize(itemType);
                 //string propertyPath = sort.PropertyName;
@@ -4385,7 +4385,7 @@ namespace Avalonia.Collections
         {
             private readonly IComparer<object>[] _comparers;
 
-            public MergedComparer(AvaloniaSortDescriptionCollection coll)
+            public MergedComparer(DataGridSortDescriptionCollection coll)
             {
                 _comparers = MakeComparerArray(coll);
             }
@@ -4393,7 +4393,7 @@ namespace Avalonia.Collections
                 : this(collectionView.SortDescriptions)
             { }
 
-            private static IComparer<object>[] MakeComparerArray(AvaloniaSortDescriptionCollection coll)
+            private static IComparer<object>[] MakeComparerArray(DataGridSortDescriptionCollection coll)
             {
                 return 
                     coll.Select(c => c.Comparer)

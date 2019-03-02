@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     internal class DataGridRowGroupInfo
     {
         public DataGridRowGroupInfo(
-            CollectionViewGroup collectionViewGroup,
+            DataGridCollectionViewGroup collectionViewGroup,
             bool isVisible,
             int level,
             int slot,
@@ -24,7 +24,7 @@ namespace Avalonia.Controls
             LastSubItemSlot = lastSubItemSlot;
         }
 
-        public CollectionViewGroup CollectionViewGroup
+        public DataGridCollectionViewGroup CollectionViewGroup
         {
             get;
             private set;

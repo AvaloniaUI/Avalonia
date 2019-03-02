@@ -2225,7 +2225,7 @@ namespace Avalonia.Controls
                 // it since this lookup should be performant enough
                 int insertSlot = -1;
                 DataGridRowGroupInfo parentGroupInfo = GetParentGroupInfo(sender);
-                CollectionViewGroup group = e.NewItems[0] as CollectionViewGroup;
+                DataGridCollectionViewGroup group = e.NewItems[0] as DataGridCollectionViewGroup;
 
                 if (parentGroupInfo != null)
                 {
@@ -2305,7 +2305,7 @@ namespace Avalonia.Controls
             Debug.Assert(e.OldItems.Count == 1);
             if (e.OldItems != null && e.OldItems.Count > 0)
             {
-                if (e.OldItems[0] is CollectionViewGroup removedGroup)
+                if (e.OldItems[0] is DataGridCollectionViewGroup removedGroup)
                 {
                     if (removedGroup.Items != null)
                     {
@@ -2380,7 +2380,7 @@ namespace Avalonia.Controls
         {
             if (e.PropertyName == "ItemCount")
             {
-                DataGridRowGroupInfo rowGroupInfo = RowGroupInfoFromCollectionViewGroup(sender as CollectionViewGroup);
+                DataGridRowGroupInfo rowGroupInfo = RowGroupInfoFromCollectionViewGroup(sender as DataGridCollectionViewGroup);
                 if (rowGroupInfo != null && IsSlotVisible(rowGroupInfo.Slot))
                 {
                     if (DisplayData.GetDisplayedElement(rowGroupInfo.Slot) is DataGridRowGroupHeader rowGroupHeader)
@@ -2414,12 +2414,12 @@ namespace Avalonia.Controls
         {
             int treeCount = 1;
 
-            if (group is CollectionViewGroup collectionViewGroup)
+            if (group is DataGridCollectionViewGroup collectionViewGroup)
             {
                 if (collectionViewGroup.Items != null && collectionViewGroup.Items.Count > 0)
                 {
                     collectionViewGroup.Items.CollectionChanged += CollectionViewGroup_CollectionChanged;
-                    if (collectionViewGroup.Items[0] is CollectionViewGroup)
+                    if (collectionViewGroup.Items[0] is DataGridCollectionViewGroup)
                     {
                         foreach (object subGroup in collectionViewGroup.Items)
                         {
@@ -2887,7 +2887,7 @@ namespace Avalonia.Controls
             EnsureRowGroupSpacerColumnWidth(groupLevelCount);
         }
 
-        internal DataGridRowGroupInfo RowGroupInfoFromCollectionViewGroup(CollectionViewGroup collectionViewGroup)
+        internal DataGridRowGroupInfo RowGroupInfoFromCollectionViewGroup(DataGridCollectionViewGroup collectionViewGroup)
         {
             foreach (int slot in RowGroupHeadersTable.GetIndexes())
             {
@@ -2905,7 +2905,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="collectionViewGroup">CollectionViewGroup</param>
         /// <param name="collapseAllSubgroups">Set to true to collapse all Subgroups</param>
-        public void CollapseRowGroup(CollectionViewGroup collectionViewGroup, bool collapseAllSubgroups)
+        public void CollapseRowGroup(DataGridCollectionViewGroup collectionViewGroup, bool collapseAllSubgroups)
         {
             if (WaitForLostFocus(delegate { CollapseRowGroup(collectionViewGroup, collapseAllSubgroups); }) ||
                 collectionViewGroup == null || !CommitEdit())
@@ -2919,7 +2919,7 @@ namespace Avalonia.Controls
             {
                 foreach (object groupObj in collectionViewGroup.Items)
                 {
-                    if (groupObj is CollectionViewGroup subGroup)
+                    if (groupObj is DataGridCollectionViewGroup subGroup)
                     {
                         CollapseRowGroup(subGroup, collapseAllSubgroups);
                     }
@@ -2932,7 +2932,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="collectionViewGroup">CollectionViewGroup</param>
         /// <param name="expandAllSubgroups">Set to true to expand all Subgroups</param>
-        public void ExpandRowGroup(CollectionViewGroup collectionViewGroup, bool expandAllSubgroups)
+        public void ExpandRowGroup(DataGridCollectionViewGroup collectionViewGroup, bool expandAllSubgroups)
         {
             if (WaitForLostFocus(delegate { ExpandRowGroup(collectionViewGroup, expandAllSubgroups); }) ||
                 collectionViewGroup == null || !CommitEdit())
@@ -2947,7 +2947,7 @@ namespace Avalonia.Controls
             {
                 foreach (object groupObj in collectionViewGroup.Items)
                 {
-                    if (groupObj is CollectionViewGroup subGroup)
+                    if (groupObj is DataGridCollectionViewGroup subGroup)
                     {
                         ExpandRowGroup(subGroup, expandAllSubgroups);
                     }

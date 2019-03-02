@@ -341,12 +341,12 @@ namespace Avalonia.Controls
             {
                 DataGrid owningGrid = OwningGrid;
 
-                AvaloniaSortDescription newSort;
+                DataGridSortDescription newSort;
 
                 KeyboardHelper.GetMetaKeyState(inputModifiers, out bool ctrl, out bool shift);
 
-                AvaloniaSortDescription sort = OwningColumn.GetSortDescription();
-                ICollectionView collectionView = owningGrid.DataConnection.CollectionView;
+                DataGridSortDescription sort = OwningColumn.GetSortDescription();
+                IDataGridCollectionView collectionView = owningGrid.DataConnection.CollectionView;
                 Debug.Assert(collectionView != null);
                 using (collectionView.DeferRefresh())
                 {
@@ -402,7 +402,7 @@ namespace Avalonia.Controls
                             return;
                         }
 
-                        newSort = AvaloniaSortDescription.FromPath(propertyName, culture: collectionView.Culture);
+                        newSort = DataGridSortDescription.FromPath(propertyName, culture: collectionView.Culture);
                         owningGrid.DataConnection.SortDescriptions.Add(newSort);
                     }
                 }

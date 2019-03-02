@@ -23,7 +23,7 @@ namespace ControlCatalog.Pages
             dg2.IsReadOnly = true;
 
             var collectionView2 = new CollectionViewBase(Countries.All);
-            collectionView2.GroupDescriptions.Add(new PathGroupDescription("Region"));
+            collectionView2.GroupDescriptions.Add(new DataGridPathGroupDescription("Region"));
 
             dg2.Items = collectionView2;
 

@@ -196,22 +196,22 @@ namespace Avalonia.Controls
             }
         }
 
-        public ICollectionView CollectionView
+        public IDataGridCollectionView CollectionView
         {
             get
             {
-                return DataSource as ICollectionView;
+                return DataSource as IDataGridCollectionView;
             }
         }
-        public IEditableCollectionView EditableCollectionView
+        public IDataGridEditableCollectionView EditableCollectionView
         {
             get
             {
-                return DataSource as IEditableCollectionView;
+                return DataSource as IDataGridEditableCollectionView;
             }
         }
 
-        public AvaloniaSortDescriptionCollection SortDescriptions
+        public DataGridSortDescriptionCollection SortDescriptions
         {
             get
             {
@@ -242,7 +242,7 @@ namespace Avalonia.Controls
                 return false;
             }
 
-            IEditableCollectionView editableCollectionView = EditableCollectionView;
+            IDataGridEditableCollectionView editableCollectionView = EditableCollectionView;
             if (editableCollectionView != null)
             {
                 if (editableCollectionView.IsEditingItem && (dataItem == editableCollectionView.CurrentEditItem))
@@ -272,7 +272,7 @@ namespace Avalonia.Controls
         /// <returns>True if a cancellation operation was invoked.</returns>
         public bool CancelEdit(object dataItem)
         {
-            IEditableCollectionView editableCollectionView = EditableCollectionView;
+            IDataGridEditableCollectionView editableCollectionView = EditableCollectionView;
             if (editableCollectionView != null)
             {
                 if (editableCollectionView.CanCancelEdit)
@@ -324,7 +324,7 @@ namespace Avalonia.Controls
         /// <returns>True if a commit operation was invoked.</returns>
         public bool EndEdit(object dataItem)
         {
-            IEditableCollectionView editableCollectionView = EditableCollectionView;
+            IDataGridEditableCollectionView editableCollectionView = EditableCollectionView;
             if (editableCollectionView != null)
             {
                 // IEditableCollectionView.CommitEdit can potentially change currency. If it does,
@@ -470,12 +470,12 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="source">Enumerable source for which to create a view</param>
         /// <returns>ICollectionView view over the provided source</returns>
-        internal static ICollectionView CreateView(IEnumerable source)
+        internal static IDataGridCollectionView CreateView(IEnumerable source)
         {
             Debug.Assert(source != null, "source unexpectedly null");
-            Debug.Assert(!(source is ICollectionView), "source is an ICollectionView");
+            Debug.Assert(!(source is IDataGridCollectionView), "source is an ICollectionView");
 
-            ICollectionView collectionView = null;
+            IDataGridCollectionView collectionView = null;
 
             if (source is ICollectionViewFactory collectionViewFactory)
             {
@@ -515,7 +515,7 @@ namespace Avalonia.Controls
                 _scrollForCurrentChanged = scrollIntoView;
                 _backupSlotForCurrentChanged = backupSlot;
 
-                CollectionView.MoveCurrentTo(item is CollectionViewGroup ? null : item);
+                CollectionView.MoveCurrentTo(item is DataGridCollectionViewGroup ? null : item);
 
                 _expectingCurrentChanged = false;
             }
@@ -574,7 +574,7 @@ namespace Avalonia.Controls
             {
                 // Committing Edit could cause our item to move to a group that no longer exists.  In
                 // this case, we need to update the item.
-                if (_itemToSelectOnCurrentChanged is CollectionViewGroup collectionViewGroup)
+                if (_itemToSelectOnCurrentChanged is DataGridCollectionViewGroup collectionViewGroup)
                 {
                     DataGridRowGroupInfo groupInfo = _owner.RowGroupInfoFromCollectionViewGroup(collectionViewGroup);
                     if (groupInfo == null)
@@ -609,7 +609,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void CollectionView_CurrentChanging(object sender, CurrentChangingEventArgs e)
+        private void CollectionView_CurrentChanging(object sender, DataGridCurrentChangingEventArgs e)
         {
             if (_owner.NoCurrentCellChangeCount == 0 &&
                 !_expectingCurrentChanged &&

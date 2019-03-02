@@ -13,7 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Collections
 {
-    public abstract class AvaloniaSortDescription
+    public abstract class DataGridSortDescription
     {
         public virtual string PropertyPath => null;
         public virtual bool Descending => false;
@@ -29,7 +29,7 @@ namespace Avalonia.Collections
             return seq.ThenBy(o => o, Comparer);
         }
 
-        internal virtual AvaloniaSortDescription SwitchSortDirection()
+        internal virtual DataGridSortDescription SwitchSortDirection()
         {
             return this;
         }
@@ -109,7 +109,7 @@ namespace Avalonia.Collections
             #endregion
         }
 
-        private class PathSortDescription : AvaloniaSortDescription
+        private class DataGridPathSortDescription : DataGridSortDescription
         {
             private readonly bool _descending;
             private readonly string _propertyPath;
@@ -138,14 +138,14 @@ namespace Avalonia.Collections
             public override IComparer<object> Comparer => _comparer.Value;
             public override bool Descending => _descending;
 
-            public PathSortDescription(string propertyPath, bool descending, CultureInfo culture)
+            public DataGridPathSortDescription(string propertyPath, bool descending, CultureInfo culture)
             {
                 _propertyPath = propertyPath;
                 _descending = descending;
                 _cultureSensitiveComparer = new Lazy<CultureSensitiveComparer>(() => new CultureSensitiveComparer(culture ?? CultureInfo.CurrentCulture));
                 _comparer = new Lazy<IComparer<object>>(() => Comparer<object>.Create((x, y) => Compare(x, y)));
             }
-            private PathSortDescription(PathSortDescription inner, bool descending)
+            private DataGridPathSortDescription(DataGridPathSortDescription inner, bool descending)
             {
                 _propertyPath = inner._propertyPath;
                 _descending = descending;
@@ -245,18 +245,18 @@ namespace Avalonia.Collections
                 }
             }
 
-            internal override AvaloniaSortDescription SwitchSortDirection()
+            internal override DataGridSortDescription SwitchSortDirection()
             {
-                return new PathSortDescription(this, !_descending);
+                return new DataGridPathSortDescription(this, !_descending);
             }
         }
 
-        public static AvaloniaSortDescription FromPath(string propertyPath, bool descending = false, CultureInfo culture = null)
+        public static DataGridSortDescription FromPath(string propertyPath, bool descending = false, CultureInfo culture = null)
         {
-            return new PathSortDescription(propertyPath, descending, culture);
+            return new DataGridPathSortDescription(propertyPath, descending, culture);
         }
     }
 
-    public class AvaloniaSortDescriptionCollection : AvaloniaList<AvaloniaSortDescription>
+    public class DataGridSortDescriptionCollection : AvaloniaList<DataGridSortDescription>
     { }
 }

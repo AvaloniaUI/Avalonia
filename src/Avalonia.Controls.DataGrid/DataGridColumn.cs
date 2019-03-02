@@ -1044,7 +1044,7 @@ namespace Avalonia.Controls
         /// We get the sort description from the data source.  We don't worry whether we can modify sort -- perhaps the sort description
         /// describes an unchangeable sort that exists on the data.
         /// </summary>
-        internal AvaloniaSortDescription GetSortDescription()
+        internal DataGridSortDescription GetSortDescription()
         {
             if (OwningGrid != null
                 && OwningGrid.DataConnection != null

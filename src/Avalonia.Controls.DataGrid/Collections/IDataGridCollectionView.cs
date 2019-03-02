@@ -13,20 +13,20 @@ using System.Text;
 namespace Avalonia.Collections
 {
     /// <summary>Provides data for the <see cref="E:Avalonia.Collections.ICollectionView.CurrentChanging" /> event.</summary>
-    public class CurrentChangingEventArgs : EventArgs
+    public class DataGridCurrentChangingEventArgs : EventArgs
     {
         private bool _cancel;
         private bool _isCancelable;
 
         /// <summary>Initializes a new instance of the <see cref="T:System.ComponentModel.CurrentChangingEventArgs" /> class and sets the <see cref="P:System.ComponentModel.CurrentChangingEventArgs.IsCancelable" /> property to true.</summary>
-        public CurrentChangingEventArgs()
+        public DataGridCurrentChangingEventArgs()
         {
             Initialize(true);
         }
 
         /// <summary>Initializes a new instance of the <see cref="T:System.ComponentModel.CurrentChangingEventArgs" /> class and sets the <see cref="P:System.ComponentModel.CurrentChangingEventArgs.IsCancelable" /> property to the specified value.</summary>
         /// <param name="isCancelable">true to disable the ability to cancel a <see cref="P:System.ComponentModel.ICollectionView.CurrentItem" /> change; false to enable cancellation.</param>
-        public CurrentChangingEventArgs(bool isCancelable)
+        public DataGridCurrentChangingEventArgs(bool isCancelable)
         {
             Initialize(isCancelable);
         }
@@ -66,7 +66,7 @@ namespace Avalonia.Collections
     }
 
     /// <summary>Enables collections to have the functionalities of current record management, custom sorting, filtering, and grouping.</summary>
-    public interface ICollectionView : IEnumerable, INotifyCollectionChanged
+    internal interface IDataGridCollectionView : IEnumerable, INotifyCollectionChanged
     {
         /// <summary>Gets or sets the cultural information for any operations of the view that may differ by culture, such as sorting.</summary>
         /// <returns>The culture information to use during culture-sensitive operations. </returns>
@@ -91,7 +91,7 @@ namespace Avalonia.Collections
 
         /// <summary>Gets a collection of <see cref="T:System.ComponentModel.SortDescription" /> instances that describe how the items in the collection are sorted in the view.</summary>
         /// <returns>A collection of values that describe how the items in the collection are sorted in the view.</returns>
-        AvaloniaSortDescriptionCollection SortDescriptions { get; }
+        DataGridSortDescriptionCollection SortDescriptions { get; }
 
         /// <summary>Gets a value that indicates whether this view supports sorting by way of the <see cref="P:System.ComponentModel.ICollectionView.SortDescriptions" /> property.</summary>
         /// <returns>true if this view supports sorting; otherwise, false.</returns>
@@ -167,12 +167,12 @@ namespace Avalonia.Collections
         bool MoveCurrentToPosition(int position);
 
         /// <summary>Occurs before the current item changes.</summary>
-        event EventHandler<CurrentChangingEventArgs> CurrentChanging;
+        event EventHandler<DataGridCurrentChangingEventArgs> CurrentChanging;
 
         /// <summary>Occurs after the current item has been changed.</summary>
         event EventHandler CurrentChanged;
     }
-    public interface IEditableCollectionView
+    internal interface IDataGridEditableCollectionView
     {
         /// <summary>Gets a value that indicates whether a new item can be added to the collection.</summary>
         /// <returns>true if a new item can be added to the collection; otherwise, false.</returns>
