@@ -275,7 +275,7 @@ namespace Avalonia.Controls.Presenters
                     Typeface = new Typeface(FontFamily, FontSize, FontStyle, FontWeight),
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,
-                }.Measure();
+                }.Measure().Size;
             }
         }
 

@@ -396,7 +396,7 @@ namespace Avalonia.Controls
                     FormattedText.Constraint = Size.Infinity;
                 }
 
-                return FormattedText.Measure();
+                return FormattedText.Measure().Size;
             }
 
             return new Size();
