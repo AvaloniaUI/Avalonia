@@ -639,7 +639,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        internal static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
             int index = 0;
 
