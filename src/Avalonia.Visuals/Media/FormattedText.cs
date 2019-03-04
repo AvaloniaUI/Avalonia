@@ -38,6 +38,12 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets the bounds of the text within the <see cref="Constraint"/>.
+        /// </summary>
+        /// <returns>The bounds of the text.</returns>
+        public Rect Bounds => PlatformImpl.Bounds;
+
+        /// <summary>
         /// Gets or sets the constraint of the text.
         /// </summary>
         public Size Constraint
@@ -157,12 +163,6 @@ namespace Avalonia.Media
         {
             return PlatformImpl.HitTestTextRange(index, length);
         }
-
-        /// <summary>
-        /// Gets the bounds of the text, taking <see cref="Constraint"/> into account.
-        /// </summary>
-        /// <returns>The bounds of the text.</returns>
-        public Rect Measure() => PlatformImpl.Bounds;
 
         private void Set<T>(ref T field, T value)
         {
