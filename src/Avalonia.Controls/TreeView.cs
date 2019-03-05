@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the selected items.
         /// </summary>
-        protected IList SelectedItems
+        public IList SelectedItems
         {
             get
             {
