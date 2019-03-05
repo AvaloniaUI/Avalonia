@@ -21,7 +21,7 @@ namespace Avalonia.Win32
             var hWnd = parent?.Handle?.Handle ?? IntPtr.Zero;
             return Task.Factory.StartNew(() =>
             {
-                var result = new string[0];
+                var result = Array.Empty<string>();
 
                 Guid clsid = dialog is OpenFileDialog ? UnmanagedMethods.ShellIds.OpenFileDialog : UnmanagedMethods.ShellIds.SaveFileDialog;
                 Guid iid = UnmanagedMethods.ShellIds.IFileDialog;
