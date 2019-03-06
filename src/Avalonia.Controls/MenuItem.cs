@@ -26,7 +26,10 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Command"/> property.
         /// </summary>
         public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
-            Button.CommandProperty.AddOwner<MenuItem>(menuItem => menuItem.Command, (menuItem, command) => menuItem.Command = command, enableDataValidation: true);
+            Button.CommandProperty.AddOwner<MenuItem>(
+                menuItem => menuItem.Command, 
+                (menuItem, command) => menuItem.Command = command, 
+                enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
