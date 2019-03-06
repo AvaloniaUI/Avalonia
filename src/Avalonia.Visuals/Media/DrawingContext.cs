@@ -109,6 +109,8 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
         {
+            Contract.Requires<ArgumentNullException>(geometry != null);
+
             if (brush != null || PenIsVisible(pen))
             {
                 PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);

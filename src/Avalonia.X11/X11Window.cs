@@ -557,8 +557,14 @@ namespace Avalonia.X11
         
         private bool _systemDecorations = true;
         private bool _canResize = true;
-        private (Size minSize, Size maxSize) _scaledMinMaxSize;
-        private (PixelSize minSize, PixelSize maxSize) _minMaxSize;
+        private const int MaxWindowDimension = 100000;
+
+        private (Size minSize, Size maxSize) _scaledMinMaxSize =
+            (new Size(1, 1), new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+        private (PixelSize minSize, PixelSize maxSize) _minMaxSize = (new PixelSize(1, 1),
+            new PixelSize(MaxWindowDimension, MaxWindowDimension));
+        
         private double _scaling = 1;
 
         void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
@@ -874,10 +880,10 @@ namespace Avalonia.X11
                 (int)(minSize.Width < 1 ? 1 : minSize.Width * Scaling),
                 (int)(minSize.Height < 1 ? 1 : minSize.Height * Scaling));
 
-            const int maxDim = 100000;
+            const int maxDim = MaxWindowDimension;
             var max = new PixelSize(
-                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, minSize.Width * Scaling)),
-                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, minSize.Height * Scaling)));
+                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, maxSize.Width * Scaling)),
+                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, maxSize.Height * Scaling)));
             
             _minMaxSize = (min, max);
             UpdateSizeHints(null);

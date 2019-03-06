@@ -15,6 +15,7 @@ namespace Avalonia.Remote.Protocol.Designer
     {
         public string Error { get; set; }
         public string Handle { get; set; }
+        public ExceptionDetails Exception { get; set; }
     }
 
     [AvaloniaRemoteMessageGuid("854887CF-2694-4EB6-B499-7461B6FB96C7")]
@@ -23,4 +24,11 @@ namespace Avalonia.Remote.Protocol.Designer
         public string SessionId { get; set; }
     }
     
+    public class ExceptionDetails
+    {
+        public string ExceptionType { get; set; }
+        public string Message { get; set; }
+        public int? LineNumber { get; set; }
+        public int? LinePosition { get; set; }
+    }
 }

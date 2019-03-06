@@ -48,14 +48,14 @@ namespace Avalonia.Controls
         }
         
         public static readonly AttachedProperty<Control> PreviewWithProperty = AvaloniaProperty
-            .RegisterAttached<Style, Control>("PreviewWith", typeof (Design));
+            .RegisterAttached<AvaloniaObject, Control>("PreviewWith", typeof (Design));
 
-        public static void SetPreviewWith(Style target, Control control)
+        public static void SetPreviewWith(AvaloniaObject target, Control control)
         {
             target.SetValue(PreviewWithProperty, control);
         }
 
-        public static Control GetPreviewWith(Style target)
+        public static Control GetPreviewWith(AvaloniaObject target)
         {
             return target.GetValue(PreviewWithProperty);
         }

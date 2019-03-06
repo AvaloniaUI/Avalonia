@@ -8,8 +8,10 @@ using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Logging;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia
@@ -346,12 +348,12 @@ namespace Avalonia
                 {
                     if (e.OldValue is IAffectsRender oldValue)
                     {
-                        oldValue.Invalidated -= sender.AffectsRenderInvalidated;
+                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(oldValue, nameof(oldValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        newValue.Invalidated += sender.AffectsRenderInvalidated;
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
                     }
 
                     sender.InvalidateVisual();
@@ -448,6 +450,34 @@ namespace Avalonia
             RaisePropertyChanged(VisualParentProperty, oldParent, newParent, BindingPriority.LocalValue);
         }
 
+        protected override sealed void LogBindingError(AvaloniaProperty property, Exception e)
+        {
+            // Don't log a binding error unless the control is attached to a logical or visual tree.
+            // In theory this should only need to check for logical tree attachment, but in practise
+            // due to ContentControlMixin only taking effect when the template has finished being
+            // applied, some controls are attached to the visual tree before the logical tree.
+            if (((ILogical)this).IsAttachedToLogicalTree || ((IVisual)this).IsAttachedToVisualTree)
+            {
+                if (e is BindingChainException b &&
+                    string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
+                    DataContext == null)
+                {
+                    // The error occurred at the root of the binding chain and DataContext is null;
+                    // don't log this - the DataContext probably hasn't been set up yet.
+                    return;
+                }
+
+                Logger.Log(
+                    LogEventLevel.Warning,
+                    LogArea.Binding,
+                    this,
+                    "Error in binding to {Target}.{Property}: {Message}",
+                    this,
+                    property,
+                    e.Message);
+            }
+        }
+
         /// <summary>
         /// Gets the visual offset from the specified ancestor.
         /// </summary>
@@ -522,7 +552,7 @@ namespace Avalonia
         {
             if (c == null)
             {
-                throw new ArgumentNullException("Cannot add null to VisualChildren.");
+                throw new ArgumentNullException(nameof(c), "Cannot add null to VisualChildren.");
             }
 
             if (c.VisualParent != null)

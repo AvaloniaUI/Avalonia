@@ -49,6 +49,18 @@ namespace Avalonia.Markup.Xaml.PortableXaml
                 //Portable.Xaml is not searching for Type Converter
                 result = new TypeConverterAttribute(typeof(SetterValueTypeConverter));
             }
+            else if (attributeType == typeof(TypeConverterAttribute) && _info is EventInfo)
+            {
+                // If a type converter for `EventInfo` is registered, then use that to convert
+                // event handler values. This is used by the designer to override the lookup
+                // for event handlers with a null handler.
+                var eventConverter = AvaloniaTypeConverters.GetTypeConverter(typeof(EventInfo));
+
+                if (eventConverter != null)
+                {
+                    result = new TypeConverterAttribute(eventConverter);
+                }
+            }
 
             if (result == null)
             {

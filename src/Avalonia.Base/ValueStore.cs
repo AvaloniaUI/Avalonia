@@ -118,6 +118,10 @@ namespace Avalonia
 
             return dict;
         }
+        public void LogError(AvaloniaProperty property, Exception e)
+        {
+            _owner.LogBindingError(property, e);
+        }
 
         public object GetValue(AvaloniaProperty property)
         {

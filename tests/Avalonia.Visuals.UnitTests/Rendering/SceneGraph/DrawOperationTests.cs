@@ -61,6 +61,19 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
             Assert.Equal(1, bitmap.RefCount);
         }
 
+        [Fact]
+        public void HitTest_On_Geometry_Node_With_Zero_Transform_Does_Not_Throw()
+        {
+            var geometry = Mock.Of<IGeometryImpl>();
+            var geometryNode = new GeometryNode(
+                new Matrix(),
+                Brushes.Black,
+                null,
+                geometry);
+
+            geometryNode.HitTest(new Point());
+        }
+
         private class TestDrawOperation : DrawOperation
         {
             public TestDrawOperation(Rect bounds, Matrix transform, Pen pen)
