@@ -106,6 +106,11 @@ namespace Avalonia.Markup.Parsers
             {
                 return State.Indexer;
             }
+            else if (ParseDot(ref r))
+            {
+                nodes.Add(new EmptyExpressionNode());
+                return State.End;
+            }
             else
             {
                 var identifier = r.ParseIdentifier();
@@ -315,6 +320,11 @@ namespace Avalonia.Markup.Parsers
         private static bool ParseSharp(ref CharacterReader r)
         {
             return !r.End && r.TakeIf('#');
+        }
+
+        private static bool ParseDot(ref CharacterReader r)
+        {
+            return !r.End && r.TakeIf('.');
         }
 
         private enum State

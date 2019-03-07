@@ -84,18 +84,14 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(relativeTo != null);
 
-            Point p = default(Point);
-            IVisual v = relativeTo;
-            IVisual root = null;
-
-            while (v != null)
+            if (relativeTo.VisualRoot == null)
             {
-                p += v.Bounds.Position;
-                root = v;
-                v = v.VisualParent;
+                throw new InvalidOperationException("Control is not attached to visual tree.");
             }
 
-            return root.PointToClient(Position) - p;
+            var rootPoint = relativeTo.VisualRoot.PointToClient(Position);
+            var transform = relativeTo.VisualRoot.TransformToVisual(relativeTo);
+            return rootPoint * transform.Value;
         }
 
         public void ProcessRawEvent(RawInputEventArgs e)

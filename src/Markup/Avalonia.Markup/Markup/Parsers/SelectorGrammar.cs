@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Parsers
                         state = ParseStart(ref r);
                         break;
                     case State.Middle:
-                        state = ParseMiddle(ref r, end);
+                        (state, syntax) = ParseMiddle(ref r, end);
                         break;
                     case State.CanHaveType:
                         state = ParseCanHaveType(ref r);
@@ -113,33 +113,37 @@ namespace Avalonia.Markup.Parsers
             return State.TypeName;
         }
 
-        private static State ParseMiddle(ref CharacterReader r, char? end)
+        private static (State, ISyntax) ParseMiddle(ref CharacterReader r, char? end)
         {
             if (r.TakeIf(':'))
             {
-                return State.Colon;
+                return (State.Colon, null);
             }
             else if (r.TakeIf('.'))
             {
-                return State.Class;
+                return (State.Class, null);
             }
             else if (r.TakeIf(char.IsWhiteSpace) || r.Peek == '>')
             {
-                return State.Traversal;
+                return (State.Traversal, null);
             }
             else if (r.TakeIf('/'))
             {
-                return State.Template;
+                return (State.Template, null);
             }
             else if (r.TakeIf('#'))
             {
-                return State.Name;
+                return (State.Name, null);
+            }
+            else if (r.TakeIf(','))
+            {
+                return (State.Start, new CommaSyntax());
             }
             else if (end.HasValue && !r.End && r.Peek == end.Value)
             {
-                return State.End;
+                return (State.End, null);
             }
-            return State.TypeName;
+            return (State.TypeName, null);
         }
 
         private static State ParseCanHaveType(ref CharacterReader r)
@@ -413,6 +417,14 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object obj)
             {
                 return (obj is NotSyntax not) && Argument.SequenceEqual(not.Argument);
+            }
+        }
+
+        public class CommaSyntax : ISyntax
+        {
+            public override bool Equals(object obj)
+            {
+                return obj is CommaSyntax or;
             }
         }
     }

@@ -210,7 +210,7 @@ namespace Avalonia.Controls
             var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
             var platformClassFullName = assemblyName + "." + platformClassName;
             var platformClass = assembly.GetType(platformClassFullName);
-            var init = platformClass.GetRuntimeMethod("Initialize", new Type[0]);
+            var init = platformClass.GetRuntimeMethod("Initialize", Type.EmptyTypes);
             init.Invoke(null, null);
         };
 
@@ -245,7 +245,7 @@ namespace Avalonia.Controls
                                      select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
                                              where constructor.GetParameters().Length == 0 && !constructor.IsStatic
                                              select constructor).Single() into constructor
-                                     select (Action)(() => constructor.Invoke(new object[0]));
+                                     select (Action)(() => constructor.Invoke(Array.Empty<object>()));
             Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
         }
 
