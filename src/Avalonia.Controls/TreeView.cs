@@ -555,6 +555,54 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Find which node is first in hierarchy.
+        /// </summary>
+        /// <param name="treeView">Search root.</param>
+        /// <param name="nodeA">Nodes to find.</param>
+        /// <param name="nodeB">Node to find.</param>
+        /// <returns>Found first node.</returns>
+        private static TreeViewItem FindFirstNode(TreeView treeView, TreeViewItem nodeA, TreeViewItem nodeB)
+        {
+            return FindInContainers(treeView.ItemContainerGenerator, nodeA, nodeB);
+        }
+
+        private static TreeViewItem FindInContainers(ITreeItemContainerGenerator containerGenerator,
+            TreeViewItem nodeA,
+            TreeViewItem nodeB)
+        {
+            IEnumerable<ItemContainerInfo> containers = containerGenerator.Containers;
+
+            foreach (ItemContainerInfo container in containers)
+            {
+                TreeViewItem node = FindFirstNode(container.ContainerControl as TreeViewItem, nodeA, nodeB);
+
+                if (node != null)
+                {
+                    return node;
+                }
+            }
+
+            return null;
+        }
+
+        private static TreeViewItem FindFirstNode(TreeViewItem node, TreeViewItem nodeA, TreeViewItem nodeB)
+        {
+            if (node == null)
+            {
+                return null;
+            }
+
+            TreeViewItem match = node == nodeA ? nodeA : node == nodeB ? nodeB : null;
+
+            if (match != null)
+            {
+                return match;
+            }
+
+            return FindInContainers(node.ItemContainerGenerator, nodeA, nodeB);
+        }
+
+        /// <summary>
         /// Returns all items that belong to containers between <paramref name="from"/> and <paramref name="to"/>.
         /// The range is inclusive.
         /// </summary>
@@ -569,7 +617,7 @@ namespace Avalonia.Controls
                 return items;
             }
 
-            TreeViewItem firstItem = TreeViewHelper.FindFirstNode(this, new TreeViewHelper.SearchInfo(from, to));
+            TreeViewItem firstItem = FindFirstNode(this, from, to);
 
             if (firstItem == null)
             {
