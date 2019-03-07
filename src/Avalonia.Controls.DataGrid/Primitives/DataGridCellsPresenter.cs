@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             _fillerLeftEdge = scrollingLeftEdge;
-            // FillerColumn.Width == 0 when the filler column is not active
+
             OwningRow.FillerCell.Arrange(new Rect(_fillerLeftEdge, 0, OwningGrid.ColumnsInternal.FillerColumn.FillerWidth, finalSize.Height));
 
             return finalSize;

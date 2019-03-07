@@ -1778,61 +1778,9 @@ namespace Avalonia.Controls
 
     #region DragDrop
 
-    //TODO DragDrop
-
-    /*internal void OnColumnHeaderDragStarted(DragStartedEventArgs e)
-    {
-        if (ColumnHeaderDragStarted != null)
-        {
-            ColumnHeaderDragStarted(this, e);
-        }
-    }*/
-
-    /*internal void OnColumnHeaderDragDelta(DragDeltaEventArgs e)
-    {
-        if (ColumnHeaderDragDelta != null)
-        {
-            ColumnHeaderDragDelta(this, e);
-        }
-    }*/
-
-    /*internal void OnColumnHeaderDragCompleted(DragCompletedEventArgs e)
-    {
-        if (ColumnHeaderDragCompleted != null)
-        {
-            ColumnHeaderDragCompleted(this, e);
-        }
-    }*/
-
     #endregion
 
     #region Styles
-
-    //TODO Styles
-    /*internal void OnColumnElementStyleChanged(DataGridBoundColumn column)
-    {
-        // Update Element Style in Displayed rows
-        foreach (DataGridRow row in GetAllRows())
-        {
-            Control element = column.GetCellContent(row);
-            if (element != null)
-            {
-                element.SetStyleWithType(column.ElementStyle);
-            }
-        }
-        InvalidateRowHeightEstimate();
-    }*/
-
-    /*internal void OnColumnCellStyleChanged(DataGridColumn column, Style previousStyle)
-    {
-        // Set HeaderCell.Style for displayed rows if HeaderCell.Style is not already set
-        foreach (DataGridRow row in GetAllRows())
-        {
-            row.Cells[column.Index].EnsureStyle(previousStyle);
-        }
-        InvalidateRowHeightEstimate();
-    }*/
-
 
     #endregion
 }

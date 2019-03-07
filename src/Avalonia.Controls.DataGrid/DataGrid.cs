@@ -72,23 +72,6 @@ namespace Avalonia.Controls
         private const double DATAGRID_defaultMinColumnWidth = 20;
         private const double DATAGRID_defaultMaxColumnWidth = double.PositiveInfinity;
 
-        /*
-        // DataGrid Template Parts
-        private ValidationSummary _validationSummary;
-        
-        private List<ValidationResult> _indeiValidationResults;
-        private DataGridCellCoordinates _previousAutomationFocusCoordinates;
-        private List<ValidationResult> _propertyValidationResults;
-        private ObservableCollection<Style> _rowGroupHeaderStyles;
-        // To figure out what the old RowGroupHeaderStyle was for each level, we need to keep a copy
-        // of the list.  The old style important so we don't blow away styles set directly on the RowGroupHeader
-        private List<Style> _rowGroupHeaderStylesOld;
-        private ValidationSummaryItem _selectedValidationSummaryItem;
-        private string _updateSourcePath;
-
-        */
-
-        //private Dictionary<INotifyDataErrorInfo, string> _validationItems;
         private List<Exception> _validationErrors;
         private List<Exception> _bindingValidationErrors;
         private IDisposable _validationSubscription;
@@ -108,6 +91,7 @@ namespace Avalonia.Controls
         // the sum of the widths in pixels of the scrolling columns preceding 
         // the first displayed scrolling column
         private double _horizontalOffset;
+
         // the number of pixels of the firstDisplayedScrollingCol which are not displayed
         private double _negHorizontalOffset;
         private byte _autoGeneratingColumnOperationCount;
@@ -116,9 +100,11 @@ namespace Avalonia.Controls
         private IndexToValueTable<bool> _collapsedSlotsTable;
         private DataGridCellCoordinates _currentCellCoordinates;
         private Control _clickedElement;
+        
         // used to store the current column during a Reset
         private int _desiredCurrentColumnIndex;
         private int _editingColumnIndex;
+
         // this is a workaround only for the scenarios where we need it, it is not all encompassing nor always updated
         private RoutedEventArgs _editingEventArgs;
         private bool _executingLostFocusActions;
@@ -128,9 +114,11 @@ namespace Avalonia.Controls
         private byte _horizontalScrollChangesIgnored;
         private DataGridRow _focusedRow;
         private bool _ignoreNextScrollBarsLayout;
+
         // Nth row of rows 0..N that make up the RowHeightEstimate
         private int _lastEstimatedRow;
         private List<DataGridRow> _loadedRows;
+
         // prevents reentry into the VerticalScroll event handler
         private Queue<Action> _lostFocusActions;
         private int _noSelectionChangeCount;
@@ -206,7 +194,6 @@ namespace Avalonia.Controls
             set { SetValue(CanUserSortColumnsProperty, value); }
         }
 
-
         /// <summary>
         /// Identifies the ColumnHeaderHeight dependency property.
         /// </summary>
@@ -239,7 +226,6 @@ namespace Avalonia.Controls
             set { SetValue(ColumnHeaderHeightProperty, value); }
         }
 
-
         /// <summary>
         /// Identifies the ColumnWidth dependency property.
         /// </summary>
@@ -254,7 +240,6 @@ namespace Avalonia.Controls
             get { return GetValue(ColumnWidthProperty); }
             set { SetValue(ColumnWidthProperty, value); }
         }
-
 
         public static readonly StyledProperty<IBrush> AlternatingRowBackgroundProperty =
             AvaloniaProperty.Register<DataGrid, IBrush>(nameof(AlternatingRowBackground));
@@ -272,7 +257,6 @@ namespace Avalonia.Controls
             get { return GetValue(AlternatingRowBackgroundProperty); }
             set { SetValue(AlternatingRowBackgroundProperty, value); }
         }
-
 
         public static readonly StyledProperty<int> FrozenColumnCountProperty =
             AvaloniaProperty.Register<DataGrid, int>(
@@ -298,7 +282,6 @@ namespace Avalonia.Controls
             return value;
         }
 
-
         public static readonly StyledProperty<DataGridGridLinesVisibility> GridLinesVisibilityProperty =
             AvaloniaProperty.Register<DataGrid, DataGridGridLinesVisibility>(nameof(GridLinesVisibility));
 
@@ -310,7 +293,6 @@ namespace Avalonia.Controls
             get { return GetValue(GridLinesVisibilityProperty); }
             set { SetValue(GridLinesVisibilityProperty, value); }
         }
-
 
         public static readonly StyledProperty<DataGridHeadersVisibility> HeadersVisibilityProperty =
             AvaloniaProperty.Register<DataGrid, DataGridHeadersVisibility>(nameof(HeadersVisibility));
@@ -335,7 +317,6 @@ namespace Avalonia.Controls
             get { return GetValue(HorizontalGridLinesBrushProperty); }
             set { SetValue(HorizontalGridLinesBrushProperty, value); }
         }
-
 
         public static readonly StyledProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
             AvaloniaProperty.Register<DataGrid, ScrollBarVisibility>(nameof(HorizontalScrollBarVisibility));
@@ -595,7 +576,6 @@ namespace Avalonia.Controls
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
-
         public static readonly StyledProperty<ITemplate<IControl>> DropLocationIndicatorTemplateProperty =
             AvaloniaProperty.Register<DataGrid, ITemplate<IControl>>(nameof(DropLocationIndicatorTemplate));
 
@@ -742,8 +722,6 @@ namespace Avalonia.Controls
             set { SetValue(RowDetailsVisibilityModeProperty, value); }
         }
 
-        
-
         static DataGrid()
         {
             AffectsMeasure<DataGrid>(
@@ -783,25 +761,18 @@ namespace Avalonia.Controls
         /// </summary>
         public DataGrid()
         {
-            //TabNavigation = KeyboardNavigationMode.Once;
             KeyDown += DataGrid_KeyDown;
             KeyUp += DataGrid_KeyUp;
+
             //TODO: Check if override works
             GotFocus += DataGrid_GotFocus;
             LostFocus += DataGrid_LostFocus;
 
             _loadedRows = new List<DataGridRow>();
             _lostFocusActions = new Queue<Action>();
-            _selectedItems = new DataGridSelectedItemsCollection(this);
-            //_rowGroupHeaderStyles = new ObservableCollection<Style>();
-            //_rowGroupHeaderStyles.CollectionChanged += RowGroupHeaderStyles_CollectionChanged;
-            //_rowGroupHeaderStylesOld = new List<Style>();
-            RowGroupHeadersTable = new IndexToValueTable<DataGridRowGroupInfo>();
-            //_validationItems = new Dictionary<INotifyDataErrorInfo, string>();
-            //_validationResults = new List<ValidationResult>();
+            _selectedItems = new DataGridSelectedItemsCollection(this); 
+            RowGroupHeadersTable = new IndexToValueTable<DataGridRowGroupInfo>(); 
             _bindingValidationErrors = new List<Exception>();
-            //_propertyValidationResults = new List<ValidationResult>();
-            //_indeiValidationResults = new List<ValidationResult>();
 
             DisplayData = new DataGridDisplayData(this);
             ColumnsInternal = CreateColumnsInstance();
@@ -840,6 +811,7 @@ namespace Avalonia.Controls
         {
             UpdateRowDetailsVisibilityMode((DataGridRowDetailsVisibilityMode)e.NewValue);
         }
+        
         private void OnRowDetailsTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
 
@@ -859,6 +831,7 @@ namespace Avalonia.Controls
             UpdateRowDetailsHeightEstimate();
             InvalidateMeasure();
         }
+
         /// <summary>
         /// ItemsProperty property changed handler.
         /// </summary>
@@ -945,6 +918,7 @@ namespace Avalonia.Controls
                 InvalidateMeasure();
             }
         }
+
         private void OnSelectedIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -962,6 +936,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
         private void OnSelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1043,6 +1018,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
         private void OnSelectionModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1050,6 +1026,7 @@ namespace Avalonia.Controls
                 ClearRowSelection(resetAnchorSlot: true); 
             }
         }
+
         private void OnRowHeaderWidthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1057,6 +1034,7 @@ namespace Avalonia.Controls
                 EnsureRowHeaderWidth();
             }
         }
+
         private void OnRowHeightChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1068,6 +1046,7 @@ namespace Avalonia.Controls
                 InvalidateMeasure();
             }
         }
+
         private void OnMinColumnWidthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1079,6 +1058,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
         private void OnMaxColumnWidthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1090,6 +1070,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
         private void OnIsReadOnlyChanged(AvaloniaPropertyChangedEventArgs e)
         {
             if (!_areHandlersSuspended)
@@ -1112,6 +1093,7 @@ namespace Avalonia.Controls
                 }
             }
         }
+
         private void OnHeadersVisibilityChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (DataGridHeadersVisibility)e.OldValue;
@@ -1159,7 +1141,6 @@ namespace Avalonia.Controls
                         }
                         else if (element is DataGridRowGroupHeader rowGroupHeader)
                         {
-                            //rowGroupHeader.EnsureHeaderStyleAndVisibility(null);
                             rowGroupHeader.EnsureHeaderVisibility();
                         }
                     }
@@ -1178,6 +1159,7 @@ namespace Avalonia.Controls
             }
 
         }
+
         private void OnGridLinesVisibilityChanged(AvaloniaPropertyChangedEventArgs e)
         {
             foreach (DataGridRow row in GetAllRows())
@@ -1186,10 +1168,12 @@ namespace Avalonia.Controls
                 row.InvalidateHorizontalArrange();
             }
         }
+
         private void OnFrozenColumnCountChanged(AvaloniaPropertyChangedEventArgs e)
         {
             ProcessFrozenColumnCount();
         }
+
         private void ProcessFrozenColumnCount()
         {
             CorrectColumnFrozenStates();
@@ -1198,6 +1182,7 @@ namespace Avalonia.Controls
             InvalidateColumnHeadersArrange();
             InvalidateCellsArrange();
         }
+
         private void OnRowBackgroundChanged(AvaloniaPropertyChangedEventArgs e)
         {
             foreach (DataGridRow row in GetAllRows())
@@ -1205,6 +1190,7 @@ namespace Avalonia.Controls
                 row.EnsureBackground();
             }
         }
+
         private void OnColumnWidthChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var value = (DataGridLength)e.NewValue;
@@ -1219,6 +1205,7 @@ namespace Avalonia.Controls
 
             EnsureHorizontalLayout();
         }
+
         private void OnCanUserResizeColumnsChanged(AvaloniaPropertyChangedEventArgs e)
         {
             EnsureHorizontalLayout();
@@ -1336,8 +1323,6 @@ namespace Avalonia.Controls
 
         #endregion Events
 
-
-
         /// <summary>
         /// Gets a collection that contains all the columns in the control.
         /// </summary>      
@@ -1390,14 +1375,17 @@ namespace Avalonia.Controls
                         throw DataGridError.DataGrid.NoCurrentRow();
                     }
                     bool beginEdit = _editingColumnIndex != -1;
+
                     //exitEditingMode, keepFocus, raiseEvents
                     if (!EndCellEdit(DataGridEditAction.Commit, true, ContainsFocus, true))
                     {
                         // Edited value couldn't be committed or aborted
                         return;
                     }
+
                     UpdateSelectionAndCurrency(dataGridColumn.Index, CurrentSlot, DataGridSelectionAction.None, false); //scrollIntoView
                     Debug.Assert(_successfullyUpdatedSelection);
+
                     if (beginEdit &&
                         _editingColumnIndex == -1 &&
                         CurrentSlot != -1 &&
@@ -1539,9 +1527,7 @@ namespace Avalonia.Controls
             }
         }
 
-
         internal DataGridColumnHeadersPresenter ColumnHeaders => _columnHeadersPresenter;
-
 
         internal List<DataGridColumn> ColumnsItemsInternal => ColumnsInternal.ItemsInternal;
 
@@ -2213,13 +2199,6 @@ namespace Avalonia.Controls
         protected virtual void OnCellEditEnded(DataGridCellEditEndedEventArgs e)
         {
             CellEditEnded?.Invoke(this, e);
-
-            // Raise the automation invoke event for the cell that just ended edit
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null && AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
-            //{
-            //    peer.RaiseAutomationInvokeEvents(DataGridEditingUnit.Cell, e.Column, e.Row);
-            //}
         }
 
         /// <summary>
@@ -2244,15 +2223,6 @@ namespace Avalonia.Controls
         protected virtual void OnCurrentCellChanged(EventArgs e)
         {
             CurrentCellChanged?.Invoke(this, e);
-
-            //if (AutomationPeer.ListenerExists(AutomationEvents.SelectionItemPatternOnElementSelected))
-            //{
-            //    DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //    if (peer != null)
-            //    {
-            //        peer.RaiseAutomationCellSelectedEvent(CurrentSlot, CurrentColumnIndex);
-            //    }
-            //}
         }
 
         /// <summary>
@@ -2313,14 +2283,6 @@ namespace Avalonia.Controls
         protected virtual void OnPreparingCellForEdit(DataGridPreparingCellForEditEventArgs e)
         {
             PreparingCellForEdit?.Invoke(this, e);
-
-            // Raise the automation invoke event for the cell that just began edit because now
-            // its editable content has been loaded
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null && AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
-            //{
-            //    peer.RaiseAutomationInvokeEvents(DataGridEditingUnit.Cell, e.Column, e.Row);
-            //}
         }
 
         /// <summary>
@@ -2329,14 +2291,6 @@ namespace Avalonia.Controls
         protected virtual void OnRowEditEnded(DataGridRowEditEndedEventArgs e)
         {
             RowEditEnded?.Invoke(this, e);
-
-            // Raise the automation invoke event for the row that just ended edit because the edits
-            // to its associated item have either been committed or reverted
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null && AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
-            //{
-            //    peer.RaiseAutomationInvokeEvents(DataGridEditingUnit.Row, null, e.Row);
-            //}
         } 
 
         /// <summary>
@@ -2354,17 +2308,6 @@ namespace Avalonia.Controls
         protected virtual void OnSelectionChanged(SelectionChangedEventArgs e)
         {
             RaiseEvent(e);
-
-            //if (AutomationPeer.ListenerExists(AutomationEvents.SelectionItemPatternOnElementSelected) ||
-            //    AutomationPeer.ListenerExists(AutomationEvents.SelectionItemPatternOnElementAddedToSelection) ||
-            //    AutomationPeer.ListenerExists(AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection))
-            //{
-            //    DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //    if (peer != null)
-            //    {
-            //        peer.RaiseAutomationSelectionEvents(e);
-            //    }
-            //}
         }
 
         /// <summary>
@@ -2397,7 +2340,9 @@ namespace Avalonia.Controls
                 // If we're applying a new template, we want to remove the old column headers first
                 _columnHeadersPresenter.Children.Clear();
             }
+
             _columnHeadersPresenter = e.NameScope.Find<DataGridColumnHeadersPresenter>(DATAGRID_elementColumnHeadersPresenterName);
+
             if (_columnHeadersPresenter != null)
             {
                 if (ColumnsInternal.FillerColumn != null)
@@ -2417,20 +2362,25 @@ namespace Avalonia.Controls
                 // If we're applying a new template, we want to remove the old rows first
                 UnloadElements(recycle: false);
             }
+
             _rowsPresenter = e.NameScope.Find<DataGridRowsPresenter>(DATAGRID_elementRowsPresenterName);
+
             if (_rowsPresenter != null)
             {
                 _rowsPresenter.OwningGrid = this;
                 InvalidateRowHeightEstimate();
                 UpdateRowDetailsHeightEstimate();
             }
+
             _frozenColumnScrollBarSpacer = e.NameScope.Find<Control>(DATAGRID_elementFrozenColumnScrollBarSpacerName);
 
             if (_hScrollBar != null)
             {
                 _hScrollBar.Scroll -= HorizontalScrollBar_Scroll;
             }
+
             _hScrollBar = e.NameScope.Find<ScrollBar>(DATAGRID_elementHorizontalScrollbarName);
+
             if (_hScrollBar != null)
             {
                 //_hScrollBar.IsTabStop = false;
@@ -2440,12 +2390,13 @@ namespace Avalonia.Controls
                 _hScrollBar.Scroll += HorizontalScrollBar_Scroll;
             }
 
-
             if (_vScrollBar != null)
             {
                 _vScrollBar.Scroll -= VerticalScrollBar_Scroll;
             }
+
             _vScrollBar = e.NameScope.Find<ScrollBar>(DATAGRID_elementVerticalScrollbarName);
+            
             if (_vScrollBar != null)
             {
                 //_vScrollBar.IsTabStop = false;
@@ -2458,33 +2409,6 @@ namespace Avalonia.Controls
             _topLeftCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopLeftCornerHeaderName);
             EnsureTopLeftCornerHeader(); // EnsureTopLeftCornerHeader checks for a null _topLeftCornerHeader;
             _topRightCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopRightCornerHeaderName);
-
-            //if (_validationSummary != null)
-            //{
-            //    _validationSummary.FocusingInvalidControl -= new EventHandler<FocusingInvalidControlEventArgs>(ValidationSummary_FocusingInvalidControl);
-            //    _validationSummary.SelectionChanged -= new EventHandler<SelectionChangedEventArgs>(ValidationSummary_SelectionChanged);
-            //}
-            //_validationSummary = GetTemplateChild(DATAGRID_elementValidationSummary) as ValidationSummary;
-            //if (_validationSummary != null)
-            //{
-            //    // The ValidationSummary defaults to using its parent if Target is null, so the only
-            //    // way to prevent it from automatically picking up errors is to set it to some useless element.
-            //    if (_validationSummary.Target == null)
-            //    {
-            //        _validationSummary.Target = new Rectangle();
-            //    }
-
-            //    _validationSummary.FocusingInvalidControl += new EventHandler<FocusingInvalidControlEventArgs>(ValidationSummary_FocusingInvalidControl);
-            //    _validationSummary.SelectionChanged += new EventHandler<SelectionChangedEventArgs>(ValidationSummary_SelectionChanged);
-            //    if (DesignerProperties.IsInDesignTool)
-            //    {
-            //        Debug.Assert(_validationSummary.Errors != null);
-            //        // Do not add the default design time errors when in design mode.
-            //        _validationSummary.Errors.Clear();
-            //    }
-            //}
-
-            //UpdateDisabledVisual();
         }
         
         #region Internal Methods
@@ -2505,10 +2429,12 @@ namespace Avalonia.Controls
             {
                 return false;
             }
+
             if (editingUnit == DataGridEditingUnit.Row)
             {
                 return EndRowEdit(DataGridEditAction.Cancel, true, raiseEvents);
             }
+
             return true;
         }
 
@@ -2534,10 +2460,12 @@ namespace Avalonia.Controls
 
             // Update the SelectedIndex
             int newIndex = -1;
+
             if (selectedItem != null)
             {
                 newIndex = DataConnection.IndexOf(selectedItem);
             }
+
             SetValueNoCallback(SelectedIndexProperty, newIndex);
         }
 
@@ -2690,12 +2618,6 @@ namespace Avalonia.Controls
             {
                 _horizontalScrollChangesIgnored--;
             }
-
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null)
-            //{
-            //    peer.RaiseAutomationScrollEvents();
-            //}
         }
 
         internal bool ProcessLeftKey(KeyEventArgs e)
@@ -2973,7 +2895,6 @@ namespace Avalonia.Controls
             double oldHorizontalOffset = HorizontalOffset;
 
             //scroll horizontally unless we're on a RowGroupHeader and we're not forcing horizontal scrolling
-            //if ((forceHorizontalScroll || (slot != -1 && !RowGroupHeadersTable.Contains(slot)))
             if ((forceHorizontalScroll || (slot != -1))
                 && !ScrollColumnIntoView(columnIndex))
             {
@@ -2986,11 +2907,6 @@ namespace Avalonia.Controls
                 return false;
             }
 
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null)
-            //{
-            //    peer.RaiseAutomationScrollEvents();
-            //}
             return true;
         }
 
@@ -3354,15 +3270,7 @@ namespace Avalonia.Controls
             if (DataConnection.BeginEdit(dataGridRow.DataContext))
             {
                 EditingRow = dataGridRow;
-                GenerateEditingElements();
-                //ValidateEditingRow(scrollIntoView: false, wireEvents: true);
-
-                // Raise the automation invoke event for the row that just began edit
-                //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-                //if (peer != null && AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
-                //{
-                //    peer.RaiseAutomationInvokeEvents(DataGridEditingUnit.Row, null, dataGridRow);
-                //}
+                GenerateEditingElements(); 
                 return true;
             }
             return false;
@@ -3865,22 +3773,11 @@ namespace Avalonia.Controls
                 }
                 focusedElement = focusedElement.GetVisualParent();
             }
-
-            // If the DataGrid itself got focus, we actually want the automation focus to be on the current element
-            //if (e.OriginalSource == this && AutomationPeer.ListenerExists(AutomationEvents.AutomationFocusChanged))
-            //{
-            //    DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //    if (peer != null)
-            //    {
-            //        peer.RaiseAutomationFocusChangedEvent(CurrentSlot, CurrentColumnIndex);
-            //    }
-            //}
         }
 
         //TODO: Check
         private void DataGrid_IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            //UpdateDisabledVisual();
         }
 
         private void DataGrid_KeyDown(object sender, KeyEventArgs e)
@@ -4031,8 +3928,6 @@ namespace Avalonia.Controls
                 Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
             }
 
-            //_bindingValidationErrors.Clear();
-
             // If we're canceling, let the editing column repopulate its old value if it wants
             if (editAction == DataGridEditAction.Cancel)
             {
@@ -4049,23 +3944,11 @@ namespace Avalonia.Controls
                 Debug.Assert(EditingRow.Slot == currentSlot);
                 Debug.Assert(_editingColumnIndex != -1);
                 Debug.Assert(_editingColumnIndex == CurrentColumnIndex);
-
-                // Re-validate
-                //ValidateEditingRow(scrollIntoView: true, wireEvents: false);
             }
 
             // If we're committing, explicitly update the source but watch out for any validation errors
             if (editAction == DataGridEditAction.Commit)
             {
-                //foreach (BindingInfo bindingData in CurrentColumn.GetInputBindings(editingElement, CurrentItem))
-                //{
-                //    Debug.Assert(bindingData.BindingExpression.ParentBinding != null);
-                //    _updateSourcePath = bindingData.BindingExpression.ParentBinding.Path != null ? bindingData.BindingExpression.ParentBinding.Path.Path : null;
-                //    bindingData.Element.BindingValidationError += new EventHandler<ValidationErrorEventArgs>(EditingElement_BindingValidationError);
-                //    bindingData.BindingExpression.UpdateSource();
-                //    bindingData.Element.BindingValidationError -= new EventHandler<ValidationErrorEventArgs>(EditingElement_BindingValidationError);
-                //}
-
                 void SetValidationStatus(ICellEditBinding binding)
                 {
                     if (binding.IsValid)
@@ -4114,16 +3997,6 @@ namespace Avalonia.Controls
 
                     ScrollSlotIntoView(CurrentColumnIndex, CurrentSlot, forCurrentCellChange: false, forceHorizontalScroll: true);
                     return false;
-                }
-                else
-                {
-                    // Re-validate
-                    //ValidateEditingRow(scrollIntoView: true, wireEvents: false);
-
-                    //if (_bindingValidationResults.Count > 0)
-                    //{
-                    //    return false;
-                    //}
                 }
             }
 
@@ -4219,12 +4092,6 @@ namespace Avalonia.Controls
             // Update the previously edited row's state
             if (exitEditingMode && editingRow == EditingRow)
             {
-                // Unwire the INDEI event handlers
-                //foreach (INotifyDataErrorInfo indei in _validationItems.Keys)
-                //{
-                //    indei.ErrorsChanged -= new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
-                //}
-                //_validationItems.Clear();
                 RemoveEditingElements();
                 ResetEditingRow();
             }
@@ -4345,21 +4212,6 @@ namespace Avalonia.Controls
 
                 OnCurrentCellChanged(EventArgs.Empty);
             }
-
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null && CurrentCellCoordinates != _previousAutomationFocusCoordinates)
-            //{
-            //    _previousAutomationFocusCoordinates = new DataGridCellCoordinates(CurrentCellCoordinates);
-            //
-            //    // If the DataGrid itself has focus, we want to move automation focus to the new current element
-            //    if (FocusManager.GetFocusedElement() == this)
-            //    {
-            //        if (AutomationPeer.ListenerExists(AutomationEvents.AutomationFocusChanged))
-            //        {
-            //            peer.RaiseAutomationFocusChangedEvent(CurrentSlot, CurrentColumnIndex);
-            //        }
-            //    }
-            //}
 
             _flushCurrentCellChanged = false;
         }
@@ -4587,11 +4439,6 @@ namespace Avalonia.Controls
                 element = dataGridColumn.GenerateEditingElementInternal(dataGridCell, dataGridRow.DataContext);
                 if (element != null)
                 {
-                    //if (dataGridBoundColumn != null && dataGridBoundColumn.EditingElementStyle != null)
-                    //{
-                    //    element.SetStyleWithType(dataGridBoundColumn.EditingElementStyle);
-                    //}
-
                     // Subscribe to the new element's events
                     element.Initialized += EditingElement_Initialized;
                 }
@@ -4600,13 +4447,6 @@ namespace Avalonia.Controls
             {
                 // Generate Element and apply column style if available
                 element = dataGridColumn.GenerateElementInternal(dataGridCell, dataGridRow.DataContext);
-                if (element != null)
-                {
-                    //if (dataGridBoundColumn != null && dataGridBoundColumn.ElementStyle != null)
-                    //{
-                    //    element.SetStyleWithType(dataGridBoundColumn.ElementStyle);
-                    //}
-                }
             }
 
             dataGridCell.Content = element;
@@ -4676,13 +4516,11 @@ namespace Avalonia.Controls
                     break;
 
                 case Key.Left:
-                    //focusDataGrid = FlowDirection == FlowDirection.LeftToRight ? ProcessLeftKey(e) : ProcessRightKey(e);
                     focusDataGrid = ProcessLeftKey(e);
                     break;
 
                 case Key.Right:
                     focusDataGrid = ProcessRightKey(e);
-                    //focusDataGrid = FlowDirection == FlowDirection.LeftToRight ? ProcessRightKey(e) : ProcessLeftKey(e);
                     break;
 
                 case Key.F2:
@@ -4713,7 +4551,6 @@ namespace Avalonia.Controls
                     return ProcessCopyKey(e.Modifiers);
             }
             if (focusDataGrid)
-            //if (focusDataGrid && IsTabStop)
             {
                 Focus();
             }
@@ -5751,12 +5588,6 @@ namespace Avalonia.Controls
                         _ignoreNextScrollBarsLayout = true;
                     }
                 }
-
-                //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-                //if (peer != null)
-                //{
-                //    peer.RaiseAutomationScrollEvents();
-                //}
             }
         }
 
@@ -5822,12 +5653,6 @@ namespace Avalonia.Controls
                         _ignoreNextScrollBarsLayout = true;
                     }
                 }
-
-                //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-                //if (peer != null)
-                //{
-                //    peer.RaiseAutomationScrollEvents();
-                //}
             }
         }
 
@@ -5919,18 +5744,6 @@ namespace Avalonia.Controls
 
             return true;
         }
-
-        /*private void UpdateDisabledVisual()
-        {
-            if (IsEnabled)
-            {
-                VisualStates.GoToState(this, true, VisualStates.StateNormal);
-            }
-            else
-            {
-                VisualStates.GoToState(this, true, VisualStates.StateDisabled, VisualStates.StateNormal);
-            }
-        } */
         #endregion Private Methods
 
 
@@ -5986,8 +5799,6 @@ namespace Avalonia.Controls
                 LoadingOrUnloadingRow = false;
             }
         }
-
-        
 
         /// <summary>
         /// Occurs before a DataGridRowGroupHeader header is used.
@@ -6133,7 +5944,6 @@ namespace Avalonia.Controls
             await clipboard.SetTextAsync(text);
         }
 
-
         /// <summary>
         /// This is an empty content control that's used during the DataGrid's copy procedure
         /// to determine the value of a ClipboardContentBinding for a particular column and item.
@@ -6154,181 +5964,6 @@ namespace Avalonia.Controls
 
         #region Validation
         
-        /// <summary>
-        /// Validates the current editing row and updates the visual states.
-        /// </summary>
-        /// <param name="scrollIntoView">If true, will scroll the editing row into view when a new error is introduced.</param>
-        /// <param name="wireEvents">If true, subscribes to the asynchronous INDEI ErrorsChanged events.</param>
-        /// <returns>True if the editing row is valid, false otherwise.</returns>
-        //TODO Validation
-        /*private bool ValidateEditingRow(bool scrollIntoView, bool wireEvents)
-        {
-            //_propertyValidationResults.Clear();
-            //_indeiValidationResults.Clear();
-
-            if (EditingRow != null)
-            {
-                object dataItem = EditingRow.DataContext;
-                Debug.Assert(dataItem != null);
-
-                // Validate using the Validator.
-                var validationResults = new List<ValidationResult>();
-                var context = new ValidationContext(dataItem);
-                Validator.TryValidateObject(dataItem, context, validationResults, true);
-
-                var validationErrors =
-                    validationResults.Where(r => !r.IsValid())
-                                     .Select(r => (Exception)new ValidationException(r.ErrorMessage))
-                                     .ToList();
-
-                // Add any existing exception errors (in case we're editing a cell).
-                // Note: these errors will only be displayed in the ValidationSummary if the
-                // editing data item implements IDEI or INDEI.
-                foreach (var error in _bindingValidationErrors)
-                {
-                    validationErrors.AddExceptionIfNew(error);
-                    //_propertyValidationResults.Add(validationResult);
-                }
-
-                // IDEI entity validation.
-                //ValidateIdei(dataItem as IDataErrorInfo, null, null, validationResults);
-
-                ValidateIndeiObject(dataItem as INotifyDataErrorInfo, validationErrors);
-
-                // INDEI entity validation.
-                //ValidateIndei(dataItem as INotifyDataErrorInfo, null, null, null, validationResults, wireEvents);
-
-                // IDEI and INDEI property validation.
-                //foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
-                //{
-                //    foreach (string bindingPath in column.BindingPaths)
-                //    {
-                //        string declaringPath = null;
-                //        object declaringItem = dataItem;
-                //        string bindingProperty = bindingPath;
-
-                //        // Check for nested paths.
-                //        int lastIndexOfSeparator = bindingPath.LastIndexOfAny(new char[] { TypeHelper.PropertyNameSeparator, TypeHelper.LeftIndexerToken });
-                //        if (lastIndexOfSeparator >= 0)
-                //        {
-                //            declaringPath = bindingPath.Substring(0, lastIndexOfSeparator);
-                //            declaringItem = TypeHelper.GetNestedPropertyValue(dataItem, declaringPath);
-                //            if (bindingProperty[lastIndexOfSeparator] == TypeHelper.LeftIndexerToken)
-                //            {
-                //                bindingProperty = TypeHelper.PrependDefaultMemberName(declaringItem, bindingPath.Substring(lastIndexOfSeparator));
-                //            }
-                //            else
-                //            {
-                //                bindingProperty = bindingPath.Substring(lastIndexOfSeparator + 1);
-                //            }
-                //        }
-
-                //        // IDEI property validation.
-                //        ValidateIdei(declaringItem as IDataErrorInfo, bindingProperty, bindingPath, validationResults);
-
-                //        // INDEI property validation.
-                //        ValidateIndei(declaringItem as INotifyDataErrorInfo, bindingProperty, bindingPath, declaringPath, validationResults, wireEvents);
-                //    }
-                //}
-
-                // Merge the new validation results with the existing ones.
-                UpdateValidationResults(validationErrors, scrollIntoView);
-
-                // Return false if there are validation errors.
-                if (!IsValid)
-                {
-                    return false;
-                }
-            }
-
-            // Return true if there are no errors or there is no editing row.
-            ResetValidationStatus();
-            return true;
-        }*/
-
-        /// <summary>
-        /// Updates the DataGrid's validation results, modifies the ValidationSummary's items,
-        /// and sets the IsValid states of the UIElements.
-        /// </summary>
-        /// <param name="newValidationResults">New validation results.</param>
-        /// <param name="scrollIntoView">If the validation results have changed, scrolls the editing row into view.</param>
-        //TODO Validation
-        /*private void UpdateValidationResults(List<Exception> newValidationErrors, bool scrollIntoView)
-        {
-            bool validationResultsChanged = false;
-            Debug.Assert(EditingRow != null);
-
-            // Remove the validation results that have been fixed
-            List<ValidationResult> removedValidationResults = new List<ValidationResult>();
-            foreach (ValidationResult oldValidationResult in _validationResults)
-            {
-                if (oldValidationResult != null && !newValidationResults.ContainsEqualValidationResult(oldValidationResult))
-                {
-                    removedValidationResults.Add(oldValidationResult);
-                    validationResultsChanged = true;
-                }
-            }
-            foreach (ValidationResult removedValidationResult in removedValidationResults)
-            {
-                _validationResults.Remove(removedValidationResult);
-                if (_validationSummary != null)
-                {
-                    ValidationSummaryItem removedValidationSummaryItem = FindValidationSummaryItem(removedValidationResult);
-                    if (removedValidationSummaryItem != null)
-                    {
-                        _validationSummary.Errors.Remove(removedValidationSummaryItem);
-                    }
-                }
-            }
-
-            // Add any validation results that were just introduced
-            foreach (ValidationResult newValidationResult in newValidationResults)
-            {
-                if (newValidationResult != null && !_validationResults.ContainsEqualValidationResult(newValidationResult))
-                {
-                    _validationResults.Add(newValidationResult);
-                    if (_validationSummary != null && ShouldDisplayValidationResult(newValidationResult))
-                    {
-                        ValidationSummaryItem newValidationSummaryItem = CreateValidationSummaryItem(newValidationResult);
-                        if (newValidationSummaryItem != null)
-                        {
-                            _validationSummary.Errors.Add(newValidationSummaryItem);
-                        }
-                    }
-                    validationResultsChanged = true;
-                }
-            }
-
-            if (validationResultsChanged)
-            {
-                UpdateValidationStatus();
-            }
-            if (!IsValid && scrollIntoView)
-            {
-                // Scroll the row with the error into view.
-                int editingRowSlot = EditingRow.Slot;
-                if (_validationSummary != null)
-                {
-                    // If the number of errors has changed, then the ValidationSummary will be a different size,
-                    // and we need to delay our call to ScrollSlotIntoView
-                    InvalidateMeasure();
-                    Dispatcher.BeginInvoke(delegate
-                    {
-                        // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
-                        // so we need to ensure that the editing row still exists before scrolling it into view
-                        if (!IsSlotOutOfBounds(editingRowSlot))
-                        {
-                            ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-                        }
-                    });
-                }
-                else
-                {
-                    ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-                }
-            }
-        }*/
-
         //TODO Validation UI
         private void ResetValidationStatus()
         {
@@ -6351,371 +5986,16 @@ namespace Avalonia.Controls
             }
             IsValid = true;
 
-            // Clear the previous validation results
-            //_validationErrors.Clear();
             _validationSubscription?.Dispose();
             _validationSubscription = null;
-
-            //_validationResults.Clear();
-
-            // Hide the error list if validation succeeded
-            //if (_validationSummary != null && _validationSummary.Errors.Count > 0)
-            //{
-            //    _validationSummary.Errors.Clear();
-            //    if (EditingRow != null)
-            //    {
-            //        int editingRowSlot = EditingRow.Slot;
-
-            //        InvalidateMeasure();
-            //        Dispatcher.BeginInvoke(delegate
-            //        {
-            //            // It's possible that the DataContext or ItemsSource has changed by the time we reach this code,
-            //            // so we need to ensure that the editing row still exists before scrolling it into view
-            //            if (!IsSlotOutOfBounds(editingRowSlot))
-            //            {
-            //                ScrollSlotIntoView(editingRowSlot, scrolledHorizontally: false);
-            //            }
-            //        });
-            //    }
-            //}
         }
-
-        /// <summary>
-        /// Updates the IsValid states of the DataGrid, the EditingRow and its cells. All cells related to
-        /// property-level errors are set to Invalid.  If there is an object-level error selected in the
-        /// ValidationSummary, then its associated cells will also be flagged (if there are any).
-        /// </summary>
-        /*private void UpdateValidationStatus()
-        {
-            if (EditingRow != null)
-            {
-                foreach (DataGridCell cell in EditingRow.Cells)
-                {
-                    bool isCellValid = true;
-
-                    Debug.Assert(cell.OwningColumn != null);
-                    if (!cell.OwningColumn.IsReadOnly)
-                    {
-                        foreach (ValidationResult validationResult in _validationResults)
-                        {
-                            if (_propertyValidationResults.ContainsEqualValidationResult(validationResult) ||
-                                _selectedValidationSummaryItem != null && _selectedValidationSummaryItem.Context == validationResult)
-                            {
-                                foreach (string bindingPath in validationResult.MemberNames)
-                                {
-                                    if (cell.OwningColumn.BindingPaths.Contains(bindingPath))
-                                    {
-                                        isCellValid = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (cell.IsValid != isCellValid)
-                    {
-                        cell.IsValid = isCellValid;
-                        cell.UpdatePseudoClasses();
-                    }
-                }
-                bool isRowValid = _validationResults.Count == 0;
-                if (EditingRow.IsValid != isRowValid)
-                {
-                    EditingRow.IsValid = isRowValid;
-                    EditingRow.UpdatePseudoClasses();
-                }
-                IsValid = isRowValid;
-            }
-            else
-            {
-                IsValid = true;
-            }
-
-        } */
-
-        /* private void EditingElement_BindingValidationError(object sender, ValidationErrorEventArgs e)
-        {
-            if (e.Action == ValidationErrorEventAction.Added && e.Error.Exception != null && e.Error.ErrorContent != null)
-            {
-                ValidationResult validationResult = new ValidationResult(e.Error.ErrorContent.ToString(), new List<string>() { _updateSourcePath });
-                _bindingValidationResults.AddIfNew(validationResult);
-            }
-        } */
-
-        /// <summary>
-        /// Determines whether or not a specific validation result should be displayed in the ValidationSummary.
-        /// </summary>
-        /// <param name="validationResult">Validation result to display.</param>
-        /// <returns>True if it should be added to the ValidationSummary, false otherwise.</returns>
-        /*private bool ShouldDisplayValidationResult(ValidationResult validationResult)
-        {
-            if (EditingRow != null)
-            {
-                return !_bindingValidationResults.ContainsEqualValidationResult(validationResult) ||
-                    EditingRow.DataContext is IDataErrorInfo || EditingRow.DataContext is INotifyDataErrorInfo;
-            }
-            return false;
-        } */
-
-        /// <summary>
-        /// Handles the asynchronous INDEI errors that occur while the DataGrid is in editing mode.
-        /// </summary>
-        /// <param name="sender">INDEI item whose errors changed.</param>
-        /// <param name="e">Error event arguments.</param>
-        /*private void ValidationItem_ErrorsChanged(object sender, DataErrorsChangedEventArgs e)
-        {
-            INotifyDataErrorInfo indei = sender as INotifyDataErrorInfo;
-            if (_validationItems.ContainsKey(indei))
-            {
-                Debug.Assert(EditingRow != null);
-
-                // Determine the binding path.
-                string bindingPath = _validationItems[indei];
-                if (string.IsNullOrEmpty(bindingPath))
-                {
-                    bindingPath = e.PropertyName;
-                }
-                else if (!string.IsNullOrEmpty(e.PropertyName) && e.PropertyName.IndexOf(TypeHelper.LeftIndexerToken) >= 0)
-                {
-                    bindingPath += TypeHelper.RemoveDefaultMemberName(e.PropertyName);
-                }
-                else
-                {
-                    bindingPath += TypeHelper.PropertyNameSeparator + e.PropertyName;
-                }
-
-                // Remove the old errors.
-                List<ValidationResult> validationResults = new List<ValidationResult>();
-                foreach (ValidationResult validationResult in _validationResults)
-                {
-                    ValidationResult oldValidationResult = _indeiValidationResults.FindEqualValidationResult(validationResult);
-                    if (oldValidationResult != null && oldValidationResult.ContainsMemberName(bindingPath))
-                    {
-                        _indeiValidationResults.Remove(oldValidationResult);
-                    }
-                    else
-                    {
-                        validationResults.Add(validationResult);
-                    }
-                }
-
-                // Find any new errors and update the visuals.
-                //TODO: Validation ParameterNames
-                ValidateIndei(indei, e.PropertyName, bindingPath, null, validationResults, false);
-                //TODO: Validation ParameterNames
-                UpdateValidationResults(validationResults, false);
-
-                // If we're valid now then reset our status.
-                if (IsValid)
-                {
-                    ResetValidationStatus();
-                }
-            }
-            else if (indei != null)
-            {
-                indei.ErrorsChanged -= new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
-            }
-        }*/
-
-        /*private void ValidateIndeiObject(INotifyDataErrorInfo indei, List<Exception> validationErrors)
-        {
-            if(indei != null && indei.HasErrors)
-            {
-                IEnumerable errors = null;
-                ValidationUtil.CatchNonCriticalExceptions(() => { errors = indei.GetErrors(null); });
-                foreach (var error in errors)
-                {
-                    string errorString = null;
-                    ValidationUtil.CatchNonCriticalExceptions(() => { errorString = error.ToString(); });
-                    if(!String.IsNullOrWhiteSpace(errorString))
-                    {
-                        var ex = new ValidationException(errorString);
-                        validationErrors.AddExceptionIfNew(ex);
-                    }
-                }
-            }
-        }*/
-
-        /// <summary>
-        /// Checks an INDEI data object for errors on the specified path. New errors are added to the
-        /// list of validation results.
-        /// </summary>
-        /// <param name="indei">INDEI object to validate.</param>
-        /// <param name="bindingProperty">Name of the property to validate.</param>
-        /// <param name="bindingPath">Path of the binding.</param>
-        /// <param name="declaringPath">Path of the INDEI object.</param>
-        /// <param name="validationResults">List of results to add to.</param>
-        /// <param name="wireEvents">True if the ErrorsChanged event should be subscribed to.</param>
-        /*private void ValidateIndei(INotifyDataErrorInfo indei, string bindingProperty, string bindingPath, string declaringPath, List<ValidationResult> validationResults, bool wireEvents)
-        {
-            if (indei != null)
-            {
-                if (indei.HasErrors)
-                {
-                    IEnumerable errors = null;
-                    ValidationUtil.CatchNonCriticalExceptions(() => { errors = indei.GetErrors(bindingProperty); });
-                    if (errors != null)
-                    {
-                        foreach (object errorItem in errors)
-                        {
-                            if (errorItem != null)
-                            {
-                                string errorString = null;
-                                ValidationUtil.CatchNonCriticalExceptions(() => { errorString = errorItem.ToString(); });
-                                if (!string.IsNullOrEmpty(errorString))
-                                {
-                                    ValidationResult validationResult;
-                                    if (!string.IsNullOrEmpty(bindingProperty))
-                                    {
-                                        validationResult = new ValidationResult(errorString, new List<string>() { bindingPath });
-                                        _propertyValidationResults.Add(validationResult);
-                                    }
-                                    else
-                                    {
-                                        Debug.Assert(string.IsNullOrEmpty(bindingPath));
-                                        validationResult = new ValidationResult(errorString);
-                                    }
-                                    validationResults.AddIfNew(validationResult);
-                                    _indeiValidationResults.AddIfNew(validationResult);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (wireEvents)
-                {
-                    indei.ErrorsChanged += new EventHandler<DataErrorsChangedEventArgs>(ValidationItem_ErrorsChanged);
-                    if (!_validationItems.ContainsKey(indei))
-                    {
-                        _validationItems.Add(indei, declaringPath);
-                    }
-                }
-            }
-        }*/
 
         #region Old Validation UI
 
 
-        /// <summary>
-        /// Create an ValidationSummaryItem for a given ValidationResult, by finding all cells related to the
-        /// validation error and adding them as separate ValidationSummaryItemSources.
-        /// </summary>
-        /// <param name="validationResult">ValidationResult</param>
-        /// <returns>ValidationSummaryItem</returns>
-        /*private ValidationSummaryItem CreateValidationSummaryItem(ValidationResult validationResult)
-        {
-            Debug.Assert(validationResult != null);
-            Debug.Assert(_validationSummary != null);
-            Debug.Assert(EditingRow != null);
-
-            ValidationSummaryItem validationSummaryItem = new ValidationSummaryItem(validationResult.ErrorMessage);
-            validationSummaryItem.Context = validationResult;
-
-            string messageHeader = null;
-            foreach (DataGridColumn column in ColumnsInternal.GetDisplayedColumns(c => c.IsVisible && !c.IsReadOnly))
-            {
-                foreach (string property in validationResult.MemberNames)
-                {
-                    if (!string.IsNullOrEmpty(property) && column.BindingPaths.Contains(property))
-                    {
-                        validationSummaryItem.Sources.Add(new ValidationSummaryItemSource(property, EditingRow.Cells[column.Index]));
-                        if (string.IsNullOrEmpty(messageHeader) && column.Header != null)
-                        {
-                            messageHeader = column.Header.ToString();
-                        }
-                    }
-                }
-            }
-
-            Debug.Assert(validationSummaryItem.ItemType == ValidationSummaryItemType.ObjectError);
-            if (_propertyValidationResults.ContainsEqualValidationResult(validationResult))
-            {
-                validationSummaryItem.MessageHeader = messageHeader;
-                validationSummaryItem.ItemType = ValidationSummaryItemType.PropertyError;
-            }
-
-            return validationSummaryItem;
-        } */
-
-        /// <summary>
-        /// Handles the ValidationSummary's FocusingInvalidControl event and begins edit on the cells
-        /// that are associated with the selected error.
-        /// </summary>
-        /// <param name="sender">ValidationSummary</param>
-        /// <param name="e">FocusingInvalidControlEventArgs</param>
-        /*private void ValidationSummary_FocusingInvalidControl(object sender, FocusingInvalidControlEventArgs e)
-        {
-            Debug.Assert(_validationSummary != null);
-            if (EditingRow == null || !ScrollSlotIntoView(EditingRow.Slot, scrolledHorizontally: false))
-            {
-                return;
-            }
-
-            // We need to focus the DataGrid in case the focused element gets removed when we end edit.
-            if ((_editingColumnIndex == -1 || (Focus() && EndCellEdit(DataGridEditAction.Commit, true, true, true)))
-                && e.Item != null && e.Target != null && _validationSummary.Errors.Contains(e.Item))
-            {
-                DataGridCell cell = e.Target.Control as DataGridCell;
-                if (cell != null && cell.OwningGrid == this && cell.OwningColumn != null && cell.OwningColumn.IsVisible)
-                {
-                    Debug.Assert(cell.ColumnIndex >= 0 && cell.ColumnIndex < ColumnsInternal.Count);
-
-                    // Begin editing the next relevant cell
-                    UpdateSelectionAndCurrency(cell.ColumnIndex, EditingRow.Slot, DataGridSelectionAction.None, scrollIntoView: true);
-                    if (_successfullyUpdatedSelection)
-                    {
-                        BeginCellEdit(new RoutedEventArgs());
-                        if (!IsColumnDisplayed(CurrentColumnIndex))
-                        {
-                            ScrollColumnIntoView(CurrentColumnIndex);
-                        }
-                    }
-                }
-                e.Handled = true;
-            }
-        } */
-
-        /// <summary>
-        /// Handles the ValidationSummary's SelectionChanged event and changes which cells are displayed as invalid.
-        /// </summary>
-        /// <param name="sender">ValidationSummary</param>
-        /// <param name="e">SelectionChangedEventArgs</param>
-        /*private void ValidationSummary_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // ValidationSummary only supports single-selection mode.
-            if (e.AddedItems.Count == 1)
-            {
-                _selectedValidationSummaryItem = e.AddedItems[0] as ValidationSummaryItem;
-            }
-
-            UpdateValidationStatus();
-        } */
-
-        /// <summary>
-        /// Searches through the DataGrid's ValidationSummary for any errors that use the given
-        /// ValidationResult as the ValidationSummaryItem's Context value.
-        /// </summary>
-        /// <param name="context">ValidationResult</param>
-        /// <returns>ValidationSummaryItem or null if not found</returns>
-        /*private ValidationSummaryItem FindValidationSummaryItem(ValidationResult context)
-        {
-            Debug.Assert(context != null);
-            Debug.Assert(_validationSummary != null);
-            foreach (ValidationSummaryItem ValidationSummaryItem in _validationSummary.Errors)
-            {
-                if (context.Equals(ValidationSummaryItem.Context))
-                {
-                    return ValidationSummaryItem;
-                }
-            }
-            return null;
-        } */
-
         #endregion
 
-
         #endregion
-
 
         /// <summary>
         /// Raises the AutoGeneratingColumn event.
@@ -6727,40 +6007,7 @@ namespace Avalonia.Controls
 
     }
 
-    /*
-     
-    [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementRowsPresenterName, Type = typeof(DataGridRowsPresenter))]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementColumnHeadersPresenterName, Type = typeof(DataGridColumnHeadersPresenter))]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementFrozenColumnScrollBarSpacerName, Type = typeof(FrameworkElement))]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementHorizontalScrollbarName, Type = typeof(ScrollBar))]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementValidationSummary, Type = typeof(ValidationSummary))]
-    [TemplatePart(Name = DataGrid.DATAGRID_elementVerticalScrollbarName, Type = typeof(ScrollBar))]
-    [TemplateVisualState(Name = VisualStates.StateDisabled, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateNormal, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateInvalid, GroupName = VisualStates.GroupValidation)]
-    [TemplateVisualState(Name = VisualStates.StateValid, GroupName = VisualStates.GroupValidation)]
-    [StyleTypedProperty(Property = "CellStyle", StyleTargetType = typeof(DataGridCell))]
-    [StyleTypedProperty(Property = "ColumnHeaderStyle", StyleTargetType = typeof(DataGridColumnHeader))]
-    [StyleTypedProperty(Property = "DragIndicatorStyle", StyleTargetType = typeof(ContentControl))]
-    [StyleTypedProperty(Property = "DropLocationIndicatorStyle", StyleTargetType = typeof(ContentControl))]
-    [StyleTypedProperty(Property = "RowHeaderStyle", StyleTargetType = typeof(DataGridRowHeader))]
-    [StyleTypedProperty(Property = "RowStyle", StyleTargetType = typeof(DataGridRow))]
-    public partial class DataGrid : Control 
-    
-     */
-
     #region Automation
-
-
-    /// <summary>
-    /// Creates AutomationPeer (<see cref="UIElement.OnCreateAutomationPeer"/>)
-    /// </summary>
-    /*protected override AutomationPeer OnCreateAutomationPeer()
-    {
-        return new DataGridAutomationPeer(this);
-    } */
-
 
     #endregion
 
@@ -6768,280 +6015,39 @@ namespace Avalonia.Controls
 
     #endregion
 
-
     #region RowGroups
-
-    //TODO Styles RowGroups
-
-    /*private void RowGroupHeaderStyles_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (_rowsPresenter != null)
-        {
-            Style oldLastStyle = _rowGroupHeaderStylesOld.Count > 0 ? _rowGroupHeaderStylesOld[_rowGroupHeaderStylesOld.Count - 1] : null;
-            while (_rowGroupHeaderStylesOld.Count < _rowGroupHeaderStyles.Count)
-            {
-                _rowGroupHeaderStylesOld.Add(oldLastStyle);
-            }
-
-            Style lastStyle = _rowGroupHeaderStyles.Count > 0 ? _rowGroupHeaderStyles[_rowGroupHeaderStyles.Count - 1] : null;
-            foreach (UIElement element in _rowsPresenter.Children)
-            {
-                DataGridRowGroupHeader groupHeader = element as DataGridRowGroupHeader;
-                if (groupHeader != null)
-                {
-                    Style oldStyle = groupHeader.Level < _rowGroupHeaderStylesOld.Count ? _rowGroupHeaderStylesOld[groupHeader.Level] : oldLastStyle;
-                    Style newStyle = groupHeader.Level < _rowGroupHeaderStyles.Count ? _rowGroupHeaderStyles[groupHeader.Level] : lastStyle;
-                    EnsureElementStyle(groupHeader, oldStyle, newStyle);
-                }
-            }
-        }
-        _rowGroupHeaderStylesOld.Clear();
-        foreach (Style style in _rowGroupHeaderStyles)
-        {
-            _rowGroupHeaderStylesOld.Add(style);
-        }
-    } */
-
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the row group header.
-    /// </summary>
-    /*public ObservableCollection<Style> RowGroupHeaderStyles
-    {
-        get
-        {
-            return _rowGroupHeaderStyles;
-        }
-    } */
-
 
     #endregion
 
     #region Styles
 
-    //TODO Styles
-
-    // Applies the given Style to the Row if it's supposed to use DataGrid.RowStyle
-    /*private static void EnsureElementStyle(FrameworkElement element, Style oldDataGridStyle, Style newDataGridStyle)
-    {
-        Debug.Assert(element != null);
-
-        // Apply the DataGrid style if the row was using the old DataGridRowStyle before
-        if (element != null && (element.Style == null || element.Style == oldDataGridStyle))
-        {
-            element.SetStyleWithType(newDataGridStyle);
-        }
-    } */
-
     #region CellStyle
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the data grid cells.
-    /// </summary>
-    /*public Style CellStyle
-    {
-        get { return GetValue(CellStyleProperty) as Style; }
-        set { SetValue(CellStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGrid.CellStyle" /> dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty CellStyleProperty =
-        DependencyProperty.Register(
-            "CellStyle",
-            typeof(Style),
-            typeof(DataGrid),
-            new PropertyMetadata(OnCellStylePropertyChanged));*/
-
-    /*private static void OnCellStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-    {
-        DataGrid dataGrid = d as DataGrid;
-        if (dataGrid != null)
-        {
-            Style previousStyle = e.OldValue as Style;
-            foreach (DataGridRow row in dataGrid.GetAllRows())
-            {
-                foreach (DataGridCell cell in row.Cells)
-                {
-                    cell.EnsureStyle(previousStyle);
-                }
-                row.FillerCell.EnsureStyle(previousStyle);
-            }
-            dataGrid.InvalidateRowHeightEstimate();
-        }
-    } */
+   
     #endregion CellStyle
 
-
     #region ColumnHeaderStyle
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the column headers.
-    /// </summary>
-    /*public Style ColumnHeaderStyle
-    {
-        get { return GetValue(ColumnHeaderStyleProperty) as Style; }
-        set { SetValue(ColumnHeaderStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the ColumnHeaderStyle dependency property.
-    /// </summary>
-    //public static readonly DependencyProperty ColumnHeaderStyleProperty = DependencyProperty.Register("ColumnHeaderStyle", typeof(Style), typeof(DataGrid), new PropertyMetadata(OnColumnHeaderStylePropertyChanged));
-
-    /*private static void OnColumnHeaderStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-    {
-        // 
-        DataGrid dataGrid = d as DataGrid;
-        if (dataGrid != null)
-        {
-            Style previousStyle = e.OldValue as Style;
-            foreach (DataGridColumn column in dataGrid.Columns)
-            {
-                column.HeaderCell.EnsureStyle(previousStyle);
-            }
-            if (dataGrid.ColumnsInternal.FillerColumn != null)
-            {
-                dataGrid.ColumnsInternal.FillerColumn.HeaderCell.EnsureStyle(previousStyle);
-            }
-        }
-    } */
+    
     #endregion ColumnHeaderStyle
 
     #region RowHeaderStyle
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the row headers. 
-    /// </summary>
-    /*public Style RowHeaderStyle
-    {
-        get { return GetValue(RowHeaderStyleProperty) as Style; }
-        set { SetValue(RowHeaderStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGrid.RowHeaderStyle" /> dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty RowHeaderStyleProperty = DependencyProperty.Register("RowHeaderStyle", typeof(Style), typeof(DataGrid), new PropertyMetadata(OnRowHeaderStylePropertyChanged));
-
-    /*private static void OnRowHeaderStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-    {
-        DataGrid dataGrid = d as DataGrid;
-        if (dataGrid != null && dataGrid._rowsPresenter != null)
-        {
-            // Set HeaderStyle for displayed rows
-            Style previousStyle = e.OldValue as Style;
-            foreach (UIElement element in dataGrid._rowsPresenter.Children)
-            {
-                DataGridRow row = element as DataGridRow;
-                if (row != null)
-                {
-                    row.EnsureHeaderStyleAndVisibility(previousStyle);
-                }
-                else
-                {
-                    DataGridRowGroupHeader groupHeader = element as DataGridRowGroupHeader;
-                    if (groupHeader != null)
-                    {
-                        groupHeader.EnsureHeaderStyleAndVisibility(previousStyle);
-                    }
-                }
-            }
-            dataGrid.InvalidateRowHeightEstimate();
-        }
-    } */
+    
     #endregion RowHeaderStyle
 
     #region RowStyle
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the rows.
-    /// </summary>
-    /*public Style RowStyle
-    {
-        get { return GetValue(RowStyleProperty) as Style; }
-        set { SetValue(RowStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGrid.RowStyle" /> dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty RowStyleProperty =
-        DependencyProperty.Register(
-            "RowStyle",
-            typeof(Style),
-            typeof(DataGrid),
-            new PropertyMetadata(OnRowStylePropertyChanged));
-
-    /*private static void OnRowStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-    {
-        DataGrid dataGrid = d as DataGrid;
-        if (dataGrid != null)
-        {
-            if (dataGrid._rowsPresenter != null)
-            {
-                // Set the style for displayed rows if it has not already been set
-                foreach (DataGridRow row in dataGrid.GetAllRows())
-                {
-                    EnsureElementStyle(row, e.OldValue as Style, e.NewValue as Style);
-                }
-            }
-            dataGrid.InvalidateRowHeightEstimate();
-        }
-    } */
+    
     #endregion RowStyle
-
 
     #endregion
 
     #region DragDrop
 
-    //TODO DragDrop
-
-    /*
-     
-        /// <summary>
-        /// Occurs when the user drops a column header that was being dragged using the mouse.
-        /// </summary>
-        public event EventHandler<DragCompletedEventArgs> ColumnHeaderDragCompleted;
-
-        /// <summary>
-        /// Occurs one or more times while the user drags a column header using the mouse. 
-        /// </summary>
-        public event EventHandler<DragDeltaEventArgs> ColumnHeaderDragDelta;
-
-        /// <summary>
-        /// Occurs when the user begins dragging a column header using the mouse. 
-        /// </summary>
-        public event EventHandler<DragStartedEventArgs> ColumnHeaderDragStarted;
-    */
-
     #region DragIndicatorStyle
 
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the drag indicator
-    /// that is displayed while dragging column headers.
-    /// </summary>
-    /*public Style DragIndicatorStyle
-    {
-        get { return GetValue(DragIndicatorStyleProperty) as Style; }
-        set { SetValue(DragIndicatorStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGrid.DragIndicatorStyle" /> 
-    /// dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty DragIndicatorStyleProperty =
-        DependencyProperty.Register(
-            "DragIndicatorStyle",
-            typeof(Style),
-            typeof(DataGrid),
-            null);*/
     #endregion DragIndicatorStyle
 
     #region DropLocationIndicatorStyle
 
     #endregion DropLocationIndicatorStyle
 
-
-
     #endregion
-
 }

@@ -208,7 +208,6 @@ namespace Avalonia.Controls
 
         public void CopyTo(System.Array array, int index)
         {
-            // 
             throw new NotImplementedException();
         }
 
@@ -466,7 +465,6 @@ namespace Avalonia.Controls
                 }
                 _selectedItemsCache = tempSelectedItemsCache;
             }
-
         }
     }
 }

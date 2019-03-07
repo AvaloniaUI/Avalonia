@@ -132,10 +132,5 @@ namespace Avalonia.Controls.Primitives
 
             return new Size(desiredWidth, desiredHeight);
         }
-        
-        //protected override AutomationPeer OnCreateAutomationPeer()
-        //{
-        //    return new DataGridDetailsPresenterAutomationPeer(this);
-        //}
     }
 }

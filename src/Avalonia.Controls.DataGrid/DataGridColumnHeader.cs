@@ -70,8 +70,6 @@ namespace Avalonia.Controls
             AreSeparatorsVisibleProperty.Changed.AddClassHandler<DataGridColumnHeader>(x => x.OnAreSeparatorsVisibleChanged);
         }
 
-
-
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridColumnHeader" /> class. 
         /// </summary>
@@ -84,48 +82,8 @@ namespace Avalonia.Controls
             PointerEnter += DataGridColumnHeader_PointerEnter;
             PointerLeave += DataGridColumnHeader_PointerLeave;
         }
-        /*public DataGridColumnHeader()
-        {
-            LostMouseCapture += new MouseEventHandler(DataGridColumnHeader_LostMouseCapture);
-            MouseLeftButtonDown += new MouseButtonEventHandler(DataGridColumnHeader_MouseLeftButtonDown);
-            MouseLeftButtonUp += new MouseButtonEventHandler(DataGridColumnHeader_MouseLeftButtonUp);
-            MouseMove += new MouseEventHandler(DataGridColumnHeader_MouseMove);
-            MouseEnter += new MouseEventHandler(DataGridColumnHeader_MouseEnter);
-            MouseLeave += new MouseEventHandler(DataGridColumnHeader_MouseLeave);
-
-            DefaultStyleKey = typeof(DataGridColumnHeader);
-        }  */
         
         #region Protected Methods
-
-        /// <summary>
-        /// Builds the visual tree for the column header when a new template is applied. 
-        /// </summary>
-        //TODO Implement
-        /*public override void OnApplyTemplate()
-        {
-            base.OnApplyTemplate();
-
-            ApplyState(false);
-        }  */
-        /// <summary>
-        /// Called when the value of the <see cref="P:Avalonia.Controls.ContentControl.Content" /> property changes.
-        /// </summary>
-        /// <param name="oldContent">The old value of the <see cref="P:Avalonia.Controls.ContentControl.Content" /> property.</param>
-        /// <param name="newContent">The new value of the <see cref="P:Avalonia.Controls.ContentControl.Content" /> property.</param>
-        /// <exception cref="T:System.NotSupportedException">
-        /// <paramref name="newContent" /> is not a UIElement.
-        /// </exception>
-        //TODO Implement
-        /*protected override void OnContentChanged(object oldContent, object newContent)
-        {
-            if (newContent is UIElement)
-            {
-                throw DataGridError.DataGridColumnHeader.ContentDoesNotSupportUIElements();
-            }
-            base.OnContentChanged(oldContent, newContent);
-        }  */
-
 
         #endregion Protected Methods
 
@@ -208,48 +166,6 @@ namespace Avalonia.Controls
         //TODO Implement
         internal void ApplyState()
         {
-            /*
-            // Common States
-            if (IsPressed && DataGridColumnHeader._dragMode != DragMode.Resize)
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StatePressed, VisualStates.StateMouseOver, VisualStates.StateNormal);
-            }
-            else if (IsMouseOver && DataGridColumnHeader._dragMode != DragMode.Resize)
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateMouseOver, VisualStates.StateNormal);
-            }
-            else
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateNormal);
-            }
-
-            // Sort States
-            CurrentSortingState = null;
-            if (OwningGrid != null
-                && OwningGrid.DataConnection != null
-                && OwningGrid.DataConnection.AllowSort)
-            {
-                SortDescription? sort = OwningColumn.GetSortDescription();
-
-                if (sort.HasValue)
-                {
-                    CurrentSortingState = sort.Value.Direction;
-                    if (CurrentSortingState == ListSortDirection.Ascending)
-                    {
-                        VisualStates.GoToState(this, useTransitions, VisualStates.StateSortAscending, VisualStates.StateUnsorted);
-                    }
-                    if (CurrentSortingState == ListSortDirection.Descending)
-                    {
-                        VisualStates.GoToState(this, useTransitions, VisualStates.StateSortDescending, VisualStates.StateUnsorted);
-                    }
-                }
-                else
-                {
-                    VisualStates.GoToState(this, useTransitions, VisualStates.StateUnsorted);
-                }
-            }
-            */
-
             CurrentSortingState = null;
             if (OwningGrid != null
                 && OwningGrid.DataConnection != null
@@ -266,18 +182,6 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":sortdescending", 
                 CurrentSortingState.HasValue && CurrentSortingState.Value == ListSortDirection.Descending);
         }
-
-
-        //protected override void OnPointerReleased(PointerReleasedEventArgs e)
-        //{
-        //    base.OnPointerReleased(e);
-        //    bool handled = e.Handled;
-        //    if (e.MouseButton == MouseButton.Left)
-        //    {
-        //        OnMouseLeftButtonUp_Click(e.InputModifiers, ref handled);
-        //        e.Handled = handled;
-        //    }
-        //}
 
         internal void UpdateSeparatorVisibility(DataGridColumn lastVisibleColumn)
         {
@@ -353,26 +257,6 @@ namespace Avalonia.Controls
                     // if shift is held down, we multi-sort, therefore if it isn't, we'll clear the sorts beforehand
                     if (!shift || owningGrid.DataConnection.SortDescriptions.Count == 0)
                     {
-                        /*if (collectionView.CanGroup && collectionView.GroupDescriptions != null)
-                        {
-                            // Make sure we sort by the GroupDescriptions first
-                            for (int i = 0; i < collectionView.GroupDescriptions.Count; i++)
-                            {
-                                PropertyGroupDescription groupDescription = collectionView.GroupDescriptions[i] as PropertyGroupDescription;
-                                if (groupDescription != null && collectionView.SortDescriptions.Count <= i || collectionView.SortDescriptions[i].PropertyName != groupDescription.PropertyName)
-                                {
-                                    collectionView.SortDescriptions.Insert(Math.Min(i, collectionView.SortDescriptions.Count), new SortDescription(groupDescription.PropertyName, ListSortDirection.Ascending));
-                                }
-                            }
-                            while (collectionView.SortDescriptions.Count > collectionView.GroupDescriptions.Count)
-                            {
-                                collectionView.SortDescriptions.RemoveAt(collectionView.GroupDescriptions.Count);
-                            }
-                        }
-                        else if (!shift)
-                        {
-                            owningGrid.DataConnection.SortDescriptions.Clear();
-                        }*/
                         owningGrid.DataConnection.SortDescriptions.Clear();
                     }
 
@@ -406,21 +290,9 @@ namespace Avalonia.Controls
                         owningGrid.DataConnection.SortDescriptions.Add(newSort);
                     }
                 }
-
-                // We've completed the sort, so send the Invoked event for the column header's automation peer
-                /*if (AutomationPeer.ListenerExists(AutomationEvents.InvokePatternOnInvoked))
-                {
-                    AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(this);
-                    if (peer != null)
-                    {
-                        peer.RaiseAutomationEvent(AutomationEvents.InvokePatternOnInvoked);
-                    }
-                }*/
-
             }
         } 
         #endregion Internal Methods
-
 
         #region Private Methods
 
@@ -448,8 +320,6 @@ namespace Avalonia.Controls
             }
             return column.ActualCanUserResize;
         }  
-
-
 
         private static bool TrySetResizeColumn(DataGridColumn column)
         {
@@ -537,15 +407,7 @@ namespace Avalonia.Controls
                         DataGridColumnEventArgs ea = new DataGridColumnEventArgs(OwningColumn);
                         OwningGrid.OnColumnReordered(ea);
                     }
-
-                    //DragCompletedEventArgs dragCompletedEventArgs = new DragCompletedEventArgs(mousePosition.X - _dragStart.Value.X, mousePosition.Y - _dragStart.Value.Y, false);
-                    //OwningGrid.OnColumnHeaderDragCompleted(dragCompletedEventArgs);
                 }
-                //else if (_dragMode == DragMode.Drag)
-                //{
-                //    DragCompletedEventArgs dragCompletedEventArgs = new DragCompletedEventArgs(0, 0, false);
-                //    OwningGrid.OnColumnHeaderDragCompleted(dragCompletedEventArgs);
-                //}
 
                 SetDragCursor(mousePosition);
 
@@ -582,21 +444,10 @@ namespace Avalonia.Controls
                 _dragMode = DragMode.Drag;
             }
 
-            //if (_dragMode == DragMode.Drag)
-            //{
-            //    DragDeltaEventArgs dragDeltaEventArgs = new DragDeltaEventArgs(mousePositionHeaders.X - _lastMousePositionHeaders.Value.X, mousePositionHeaders.Y - _lastMousePositionHeaders.Value.Y);
-            //    OwningGrid.OnColumnHeaderDragDelta(dragDeltaEventArgs);
-            //}
-
             _lastMousePositionHeaders = mousePositionHeaders;
 
             SetDragCursor(mousePosition);
         }
-
-        /*private void DataGridColumnHeader_LostMouseCapture(object sender, MouseEventArgs e)
-        {
-            OnLostMouseCapture();
-        }  */
 
         private void DataGridColumnHeader_PointerEnter(object sender, PointerEventArgs e)
         {
@@ -824,17 +675,7 @@ namespace Avalonia.Controls
             dragIndicator.PseudoClasses.Add(":dragIndicator");
 
             IControl dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
-            //dropLocationIndicator.SetStyleWithType(OwningGrid.DropLocationIndicatorStyle);
 
-            //if (OwningColumn.DragIndicatorStyle != null)
-            //{
-            //    dragIndicator.SetStyleWithType(OwningColumn.DragIndicatorStyle);
-            //}
-            //else if (OwningGrid.DragIndicatorStyle != null)
-            //{
-            //    dragIndicator.SetStyleWithType(OwningGrid.DragIndicatorStyle);
-            //}
-            
             // If the user didn't style the dropLocationIndicator's Height, default to the column header's height
             if (dropLocationIndicator != null && double.IsNaN(dropLocationIndicator.Height) && dropLocationIndicator is Control element)
             {
@@ -881,9 +722,6 @@ namespace Avalonia.Controls
             //handle entry into reorder mode
             if (_dragMode == DragMode.MouseDown && _dragColumn == null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
             {
-                //DragStartedEventArgs dragStartedEventArgs = new DragStartedEventArgs(mousePositionHeaders.X - _lastMousePositionHeaders.Value.X, mousePositionHeaders.Y - _lastMousePositionHeaders.Value.Y);
-                //OwningGrid.OnColumnHeaderDragStarted(dragStartedEventArgs);
-
                 handled = CanReorderColumn(OwningColumn);
 
                 if (handled)
@@ -895,9 +733,6 @@ namespace Avalonia.Controls
             //handle reorder mode (eg, positioning of the popup)
             if (_dragMode == DragMode.Reorder && OwningGrid.ColumnHeaders.DragIndicator != null)
             {
-                //DragDeltaEventArgs dragDeltaEventArgs = new DragDeltaEventArgs(mousePositionHeaders.X - _lastMousePositionHeaders.Value.X, mousePositionHeaders.Y - _lastMousePositionHeaders.Value.Y);
-                //OwningGrid.OnColumnHeaderDragDelta(dragDeltaEventArgs);
-
                 // Find header we're hovering over
                 DataGridColumn targetColumn = GetReorderingTargetColumn(mousePositionHeaders, !OwningColumn.IsFrozen /*scroll*/, out double scrollAmount);
 
@@ -994,58 +829,5 @@ namespace Avalonia.Controls
 
     #region Style
 
-    //TODO Styles
-
-    /// <summary>
-    /// Ensures that the correct Style is applied to this object.
-    /// </summary>
-    /// <param name="previousStyle">Caller's previous associated Style</param>
-    /*internal void EnsureStyle(Style previousStyle)
-    {
-        if (Style != null
-            && (OwningColumn == null || Style != OwningColumn.HeaderStyle)
-            && (OwningGrid == null || Style != OwningGrid.ColumnHeaderStyle)
-            && (Style != previousStyle))
-        {
-            return;
-        }
-
-        Style style = null;
-        if (OwningColumn != null)
-        {
-            style = OwningColumn.HeaderStyle;
-        }
-        if (style == null && OwningGrid != null)
-        {
-            style = OwningGrid.ColumnHeaderStyle;
-        }
-        SetStyleWithType(style);
-    }  */
-
     #endregion
-    
-    /*
-    
-    /// <QualityBand>Mature</QualityBand>
-    [TemplateVisualState(Name = VisualStates.StateNormal, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateMouseOver, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StatePressed, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateUnsorted, GroupName = VisualStates.GroupSort)]
-    [TemplateVisualState(Name = VisualStates.StateSortAscending, GroupName = VisualStates.GroupSort)]
-    [TemplateVisualState(Name = VisualStates.StateSortDescending, GroupName = VisualStates.GroupSort)]
-    public partial class DataGridColumnHeader : ContentControl
-    */
-
-    /// <summary>
-    /// Creates AutomationPeer (<see cref="UIElement.OnCreateAutomationPeer"/>)
-    /// </summary>
-    /*protected override AutomationPeer OnCreateAutomationPeer()
-    {
-        if (OwningGrid != null && OwningColumn != OwningGrid.ColumnsInternal.FillerColumn)
-        {
-            return new DataGridColumnHeaderAutomationPeer(this);
-        }
-        return base.OnCreateAutomationPeer();
-    }  */
-
 }

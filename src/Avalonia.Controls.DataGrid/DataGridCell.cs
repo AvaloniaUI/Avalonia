@@ -182,72 +182,7 @@ namespace Avalonia.Controls
 
         internal void UpdatePseudoClasses()
         {
-            /*
-            if (OwningGrid == null || OwningColumn == null || OwningRow == null || OwningRow.Visibility == Visibility.Collapsed || OwningRow.Slot == -1)
-            {
-                return;
-            }
-
-            // CommonStates
-            if (IsMouseOver)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateMouseOver, VisualStates.StateNormal);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateNormal);
-            }
-
-            // SelectionStates
-            if (OwningRow.IsSelected)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateSelected, VisualStates.StateUnselected);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateUnselected);
-            }
-
-            // FocusStates
-            if (OwningGrid.ContainsFocus)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateFocused, VisualStates.StateUnfocused);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateUnfocused);
-            }
-
-            // CurrentStates
-            if (IsCurrent)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateCurrent, VisualStates.StateRegular);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateRegular);
-            }
-
-            // Interaction states
-            if (IsEdited)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateEditing, VisualStates.StateDisplay);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateDisplay);
-            }
-
-            // Validation states
-            if (IsValid)
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateValid);
-            }
-            else
-            {
-                VisualStates.GoToState(this, animate, VisualStates.StateInvalid, VisualStates.StateValid);
-            }
-             */
+            
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 
@@ -283,53 +218,5 @@ namespace Avalonia.Controls
                 Classes.Replace(column.CellStyleClasses);
             }
         }
-
     }
-
-    /*
-    [TemplatePart(Name = DATAGRIDCELL_elementRightGridLine, Type = typeof(Rectangle))]
-    [TemplateVisualState(Name = VisualStates.StateNormal, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateMouseOver, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = VisualStates.StateUnselected, GroupName = VisualStates.GroupSelection)]
-    [TemplateVisualState(Name = VisualStates.StateSelected, GroupName = VisualStates.GroupSelection)]
-    [TemplateVisualState(Name = VisualStates.StateUnfocused, GroupName = VisualStates.GroupFocus)]
-    [TemplateVisualState(Name = VisualStates.StateFocused, GroupName = VisualStates.GroupFocus)]
-    [TemplateVisualState(Name = VisualStates.StateRegular, GroupName = VisualStates.GroupCurrent)]
-    [TemplateVisualState(Name = VisualStates.StateCurrent, GroupName = VisualStates.GroupCurrent)]
-    [TemplateVisualState(Name = VisualStates.StateDisplay, GroupName = VisualStates.GroupInteraction)]
-    [TemplateVisualState(Name = VisualStates.StateEditing, GroupName = VisualStates.GroupInteraction)]
-    [TemplateVisualState(Name = VisualStates.StateInvalid, GroupName = VisualStates.GroupValidation)]
-    [TemplateVisualState(Name = VisualStates.StateValid, GroupName = VisualStates.GroupValidation)]
-    public sealed partial class DataGridCell : ContentControl
-    */
-
-
-    //TODO Styles
-    /// <summary>
-    /// Ensures that the correct Style is applied to this object.
-    /// </summary>
-    /// <param name="previousStyle">Caller's previous associated Style</param>
-    /*internal void EnsureStyle(Style previousStyle)
-    {
-        if (Style != null
-            && (OwningColumn == null || Style != OwningColumn.CellStyle)
-            && (OwningGrid == null || Style != OwningGrid.CellStyle)
-            && (Style != previousStyle))
-        {
-            return;
-        }
-
-        Style style = null;
-        if (OwningColumn != null)
-        {
-            style = OwningColumn.CellStyle;
-        }
-        if (style == null && OwningGrid != null)
-        {
-            style = OwningGrid.CellStyle;
-        }
-        SetStyleWithType(style);
-    } */
-
-
 }

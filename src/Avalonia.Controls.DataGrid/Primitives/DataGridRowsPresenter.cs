@@ -161,15 +161,6 @@ namespace Avalonia.Controls.Primitives
 
             return new Size(totalCellsWidth + headerWidth, totalHeight);
         }
-
-        // / <summary>
-        // / Creates AutomationPeer (<see cref="UIElement.OnCreateAutomationPeer"/>)
-        // / </summary>
-        //Automation
-        //protected override AutomationPeer OnCreateAutomationPeer()
-        //{
-        //    return new DataGridRowsPresenterAutomationPeer(this);
-        //}
         
 #if DEBUG
         internal void PrintChildren()

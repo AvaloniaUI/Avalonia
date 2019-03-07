@@ -313,6 +313,7 @@ namespace Avalonia.Controls
         {
             int slot = SlotFromRowIndex(rowIndex);
             object item = DataConnection.GetDataItem(rowIndex);
+
             // isCollapsed below is always false because we only use the method if we're not grouping
             InsertElementAt(slot, rowIndex, item, null/*DataGridRowGroupInfo*/, false /*isCollapsed*/);
         }
@@ -1039,12 +1040,6 @@ namespace Avalonia.Controls
                 CompleteCellsCollection(dataGridRow);
 
                 OnLoadingRow(new DataGridRowEventArgs(dataGridRow));
-
-                //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-                //if (peer != null)
-                //{
-                //    peer.UpdateRowPeerEventsSource(dataGridRow);
-                //}
             }
             return dataGridRow;
         }
@@ -1220,9 +1215,6 @@ namespace Avalonia.Controls
                             _rowsPresenter.Children.Add(element);
                         }
                         groupHeader.LoadVisualsForDisplay();
-
-                        //Style lastStyle = _rowGroupHeaderStyles.Count > 0 ? _rowGroupHeaderStyles[_rowGroupHeaderStyles.Count - 1] : null;
-                        //EnsureElementStyle(groupHeader, groupHeader.Style, groupHeader.Level < _rowGroupHeaderStyles.Count ? _rowGroupHeaderStyles[groupHeader.Level] : lastStyle);
                     }
                 }
 
@@ -1913,12 +1905,6 @@ namespace Avalonia.Controls
 
                 Debug.Assert(DoubleUtil.GreaterThanOrClose(NegVerticalOffset, 0));
                 Debug.Assert(DoubleUtil.GreaterThanOrClose(_verticalOffset, NegVerticalOffset));
-
-                //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-                //if (peer != null)
-                //{
-                //    peer.RaiseAutomationScrollEvents();
-                //}
             }
             finally
             {
@@ -2348,7 +2334,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         private void ClearRowGroupHeadersTable()
         {
             // Detach existing handlers on CollectionViewGroup.Items.CollectionChanged
@@ -2505,22 +2490,7 @@ namespace Avalonia.Controls
                     double indent;
                     for (int i = 0; i < groupLevelCount; i++)
                     {
-                        //DataGridRowGroupHeader rowGroupHeader = null;
-                        indent = DATAGRID_defaultRowGroupSublevelIndent;
-                        //if (i < RowGroupHeaderStyles.Count && RowGroupHeaderStyles[i] != null)
-                        //{
-                        //    // Due to Silverlight Bugs 22038, we have to actually set the Style to read
-                        //    // setter values instead of simply enumerating through the setters
-                        //    if (rowGroupHeader == null)
-                        //    {
-                        //        rowGroupHeader = new DataGridRowGroupHeader();
-                        //    }
-                        //    rowGroupHeader.Style = RowGroupHeaderStyles[i];
-                        //    if (rowGroupHeader.SublevelIndent != DataGrid.DATAGRID_defaultRowGroupSublevelIndent)
-                        //    {
-                        //        indent = rowGroupHeader.SublevelIndent;
-                        //    }
-                        //}
+                        indent = DATAGRID_defaultRowGroupSublevelIndent; 
                         RowGroupSublevelIndents[i] = indent;
                         if (i > 0)
                         {
@@ -2809,13 +2779,7 @@ namespace Avalonia.Controls
             groupHeader.UpdateTitleElements();
 
             OnLoadingRowGroup(new DataGridRowGroupHeaderEventArgs(groupHeader));
-
-            //DataGridAutomationPeer peer = DataGridAutomationPeer.FromElement(this) as DataGridAutomationPeer;
-            //if (peer != null)
-            //{
-            //    peer.UpdateRowGroupHeaderPeerEventsSource(groupHeader);
-            //}
-
+ 
             return groupHeader;
         }
 
@@ -3054,7 +3018,6 @@ namespace Avalonia.Controls
                      _selectedItems.ContainsSlot(SlotFromRowIndex(rowIndex)));
             }
         }
-
 
         /// <summary>
         /// Raises the <see cref="E:Avalonia.Controls.DataGrid.RowDetailsVisibilityChanged" /> event.

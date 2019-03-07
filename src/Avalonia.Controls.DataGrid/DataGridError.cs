@@ -124,15 +124,6 @@ namespace Avalonia.Controls
 
         }
 
-        // 
-
-
-
-
-
-
-
-
         public static class DataGridColumnHeader
         {
             public static NotSupportedException ContentDoesNotSupportUIElements()

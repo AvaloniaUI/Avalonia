@@ -43,7 +43,6 @@ namespace Avalonia.Controls
 
         #endregion Data
 
-
         #region Constructors
 
         /// <summary>

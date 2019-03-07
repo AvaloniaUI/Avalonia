@@ -265,13 +265,6 @@ namespace Avalonia.Collections
 
         #region Private Delegates
 
-        // / <summary>
-        // / Delegate used to asynchronously trigger a page move.
-        // / </summary>
-        // / <param name="pageIndex">Requested page index</param>
-        //TODO Not Needed?
-        //private delegate void RequestPageMoveDelegate(int pageIndex);
-
         #endregion Private Delegates
 
         #region Events
@@ -1003,13 +996,7 @@ namespace Avalonia.Collections
             }
         }
 
-        #endregion Public Properties
-
-        ////------------------------------------------------------
-        ////
-        ////  Private Properties
-        ////
-        ////------------------------------------------------------
+        #endregion Public Properties 
 
         #region Private Properties
 
@@ -1188,13 +1175,7 @@ namespace Avalonia.Collections
             get { return SortDescriptions.Count > 0 || Filter != null || _pageSize > 0 || GroupDescriptions.Count > 0; }
         }
 
-        #endregion Private Properties
-
-        ////------------------------------------------------------
-        ////
-        ////  Indexers
-        ////
-        ////------------------------------------------------------
+        #endregion Private Properties 
 
         #region Indexers
 
@@ -1208,13 +1189,7 @@ namespace Avalonia.Collections
             get { return GetItemAt(index); }
         }
 
-        #endregion Indexers
-
-        ////------------------------------------------------------
-        ////
-        ////  Public Methods
-        ////
-        ////------------------------------------------------------
+        #endregion Indexers 
 
         #region Public Methods
 
@@ -2520,12 +2495,6 @@ namespace Avalonia.Collections
 
         #endregion Public Methods
 
-        ////------------------------------------------------------
-        ////
-        ////  Static Methods
-        ////
-        ////------------------------------------------------------
-
         #region Static Methods
 
         /// <summary>
@@ -2546,12 +2515,6 @@ namespace Avalonia.Collections
         }
 
         #endregion Static Methods
-
-        ////------------------------------------------------------
-        ////
-        ////  Private Methods
-        ////
-        ////------------------------------------------------------
 
         #region Private Methods
 
@@ -3425,13 +3388,6 @@ namespace Avalonia.Collections
                 }
             }
 
-            // if we need to add the item into the current group
-            // that will be displayed
-            //if (needsGrouping)
-            //{
-            //    _group.AddToSubgroups(addedItem, false /*loading*/);
-            //}
-
             int addedIndex = IndexOf(addedItem);
 
             // if the item is within the current page
@@ -3457,7 +3413,7 @@ namespace Avalonia.Collections
             {
                 // otherwise if the item was added into a previous page
                 int internalIndex = InternalIndexOf(addedItem);
-                //int internalIndex = IsGrouping ? _group.LeafIndexOf(addedItem) : InternalIndexOf(addedItem);
+
                 if (internalIndex < ConvertToInternalIndex(0))
                 {
                     // fire add notification for item pushed in
@@ -4030,23 +3986,8 @@ namespace Avalonia.Collections
 
             foreach (DataGridSortDescription sort in SortDescriptions)
             {
-                sort.Initialize(itemType);
-                //string propertyPath = sort.PropertyName;
-                //Type propertyType = null;
+                sort.Initialize(itemType); 
 
-                // find the propertyType from the first non-null instance
-                // in the list
-                //foreach (object item in list)
-                //{
-                //    if (item != null)
-                //    {
-                //        propertyType = item.GetType().GetNestedPropertyType(propertyPath);
-                //        break;
-                //    }
-                //}
-
-                //IOrderedEnumerable<object> orderedEnum = seq as IOrderedEnumerable<object>;
-                
                 if(seq is IOrderedEnumerable<object> orderedEnum)
                 {
                     seq = sort.ThenBy(orderedEnum);
@@ -4055,38 +3996,6 @@ namespace Avalonia.Collections
                 {
                     seq = sort.OrderBy(seq);
                 }
-
-                //switch (sort.Direction)
-                //{
-                //    case System.ComponentModel.ListSortDirection.Ascending:
-                //        if (orderedEnum != null)
-                //        {
-                //            // thenby
-                //            seq = orderedEnum.ThenBy(item => InvokePath(item, propertyPath, propertyType), comparer);
-                //        }
-                //        else
-                //        {
-                //            // orderby
-                //            seq = seq.OrderBy(item => InvokePath(item, propertyPath, propertyType), comparer);
-                //        }
-
-                //        break;
-                //    case System.ComponentModel.ListSortDirection.Descending:
-                //        if (orderedEnum != null)
-                //        {
-                //            // thenby
-                //            seq = orderedEnum.ThenByDescending(item => InvokePath(item, propertyPath, propertyType), comparer);
-                //        }
-                //        else
-                //        {
-                //            // orderby
-                //            seq = seq.OrderByDescending(item => InvokePath(item, propertyPath, propertyType), comparer);
-                //        }
-
-                //        break;
-                //    default:
-                //        break;
-                //}
             }
 
             return seq.ToList();
@@ -4108,12 +4017,6 @@ namespace Avalonia.Collections
         }
 
         #endregion Private Methods
-
-        ////------------------------------------------------------
-        ////
-        ////  Private Classes
-        ////
-        ////------------------------------------------------------
 
         #region Private Classes
 

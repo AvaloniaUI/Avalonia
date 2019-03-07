@@ -20,14 +20,6 @@ namespace Avalonia.Controls
         internal const int DATAGRIDCOLUMN_maximumWidth = 65536;
         private const bool DATAGRIDCOLUMN_defaultIsReadOnly = false;
 
-        /*
-        private List<string> _bindingPaths;
-        private Style _cellStyle;
-        private Style _dragIndicatorStyle;
-        private Style _headerStyle;
-        private List<BindingInfo> _inputBindings;
-        */
-
         private DataGridLength? _width; // Null by default, null means inherit the Width from the DataGrid
         private bool? _isReadOnly;
         private double? _maxWidth;
@@ -995,28 +987,7 @@ namespace Avalonia.Controls
             {
                 _editingElement = GenerateEditingElement(cell, dataItem, out _editBinding);
             }
-            //if (_inputBindings == null && _editingElement != null)
-            //{
-            //        //TODO: Binding ParameterNames
-            //    _inputBindings = CreateBindings(_editingElement, dataItem, true);
-
-            //    // Setup all of the active input bindings to support validation
-            //    foreach (BindingInfo bindingData in _inputBindings)
-            //    {
-            //        if (bindingData.BindingExpression != null
-            //            && bindingData.BindingExpression.ParentBinding != null
-            //            && bindingData.BindingExpression.ParentBinding.UpdateSourceTrigger != UpdateSourceTrigger.Explicit)
-            //        {
-            //            Binding binding = ValidationUtil.CloneBinding(bindingData.BindingExpression.ParentBinding);
-            //            if (binding != null)
-            //            {
-            //                binding.UpdateSourceTrigger = UpdateSourceTrigger.Explicit;
-            //                bindingData.Element.SetBinding(bindingData.BindingTarget, binding);
-            //                bindingData.BindingExpression = bindingData.Element.GetBindingExpression(bindingData.BindingTarget);
-            //            }
-            //        }
-            //    }
-            //}
+     
             return _editingElement;
         }
 
@@ -1027,8 +998,6 @@ namespace Avalonia.Controls
         internal void RemoveEditingElement()
         {
             _editingElement = null;
-            //_inputBindings = null;
-            //_bindingPaths = null;
         }
 
         /// <summary>
@@ -1078,157 +1047,12 @@ namespace Avalonia.Controls
         }
 
     }
-
-    /*
-     
-    /// <summary>
-    /// Represents a <see cref="T:Avalonia.Controls.DataGrid" /> column.
-    /// </summary>
-    /// <QualityBand>Mature</QualityBand>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1036:OverrideMethodsOnComparableTypes", Justification = "IComparable in Jolt has only one method, probably a false positive in FxCop.")]
-    [StyleTypedProperty(Property = "CellStyle", StyleTargetType = typeof(DataGridCell))]
-    [StyleTypedProperty(Property = "DragIndicatorStyle", StyleTargetType = typeof(ContentControl))]
-    [StyleTypedProperty(Property = "HeaderStyle", StyleTargetType = typeof(DataGridColumnHeader))]
-    public abstract class DataGridColumn : AvaloniaObject
-    */
     
     #region Styles
-
-    //TODO Styles
-    /// <summary>
-    /// Gets or sets the style that is used when rendering cells in the column.
-    /// </summary>
-    /// <returns>
-    /// The style that is used when rendering cells in the column. The default is null.
-    /// </returns>
-    /*public Style CellStyle
-    {
-        get
-        {
-            return _cellStyle;
-        }
-        set
-        {
-            if (_cellStyle != value)
-            {
-                Style previousStyle = _cellStyle;
-                _cellStyle = value;
-                if (OwningGrid != null)
-                {
-                    OwningGrid.OnColumnCellStyleChanged(this, previousStyle);
-                }
-            }
-        }
-    } */
-
-    /*public Style DragIndicatorStyle
-    {
-        get
-        {
-            return _dragIndicatorStyle;
-        }
-        set
-        {
-            if (_dragIndicatorStyle != value)
-            {
-                _dragIndicatorStyle = value;
-            }
-        }
-    } */
-
-    /*public Style HeaderStyle
-    {
-        get
-        {
-            return _headerStyle;
-        }
-        set
-        {
-            if (_headerStyle != value)
-            {
-                Style previousStyle = _headerStyle;
-                _headerStyle = value;
-                if (_headerCell != null)
-                {
-                    _headerCell.EnsureStyle(previousStyle);
-                }
-            }
-        }
-    } */
 
     #endregion
 
     #region Binding
 
-    //TODO Binding
-
-    /*internal List<string> BindingPaths
-    {
-        get
-        {
-            if (_bindingPaths != null)
-            {
-                return _bindingPaths;
-            }
-            _bindingPaths = CreateBindingPaths();
-            return _bindingPaths;
-        }
-    } */
-
-    /*internal virtual List<string> CreateBindingPaths()
-    {
-        List<string> bindingPaths = new List<string>();
-        List<BindingInfo> bindings = null;
-        if (_inputBindings == null && OwningGrid != null)
-        {
-            DataGridRow row = OwningGrid.EditingRow;
-            if (row != null && row.Cells != null && row.Cells.Count > Index)
-            {
-                // Finds the input bindings if they don't already exist
-                GenerateEditingElementInternal(row.Cells[Index], row.DataContext);
-            }
-        }
-        if (_inputBindings != null)
-        {
-            Debug.Assert(OwningGrid != null);
-
-            // Use the editing bindings if they've already been created
-            bindings = _inputBindings;
-        }
-        if (bindings != null)
-        {
-            // We're going to return the path of every active binding
-            foreach (BindingInfo binding in bindings)
-            {
-                if (binding != null &&
-                    binding.BindingExpression != null &&
-                    binding.BindingExpression.ParentBinding != null &&
-                    binding.BindingExpression.ParentBinding.Path != null)
-                {
-                    bindingPaths.Add(binding.BindingExpression.ParentBinding.Path.Path);
-                }
-            }
-        }
-        return bindingPaths;
-    } */
-
-    /*internal virtual List<BindingInfo> CreateBindings(FrameworkElement element, object dataItem, bool twoWay)
-    {
-        //TODO: Binding ParameterNames
-        return element.GetBindingInfo(dataItem, twoWay, false, true, typeof(DataGrid));
-    } */
-
-    /*internal List<BindingInfo> GetInputBindings(FrameworkElement element, object dataItem)
-    {
-        if (_inputBindings != null)
-        {
-            return _inputBindings;
-        }
-                //TODO: Binding ParameterNames
-        return CreateBindings(element, dataItem, true);
-    } */
-
     #endregion
-
-
 }

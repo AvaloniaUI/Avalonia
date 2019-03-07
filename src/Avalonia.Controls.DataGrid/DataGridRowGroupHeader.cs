@@ -28,7 +28,6 @@ namespace Avalonia.Controls
         private Panel _rootElement;
         private double _totalIndent;
 
-
         public static readonly StyledProperty<bool> IsItemCountVisibleProperty =
             AvaloniaProperty.Register<DataGridRowGroupHeader, bool>(nameof(IsItemCountVisible));
 
@@ -40,7 +39,6 @@ namespace Avalonia.Controls
             get { return GetValue(IsItemCountVisibleProperty); }
             set { SetValue(IsItemCountVisibleProperty, value); }
         }
-
 
         public static readonly StyledProperty<string> PropertyNameProperty =
             AvaloniaProperty.Register<DataGridRowGroupHeader, string>(nameof(PropertyName));
@@ -54,7 +52,6 @@ namespace Avalonia.Controls
             set { SetValue(PropertyNameProperty, value); }
         }
 
-
         public static readonly StyledProperty<bool> IsPropertyNameVisibleProperty =
             AvaloniaProperty.Register<DataGridRowGroupHeader, bool>(nameof(IsPropertyNameVisible));
 
@@ -66,7 +63,6 @@ namespace Avalonia.Controls
             get { return GetValue(IsPropertyNameVisibleProperty); }
             set { SetValue(IsPropertyNameVisibleProperty, value); }
         }
-
 
         public static readonly StyledProperty<double> SublevelIndentProperty =
             AvaloniaProperty.Register<DataGridRowGroupHeader, double>(
@@ -238,43 +234,7 @@ namespace Avalonia.Controls
         //TODO Implement
         internal void ApplyState(bool useTransitions)
         {
-            /*
-            // Common States
-            if (IsMouseOver)
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateMouseOver, VisualStates.StateNormal);
-            }
-            else
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateNormal);
-            }
 
-            // Current States
-            if (IsCurrent)
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateCurrent, VisualStates.StateRegular);
-            }
-            else
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateRegular);
-            }
-
-            // Expanded States
-            if (RowGroupInfo.CollectionViewGroup.ItemCount == 0)
-            {
-                VisualStates.GoToState(this, useTransitions, VisualStates.StateEmpty);
-            }
-            else
-            {
-                if (RowGroupInfo.Visibility == Visibility.Visible)
-                {
-                    VisualStates.GoToState(this, useTransitions, VisualStates.StateExpanded, VisualStates.StateEmpty);
-                }
-                else
-                {
-                    VisualStates.GoToState(this, useTransitions, VisualStates.StateCollapsed, VisualStates.StateEmpty);
-                }
-            }*/
         }
 
         protected override Size ArrangeOverride(Size finalSize)
@@ -391,15 +351,6 @@ namespace Avalonia.Controls
             if (_headerElement != null && OwningGrid != null)
             {
                 _headerElement.IsVisible = OwningGrid.AreColumnHeadersVisible;
-                //if (OwningGrid.AreRowHeadersVisible)
-                //{
-                //    _headerElement.EnsureStyle(previousStyle);
-                //     ;
-                //}
-                //else
-                //{
-                //    _headerElement.IsVisible = false;
-                //}
             }
         }
 
@@ -414,8 +365,6 @@ namespace Avalonia.Controls
         internal void LoadVisualsForDisplay()
         {
             EnsureExpanderButtonIsChecked();
-
-            //EnsureHeaderStyleAndVisibility(null);
             EnsureHeaderVisibility();
             ApplyState(useTransitions: false);
             ApplyHeaderStatus();
@@ -505,39 +454,4 @@ namespace Avalonia.Controls
 
         #endregion Methods
     }
-
-    /*
-     
-        #region HeaderStyle
-        //TODO Styles
-
-        /// <summary>
-        /// The style applied to the header cell of a <see cref="T:Avalonia.Controls.DataGridRowGroupHeader" />. 
-        /// </summary>
-        public Style HeaderStyle
-        {
-            get { return GetValue(HeaderStyleProperty) as Style; }
-            set { SetValue(HeaderStyleProperty, value); }
-        }
-
-        /// <summary>
-        /// Dependency Property for HeaderStyle
-        /// </summary>
-        public static readonly DependencyProperty HeaderStyleProperty =
-            DependencyProperty.Register(
-                "HeaderStyle",
-                typeof(Style),
-                typeof(DataGridRowGroupHeader),
-                new PropertyMetadata(OnHeaderStylePropertyChanged));
-
-        private static void OnHeaderStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-        {
-            DataGridRowGroupHeader groupHeader = d as DataGridRowGroupHeader;
-            if (groupHeader._headerElement != null)
-            {
-                groupHeader._headerElement.EnsureStyle(e.OldValue as Style);
-            }
-        }
-        #endregion HeaderStyle
-     */
 }

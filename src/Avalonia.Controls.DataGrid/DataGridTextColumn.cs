@@ -15,17 +15,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a <see cref="T:Avalonia.Controls.DataGrid" /> column that hosts textual content in its cells.
     /// </summary>
-    //[StyleTypedProperty(Property = "ElementStyle", StyleTargetType = typeof(TextBlock))]
-    //[StyleTypedProperty(Property = "EditingElementStyle", StyleTargetType = typeof(TextBox))]
     public class DataGridTextColumn : DataGridBoundColumn
     {
         #region Constants
-
-        //private const string DATAGRIDTEXTCOLUMN_fontFamilyName = "FontFamily";
-        //private const string DATAGRIDTEXTCOLUMN_fontSizeName = "FontSize";
-        //private const string DATAGRIDTEXTCOLUMN_fontStyleName = "FontStyle";
-        //private const string DATAGRIDTEXTCOLUMN_fontWeightName = "FontWeight";
-        //private const string DATAGRIDTEXTCOLUMN_foregroundName = "Foreground";
 
         #endregion Constants
 
@@ -48,7 +40,6 @@ namespace Avalonia.Controls
 
         #region DependencyProperties
 
-
         /// <summary>
         /// Identifies the FontFamily dependency property.
         /// </summary>
@@ -63,19 +54,6 @@ namespace Avalonia.Controls
             get { return GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
-
-        /*private void OnFontFamilyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            //FontFamilyProperty.Changed.AddClassHandler<DataGridTextColumn>(x => x.OnFontFamilyChanged);
-            var oldValue = (string)e.OldValue;
-            var value = (string)e.NewValue;
-        }*/
-
-        /*private static void OnFontFamilyPropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-        {
-            DataGridTextColumn textColumn = (DataGridTextColumn)d;
-            textColumn.NotifyPropertyChanged(DATAGRIDTEXTCOLUMN_fontFamilyName);
-        }*/
 
         #endregion DependencyProperties
 
@@ -191,7 +169,6 @@ namespace Avalonia.Controls
                 Background = new SolidColorBrush(Colors.Transparent)
             };
 
-            //if (DependencyProperty.UnsetValue != ReadLocalValue(DataGridTextColumn.FontFamilyProperty))
             if (IsSet(FontFamilyProperty))
             {
                 textBox.FontFamily = FontFamily;
@@ -251,7 +228,6 @@ namespace Avalonia.Controls
                 textBlockElement.Foreground = _foreground;
             }
             if (Binding != null)
-            //if (Binding != null || !DesignerProperties.IsInDesignTool)
             {
                 textBlockElement.Bind(TextBlock.TextProperty, Binding);
             }

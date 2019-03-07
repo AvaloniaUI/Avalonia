@@ -392,13 +392,5 @@ namespace Avalonia.Controls.Primitives
             OwningGrid.ColumnsInternal.EnsureVisibleEdgedColumnsWidth();
             return new Size(OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth, height);
         }
-
-        /// <summary>
-        /// Creates AutomationPeer (<see cref="UIElement.OnCreateAutomationPeer"/>)
-        /// </summary>
-        //protected override AutomationPeer OnCreateAutomationPeer()
-        //{
-        //    return new DataGridColumnHeadersPresenterAutomationPeer(this);
-        //}
     }
 }

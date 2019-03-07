@@ -467,7 +467,6 @@ namespace Avalonia.Controls.Utils
             return propertyPaths;
         }
 
-
         /// <summary>
         /// Checks a MemberInfo object (e.g. a Type or PropertyInfo) for the ReadOnly attribute
         /// and returns the value of IsReadOnly if it exists.

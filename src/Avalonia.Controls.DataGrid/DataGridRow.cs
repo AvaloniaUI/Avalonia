@@ -36,13 +36,6 @@ namespace Avalonia.Controls
 
         #endregion
 
-        /*
-        private bool _animatingDetails;
-        private Storyboard _detailsVisibleStoryboard;
-        private DoubleAnimation _detailsHeightAnimation;
-        private double? _detailsHeightAnimationToOverride;
-        */
-
         #region Fields
 
 
@@ -55,20 +48,23 @@ namespace Avalonia.Controls
         private Rectangle _bottomGridLine;
         private bool _areHandlersSuspended;
 
-
         // In the case where Details scales vertically when it's arranged at a different width, we
         // get the wrong height measurement so we need to check it again after arrange
         private bool _checkDetailsContentHeight;
+
         // Optimal height of the details based on the Element created by the DataTemplate
         private double _detailsDesiredHeight;
+
         private bool _detailsLoaded;
         private bool _detailsVisibilityNotificationPending;
         private IControl _detailsContent;
         private IDisposable _detailsContentSizeSubscription;
         private DataGridDetailsPresenter _detailsElement;
+
         // Locally cache whether or not details are visible so we don't run redundant storyboards
         // The Details Template that is actually applied to the Row
         private IDataTemplate _appliedDetailsTemplate;
+
         private bool? _appliedDetailsVisibility;
 
         #endregion
@@ -104,7 +100,6 @@ namespace Avalonia.Controls
             internal set { SetAndRaise(IsValidProperty, ref _isValid, value); }
         }
 
-
         public static readonly StyledProperty<IDataTemplate> DetailsTemplateProperty =
             AvaloniaProperty.Register<DataGridRow, IDataTemplate>(nameof(DetailsTemplate));
 
@@ -116,7 +111,6 @@ namespace Avalonia.Controls
             get { return GetValue(DetailsTemplateProperty); }
             set { SetValue(DetailsTemplateProperty, value); }
         }
-
 
         public static readonly StyledProperty<bool> AreDetailsVisibleProperty =
             AvaloniaProperty.Register<DataGridRow, bool>(nameof(AreDetailsVisible));
@@ -132,13 +126,11 @@ namespace Avalonia.Controls
         
         #endregion
 
-
         static DataGridRow()
         {
             HeaderProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnHeaderChanged);
             DetailsTemplateProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnDetailsTemplateChanged);
             AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnAreDetailsVisibleChanged);
-
             PointerPressedEvent.AddClassHandler<DataGridRow>(x => x.DataGridRow_PointerPressed, handledEventsToo: true);
         }
         
@@ -673,70 +665,6 @@ namespace Avalonia.Controls
             PseudoClasses.Set(":editing", IsEditing);
             if (RootElement != null && OwningGrid != null && IsVisible)
             {
-                //Debug.Assert(Index != -1);
-                //byte idealStateMappingIndex = 0;
-                //if (IsSelected || IsEditing)
-                //{
-                //    idealStateMappingIndex += 8;
-                //}
-                //if (IsEditing)
-                //{
-                //    idealStateMappingIndex += 4;
-                //}
-                //if (IsMouseOver)
-                //{
-                //    idealStateMappingIndex += 2;
-                //}
-                //if (OwningGrid.ContainsFocus)
-                //{
-                //    idealStateMappingIndex += 1;
-                //}
-
-                //byte stateCode = _idealStateMapping[idealStateMappingIndex];
-                //Debug.Assert(stateCode != DATAGRIDROW_stateNullCode);
-
-                //string storyboardName;
-                //string legacyStoryboardName;
-                //while (stateCode != DATAGRIDROW_stateNullCode)
-                //{
-                //    if (stateCode == DATAGRIDROW_stateNormalCode)
-                //    {
-                //        if (Index % 2 == 1)
-                //        {
-                //            storyboardName = DATAGRIDROW_stateAlternate;
-                //            legacyStoryboardName = DATAGRIDROW_stateAlternateLegacy;
-                //        }
-                //        else
-                //        {
-                //            storyboardName = DATAGRIDROW_stateNormal;
-                //            legacyStoryboardName = DATAGRIDROW_stateNormal;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        storyboardName = _stateNames[stateCode];
-                //        legacyStoryboardName = _legacyStateNames[stateCode];
-                //    }
-                //    if (VisualStateManager.GoToState(this, storyboardName, animate) || VisualStateManager.GoToState(this, legacyStoryboardName, animate))
-                //    {
-                //        break;
-                //    }
-                //    else
-                //    {
-                //        // The state wasn't implemented so fall back to the next one
-                //        stateCode = _fallbackStateMapping[stateCode];
-                //    }
-                //}
-
-                //if (IsValid)
-                //{
-                //    VisualStates.GoToState(this, animate, VisualStates.StateValid);
-                //}
-                //else
-                //{
-                //    VisualStates.GoToState(this, animate, VisualStates.StateInvalid, VisualStates.StateValid);
-                //}
-
                 ApplyHeaderStatus();
             } 
         }
@@ -764,8 +692,6 @@ namespace Avalonia.Controls
                     _detailsElement.ClearValue(DataGridDetailsPresenter.ContentHeightProperty);
                 }
             }
-
-            //StopDetailsAnimation();
 
             Slot = -1;
         }
@@ -848,16 +774,6 @@ namespace Avalonia.Controls
             if (_headerElement != null && OwningGrid != null)
             {
                 _headerElement.IsVisible = OwningGrid.AreRowHeadersVisible;
-
-                //if (OwningGrid.AreRowHeadersVisible)
-                //{
-                //    _headerElement.EnsureStyle(previousStyle);
-                //    _headerElement.Visibility = Visibility.Visible;
-                //}
-                //else
-                //{
-                //    _headerElement.Visibility = Visibility.Collapsed;
-                //}
             }
         }
 
@@ -960,31 +876,6 @@ namespace Avalonia.Controls
             }
         }
         
-        /*private Storyboard DetailsVisibleStoryboard
-        {
-            get
-            {
-                if (_detailsVisibleStoryboard == null && RootElement != null)
-                {
-                    _detailsVisibleStoryboard = RootElement.Resources[DATAGRIDROW_detailsVisibleTransition] as Storyboard;
-                    if (_detailsVisibleStoryboard != null)
-                    {
-                        _detailsVisibleStoryboard.Completed += new EventHandler(DetailsVisibleStoryboard_Completed);
-                        if (_detailsVisibleStoryboard.Children.Count > 0)
-                        {
-                            // If the user set a To value for the animation, we want to respect
-                            _detailsHeightAnimation = _detailsVisibleStoryboard.Children[0] as DoubleAnimation;
-                            if (_detailsHeightAnimation != null)
-                            {
-                                _detailsHeightAnimationToOverride = _detailsHeightAnimation.To;
-                            }
-                        }
-                    }
-                }
-                return _detailsVisibleStoryboard;
-            }
-        } */
-
         private void UnloadDetailsTemplate(bool recycle)
         {
             if (_detailsElement != null)
@@ -1021,15 +912,6 @@ namespace Avalonia.Controls
             SetValueNoCallback(AreDetailsVisibleProperty, false);
         }
 
-        /*private void StopDetailsAnimation()
-        {
-            if (DetailsVisibleStoryboard != null)
-            {
-                DetailsVisibleStoryboard.Stop();
-                _animatingDetails = false;
-            }
-        } */
-
         //TODO Animation
         internal void EnsureDetailsContentHeight()
         {
@@ -1042,7 +924,7 @@ namespace Avalonia.Controls
                 && Slot != -1)
             {
                 _detailsDesiredHeight = _detailsContent.Bounds.Height;
-                //if (!_animatingDetails)
+
                 if (true)
                 {
                     _detailsElement.ContentHeight = _detailsDesiredHeight;
@@ -1087,22 +969,12 @@ namespace Avalonia.Controls
                         // Update the new desired height for RowDetails
                         _detailsDesiredHeight = newValue.Height;
 
-                        //if (DetailsVisibleStoryboard != null)
-                        //{
-                        //    DetailsVisibleStoryboard.SkipToFill();
-                        //    StopDetailsAnimation();
-                        //}
-
                         _detailsElement.ContentHeight = newValue.Height;
 
                         // Calling this when details are not visible invalidates during layout when we have no work 
                         // to do.  In certain scenarios, this could cause a layout cycle
                         OnRowDetailsChanged();
                     }
-                    //else if(_detailsContent != null)
-                    //{
-                    //    _detailsDesiredHeight = _detailsContent.DesiredSize.Height;
-                    //}
                 }
             }
             else
@@ -1110,23 +982,6 @@ namespace Avalonia.Controls
                 _previousDetailsHeight = newValue.Height;
             }
         }
-
-        /*private void DetailsVisibleStoryboard_Completed(object sender, EventArgs e)
-        {
-            _animatingDetails = false;
-            if (OwningGrid != null && (Slot != -1) && OwningGrid.IsSlotVisible(Slot))
-            {
-                if (AreDetailsVisible)
-                {
-                    Debug.Assert(!double.IsNaN(_detailsDesiredHeight));
-                    Debug.Assert(_detailsContent != null);
-
-                    // The height of the DetailsContents may have changed while we were animating its height
-                    _detailsElement.ContentHeight = _detailsDesiredHeight;
-                }
-                OwningGrid.OnRowDetailsChanged();
-            }
-        } */
 
         //TODO Animation
         // Sets AreDetailsVisible on the row and animates if necessary
@@ -1149,8 +1004,6 @@ namespace Avalonia.Controls
                 _appliedDetailsVisibility = isVisible;
                 SetValueNoCallback(AreDetailsVisibleProperty, isVisible);
 
-                //StopDetailsAnimation();
-
                 // Applies a new DetailsTemplate only if it has changed either here or at the DataGrid level
                 ApplyDetailsTemplate(initializeDetailsPreferredHeight: true);
 
@@ -1164,42 +1017,17 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                if(false)
-                { }
-                //if (animate && DetailsVisibleStoryboard != null && _detailsHeightAnimation != null)
-                //{
-                //    if (AreDetailsVisible)
-                //    {
-                //        // Expand
-                //        _detailsHeightAnimation.From = 0.0;
-                //        _detailsHeightAnimation.To = _detailsHeightAnimationToOverride.HasValue ?
-                //            _detailsHeightAnimationToOverride.Value :
-                //            _detailsDesiredHeight;
-                //        _checkDetailsContentHeight = true;
-                //    }
-                //    else
-                //    {
-                //        // Collapse
-                //        _detailsHeightAnimation.From = _detailsElement.ActualHeight;
-                //        _detailsHeightAnimation.To = 0.0;
-                //    }
-                //    _animatingDetails = true;
-                //    DetailsVisibleStoryboard.Begin();
-                //}
+                if (AreDetailsVisible)
+                {
+                    // Set the details height directly
+                    _detailsElement.ContentHeight = _detailsDesiredHeight;
+                    _checkDetailsContentHeight = true;
+                }
                 else
                 {
-                    if (AreDetailsVisible)
-                    {
-                        // Set the details height directly
-                        _detailsElement.ContentHeight = _detailsDesiredHeight;
-                        _checkDetailsContentHeight = true;
-                    }
-                    else
-                    {
-                        _detailsElement.ContentHeight = 0;
-                    }
+                    _detailsElement.ContentHeight = 0;
                 }
-
+                
                 OnRowDetailsChanged();
 
                 if (raiseNotification)
@@ -1258,146 +1086,15 @@ namespace Avalonia.Controls
                     _detailsElement.ContentHeight = _detailsDesiredHeight;
                 }
             }
-        } 
-
-
-
+        }
         #endregion
-
     }
 
-    /*
-    [TemplatePart(Name = DATAGRIDROW_elementBottomGridLine, Type = typeof(Rectangle))]
-    [TemplatePart(Name = DATAGRIDROW_elementCells, Type = typeof(DataGridCellsPresenter))]
-    [TemplatePart(Name = DATAGRIDROW_elementDetails, Type = typeof(DataGridDetailsPresenter))]
-    [TemplatePart(Name = DATAGRIDROW_elementRoot, Type = typeof(Panel))]
-    [TemplatePart(Name = DATAGRIDROW_elementRowHeader, Type = typeof(DataGridRowHeader))]
-
-    [TemplateVisualState(Name = DATAGRIDROW_stateNormal, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateAlternate, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateNormalEditing, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateNormalEditingFocused, GroupName = VisualStates.GroupCommon)]
-
-    [TemplateVisualState(Name = DATAGRIDROW_stateSelected, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateSelectedFocused, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateMouseOver, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateMouseOverEditing, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateMouseOverEditingFocused, GroupName = VisualStates.GroupCommon)]
-
-    [TemplateVisualState(Name = DATAGRIDROW_stateMouseOverSelected, GroupName = VisualStates.GroupCommon)]
-    [TemplateVisualState(Name = DATAGRIDROW_stateMouseOverSelectedFocused, GroupName = VisualStates.GroupCommon)]
-
-    [TemplateVisualState(Name = VisualStates.StateInvalid, GroupName = VisualStates.GroupValidation)]
-    [TemplateVisualState(Name = VisualStates.StateValid, GroupName = VisualStates.GroupValidation)]
-    [StyleTypedProperty(Property = "HeaderStyle", StyleTargetType = typeof(DataGridRowHeader))]
-    public partial class DataGridRow : Control
-    */
     #region Constants
-
-    /*
-
-    private const string DATAGRIDROW_detailsVisibleTransition = "DetailsVisibleTransition";
-
-
-    private const string DATAGRIDROW_stateAlternate = "NormalAlternatingRow";
-    private const string DATAGRIDROW_stateAlternateLegacy = "Normal AlternatingRow";
-    private const string DATAGRIDROW_stateMouseOver = "MouseOver";
-    private const string DATAGRIDROW_stateMouseOverEditing = "MouseOverUnfocusedEditing";
-    private const string DATAGRIDROW_stateMouseOverEditingLegacy = "MouseOver Unfocused Editing";
-    private const string DATAGRIDROW_stateMouseOverEditingFocused = "MouseOverEditing";
-    private const string DATAGRIDROW_stateMouseOverEditingFocusedLegacy = "MouseOver Editing";
-    private const string DATAGRIDROW_stateMouseOverSelected = "MouseOverUnfocusedSelected";
-    private const string DATAGRIDROW_stateMouseOverSelectedLegacy = "MouseOver Unfocused Selected";
-    private const string DATAGRIDROW_stateMouseOverSelectedFocused = "MouseOverSelected";
-    private const string DATAGRIDROW_stateMouseOverSelectedFocusedLegacy = "MouseOver Selected";
-    private const string DATAGRIDROW_stateNormal = "Normal";
-    private const string DATAGRIDROW_stateNormalEditing = "UnfocusedEditing";
-    private const string DATAGRIDROW_stateNormalEditingLegacy = "Unfocused Editing";
-    private const string DATAGRIDROW_stateNormalEditingFocused = "NormalEditing";
-    private const string DATAGRIDROW_stateNormalEditingFocusedLegacy = "Normal Editing";
-    private const string DATAGRIDROW_stateSelected = "UnfocusedSelected";
-    private const string DATAGRIDROW_stateSelectedLegacy = "Unfocused Selected";
-    private const string DATAGRIDROW_stateSelectedFocused = "NormalSelected";
-    private const string DATAGRIDROW_stateSelectedFocusedLegacy = "Normal Selected";
-
-    private const byte DATAGRIDROW_stateMouseOverCode = 0;
-    private const byte DATAGRIDROW_stateMouseOverEditingCode = 1;
-    private const byte DATAGRIDROW_stateMouseOverEditingFocusedCode = 2;
-    private const byte DATAGRIDROW_stateMouseOverSelectedCode = 3;
-    private const byte DATAGRIDROW_stateMouseOverSelectedFocusedCode = 4;
-    private const byte DATAGRIDROW_stateNormalCode = 5;
-    private const byte DATAGRIDROW_stateNormalEditingCode = 6;
-    private const byte DATAGRIDROW_stateNormalEditingFocusedCode = 7;
-    private const byte DATAGRIDROW_stateSelectedCode = 8;
-    private const byte DATAGRIDROW_stateSelectedFocusedCode = 9;
-    private const byte DATAGRIDROW_stateNullCode = 255;
-    */
 
     #endregion Constants
 
     #region Data
-
-
-    // Static arrays to handle state transitions:
-    /*private static byte[] _idealStateMapping = new byte[] {
-        DATAGRIDROW_stateNormalCode,
-        DATAGRIDROW_stateNormalCode,
-        DATAGRIDROW_stateMouseOverCode,
-        DATAGRIDROW_stateMouseOverCode,
-        DATAGRIDROW_stateNullCode,
-        DATAGRIDROW_stateNullCode,
-        DATAGRIDROW_stateNullCode,
-        DATAGRIDROW_stateNullCode,
-        DATAGRIDROW_stateSelectedCode,
-        DATAGRIDROW_stateSelectedFocusedCode,
-        DATAGRIDROW_stateMouseOverSelectedCode,
-        DATAGRIDROW_stateMouseOverSelectedFocusedCode,
-        DATAGRIDROW_stateNormalEditingCode,
-        DATAGRIDROW_stateNormalEditingFocusedCode,
-        DATAGRIDROW_stateMouseOverEditingCode,
-        DATAGRIDROW_stateMouseOverEditingFocusedCode
-    }; */
-
-    /*private static byte[] _fallbackStateMapping = new byte[] {
-        DATAGRIDROW_stateNormalCode, //DATAGRIDROW_stateMouseOverCode's fallback
-        DATAGRIDROW_stateMouseOverEditingFocusedCode, //DATAGRIDROW_stateMouseOverEditingCode's fallback
-        DATAGRIDROW_stateNormalEditingFocusedCode, //DATAGRIDROW_stateMouseOverEditingFocusedCode's fallback
-        DATAGRIDROW_stateMouseOverSelectedFocusedCode, //DATAGRIDROW_stateMouseOverSelectedCode's fallback
-        DATAGRIDROW_stateSelectedFocusedCode, //DATAGRIDROW_stateMouseOverSelectedFocusedCode's fallback
-        DATAGRIDROW_stateNullCode, //DATAGRIDROW_stateNormalCode's fallback
-        DATAGRIDROW_stateNormalEditingFocusedCode, //DATAGRIDROW_stateNormalEditingCode's fallback
-        DATAGRIDROW_stateSelectedFocusedCode, //DATAGRIDROW_stateNormalEditingFocusedCode's fallback
-        DATAGRIDROW_stateSelectedFocusedCode, //DATAGRIDROW_stateSelectedCode's fallback
-        DATAGRIDROW_stateNormalCode //DATAGRIDROW_stateSelectedFocusedCode's fallback
-    }; */
-
-    // In SL 2, our state names had spaces.  Going forward, we are removing the spaces but still 
-    // supporting the legacy state names
-    /*private static string[] _legacyStateNames = new string[] {
-        DATAGRIDROW_stateMouseOver,
-        DATAGRIDROW_stateMouseOverEditingLegacy,
-        DATAGRIDROW_stateMouseOverEditingFocusedLegacy,
-        DATAGRIDROW_stateMouseOverSelectedLegacy,
-        DATAGRIDROW_stateMouseOverSelectedFocusedLegacy,
-        DATAGRIDROW_stateNormal,
-        DATAGRIDROW_stateNormalEditingLegacy,
-        DATAGRIDROW_stateNormalEditingFocusedLegacy,
-        DATAGRIDROW_stateSelectedLegacy,
-        DATAGRIDROW_stateSelectedFocusedLegacy
-    }; */
-
-    /*private static string[] _stateNames = new string[] {
-        DATAGRIDROW_stateMouseOver,
-        DATAGRIDROW_stateMouseOverEditing,
-        DATAGRIDROW_stateMouseOverEditingFocused,
-        DATAGRIDROW_stateMouseOverSelected,
-        DATAGRIDROW_stateMouseOverSelectedFocused,
-        DATAGRIDROW_stateNormal,
-        DATAGRIDROW_stateNormalEditing,
-        DATAGRIDROW_stateNormalEditingFocused,
-        DATAGRIDROW_stateSelected,
-        DATAGRIDROW_stateSelectedFocused
-    }; */
 
     #endregion Data
 
@@ -1405,45 +1102,5 @@ namespace Avalonia.Controls
 
     //TODO Styles
 
-    /// <summary>
-    /// Gets or sets the style that is used when rendering the row header.
-    /// </summary>
-    /*public Style HeaderStyle
-    {
-        get { return GetValue(HeaderStyleProperty) as Style; }
-        set { SetValue(HeaderStyleProperty, value); }
-    } */
-
-    /// <summary>
-    /// Identifies the <see cref="P:Avalonia.Controls.DataGridRow.HeaderStyle" /> dependency property.
-    /// </summary>
-    /*public static readonly DependencyProperty HeaderStyleProperty =
-        DependencyProperty.Register(
-            "HeaderStyle",
-            typeof(Style),
-            typeof(DataGridRow),
-            new PropertyMetadata(OnHeaderStylePropertyChanged));
-
-    /*private static void OnHeaderStylePropertyChanged(AvaloniaObject d, DependencyPropertyChangedEventArgs e)
-    {
-        DataGridRow row = d as DataGridRow;
-        if (row != null && row._headerElement != null)
-        {
-            row._headerElement.EnsureStyle(e.OldValue as Style);
-        }
-    } */
     #endregion HeaderStyle
-
-
-
-    /// <summary>
-    /// Creates AutomationPeer (<see cref="UIElement.OnCreateAutomationPeer"/>)
-    /// </summary>
-    /*protected override AutomationPeer OnCreateAutomationPeer()
-    {
-        return new DataGridRowAutomationPeer(this);
-    } */
-
-
-
 }

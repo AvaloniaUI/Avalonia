@@ -30,7 +30,6 @@ namespace Avalonia.Controls
 
         private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            //CellTemplateProperty.Changed.AddClassHandler<DataGridTemplateColumn>(x => x.OnCellTemplateChanged);
             var oldValue = (IDataTemplate)e.OldValue;
             var value = (IDataTemplate)e.NewValue;
         }

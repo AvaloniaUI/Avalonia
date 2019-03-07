@@ -11,7 +11,6 @@ namespace Avalonia.Controls
 {
     internal class DataGridFillerColumn : DataGridColumn
     {
-
         public DataGridFillerColumn(DataGrid owningGrid)
         {
             IsReadOnly = true;

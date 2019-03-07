@@ -597,6 +597,5 @@ namespace Avalonia.Controls
         }
 
         #endregion Private Methods
-        
     }
 }

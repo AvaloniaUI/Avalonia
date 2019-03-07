@@ -171,7 +171,6 @@ namespace Avalonia.Controls
 
         #endregion Properties
     }
-    
 
     /// <summary>
     /// Provides information after the cell has been pressed.
@@ -216,7 +215,6 @@ namespace Avalonia.Controls
         /// </summary> 
         public PointerPressedEventArgs PointerPressedEventArgs { get; }
     }
-
 
     /// <summary>
     /// Provides information just before a cell exits editing mode.
@@ -522,7 +520,6 @@ namespace Avalonia.Controls
 
         #endregion
     }
-
 
     /// <summary>
     /// EventArgs used for the DataGrid's LoadingRowGroup and UnloadingRowGroup events
