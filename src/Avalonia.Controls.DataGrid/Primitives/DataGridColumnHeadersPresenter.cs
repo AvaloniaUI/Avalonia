@@ -13,7 +13,6 @@ namespace Avalonia.Controls.Primitives
     /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" /> to specify the 
     /// location in the control's visual tree where the column headers are to be added.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public sealed class DataGridColumnHeadersPresenter : Panel
     {
         private Control _dragIndicator;

@@ -22,7 +22,6 @@ namespace Avalonia.Collections
     /// Event argument used for page index change notifications. The requested page move
     /// can be canceled by setting e.Cancel to True.
     /// </summary>
-    /// <QualityBand>Preview</QualityBand>
     public sealed class PageChangingEventArgs : CancelEventArgs
     {
         /// <summary>

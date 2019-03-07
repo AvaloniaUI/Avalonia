@@ -379,7 +379,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Provides information just before a row exits editing mode.
     /// </summary>
-    /// <QualityBand>Preview</QualityBand>
     public class DataGridRowEditEndingEventArgs : CancelEventArgs
     {
         /// <summary>
@@ -415,7 +414,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Provides information just after a row has exited edit mode.
     /// </summary>
-    /// <QualityBand>Preview</QualityBand>
     public class DataGridRowEditEndedEventArgs : EventArgs
     {
         /// <summary>
@@ -512,7 +510,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// EventArgs used for the DataGrid's LoadingRowGroup and UnloadingRowGroup events
     /// </summary>
-    /// <QualityBand>Preview</QualityBand>
     public class DataGridRowGroupHeaderEventArgs : EventArgs
     {
         /// <summary>
@@ -538,7 +535,6 @@ namespace Avalonia.Controls
     /// Provides data for the <see cref="E:Avalonia.Controls.DataGrid.LoadingRowDetails" />, <see cref="E:Avalonia.Controls.DataGrid.UnloadingRowDetails" />, 
     /// and <see cref="E:Avalonia.Controls.DataGrid.RowDetailsVisibilityChanged" /> events.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public class DataGridRowDetailsEventArgs : EventArgs
     {
         /// <summary>

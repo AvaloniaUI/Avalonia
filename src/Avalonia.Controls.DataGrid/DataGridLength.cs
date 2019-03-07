@@ -348,7 +348,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// DataGridLengthConverter - Converter class for converting instances of other types to and from DataGridLength instances.
     /// </summary> 
-    /// <QualityBand>Mature</QualityBand>
     public class DataGridLengthConverter : TypeConverter
     {
         private static string _starSuffix = "*";

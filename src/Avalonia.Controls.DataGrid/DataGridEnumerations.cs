@@ -10,7 +10,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Used to specify action to take out of edit mode.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public enum DataGridEditAction
     {
         /// <summary>
@@ -35,7 +34,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Determines whether the inner cells' vertical/horizontal gridlines are shown or not.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     [Flags]
     public enum DataGridGridLinesVisibility
     {
@@ -45,7 +43,6 @@ namespace Avalonia.Controls
         All = 3,
     }
 
-    /// <QualityBand>Mature</QualityBand>
     public enum DataGridEditingUnit
     {
         Cell = 0,
@@ -55,7 +52,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Determines whether the row/column headers are shown or not.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     [Flags]
     public enum DataGridHeadersVisibility
     {
@@ -102,7 +98,6 @@ namespace Avalonia.Controls
     /// <summary>
     /// Determines the selection model
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public enum DataGridSelectionMode
     {
         Extended = 0,
