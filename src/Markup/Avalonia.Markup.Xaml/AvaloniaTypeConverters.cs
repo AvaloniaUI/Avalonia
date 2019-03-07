@@ -11,6 +11,7 @@ using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml
 {
+    using System.Reflection;
     using Avalonia.Media;
 
     /// <summary>
@@ -41,7 +42,8 @@ namespace Avalonia.Markup.Xaml
             { typeof(WindowIcon), typeof(IconTypeConverter) },
             { typeof(CultureInfo), typeof(CultureInfoConverter) },
             { typeof(Uri), typeof(AvaloniaUriTypeConverter) },
-            { typeof(FontFamily), typeof(FontFamilyTypeConverter) }
+            { typeof(FontFamily), typeof(FontFamilyTypeConverter) },
+            { typeof(EventInfo), typeof(AvaloniaEventConverter) },
         };
 
         internal static Type GetBuiltinTypeConverter(Type type)

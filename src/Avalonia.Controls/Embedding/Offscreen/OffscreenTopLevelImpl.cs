@@ -11,11 +11,13 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
+
         public IInputRoot InputRoot { get; private set; }
+        public bool IsDisposed { get; private set; }
 
         public virtual void Dispose()
         {
-            //No-op
+            IsDisposed = true;
         }
 
         public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);

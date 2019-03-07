@@ -15,6 +15,13 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Parses_Comma_Separated_Selectors()
+        {
+            var target = new SelectorParser((ns, type) => typeof(TextBlock));
+            var result = target.Parse("TextBlock, TextBlock:foo");
+        }
+
+        [Fact]
         public void Throws_If_OfType_Type_Not_Found()
         {
             var target = new SelectorParser((ns, type) => null);

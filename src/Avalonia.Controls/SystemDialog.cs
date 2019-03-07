@@ -27,7 +27,7 @@ namespace Avalonia.Controls
                 throw new ArgumentNullException(nameof(parent));
             return ((await AvaloniaLocator.Current.GetService<ISystemDialogImpl>()
                  .ShowFileDialogAsync(this, parent?.PlatformImpl)) ??
-             new string[0]).FirstOrDefault();
+             Array.Empty<string>()).FirstOrDefault();
         }
     }
 

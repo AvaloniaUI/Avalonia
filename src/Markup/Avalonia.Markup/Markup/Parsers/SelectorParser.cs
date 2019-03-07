@@ -43,6 +43,7 @@ namespace Avalonia.Markup.Parsers
         private Selector Create(IEnumerable<SelectorGrammar.ISyntax> syntax)
         {
             var result = default(Selector);
+            var results = default(List<Selector>);
 
             foreach (var i in syntax)
             {
@@ -106,9 +107,28 @@ namespace Avalonia.Markup.Parsers
                     case SelectorGrammar.NotSyntax not:
                         result = result.Not(x => Create(not.Argument));
                         break;
+                    case SelectorGrammar.CommaSyntax comma:
+                        if (results == null)
+                        {
+                            results = new List<Selector>();
+                        }
+
+                        results.Add(result);
+                        result = null;
+                        break;
                     default:
                         throw new NotSupportedException($"Unsupported selector grammar '{i.GetType()}'.");
                 }
+            }
+
+            if (results != null)
+            {
+                if (result != null)
+                {
+                    results.Add(result);
+                }
+
+                result = results.Count > 1 ? Selectors.Or(results) : results[0];
             }
 
             return result;

@@ -262,6 +262,22 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void OfType_Comma_Is_Class()
+        {
+            var result = SelectorGrammar.Parse("TextBlock, :is(Button).foo");
+
+            Assert.Equal(
+                new SelectorGrammar.ISyntax[]
+                {
+                    new SelectorGrammar.OfTypeSyntax { TypeName = "TextBlock" },
+                    new SelectorGrammar.CommaSyntax(),
+                    new SelectorGrammar.IsSyntax { TypeName = "Button" },
+                    new SelectorGrammar.ClassSyntax { Class = "foo" },
+                },
+                result);
+        }
+
+        [Fact]
         public void Namespace_Alone_Fails()
         {
             Assert.Throws<ExpressionParseException>(() => SelectorGrammar.Parse("ns|"));
