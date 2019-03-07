@@ -18,7 +18,6 @@ namespace Avalonia.Controls
 {
     public partial class DataGrid
     {
-        #region Internal Properties
 
         internal bool AreRowBottomGridLinesRequired
         {
@@ -59,10 +58,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Internal Properties
-
-        #region Private Properties
-        
         // Cumulated height of all known rows, including the gridlines and details section.
         // This property returns an approximation of the actual total row heights and also
         // updates the RowHeightEstimate
@@ -127,10 +122,6 @@ namespace Avalonia.Controls
                 return totalRowsHeight + totalDetailsHeight;
             }
         }
-
-        #endregion Private Properties
-        
-        #region Internal Methods
 
         /// <summary>
         /// Clears the entire selection. Displayed rows are deselected explicitly to visualize
@@ -602,10 +593,6 @@ namespace Avalonia.Controls
             return rowIndex + RowGroupHeadersTable.GetIndexCountBeforeGap(0, rowIndex);
         }
 
-        #endregion Internal Methods
-
-        #region Private Methods
-
         private void AddSlotElement(int slot, Control element)
         {
 #if DEBUG
@@ -693,7 +680,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         private void ClearRows(bool recycle)
         {
             // Need to clean up recycled rows even if the RowCount is 0
@@ -2177,8 +2164,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Methods
-
         private void CollectionViewGroup_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             // If we receive this event when the number of GroupDescriptions is different than what we have already
@@ -2779,7 +2764,7 @@ namespace Avalonia.Controls
             groupHeader.UpdateTitleElements();
 
             OnLoadingRowGroup(new DataGridRowGroupHeaderEventArgs(groupHeader));
- 
+
             return groupHeader;
         }
 
@@ -2803,7 +2788,6 @@ namespace Avalonia.Controls
             }
             return null;
         }
-
 
         internal void OnRowGroupHeaderToggled(DataGridRowGroupHeader groupHeader, bool newIsVisibile, bool setCurrent)
         {
@@ -2919,8 +2903,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #region Details
-
         // Returns the number of rows with details visible between lowerBound and upperBound exclusive.
         // As of now, the caller needs to account for Collapsed slots.  This method assumes everything
         // is visible
@@ -3027,8 +3009,6 @@ namespace Avalonia.Controls
         {
             RowDetailsVisibilityChanged?.Invoke(this, e);
         }
-
-        #endregion
 
 #if DEBUG
         internal void PrintRowGroupInfo()

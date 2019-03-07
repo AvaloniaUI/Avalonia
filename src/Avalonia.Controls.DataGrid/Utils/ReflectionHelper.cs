@@ -149,7 +149,6 @@ namespace Avalonia.Controls.Utils
             return enumerableType;
         }
 
-
         /// <summary>
         /// Retrieves the value and type of a property. That property can be nested and its path
         /// can include indexers. Each element of the path needs to be a public instance property.

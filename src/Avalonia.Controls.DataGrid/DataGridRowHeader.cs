@@ -17,13 +17,7 @@ namespace Avalonia.Controls.Primitives
         private const string DATAGRIDROWHEADER_elementRootName = "Root";
         private const double DATAGRIDROWHEADER_separatorThickness = 1;
 
-        #region Data
-
         private Control _rootElement;
-
-        #endregion Data
-
-        #region Dependency Properties
 
         public static readonly StyledProperty<IBrush> SeparatorBrushProperty =
             AvaloniaProperty.Register<DataGridRowHeader, IBrush>(nameof(SeparatorBrush));
@@ -47,8 +41,6 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(AreSeparatorsVisibleProperty, value); }
         }
 
-        #endregion
-
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridRowHeader" /> class. 
         /// </summary>
@@ -56,8 +48,6 @@ namespace Avalonia.Controls.Primitives
         {
             AddHandler(PointerPressedEvent, DataGridRowHeader_PointerPressed, handledEventsToo: true);
         }
-
-        #region Properties
 
         internal Control Owner
         {
@@ -101,10 +91,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        #endregion
-        
-        #region Protected Methods
-
         /// <summary>
         /// Builds the visual tree for the row header when a new template is applied. 
         /// </summary>
@@ -147,22 +133,14 @@ namespace Avalonia.Controls.Primitives
             return measuredSize;
         }
 
-        #endregion Protected Methods
-
-        #region Internal Methods
-
         //TODO Implement
         internal void ApplyOwnerStatus()
         {
             if (_rootElement != null && Owner != null && Owner.IsVisible)
             {
-                
+
             }
         }
-
-        #endregion Internal Methods
-
-        #region Private Methods
 
         protected override void OnPointerEnter(PointerEventArgs e)
         {
@@ -208,16 +186,7 @@ namespace Avalonia.Controls.Primitives
             }
         } 
 
-        #endregion Private Methods
-
     }
 
-    #region Styles
-
-    #endregion
-    
-    #region Constants
-   
-    #endregion Constants
 }
 

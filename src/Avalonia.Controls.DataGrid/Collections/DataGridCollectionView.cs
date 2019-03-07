@@ -51,23 +51,17 @@ namespace Avalonia.Collections
         /// <returns>A custom view for specialized sorting, filtering, grouping, and currency.</returns>
         IDataGridCollectionView CreateView();
     }
-    
+
     /// <summary>
     /// PagedCollectionView view over an IEnumerable.
     /// </summary>
     public sealed class CollectionViewBase : IDataGridCollectionView, IDataGridEditableCollectionView, INotifyPropertyChanged //IPagedCollectionView, 
     {
-        #region Static Fields and Constants
-
         /// <summary>
         /// Since there's nothing in the un-cancelable event args that is mutable,
         /// just create one instance to be used universally.
         /// </summary>
         private static readonly DataGridCurrentChangingEventArgs uncancelableCurrentChangingEventArgs = new DataGridCurrentChangingEventArgs(false);
-
-        #endregion Static Fields and Constants
-
-        #region Private Fields
 
         /// <summary>
         /// Value that we cache for the PageIndex if we are in a DeferRefresh,
@@ -201,10 +195,6 @@ namespace Avalonia.Collections
         /// </summary>
         private IEnumerator _trackingEnumerator;
 
-        #endregion Private Fields
-
-        #region Constructors
-
         /// <summary>
         /// Helper constructor that sets default values for isDataSorted and isDataInGroupOrder.
         /// </summary>
@@ -261,14 +251,6 @@ namespace Avalonia.Collections
             }
         }
 
-        #endregion Constructors
-
-        #region Private Delegates
-
-        #endregion Private Delegates
-
-        #region Events
-
         /// <summary>
         /// Raise this event when the (filtered) view changes
         /// </summary>
@@ -318,10 +300,6 @@ namespace Avalonia.Collections
             add { PropertyChanged += value; }
             remove { PropertyChanged -= value; }
         }
-
-        #endregion Events
-
-        #region Enumerators
 
         /// <summary>
         /// Enum for CollectionViewFlags
@@ -382,8 +360,6 @@ namespace Avalonia.Collections
             IsUpdatePageSizeDeferred = 0x200
         }
 
-        #endregion Enumerators
-
         private Type _itemType;
         private Type ItemType
         {
@@ -395,8 +371,6 @@ namespace Avalonia.Collections
                 return _itemType;
             }
         }
-
-        #region Public Properties
 
         /// <summary>
         /// Gets a value indicating whether the view supports AddNew.
@@ -804,7 +778,6 @@ namespace Avalonia.Collections
         {
             get { return CheckFlag(CollectionViewFlags.NeedsRefresh); }
         }
-        
 
         /// <summary>
         /// Gets the current page we are on. (zero based)
@@ -996,10 +969,6 @@ namespace Avalonia.Collections
             }
         }
 
-        #endregion Public Properties 
-
-        #region Private Properties
-
         /// <summary>
         /// Gets a value indicating whether we have a valid ItemConstructor of the correct type
         /// </summary>
@@ -1175,10 +1144,6 @@ namespace Avalonia.Collections
             get { return SortDescriptions.Count > 0 || Filter != null || _pageSize > 0 || GroupDescriptions.Count > 0; }
         }
 
-        #endregion Private Properties 
-
-        #region Indexers
-
         /// <summary>
         /// Return the item at the specified index
         /// </summary>
@@ -1188,10 +1153,6 @@ namespace Avalonia.Collections
         {
             get { return GetItemAt(index); }
         }
-
-        #endregion Indexers 
-
-        #region Public Methods
 
         /// <summary>
         /// Add a new item to the underlying collection.  Returns the new item.
@@ -2493,10 +2454,6 @@ namespace Avalonia.Collections
             }
         }
 
-        #endregion Public Methods
-
-        #region Static Methods
-
         /// <summary>
         /// Helper for SortList to handle nested properties (e.g. Address.Street)
         /// </summary>
@@ -2513,10 +2470,6 @@ namespace Avalonia.Collections
             }
             return propertyValue;
         }
-
-        #endregion Static Methods
-
-        #region Private Methods
 
         /// <summary>
         /// Fix up CurrentPosition and CurrentItem after a collection change
@@ -3983,7 +3936,6 @@ namespace Avalonia.Collections
             IComparer<object> comparer = new CultureSensitiveComparer(Culture);
             var itemType = ItemType;
 
-
             foreach (DataGridSortDescription sort in SortDescriptions)
             {
                 sort.Initialize(itemType); 
@@ -4016,10 +3968,6 @@ namespace Avalonia.Collections
             }
         }
 
-        #endregion Private Methods
-
-        #region Private Classes
-
         /// <summary>
         /// Creates a comparer class that takes in a CultureInfo as a parameter,
         /// which it will use when comparing strings.
@@ -4041,8 +3989,6 @@ namespace Avalonia.Collections
             {
                 _culture = culture ?? CultureInfo.InvariantCulture;
             }
-
-            #region IComparer<object> Members
 
             /// <summary>
             /// Compares two objects and returns a value indicating whether one is less than, equal to or greater than the other.
@@ -4078,8 +4024,6 @@ namespace Avalonia.Collections
                     return Comparer<object>.Default.Compare(x, y);
                 }
             }
-
-            #endregion
         }
 
         /// <summary>
@@ -4367,8 +4311,6 @@ namespace Avalonia.Collections
 
                 return min;
             }
-        }
-        
-        #endregion Private Classes
+        }       
     }
 }

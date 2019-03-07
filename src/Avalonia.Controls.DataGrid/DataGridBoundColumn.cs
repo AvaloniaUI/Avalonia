@@ -1,7 +1,7 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
-// All other rights reserved.
+// All other rights reserved. 
 
 using Avalonia.Data;
 using Avalonia.Utilities;
@@ -10,7 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using Avalonia.Reactive;
 using System.Diagnostics;
-using Avalonia.Controls.Utils;
+using Avalonia.Controls.Utils; 
 
 namespace Avalonia.Controls
 {
@@ -20,8 +20,8 @@ namespace Avalonia.Controls
     /// </summary>
     public abstract class DataGridBoundColumn : DataGridColumn
     {
-        private IBinding _binding;
-        
+        private IBinding _binding; 
+
         /// <summary>
         /// Gets or sets the binding that associates the column with a property in the data source.
         /// </summary>
@@ -40,10 +40,9 @@ namespace Avalonia.Controls
                     {
                         // Edited value couldn't be committed, so we force a CancelEdit
                         OwningGrid.CancelEdit(DataGridEditingUnit.Row, raiseEvents: false);
-                    }
+                    } 
 
-                    _binding = value;
-
+                    _binding = value; 
 
                     if (_binding != null)
                     {
@@ -53,25 +52,25 @@ namespace Avalonia.Controls
                             if (!String.IsNullOrEmpty(binding.Path))
                             {
                                 binding.Mode = BindingMode.TwoWay;
-                            }
+                            } 
 
                             if (binding.Converter == null)
                             {
                                 binding.Converter = DataGridValueConverter.Instance;
                             }
-                        } 
+                        }  
 
                         // Apply the new Binding to existing rows in the DataGrid
                         if (OwningGrid != null)
                         {
                             OwningGrid.OnColumnBindingChanged(this);
                         }
-                    }
+                    } 
 
                     RemoveEditingElement();
                 }
             }
-        }
+        } 
 
         /// <summary>
         /// The binding that will be used to get or set cell content for the clipboard.
@@ -87,47 +86,47 @@ namespace Avalonia.Controls
             {
                 base.ClipboardContentBinding = value;
             }
-        }
+        } 
 
         //TODO Rename
         //TODO Validation
         protected sealed override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding editBinding)
         {
             IControl element = GenerateEditingElementDirect(cell, dataItem);
-            editBinding = null;
+            editBinding = null; 
 
             if (Binding != null)
             {
                 editBinding = BindEditingElement(element, BindingTarget, Binding);
-            }
+            } 
 
             return element;
-        }
+        } 
 
         private static ICellEditBinding BindEditingElement(IAvaloniaObject target, AvaloniaProperty property, IBinding binding)
         {
-            var result = binding.Initiate(target, property, enableDataValidation: true);
+            var result = binding.Initiate(target, property, enableDataValidation: true); 
 
             if (result != null)
             {
                 if(result.Subject != null)
                 {
                     var bindingHelper = new CellEditBinding(result.Subject);
-                    var instanceBinding = new InstancedBinding(bindingHelper.InternalSubject, result.Mode, result.Priority);
+                    var instanceBinding = new InstancedBinding(bindingHelper.InternalSubject, result.Mode, result.Priority); 
 
                     BindingOperations.Apply(target, property, instanceBinding, null);
                     return bindingHelper;
-                }
+                } 
 
                 BindingOperations.Apply(target, property, result, null);
-            }
+            } 
 
             return null;
-        }
+        } 
 
-        protected abstract IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem);
+        protected abstract IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
 
-        internal AvaloniaProperty BindingTarget { get; set; }
+        internal AvaloniaProperty BindingTarget { get; set; } 
 
         internal void SetHeaderFromBinding()
         {
@@ -142,13 +141,5 @@ namespace Avalonia.Controls
                 }
             }
         }
-    }
-
-    #region Binding
-
-    #endregion
-    
-    #region Styles
-
-    #endregion
+    } 
 }

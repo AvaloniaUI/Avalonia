@@ -251,7 +251,6 @@ namespace Avalonia.Controls
             return GetScrollingElements(element => element is DataGridRow);
         }
 
-
         internal DataGridRow GetUsedRow()
         {
             if (_recyclableRows.Count > 0)

@@ -198,7 +198,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Actual visible width after Width, MinWidth, and MaxWidth setting at the Column level and DataGrid level
         /// have been taken into account
@@ -387,7 +387,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         public object Header
         {
             get
@@ -470,7 +469,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         public double MinWidth
         {
             get
@@ -506,7 +505,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         public DataGridLength Width
         {
             get
@@ -987,7 +986,7 @@ namespace Avalonia.Controls
             {
                 _editingElement = GenerateEditingElement(cell, dataItem, out _editBinding);
             }
-     
+
             return _editingElement;
         }
 
@@ -1026,7 +1025,7 @@ namespace Avalonia.Controls
 
             return null;
         }
-        
+
         internal string GetSortPropertyName()
         {
             string result = SortMemberPath;
@@ -1047,12 +1046,5 @@ namespace Avalonia.Controls
         }
 
     }
-    
-    #region Styles
 
-    #endregion
-
-    #region Binding
-
-    #endregion
 }

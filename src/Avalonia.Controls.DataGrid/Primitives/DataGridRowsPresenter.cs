@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Primitives
 
             return new Size(totalCellsWidth + headerWidth, totalHeight);
         }
-        
+
 #if DEBUG
         internal void PrintChildren()
         {

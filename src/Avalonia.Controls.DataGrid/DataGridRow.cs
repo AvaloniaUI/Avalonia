@@ -22,7 +22,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridRow : TemplatedControl
     {
-        #region Constants
 
         private const byte DATAGRIDROW_defaultMinHeight = 0;
         internal const int DATAGRIDROW_maximumHeight = 65536;
@@ -33,11 +32,6 @@ namespace Avalonia.Controls
         private const string DATAGRIDROW_elementDetails = "PART_DetailsPresenter";
         internal const string DATAGRIDROW_elementRoot = "PART_Root";
         internal const string DATAGRIDROW_elementRowHeader = "PART_RowHeader";
-
-        #endregion
-
-        #region Fields
-
 
         private DataGridCellsPresenter _cellsElement;
         private DataGridCell _fillerCell;
@@ -67,10 +61,6 @@ namespace Avalonia.Controls
 
         private bool? _appliedDetailsVisibility;
 
-        #endregion
-
-        #region Avalonia Properties
-
         /// <summary>
         /// Identifies the Header dependency property.
         /// </summary>
@@ -85,7 +75,7 @@ namespace Avalonia.Controls
             get { return GetValue(HeaderProperty); }
             set { SetValue(HeaderProperty, value); }
         }
-        
+
         public static readonly DirectProperty<DataGridRow, bool> IsValidProperty =
             AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
                 nameof(IsValid),
@@ -123,8 +113,6 @@ namespace Avalonia.Controls
             get { return GetValue(AreDetailsVisibleProperty); }
             set { SetValue(AreDetailsVisibleProperty, value); }
         }
-        
-        #endregion
 
         static DataGridRow()
         {
@@ -133,7 +121,7 @@ namespace Avalonia.Controls
             AreDetailsVisibleProperty.Changed.AddClassHandler<DataGridRow>(x => x.OnAreDetailsVisibleChanged);
             PointerPressedEvent.AddClassHandler<DataGridRow>(x => x.DataGridRow_PointerPressed, handledEventsToo: true);
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridRow" /> class. 
         /// </summary>
@@ -178,7 +166,7 @@ namespace Avalonia.Controls
         {
             var oldValue = (IDataTemplate)e.OldValue;
             var newValue = (IDataTemplate)e.NewValue;
-            
+
             if (!_areHandlersSuspended && OwningGrid != null)
             {
                 IDataTemplate actualDetailsTemplate(IDataTemplate template) => (template ?? OwningGrid.RowDetailsTemplate);
@@ -211,14 +199,12 @@ namespace Avalonia.Controls
             }
         }
 
-        #region Properties
-
         internal DataGrid OwningGrid
         {
             get;
             set;
         }
-        
+
         /// <summary>
         /// Index of the row
         /// </summary>
@@ -227,7 +213,7 @@ namespace Avalonia.Controls
             get;
             set;
         }
-        
+
         internal double ActualBottomGridLineHeight
         {
             get
@@ -303,7 +289,7 @@ namespace Avalonia.Controls
             get;
             private set;
         }
-        
+
         internal bool IsMouseOver
         {
             get
@@ -331,7 +317,7 @@ namespace Avalonia.Controls
             get;
             private set;
         }
-        
+
         internal bool IsRecyclable
         {
             get
@@ -343,7 +329,7 @@ namespace Avalonia.Controls
                 return true;
             }
         }
-        
+
         internal bool IsSelected
         {
             get
@@ -357,7 +343,7 @@ namespace Avalonia.Controls
                 return OwningGrid.GetRowSelection(Slot);
             }
         }
-        
+
         internal int? MouseOverColumnIndex
         {
             get
@@ -426,12 +412,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion
-
-        #region Methods
-
-        #region Public
-        
         /// <summary>
         /// Returns the index of the current row.
         /// </summary>
@@ -462,10 +442,6 @@ namespace Avalonia.Controls
             return row;
         }
 
-        #endregion
-
-        #region Protected
-        
         /// <summary>
         /// Arranges the content of the <see cref="T:Avalonia.Controls.DataGridRow" />.
         /// </summary>
@@ -638,10 +614,6 @@ namespace Avalonia.Controls
             base.OnPointerLeave(e);
         }
 
-        #endregion
-
-        #region Internal
-
         internal void ApplyCellsState()
         {
             foreach (DataGridCell dataGridCell in Cells)
@@ -668,7 +640,7 @@ namespace Avalonia.Controls
                 ApplyHeaderStatus();
             } 
         }
-        
+
         //TODO Animation
         internal void DetachFromDataGrid(bool recycle)
         {
@@ -802,10 +774,6 @@ namespace Avalonia.Controls
             _bottomGridLine = null;
         }
 
-        #endregion
-
-        #region Private
-        
         private void DataGridCellCollection_CellAdded(object sender, DataGridCellEventArgs e)
         {
             _cellsElement?.Children.Add(e.Cell);
@@ -815,7 +783,7 @@ namespace Avalonia.Controls
         {
             _cellsElement?.Children.Remove(e.Cell);
         }
-        
+
         private void DataGridRow_PointerPressed(PointerPressedEventArgs e)
         {
             if(e.MouseButton != MouseButton.Left)
@@ -836,13 +804,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-
-        #endregion
-
-        #endregion
-
-        #region Row Details
 
         private void OnRowDetailsChanged()
         {
@@ -875,7 +836,7 @@ namespace Avalonia.Controls
                 return OwningGrid.GetRowDetailsVisibility(Index);
             }
         }
-        
+
         private void UnloadDetailsTemplate(bool recycle)
         {
             if (_detailsElement != null)
@@ -1027,7 +988,7 @@ namespace Avalonia.Controls
                 {
                     _detailsElement.ContentHeight = 0;
                 }
-                
+
                 OnRowDetailsChanged();
 
                 if (raiseNotification)
@@ -1087,20 +1048,9 @@ namespace Avalonia.Controls
                 }
             }
         }
-        #endregion
+
     }
-
-    #region Constants
-
-    #endregion Constants
-
-    #region Data
-
-    #endregion Data
-
-    #region HeaderStyle
 
     //TODO Styles
 
-    #endregion HeaderStyle
 }

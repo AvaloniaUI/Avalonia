@@ -57,7 +57,7 @@ namespace Avalonia.Controls.Primitives
             {
                 return base.ArrangeOverride(finalSize);
             }
-            
+
             if (OwningGrid.AutoSizingColumns)
             {
                 // When we initially load an auto-column, we have to wait for all the rows to be measured

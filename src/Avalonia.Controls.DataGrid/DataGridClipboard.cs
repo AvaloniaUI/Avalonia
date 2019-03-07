@@ -36,15 +36,10 @@ namespace Avalonia.Controls
     /// </summary>
     public struct DataGridClipboardCellContent
     {
-        #region Data
 
         private DataGridColumn _column;
         private object _content;
         private object _item;
-
-        #endregion Data
-
-        #region Constructors
 
         /// <summary>
         /// Creates a new DataGridClipboardCellValue structure containing information about a DataGrid cell.
@@ -58,10 +53,6 @@ namespace Avalonia.Controls
             this._column = column;
             this._content = content;
         }
-
-        #endregion Constructors
-
-        #region Public Properties
 
         /// <summary>
         /// DataGridColumn containing the cell.
@@ -95,10 +86,6 @@ namespace Avalonia.Controls
                 return _item;
             }
         }
-
-        #endregion Public Properties
-
-        #region Public Methods
 
         /// <summary>
         /// Field-by-field comparison to avoid reflection-based ValueType.Equals.
@@ -152,7 +139,6 @@ namespace Avalonia.Controls
             return true;
         }
 
-        #endregion Public Methods
     }
 
     /// <summary>
@@ -160,15 +146,10 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridRowClipboardEventArgs : EventArgs
     {
-        #region Data
 
         private List<DataGridClipboardCellContent> _clipboardRowContent;
         private bool _isColumnHeadersRow;
         private object _item;
-
-        #endregion Data
-
-        #region Constructor
 
         /// <summary>
         /// Creates a DataGridRowClipboardEventArgs object and initializes the properties.
@@ -180,10 +161,6 @@ namespace Avalonia.Controls
             _isColumnHeadersRow = isColumnHeadersRow;
             _item = item;
         }
-
-        #endregion Constructor
-
-        #region Public Properties
 
         /// <summary>
         /// This list should be used to modify, add ot remove a cell content before it gets stored into the clipboard.
@@ -222,7 +199,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Public Properties
     }
 
 }

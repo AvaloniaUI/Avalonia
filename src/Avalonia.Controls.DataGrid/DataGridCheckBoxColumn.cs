@@ -17,14 +17,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridCheckBoxColumn : DataGridBoundColumn
     {
-        #region Data
 
         private bool _beganEditWithKeyboard;
         private bool _isThreeState;
         private CheckBox _currentCheckBox;
         private DataGrid _owningGrid;
-
-        #endregion Data
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:System.Windows.Controls.DataGridCheckBoxColumn" /> class. 
@@ -33,8 +30,6 @@ namespace Avalonia.Controls
         {
             BindingTarget = CheckBox.IsCheckedProperty;
         }
-
-        #region Public Properties
 
         /// <summary>
         /// Gets or sets a value that indicates whether the hosted <see cref="T:System.Windows.Controls.CheckBox" /> controls allow three states or two. 
@@ -57,10 +52,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        #endregion Public Properties
-
-        #region Protected Methods
 
         /// <summary>
         /// Causes the column cell being edited to revert to the specified value.
@@ -222,10 +213,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Protected Methods
-
-        #region Private Methods
-
         private void Columns_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Remove && e.OldItems.Contains(this) && _owningGrid != null)
@@ -325,6 +312,5 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Methods
     }
 }

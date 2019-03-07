@@ -26,7 +26,6 @@ namespace Avalonia.Controls
     [TypeConverter(typeof(DataGridLengthConverter))]
     public struct DataGridLength : IEquatable<DataGridLength>
     {
-        #region Data
 
         private double _desiredValue;   //  desired value storage
         private double _displayValue;   //  display value storage
@@ -40,10 +39,6 @@ namespace Avalonia.Controls
 
         // WPF uses 1.0 as the default value as well
         internal const double DATAGRIDLENGTH_DefaultValue = 1.0;
-
-        #endregion Data
-
-        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridLength" /> class. 
@@ -135,10 +130,6 @@ namespace Avalonia.Controls
             _unitValue = (type == DataGridLengthUnitType.Auto) ? DATAGRIDLENGTH_DefaultValue : value;
             _unitType = type;
         }
-
-        #endregion Constructors
-
-        #region Properties
 
         /// <summary>
         /// Gets a <see cref="T:Avalonia.Controls.DataGridLength" /> structure that represents the standard automatic sizing mode.
@@ -287,10 +278,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Properties
-
-        #region Methods
-
         /// <summary>
         /// Overloaded operator, compares 2 DataGridLength's.
         /// </summary>
@@ -357,7 +344,6 @@ namespace Avalonia.Controls
             return ((int)_unitValue + (int)_unitType) + (int)_desiredValue + (int)_displayValue;
         }
 
-        #endregion Methods
     }
     /// <summary>
     /// DataGridLengthConverter - Converter class for converting instances of other types to and from DataGridLength instances.
@@ -368,7 +354,7 @@ namespace Avalonia.Controls
         private static string _starSuffix = "*";
         private static string[] _valueInvariantUnitStrings = { "auto", "sizetocells", "sizetoheader" };
         private static DataGridLength[] _valueInvariantDataGridLengths = { DataGridLength.Auto, DataGridLength.SizeToCells, DataGridLength.SizeToHeader };
-        
+
         /// <summary>
         /// Checks whether or not this class can convert from a given type.
         /// </summary>

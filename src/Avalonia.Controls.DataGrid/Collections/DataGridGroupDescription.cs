@@ -221,7 +221,6 @@ namespace Avalonia.Collections
             _parentGroup?.OnGroupByChanged();
         }
 
-
         /// <summary>
         /// Gets or sets the most recent index where activity took place
         /// </summary>
@@ -254,7 +253,7 @@ namespace Avalonia.Collections
                     }
 
                     // we shouldn't get here, but just in case...
-                    
+
                     return AvaloniaProperty.UnsetValue;
                 }
                 else
@@ -536,7 +535,6 @@ namespace Avalonia.Collections
             }
         }
 
-
         /// <summary>
         /// Update the item count of the CollectionViewGroup
         /// </summary>
@@ -569,7 +567,6 @@ namespace Avalonia.Collections
             }
         }
 
-
         /// <summary>
         /// Enumerator for the leaves in the CollectionViewGroupInternal class.
         /// </summary>
@@ -601,8 +598,6 @@ namespace Avalonia.Collections
                 _index = -1;
                 _subEnum = null;
             }
-
-            #region Implement IEnumerator
 
             /// <summary>
             /// Reset implementation for IEnumerator
@@ -675,7 +670,6 @@ namespace Avalonia.Collections
                 }
             }
 
-            #endregion Implement IEnumerator
         }
 
         // / <summary>
@@ -925,7 +919,6 @@ namespace Avalonia.Collections
             set { _isDataInGroupOrder = value; }
         }
 
-
         /// <summary>
         /// Finds the index of the specified item
         /// </summary>
@@ -1087,7 +1080,6 @@ namespace Avalonia.Collections
             subgroup = new DataGridCollectionViewGroupInternal(key, group);
             InitializeGroup(subgroup, level + 1, item);
 
-
             if (loading)
             {
                 group.Add(subgroup);
@@ -1103,7 +1095,6 @@ namespace Avalonia.Collections
 
             AddToSubgroups(item, subgroup, level + 1, loading);
         }
-
 
         /// <summary>
         /// Add an item to the desired subgroup(s) of the given group
@@ -1344,7 +1335,6 @@ namespace Avalonia.Collections
                 }
             }
         }
-
 
         /// <summary>
         /// TopLevelGroupDescription class

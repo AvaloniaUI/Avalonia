@@ -32,7 +32,7 @@ namespace Avalonia.Controls
 
         private const int DATAGRIDCOLUMNHEADER_resizeRegionWidth = 5;
         private const double DATAGRIDCOLUMNHEADER_separatorThickness = 1;
-        
+
         private bool _areHandlersSuspended;
         private static DragMode _dragMode;
         private static Point? _lastMousePositionHeaders;
@@ -82,10 +82,6 @@ namespace Avalonia.Controls
             PointerEnter += DataGridColumnHeader_PointerEnter;
             PointerLeave += DataGridColumnHeader_PointerLeave;
         }
-        
-        #region Protected Methods
-
-        #endregion Protected Methods
 
         private void OnAreSeparatorsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
@@ -103,15 +99,13 @@ namespace Avalonia.Controls
             }
         }
 
-        #region Internal Properties
-
         internal DataGridColumn OwningColumn
         {
             get;
             set;
         } 
         internal DataGrid OwningGrid => OwningColumn?.OwningGrid;
-        
+
         internal int ColumnIndex
         {
             get
@@ -130,10 +124,6 @@ namespace Avalonia.Controls
             private set;
         } 
 
-        #endregion Internal Properties
-
-        #region Private Properties
-
         private bool IsMouseOver
         {
             get;
@@ -145,8 +135,6 @@ namespace Avalonia.Controls
             get;
             set;
         }
-
-        #endregion Private Properties
 
         private void SetValueNoCallback<T>(AvaloniaProperty<T> property, T value, BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -160,8 +148,6 @@ namespace Avalonia.Controls
                 _areHandlersSuspended = false;
             }
         }
-
-        #region Internal Methods
 
         //TODO Implement
         internal void ApplyState()
@@ -292,9 +278,6 @@ namespace Avalonia.Controls
                 }
             }
         } 
-        #endregion Internal Methods
-
-        #region Private Methods
 
         private bool CanReorderColumn(DataGridColumn column)
         {
@@ -334,10 +317,6 @@ namespace Avalonia.Controls
             }
             return false;
         } 
-
-        #endregion Private Methods
-
-        #region DragDrop
 
         //TODO DragDrop
 
@@ -750,7 +729,7 @@ namespace Avalonia.Controls
                                 isFrozen: OwningColumn.IsFrozen,
                                 isReadOnly: null);
                         targetPosition = targetColumn.HeaderCell.Translate(OwningGrid.ColumnHeaders, targetPosition);
-                                            
+
                         targetPosition = targetPosition.WithX(targetPosition.X + targetColumn.ActualWidth);
                     }
                     else
@@ -805,7 +784,7 @@ namespace Avalonia.Controls
             {
                 previousColumn = OwningGrid.ColumnsInternal.GetPreviousVisibleNonFillerColumn(currentColumn);
             }
-            
+
             if ((distanceFromRight <= DATAGRIDCOLUMNHEADER_resizeRegionWidth && currentColumn != null && CanResizeColumn(currentColumn)) ||
                 (distanceFromLeft <= DATAGRIDCOLUMNHEADER_resizeRegionWidth && previousColumn != null && CanResizeColumn(previousColumn)))
             {
@@ -822,12 +801,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion
-
-
     }
 
-    #region Style
-
-    #endregion
 }

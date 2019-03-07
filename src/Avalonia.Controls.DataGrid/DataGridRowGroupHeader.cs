@@ -121,8 +121,6 @@ namespace Avalonia.Controls
             AddHandler(InputElement.PointerPressedEvent, (s, e) => DataGridRowGroupHeader_PointerPressed(e), handledEventsToo: true);
         }
 
-        #region Properties
-
         internal DataGridRowHeader HeaderCell
         {
             get
@@ -182,10 +180,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Properties
-
-        #region Methods
-
         private IDisposable _expanderButtonSubscription;
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -222,7 +216,7 @@ namespace Avalonia.Controls
 
             base.OnTemplateApplied(e);
         }
-        
+
         internal void ApplyHeaderStatus()
         {
             if (_headerElement != null && OwningGrid.AreRowHeadersVisible)
@@ -391,7 +385,7 @@ namespace Avalonia.Controls
 
             base.OnPointerLeave(e);
         }
-        
+
         private void SetIsCheckedNoCallBack(bool value)
         {
             if (_expanderButton != null && _expanderButton.IsChecked != value)
@@ -447,11 +441,9 @@ namespace Avalonia.Controls
                 else
                     formatString = "({0} Items)";
 
-
                 _itemCountElement.Text = String.Format(formatString, RowGroupInfo.CollectionViewGroup.ItemCount);
             }
         }
 
-        #endregion Methods
     }
 }

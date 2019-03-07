@@ -16,7 +16,6 @@ namespace Avalonia.Controls
 {
     public partial class DataGrid
     {
-        #region Protected Methods
 
         protected virtual void OnColumnDisplayIndexChanged(DataGridColumnEventArgs e)
         {
@@ -33,10 +32,6 @@ namespace Avalonia.Controls
         {
             ColumnReordering?.Invoke(this, e);
         }
-
-        #endregion Protected Methods
-
-        #region Internal Methods
 
         /// <summary>
         /// Adjusts the widths of all columns with DisplayIndex >= displayIndex such that the total
@@ -345,7 +340,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         /// <summary>
         /// Adjusts the specified column's width according to its new maximum value.
         /// </summary>
@@ -770,10 +765,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Internal Methods
-
-        #region Private Methods
-        
         /// <summary>
         /// Adjusts the widths of all star columns with DisplayIndex >= displayIndex such that the total
         /// width is adjusted by the given amount, if possible.  If the total desired adjustment amount
@@ -901,7 +892,7 @@ namespace Avalonia.Controls
 
             return remainingAdjustment;
         }
-        
+
         private bool ComputeDisplayedColumns()
         {
             bool invalidate = false;
@@ -1137,7 +1128,7 @@ namespace Avalonia.Controls
                         column.DisplayIndexHasChanged = true; // OnColumnDisplayIndexChanged needs to be raised later on
                     }
                 }
-                
+
                 // Now raise all the OnColumnDisplayIndexChanged events
                 FlushDisplayIndexChanged(true /*raiseEvent*/);
             }
@@ -1180,7 +1171,7 @@ namespace Avalonia.Controls
                     }
                 }
                 ColumnsInternal.DisplayIndexMap.Insert(insertedColumn.DisplayIndexWithFiller, insertedColumn.Index);
-                
+
                 // Now raise all the OnColumnDisplayIndexChanged events
                 FlushDisplayIndexChanged(true /*raiseEvent*/);
             }
@@ -1317,7 +1308,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
+
         private bool GetColumnEffectiveReadOnlyState(DataGridColumn dataGridColumn)
         {
             Debug.Assert(dataGridColumn != null);
@@ -1346,7 +1337,7 @@ namespace Avalonia.Controls
             }
             return x;
         }
-        
+
         private double GetNegHorizontalOffsetFromHorizontalOffset(double horizontalOffset)
         {
             foreach (DataGridColumn column in ColumnsInternal.GetVisibleScrollingColumns())
@@ -1622,10 +1613,6 @@ namespace Avalonia.Controls
             ComputeDisplayedColumns();
         }
 
-        #endregion Private Methods
-
-        #region AutoGenerate
-
         private static DataGridBoundColumn GetDataGridColumnFromType(Type type)
         {
             Debug.Assert(type != null);
@@ -1772,15 +1759,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion
     }
 
-
-    #region DragDrop
-
-    #endregion
-
-    #region Styles
-
-    #endregion
 }

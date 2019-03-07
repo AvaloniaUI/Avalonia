@@ -90,8 +90,6 @@ namespace Avalonia.Controls
             this.EditingEventArgs = editingEventArgs;
         }
 
-        #region Properties
-
         /// <summary>
         /// Gets the column that contains the cell to be edited.
         /// </summary>
@@ -119,7 +117,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        #endregion Properties
     }
 
     /// <summary>
@@ -139,8 +136,6 @@ namespace Avalonia.Controls
             Row = row;
             EditAction = editAction;
         }
-
-        #region Properties
 
         /// <summary>
         /// The column of the cell that has just exited edit mode.
@@ -169,7 +164,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        #endregion Properties
     }
 
     /// <summary>
@@ -239,8 +233,6 @@ namespace Avalonia.Controls
             EditAction = editAction;
         }
 
-        #region Properties
-
         /// <summary>
         /// The column of the cell that is about to exit edit mode.
         /// </summary>
@@ -277,7 +269,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        #endregion Properties
     }
 
     internal class DataGridCellEventArgs : EventArgs
@@ -480,8 +471,6 @@ namespace Avalonia.Controls
             EditingElement = editingElement;
         }
 
-        #region Public Properties
-
         /// <summary>
         /// Gets the column that contains the cell to be edited.
         /// </summary>
@@ -518,7 +507,6 @@ namespace Avalonia.Controls
             private set;
         }
 
-        #endregion
     }
 
     /// <summary>

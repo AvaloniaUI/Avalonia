@@ -69,8 +69,6 @@ namespace Avalonia.Collections
                 _culture = culture ?? CultureInfo.InvariantCulture;
             }
 
-            #region IComparer<object> Members
-
             /// <summary>
             /// Compares two objects and returns a value indicating whether one is less than, equal to or greater than the other.
             /// </summary>
@@ -106,7 +104,6 @@ namespace Avalonia.Collections
                 }
             }
 
-            #endregion
         }
 
         private class DataGridPathSortDescription : DataGridSortDescription

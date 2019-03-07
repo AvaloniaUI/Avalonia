@@ -17,18 +17,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridTextColumn : DataGridBoundColumn
     {
-        #region Constants
-
-        #endregion Constants
-
-        #region Data
 
         private double? _fontSize;
         private FontStyle? _fontStyle;
         private FontWeight? _fontWeight;
         private IBrush _foreground;
-
-        #endregion Data
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridTextColumn" /> class.
@@ -37,8 +30,6 @@ namespace Avalonia.Controls
         {
             BindingTarget = TextBox.TextProperty;
         }
-
-        #region DependencyProperties
 
         /// <summary>
         /// Identifies the FontFamily dependency property.
@@ -54,10 +45,6 @@ namespace Avalonia.Controls
             get { return GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
-
-        #endregion DependencyProperties
-
-        #region Public Properties
 
         /// <summary>
         /// Gets or sets the font size.
@@ -136,10 +123,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        #endregion Public Properties
-
-        #region Protected Methods
 
         /// <summary>
         /// Causes the column cell being edited to revert to the specified value.
@@ -357,10 +340,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Protected Methods
-        
-        #region Private Methods
-
         private void SetTextFontSize(AvaloniaObject textElement, AvaloniaProperty fontSizeProperty)
         {
             double newFontSize = FontSize;
@@ -374,6 +353,5 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Methods
     }
 }

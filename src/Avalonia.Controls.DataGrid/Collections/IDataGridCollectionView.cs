@@ -104,7 +104,7 @@ namespace Avalonia.Collections
         /// <summary>Gets a collection of <see cref="T:System.ComponentModel.GroupDescription" /> objects that describe how the items in the collection are grouped in the view. </summary>
         /// <returns>A collection of objects that describe how the items in the collection are grouped in the view. </returns>
         //ObservableCollection<GroupDescription> GroupDescriptions { get; }
-        
+
         bool IsGrouping { get; }
         int GroupingDepth { get; }
         string GetGroupingPropertyNameAtDepth(int level);
@@ -112,7 +112,7 @@ namespace Avalonia.Collections
         /// <summary>Gets the top-level groups.</summary>
         /// <returns>A read-only collection of the top-level groups or null if there are no groups.</returns>
         IAvaloniaReadOnlyList<object> Groups { get; }
-        
+
         /// <summary>Gets a value that indicates whether the view is empty.</summary>
         /// <returns>true if the view is empty; otherwise, false.</returns>
         bool IsEmpty { get; }

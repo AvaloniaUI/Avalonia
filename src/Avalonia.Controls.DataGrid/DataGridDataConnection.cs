@@ -20,8 +20,7 @@ namespace Avalonia.Controls
 {
     internal class DataGridDataConnection
     {
-        #region Data
-        
+
         private int _backupSlotForCurrentChanged;
         private int _columnForCurrentChanged;
         private PropertyInfo[] _dataProperties;
@@ -33,14 +32,10 @@ namespace Avalonia.Controls
         private bool _scrollForCurrentChanged;
         private DataGridSelectionAction _selectionActionForCurrentChanged;
 
-        #endregion Data
-
         public DataGridDataConnection(DataGrid owner)
         {
             _owner = owner;
         }
-
-        #region Properties
 
         public bool AllowEdit
         {
@@ -214,10 +209,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        #endregion Properties
-
-        #region Public Methods
 
         /// <summary>
         /// Puts the entity into editing mode if possible
@@ -444,10 +435,6 @@ namespace Avalonia.Controls
             return -1;
         }
 
-        #endregion Public methods
-
-        #region Internal Methods
-
         internal void ClearDataProperties()
         {
             _dataProperties = null;
@@ -551,10 +538,6 @@ namespace Avalonia.Controls
 
             EventsWired = true;
         }
-
-        #endregion Internal Methods
-
-        #region Private methods
 
         private void CollectionView_CurrentChanged(object sender, EventArgs e)
         {
@@ -694,7 +677,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         private void UpdateDataProperties()
         {
             Type dataType = DataType;
@@ -710,6 +692,5 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Methods
     }
 }

@@ -182,7 +182,7 @@ namespace Avalonia.Controls
 
         internal void UpdatePseudoClasses()
         {
-            
+
         }
 
         // Makes sure the right gridline has the proper stroke and visibility. If lastVisibleColumn is specified, the 

@@ -131,7 +131,6 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-
         /// <summary>
         /// Performs an action and catches any non-critical exceptions.
         /// </summary>
@@ -151,7 +150,7 @@ namespace Avalonia.Controls.Utils
                 // Catch any non-critical exceptions
             }
         }
-        
+
         /// <summary>
         /// Determines if the specified exception is un-recoverable.
         /// </summary>
