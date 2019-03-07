@@ -340,9 +340,9 @@ namespace Avalonia.Controls
             {
                 if (!this.IsVisualAncestorOf(element))
                 {
-                    IControl result = _selectedItem != null
-                        ? ItemContainerGenerator.Index.ContainerFromItem(_selectedItem)
-                        : ItemContainerGenerator.ContainerFromIndex(0);
+                    IControl result = _selectedItem != null ?
+                        ItemContainerGenerator.Index.ContainerFromItem(_selectedItem) :
+                        ItemContainerGenerator.ContainerFromIndex(0);
                     return (true, result);
                 }
 
@@ -426,9 +426,9 @@ namespace Avalonia.Controls
                     if (index > 0)
                     {
                         var previous = (TreeViewItem)parentGenerator.ContainerFromIndex(index - 1);
-                        result = previous.IsExpanded
-                            ? (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1)
-                            : previous;
+                        result = previous.IsExpanded ?
+                            (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1) :
+                            previous;
                     }
                     else
                     {
