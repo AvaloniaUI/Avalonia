@@ -460,6 +460,23 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Handles 'select all' (Ctrl+A) in <see cref="SelectingItemsControl"/>.
+        /// </summary>
+        /// <param name="e">The key events.</param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (!e.Handled)
+            {
+                if (this.SelectionMode == SelectionMode.Multiple && e.Key == Key.A && e.Modifiers == InputModifiers.Control)
+                {
+                    SynchronizeItems(SelectedItems, Items?.Cast<object>());
+                }
+            }
+        }
+
+        /// <summary>
         /// Moves the selection in the specified direction relative to the current selection.
         /// </summary>
         /// <param name="direction">The direction to move.</param>
