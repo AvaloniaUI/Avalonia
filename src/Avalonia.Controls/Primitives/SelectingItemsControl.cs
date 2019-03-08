@@ -615,31 +615,11 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets a range of items from an IEnumerable.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="first">The index of the first item.</param>
-        /// <param name="last">The index of the last item.</param>
-        /// <returns>The items.</returns>
-        private static IEnumerable<object> GetRange(IEnumerable items, int first, int last)
-        {
-            var list = (items as IList) ?? items.Cast<object>().ToList();
-            int step = first > last ? -1 : 1;
-
-            for (int i = first; i != last; i += step)
-            {
-                yield return list[i];
-            }
-
-            yield return list[last];
-        }
-
-        /// <summary>
         /// Makes a list of objects equal another.
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        internal static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
             int index = 0;
 
@@ -664,6 +644,26 @@ namespace Avalonia.Controls.Primitives
             {
                 items.RemoveAt(items.Count - 1);
             }
+        }
+
+        /// <summary>
+        /// Gets a range of items from an IEnumerable.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="first">The index of the first item.</param>
+        /// <param name="last">The index of the last item.</param>
+        /// <returns>The items.</returns>
+        private static IEnumerable<object> GetRange(IEnumerable items, int first, int last)
+        {
+            var list = (items as IList) ?? items.Cast<object>().ToList();
+            int step = first > last ? -1 : 1;
+
+            for (int i = first; i != last; i += step)
+            {
+                yield return list[i];
+            }
+
+            yield return list[last];
         }
 
         /// <summary>
