@@ -466,7 +466,7 @@ namespace Avalonia.Skia.Text
                 Typeface = typeface,
                 TextSize = fontSize
             };
-        }       
+        }
 
         /// <summary>
         ///     Initializes the paint for text run.
@@ -1602,19 +1602,65 @@ namespace Avalonia.Skia.Text
 
             var foreground = textRun.Foreground;
 
-            var firstTextRun = CreateTextRun(
-                text,
-                new SKTextPointer(startingIndex, length),
-                textFormat,
-                foreground,
-                true);
+            SKTextRun firstTextRun;
+            SKTextRun secondTextRun;
 
-            var secondTextRun = CreateTextRun(
-                text,
-                new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
-                textFormat,
-                foreground,
-                true);
+            if (textRun.GlyphRun != null)
+            {
+                var firstGlyphRun = new SKGlyphRun(
+                    textRun.GlyphRun.GlyphIndices.Take(length).ToArray(),
+                    textRun.GlyphRun.GlyphOffsets.Take(length).ToArray(),
+                    textRun.GlyphRun.GlyphClusters.Take(length).ToArray());
+                firstTextRun = new SKTextRun(
+                    new SKTextPointer(startingIndex, length),
+                    firstGlyphRun,
+                    textFormat,
+                    textRun.FontMetrics,
+                    firstGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    textRun.Foreground);
+
+                var secondGlyphClusters = textRun.GlyphRun.GlyphClusters.Skip(length).Select(
+                    cluster => new SKGlyphCluster(
+                        cluster.TextPosition,
+                        cluster.Length,
+                        new SKRect(
+                            cluster.Bounds.Left - firstTextRun.Width,
+                            cluster.Bounds.Top,
+                            cluster.Bounds.Right - firstTextRun.Width,
+                            cluster.Bounds.Bottom))).ToArray();
+
+                var secondGlyphOffsets = secondGlyphClusters.Select(
+                    cluster => new SKPoint(cluster.Bounds.Left, cluster.Bounds.Top)).ToArray();
+
+                var secondGlyphRun = new SKGlyphRun(
+                    textRun.GlyphRun.GlyphIndices.Skip(length).ToArray(),
+                    secondGlyphOffsets,
+                    secondGlyphClusters);
+
+                secondTextRun = new SKTextRun(
+                    new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
+                    secondGlyphRun,
+                    textFormat,
+                    textRun.FontMetrics,
+                    secondGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    textRun.Foreground);
+            }
+            else
+            {
+                firstTextRun = CreateTextRun(
+                    text,
+                    new SKTextPointer(startingIndex, length),
+                    textFormat,
+                    foreground,
+                    true);
+
+                secondTextRun = CreateTextRun(
+                    text,
+                    new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
+                    textFormat,
+                    foreground,
+                    true);
+            }
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
