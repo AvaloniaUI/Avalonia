@@ -9,7 +9,7 @@
               Margin="0,16,0,0"
               HorizontalAlignment="Center"
               Spacing="16">
-      <TreeView Items="{Binding}" Width="250" Height="350">
+      <TreeView SelectionMode="Multiple" Items="{Binding}" Width="250" Height="350">
         <TreeView.ItemTemplate>
           <TreeDataTemplate ItemsSource="{Binding Children}">
             <TextBlock Text="{Binding Header}"/>

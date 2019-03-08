@@ -20,11 +20,16 @@ namespace Avalonia.Controls
     /// </summary>
     public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
     {
+        private ICommand _command;
+
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
-        public static readonly StyledProperty<ICommand> CommandProperty =
-            AvaloniaProperty.Register<MenuItem, ICommand>(nameof(Command));
+        public static readonly DirectProperty<MenuItem, ICommand> CommandProperty =
+            Button.CommandProperty.AddOwner<MenuItem>(
+                menuItem => menuItem.Command, 
+                (menuItem, command) => menuItem.Command = command, 
+                enableDataValidation: true);
 
         /// <summary>
         /// Defines the <see cref="HotKey"/> property.
@@ -159,8 +164,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ICommand Command
         {
-            get { return GetValue(CommandProperty); }
-            set { SetValue(CommandProperty, value); }
+            get { return _command; }
+            set { SetAndRaise(CommandProperty, ref _command, value); }
         }
 
         /// <summary>

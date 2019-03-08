@@ -31,7 +31,10 @@
 
         public override void Draw(DrawingContext context)
         {
-            context.DrawGeometry(Brush, Pen, Geometry);
+            if (Geometry != null)
+            {
+                context.DrawGeometry(Brush, Pen, Geometry);
+            }
         }
 
         public override Rect GetBounds()

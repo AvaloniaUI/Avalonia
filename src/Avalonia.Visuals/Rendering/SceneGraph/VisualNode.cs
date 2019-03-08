@@ -17,8 +17,8 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal class VisualNode : IVisualNode
     {
-        private static readonly IReadOnlyList<IVisualNode> EmptyChildren = new IVisualNode[0];
-        private static readonly IReadOnlyList<IRef<IDrawOperation>> EmptyDrawOperations = new IRef<IDrawOperation>[0];
+        private static readonly IReadOnlyList<IVisualNode> EmptyChildren = Array.Empty<IVisualNode>();
+        private static readonly IReadOnlyList<IRef<IDrawOperation>> EmptyDrawOperations = Array.Empty<IRef<IDrawOperation>>();
 
         private Rect? _bounds;
         private double _opacity;
