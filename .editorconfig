@@ -132,6 +132,9 @@ csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
+# Wrapping preferences
+csharp_wrap_before_ternary_opsigns = false
+
 # Xaml files
 [*.xaml]
 indent_size = 4
