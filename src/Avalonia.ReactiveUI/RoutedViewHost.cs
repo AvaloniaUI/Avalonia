@@ -163,6 +163,8 @@ namespace Avalonia
     
             this.Log().Info($"Ready to show {view} with autowired {viewModel}.");
             view.ViewModel = viewModel;
+            if (view is IStyledElement styled)
+                styled.DataContext = viewModel;
             UpdateContent(view);
         }
     
