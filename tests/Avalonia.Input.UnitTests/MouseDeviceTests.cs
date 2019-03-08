@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -184,6 +185,33 @@ namespace Avalonia.Input.UnitTests
             }
         }
 
+
+        [Fact]
+        public void GetPosition_Should_Respect_Control_RenderTransform()
+        {
+            var renderer = new Mock<IRenderer>();
+
+            using (TestApplication(renderer.Object))
+            {
+                var inputManager = InputManager.Instance;
+
+                var root = new TestRoot
+                {
+                    MouseDevice = new MouseDevice(),
+                    Child = new Border
+                    {
+                        Background = Brushes.Black,
+                        RenderTransform = new TranslateTransform(10, 0),
+                    }
+                };
+
+                SendMouseMove(inputManager, root, new Point(11, 11));
+
+                var result = root.MouseDevice.GetPosition(root.Child);
+                Assert.Equal(new Point(1, 11), result);
+            }
+        }
+
         private void AddEnterLeaveHandlers(
             EventHandler<PointerEventArgs> handler,
             params IControl[] controls)
@@ -195,14 +223,14 @@ namespace Avalonia.Input.UnitTests
             }
         }
 
-        private void SendMouseMove(IInputManager inputManager, TestRoot root)
+        private void SendMouseMove(IInputManager inputManager, TestRoot root, Point p = new Point())
         {
             inputManager.ProcessInput(new RawMouseEventArgs(
                 root.MouseDevice,
                 0,
                 root,
                 RawMouseEventType.Move,
-                new Point(),
+                p,
                 InputModifiers.None));
         }
 
