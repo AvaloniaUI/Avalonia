@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Styling
 {
@@ -135,6 +137,26 @@ namespace Avalonia.Styling
         public static Selector OfType<T>(this Selector previous) where T : IStyleable
         {
             return previous.OfType(typeof(T));
+        }
+
+        /// <summary>
+        /// Returns a selector which ORs selectors.
+        /// </summary>
+        /// <param name="selectors">The selectors to be OR'd.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Or(params Selector[] selectors)
+        {
+            return new OrSelector(selectors);
+        }
+
+        /// <summary>
+        /// Returns a selector which ORs selectors.
+        /// </summary>
+        /// <param name="selectors">The selectors to be OR'd.</param>
+        /// <returns>The selector.</returns>
+        public static Selector Or(IReadOnlyList<Selector> selectors)
+        {
+            return new OrSelector(selectors);
         }
 
         /// <summary>
