@@ -37,6 +37,11 @@ namespace Avalonia.Controls.Generators
         public IEnumerable<IControl> Items => _containerToItem.Keys;
 
         /// <summary>
+        /// Gets the items of currently materialized containers.
+        /// </summary>
+        public IEnumerable<object> Objects => _containerToItem.Values;
+
+        /// <summary>
         /// Adds an entry to the index.
         /// </summary>
         /// <param name="item">The item.</param>
