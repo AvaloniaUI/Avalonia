@@ -10,6 +10,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -400,6 +401,19 @@ namespace Avalonia.Controls
                 else
                 {
                     SelectedItem = ElementAt(Items, 0);
+                }
+            }
+
+            if (!e.Handled)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+                if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
+                {
+                    var allVisibleItems = ItemContainerGenerator.Index.Items.Select(ItemContainerGenerator.Index.ItemFromContainer);
+                    SelectingItemsControl.SynchronizeItems(SelectedItems, allVisibleItems);
+                    e.Handled = true;
                 }
             }
         }
