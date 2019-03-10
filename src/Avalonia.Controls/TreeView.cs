@@ -245,7 +245,7 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Reset:
 
-                    foreach (IControl container in ItemContainerGenerator.Index.Items)
+                    foreach (IControl container in ItemContainerGenerator.Index.Containers)
                     {
                         MarkContainerSelected(container, false);
                     }
