@@ -10,6 +10,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -244,7 +245,7 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Reset:
 
-                    foreach (IControl container in ItemContainerGenerator.Index.Items)
+                    foreach (IControl container in ItemContainerGenerator.Index.Containers)
                     {
                         MarkContainerSelected(container, false);
                     }
@@ -400,6 +401,18 @@ namespace Avalonia.Controls
                 else
                 {
                     SelectedItem = ElementAt(Items, 0);
+                }
+            }
+
+            if (!e.Handled)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+                if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
+                {
+                    SelectingItemsControl.SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Objects);
+                    e.Handled = true;
                 }
             }
         }

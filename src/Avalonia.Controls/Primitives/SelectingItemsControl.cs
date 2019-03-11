@@ -10,6 +10,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -456,6 +457,23 @@ namespace Avalonia.Controls.Primitives
             if (--_updateCount == 0)
             {
                 UpdateFinished();
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (!e.Handled)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+                if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
+                {
+                    SynchronizeItems(SelectedItems, Items?.Cast<object>());
+                    e.Handled = true;
+                }
             }
         }
 
