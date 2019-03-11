@@ -460,10 +460,6 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <summary>
-        /// Handles 'select all' (Ctrl+A) in <see cref="SelectingItemsControl"/>.
-        /// </summary>
-        /// <param name="e">The key events.</param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
