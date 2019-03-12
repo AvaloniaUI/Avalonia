@@ -411,7 +411,7 @@ namespace Avalonia.Controls
 
                 if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
                 {
-                    SelectingItemsControl.SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Objects);
+                    SelectingItemsControl.SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
                     e.Handled = true;
                 }
             }
