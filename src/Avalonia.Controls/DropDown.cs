@@ -56,6 +56,7 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private Popup _popup;
         private object _selectionBoxItem;
+        private IDisposable _subscriptionsOnOpen;
 
         /// <summary>
         /// Initializes static members of the <see cref="DropDown"/> class.
@@ -149,16 +150,12 @@ namespace Avalonia.Controls
             {
                 if (e.Key == Key.Down)
                 {
-                    if (++SelectedIndex >= ItemCount)
-                        SelectedIndex = 0;
-
+                    SelectNext();
                     e.Handled = true;
                 }
                 else if (e.Key == Key.Up)
                 {
-                    if (--SelectedIndex < 0)
-                        SelectedIndex = ItemCount - 1;
-
+                    SelectPrev();
                     e.Handled = true;
                 }
             }
@@ -169,6 +166,32 @@ namespace Avalonia.Controls
                 if (firstChild != null)
                 {
                     FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+        {
+            base.OnPointerWheelChanged(e);
+
+            if (!e.Handled)
+            {
+                if (!IsDropDownOpen)
+                {
+                    if (IsFocused)
+                    {
+                        if (e.Delta.Y < 0)
+                            SelectNext();
+                        else
+                            SelectPrev();
+
+                        e.Handled = true;
+                    }
+                }
+                else
+                {
                     e.Handled = true;
                 }
             }
@@ -223,6 +246,9 @@ namespace Avalonia.Controls
 
         private void PopupClosed(object sender, EventArgs e)
         {
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
             if (CanFocus(this))
             {
                 Focus();
@@ -232,6 +258,22 @@ namespace Avalonia.Controls
         private void PopupOpened(object sender, EventArgs e)
         {
             TryFocusSelectedItem();
+
+            _subscriptionsOnOpen?.Dispose();
+            _subscriptionsOnOpen = null;
+
+            var toplevel = this.GetVisualRoot() as TopLevel;
+            if (toplevel != null)
+            {
+                _subscriptionsOnOpen = toplevel.AddHandler(PointerWheelChangedEvent, (s, ev) =>
+                {
+                    //eat wheel scroll event outside dropdown popup while it's open
+                    if (IsDropDownOpen && (ev.Source as IVisual).GetVisualRoot() == toplevel)
+                    {
+                        ev.Handled = true;
+                    }
+                }, Interactivity.RoutingStrategies.Tunnel);
+            }
         }
 
         private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
@@ -247,7 +289,7 @@ namespace Avalonia.Controls
             {
                 var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
 
-                if(container == null && SelectedItems.Count > 0)
+                if (container == null && SelectedItems.Count > 0)
                 {
                     ScrollIntoView(SelectedItems[0]);
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
@@ -306,6 +348,26 @@ namespace Avalonia.Controls
                     break;
                 }
             }
+        }
+
+        private void SelectNext()
+        {
+            int next = SelectedIndex + 1;
+
+            if (next >= ItemCount)
+                next = 0;
+
+            SelectedIndex = next;
+        }
+
+        private void SelectPrev()
+        {
+            int prev = SelectedIndex - 1;
+
+            if (prev < 0)
+                prev = ItemCount - 1;
+
+            SelectedIndex = prev;
         }
     }
 }

@@ -749,7 +749,7 @@ namespace Metsys.Bson
 
                         if (memberExpression.Expression.NodeType != ExpressionType.Parameter && memberExpression.Expression.NodeType != ExpressionType.Convert)
                         {
-                            throw new ArgumentException(string.Format("Expression '{0}' must resolve to top-level member.", lambdaExpression), "lambdaExpression");
+                            throw new ArgumentException(string.Format("Expression '{0}' must resolve to top-level member.", lambdaExpression), nameof(lambdaExpression));
                         }
                         return memberExpression.Member.Name;
                     default:
@@ -806,7 +806,7 @@ namespace Metsys.Bson
             {
                 return Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType));
             }
-            if (type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null) != null)
+            if (type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null) != null)
             {
                 return Activator.CreateInstance(type);
             }
@@ -853,7 +853,7 @@ namespace Metsys.Bson
                 return (IDictionary)Activator.CreateInstance(typeof(Dictionary<,>).MakeGenericType(keyType, valueType));
             }
 
-            if (dictionaryType.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, new Type[0], null) != null)
+            if (dictionaryType.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null) != null)
             {
                 return (IDictionary)Activator.CreateInstance(dictionaryType);
             }

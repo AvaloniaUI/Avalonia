@@ -31,8 +31,6 @@ namespace Avalonia.Skia.Text
 
         private readonly SKPaint _paint;
 
-        private readonly List<SKTextLine> _textLines;
-
         private readonly int _textLength;
 
         /// <summary>
@@ -61,7 +59,8 @@ namespace Avalonia.Skia.Text
             _constraint = constraint;
             _paint = CreatePaint(typeface, fontSize);
             _textLength = text.Length;
-            _textLines = CreateTextLines(text.AsSpan(), spans);
+            TextLines = CreateTextLines(text.AsSpan(), spans);
+            Bounds = CreateLayoutBounds(TextLines);
         }
 
         /// <summary>
@@ -70,15 +69,15 @@ namespace Avalonia.Skia.Text
         /// <value>
         ///     The text lines.
         /// </value>
-        public IReadOnlyList<SKTextLine> TextLines => _textLines;
+        public IReadOnlyList<SKTextLine> TextLines { get; }
 
         /// <summary>
-        ///     Gets the size of the layout box.
+        ///     Gets the text metrics of the layout.
         /// </summary>
         /// <value>
         ///     The size.
         /// </value>
-        public Size Size { get; private set; }
+        public SKRect Bounds { get; }
 
         /// <summary>
         ///     Draws the layout.
@@ -100,13 +99,13 @@ namespace Avalonia.Skia.Text
 
             canvas.Translate(origin.X, origin.Y);
 
-            using (var foregroundWrapper = context.CreatePaint(foreground, Size))
+            using (var foregroundWrapper = context.CreatePaint(foreground, new Size(Bounds.Width, Bounds.Height)))
             {
                 foreach (var textLine in TextLines)
                 {
-                    var lineOffsetX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                    var baselineOrigin = textLine.LineMetrics.BaselineOrigin;
 
-                    canvas.Translate(lineOffsetX, textLine.LineMetrics.BaselineOrigin.Y);
+                    canvas.Translate(baselineOrigin.X, baselineOrigin.Y);
 
                     foreach (var textRun in textLine.TextRuns)
                     {
@@ -225,9 +224,9 @@ namespace Avalonia.Skia.Text
 
             foreach (var textLine in TextLines)
             {
-                if (pointY <= currentY + textLine.LineMetrics.Size.Height)
+                if (pointY < currentY + textLine.LineMetrics.Size.Height)
                 {
-                    var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                    var currentX = textLine.LineMetrics.BaselineOrigin.X;
 
                     foreach (var textRun in textLine.TextRuns)
                     {
@@ -290,7 +289,7 @@ namespace Avalonia.Skia.Text
                 currentY += textLine.LineMetrics.Size.Height;
             }
 
-            isTrailing = point.X > Size.Width || point.Y > Size.Height;
+            isTrailing = point.X > Bounds.Width || point.Y > Bounds.Height;
 
             var lastLine = TextLines.Last();
 
@@ -323,11 +322,11 @@ namespace Avalonia.Skia.Text
             {
                 var lastLine = TextLines.Last();
 
-                var offsetX = GetTextLineOffsetX(_textAlignment, lastLine.LineMetrics.Size.Width);
+                var offsetX = lastLine.LineMetrics.BaselineOrigin.X;
 
                 var lineX = offsetX + lastLine.LineMetrics.Size.Width;
 
-                var lineY = Size.Height - lastLine.LineMetrics.Size.Height;
+                var lineY = Bounds.Height - lastLine.LineMetrics.Size.Height;
 
                 return new Rect(lineX, lineY, 0, lastLine.LineMetrics.Size.Height);
             }
@@ -343,7 +342,7 @@ namespace Avalonia.Skia.Text
                     continue;
                 }
 
-                var currentX = GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var currentX = textLine.LineMetrics.BaselineOrigin.X;
 
                 foreach (var textRun in textLine.TextRuns)
                 {
@@ -393,7 +392,7 @@ namespace Avalonia.Skia.Text
                     continue;
                 }
 
-                var lineX = (float)GetTextLineOffsetX(_textAlignment, textLine.LineMetrics.Size.Width);
+                var lineX = textLine.LineMetrics.BaselineOrigin.X;
                 var startX = -1f;
 
                 foreach (var textRun in textLine.TextRuns)
@@ -466,46 +465,6 @@ namespace Avalonia.Skia.Text
                 Typeface = typeface,
                 TextSize = fontSize
             };
-        }
-
-        /// <summary>
-        ///     Creates the text line metrics.
-        /// </summary>
-        /// <param name="textRuns">The text runs.</param>
-        /// <param name="length">Text length</param>
-        /// <returns></returns>
-        private static SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns, out int length)
-        {
-            var width = 0.0f;
-            var ascent = 0.0f;
-            var descent = 0.0f;
-            var leading = 0.0f;
-
-            length = 0;
-
-            foreach (var textRun in textRuns)
-            {
-                length += textRun.TextPointer.Length;
-
-                width += textRun.Width;
-
-                if (ascent > textRun.FontMetrics.Ascent)
-                {
-                    ascent = textRun.FontMetrics.Ascent;
-                }
-
-                if (descent < textRun.FontMetrics.Descent)
-                {
-                    descent = textRun.FontMetrics.Descent;
-                }
-
-                if (leading < textRun.FontMetrics.Leading)
-                {
-                    leading = textRun.FontMetrics.Leading;
-                }
-            }
-
-            return new SKTextLineMetrics(width, ascent, descent, leading);
         }
 
         /// <summary>
@@ -617,17 +576,14 @@ namespace Avalonia.Skia.Text
         {
             Font font;
 
-            // ToDo: Cache this
             using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
-            using (var face = new Face(blob, (uint)index))
+            using (var face = new Face(blob, index))
             {
-                face.Index = (uint)index;
+                face.Index = index;
 
-                face.UnitsPerEm = (uint)textFormat.Typeface.UnitsPerEm;
+                face.UnitsPerEm = textFormat.Typeface.UnitsPerEm;
 
                 font = new Font(face);
-
-                font.SetScale(512, 512);
 
                 font.SetFunctionsOpenType();
             }
@@ -640,13 +596,13 @@ namespace Avalonia.Skia.Text
 
             var pos = buffer.GlyphPositions;
 
-            var textScale = textFormat.FontSize / 512;
+            var textScale = textFormat.FontSize / font.Scale.X;
 
             glyphPositions = new SKPoint[len];
 
             var glyphAdvances = new float[len];
 
-            var clusters = new uint[len];
+            var clusters = new int[len];
 
             glyphIndices = new ushort[len];
 
@@ -657,7 +613,7 @@ namespace Avalonia.Skia.Text
             {
                 glyphIndices[i] = (ushort)info[i].Codepoint;
 
-                clusters[i] = info[i].Cluster;
+                clusters[i] = (int)info[i].Cluster;
 
                 var offsetX = pos[i].XOffset * textScale;
                 var offsetY = pos[i].YOffset * textScale;
@@ -690,7 +646,7 @@ namespace Avalonia.Skia.Text
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             SKTextPointer textPointer,
             SKFontMetrics fontMetrics,
-            uint[] clusters,
+            int[] clusters,
             IReadOnlyList<float> glyphAdvances,
             IReadOnlyList<SKPoint> glyphPositions)
         {
@@ -704,10 +660,10 @@ namespace Avalonia.Skia.Text
 
             while (currentCluster <= lastCluster)
             {
-                var currentPosition = (int)clusters[currentCluster];
+                var currentPosition = clusters[currentCluster];
 
                 // ToDo: Need a custom implementation that searches for the next cluster.
-                var nextCluster = Array.BinarySearch(clusters, (uint)(currentPosition + 1));
+                var nextCluster = Array.BinarySearch(clusters, currentPosition + 1);
 
                 if (nextCluster < 0)
                 {
@@ -722,7 +678,7 @@ namespace Avalonia.Skia.Text
                 }
                 else
                 {
-                    var nextPosition = (int)clusters[nextCluster];
+                    var nextPosition = clusters[nextCluster];
 
                     length = nextPosition - currentPosition;
                 }
@@ -781,6 +737,73 @@ namespace Avalonia.Skia.Text
             return -1;
         }
 
+        /// <summary>Creates the layout bounds.</summary>
+        /// <param name="textLines">The text lines.</param>
+        /// <returns>Bounds</returns>
+        private static SKRect CreateLayoutBounds(IEnumerable<SKTextLine> textLines)
+        {
+            float left = 0.0f, right = 0.0f, bottom = 0.0f;
+
+            foreach (var textLine in textLines)
+            {
+                if (right < textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width)
+                {
+                    right = textLine.LineMetrics.BaselineOrigin.X + textLine.LineMetrics.Size.Width;
+                }
+
+                if (left < textLine.LineMetrics.BaselineOrigin.X)
+                {
+                    left = textLine.LineMetrics.BaselineOrigin.X;
+                }
+
+                bottom += textLine.LineMetrics.Size.Height;
+            }
+
+            return new SKRect(left, 0, right, bottom);
+        }
+
+        /// <summary>
+        ///     Creates the text line metrics.
+        /// </summary>
+        /// <param name="textRuns">The text runs.</param>
+        /// <param name="length">Text length</param>
+        /// <returns></returns>
+        private SKTextLineMetrics CreateTextLineMetrics(IEnumerable<SKTextRun> textRuns, out int length)
+        {
+            var width = 0.0f;
+            var ascent = 0.0f;
+            var descent = 0.0f;
+            var leading = 0.0f;
+
+            length = 0;
+
+            foreach (var textRun in textRuns)
+            {
+                length += textRun.TextPointer.Length;
+
+                width += textRun.Width;
+
+                if (ascent > textRun.FontMetrics.Ascent)
+                {
+                    ascent = textRun.FontMetrics.Ascent;
+                }
+
+                if (descent < textRun.FontMetrics.Descent)
+                {
+                    descent = textRun.FontMetrics.Descent;
+                }
+
+                if (leading < textRun.FontMetrics.Leading)
+                {
+                    leading = textRun.FontMetrics.Leading;
+                }
+            }
+
+            var xOrigin = GetTextLineOffsetX(width);
+
+            return new SKTextLineMetrics(width, xOrigin, ascent, descent, leading);
+        }
+
         /// <summary>
         ///     Creates a new text line of specified text runs.
         /// </summary>
@@ -832,7 +855,8 @@ namespace Avalonia.Skia.Text
             var fontMetrics = _paint.FontMetrics;
 
             var textLineMetrics = new SKTextLineMetrics(
-                0,
+                0f,
+                0f,
                 fontMetrics.Ascent,
                 fontMetrics.Descent,
                 fontMetrics.Leading);
@@ -1079,26 +1103,22 @@ namespace Avalonia.Skia.Text
         /// <summary>
         ///     Gets the text line offset x.
         /// </summary>
-        /// <param name="textAlignment">The text alignment.</param>
         /// <param name="lineWidth">The line width.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentOutOfRangeException">textAlignment - null</exception>
-        private double GetTextLineOffsetX(TextAlignment textAlignment, double lineWidth)
+        private float GetTextLineOffsetX(float lineWidth)
         {
             var availableWidth = _constraint.Width > 0 && !double.IsPositiveInfinity(_constraint.Width)
-                                     ? _constraint.Width
-                                     : Size.Width;
+                                     ? (float)_constraint.Width
+                                     : Bounds.Width;
 
-            switch (textAlignment)
+            switch (_textAlignment)
             {
-                case TextAlignment.Left:
-                    return 0.0d;
                 case TextAlignment.Center:
                     return (availableWidth - lineWidth) / 2;
                 case TextAlignment.Right:
                     return availableWidth - lineWidth;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(textAlignment), textAlignment, null);
+                    return 0.0f;
             }
         }
 
@@ -1111,8 +1131,6 @@ namespace Avalonia.Skia.Text
             if (text.Length == 0)
             {
                 var emptyTextLine = CreateEmptyTextLine();
-
-                Size = new Size(emptyTextLine.LineMetrics.Size.Width, emptyTextLine.LineMetrics.Size.Height);
 
                 return new List<SKTextLine>
                        {
@@ -1180,21 +1198,6 @@ namespace Avalonia.Skia.Text
                 }
             }
 
-            var sizeX = 0.0f;
-            var sizeY = 0.0f;
-
-            foreach (var textLine in textLines)
-            {
-                if (sizeX < textLine.LineMetrics.Size.Width)
-                {
-                    sizeX = textLine.LineMetrics.Size.Width;
-                }
-
-                sizeY += textLine.LineMetrics.Size.Height;
-            }
-
-            Size = new Size(sizeX, sizeY);
-
             return textLines;
         }
 
@@ -1234,30 +1237,43 @@ namespace Avalonia.Skia.Text
             {
                 buffer.Language = new Language(CultureInfo.CurrentCulture);
 
-                var hasDoubleBreakChar = false;
+                var breakCharCount = 0;
 
                 if (textPointer.Length >= 2)
                 {
                     var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                    if (text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
+                    if (IsBreakChar(text[lastPosition]))
                     {
-                        hasDoubleBreakChar = true;
-                    }
-
-                    if (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r')
-                    {
-                        hasDoubleBreakChar = true;
+                        if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
+                            || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
+                        {
+                            breakCharCount = 2;
+                        }
+                        else
+                        {
+                            breakCharCount = 1;
+                        }
                     }
                 }
 
-                if (hasDoubleBreakChar)
+                // Replace break char with zero width space
+                if (breakCharCount > 0)
                 {
-                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length - 1);
+                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+
+                    var cluster = buffer.GlyphInfos.Length > 0
+                                      ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
+                                      : (uint)textPointer.StartingIndex;
+
+                    for (var i = 0; i < breakCharCount; i++)
+                    {
+                        buffer.Add('\u200C', cluster);
+                    }
                 }
                 else
                 {
-                    buffer.AddUtf16(text, (uint)textPointer.StartingIndex, textPointer.Length);
+                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length);
                 }
 
                 buffer.GuessSegmentProperties();
@@ -1593,19 +1609,65 @@ namespace Avalonia.Skia.Text
 
             var foreground = textRun.Foreground;
 
-            var firstTextRun = CreateTextRun(
-                text,
-                new SKTextPointer(startingIndex, length),
-                textFormat,
-                foreground,
-                true);
+            SKTextRun firstTextRun;
+            SKTextRun secondTextRun;
 
-            var secondTextRun = CreateTextRun(
-                text,
-                new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
-                textFormat,
-                foreground,
-                true);
+            if (textRun.GlyphRun != null)
+            {
+                var firstGlyphRun = new SKGlyphRun(
+                    textRun.GlyphRun.GlyphIndices.Take(length).ToArray(),
+                    textRun.GlyphRun.GlyphOffsets.Take(length).ToArray(),
+                    textRun.GlyphRun.GlyphClusters.Take(length).ToArray());
+                firstTextRun = new SKTextRun(
+                    new SKTextPointer(startingIndex, length),
+                    firstGlyphRun,
+                    textFormat,
+                    textRun.FontMetrics,
+                    firstGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    textRun.Foreground);
+
+                var secondGlyphClusters = textRun.GlyphRun.GlyphClusters.Skip(length).Select(
+                    cluster => new SKGlyphCluster(
+                        cluster.TextPosition,
+                        cluster.Length,
+                        new SKRect(
+                            cluster.Bounds.Left - firstTextRun.Width,
+                            cluster.Bounds.Top,
+                            cluster.Bounds.Right - firstTextRun.Width,
+                            cluster.Bounds.Bottom))).ToArray();
+
+                var secondGlyphOffsets = secondGlyphClusters.Select(
+                    cluster => new SKPoint(cluster.Bounds.Left, cluster.Bounds.Top)).ToArray();
+
+                var secondGlyphRun = new SKGlyphRun(
+                    textRun.GlyphRun.GlyphIndices.Skip(length).ToArray(),
+                    secondGlyphOffsets,
+                    secondGlyphClusters);
+
+                secondTextRun = new SKTextRun(
+                    new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
+                    secondGlyphRun,
+                    textFormat,
+                    textRun.FontMetrics,
+                    secondGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    textRun.Foreground);
+            }
+            else
+            {
+                firstTextRun = CreateTextRun(
+                    text,
+                    new SKTextPointer(startingIndex, length),
+                    textFormat,
+                    foreground,
+                    true);
+
+                secondTextRun = CreateTextRun(
+                    text,
+                    new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
+                    textFormat,
+                    foreground,
+                    true);
+            }
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }

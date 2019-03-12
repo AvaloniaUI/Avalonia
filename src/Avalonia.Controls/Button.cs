@@ -32,6 +32,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Button : ContentControl
     {
+        private ICommand _command;
+
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
         /// </summary>
@@ -68,8 +70,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
-
-        private ICommand _command;
 
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
@@ -217,7 +217,7 @@ namespace Avalonia.Controls
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;

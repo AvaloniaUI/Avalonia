@@ -501,7 +501,6 @@ namespace Avalonia.Skia
         {
             var paint = new SKPaint
             {
-                IsStroke = false,
                 IsAntialias = true
             };
 
@@ -558,6 +557,13 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private PaintWrapper CreatePaint(Pen pen, Size targetSize)
         {
+            // In Skia 0 thickness means - use hairline rendering
+            // and for us it means - there is nothing rendered.
+            if (pen.Thickness == 0d)
+            {
+                return default;
+            }
+
             var rv = CreatePaint(pen.Brush, targetSize);
             var paint = rv.Paint;
 

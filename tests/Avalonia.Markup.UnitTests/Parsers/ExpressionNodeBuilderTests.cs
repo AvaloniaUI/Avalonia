@@ -37,6 +37,15 @@ namespace Avalonia.Markup.UnitTests.Parsers
         }
 
         [Fact]
+        public void Should_Build_Dot()
+        {
+            var result = ToList(ExpressionObserverBuilder.Parse("."));
+
+            Assert.Equal(1, result.Count);
+            Assert.IsType<EmptyExpressionNode>(result[0]);
+        }
+
+        [Fact]
         public void Should_Build_Property_Chain()
         {
             var result = ToList(ExpressionObserverBuilder.Parse("Foo.Bar.Baz"));

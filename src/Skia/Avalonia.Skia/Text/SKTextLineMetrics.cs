@@ -7,13 +7,13 @@ namespace Avalonia.Skia.Text
 {   
     public struct SKTextLineMetrics
     {
-        public SKTextLineMetrics(float width, float ascent, float descent, float leading)
+        public SKTextLineMetrics(float width, float xOrigin, float ascent, float descent, float leading)
         {
             Ascent = ascent;
             Descent = descent;
             Leading = leading;
             Size = new SKSize(width, descent - ascent + leading);
-            BaselineOrigin = new SKPoint(0, -ascent);
+            BaselineOrigin = new SKPoint(xOrigin, -ascent);
         }
 
         /// <summary>

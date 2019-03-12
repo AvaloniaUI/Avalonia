@@ -12,6 +12,7 @@ namespace Avalonia.Styling.UnitTests
     public abstract class TestTemplatedControl : ITemplatedControl, IStyleable
     {
         public event EventHandler<AvaloniaPropertyChangedEventArgs> PropertyChanged;
+        public event EventHandler<AvaloniaPropertyChangedEventArgs> InheritablePropertyChanged;
 
         public abstract Classes Classes
         {
