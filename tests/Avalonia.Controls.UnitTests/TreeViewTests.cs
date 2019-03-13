@@ -54,7 +54,7 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplates(target);
 
-            var items = target.ItemContainerGenerator.Index.Items
+            var items = target.ItemContainerGenerator.Index.Containers
                 .OfType<TreeViewItem>()
                 .ToList();
 
@@ -463,11 +463,11 @@ namespace Avalonia.Controls.UnitTests
             CreateNodeDataTemplate(target);
             ApplyTemplates(target);
 
-            Assert.Equal(5, target.ItemContainerGenerator.Index.Items.Count());
+            Assert.Equal(5, target.ItemContainerGenerator.Index.Containers.Count());
 
             tree[0].Children.RemoveAt(1);
 
-            Assert.Equal(3, target.ItemContainerGenerator.Index.Items.Count());
+            Assert.Equal(3, target.ItemContainerGenerator.Index.Containers.Count());
         }
 
         [Fact]
