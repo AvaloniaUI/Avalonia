@@ -18,6 +18,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
         public IPlatformHandle Handle { get; }
+        public Size MinClientSize { get; }
         public Size MaxClientSize { get; }
         public Size ClientSize { get; }
         public double Scaling { get; } = 1.0;

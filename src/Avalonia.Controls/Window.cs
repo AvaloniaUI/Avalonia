@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using System.ComponentModel;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -358,12 +359,8 @@ namespace Avalonia.Controls
                 return;
             }
 
-            using (BeginAutoSizing())
-            {
-                Renderer?.Stop();
-                PlatformImpl?.Hide();
-            }
-
+            Renderer?.Stop();
+            PlatformImpl?.Hide();
             IsVisible = false;
         }
 
@@ -382,12 +379,9 @@ namespace Avalonia.Controls
             EnsureInitialized();
             IsVisible = true;
             LayoutManager.ExecuteInitialLayoutPass(this);
+            PlatformImpl?.Show();
+            Renderer?.Start();
 
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Show();
-                Renderer?.Start();
-            }
             SetWindowStartupLocation(Owner?.PlatformImpl);
             OnOpened(EventArgs.Empty);
         }
@@ -444,24 +438,20 @@ namespace Avalonia.Controls
 
             var result = new TaskCompletionSource<TResult>();
 
-            using (BeginAutoSizing())
-            {
+            PlatformImpl?.ShowDialog(owner);
 
-                PlatformImpl?.ShowDialog(owner);
-
-                Renderer?.Start();
-                Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => this.Closed += x,
-                    x => this.Closed -= x)
-                    .Take(1)
-                    .Subscribe(_ =>
-                    {
-                        owner.Activate();
-                        result.SetResult((TResult)(_dialogResult ?? default(TResult)));
-                    });
-                OnOpened(EventArgs.Empty);
-            }
-
+            Renderer?.Start();
+            Observable.FromEventPattern<EventHandler, EventArgs>(
+                x => this.Closed += x,
+                x => this.Closed -= x)
+                .Take(1)
+                .Subscribe(_ =>
+                {
+                    owner.Activate();
+                    result.SetResult((TResult)(_dialogResult ?? default(TResult)));
+                });
+                
+            OnOpened(EventArgs.Empty);
             SetWindowStartupLocation(owner);
             return result.Task;
         }
@@ -520,7 +510,7 @@ namespace Avalonia.Controls
         {
             var sizeToContent = SizeToContent;
             var clientSize = ClientSize;
-            Size constraint = clientSize;
+            var constraint = clientSize;
 
             if ((sizeToContent & SizeToContent.Width) != 0)
             {
@@ -544,6 +534,16 @@ namespace Avalonia.Controls
                 result = result.WithHeight(clientSize.Height);
             }
 
+            if (PlatformImpl != null)
+            {
+                var minSize = PlatformImpl.MinClientSize;
+                var maxSize = PlatformImpl.MaxClientSize;
+
+                result = new Size(
+                    MathUtilities.Clamp(result.Width, minSize.Width, maxSize.Width),
+                    MathUtilities.Clamp(result.Height, minSize.Height, maxSize.Height));
+            }
+
             return result;
         }
 
@@ -557,7 +557,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
-            if (!AutoSizing)
+            if (clientSize != DesiredSize)
             {
                 SizeToContent = SizeToContent.Manual;
             }

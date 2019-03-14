@@ -301,6 +301,8 @@ namespace Avalonia.Native
             _native.BeginMoveDrag();
         }
 
+        public Size MinClientSize => Size.Empty;
+
         public Size MaxClientSize => _native.GetMaxClientSize().ToAvaloniaSize();
 
         public void SetTopmost(bool value)

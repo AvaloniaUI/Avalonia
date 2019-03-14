@@ -344,6 +344,8 @@ namespace Avalonia.Gtk3
             }
         }
 
+        public Size MinClientSize => Size.Empty;
+
         public Size MaxClientSize
         {
             get

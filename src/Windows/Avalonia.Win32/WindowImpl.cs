@@ -189,6 +189,17 @@ namespace Avalonia.Win32
             EnableWindow(_hwnd, _disabledBy.Count == 0);
         }
 
+        public Size MinClientSize
+        {
+            get
+            {
+                return (new Size(
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXMINTRACK),
+                    UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYMINTRACK))
+                    - BorderThickness) / Scaling;
+            }
+        }
+
         public Size MaxClientSize
         {
             get

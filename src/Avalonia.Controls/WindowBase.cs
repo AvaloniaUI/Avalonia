@@ -110,15 +110,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Whether an auto-size operation is in progress.
-        /// </summary>
-        protected bool AutoSizing
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Gets or sets the owner of the window.
         /// </summary>
         public WindowBase Owner
@@ -191,32 +182,13 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Begins an auto-resize operation.
-        /// </summary>
-        /// <returns>A disposable used to finish the operation.</returns>
-        /// <remarks>
-        /// When an auto-resize operation is in progress any resize events received will not be
-        /// cause the new size to be written to the <see cref="Layoutable.Width"/> and
-        /// <see cref="Layoutable.Height"/> properties.
-        /// </remarks>
-        protected IDisposable BeginAutoSizing()
-        {
-            AutoSizing = true;
-            return Disposable.Create(() => AutoSizing = false);
-        }
-
-        /// <summary>
         /// Carries out the arrange pass of the window.
         /// </summary>
         /// <param name="finalSize">The final window size.</param>
         /// <returns>The <paramref name="finalSize"/> parameter unchanged.</returns>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            using (BeginAutoSizing())
-            {
-                PlatformImpl?.Resize(finalSize);
-            }
-
+            PlatformImpl?.Resize(finalSize);
             return base.ArrangeOverride(PlatformImpl?.ClientSize ?? default(Size));
         }
 
@@ -254,11 +226,6 @@ namespace Avalonia.Controls
         /// <param name="clientSize">The new client size.</param>
         protected override void HandleResized(Size clientSize)
         {
-            if (!AutoSizing)
-            {
-                Width = clientSize.Width;
-                Height = clientSize.Height;
-            }
             ClientSize = clientSize;
             LayoutManager.ExecuteLayoutPass();
             Renderer?.Resized(clientSize);
