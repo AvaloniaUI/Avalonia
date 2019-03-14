@@ -100,7 +100,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         public void Should_Measure_String_Correctly(string input, double fontSize, double expWidth, double expHeight)
         {
             var fmt = Create(input, fontSize);
-            var size = fmt.Size;
+            var size = fmt.Bounds.Size;
 
             Assert.Equal(expWidth, size.Width, 2);
             Assert.Equal(expHeight, size.Height, 2);
