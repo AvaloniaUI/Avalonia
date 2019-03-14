@@ -50,7 +50,7 @@ namespace Avalonia
         }
 
         [Fact]
-        public void RoutedViewHostShouldStayInSyncWithRoutingState() 
+        public void RoutedViewHost_Should_Stay_In_Sync_With_RoutingState() 
         {
             var screen = new ScreenViewModel();
             var defaultContent = new TextBlock();
@@ -71,19 +71,25 @@ namespace Avalonia
             Assert.Equal(typeof(TextBlock), host.Content.GetType());
             Assert.Equal(defaultContent, host.Content);
 
+            var first = new FirstRoutableViewModel();
             screen.Router.Navigate
-                .Execute(new FirstRoutableViewModel())
+                .Execute(first)
                 .Subscribe();
 
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
+            Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
+            Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
 
+            var second = new SecondRoutableViewModel();
             screen.Router.Navigate
-                .Execute(new SecondRoutableViewModel())
+                .Execute(second)
                 .Subscribe();
 
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(SecondRoutableView), host.Content.GetType());
+            Assert.Equal(second, ((SecondRoutableView)host.Content).DataContext);
+            Assert.Equal(second, ((SecondRoutableView)host.Content).ViewModel);
 
             screen.Router.NavigateBack
                 .Execute(Unit.Default)
@@ -91,6 +97,8 @@ namespace Avalonia
 
             Assert.NotNull(host.Content);
             Assert.Equal(typeof(FirstRoutableView), host.Content.GetType());
+            Assert.Equal(first, ((FirstRoutableView)host.Content).DataContext);
+            Assert.Equal(first, ((FirstRoutableView)host.Content).ViewModel);
 
             screen.Router.NavigateBack
                 .Execute(Unit.Default)

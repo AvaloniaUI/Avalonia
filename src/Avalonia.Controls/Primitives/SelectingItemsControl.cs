@@ -10,6 +10,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -99,7 +100,7 @@ namespace Avalonia.Controls.Primitives
                 "SelectionChanged",
                 RoutingStrategies.Bubble);
 
-        private static readonly IList Empty = new object[0];
+        private static readonly IList Empty = Array.Empty<object>();
 
         private int _selectedIndex = -1;
         private object _selectedItem;
@@ -459,6 +460,23 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (!e.Handled)
+            {
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
+
+                if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
+                {
+                    SynchronizeItems(SelectedItems, Items?.Cast<object>());
+                    e.Handled = true;
+                }
+            }
+        }
+
         /// <summary>
         /// Moves the selection in the specified direction relative to the current selection.
         /// </summary>
@@ -615,31 +633,11 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets a range of items from an IEnumerable.
-        /// </summary>
-        /// <param name="items">The items.</param>
-        /// <param name="first">The index of the first item.</param>
-        /// <param name="last">The index of the last item.</param>
-        /// <returns>The items.</returns>
-        private static IEnumerable<object> GetRange(IEnumerable items, int first, int last)
-        {
-            var list = (items as IList) ?? items.Cast<object>().ToList();
-            int step = first > last ? -1 : 1;
-
-            for (int i = first; i != last; i += step)
-            {
-                yield return list[i];
-            }
-
-            yield return list[last];
-        }
-
-        /// <summary>
         /// Makes a list of objects equal another.
         /// </summary>
         /// <param name="items">The items collection.</param>
         /// <param name="desired">The desired items.</param>
-        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        internal static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
             int index = 0;
 
@@ -664,6 +662,26 @@ namespace Avalonia.Controls.Primitives
             {
                 items.RemoveAt(items.Count - 1);
             }
+        }
+
+        /// <summary>
+        /// Gets a range of items from an IEnumerable.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="first">The index of the first item.</param>
+        /// <param name="last">The index of the last item.</param>
+        /// <returns>The items.</returns>
+        private static IEnumerable<object> GetRange(IEnumerable items, int first, int last)
+        {
+            var list = (items as IList) ?? items.Cast<object>().ToList();
+            int step = first > last ? -1 : 1;
+
+            for (int i = first; i != last; i += step)
+            {
+                yield return list[i];
+            }
+
+            yield return list[last];
         }
 
         /// <summary>
