@@ -8,7 +8,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    public class GlRenderTarget : IRenderTarget
+    internal class GlRenderTarget : IRenderTarget
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;

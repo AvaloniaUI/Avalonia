@@ -165,6 +165,15 @@ namespace Avalonia.Rendering.SceneGraph
                 ++_drawOperationindex;
             }
         }
+        
+        public void Custom(ICustomDrawOperation custom)
+        {
+            var next = NextDrawAs<CustomDrawOperation>();
+            if (next == null || !next.Item.Equals(Transform, custom))
+                Add(new CustomDrawOperation(custom, Transform));
+            else
+                ++_drawOperationindex;
+        }
 
         /// <inheritdoc/>
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
