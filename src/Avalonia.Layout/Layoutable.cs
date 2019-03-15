@@ -309,6 +309,8 @@ namespace Avalonia.Layout
                 var previousDesiredSize = DesiredSize;
                 var desiredSize = default(Size);
 
+                Logger.Verbose(LogArea.Layout, this, "Measure started with constraint of {AvailableSize}", availableSize);
+
                 IsMeasureValid = true;
 
                 try
@@ -329,7 +331,7 @@ namespace Avalonia.Layout
                 DesiredSize = desiredSize;
                 _previousMeasure = availableSize;
 
-                Logger.Verbose(LogArea.Layout, this, "Measure requested {DesiredSize}", DesiredSize);
+                Logger.Verbose(LogArea.Layout, this, "Measure finished with desired size of {DesiredSize}", DesiredSize);
 
                 if (DesiredSize != previousDesiredSize)
                 {
@@ -351,18 +353,21 @@ namespace Avalonia.Layout
 
             if (!IsMeasureValid)
             {
+                Logger.Verbose(LogArea.Layout, this, "Arrange called without valid measure");
                 Measure(_previousMeasure ?? rect.Size);
             }
 
             if (!IsArrangeValid || _previousArrange != rect)
             {
-                Logger.Verbose(LogArea.Layout, this, "Arrange to {Rect} ", rect);
+                Logger.Verbose(LogArea.Layout, this, "Arrange started with bounds of {Bounds}", rect);
 
                 IsArrangeValid = true;
                 ArrangeCore(rect);
                 _previousArrange = rect;
 
                 LayoutUpdated?.Invoke(this, EventArgs.Empty);
+
+                Logger.Verbose(LogArea.Layout, this, "Arrange finished", rect);
             }
         }
 

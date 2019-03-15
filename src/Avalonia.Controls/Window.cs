@@ -15,6 +15,7 @@ using System.Linq;
 using JetBrains.Annotations;
 using System.ComponentModel;
 using Avalonia.Utilities;
+using Avalonia.Logging;
 
 namespace Avalonia.Controls
 {
@@ -559,6 +560,12 @@ namespace Avalonia.Controls
         {
             if (clientSize != DesiredSize)
             {
+                Logger.Debug(
+                    LogArea.Layout,
+                    this,
+                    "Set SizeToContent = Manual due to resize to {Size} with desired size of {DesiredSize}",
+                    clientSize,
+                    DesiredSize);
                 SizeToContent = SizeToContent.Manual;
             }
 

@@ -3,7 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
+using Avalonia.Logging;
+using Avalonia.Logging.Serilog;
 using Avalonia.Skia;
+using Serilog;
+using Serilog.Filters;
 
 namespace ControlCatalog.NetCore
 {
@@ -43,7 +47,11 @@ namespace ControlCatalog.NetCore
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>().UsePlatformDetect().UseSkia().UseReactiveUI();
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .UseSkia()
+                .UseReactiveUI()
+                .LogToDebug(LogArea.Layout, LogEventLevel.Verbose);
 
         static void ConsoleSilencer()
         {
