@@ -20,7 +20,10 @@ public partial class Build
     public string ForceNugetVersion { get; set; }
 
     [Parameter("skip-previewer")]
-    public bool SkipPreviewer { get; set; }
+    public bool SkipPreviewer { get; set; } = IsLocalBuild;
+
+    [Parameter("nuget-buildtag")]
+    public string NugetBuildTag { get; set; }
 
     [Parameter("force-dotnetcorebuild")]
     public bool ForceDotNetCoreBuild { get; set; }
@@ -105,6 +108,20 @@ public partial class Build
             IsMyGetRelease = IsReleasable;
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
+            if (!string.IsNullOrEmpty(b.NugetBuildTag))
+            {
+                var version = GetVersion();
+                string versuffix = "";
+                int si = version.IndexOf('-');
+                if(si > 0)
+                {
+                    versuffix = version.Substring(si);
+                    version = version.Replace(versuffix,"");
+                }
+                //let's force well known version meaning something to us
+                b.ForceNugetVersion = $"{version}{(string.IsNullOrEmpty(b.NugetBuildTag) ? "" : $"{b.NugetBuildTag}")}{versuffix}";
+            }
+           
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
