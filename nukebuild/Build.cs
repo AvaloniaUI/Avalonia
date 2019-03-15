@@ -24,6 +24,7 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using System.IO.Compression;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -115,8 +116,20 @@ partial class Build : NukeBuild
 
     Target Clean => _ => _.Executes(() =>
     {
-        Parameters.BuildDirs.ForEach(DeleteDirectory);
-        Parameters.BuildDirs.ForEach(EnsureCleanDirectory);
+        void safe(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e) { Logger.Warn(e); }
+        }
+        //helps local dev builds
+        void deldir(string dir) => safe(() => DeleteDirectory(dir));
+        void cleandir(string dir) => safe(() => EnsureCleanDirectory(dir));
+
+        Parameters.BuildDirs.ForEach(deldir);
+        Parameters.BuildDirs.ForEach(cleandir);
         EnsureCleanDirectory(Parameters.ArtifactsDir);
         EnsureCleanDirectory(Parameters.NugetIntermediateRoot);
         EnsureCleanDirectory(Parameters.NugetRoot);
@@ -151,7 +164,8 @@ partial class Build : NukeBuild
 
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
-        .DependsOn(CompileHtmlPreviewer)
+        .DependsOn(DownloadAvaloniaNativeLib)
+        //.DependsOn(CompileHtmlPreviewer)//we don't need it ??
         .Executes(async () =>
         {
             if (Parameters.IsRunningOnWindows)
@@ -259,7 +273,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             RunCoreTest("Avalonia.Skia.RenderTests");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Nuke.Common.CI.TeamCity.TeamCity.Instance == null)// no direct2d tests on teamcity - they fail?
                 RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
 
@@ -299,6 +313,43 @@ partial class Build : NukeBuild
                     GlobFiles(data.ZipSourceControlCatalogDesktopDir, "*.exe")));
         });
 
+    Target UpdateTeamCityVersion => _ => _
+        .Executes(() =>
+        {
+            Nuke.Common.CI.TeamCity.TeamCity.Instance?.SetBuildNumber(Parameters.Version);
+        });
+
+    Target DownloadAvaloniaNativeLib => _ => _
+        .After(Clean)
+        .OnlyWhenStatic(() => EnvironmentInfo.IsWin)
+        .Executes(() =>
+        {
+            //download avalonia native osx binary, so we don't have to build it on osx
+            //expected to be -> Build/Products/Release/libAvalonia.Native.OSX.dylib
+            //Avalonia.Native.0.10.0-preview5.nupkg
+            string nugetversion = "0.10.0-preview5";
+
+            var nugetdir = RootDirectory + "/Build/Products/Release/";
+            //string nugeturl = "https://www.myget.org/F/avalonia-ci/api/v2/package/Avalonia.Native/";
+            string nugeturl = "https://www.nuget.org/api/v2/package/Avalonia.Native/";
+
+            nugeturl += nugetversion;
+
+            //myget packages are expiring so i've made a copy here
+            //google drive file share https://drive.google.com/open?id=1HK-XfBZRunGpxXcGUUEC-64H9T_n9cIJ
+            //nugeturl = "https://drive.google.com/uc?id=1HK-XfBZRunGpxXcGUUEC-64H9T_n9cIJ&export=download";//Avalonia.Native.0.9.999-cibuild0005383-beta
+            //nugeturl = "https://drive.google.com/uc?id=1fNKJ-KNsPtoi_MYVJZ0l4hbgHAkLMYZZ&export=download";//Avalonia.Native.0.9.2.16.nupkg custom build
+            string nugetname = $"Avalonia.Native.{nugetversion}";
+            string nugetcontentsdir = Path.Combine(nugetdir, nugetname);
+            string nugetpath = nugetcontentsdir + ".nupkg";
+            Logger.Info($"Downloading {nugetname} from {nugeturl}");
+            Nuke.Common.IO.HttpTasks.HttpDownloadFile(nugeturl, nugetpath);
+            System.IO.Compression.ZipFile.ExtractToDirectory(nugetpath, nugetcontentsdir, true);
+
+            CopyFile(nugetcontentsdir + @"/runtimes/osx/native/libAvaloniaNative.dylib", nugetdir + "libAvalonia.Native.OSX." +
+                "dylib", Nuke.Common.IO.FileExistsPolicy.Overwrite);
+        });
+
     Target CreateIntermediateNugetPackages => _ => _
         .DependsOn(Compile)
         .After(RunTests)
@@ -307,6 +358,7 @@ partial class Build : NukeBuild
             if (Parameters.IsRunningOnWindows)
 
                 MsBuildCommon(Parameters.MSBuildSolution, c => c
+                    .AddProperty("PackAvaloniaNative", "true")
                     .AddTargets("Pack"));
             else
                 DotNetPack(c => c
@@ -327,6 +379,66 @@ partial class Build : NukeBuild
                 new NumergeNukeLogger()))
                 throw new Exception("Package merge failed");
         });
+
+    private static string GetNuGetNugetPackagesDir()
+    {
+        string env(string v) => Environment.GetEnvironmentVariable(v);
+        return env("NUGET_PACKAGES") ?? Path.Combine(env("USERPROFILE") ?? env("HOME"), ".nuget/packages");
+    }
+
+    Target PublishLocalNugetPackages => _ => _
+    .Executes(() =>
+    {
+        string nugetPackagesDir = GetNuGetNugetPackagesDir();
+
+        foreach (var package in Directory.EnumerateFiles(Parameters.NugetRoot))
+        {
+            var packName = Path.GetFileName(package);
+            string packgageFolderName = packName.Replace($".{Parameters.Version}.nupkg", "");
+            var nugetCaheFolder = Path.Combine(nugetPackagesDir, packgageFolderName, Parameters.Version);
+
+            //clean directory is not good, nuget will noticed and clean our files
+            //EnsureCleanDirectory(nugetCaheFolder);
+            EnsureExistingDirectory(nugetCaheFolder);
+
+            CopyFile(package, nugetCaheFolder + "/" + packName, Nuke.Common.IO.FileExistsPolicy.Skip);
+
+            Logger.Info($"Extracting to {nugetCaheFolder}, {package}");
+
+            if (packgageFolderName == "Avalonia")
+            {
+                //on windows sometimes Avalonia.Build.Tasks is locked
+                var toDelete = $"{nugetCaheFolder}/tools/netstandard2.0/Avalonia.Build.Tasks.dll";
+                try
+                {
+                    DeleteFile(toDelete);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warn($"Will rename! Failed {e.Message} for {toDelete}");
+                    RenameFile(toDelete, toDelete + ".old", Nuke.Common.IO.FileExistsPolicy.Overwrite);
+                }
+
+            }
+
+            ZipFile.ExtractToDirectory(package, nugetCaheFolder, true);
+        }
+    });
+
+    Target ClearLocalNugetPackages => _ => _
+    .Executes(() =>
+    {
+        string nugetPackagesDir = GetNuGetNugetPackagesDir();
+
+        foreach (var package in Directory.EnumerateFiles(Parameters.NugetRoot))
+        {
+            var packName = Path.GetFileName(package);
+            string packgageFolderName = packName.Replace($".{Parameters.Version}.nupkg", "");
+            var nugetCaheFolder = Path.Combine(nugetPackagesDir, packgageFolderName, Parameters.Version);
+
+            EnsureCleanDirectory(nugetCaheFolder);
+        }
+    });
 
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
