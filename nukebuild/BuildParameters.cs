@@ -21,7 +21,10 @@ public partial class Build
     
     [Parameter("force-nuget-version")]
     public string ForceNugetVersion { get; set; }
-    
+
+    [Parameter("nuget-buildtag")]
+    public string NugetBuildTag { get; set; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
@@ -101,6 +104,12 @@ public partial class Build
             IsMyGetRelease = IsReleasable;
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
+            if (!string.IsNullOrEmpty(b.NugetBuildTag))
+            {
+                //let's force well known version meaning something to us
+                b.ForceNugetVersion = $"{GetVersion()}{(string.IsNullOrEmpty(b.NugetBuildTag) ? "" : $"{b.NugetBuildTag}")}";
+            }
+           
             // VERSION
             Version = b.ForceNugetVersion ?? GetVersion();
 
