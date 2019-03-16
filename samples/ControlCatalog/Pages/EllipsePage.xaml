@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.EllipsePage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h1">Ellipse</TextBlock>
+    <TextBlock Classes="h2">A control which represents an ellipse with a fill and a stroke.</TextBlock>
+
+    <StackPanel Orientation="Vertical"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                Spacing="16">
+      <Ellipse Width="200" Height="200" Fill="Red" Stroke="Blue" StrokeThickness="{Binding #StrokeThickness.Value}"/>
+
+      <Ellipse Width="200" Height="100" Fill="Red" Stroke="Blue" StrokeThickness="{Binding #StrokeThickness.Value}"/>
+
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock Grid.Column="0" Text="Stroke thickness"/>
+        <Slider Grid.Column="1"  Name="StrokeThickness" Maximum="10" Value="1"/>
+      </Grid>
+      
+    </StackPanel>
+  </StackPanel>
+</UserControl>

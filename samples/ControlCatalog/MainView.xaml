@@ -23,14 +23,17 @@
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
+      <TabItem Header="Ellipse"><pages:EllipsePage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
+      <TabItem Header="Line"><pages:LinePage/></TabItem>
       <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
 	  <TabItem Header="NumericUpDown"><pages:NumericUpDownPage/></TabItem>
       <TabItem Header="ProgressBar"><pages:ProgressBarPage/></TabItem>
       <TabItem Header="RadioButton"><pages:RadioButtonPage/></TabItem>
+      <TabItem Header="Rectangle"><pages:RectanglePage/></TabItem>
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>

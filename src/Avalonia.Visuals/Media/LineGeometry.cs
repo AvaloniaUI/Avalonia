@@ -73,16 +73,8 @@ namespace Avalonia.Media
         protected override IGeometryImpl CreateDefiningGeometry()
         {
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            var geometry = factory.CreateStreamGeometry();
 
-            using (var context = geometry.Open())
-            {
-                context.BeginFigure(StartPoint, false);
-                context.LineTo(EndPoint);
-                context.EndFigure(false);
-            }
-
-            return geometry;
+            return factory.CreateLineGeometry(StartPoint, EndPoint);
         }
     }
 }

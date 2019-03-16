@@ -50,6 +50,12 @@ namespace Avalonia.Skia
             return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
         }
 
+        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
+
+        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
+
+        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
+
         /// <inheritdoc />
         public IStreamGeometryImpl CreateStreamGeometry()
         {

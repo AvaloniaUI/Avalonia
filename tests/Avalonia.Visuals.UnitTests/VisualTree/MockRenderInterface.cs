@@ -56,6 +56,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();

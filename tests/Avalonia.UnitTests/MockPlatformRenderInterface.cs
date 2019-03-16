@@ -22,6 +22,21 @@ namespace Avalonia.UnitTests
             return Mock.Of<IFormattedTextImpl>();
         }
 
+        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             return Mock.Of<IRenderTarget>();
