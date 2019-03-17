@@ -27,20 +27,10 @@ namespace Avalonia.Skia
 
         public static SKMatrix ToSKMatrix(this Matrix m)
         {
-            var sm = new SKMatrix
-            {
-                ScaleX = (float)m.M11,
-                SkewX = (float)m.M21,
-                TransX = (float)m.M31,
-                SkewY = (float)m.M12,
-                ScaleY = (float)m.M22,
-                TransY = (float)m.M32,
-                Persp0 = 0,
-                Persp1 = 0,
-                Persp2 = 1
-            };
-
-            return sm;
+            return new SKMatrix(
+                (float)m.M11, (float)m.M21, (float)m.M31,
+                (float)m.M12, (float)m.M22, (float)m.M32,
+                0, 0, 1);
         }
 
         public static SKColor ToSKColor(this Media.Color c)

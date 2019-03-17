@@ -10,8 +10,10 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Utilities;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
+using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -491,31 +493,14 @@ namespace Avalonia.Skia
             }
         }
 
-        /// <summary>
-        /// Creates paint wrapper for given brush.
-        /// </summary>
-        /// <param name="brush">Source brush.</param>
-        /// <param name="targetSize">Target size.</param>
-        /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize)
+        private PaintWrapper CreateComplexPaint(IBrush brush, Size targetSize, double opacity)
         {
-            var paint = new SKPaint
-            {
-                IsAntialias = true
-            };
+            var paintEntry = PaintPool.General.Allocate();
 
-            var paintWrapper = new PaintWrapper(paint);
+            var paintWrapper = new PaintWrapper(paintEntry);
+            var paint = paintWrapper.Paint;
 
-            double opacity = brush.Opacity * _currentOpacity;
-
-            if (brush is ISolidColorBrush solid)
-            {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
-
-                return paintWrapper;
-            }
-
-            paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity));
 
             if (brush is IGradientBrush gradient)
             {
@@ -550,6 +535,33 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
+        /// Creates paint wrapper for given brush.
+        /// </summary>
+        /// <param name="brush">Source brush.</param>
+        /// <param name="targetSize">Target size.</param>
+        /// <param name="isPen">If the paint wrapper will be used for the pen creation.</param>
+        /// <returns>Paint wrapper for given brush.</returns>
+        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize, bool isPen = false)
+        {
+            double opacity = brush.Opacity * _currentOpacity;
+
+            if (brush is ISolidColorBrush solid)
+            {
+                var pool = !isPen ? PaintPool.SolidColorBrush : PaintPool.SolidColorPen;
+
+                var paintEntry = pool.Allocate();
+                var paint = paintEntry.Paint;
+                var color = solid.Color;
+
+                paint.Color = new SKColor(color.R, color.G, color.B, (byte) (color.A * opacity));
+
+                return new PaintWrapper(paintEntry);
+            }
+
+            return CreateComplexPaint(brush, targetSize, opacity);
+        }
+
+        /// <summary>
         /// Creates paint wrapper for given pen.
         /// </summary>
         /// <param name="pen">Source pen.</param>
@@ -564,7 +576,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(pen.Brush, targetSize);
+            var rv = CreatePaint(pen.Brush, targetSize, true);
             var paint = rv.Paint;
 
             paint.IsStroke = true;
@@ -628,6 +640,10 @@ namespace Avalonia.Skia
                 paint.PathEffect = pe;
                 rv.AddDisposable(pe);
             }
+            else
+            {
+                paint.PathEffect = null;
+            }
 
             return rv;
         }
@@ -679,20 +695,94 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
+        /// Skia paint pool.
+        /// <remarks>
+        /// </remarks>
+        /// There is a special case for solid color brushes, as this is very common case
+        /// and using a dedicated pool that do not have to use reset is beneficial.
+        /// Not using reset is possible when all properties of a <see cref="SKPaint"/> will be overwritten anyway.
+        /// </summary>
+        internal class PaintPool
+        {
+            private readonly bool _needsReset;
+            private readonly ThreadSafeObjectPoolWithFactory<SKPaint> _pool;
+
+            public PaintPool(bool needsReset, Func<SKPaint> factory)
+            {
+                _needsReset = needsReset;
+                _pool = new ThreadSafeObjectPoolWithFactory<SKPaint>(factory);
+            }
+
+            public static readonly PaintPool SolidColorBrush = new PaintPool(false, () => new SKPaint
+            {
+                IsAntialias = true
+            });
+
+            public static readonly PaintPool SolidColorPen = new PaintPool(false, () => new SKPaint
+            {
+                IsAntialias = true,
+                IsStroke = true
+            });
+
+            public static readonly PaintPool General = new PaintPool(true, () => new SKPaint
+            {
+                IsAntialias = true
+            });
+
+            [MustUseReturnValue]
+            public Entry Allocate()
+            {
+                SKPaint paint = _pool.Get();
+
+                return new Entry(paint, this);
+            }
+
+            private void Free(SKPaint paint)
+            {
+                Debug.Assert(paint != null);
+
+                if (_needsReset)
+                {
+                    paint.Reset();
+                }
+
+                _pool.Return(paint);
+            }
+
+            public readonly struct Entry : IDisposable
+            {
+                public readonly SKPaint Paint;
+                public readonly PaintPool Pool;
+
+                public Entry(SKPaint paint, PaintPool pool)
+                {
+                    Paint = paint;
+                    Pool = pool;
+                }
+
+                public void Dispose()
+                {
+                    Pool?.Free(Paint);
+                }
+            }
+        }
+
+        /// <summary>
         /// Skia paint wrapper.
         /// </summary>
         internal struct PaintWrapper : IDisposable
         {
-            //We are saving memory allocations there
             public readonly SKPaint Paint;
-
+            private PaintPool.Entry _poolEntry;
+            // We are saving memory allocations there
             private IDisposable _disposable1;
             private IDisposable _disposable2;
             private IDisposable _disposable3;
 
-            public PaintWrapper(SKPaint paint)
+            public PaintWrapper(PaintPool.Entry paintEntry)
             {
-                Paint = paint;
+                Paint = paintEntry.Paint;
+                _poolEntry = paintEntry;
 
                 _disposable1 = null;
                 _disposable2 = null;
@@ -740,10 +830,14 @@ namespace Avalonia.Skia
             /// <inheritdoc />
             public void Dispose()
             {
-                Paint?.Dispose();
-                _disposable1?.Dispose();
-                _disposable2?.Dispose();
-                _disposable3?.Dispose();
+                _poolEntry.Dispose();
+
+                if (_disposable1 != null)
+                {
+                    _disposable1.Dispose();
+                    _disposable2?.Dispose();
+                    _disposable3?.Dispose();
+                }
             }
         }
     }
