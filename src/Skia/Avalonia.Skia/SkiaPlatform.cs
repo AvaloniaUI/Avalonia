@@ -13,7 +13,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Initialize Skia platform.
         /// </summary>
-        public static void Initialize(ICustomSkiaGpu customGpu)
+        public static void Initialize(ICustomSkiaGpu customGpu = null)
         {
             var renderInterface = new PlatformRenderInterface(customGpu);
 
