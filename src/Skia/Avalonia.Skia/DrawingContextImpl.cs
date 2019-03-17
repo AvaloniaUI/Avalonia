@@ -702,7 +702,7 @@ namespace Avalonia.Skia
         /// and using a dedicated pool that do not have to use reset is beneficial.
         /// Not using reset is possible when all properties of a <see cref="SKPaint"/> will be overwritten anyway.
         /// </summary>
-        internal class PaintPool
+        internal sealed class PaintPool
         {
             private readonly bool _needsReset;
             private readonly ThreadSafeObjectPoolWithFactory<SKPaint> _pool;
