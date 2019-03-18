@@ -34,6 +34,7 @@
       <TabItem Header="Slider"><pages:SliderPage/></TabItem>
       <TabItem Header="TabControl"><pages:TabControlPage/></TabItem>
       <TabItem Header="TextBox"><pages:TextBoxPage/></TabItem>
+      <TabItem Header="GlyphRun"><pages:GlyphRunPage/></TabItem>
       <TabItem Header="ToolTip"><pages:ToolTipPage/></TabItem>
       <TabItem Header="TreeView"><pages:TreeViewPage/></TabItem>
       <TabItem Header="Viewbox"><pages:ViewboxPage/></TabItem>

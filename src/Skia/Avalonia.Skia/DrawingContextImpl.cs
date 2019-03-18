@@ -76,8 +76,10 @@ namespace Avalonia.Skia
             _canTextUseLcdRendering = !createInfo.DisableTextLcdRendering;
             _grContext = createInfo.GrContext;
             if (_grContext != null)
+            {
                 Monitor.Enter(_grContext);
-            
+            }
+
             Canvas = createInfo.Canvas;
 
             if (Canvas == null)
@@ -224,6 +226,40 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        {
+            using (var paint = CreatePaint(foreground, glyphRun.Size))
+            {
+                var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
+
+                paint.Paint.TextSize = (float)(12 * glyphRun.RenderingEmSize);
+
+                paint.Paint.Typeface = glyphTypefaceImpl.Typeface;
+
+                paint.Paint.TextEncoding = SKTextEncoding.GlyphId;
+
+                var glyphOffsets = glyphRun.GlyphOffsets?.Select(x => new SKPoint((float)x.X, (float)x.Y)).ToArray();
+
+                var currentMatrix = Canvas.TotalMatrix;
+
+                Canvas.Translate((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+
+                var glyphIndices = glyphRun.GlyphIndices.SelectMany(BitConverter.GetBytes).ToArray();
+
+                if (glyphOffsets != null)
+                {
+                    Canvas.DrawPositionedText(glyphIndices, glyphOffsets, paint.Paint);
+                }
+                else
+                {
+                    Canvas.DrawText(glyphIndices, 0, 0, paint.Paint);
+                }
+
+                Canvas.SetMatrix(currentMatrix);
+            }
+        }
+
+        /// <inheritdoc />
         public IRenderTargetBitmapImpl CreateLayer(Size size)
         {
             return CreateRenderTarget(size);
@@ -258,8 +294,11 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public virtual void Dispose()
         {
-            if(_disposed)
+            if (_disposed)
+            {
                 return;
+            }
+
             try
             {
                 if (_grContext != null)
@@ -271,7 +310,10 @@ namespace Avalonia.Skia
                 if (_disposables != null)
                 {
                     foreach (var disposable in _disposables)
+                    {
                         disposable?.Dispose();
+                    }
+
                     _disposables = null;
                 }
             }

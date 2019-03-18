@@ -14,6 +14,13 @@ using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolati
 
 namespace Avalonia.Direct2D1.Media
 {
+    using System.Linq;
+
+    using SharpDX.DirectWrite;
+
+    using BitmapRenderTarget = SharpDX.Direct2D1.BitmapRenderTarget;
+    using GlyphRun = Avalonia.Media.GlyphRun;
+
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
@@ -286,6 +293,33 @@ namespace Avalonia.Direct2D1.Media
         }
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        {
+            using (var brush = CreateBrush(foreground, glyphRun.Size))
+            using (var run = new SharpDX.DirectWrite.GlyphRun())
+            {
+                var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
+
+                run.FontFace = glyphTypefaceImpl.FontFace;
+                run.FontSize = 12 * (float)glyphRun.RenderingEmSize;
+                run.Indices = glyphRun.GlyphIndices.Select(x => (short)x).ToArray();
+                run.Advances = glyphRun.GlyphAdvances.Select(x => (float)x).ToArray();
+                run.Offsets = glyphRun.GlyphOffsets?.Select(
+                    x => new GlyphOffset()
+                    {
+                        AdvanceOffset = (float)x.X,
+                        AscenderOffset = (float)x.Y
+                    }).ToArray();
+
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), run, brush.PlatformBrush, MeasuringMode.Natural);
+            }
+        }
+
+        /// <summary>
         /// Draws a filled rectangle.
         /// </summary>
         /// <param name="brush">The brush.</param>
@@ -374,7 +408,9 @@ namespace Avalonia.Direct2D1.Media
                 _layers.Push(layer);
             }
             else
+            {
                 _layers.Push(null);
+            }
         }
 
         public void PopOpacity()

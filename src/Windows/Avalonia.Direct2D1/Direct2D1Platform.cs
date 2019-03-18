@@ -203,5 +203,10 @@ namespace Avalonia.Direct2D1
         {
             return new WicBitmapImpl(format, data, size, dpi, stride);
         }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return new GlyphTypefaceImpl(typeface);
+        }
     }
 }

@@ -148,6 +148,21 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground brush.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        {
+            Contract.Requires<ArgumentNullException>(glyphRun != null);
+
+            if (foreground != null)
+            {
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun);
+            }
+        }
+
+        /// <summary>
         /// Draws a filled rectangle.
         /// </summary>
         /// <param name="brush">The brush.</param>

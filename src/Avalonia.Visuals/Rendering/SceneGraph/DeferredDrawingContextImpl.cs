@@ -182,6 +182,21 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
+        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        {
+            var next = NextDrawAs<GlyphRunNode>();
+
+            if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
+            {
+                Add(new GlyphRunNode(Transform, foreground, glyphRun, CreateChildScene(foreground)));
+            }
+            else
+            {
+                ++_drawOperationindex;
+            }
+        }
+
+        /// <inheritdoc/>
         public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
         {
             var next = NextDrawAs<RectangleNode>();

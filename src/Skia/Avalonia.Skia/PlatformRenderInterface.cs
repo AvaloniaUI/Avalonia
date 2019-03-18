@@ -32,7 +32,7 @@ namespace Avalonia.Skia
                     ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
                 {
-                    
+
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }
             }
@@ -76,6 +76,11 @@ namespace Avalonia.Skia
         public IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new ImmutableBitmap(size, dpi, stride, format, data);
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return new GlyphTypefaceImpl(TypefaceCache.GetSKTypeface(typeface));
         }
 
         /// <inheritdoc />

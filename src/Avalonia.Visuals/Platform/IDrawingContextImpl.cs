@@ -76,6 +76,13 @@ namespace Avalonia.Platform
         void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
 
         /// <summary>
+        /// Draws a glyph run.
+        /// </summary>
+        /// <param name="foreground">The foreground.</param>
+        /// <param name="glyphRun">The glyph run.</param>
+        void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun);
+
+        /// <summary>
         /// Draws a filled rectangle.
         /// </summary>
         /// <param name="brush">The brush.</param>
@@ -138,6 +145,6 @@ namespace Avalonia.Platform
         /// <summary>
         /// Pops the latest pushed geometry clip.
         /// </summary>
-        void PopGeometryClip();
+        void PopGeometryClip();        
     }
 }
