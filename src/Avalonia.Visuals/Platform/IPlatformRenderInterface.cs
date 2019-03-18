@@ -92,5 +92,12 @@ namespace Avalonia.Platform
         /// <param name="stride">The number of bytes per row.</param>
         /// <returns>An <see cref="IBitmapImpl"/>.</returns>
         IBitmapImpl LoadBitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride);
+
+        /// <summary>
+        /// Creates a glyph typeface implementation for the specified typeface.
+        /// </summary>
+        /// <param name="typeface"></param>
+        /// <returns></returns>
+        IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
     }
 }
