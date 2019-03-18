@@ -93,7 +93,7 @@ namespace Avalonia.Skia
 
             Transform = Matrix.Identity;
         }
-        
+
         /// <summary>
         /// Skia canvas.
         /// </summary>
@@ -154,14 +154,14 @@ namespace Avalonia.Skia
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
+                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
         /// <inheritdoc />
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (GeometryImpl) geometry;
+            var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -218,11 +218,9 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            using (var paint = CreatePaint(foreground, text.Bounds.Size))
-            {
-                var textImpl = (FormattedTextImpl) text;
-                textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
-            }
+            var textImpl = (FormattedTextImpl)text;
+
+            textImpl.TextLayout.Draw(this, foreground, Canvas, origin.ToSKPoint());
         }
 
         /// <inheritdoc />
@@ -329,7 +327,9 @@ namespace Avalonia.Skia
             set
             {
                 if (_currentTransform == value)
+                {
                     return;
+                }
 
                 _currentTransform = value;
 
@@ -359,36 +359,36 @@ namespace Avalonia.Skia
             switch (gradientBrush)
             {
                 case ILinearGradientBrush linearGradient:
-                {
-                    var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
-                    var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
-
-                    // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
                     {
-                        paintWrapper.Paint.Shader = shader;
-                    }
+                        var start = linearGradient.StartPoint.ToPixels(targetSize).ToSKPoint();
+                        var end = linearGradient.EndPoint.ToPixels(targetSize).ToSKPoint();
 
-                    break;
-                }
+                        // would be nice to cache these shaders possibly?
+                        using (var shader =
+                            SKShader.CreateLinearGradient(start, end, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+
+                        break;
+                    }
                 case IRadialGradientBrush radialGradient:
-                {
-                    var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
-                    var radius = (float)(radialGradient.Radius * targetSize.Width);
-
-                    // TODO: There is no SetAlpha in SkiaSharp
-                    //paint.setAlpha(128);
-
-                    // would be nice to cache these shaders possibly?
-                    using (var shader =
-                        SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
                     {
-                        paintWrapper.Paint.Shader = shader;
-                    }
+                        var center = radialGradient.Center.ToPixels(targetSize).ToSKPoint();
+                        var radius = (float)(radialGradient.Radius * targetSize.Width);
 
-                    break;
-                }
+                        // TODO: There is no SetAlpha in SkiaSharp
+                        //paint.setAlpha(128);
+
+                        // would be nice to cache these shaders possibly?
+                        using (var shader =
+                            SKShader.CreateRadialGradient(center, radius, stopColors, stopOffsets, tileMode))
+                        {
+                            paintWrapper.Paint.Shader = shader;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -510,12 +510,12 @@ namespace Avalonia.Skia
 
             if (brush is ISolidColorBrush solid)
             {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte)(solid.Color.A * opacity));
 
                 return paintWrapper;
             }
 
-            paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity));
 
             if (brush is IGradientBrush gradient)
             {
@@ -568,7 +568,7 @@ namespace Avalonia.Skia
             var paint = rv.Paint;
 
             paint.IsStroke = true;
-            paint.StrokeWidth = (float) pen.Thickness;
+            paint.StrokeWidth = (float)pen.Thickness;
 
             // Need to modify dashes due to Skia modifying their lengths
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
@@ -608,7 +608,7 @@ namespace Avalonia.Skia
                     break;
             }
 
-            paint.StrokeMiter = (float) pen.MiterLimit;
+            paint.StrokeMiter = (float)pen.MiterLimit;
 
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
@@ -620,10 +620,10 @@ namespace Avalonia.Skia
                     var lengthModifier = i % 2 == 0 ? dashLengthModifier : gapLengthModifier;
 
                     // Avalonia dash lengths are relative, but Skia takes absolute sizes - need to scale
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth + lengthModifier;
+                    dashesArray[i] = (float)srcDashes[i] * paint.StrokeWidth + lengthModifier;
                 }
 
-                var pe = SKPathEffect.CreateDash(dashesArray, (float) pen.DashStyle.Offset);
+                var pe = SKPathEffect.CreateDash(dashesArray, (float)pen.DashStyle.Offset);
 
                 paint.PathEffect = pe;
                 rv.AddDisposable(pe);
@@ -662,7 +662,7 @@ namespace Avalonia.Skia
             private readonly SKColor _color;
             private readonly SKShader _shader;
             private readonly SKPaint _paint;
-            
+
             public PaintState(SKPaint paint, SKColor color, SKShader shader)
             {
                 _paint = paint;
@@ -736,7 +736,7 @@ namespace Avalonia.Skia
                         "PaintWrapper disposable object limit reached. You need to add extra struct fields to support more disposables.");
                 }
             }
-            
+
             /// <inheritdoc />
             public void Dispose()
             {

@@ -16,6 +16,7 @@ namespace Avalonia.Media
         private IFormattedTextImpl _platformImpl;
         private IReadOnlyList<FormattedTextStyleSpan> _spans;
         private Typeface _typeface;
+        private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
         private TextWrapping _wrapping;
@@ -59,6 +60,15 @@ namespace Avalonia.Media
         {
             get => _typeface;
             set => Set(ref _typeface, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => _fontSize;
+            set => Set(ref _fontSize, value);
         }
 
         /// <summary>
@@ -110,6 +120,7 @@ namespace Avalonia.Media
                     _platformImpl = _platform.CreateFormattedText(
                         _text,
                         _typeface,
+                        _fontSize,
                         _textAlignment,
                         _wrapping,
                         _constraint,
