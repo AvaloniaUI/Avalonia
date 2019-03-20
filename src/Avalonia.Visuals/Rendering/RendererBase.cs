@@ -45,7 +45,7 @@ namespace Avalonia.Rendering
                 _fpsText.Text = string.Format("FPS: {0:000}", _fps);
             }
 
-            var size = _fpsText.Measure();
+            var size = _fpsText.Bounds.Size;
             var rect = new Rect(clientRect.Right - size.Width, 0, size.Width, size.Height);
 
             context.Transform = Matrix.Identity;

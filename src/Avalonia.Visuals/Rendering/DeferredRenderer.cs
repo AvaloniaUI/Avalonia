@@ -393,24 +393,36 @@ namespace Avalonia.Rendering
                         }
                         else
                         {
+                            var scale = scene.Scaling;
+
                             foreach (var rect in layer.Dirty)
                             {
+                                var snappedRect = SnapToDevicePixels(rect, scale);
                                 context.Transform = Matrix.Identity;
-                                context.PushClip(rect);
+                                context.PushClip(snappedRect);
                                 context.Clear(Colors.Transparent);
-                                Render(context, node, layer.LayerRoot, rect);
+                                Render(context, node, layer.LayerRoot, snappedRect);
                                 context.PopClip();
 
                                 if (DrawDirtyRects)
                                 {
-                                    _dirtyRectsDisplay.Add(rect);
+                                    _dirtyRectsDisplay.Add(snappedRect);
                                 }
                             }
                         }
                     }
                 }
             }
+        }
 
+        private static Rect SnapToDevicePixels(Rect rect, double scale)
+        {
+            return new Rect(
+                Math.Floor(rect.X * scale) / scale,
+                Math.Floor(rect.Y * scale) / scale,
+                Math.Ceiling(rect.Width * scale) / scale,
+                Math.Ceiling(rect.Height * scale) / scale);
+                
         }
 
         private void RenderOverlay(Scene scene, IDrawingContextImpl parentContent)
