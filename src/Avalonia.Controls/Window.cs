@@ -558,7 +558,19 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void HandleResized(Size clientSize)
         {
-            if (clientSize != DesiredSize)
+            var manuallySized = false;
+
+            if ((SizeToContent & SizeToContent.Width) != 0)
+            {
+                manuallySized |= clientSize.Width != DesiredSize.Width;
+            }
+
+            if ((SizeToContent & SizeToContent.Height) != 0)
+            {
+                manuallySized |= clientSize.Height != DesiredSize.Height;
+            }
+
+            if (manuallySized)
             {
                 Logger.Debug(
                     LogArea.Layout,
