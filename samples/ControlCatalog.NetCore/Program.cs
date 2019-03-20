@@ -51,7 +51,7 @@ namespace ControlCatalog.NetCore
                 .UsePlatformDetect()
                 .UseSkia()
                 .UseReactiveUI()
-                .LogToDebug(LogArea.Layout, LogEventLevel.Verbose);
+                .LogToDebug();
 
         static void ConsoleSilencer()
         {
