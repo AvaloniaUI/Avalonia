@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -12,12 +14,8 @@ namespace Avalonia.Skia
 {
     internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
-        private static SKPaint s_paint = new SKPaint { TextSize = 12 };
-
         private readonly Face _face;
         private readonly Font _font;
-        private readonly double _fontScale;
-        private readonly SKFontMetrics _fontMetrics;
 
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
@@ -30,55 +28,53 @@ namespace Avalonia.Skia
 
             _face.MakeImmutable();
 
-            _font = new Font(_face);
-
-            _fontScale = 12d / _font.Scale.X;
-
-            _fontMetrics = GetFontMetrics(typeface);
+            _font = new Font(_face);            
         }
 
         public SKTypeface Typeface { get; }
 
-        public double Ascent => _fontMetrics.Ascent;
+        public int Ascent => -_font.HorizontalFontExtents.Ascender;
 
-        public double Descent => _fontMetrics.Descent;
+        public int Descent => -_font.HorizontalFontExtents.Descender;
 
-        public double Leading => _fontMetrics.Leading;
+        public int LineGap => _font.HorizontalFontExtents.LineGap;
 
-        public double UnderlinePosition => _fontMetrics.UnderlinePosition ?? _fontMetrics.Descent;
+        public int UnderlinePosition => 0;
 
-        public double UnderlineThickness => _fontMetrics.UnderlineThickness ?? 1.0d;
+        public int UnderlineThickness => 0;
 
-        public double StrikethroughPosition => _fontMetrics.StrikeoutPosition ?? 0;
+        public int StrikethroughPosition => 0;
 
-        public double StrikethroughThickness => _fontMetrics.StrikeoutThickness ?? 1.0d;
+        public int StrikethroughThickness => 0;
 
-        public ushort CharacterToGlyph(char c)
+        public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text)
         {
-            return (ushort)_font.GetGlyph(c);
+            var glyphs = new short[text.Length];
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                glyphs[i] = (short)_font.GetGlyph(text[i]);
+            }
+
+            return glyphs;
         }
 
-        public ushort CharacterToGlyph(int c)
+        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs)
         {
-            return (ushort)_font.GetGlyph(c);
-        }
+            var indices = new int[glyphs.Length];
 
-        public double GetHorizontalGlyphAdvance(ushort glyph)
-        {
-            return _fontScale * _font.GetHorizontalGlyphAdvance(glyph);
+            for (var i = 0; i < glyphs.Length; i++)
+            {
+                indices[i] = glyphs[i];
+            }
+
+            return _font.GetHorizontalGlyphAdvances(indices);
         }
 
         public void Dispose()
         {
             _font.Dispose();
             _face.Dispose();
-        }
-
-        private static SKFontMetrics GetFontMetrics(SKTypeface typeface)
-        {
-            s_paint.Typeface = typeface;
-
-            return s_paint.FontMetrics;
         }
     }
 }

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+
 using Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
@@ -25,51 +28,53 @@ namespace Avalonia.Direct2D1.Media
             var fontMetrics = font.Metrics;
 
             FontFace = new FontFace(font);
-            Ascent = (double)fontMetrics.Ascent / fontMetrics.DesignUnitsPerEm;
-            Descent = (double)fontMetrics.Descent / fontMetrics.DesignUnitsPerEm;
-            Leading = (double)fontMetrics.LineGap / fontMetrics.DesignUnitsPerEm;
-            UnderlinePosition = (double)fontMetrics.UnderlinePosition / fontMetrics.DesignUnitsPerEm;
-            UnderlineThickness = (double)fontMetrics.UnderlineThickness / fontMetrics.DesignUnitsPerEm;
-            StrikethroughPosition = (double)fontMetrics.StrikethroughPosition / fontMetrics.DesignUnitsPerEm;
-            StrikethroughThickness = (double)fontMetrics.StrikethroughThickness / fontMetrics.DesignUnitsPerEm;
+            Ascent = fontMetrics.Ascent;
+            Descent = fontMetrics.Descent;
+            LineGap = fontMetrics.LineGap;
+            UnderlinePosition = fontMetrics.UnderlinePosition;
+            UnderlineThickness = fontMetrics.UnderlineThickness;
+            StrikethroughPosition = fontMetrics.StrikethroughPosition;
+            StrikethroughThickness = fontMetrics.StrikethroughThickness;
         }
 
         public FontFace FontFace { get; }
 
-        public double Ascent { get; }
+        public int Ascent { get; }
 
-        public double Descent { get; }
+        public int Descent { get; }
 
-        public double Leading { get; }
+        public int LineGap { get; }
 
-        public double UnderlinePosition { get; }
+        public int UnderlinePosition { get; }
 
-        public double UnderlineThickness { get; }
+        public int UnderlineThickness { get; }
 
-        public double StrikethroughPosition { get; }
+        public int StrikethroughPosition { get; }
 
-        public double StrikethroughThickness { get; }
-
-        public ushort CharacterToGlyph(char c)
-        {
-            return (ushort)FontFace.GetGlyphIndices(new int[] { c })[0];
-        }
-
-        public ushort CharacterToGlyph(int c)
-        {
-            return (ushort)FontFace.GetGlyphIndices(new[] { c })[0];
-        }
-
-        public double GetHorizontalGlyphAdvance(ushort glyph)
-        {
-            var glyphMetrics = FontFace.GetDesignGlyphMetrics(new[] { (short)glyph }, false)[0];
-
-            return glyphMetrics.AdvanceWidth;
-        }
+        public int StrikethroughThickness { get; }
 
         public void Dispose()
         {
             FontFace.Dispose();
+        }
+
+        public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text)
+        {            
+            return FontFace.GetGlyphIndices(text.ToArray());
+        }
+
+        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs)
+        {                     
+            var glyphMetrics = FontFace.GetDesignGlyphMetrics(glyphs.ToArray(), false);
+
+            var glyphAdvances = new int[glyphMetrics.Length];
+
+            for (var i = 0; i < glyphMetrics.Length; i++)
+            {
+                glyphAdvances[i] = glyphMetrics[i].AdvanceWidth;
+            }
+
+            return glyphAdvances;
         }
     }
 }

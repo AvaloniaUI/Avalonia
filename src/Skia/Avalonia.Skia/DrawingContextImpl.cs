@@ -238,24 +238,22 @@ namespace Avalonia.Skia
 
                 paint.Paint.TextEncoding = SKTextEncoding.GlyphId;
 
-                var glyphOffsets = glyphRun.GlyphOffsets?.Select(x => new SKPoint((float)x.X, (float)x.Y)).ToArray();
-
-                var currentMatrix = Canvas.TotalMatrix;
-
-                Canvas.Translate((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+                var glyphOffsets = glyphRun.GlyphOffsets?.Select(x => new SKPoint((float)x.X, (float)x.Y)).ToArray();                         
 
                 var glyphIndices = glyphRun.GlyphIndices.SelectMany(BitConverter.GetBytes).ToArray();
 
+                var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+
                 if (glyphOffsets != null)
                 {
+                    Canvas.Translate(baselineOrigin);   
+
                     Canvas.DrawPositionedText(glyphIndices, glyphOffsets, paint.Paint);
                 }
                 else
-                {
-                    Canvas.DrawText(glyphIndices, 0, 0, paint.Paint);
-                }
-
-                Canvas.SetMatrix(currentMatrix);
+                {                    
+                    Canvas.DrawText(glyphIndices, baselineOrigin.X, baselineOrigin.Y, paint.Paint);
+                }               
             }
         }
 

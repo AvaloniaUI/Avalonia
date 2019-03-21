@@ -2,12 +2,14 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
+using System.Text;
 
 using Avalonia.Platform;
 
 namespace Avalonia.Media
-{  
+{
+    using System.Collections.Generic;
+
     public class GlyphTypeface : IDisposable
     {
         private readonly Typeface _typeface;
@@ -26,54 +28,34 @@ namespace Avalonia.Media
 
         public FontWeight Weight => _typeface.Weight;
 
-        public double Ascent => GlyphTypefaceImpl.Ascent;
+        public int Ascent => GlyphTypefaceImpl.Ascent;
 
-        public double Descent => GlyphTypefaceImpl.Descent;
+        public int Descent => GlyphTypefaceImpl.Descent;
 
-        public double Leading => GlyphTypefaceImpl.Leading;
+        public int LineGap => GlyphTypefaceImpl.LineGap;
 
-        public double UnderlinePosition => GlyphTypefaceImpl.UnderlinePosition;
+        public int UnderlinePosition => GlyphTypefaceImpl.UnderlinePosition;
 
-        public double UnderlineThickness => GlyphTypefaceImpl.UnderlineThickness;
+        public int UnderlineThickness => GlyphTypefaceImpl.UnderlineThickness;
 
-        public double StrikethroughPosition => GlyphTypefaceImpl.StrikethroughPosition;
+        public int StrikethroughPosition => GlyphTypefaceImpl.StrikethroughPosition;
 
-        public double StrikethroughThickness => GlyphTypefaceImpl.StrikethroughThickness;
+        public int StrikethroughThickness => GlyphTypefaceImpl.StrikethroughThickness;
 
-        public ushort CharacterToGlyph(char c) => GlyphTypefaceImpl.CharacterToGlyph(c);
-
-        public ushort CharacterToGlyph(int c) => GlyphTypefaceImpl.CharacterToGlyph(c);
-
-        public double GetHorizontalGlyphAdvance(ushort glyph) => GlyphTypefaceImpl.GetHorizontalGlyphAdvance(glyph);
-
-        public IReadOnlyList<ushort> CharactersToGlyphs(string s)
-        {            
-            return CharactersToGlyphs(s.AsSpan());
-        }
-
-        public IReadOnlyList<ushort> CharactersToGlyphs(ReadOnlySpan<char> characters)
+        public ReadOnlySpan<short> GetGlyphs(string text)
         {
-            var glyphs = new ushort[characters.Length];
+            var bytes = Encoding.UTF32.GetBytes(text);
 
-            for (var i = 0; i < characters.Length; i++)
-            {
-                glyphs[i] = CharacterToGlyph(characters[i]);
-            }
+            var codepoints = new int[bytes.Length / 4];
 
-            return glyphs;
+            Buffer.BlockCopy(bytes, 0, codepoints, 0, bytes.Length);
+
+            return GetGlyphs(codepoints);
         }
 
-        public IReadOnlyList<ushort> CharactersToGlyphs(ReadOnlySpan<int> characters)
-        {
-            var glyphs = new ushort[characters.Length];
+        public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text) => GlyphTypefaceImpl.GetGlyphs(text);
 
-            for (var i = 0; i < characters.Length; i++)
-            {
-                glyphs[i] = CharacterToGlyph(characters[i]);
-            }
-
-            return glyphs;
-        }
+        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
 
         public void Dispose()
         {

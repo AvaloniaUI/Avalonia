@@ -10,8 +10,8 @@ namespace Avalonia.Media
         public GlyphRun(
             GlyphTypeface glyphTypeface,            
             double renderingEmSize,
-            IReadOnlyList<ushort> glyphIndices,
             Point baselineOrigin,
+            IReadOnlyList<short> glyphIndices,
             IReadOnlyList<double> glyphAdvances,
             IReadOnlyList<Vector> glyphOffsets)
         {
@@ -28,9 +28,9 @@ namespace Avalonia.Media
 
         public double RenderingEmSize { get; }
 
-        public IReadOnlyList<ushort> GlyphIndices { get; }
-
         public Point BaselineOrigin { get; }
+
+        public IReadOnlyList<short> GlyphIndices { get; }
 
         public IReadOnlyList<double> GlyphAdvances { get; }
 
