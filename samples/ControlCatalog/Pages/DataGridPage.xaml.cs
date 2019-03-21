@@ -14,7 +14,7 @@ namespace ControlCatalog.Pages
             var dg1 = this.FindControl<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
 
-            var collectionView1 = new CollectionViewBase(Countries.All);
+            var collectionView1 = new DataGridCollectionView(Countries.All);
             //collectionView.GroupDescriptions.Add(new PathGroupDescription("Region"));
 
             dg1.Items = collectionView1;
@@ -22,7 +22,7 @@ namespace ControlCatalog.Pages
             var dg2 = this.FindControl<DataGrid>("dataGridGrouping");
             dg2.IsReadOnly = true;
 
-            var collectionView2 = new CollectionViewBase(Countries.All);
+            var collectionView2 = new DataGridCollectionView(Countries.All);
             collectionView2.GroupDescriptions.Add(new DataGridPathGroupDescription("Region"));
 
             dg2.Items = collectionView2;
@@ -36,7 +36,7 @@ namespace ControlCatalog.Pages
                 new Person { FirstName = "Elizabeth", LastName = "Thomas" },
                 new Person { FirstName = "Zack", LastName = "Ward" }
             };
-            var collectionView3 = new CollectionViewBase(items);
+            var collectionView3 = new DataGridCollectionView(items);
 
             dg3.Items = collectionView3;
 

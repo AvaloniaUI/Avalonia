@@ -87,7 +87,7 @@ namespace Avalonia.Controls
                     return list.Count;
                 }
 
-                if(DataSource is CollectionViewBase cv)
+                if(DataSource is DataGridCollectionView cv)
                 {
                     return cv.Count;
                 }
@@ -342,7 +342,7 @@ namespace Avalonia.Controls
                 return (index < list.Count) ? list[index] : null;
             }
 
-            if (DataSource is CollectionViewBase collectionView)
+            if (DataSource is DataGridCollectionView collectionView)
             {
                 return (index < collectionView.Count) ? collectionView.GetItemAt(index) : null;
             }
@@ -413,7 +413,7 @@ namespace Avalonia.Controls
                 return list.IndexOf(dataItem);
             }
 
-            if (DataSource is CollectionViewBase cv)
+            if (DataSource is DataGridCollectionView cv)
             {
                 return cv.IndexOf(dataItem);
             }
@@ -453,7 +453,7 @@ namespace Avalonia.Controls
 
             IDataGridCollectionView collectionView = null;
 
-            if (source is ICollectionViewFactory collectionViewFactory)
+            if (source is IDataGridCollectionViewFactory collectionViewFactory)
             {
                 // If the source is a collection view factory, give it a chance to produce a custom collection view.
                 collectionView = collectionViewFactory.CreateView();
@@ -462,7 +462,7 @@ namespace Avalonia.Controls
             if (collectionView == null)
             {
                 // If we still do not have a collection view, default to a PagedCollectionView.
-                collectionView = new CollectionViewBase(source);
+                collectionView = new DataGridCollectionView(source);
             }
             return collectionView;
         }

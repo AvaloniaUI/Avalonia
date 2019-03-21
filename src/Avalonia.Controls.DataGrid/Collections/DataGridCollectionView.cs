@@ -44,7 +44,7 @@ namespace Avalonia.Collections
     }
 
     /// <summary>Defines a method that enables a collection to provide a custom view for specialized sorting, filtering, grouping, and currency.</summary>
-    internal interface ICollectionViewFactory
+    internal interface IDataGridCollectionViewFactory
     {
         /// <summary>Returns a custom view for specialized sorting, filtering, grouping, and currency.</summary>
         /// <returns>A custom view for specialized sorting, filtering, grouping, and currency.</returns>
@@ -52,9 +52,9 @@ namespace Avalonia.Collections
     }
 
     /// <summary>
-    /// PagedCollectionView view over an IEnumerable.
+    /// DataGrid-readable view over an IEnumerable.
     /// </summary>
-    public sealed class CollectionViewBase : IDataGridCollectionView, IDataGridEditableCollectionView, INotifyPropertyChanged //IPagedCollectionView, 
+    public sealed class DataGridCollectionView : IDataGridCollectionView, IDataGridEditableCollectionView, INotifyPropertyChanged 
     {
         /// <summary>
         /// Since there's nothing in the un-cancelable event args that is mutable,
@@ -75,7 +75,7 @@ namespace Avalonia.Collections
         private int _cachedPageSize;
 
         /// <summary>
-        /// CultureInfo used in this PagedCollectionView
+        /// CultureInfo used in this DataGridCollectionView
         /// </summary>
         private CultureInfo _culture;
 
@@ -198,18 +198,18 @@ namespace Avalonia.Collections
         /// Helper constructor that sets default values for isDataSorted and isDataInGroupOrder.
         /// </summary>
         /// <param name="source">The source for the collection</param>
-        public CollectionViewBase(IEnumerable source)
+        public DataGridCollectionView(IEnumerable source)
             : this(source, false /*isDataSorted*/, false /*isDataInGroupOrder*/)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the PagedCollectionView class.
+        /// Initializes a new instance of the DataGridCollectionView class.
         /// </summary>
         /// <param name="source">The source for the collection</param>
         /// <param name="isDataSorted">Determines whether the source is already sorted</param>
         /// <param name="isDataInGroupOrder">Whether the source is already in the correct order for grouping</param>
-        public CollectionViewBase(IEnumerable source, bool isDataSorted, bool isDataInGroupOrder)
+        public DataGridCollectionView(IEnumerable source, bool isDataSorted, bool isDataInGroupOrder)
         {
             _sourceCollection = source ?? throw new ArgumentNullException(nameof(source));
 
@@ -1938,7 +1938,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Retrieve item at the given zero-based index in this PagedCollectionView, after the source collection
+        /// Retrieve item at the given zero-based index in this DataGridCollectionView, after the source collection
         /// is filtered, sorted, and paged.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">
@@ -3890,7 +3890,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// SortDescription was added/removed, refresh PagedCollectionView
+        /// SortDescription was added/removed, refresh DataGridCollectionView
         /// </summary>
         /// <param name="sender">Sender that triggered this handler</param>
         /// <param name="e">NotifyCollectionChangedEventArgs for this change</param>
@@ -3959,7 +3959,7 @@ namespace Avalonia.Collections
         private void VerifyRefreshNotDeferred()
         {
             // If the Refresh is being deferred to change filtering or sorting of the
-            // data by this PagedCollectionView, then PagedCollectionView will not reflect the correct
+            // data by this DataGridCollectionView, then DataGridCollectionView will not reflect the correct
             // state of the underlying data.
             if (IsRefreshDeferred)
             {
@@ -4026,7 +4026,7 @@ namespace Avalonia.Collections
         }
 
         /// <summary>
-        /// Used to keep track of Defer calls on the PagedCollectionView, which
+        /// Used to keep track of Defer calls on the DataGridCollectionView, which
         /// will prevent the user from calling Refresh() on the view. In order
         /// to allow refreshes again, the user will have to call IDisposable.Dispose,
         /// to end the Defer operation.
@@ -4036,13 +4036,13 @@ namespace Avalonia.Collections
             /// <summary>
             /// Private reference to the CollectionView that created this DeferHelper
             /// </summary>
-            private CollectionViewBase collectionView;
+            private DataGridCollectionView collectionView;
 
             /// <summary>
             /// Initializes a new instance of the DeferHelper class
             /// </summary>
             /// <param name="collectionView">CollectionView that created this DeferHelper</param>
-            public DeferHelper(CollectionViewBase collectionView)
+            public DeferHelper(DataGridCollectionView collectionView)
             {
                 this.collectionView = collectionView;
             }
@@ -4130,10 +4130,10 @@ namespace Avalonia.Collections
             /// <summary>
             /// Initializes a new instance of the NewItemAwareEnumerator class.
             /// </summary>
-            /// <param name="collectionView">The PagedCollectionView we are creating the enumerator for</param>
+            /// <param name="collectionView">The DataGridCollectionView we are creating the enumerator for</param>
             /// <param name="baseEnumerator">The baseEnumerator that we pass in</param>
             /// <param name="newItem">The new item we are adding to the collection</param>
-            public NewItemAwareEnumerator(CollectionViewBase collectionView, IEnumerator baseEnumerator, object newItem)
+            public NewItemAwareEnumerator(DataGridCollectionView collectionView, IEnumerator baseEnumerator, object newItem)
             {
                 _collectionView = collectionView;
                 _timestamp = collectionView.Timestamp;
@@ -4204,7 +4204,7 @@ namespace Avalonia.Collections
             /// <summary>
             /// CollectionView that we are creating the enumerator for
             /// </summary>
-            private CollectionViewBase _collectionView;
+            private DataGridCollectionView _collectionView;
 
             /// <summary>
             /// The Base Enumerator that we are passing in
@@ -4235,7 +4235,7 @@ namespace Avalonia.Collections
             {
                 _comparers = MakeComparerArray(coll);
             }
-            public MergedComparer(CollectionViewBase collectionView)
+            public MergedComparer(DataGridCollectionView collectionView)
                 : this(collectionView.SortDescriptions)
             { }
 
