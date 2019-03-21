@@ -3,7 +3,6 @@
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Base/Avalonia.Base.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Animation/Avalonia.Animation.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Controls/Avalonia.Controls.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Controls.DataGrid/Avalonia.Controls.DataGrid.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DesignerSupport/Avalonia.DesignerSupport.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Diagnostics/Avalonia.Diagnostics.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Input/Avalonia.Input.csproj" />

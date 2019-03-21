@@ -13,6 +13,8 @@ namespace ControlCatalog
         [STAThread]
         static void Main(string[] args)
         {
+            Avalonia.Controls.DataGrid.Load();
+            
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
             BuildAvaloniaApp().Start<MainWindow>();

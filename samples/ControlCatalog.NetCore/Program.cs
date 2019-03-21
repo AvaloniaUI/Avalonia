@@ -9,9 +9,10 @@ namespace ControlCatalog.NetCore
 {
     static class Program
     {
-        
+
         static void Main(string[] args)
         {
+            Avalonia.Controls.DataGrid.Load();
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
             {

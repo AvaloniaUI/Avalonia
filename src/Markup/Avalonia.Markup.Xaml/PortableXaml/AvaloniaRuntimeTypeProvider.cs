@@ -38,7 +38,6 @@ namespace Avalonia.Markup.Xaml.Context
             typeof(DataTemplate).GetTypeInfo().Assembly,
             typeof(SolidColorBrush).GetTypeInfo().Assembly,
             typeof(Binding).GetTypeInfo().Assembly,
-            typeof(DataGrid).GetTypeInfo().Assembly
         };
 
         private Dictionary<string, HashSet<ClrNamespaceInfo>> _namespaces = new Dictionary<string, HashSet<ClrNamespaceInfo>>();

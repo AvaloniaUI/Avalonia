@@ -1,5 +1,4 @@
 <Styles xmlns="https://github.com/avaloniaui">
-
   <!--TODO: Validation and Focus-->
   <Style Selector="DataGridCell">
     <Setter Property="Background" Value="Transparent"/>
@@ -25,7 +24,6 @@
     </Setter>
   </Style>
 
-  <!--FIX-->
   <Style Selector="DataGridColumnHeader">
     <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -94,7 +92,6 @@
     </Setter>
   </Style>
 
-  <!--FIX-->
   <Style Selector="DataGridRow">
     <Setter Property="Template">
       <ControlTemplate>
@@ -114,7 +111,6 @@
     </Setter>
   </Style>
 
-  <!--FIX-->
   <Style Selector="DataGridRow /template/ Rectangle#BackgroundRectangle">
     <Setter Property="IsVisible" Value="False"/>
     <Setter Property="Fill" Value="#FFBADDE9" />
@@ -130,7 +126,6 @@
     <Setter Property="Opacity" Value="1"/>
   </Style>
 
-  <!--FIX-->
   <Style Selector="DataGridRowHeader">
     <Setter Property="Template">
       <ControlTemplate>
@@ -189,7 +184,6 @@
     </Setter>
   </Style>
 
-  <!--FIX-->
   <Style Selector="DataGrid">
     <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
     <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
