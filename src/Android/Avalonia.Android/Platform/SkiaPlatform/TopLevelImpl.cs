@@ -70,6 +70,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public Action<RawInputEventArgs> Input { get; set; }
 
+        public Size MinClientSize { get; protected set; }
+
         public Size MaxClientSize { get; protected set; }
 
         public Action<Rect> Paint { get; set; }
