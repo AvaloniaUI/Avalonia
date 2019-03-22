@@ -238,17 +238,47 @@ namespace Avalonia.Skia
 
                 paint.Paint.TextEncoding = SKTextEncoding.GlyphId;
 
-                var glyphOffsets = glyphRun.GlyphOffsets?.Select(x => new SKPoint((float)x.X, (float)x.Y)).ToArray();                         
+                var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
 
                 var glyphIndices = glyphRun.GlyphIndices.SelectMany(BitConverter.GetBytes).ToArray();
 
-                var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+                SKPoint[] glyphPositions = null;
 
-                if (glyphOffsets != null)
+                if (glyphRun.GlyphAdvances != null)
                 {
-                    Canvas.Translate(baselineOrigin);   
+                    if (glyphRun.GlyphOffsets != null)
+                    {
+                        glyphPositions = new SKPoint[glyphIndices.Length];
 
-                    Canvas.DrawPositionedText(glyphIndices, glyphOffsets, paint.Paint);
+                        var currentX = baselineOrigin.X;
+
+                        for (var i = 0; i < glyphIndices.Length; i++)
+                        {
+                            var glyphOffset = glyphRun.GlyphOffsets[i];
+
+                            glyphPositions[i] = new SKPoint(currentX + (float)glyphOffset.X, baselineOrigin.Y + (float)glyphOffset.Y);
+
+                            currentX += (float)glyphRun.GlyphAdvances[i];
+                        }
+                    }
+                    else
+                    {
+                        glyphPositions = new SKPoint[glyphRun.GlyphAdvances.Count];
+
+                        var currentX = baselineOrigin.X;
+
+                        for (var i = 0; i < glyphPositions.Length; i++)
+                        {
+                            glyphPositions[i] = new SKPoint(currentX, baselineOrigin.Y);
+
+                            currentX += (float)glyphRun.GlyphAdvances[i];
+                        }
+                    }
+                }            
+
+                if (glyphPositions != null)
+                {                   
+                    Canvas.DrawPositionedText(glyphIndices, glyphPositions, paint.Paint);
                 }
                 else
                 {                    

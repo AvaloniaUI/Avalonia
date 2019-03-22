@@ -306,8 +306,8 @@ namespace Avalonia.Direct2D1.Media
 
                 run.FontFace = glyphTypefaceImpl.FontFace;
                 run.FontSize = 12 * (float)glyphRun.RenderingEmSize;
-                run.Indices = glyphRun.GlyphIndices.Select(x => (short)x).ToArray();
-                run.Advances = glyphRun.GlyphAdvances.Select(x => (float)x).ToArray();
+                run.Indices = glyphRun.GlyphIndices.ToArray();
+                run.Advances = glyphRun.GlyphAdvances?.Select(x => (float)x).ToArray();
                 run.Offsets = glyphRun.GlyphOffsets?.Select(
                     x => new GlyphOffset()
                     {

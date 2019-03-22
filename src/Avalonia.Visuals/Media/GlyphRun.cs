@@ -12,8 +12,8 @@ namespace Avalonia.Media
             double renderingEmSize,
             Point baselineOrigin,
             IReadOnlyList<short> glyphIndices,
-            IReadOnlyList<double> glyphAdvances,
-            IReadOnlyList<Vector> glyphOffsets)
+            IReadOnlyList<double> glyphAdvances = null,
+            IReadOnlyList<Vector> glyphOffsets = null)
         {
             GlyphTypeface = glyphTypeface;
             RenderingEmSize = renderingEmSize;

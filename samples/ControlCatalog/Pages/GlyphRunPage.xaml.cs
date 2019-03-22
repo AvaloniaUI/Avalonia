@@ -23,9 +23,9 @@ namespace ControlCatalog.Pages
 
             using (var glyphTypeface = new GlyphTypeface(typeface))
             {
-                const double Scale = 12.0 / 2048;
+                const double RenderingEmSize = 1.0d;
 
-                const double RenderingEmSize = 2.0d;
+                const double Scale = (12.0 * RenderingEmSize) / 2048;             
 
                 var glyphs = glyphTypeface.GetGlyphs("ABCDEFGHIJKL");
 
@@ -35,12 +35,12 @@ namespace ControlCatalog.Pages
 
                 for (var i = 0; i < glyphAdvances.Length; i++)
                 {
-                    glyphAdvancesScaled[i] = glyphAdvances[i] * Scale * RenderingEmSize;
+                    glyphAdvancesScaled[i] = glyphAdvances[i] * Scale;
                 }
 
-                var baselineOrigin = new Point(0, ((glyphTypeface.Descent - glyphTypeface.Ascent + glyphTypeface.LineGap) / 2d) * Scale * RenderingEmSize);
+                var baselineOrigin = new Point(0, -glyphTypeface.Ascent * Scale);
 
-                var glyphRun = new GlyphRun(glyphTypeface, RenderingEmSize, baselineOrigin, glyphs.ToArray(), glyphAdvancesScaled, null);
+                var glyphRun = new GlyphRun(glyphTypeface, RenderingEmSize, baselineOrigin, glyphs.ToArray(), glyphAdvancesScaled);
 
                 drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
             }
