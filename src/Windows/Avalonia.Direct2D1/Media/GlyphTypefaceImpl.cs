@@ -11,6 +11,8 @@ namespace Avalonia.Direct2D1.Media
 
     public class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
+        private readonly FontFace _fontFace;
+
         public GlyphTypefaceImpl(Typeface typeface)
         {
             var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface, 12);
@@ -19,24 +21,35 @@ namespace Avalonia.Direct2D1.Media
 
             fontCollection.FindFamilyName(typeface.FontFamily.Name, out var index);
 
-            var font = fontCollection.GetFontFamily(index).GetFirstMatchingFont(
+            Font = fontCollection.GetFontFamily(index).GetFirstMatchingFont(
                 (FontWeight)typeface.Weight,
                 FontStretch.Normal,
                 (FontStyle)typeface.Style);
 
-            var fontMetrics = font.Metrics;
+            var fontMetrics = Font.Metrics;
 
-            FontFace = new FontFace(font);
-            Ascent = fontMetrics.Ascent;
+            _fontFace = new FontFace(Font);
+
+            DesignEmHeight = fontMetrics.DesignUnitsPerEm;
+
+            Ascent = -fontMetrics.Ascent;
+
             Descent = fontMetrics.Descent;
+
             LineGap = fontMetrics.LineGap;
+
             UnderlinePosition = fontMetrics.UnderlinePosition;
+
             UnderlineThickness = fontMetrics.UnderlineThickness;
+
             StrikethroughPosition = fontMetrics.StrikethroughPosition;
+
             StrikethroughThickness = fontMetrics.StrikethroughThickness;
         }
 
-        public FontFace FontFace { get; }
+        public Font Font { get; }
+
+        public short DesignEmHeight { get; }
 
         public int Ascent { get; }
 
@@ -54,17 +67,17 @@ namespace Avalonia.Direct2D1.Media
 
         public void Dispose()
         {
-            FontFace.Dispose();
+            _fontFace.Dispose();
         }
 
         public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text)
         {            
-            return FontFace.GetGlyphIndices(text.ToArray());
+            return _fontFace.GetGlyphIndices(text.ToArray());
         }
 
         public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs)
         {                     
-            var glyphMetrics = FontFace.GetDesignGlyphMetrics(glyphs.ToArray(), false);
+            var glyphMetrics = _fontFace.GetDesignGlyphMetrics(glyphs.ToArray(), false);
 
             var glyphAdvances = new int[glyphMetrics.Length];
 

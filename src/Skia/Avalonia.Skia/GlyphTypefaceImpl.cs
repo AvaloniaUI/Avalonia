@@ -28,16 +28,28 @@ namespace Avalonia.Skia
 
             _face.MakeImmutable();
 
-            _font = new Font(_face);            
+            _font = new Font(_face);
+
+            DesignEmHeight = (short)_font.Scale.Y;
+
+            var horizontalFontExtents = _font.HorizontalFontExtents;
+
+            Ascent = -horizontalFontExtents.Ascender;
+
+            Descent = -horizontalFontExtents.Descender;
+
+            LineGap = horizontalFontExtents.LineGap;
         }
 
         public SKTypeface Typeface { get; }
 
-        public int Ascent => -_font.HorizontalFontExtents.Ascender;
+        public short DesignEmHeight { get; }
 
-        public int Descent => -_font.HorizontalFontExtents.Descender;
+        public int Ascent { get; }
 
-        public int LineGap => _font.HorizontalFontExtents.LineGap;
+        public int Descent { get; }
+
+        public int LineGap { get; }
 
         public int UnderlinePosition => 0;
 
@@ -74,6 +86,7 @@ namespace Avalonia.Skia
         public void Dispose()
         {
             _font.Dispose();
+
             _face.Dispose();
         }
     }

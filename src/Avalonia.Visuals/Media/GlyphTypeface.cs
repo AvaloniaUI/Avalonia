@@ -8,9 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Media
 {
-    using System.Collections.Generic;
-
-    public class GlyphTypeface : IDisposable
+    public class GlyphTypeface
     {
         private readonly Typeface _typeface;
 
@@ -27,6 +25,8 @@ namespace Avalonia.Media
         public FontStyle Style => _typeface.Style;
 
         public FontWeight Weight => _typeface.Weight;
+
+        public short DesignEmHeight => GlyphTypefaceImpl.DesignEmHeight;
 
         public int Ascent => GlyphTypefaceImpl.Ascent;
 
@@ -56,11 +56,6 @@ namespace Avalonia.Media
         public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text) => GlyphTypefaceImpl.GetGlyphs(text);
 
         public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
-
-        public void Dispose()
-        {
-            GlyphTypefaceImpl.Dispose();
-        }
 
         private IGlyphTypefaceImpl CreateGlyphTypefaceImpl()
         {

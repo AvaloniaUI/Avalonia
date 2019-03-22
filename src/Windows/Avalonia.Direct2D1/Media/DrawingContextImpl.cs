@@ -304,7 +304,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
 
-                run.FontFace = glyphTypefaceImpl.FontFace;
+                run.FontFace = new FontFace(glyphTypefaceImpl.Font);
                 run.FontSize = 12 * (float)glyphRun.RenderingEmSize;
                 run.Indices = glyphRun.GlyphIndices.ToArray();
                 run.Advances = glyphRun.GlyphAdvances?.Select(x => (float)x).ToArray();

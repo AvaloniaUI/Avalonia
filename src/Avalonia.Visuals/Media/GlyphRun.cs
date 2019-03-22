@@ -40,6 +40,8 @@ namespace Avalonia.Media
 
         private Size GetSize()
         {
+            var scale = (12.0 * RenderingEmSize) / GlyphTypeface.DesignEmHeight;
+
             var width = 0.0d;
 
             foreach (var glyphAdvance in GlyphAdvances)
@@ -47,7 +49,7 @@ namespace Avalonia.Media
                 width += glyphAdvance;
             }
 
-            return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent) * RenderingEmSize);
+            return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent) * scale);
         }
     }
 }
