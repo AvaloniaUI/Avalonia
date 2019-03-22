@@ -17,28 +17,19 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        private static readonly GlyphTypeface s_glyphTypeface = new GlyphTypeface(new Typeface("Arial"));
-
         public override void Render(DrawingContext drawingContext)
         {
+            var glyphTypeface = Typeface.Default.GlyphTypeface;
+
             const double RenderingEmSize = 1.0d;
 
-            var scale = (12.0 * RenderingEmSize) / s_glyphTypeface.DesignEmHeight;
+            var scale = (12.0 * RenderingEmSize) / glyphTypeface.DesignEmHeight;
 
-            var glyphs = s_glyphTypeface.GetGlyphs("ABCDEFGHIJKL");
+            var glyphs = glyphTypeface.GetGlyphs("ABCDEFGHIJKL");           
 
-            var glyphAdvances = s_glyphTypeface.GetGlyphAdvances(glyphs);
+            var baselineOrigin = new Point(0, -glyphTypeface.Ascent * scale);
 
-            var glyphAdvancesScaled = new double[glyphAdvances.Length];
-
-            for (var i = 0; i < glyphAdvances.Length; i++)
-            {
-                glyphAdvancesScaled[i] = glyphAdvances[i] * scale;
-            }
-
-            var baselineOrigin = new Point(0, -s_glyphTypeface.Ascent * scale);
-
-            var glyphRun = new GlyphRun(s_glyphTypeface, RenderingEmSize, baselineOrigin, glyphs.ToArray(), glyphAdvancesScaled);
+            var glyphRun = new GlyphRun(glyphTypeface, RenderingEmSize, baselineOrigin, glyphs.ToArray());
 
             drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
         }

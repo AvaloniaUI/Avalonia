@@ -12,6 +12,8 @@ namespace Avalonia.Media
     {
         public static readonly Typeface Default = new Typeface(FontFamily.Default);
 
+        private GlyphTypeface _glyphTypeface;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Typeface"/> class.
         /// </summary>
@@ -59,5 +61,13 @@ namespace Avalonia.Media
         /// Gets the font weight.
         /// </summary>
         public FontWeight Weight { get; }
+
+        /// <summary>
+        /// Gets the glyph typeface.
+        /// </summary>
+        /// <value>
+        /// The glyph typeface.
+        /// </value>
+        public GlyphTypeface GlyphTypeface => _glyphTypeface ?? (_glyphTypeface = new GlyphTypeface(this));
     }
 }

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 namespace Avalonia.Media
 {
+    using System.Linq;
+
     public class GlyphRun
     {
         public GlyphRun(
@@ -44,10 +46,22 @@ namespace Avalonia.Media
 
             var width = 0.0d;
 
-            foreach (var glyphAdvance in GlyphAdvances)
+            if (GlyphAdvances != null)
             {
-                width += glyphAdvance;
+                foreach (var glyphAdvance in GlyphAdvances)
+                {
+                    width += glyphAdvance;
+                }
             }
+            else
+            {
+                var glyphAdvances = GlyphTypeface.GetGlyphAdvances(GlyphIndices.ToArray());
+
+                foreach (var advance in glyphAdvances)
+                {
+                    width += advance * scale;
+                }
+            }            
 
             return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent) * scale);
         }
