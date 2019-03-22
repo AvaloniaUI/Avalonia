@@ -232,7 +232,7 @@ namespace Avalonia.Skia
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
 
-                paint.Paint.TextSize = (float)(12 * glyphRun.RenderingEmSize);
+                paint.Paint.TextSize = (float)glyphRun.FontRenderingEmSize;
 
                 paint.Paint.Typeface = glyphTypefaceImpl.Typeface;
 

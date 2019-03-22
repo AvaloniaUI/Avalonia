@@ -15,6 +15,7 @@ namespace Avalonia.Direct2D1.Media
 
         public GlyphTypefaceImpl(Typeface typeface)
         {
+            // ToDo: remove font size parameter
             var textFormat = Direct2D1FontCollectionCache.GetTextFormat(typeface, 12);
 
             var fontCollection = textFormat.FontCollection;

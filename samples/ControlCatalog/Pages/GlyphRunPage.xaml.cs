@@ -21,15 +21,15 @@ namespace ControlCatalog.Pages
         {
             var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-            const double RenderingEmSize = 1.0d;
+            const double FontRenderingEmSize = 36;
 
-            var scale = (12.0 * RenderingEmSize) / glyphTypeface.DesignEmHeight;
+            var scale = FontRenderingEmSize / glyphTypeface.DesignEmHeight;
 
             var glyphs = glyphTypeface.GetGlyphs("ABCDEFGHIJKL");           
 
             var baselineOrigin = new Point(0, -glyphTypeface.Ascent * scale);
 
-            var glyphRun = new GlyphRun(glyphTypeface, RenderingEmSize, baselineOrigin, glyphs.ToArray());
+            var glyphRun = new GlyphRun(glyphTypeface, FontRenderingEmSize, baselineOrigin, glyphs.ToArray());
 
             drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
         }

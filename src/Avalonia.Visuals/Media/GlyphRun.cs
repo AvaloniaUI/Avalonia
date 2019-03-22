@@ -11,14 +11,14 @@ namespace Avalonia.Media
     {
         public GlyphRun(
             GlyphTypeface glyphTypeface,            
-            double renderingEmSize,
+            double fontRenderingEmSize,
             Point baselineOrigin,
             IReadOnlyList<short> glyphIndices,
             IReadOnlyList<double> glyphAdvances = null,
             IReadOnlyList<Vector> glyphOffsets = null)
         {
             GlyphTypeface = glyphTypeface;
-            RenderingEmSize = renderingEmSize;
+            FontRenderingEmSize = fontRenderingEmSize;
             GlyphIndices = glyphIndices;
             BaselineOrigin = baselineOrigin;
             GlyphAdvances = glyphAdvances;
@@ -28,7 +28,7 @@ namespace Avalonia.Media
 
         public GlyphTypeface GlyphTypeface { get; }
 
-        public double RenderingEmSize { get; }
+        public double FontRenderingEmSize { get; }
 
         public Point BaselineOrigin { get; }
 
@@ -42,7 +42,7 @@ namespace Avalonia.Media
 
         private Size GetSize()
         {
-            var scale = (12.0 * RenderingEmSize) / GlyphTypeface.DesignEmHeight;
+            var scale = FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
 
             var width = 0.0d;
 
