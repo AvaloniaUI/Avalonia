@@ -23,9 +23,14 @@ namespace Avalonia.Data
         public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
 
         /// <summary>
-        /// Gets or sets the <see cref="IValueConverter"/> to use.
+        /// Gets or sets the <see cref="IMultiValueConverter"/> to use.
         /// </summary>
         public IMultiValueConverter Converter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a parameter to pass to <see cref="Converter"/>.
+        /// </summary>
+        public object ConverterParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the value to use when the binding is unable to produce a value.
@@ -79,7 +84,7 @@ namespace Avalonia.Data
 
         private object ConvertValue(IList<object> values, Type targetType)
         {
-            var converted = Converter.Convert(values, targetType, null, CultureInfo.CurrentCulture);
+            var converted = Converter.Convert(values, targetType, ConverterParameter, CultureInfo.CurrentCulture);
 
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {
