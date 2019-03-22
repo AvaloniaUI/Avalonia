@@ -52,6 +52,11 @@ namespace Avalonia.Data
         /// </summary>
         public RelativeSource RelativeSource { get; set; }
 
+        /// <summary>
+        /// Gets or sets the string format.
+        /// </summary>
+        public string StringFormat { get; set; }
+
         /// <inheritdoc/>
         public InstancedBinding Initiate(
             IAvaloniaObject target,
@@ -84,11 +89,21 @@ namespace Avalonia.Data
 
         private object ConvertValue(IList<object> values, Type targetType)
         {
-            var converted = Converter.Convert(values, targetType, ConverterParameter, CultureInfo.CurrentCulture);
+            var culture = CultureInfo.CurrentCulture;
+            var converted = Converter.Convert(values, targetType, ConverterParameter, culture);
 
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {
                 converted = FallbackValue;
+            }
+
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                converted = string.Format(culture, StringFormat, converted);
             }
 
             return converted;
