@@ -15,6 +15,7 @@ namespace Avalonia.Controls
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
         private static bool s_setupWasAlreadyCalled;
+        private Action _optionsInitializers;
 
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
@@ -250,6 +251,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Configures platform-specific options
+        /// </summary>
+        public TAppBuilder With<T>(T options)
+        {
+            _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToConstant(options); };
+            return Self;
+        }
+        
+        /// <summary>
+        /// Configures platform-specific options
+        /// </summary>
+        public TAppBuilder With<T>(Func<T> options)
+        {
+            _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
+            return Self;
+        }
+        
+        /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>
         private void Setup()
@@ -280,7 +299,7 @@ namespace Avalonia.Controls
             }
 
             s_setupWasAlreadyCalled = true;
-
+            _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
