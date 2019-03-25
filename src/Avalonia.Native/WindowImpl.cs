@@ -12,7 +12,7 @@ namespace Avalonia.Native
     public class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         IAvnWindow _native;
-        public WindowImpl(IAvaloniaNativeFactory factory)
+        public WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
         {
             using (var e = new WindowEvents(this))
             {
