@@ -561,6 +561,7 @@ namespace Avalonia
         protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
         {
             VerifyAccess();
+
             return SetAndRaise(
                 property,
                 ref field,
@@ -568,19 +569,89 @@ namespace Avalonia
                     => SetAndRaiseCore(property, ref backing, val, notifyWrapper),
                 value);
         }
+        
+        /// <summary>
+        /// Default setter handler that will set backing field and raise notification.
+        /// </summary>
+        private sealed class DefaultSetterHandler<T> : DeferredSetterOptimized<T>.ISetterHandler
+        {
+            public static readonly DefaultSetterHandler<T> Instance = new DefaultSetterHandler<T>();
+
+            public bool Update(AvaloniaObject source, AvaloniaProperty<T> property, ref T backing, T value)
+            {
+                var old = backing;
+                backing = value;
+
+                source.RaisePropertyChanged(property, old, value);
+
+                return true;
+            }
+        }
 
         /// <summary>
-        /// Default assignment logic for SetAndRaise.
+        /// Setter handler that will run custom user callback.
         /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="property">The property.</param>
-        /// <param name="field">The backing field.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
-        /// <returns>
-        /// True if the value changed, otherwise false.
-        /// </returns>
-        private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
+        private sealed class CallbackSetterHandler<T> : DeferredSetterOptimized<T>.ISetterHandler
+        {
+            private readonly SetAndRaiseCallback<T> _callback;
+
+            public CallbackSetterHandler(SetAndRaiseCallback<T> callback)
+            {
+                _callback = callback;
+            }
+
+            public bool Update(AvaloniaObject source, AvaloniaProperty<T> property, ref T backing, T value)
+            {
+                _callback(value, ref backing, notification => notification());
+
+                return true;
+            }
+        }
+
+        protected bool SetAndRaiseOptimized<T>(AvaloniaProperty<T> property, ref T field, T value)
+        {
+            VerifyAccess();
+
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false;
+            }
+
+            DeferredSetterOptimized<T> setter = Values.GetDeferredSetter(property);
+
+            return setter.SetAndNotify(this, property, DefaultSetterHandler<T>.Instance, ref field, value);
+        }
+
+        protected bool SetAndRaiseOptimized<T>(
+            AvaloniaProperty<T> property,
+            ref T field,
+            SetAndRaiseCallback<T> setterCallback,
+            T value)
+        {
+            VerifyAccess();
+
+            if (EqualityComparer<T>.Default.Equals(field, value))
+            {
+                return false;
+            }
+
+            DeferredSetterOptimized<T> setter = Values.GetDeferredSetter(property);
+
+            return setter.SetAndNotify(this, property, new CallbackSetterHandler<T>(setterCallback) , ref field, value);
+        }
+
+        /// <summary>
+            /// Default assignment logic for SetAndRaise.
+            /// </summary>
+            /// <typeparam name="T">The type of the property.</typeparam>
+            /// <param name="property">The property.</param>
+            /// <param name="field">The backing field.</param>
+            /// <param name="value">The value.</param>
+            /// <param name="notifyWrapper">A wrapper for the property-changed notification.</param>
+            /// <returns>
+            /// True if the value changed, otherwise false.
+            /// </returns>
+            private bool SetAndRaiseCore<T>(AvaloniaProperty property, ref T field, T value, Action<Action> notifyWrapper)
         {
             var old = field;
             field = value;
