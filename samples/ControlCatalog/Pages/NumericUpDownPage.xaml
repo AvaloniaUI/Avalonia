@@ -23,9 +23,9 @@
       </Grid>
       <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
-        <DropDown Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+        <ComboBox Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                   VerticalAlignment="Center" Margin="2">
-          <DropDown.ItemTemplate>
+          <ComboBox.ItemTemplate>
             <DataTemplate>
               <StackPanel Orientation="Horizontal" Spacing="2">
                 <TextBlock Text="{Binding Name}"/>
@@ -33,15 +33,15 @@
                 <TextBlock Text="{Binding Value}"/>
               </StackPanel>
             </DataTemplate>
-          </DropDown.ItemTemplate>
-        </DropDown>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="2">ButtonSpinnerLocation:</TextBlock>
-        <DropDown Grid.Row="1" Grid.Column="1" Items="{Binding SpinnerLocations}" SelectedItem="{Binding #upDown.ButtonSpinnerLocation}"
+        <ComboBox Grid.Row="1" Grid.Column="1" Items="{Binding SpinnerLocations}" SelectedItem="{Binding #upDown.ButtonSpinnerLocation}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">CultureInfo:</TextBlock>
-        <DropDown Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}" SelectedItem="{Binding #upDown.CultureInfo}"
+        <ComboBox Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}" SelectedItem="{Binding #upDown.CultureInfo}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>
