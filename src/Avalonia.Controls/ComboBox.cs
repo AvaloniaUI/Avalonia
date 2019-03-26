@@ -18,7 +18,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A drop-down list control.
     /// </summary>
-    public class DropDown : SelectingItemsControl
+    public class ComboBox : SelectingItemsControl
     {
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
@@ -29,8 +29,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<DropDown, bool> IsDropDownOpenProperty =
-            AvaloniaProperty.RegisterDirect<DropDown, bool>(
+        public static readonly DirectProperty<ComboBox, bool> IsDropDownOpenProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, bool>(
                 nameof(IsDropDownOpen),
                 o => o.IsDropDownOpen,
                 (o, v) => o.IsDropDownOpen = v);
@@ -39,19 +39,19 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MaxDropDownHeight"/> property.
         /// </summary>
         public static readonly StyledProperty<double> MaxDropDownHeightProperty =
-            AvaloniaProperty.Register<DropDown, double>(nameof(MaxDropDownHeight), 200);
+            AvaloniaProperty.Register<ComboBox, double>(nameof(MaxDropDownHeight), 200);
 
         /// <summary>
         /// Defines the <see cref="SelectionBoxItem"/> property.
         /// </summary>
-        public static readonly DirectProperty<DropDown, object> SelectionBoxItemProperty =
-            AvaloniaProperty.RegisterDirect<DropDown, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
+        public static readonly DirectProperty<ComboBox, object> SelectionBoxItemProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, object>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         /// <summary>
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<DropDown>();
+            ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
 
         private bool _isDropDownOpen;
         private Popup _popup;
@@ -59,14 +59,14 @@ namespace Avalonia.Controls
         private IDisposable _subscriptionsOnOpen;
 
         /// <summary>
-        /// Initializes static members of the <see cref="DropDown"/> class.
+        /// Initializes static members of the <see cref="ComboBox"/> class.
         /// </summary>
-        static DropDown()
+        static ComboBox()
         {
-            ItemsPanelProperty.OverrideDefaultValue<DropDown>(DefaultPanel);
-            FocusableProperty.OverrideDefaultValue<DropDown>(true);
-            SelectedItemProperty.Changed.AddClassHandler<DropDown>(x => x.SelectedItemChanged);
-            KeyDownEvent.AddClassHandler<DropDown>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
+            ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
+            FocusableProperty.OverrideDefaultValue<ComboBox>(true);
+            SelectedItemProperty.Changed.AddClassHandler<ComboBox>(x => x.SelectedItemChanged);
+            KeyDownEvent.AddClassHandler<ComboBox>(x => x.OnKeyDown, Interactivity.RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -108,10 +108,10 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
-            return new ItemContainerGenerator<DropDownItem>(
+            return new ItemContainerGenerator<ComboBoxItem>(
                 this,
-                DropDownItem.ContentProperty,
-                DropDownItem.ContentTemplateProperty);
+                ComboBoxItem.ContentProperty,
+                ComboBoxItem.ContentTemplateProperty);
         }
 
         /// <inheritdoc/>
@@ -236,7 +236,7 @@ namespace Avalonia.Controls
             base.OnTemplateApplied(e);
         }
 
-        internal void ItemFocused(DropDownItem dropDownItem)
+        internal void ItemFocused(ComboBoxItem dropDownItem)
         {
             if (IsDropDownOpen && dropDownItem.IsFocused && dropDownItem.IsArrangeValid)
             {
