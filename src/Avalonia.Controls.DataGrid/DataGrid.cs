@@ -5949,13 +5949,5 @@ namespace Avalonia.Controls
         {
             AutoGeneratingColumn?.Invoke(this, e);
         }
-
-        /// <summary>
-        /// Loads this assembly in runtime.
-        /// </summary>
-        public static void Load()
-        {
-
-        }
     }
 }
