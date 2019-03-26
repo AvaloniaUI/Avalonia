@@ -20,6 +20,7 @@
       <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="DataGrid"><pages:DataGridPage/></TabItem>
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
