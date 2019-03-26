@@ -11,7 +11,6 @@
     <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
     <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\JetBrains.Annotations.props" />
