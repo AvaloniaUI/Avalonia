@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DropDownTests
+    public class ComboBoxTests
     {
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
