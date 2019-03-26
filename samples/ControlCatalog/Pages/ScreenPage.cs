@@ -23,7 +23,7 @@ namespace ControlCatalog.Pages
         {
             base.Render(context);
             Window w = (Window)VisualRoot;
-            Screen[] screens = w.Screens.All;
+            var screens = w.Screens.All;
             var scaling = ((IRenderRoot)w).RenderScaling;
 
             Pen p = new Pen(Brushes.Black);

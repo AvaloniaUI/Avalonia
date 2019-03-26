@@ -94,9 +94,11 @@ namespace Avalonia
     }
     public static class AvaloniaX11PlatformExtensions
     {
-        public static T UseX11<T>(this T builder, X11PlatformOptions options = null) where T : AppBuilderBase<T>, new()
+        public static T UseX11<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseWindowingSubsystem(() => new AvaloniaX11Platform().Initialize(options ?? new X11PlatformOptions()));
+            builder.UseWindowingSubsystem(() =>
+                new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??
+                                                     new X11PlatformOptions()));
             return builder;
         }
 
