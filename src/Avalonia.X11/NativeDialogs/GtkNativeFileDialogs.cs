@@ -68,7 +68,10 @@ namespace Avalonia.X11.NativeDialogs
                     return false;
                 })
             };
-            using (var open = new Utf8Buffer("Open"))
+            using (var open = new Utf8Buffer(
+                action == GtkFileChooserAction.Save ? "Save"
+                : action == GtkFileChooserAction.SelectFolder ? "Select"
+                : "Open"))
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Accept);
             using (var open = new Utf8Buffer("Cancel"))
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
