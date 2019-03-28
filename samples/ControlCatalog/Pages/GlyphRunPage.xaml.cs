@@ -1,4 +1,7 @@
-﻿using Avalonia;
+﻿using System;
+using System.Text;
+
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -25,7 +28,13 @@ namespace ControlCatalog.Pages
 
             var scale = FontRenderingEmSize / glyphTypeface.DesignEmHeight;
 
-            var glyphs = glyphTypeface.GetGlyphs("ABCDEFGHIJKL");           
+            var bytes = Encoding.UTF32.GetBytes("ABCDEFGHIJKL");
+
+            var codePoints = new int[bytes.Length / 4];
+
+            Buffer.BlockCopy(bytes, 0, codePoints, 0, bytes.Length);
+
+            var glyphs = glyphTypeface.GetGlyphs(codePoints);
 
             var baselineOrigin = new Point(0, -glyphTypeface.Ascent * scale);
 

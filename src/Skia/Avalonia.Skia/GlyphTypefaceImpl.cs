@@ -59,13 +59,13 @@ namespace Avalonia.Skia
 
         public int StrikethroughThickness => 0;
 
-        public short[] GetGlyphs(ReadOnlySpan<char> text)
+        public short[] GetGlyphs(ReadOnlySpan<int> codePoints)
         {
-            var glyphs = new short[text.Length];
+            var glyphs = new short[codePoints.Length];
 
-            for (var i = 0; i < text.Length; i++)
+            for (var i = 0; i < codePoints.Length; i++)
             {
-                glyphs[i] = (short)_font.GetGlyph(text[i]);
+                glyphs[i] = (short)_font.GetGlyph(codePoints[i]);
             }
 
             return glyphs;

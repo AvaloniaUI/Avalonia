@@ -1,12 +1,12 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 using Avalonia.Media;
 
 namespace Avalonia.Direct2D1.Media
 {
-    using System;
-
     using SharpDX.DirectWrite;
 
     public class GlyphTypefaceImpl : IGlyphTypefaceImpl
@@ -71,16 +71,9 @@ namespace Avalonia.Direct2D1.Media
             _fontFace.Dispose();
         }
 
-        public short[] GetGlyphs(ReadOnlySpan<char> text)
+        public short[] GetGlyphs(ReadOnlySpan<int> codePoints)
         {
-            var codePoints = new int[text.Length];
-
-            for (var i = 0; i < text.Length; i++)
-            {
-                codePoints[i] = text[i];
-            }
-
-            return GetGlyphs(codePoints);
+            return GetGlyphs(codePoints.ToArray());
         }
 
         public short[] GetGlyphs(int[] codePoints)

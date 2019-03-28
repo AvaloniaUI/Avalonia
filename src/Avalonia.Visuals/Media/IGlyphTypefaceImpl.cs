@@ -15,7 +15,7 @@ namespace Avalonia.Media
         int UnderlineThickness { get; }
         int StrikethroughPosition { get; }
         int StrikethroughThickness { get; }
-        short[] GetGlyphs(ReadOnlySpan<char> text);
+        short[] GetGlyphs(ReadOnlySpan<int> codePoints);
         short[] GetGlyphs(int[] codePoints);
         ReadOnlySpan<int> GetGlyphAdvances(short[] glyphs);
     }

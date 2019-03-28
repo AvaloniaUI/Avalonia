@@ -41,9 +41,7 @@ namespace Avalonia.Media
 
         public int StrikethroughThickness => GlyphTypefaceImpl.StrikethroughThickness;
 
-        public short[] GetGlyphs(string text) => GlyphTypefaceImpl.GetGlyphs(text.AsSpan());
-
-        public short[] GetGlyphs(ReadOnlySpan<char> text) => GlyphTypefaceImpl.GetGlyphs(text);
+        public short[] GetGlyphs(ReadOnlySpan<int> codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
 
         public short[] GetGlyphs(int[] codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
 
