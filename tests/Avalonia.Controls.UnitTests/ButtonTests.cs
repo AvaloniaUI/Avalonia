@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Moq;
 using Xunit;
@@ -21,6 +22,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Command = command,
             };
+            var root = new TestRoot { Child = target };
 
             Assert.False(target.IsEnabled);
             command.IsEnabled = true;
@@ -215,6 +217,39 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(clicked);
         }
 
+        [Fact]
+        public void Button_Does_Not_Subscribe_To_Command_CanExecuteChanged_Until_Added_To_Logical_Tree()
+        {
+            var command = new TestCommand(true);
+            var target = new Button
+            {
+                Command = command,
+            };
+
+            Assert.Equal(0, command.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Button_Subscribes_To_Command_CanExecuteChanged_When_Added_To_Logical_Tree()
+        {
+            var command = new TestCommand(true);
+            var target = new Button { Command = command };
+            var root = new TestRoot { Child = target };
+
+            Assert.Equal(1, command.SubscriptionCount);
+        }
+
+        [Fact]
+        public void Button_Unsubscribes_From_Command_CanExecuteChanged_When_Removed_From_Logical_Tree()
+        {
+            var command = new TestCommand(true);
+            var target = new Button { Command = command };
+            var root = new TestRoot { Child = target };
+
+            root.Child = null;
+            Assert.Equal(0, command.SubscriptionCount);
+        }
+
         private class TestButton : Button, IRenderRoot
         {
             public TestButton()
@@ -298,6 +333,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestCommand : ICommand
         {
+            private EventHandler _canExecuteChanged;
             private bool _enabled;
 
             public TestCommand(bool enabled)
@@ -313,12 +349,18 @@ namespace Avalonia.Controls.UnitTests
                     if (_enabled != value)
                     {
                         _enabled = value;
-                        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+                        _canExecuteChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
 
-            public event EventHandler CanExecuteChanged;
+            public int SubscriptionCount { get; private set; }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { _canExecuteChanged += value; ++SubscriptionCount; }
+                remove { _canExecuteChanged -= value; --SubscriptionCount; }
+            }
 
             public bool CanExecute(object parameter) => _enabled;
 
