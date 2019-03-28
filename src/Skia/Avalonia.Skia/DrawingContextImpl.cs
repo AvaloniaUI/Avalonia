@@ -226,7 +226,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public unsafe void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
             using (var paint = CreatePaint(foreground, glyphRun.Size))
             {
@@ -240,19 +240,17 @@ namespace Avalonia.Skia
 
                 var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
 
-                var glyphIndices = glyphRun.GlyphIndices.SelectMany(BitConverter.GetBytes).ToArray();
-
                 SKPoint[] glyphPositions = null;
 
                 if (glyphRun.GlyphAdvances != null)
                 {
                     if (glyphRun.GlyphOffsets != null)
                     {
-                        glyphPositions = new SKPoint[glyphIndices.Length];
+                        glyphPositions = new SKPoint[glyphRun.GlyphIndices.Length];
 
                         var currentX = baselineOrigin.X;
 
-                        for (var i = 0; i < glyphIndices.Length; i++)
+                        for (var i = 0; i < glyphRun.GlyphIndices.Length; i++)
                         {
                             var glyphOffset = glyphRun.GlyphOffsets[i];
 
@@ -263,7 +261,7 @@ namespace Avalonia.Skia
                     }
                     else
                     {
-                        glyphPositions = new SKPoint[glyphRun.GlyphAdvances.Count];
+                        glyphPositions = new SKPoint[glyphRun.GlyphAdvances.Length];
 
                         var currentX = baselineOrigin.X;
 
@@ -274,16 +272,19 @@ namespace Avalonia.Skia
                             currentX += (float)glyphRun.GlyphAdvances[i];
                         }
                     }
-                }            
-
-                if (glyphPositions != null)
-                {                   
-                    Canvas.DrawPositionedText(glyphIndices, glyphPositions, paint.Paint);
                 }
-                else
-                {                    
-                    Canvas.DrawText(glyphIndices, baselineOrigin.X, baselineOrigin.Y, paint.Paint);
-                }               
+
+                fixed (short* ptr = glyphRun.GlyphIndices)
+                {
+                    if (glyphPositions != null)
+                    {
+                        Canvas.DrawPositionedText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, glyphPositions, paint.Paint);
+                    }
+                    else
+                    {
+                        Canvas.DrawText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, baselineOrigin.X, baselineOrigin.Y, paint.Paint);
+                    }
+                }
             }
         }
 

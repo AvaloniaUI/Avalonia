@@ -1,21 +1,17 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
-
 namespace Avalonia.Media
 {
-    using System.Linq;
-
     public class GlyphRun
     {
         public GlyphRun(
             GlyphTypeface glyphTypeface,            
             double fontRenderingEmSize,
             Point baselineOrigin,
-            IReadOnlyList<short> glyphIndices,
-            IReadOnlyList<double> glyphAdvances = null,
-            IReadOnlyList<Vector> glyphOffsets = null)
+            short[] glyphIndices,
+            double[] glyphAdvances = null,
+            Vector[] glyphOffsets = null)
         {
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
@@ -32,11 +28,11 @@ namespace Avalonia.Media
 
         public Point BaselineOrigin { get; }
 
-        public IReadOnlyList<short> GlyphIndices { get; }
+        public short[] GlyphIndices { get; }
 
-        public IReadOnlyList<double> GlyphAdvances { get; }
+        public double[] GlyphAdvances { get; }
 
-        public IReadOnlyList<Vector> GlyphOffsets { get; }
+        public Vector[] GlyphOffsets { get; }
 
         public Size Size { get; }
 
@@ -55,7 +51,7 @@ namespace Avalonia.Media
             }
             else
             {
-                var glyphAdvances = GlyphTypeface.GetGlyphAdvances(GlyphIndices.ToArray());
+                var glyphAdvances = GlyphTypeface.GetGlyphAdvances(GlyphIndices);
 
                 foreach (var advance in glyphAdvances)
                 {

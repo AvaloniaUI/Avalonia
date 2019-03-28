@@ -11,7 +11,7 @@ using SkiaSharp;
 using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia
-{
+{  
     internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private readonly Face _face;
@@ -59,7 +59,7 @@ namespace Avalonia.Skia
 
         public int StrikethroughThickness => 0;
 
-        public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text)
+        public short[] GetGlyphs(ReadOnlySpan<char> text)
         {
             var glyphs = new short[text.Length];
 
@@ -71,7 +71,19 @@ namespace Avalonia.Skia
             return glyphs;
         }
 
-        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs)
+        public short[] GetGlyphs(int[] codePoints)
+        {
+            var glyphs = new short[codePoints.Length];
+
+            for (var i = 0; i < codePoints.Length; i++)
+            {
+                glyphs[i] = (short)_font.GetGlyph(codePoints[i]);
+            }
+
+            return glyphs;
+        }
+
+        public ReadOnlySpan<int> GetGlyphAdvances(short[] glyphs)
         {
             var indices = new int[glyphs.Length];
 

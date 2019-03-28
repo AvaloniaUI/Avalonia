@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Text;
 
 using Avalonia.Platform;
 
@@ -42,20 +41,13 @@ namespace Avalonia.Media
 
         public int StrikethroughThickness => GlyphTypefaceImpl.StrikethroughThickness;
 
-        public ReadOnlySpan<short> GetGlyphs(string text)
-        {
-            var bytes = Encoding.UTF32.GetBytes(text);
+        public short[] GetGlyphs(string text) => GlyphTypefaceImpl.GetGlyphs(text.AsSpan());
 
-            var codepoints = new int[bytes.Length / 4];
+        public short[] GetGlyphs(ReadOnlySpan<char> text) => GlyphTypefaceImpl.GetGlyphs(text);
 
-            Buffer.BlockCopy(bytes, 0, codepoints, 0, bytes.Length);
+        public short[] GetGlyphs(int[] codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
 
-            return GetGlyphs(codepoints);
-        }
-
-        public ReadOnlySpan<short> GetGlyphs(ReadOnlySpan<int> text) => GlyphTypefaceImpl.GetGlyphs(text);
-
-        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<short> glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
+        public ReadOnlySpan<int> GetGlyphAdvances(short[] glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
 
         private IGlyphTypefaceImpl CreateGlyphTypefaceImpl()
         {

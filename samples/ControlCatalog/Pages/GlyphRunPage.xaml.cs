@@ -29,7 +29,7 @@ namespace ControlCatalog.Pages
 
             var baselineOrigin = new Point(0, -glyphTypeface.Ascent * scale);
 
-            var glyphRun = new GlyphRun(glyphTypeface, FontRenderingEmSize, baselineOrigin, glyphs.ToArray());
+            var glyphRun = new GlyphRun(glyphTypeface, FontRenderingEmSize, baselineOrigin, glyphs);
 
             drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
         }
