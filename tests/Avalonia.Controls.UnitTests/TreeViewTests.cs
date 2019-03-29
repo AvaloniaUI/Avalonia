@@ -10,6 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
 using Avalonia.UnitTests;
 using Xunit;
@@ -425,7 +426,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(called);
         }
 
-
         [Fact]
         public void LogicalChildren_Should_Be_Set()
         {
@@ -623,6 +623,135 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Pressing_SelectAll_Gesture_Should_Select_All_Nodes()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var rootNode = tree[0];
+
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var selectAllGesture = keymap.SelectAll.First();
+
+                var keyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = selectAllGesture.Key,
+                    Modifiers = selectAllGesture.Modifiers
+                };
+
+                target.RaiseEvent(keyEvent);
+
+                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            }
+        }
+
+        [Fact]
+        public void Pressing_SelectAll_Gesture_With_Downward_Range_Selected_Should_Select_All_Nodes()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var rootNode = tree[0];
+
+                var from = rootNode.Children[0];
+                var to = rootNode.Children.Last();
+
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+
+                TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+                TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
+
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var selectAllGesture = keymap.SelectAll.First();
+
+                var keyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = selectAllGesture.Key,
+                    Modifiers = selectAllGesture.Modifiers
+                };
+
+                target.RaiseEvent(keyEvent);
+
+                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            }
+        }
+
+        [Fact]
+        public void Pressing_SelectAll_Gesture_With_Upward_Range_Selected_Should_Select_All_Nodes()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+
+                var rootNode = tree[0];
+
+                var from = rootNode.Children.Last();
+                var to = rootNode.Children[0];
+
+                var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
+                var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
+
+                TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+                TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
+
+                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var selectAllGesture = keymap.SelectAll.First();
+
+                var keyEvent = new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = selectAllGesture.Key,
+                    Modifiers = selectAllGesture.Modifiers
+                };
+
+                target.RaiseEvent(keyEvent);
+
+                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            }
+        }
+
         private void ApplyTemplates(TreeView tree)
         {
             tree.ApplyTemplate();
@@ -765,7 +894,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private class Node :  NotifyingBase
+        private class Node : NotifyingBase
         {
             private IAvaloniaList<Node> _children;
 
