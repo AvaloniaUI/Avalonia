@@ -391,6 +391,9 @@ namespace Avalonia.X11
 
                         Dispatcher.UIThread.RunJobs(DispatcherPriority.Layout);
                     }, DispatcherPriority.Layout);
+                if (_useRenderWindow)
+                    XConfigureResizeWindow(_x11.Display, _renderHandle, ev.ConfigureEvent.width,
+                        ev.ConfigureEvent.height);
             }
             else if (ev.type == XEventName.DestroyNotify && ev.AnyEvent.window == _handle)
             {
@@ -452,7 +455,7 @@ namespace Avalonia.X11
                     Scaling = newScaling;
                     ScalingChanged?.Invoke(Scaling);
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
-                    Resize(oldScaledSize, false);
+                    Resize(oldScaledSize, true);
                     return true;
                 }
 
