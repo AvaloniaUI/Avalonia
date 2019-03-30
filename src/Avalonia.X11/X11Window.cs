@@ -128,6 +128,8 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] {_x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL}, 1);
 
+            if (platform.Options.WmClass != null)
+                SetWmClass(platform.Options.WmClass);
 
             var surfaces = new List<object>
             {
@@ -870,6 +872,16 @@ namespace Avalonia.X11
                 XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_NAME, _x11.Atoms.UTF8_STRING, 8,
                     PropertyMode.Replace, pdata, data.Length);
                 XStoreName(_x11.Display, _handle, title);
+            }
+        }
+
+        public void SetWmClass(string wmClass)
+        {
+            var data = Encoding.ASCII.GetBytes(wmClass);
+            fixed (void* pdata = data)
+            {
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_CLASS, _x11.Atoms.XA_STRING, 8,
+                    PropertyMode.Replace, pdata, data.Length);
             }
         }
 
