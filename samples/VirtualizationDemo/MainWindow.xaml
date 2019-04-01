@@ -7,9 +7,9 @@
                     Margin="16 0 0 0" 
                     MinWidth="150"
                     Spacing="4">
-            <DropDown Items="{Binding VirtualizationModes}"
+            <ComboBox Items="{Binding VirtualizationModes}"
                       SelectedItem="{Binding VirtualizationMode}"/>
-            <DropDown Items="{Binding Orientations}"
+            <ComboBox Items="{Binding Orientations}"
                       SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
                      UseFloatingWatermark="True"
@@ -24,10 +24,10 @@
                      UseFloatingWatermark="True"
                      Text="{Binding #listBox.Scroll.Viewport, Mode=OneWay}"/>
             <TextBlock>Horiz. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
+            <ComboBox Items="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding HorizontalScrollBarVisibility}"/>
             <TextBlock>Vert. ScrollBar</TextBlock>
-            <DropDown Items="{Binding ScrollBarVisibilities}"
+            <ComboBox Items="{Binding ScrollBarVisibilities}"
                       SelectedItem="{Binding VerticalScrollBarVisibility}"/>
             <TextBox Watermark="Item to Create"
                      UseFloatingWatermark="True"
