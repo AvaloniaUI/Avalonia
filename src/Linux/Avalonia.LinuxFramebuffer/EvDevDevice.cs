@@ -6,62 +6,63 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    unsafe class EvDevDevice
+    public class EvDevAxisInfo
     {
-        private static readonly Lazy<List<EvDevDevice>> AllMouseDevices = new Lazy<List<EvDevDevice>>(()
+        public int Maximum { get; set; }
+        public int Minimum { get; set; }
+    }
+
+    internal unsafe class EvDevDevice
+    {
+        private static readonly Lazy<List<EvDevDevice>> AllInputDevices = new Lazy<List<EvDevDevice>>(()
             => OpenMouseDevices());
 
-        private static List<EvDevDevice> OpenMouseDevices()
-        {
-            var rv = new List<EvDevDevice>();
-            foreach (var dev in Directory.GetFiles("/dev/input", "event*").Select(Open))
-            {
-                if (!dev.IsMouse)
-                    NativeUnsafeMethods.close(dev.Fd);
-                else
-                    rv.Add(dev);
-            }
-            return rv;
-        }
-
-        public static IReadOnlyList<EvDevDevice> MouseDevices => AllMouseDevices.Value;
-
-        
-        public int Fd { get; }
         private IntPtr _dev;
-        public string Name { get; }
-        public List<EvType> EventTypes { get; private set; } = new List<EvType>();
-        public input_absinfo? AbsX { get; }
-        public input_absinfo? AbsY { get; }
 
         public EvDevDevice(int fd, IntPtr dev)
         {
             Fd = fd;
             _dev = dev;
             Name = Marshal.PtrToStringAnsi(NativeUnsafeMethods.libevdev_get_name(_dev));
+
+            //Loading EventTypes
+            var eventTypes = new List<EvType>();
             foreach (EvType type in Enum.GetValues(typeof(EvType)))
             {
                 if (NativeUnsafeMethods.libevdev_has_event_type(dev, type) != 0)
-                    EventTypes.Add(type);
+                    eventTypes.Add(type);
             }
-            var ptr = NativeUnsafeMethods.libevdev_get_abs_info(dev, (int) AbsAxis.ABS_X);
+            EventTypes = eventTypes.AsReadOnly();
+
+            var ptr = NativeUnsafeMethods.libevdev_get_abs_info(dev, (int)AbsAxis.ABS_X);
             if (ptr != null)
                 AbsX = *ptr;
             ptr = NativeUnsafeMethods.libevdev_get_abs_info(dev, (int)AbsAxis.ABS_Y);
             if (ptr != null)
                 AbsY = *ptr;
+
+            if (EventTypes.Contains(EvType.EV_REL))
+                Type = EvDevDeviceType.Mouse;
+            else if (EventTypes.Contains(EvType.EV_ABS))
+                Type = EvDevDeviceType.Touch;
+            else
+                Type = EvDevDeviceType.Unkown;
         }
 
-        public input_event? NextEvent()
-        {
-            input_event ev;
-            if (NativeUnsafeMethods.libevdev_next_event(_dev, 2, out ev) == 0)
-                return ev;
-            return null;
-        }
+        public static IReadOnlyList<EvDevDevice> InputDevices => AllInputDevices.Value;
 
-        public bool IsMouse => EventTypes.Contains(EvType.EV_REL);
+        public input_absinfo? AbsX { get; }
 
+        public input_absinfo? AbsY { get; }
+
+        public IReadOnlyList<EvType> EventTypes { get; }
+
+        public int Fd { get; }
+
+        public string Name { get; }
+        public EvDevDeviceType Type { get; private set; }
+
+        // public bool IsMouse => EventTypes.Contains(EvType.EV_REL) || EventTypes.Contains(EvType.EV_ABS);
         public static EvDevDevice Open(string device)
         {
             var fd = NativeUnsafeMethods.open(device, 2048, 0);
@@ -77,12 +78,38 @@ namespace Avalonia.LinuxFramebuffer
             return new EvDevDevice(fd, dev);
         }
 
+        public input_event? NextEvent()
+        {
+            input_event ev;
+            if (NativeUnsafeMethods.libevdev_next_event(_dev, 2, out ev) == 0)
+                return ev;
+            return null;
+        }
 
+        private static List<EvDevDevice> OpenMouseDevices()
+        {
+            var rv = new List<EvDevDevice>();
+            foreach (var dev in Directory.GetFiles("/dev/input", "event*").Select(Open))
+            {
+                if (dev.Type == EvDevDeviceType.Unkown)
+                {
+                    NativeUnsafeMethods.close(dev.Fd);
+                    Console.WriteLine("# Mouse-Device NOT added: " + dev.Name);
+                }
+                else
+                {
+                    rv.Add(dev);
+                    Console.WriteLine($"# Mouse-Device added: [Name: {dev.Name}, Type: {dev.Type}]");
+                }
+            }
+            return rv;
+        }
     }
 
-    public class EvDevAxisInfo
+    public enum EvDevDeviceType
     {
-        public int Minimum { get; set; }
-        public int Maximum { get; set; }
+        Unkown,
+        Mouse,
+        Touch,
     }
 }

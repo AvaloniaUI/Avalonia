@@ -231,15 +231,23 @@ namespace Avalonia.LinuxFramebuffer
         ABS_DISTANCE = 0x19,
         ABS_TILT_X = 0x1a,
         ABS_TILT_Y = 0x1b,
-        ABS_TOOL_WIDTH = 0x1c
+        ABS_TOOL_WIDTH = 0x1c,
+        ABS_MT_POSITION_X = 0x35,
+        ABS_MT_POSITION_Y = 0x36,
+        ABS_MT_TRACKING_ID = 0x39,
     }
 
+    /// <summary>
+    /// https://github.com/spotify/linux/blob/master/include/linux/input.h
+    /// </summary>
     enum EvKey
     {
         BTN_LEFT = 0x110,
         BTN_RIGHT = 0x111,
-        BTN_MIDDLE = 0x112
+        BTN_MIDDLE = 0x112,
+        BTN_TOUCH = 0x14A,
     }
+
 
     [StructLayout(LayoutKind.Sequential)]
     struct input_absinfo
