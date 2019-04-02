@@ -639,20 +639,20 @@ namespace Avalonia.Controls.Primitives
         /// <param name="desired">The desired items.</param>
         internal static void SynchronizeItems(IList items, IEnumerable<object> desired)
         {
-            int index = 0;
+            var index = 0;
 
-            foreach (var i in desired)
+            foreach (object item in desired)
             {
-                if (index < items.Count)
+                int itemIndex = items.IndexOf(item);
+
+                if (itemIndex == -1)
                 {
-                    if (items[index] != i)
-                    {
-                        items[index] = i;
-                    }
+                    items.Insert(index, item);
                 }
-                else
+                else if(itemIndex != index)
                 {
-                    items.Add(i);
+                    items.RemoveAt(itemIndex);
+                    items.Insert(index, item);
                 }
 
                 ++index;
