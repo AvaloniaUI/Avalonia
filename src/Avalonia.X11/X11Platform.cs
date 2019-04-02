@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -24,6 +25,7 @@ namespace Avalonia.X11
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public IScreenImpl Screens { get; private set; }
+        public X11PlatformOptions Options { get; private set; }
         public void Initialize(X11PlatformOptions options)
         {
             XInitThreads();
@@ -63,6 +65,8 @@ namespace Avalonia.X11
                 else
                     GlxGlPlatformFeature.TryInitialize(Info);
             }
+
+            Options = options;
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -91,6 +95,7 @@ namespace Avalonia
     {
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
+        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
     }
     public static class AvaloniaX11PlatformExtensions
     {

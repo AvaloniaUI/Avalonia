@@ -67,8 +67,7 @@ namespace Avalonia.Native
             if (_factory.MacOptions != null)
             {
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
-                if (macOpts != null)
-                    _factory.MacOptions.ShowInDock = macOpts.ShowInDock ? 1 : 0;
+                _factory.MacOptions.ShowInDock = macOpts?.ShowInDock != false ? 1 : 0;
             }
 
             AvaloniaLocator.CurrentMutable
