@@ -187,7 +187,7 @@ namespace Avalonia.Controls
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
-            base.OnAttachedToLogicalTree(e);
+            base.OnDetachedFromLogicalTree(e);
 
             if (Command != null)
             {
