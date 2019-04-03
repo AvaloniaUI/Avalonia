@@ -46,7 +46,7 @@ namespace Avalonia.LinuxFramebuffer
             else if (EventTypes.Contains(EvType.EV_ABS))
                 Type = EvDevDeviceType.Touch;
             else
-                Type = EvDevDeviceType.Unkown;
+                Type = EvDevDeviceType.Unknown;
         }
 
         public static IReadOnlyList<EvDevDevice> InputDevices => AllInputDevices.Value;
@@ -91,7 +91,7 @@ namespace Avalonia.LinuxFramebuffer
             var rv = new List<EvDevDevice>();
             foreach (var dev in Directory.GetFiles("/dev/input", "event*").Select(Open))
             {
-                if (dev.Type == EvDevDeviceType.Unkown)
+                if (dev.Type == EvDevDeviceType.Unknown)
                 {
                     NativeUnsafeMethods.close(dev.Fd);
                     Console.WriteLine("# Mouse-Device NOT added: " + dev.Name);
@@ -108,7 +108,7 @@ namespace Avalonia.LinuxFramebuffer
 
     public enum EvDevDeviceType
     {
-        Unkown,
+        Unknown,
         Mouse,
         Touch,
     }
