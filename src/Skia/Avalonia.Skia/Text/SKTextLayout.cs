@@ -5,13 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
 
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
 
 using Buffer = HarfBuzzSharp.Buffer;
 
@@ -565,6 +564,37 @@ namespace Avalonia.Skia.Text
             return count;
         }
 
+        private static Blob GetHarfBuzzBlob(SKStreamAsset asset)
+        {
+            if (asset == null)
+            {
+                throw new ArgumentNullException(nameof(asset));
+            }
+
+            var size = asset.Length;
+
+            Blob blob;
+
+            var memoryBase = asset.GetMemoryBase();
+
+            if (memoryBase != IntPtr.Zero)
+            {
+                blob = new Blob(memoryBase, size, MemoryMode.ReadOnly, asset, p => ((SKStreamAsset)p).Dispose());
+            }
+            else
+            {
+                var ptr = Marshal.AllocCoTaskMem(size);
+
+                asset.Read(ptr, size);
+
+                blob = new Blob(ptr, size, MemoryMode.ReadOnly, ptr, p => Marshal.FreeCoTaskMem((IntPtr)p));
+            }
+
+            blob.MakeImmutable();
+
+            return blob;
+        }
+
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -576,7 +606,7 @@ namespace Avalonia.Skia.Text
         {
             Font font;
 
-            using (var blob = textFormat.Typeface.OpenStream(out var index).ToHarfBuzzBlob())
+            using (var blob = GetHarfBuzzBlob(textFormat.Typeface.OpenStream(out var index)))
             using (var face = new Face(blob, index))
             {
                 face.Index = index;
@@ -592,9 +622,9 @@ namespace Avalonia.Skia.Text
 
             var len = buffer.Length;
 
-            var info = buffer.GlyphInfos;
+            var info = buffer.GetGlyphInfoReferences();
 
-            var pos = buffer.GlyphPositions;
+            var pos = buffer.GetGlyphPositionReferences();
 
             font.GetScale(out var scaleX, out _);
 
