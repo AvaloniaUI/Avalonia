@@ -596,7 +596,9 @@ namespace Avalonia.Skia.Text
 
             var pos = buffer.GlyphPositions;
 
-            var textScale = textFormat.FontSize / font.Scale.X;
+            font.GetScale(out var scaleX, out _);
+
+            var textScale = textFormat.FontSize / scaleX;
 
             glyphPositions = new SKPoint[len];
 

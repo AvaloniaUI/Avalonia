@@ -6,10 +6,10 @@
         Foreground="{DynamicResource ThemeForegroundBrush}"
         FontSize="{DynamicResource FontSizeNormal}">
   <Grid>
-    <DropDown x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-      <DropDownItem>Light</DropDownItem>
-      <DropDownItem>Dark</DropDownItem>
-    </DropDown>
+    <ComboBox x:Name="Themes" SelectedIndex="0" Width="100" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+      <ComboBoxItem>Light</ComboBoxItem>
+      <ComboBoxItem>Dark</ComboBoxItem>
+    </ComboBox>
     <TabControl Classes="sidebar" Name="Sidebar">
       <TabItem Header="AutoCompleteBox"><pages:AutoCompleteBoxPage/></TabItem>
       <TabItem Header="Border"><pages:BorderPage/></TabItem>
@@ -19,10 +19,11 @@
       <TabItem Header="Canvas"><pages:CanvasPage/></TabItem>
       <TabItem Header="Carousel"><pages:CarouselPage/></TabItem>
       <TabItem Header="CheckBox"><pages:CheckBoxPage/></TabItem>
+      <TabItem Header="ComboBox"><pages:ComboBoxPage/></TabItem>
       <TabItem Header="ContextMenu"><pages:ContextMenuPage/></TabItem>
+      <TabItem Header="DataGrid"><pages:DataGridPage/></TabItem>
       <TabItem Header="DatePicker"><pages:DatePickerPage/></TabItem>
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
-      <TabItem Header="DropDown"><pages:DropDownPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>

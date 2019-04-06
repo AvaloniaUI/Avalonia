@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="DropDown">
+  <Style Selector="ComboBox">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
     <Setter Property="Padding" Value="4"/>
@@ -57,7 +57,7 @@
       </ControlTemplate>
     </Setter>
   </Style>
-  <Style Selector="DropDown:pointerover /template/ Border#border">
+  <Style Selector="ComboBox:pointerover /template/ Border#border">
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}"/>
   </Style>
 </Styles>
