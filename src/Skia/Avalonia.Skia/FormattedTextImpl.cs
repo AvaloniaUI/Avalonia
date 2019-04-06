@@ -38,14 +38,14 @@ namespace Avalonia.Skia
                 _lines.Add(new FormattedTextLine(textLine.TextPointer.Length, textLine.LineMetrics.Size.Height));
             }
 
-            Size = new Size(TextLayout.Bounds.Width, TextLayout.Bounds.Height);
+            Bounds = TextLayout.Bounds.ToAvaloniaRect();
         }
 
         public string Text { get; }
 
         public Size Constraint { get; }
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public SKTextLayout TextLayout { get; }
 
