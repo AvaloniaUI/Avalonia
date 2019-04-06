@@ -276,7 +276,7 @@ namespace Avalonia.Controls.Presenters
                     FontSize = FontSize,
                     TextAlignment = TextAlignment,
                     Constraint = availableSize,
-                }.Measure();
+                }.Bounds.Size;
             }
         }
 
