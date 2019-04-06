@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui">
-  <Style Selector="DropDownItem">
+  <Style Selector="ComboBoxItem">
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="Padding" Value="2"/>
     <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -19,23 +19,23 @@
     </Setter>
   </Style>
     
-  <Style Selector="DropDownItem:pointerover /template/ ContentPresenter">
+  <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}"/>
   </Style>
     
-  <Style Selector="DropDownItem:selected /template/ ContentPresenter">
+  <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
   </Style>
     
-  <Style Selector="DropDownItem:selected:focus /template/ ContentPresenter">
+  <Style Selector="ComboBoxItem:selected:focus /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
   </Style>
     
-  <Style Selector="DropDownItem:selected:pointerover /template/ ContentPresenter">
+  <Style Selector="ComboBoxItem:selected:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}"/>
   </Style>
 
-  <Style Selector="DropDownItem:selected:focus:pointerover /template/ ContentPresenter">
+  <Style Selector="ComboBoxItem:selected:focus:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush2}"/>
   </Style>
 </Styles>

@@ -156,7 +156,7 @@ namespace Avalonia.DesignerSupport.Remote
     {
         public int ScreenCount => 1;
 
-        public Screen[] AllScreens { get; } =
-            {new Screen(new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true)};
+        public IReadOnlyList<Screen> AllScreens { get; } =
+            new Screen[] { new Screen(new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
     }
 }
