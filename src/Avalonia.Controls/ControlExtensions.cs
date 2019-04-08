@@ -15,7 +15,7 @@ namespace Avalonia.Controls
     public static class ControlExtensions
     {
         /// <summary>
-        /// Tries to being the control into view.
+        /// Tries to bring the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
         public static void BringIntoView(this IControl control)
@@ -26,7 +26,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Tries to being the control into view.
+        /// Tries to bring the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="rect">The area of the control to being into view.</param>

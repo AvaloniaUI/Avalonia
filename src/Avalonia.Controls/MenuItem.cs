@@ -286,6 +286,26 @@ namespace Avalonia.Controls
             return new MenuItemContainerGenerator(this);
         }
 
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged += CanExecuteChanged;
+            }
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged -= CanExecuteChanged;
+            }
+        }
+
         /// <summary>
         /// Called when the <see cref="MenuItem"/> is clicked.
         /// </summary>
@@ -399,14 +419,17 @@ namespace Avalonia.Controls
         {
             if (e.Sender is MenuItem menuItem)
             {
-                if (e.OldValue is ICommand oldCommand)
+                if (((ILogical)menuItem).IsAttachedToLogicalTree)
                 {
-                    oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
-                }
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= menuItem.CanExecuteChanged;
+                    }
 
-                if (e.NewValue is ICommand newCommand)
-                {
-                    newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                    if (e.NewValue is ICommand newCommand)
+                    {
+                        newCommand.CanExecuteChanged += menuItem.CanExecuteChanged;
+                    }
                 }
 
                 menuItem.CanExecuteChanged(menuItem, EventArgs.Empty);
