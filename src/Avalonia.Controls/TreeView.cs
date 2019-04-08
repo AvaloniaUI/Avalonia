@@ -40,8 +40,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         public static readonly DirectProperty<TreeView, IList> SelectedItemsProperty =
-            AvaloniaProperty.RegisterDirect<TreeView, IList>(
-                nameof(SelectedItems),
+            ListBox.SelectedItemsProperty.AddOwner<TreeView>(
                 o => o.SelectedItems,
                 (o, v) => o.SelectedItems = v);
 
@@ -49,8 +48,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
         public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
-            AvaloniaProperty.Register<TreeView, SelectionMode>(
-                nameof(SelectionMode));
+            ListBox.SelectionModeProperty.AddOwner<TreeView>();
 
         private static readonly IList Empty = new object[0];
         private object _selectedItem;
