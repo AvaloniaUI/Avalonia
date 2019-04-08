@@ -31,10 +31,8 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
 
-        public WindowBaseImpl()
+        public WindowBaseImpl(AvaloniaNativePlatformOptions opts)
         {
-            var opts = AvaloniaLocator.Current.GetService<AvaloniaNativeOptions>();
-
             _gpu = opts.UseGpu;
             _deferredRendering = opts.UseDeferredRendering;
 

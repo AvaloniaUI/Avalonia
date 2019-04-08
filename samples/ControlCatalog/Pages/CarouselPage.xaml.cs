@@ -10,8 +10,8 @@ namespace ControlCatalog.Pages
         private Carousel _carousel;
         private Button _left;
         private Button _right;
-        private DropDown _transition;
-        private DropDown _orientation;
+        private ComboBox _transition;
+        private ComboBox _orientation;
 
         public CarouselPage()
         {
@@ -28,8 +28,8 @@ namespace ControlCatalog.Pages
             _carousel = this.FindControl<Carousel>("carousel");
             _left = this.FindControl<Button>("left");
             _right = this.FindControl<Button>("right");
-            _transition = this.FindControl<DropDown>("transition");
-            _orientation = this.FindControl<DropDown>("orientation");
+            _transition = this.FindControl<ComboBox>("transition");
+            _orientation = this.FindControl<ComboBox>("orientation");
         }
 
         private void TransitionChanged(object sender, SelectionChangedEventArgs e)
