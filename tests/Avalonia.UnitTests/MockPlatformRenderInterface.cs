@@ -24,17 +24,17 @@ namespace Avalonia.UnitTests
 
         public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return Mock.Of<IEllipseGeometryImpl>();
         }
 
         public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
-            throw new NotImplementedException();
+            return Mock.Of<ILineGeometryImpl>();
         }
 
         public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect)
         {
-            throw new NotImplementedException();
+            return Mock.Of<IRectangleGeometryImpl>();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
