@@ -13,8 +13,14 @@ namespace Avalonia.Skia
         /// <summary>
         /// Initialize Skia platform.
         /// </summary>
-        public static void Initialize(ICustomSkiaGpu customGpu = null)
+        public static void Initialize()
         {
+            Initialize(new SkiaOptions());
+        }
+
+        public static void Initialize(SkiaOptions options)
+        {
+            var customGpu = options.CustomGpuFactory?.Invoke();
             var renderInterface = new PlatformRenderInterface(customGpu);
 
             AvaloniaLocator.CurrentMutable
