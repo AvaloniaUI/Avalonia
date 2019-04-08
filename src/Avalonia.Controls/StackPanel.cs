@@ -25,6 +25,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<StackPanel, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         /// <summary>
+        /// Defines the <see cref="ReverseOrder"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ReverseOrderProperty =
+            AvaloniaProperty.Register<StackPanel, bool>(nameof(ReverseOrder));
+
+        /// <summary>
         /// Initializes static members of the <see cref="StackPanel"/> class.
         /// </summary>
         static StackPanel()
@@ -49,6 +55,15 @@ namespace Avalonia.Controls
         {
             get { return GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets if the child controls will be layed out in reverse order.
+        /// </summary>
+        public bool ReverseOrder
+        {
+            get => GetValue(ReverseOrderProperty);
+            set => SetValue(ReverseOrderProperty, value);
         }
 
         /// <summary>
@@ -244,7 +259,9 @@ namespace Avalonia.Controls
                 arrangedWidth = 0;
             }
 
-            foreach (Control child in Children)
+            var children = ReverseOrder ? Children.Reverse() : Children;
+
+            foreach (Control child in children)
             {
                 double childWidth = child.DesiredSize.Width;
                 double childHeight = child.DesiredSize.Height;
