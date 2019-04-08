@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        protected static readonly StyledProperty<SelectionMode> SelectionModeProperty =
+        public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
             AvaloniaProperty.Register<SelectingItemsControl, SelectionMode>(
                 nameof(SelectionMode));
 
