@@ -9,40 +9,54 @@ namespace Avalonia.Controls.Notifications
     {
         private TimeSpan _closingAnimationTime = TimeSpan.Zero;
 
+        static Notification()
+        {
+            CloseOnClickProperty.Changed.AddClassHandler<Button>(CloseOnClickChanged);
+        }
+
         public bool IsClosing { get; set; }
 
-        public static readonly RoutedEvent NotificationCloseInvokedEvent = EventManager.RegisterRoutedEvent(
-            "NotificationCloseInvoked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Notification));
+        /// <summary>
+        /// Defines the <see cref="NotificationCloseInvoked"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> NotificationCloseInvokedEvent =
+            RoutedEvent.Register<Notification, RoutedEventArgs>(nameof(NotificationCloseInvoked), RoutingStrategies.Bubble);
 
-        public static readonly RoutedEvent NotificationClosedEvent = EventManager.RegisterRoutedEvent(
-            "NotificationClosed", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(Notification));
+        /// <summary>
+        /// Defines the <see cref="NotificationClosed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> NotificationClosedEvent =
+            RoutedEvent.Register<Notification, RoutedEventArgs>(nameof(NotificationClosed), RoutingStrategies.Bubble);
 
-        public event RoutedEventHandler NotificationCloseInvoked
+        /// <summary>
+        /// Raised when notification close event is invoked.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> NotificationCloseInvoked
         {
             add { AddHandler(NotificationCloseInvokedEvent, value); }
             remove { RemoveHandler(NotificationCloseInvokedEvent, value); }
         }
 
-        public event RoutedEventHandler NotificationClosed
+        public event EventHandler<RoutedEventArgs> NotificationClosed
         {
             add { AddHandler(NotificationClosedEvent, value); }
             remove { RemoveHandler(NotificationClosedEvent, value); }
         }
 
-        public static bool GetCloseOnClick(DependencyObject obj)
+        public static bool GetCloseOnClick(Notification obj)
         {
             return (bool)obj.GetValue(CloseOnClickProperty);
         }
 
-        public static void SetCloseOnClick(DependencyObject obj, bool value)
+        public static void SetCloseOnClick(Notification obj, bool value)
         {
             obj.SetValue(CloseOnClickProperty, value);
         }
 
-        public static readonly DependencyProperty CloseOnClickProperty =
-            DependencyProperty.RegisterAttached("CloseOnClick", typeof(bool), typeof(Notification), new FrameworkPropertyMetadata(false, CloseOnClickChanged));
+        public static readonly AvaloniaProperty CloseOnClickProperty =
+            AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
 
-        private static void CloseOnClickChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        private static void CloseOnClickChanged(Button dependencyObject, AvaloniaPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             var button = dependencyObject as Button;
             if (button == null)
@@ -56,7 +70,7 @@ namespace Avalonia.Controls.Notifications
             {
                 button.Click += (sender, args) =>
                 {
-                    var notification = VisualTreeHelperExtensions.GetParent<Notification>(button);
+                    var notification = button.Parent as Notification;
                     notification?.Close();
                 };
             }
