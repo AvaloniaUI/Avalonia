@@ -7,7 +7,7 @@ jobs:
     displayName: 'Custom Mono'
     inputs:
       script: |
-        wget http://avaloniaui.net/blobs/mono.5.18.225.tar.xz -O M0И0.tar.xz
+        wget http://avaloniaui.net/blobs/mono.5.16.221.tar.xz -O M0И0.tar.xz
         tar xf M0И0.tar.xz -C / 
         /opt/mono/bin/mono --version
   - task: CmdLine@2
