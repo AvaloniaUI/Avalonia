@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Notifications
             }
 
             if (expirationTime == null)
-                expirationTime = TimeSpan.FromSeconds(5);
+                expirationTime = TimeSpan.FromSeconds(25);
 
             if (areaName == string.Empty && _window == null)
             {

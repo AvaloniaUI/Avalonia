@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 
@@ -15,7 +17,7 @@ namespace Avalonia.Controls.Notifications
             set { SetValue(PositionProperty, value); }
         }
 
-        public static readonly AvaloniaProperty PositionProperty =
+        public static readonly StyledProperty<NotificationPosition> PositionProperty =
             AvaloniaProperty.Register<NotificationArea, NotificationPosition>(nameof(Position), NotificationPosition.BottomRight);
 
         public int MaxItems
@@ -32,11 +34,19 @@ namespace Avalonia.Controls.Notifications
             NotificationManager.AddArea(this);
         }
 
+        static NotificationArea()
+        {
+            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
+            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
+            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
+            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
+        }
+
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
 
-            var itemsControl = this.FindControl<Panel>("PART_Items");
+            var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
         }
 
@@ -58,17 +68,17 @@ namespace Avalonia.Controls.Notifications
             notification.NotificationClosed += (sender, args) => onClose?.Invoke();
             notification.NotificationClosed += OnNotificationClosed;
 
-           /* if (!IsLoaded)
+            /*if (!this.)
             {
                 return;
-            }
+            }*/
 
-            var w = Window.GetWindow(this);
+            /*var w = this.VisualRoot Window.GetWindow(this);
             var x = PresentationSource.FromVisual(w);
             if (x == null)
             {
                 return;
-            }
+            }*/
 
             lock (_items)
             {
@@ -86,7 +96,7 @@ namespace Avalonia.Controls.Notifications
             }
             await Task.Delay(expirationTime);
 
-            notification.Close();*/
+            notification.Close();
         }
 
         private void OnNotificationClosed(object sender, RoutedEventArgs routedEventArgs)

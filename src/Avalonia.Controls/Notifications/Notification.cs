@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -11,7 +12,34 @@ namespace Avalonia.Controls.Notifications
 
         static Notification()
         {
-            CloseOnClickProperty.Changed.AddClassHandler<Button>(CloseOnClickChanged);
+            //CloseOnClickProperty.Changed.AddClassHandler<Button>(CloseOnClickChanged);
+        }
+
+        public Notification()
+        {
+            this.GetObservable(ContentProperty)
+                .OfType<NotificationContent>()
+                .Subscribe(x =>
+                {
+                    switch (x.Type)
+                    {
+                        case NotificationType.Error:
+                            PseudoClasses.Add(":error");
+                            break;
+
+                        case NotificationType.Information:
+                            PseudoClasses.Add(":information");
+                            break;
+
+                        case NotificationType.Success:
+                            PseudoClasses.Add(":success");
+                            break;
+
+                        case NotificationType.Warning:
+                            PseudoClasses.Add(":warning");
+                            break;
+                    }
+                });
         }
 
         public bool IsClosing { get; set; }
@@ -43,7 +71,7 @@ namespace Avalonia.Controls.Notifications
             remove { RemoveHandler(NotificationClosedEvent, value); }
         }
 
-        public static bool GetCloseOnClick(Notification obj)
+        /*public static bool GetCloseOnClick(Notification obj)
         {
             return (bool)obj.GetValue(CloseOnClickProperty);
         }
@@ -51,10 +79,10 @@ namespace Avalonia.Controls.Notifications
         public static void SetCloseOnClick(Notification obj, bool value)
         {
             obj.SetValue(CloseOnClickProperty, value);
-        }
+        }*/
 
-        public static readonly AvaloniaProperty CloseOnClickProperty =
-            AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
+        //public static readonly AvaloniaProperty CloseOnClickProperty =
+          //  AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
 
         private static void CloseOnClickChanged(Button dependencyObject, AvaloniaPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {

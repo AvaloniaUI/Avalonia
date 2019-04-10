@@ -4,5 +4,8 @@
         xmlns:local="clr-namespace:ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.MainWindow">
-    <local:MainView/>
+    <Panel>
+        <local:MainView/>
+        <NotificationArea Name="Main" Position="TopRight" MaxItems="5" />
+    </Panel>
 </Window>

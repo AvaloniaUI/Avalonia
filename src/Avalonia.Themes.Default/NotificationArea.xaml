@@ -1,0 +1,87 @@
+﻿<Styles xmlns="https://github.com/avaloniaui">
+    <Style Selector="NotificationArea">
+        <Setter Property="Margin" Value="0 0 8 8"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <StackPanel Name="PART_Items" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Notification">
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="Width" Value="350"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="White"/>
+        
+       <!-- <Setter Property="ContentTemplateSelector" Value="{StaticResource NotificationTemplateSelector}"/> -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Margin="8,8,0,0">
+                    <Grid>
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                        <Button Name="PART_CloseButton" Margin="12" Foreground="{TemplateBinding Foreground}" Opacity="0.8"/>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="Notification /template/ Button#PART_CloseButton">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <TextBlock Text="X" FontSize="12" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+    </Style>
+
+    <Style Selector="Notification">
+        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
+        <Setter Property="Background" Value="#444444"/>
+    </Style>
+    <Style Selector="Notification:information">
+        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
+        <Setter Property="Background" Value="CornflowerBlue"/>
+    </Style>
+    <Style Selector="Notification:success">
+        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
+        <Setter Property="Background" Value="LimeGreen"/>
+    </Style>
+    <Style Selector="Notification:warning">
+        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
+        <Setter Property="Background" Value="Orange"/>
+    </Style>
+    <Style Selector="Notification:error">
+        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
+        <Setter Property="Background" Value="OrangeRed"/>
+    </Style>
+
+    <Style Selector="NotificationArea:topleft /template/ StackPanel#PART_Items">
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <Style Selector="NotificationArea:topright /template/ StackPanel#PART_Items">
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+    </Style>
+
+    <Style Selector="NotificationArea:bottomleft /template/ StackPanel#PART_Items">
+        <Setter Property="ReverseOrder" Value="True"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <Style Selector="NotificationArea:bottomright /template/ StackPanel#PART_Items">
+        <Setter Property="ReverseOrder" Value="True"/>
+        <Setter Property="VerticalAlignment" Value="Bottom"/>
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+    </Style>
+</Styles>
