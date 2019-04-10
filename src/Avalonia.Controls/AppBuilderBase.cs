@@ -228,7 +228,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="shutdownMode">The shutdown mode.</param>
         /// <returns></returns>
-        public TAppBuilder SetExitMode(ShutdownMode shutdownMode)
+        public TAppBuilder SetShutdownMode(ShutdownMode shutdownMode)
         {
             Instance.ShutdownMode = shutdownMode;
             return Self;
