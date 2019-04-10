@@ -52,9 +52,13 @@ namespace Avalonia
         public Application()
         {
             Windows = new WindowCollection(this);
-
-            OnExit += OnExiting;
         }
+
+        /// <inheritdoc/>
+        public event EventHandler Startup;
+
+        /// <inheritdoc/>
+        public event EventHandler Exit;
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
@@ -164,14 +168,14 @@ namespace Avalonia
         IResourceNode IResourceNode.ResourceParent => null;
 
         /// <summary>
-        /// Gets or sets the <see cref="ExitMode"/>. This property indicates whether the application exits explicitly or implicitly. 
-        /// If <see cref="ExitMode"/> is set to OnExplicitExit the application is only closes if Exit is called.
+        /// Gets or sets the <see cref="ShutdownMode"/>. This property indicates whether the application is shutdown explicitly or implicitly. 
+        /// If <see cref="ShutdownMode"/> is set to OnExplicitShutdown the application is only closes if Shutdown is called.
         /// The default is OnLastWindowClose
         /// </summary>
         /// <value>
         /// The shutdown mode.
         /// </value>
-        public ExitMode ExitMode { get; set; }
+        public ShutdownMode ShutdownMode { get; set; }
 
         /// <summary>
         /// Gets or sets the main window of the application.
@@ -190,18 +194,47 @@ namespace Avalonia
         public WindowCollection Windows { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is existing.
+        /// Gets or sets a value indicating whether this instance is shutting down.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is existing; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is shutting down; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsExiting { get; set; }
+        internal bool IsShuttingDown { get; set; }
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
         public virtual void Initialize()
         {
+        }
+
+        public void Run()
+        {
+            if (_mainLoopCancellationTokenSource != null)
+            {
+                throw new Exception("Run should only called once");
+            }
+
+            _mainLoopCancellationTokenSource = new CancellationTokenSource();
+
+            Dispatcher.UIThread.Post(OnStartup, DispatcherPriority.Send);
+
+            Run(_mainLoopCancellationTokenSource.Token);
+        }
+
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+
+            // Make sure we call OnExit in case an error happened and OnExit() wasn't called explicitly
+            if (!IsShuttingDown)
+            {
+                OnExit();
+            }
         }
 
         /// <summary>
@@ -215,17 +248,11 @@ namespace Avalonia
                 throw new Exception("Run should only called once");
             }
 
-            closable.Closed += (s, e) => Exit();
+            closable.Closed += (s, e) => OnExit();
 
             _mainLoopCancellationTokenSource = new CancellationTokenSource();
 
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
+            Run(_mainLoopCancellationTokenSource.Token);
         }
 
         /// <summary>
@@ -252,46 +279,31 @@ namespace Avalonia
                 {
                     mainWindow.Show();
                 }
-
-                MainWindow = mainWindow;
-            }           
-
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
             }
+
+            Run(_mainLoopCancellationTokenSource.Token);
         }
 
-        /// <summary>
-        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
-        /// </summary>
-        /// <param name="token">The token to track</param>
-        public void Run(CancellationToken token)
+        protected virtual void OnStartup()
         {
-            Dispatcher.UIThread.MainLoop(token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
+            Startup?.Invoke(this, EventArgs.Empty);
         }
 
-        /// <summary>
-        /// Exits the application
-        /// </summary>
-        public void Exit()
+        protected virtual void OnExit()
         {
-            IsExiting = true;
+            Exit?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc/>
+        public void Shutdown()
+        {
+            IsShuttingDown = true;
 
             Windows.Clear();
 
-            OnExit?.Invoke(this, EventArgs.Empty);
-
             _mainLoopCancellationTokenSource?.Cancel();
+
+            OnExit();
         }
 
         /// <inheritdoc/>
@@ -302,19 +314,7 @@ namespace Avalonia
                    Styles.TryGetResource(key, out value);
         }
 
-        /// <summary>
-        /// Sent when the application is exiting.
-        /// </summary>
-        public event EventHandler OnExit;
 
-        /// <summary>
-        /// Called when the application is exiting.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected virtual void OnExiting(object sender, EventArgs e)
-        {
-        }
 
         /// <summary>
         /// Register's the services needed by Avalonia.

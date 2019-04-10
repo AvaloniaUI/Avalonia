@@ -15,7 +15,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Application.Current.ExitMode = ExitMode.OnMainWindowClose;
+                Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
                 var mainWindow = new Window();
 
@@ -29,7 +29,7 @@ namespace Avalonia.Controls.UnitTests
 
                 mainWindow.Close();
 
-                Assert.True(Application.Current.IsExiting);
+                Assert.True(Application.Current.IsShuttingDown);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Application.Current.ExitMode = ExitMode.OnLastWindowClose;
+                Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
                 var windowA = new Window();
 
@@ -50,11 +50,11 @@ namespace Avalonia.Controls.UnitTests
 
                 windowA.Close();
 
-                Assert.False(Application.Current.IsExiting);
+                Assert.False(Application.Current.IsShuttingDown);
 
                 windowB.Close();
 
-                Assert.True(Application.Current.IsExiting);
+                Assert.True(Application.Current.IsShuttingDown);
             }
         }
 
@@ -63,7 +63,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                Application.Current.ExitMode = ExitMode.OnExplicitExit;
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
                 var windowA = new Window();
 
@@ -75,15 +75,15 @@ namespace Avalonia.Controls.UnitTests
 
                 windowA.Close();
 
-                Assert.False(Application.Current.IsExiting);
+                Assert.False(Application.Current.IsShuttingDown);
 
                 windowB.Close();
 
-                Assert.False(Application.Current.IsExiting);
+                Assert.False(Application.Current.IsShuttingDown);
 
-                Application.Current.Exit();
+                Application.Current.Shutdown();
 
-                Assert.True(Application.Current.IsExiting);
+                Assert.True(Application.Current.IsShuttingDown);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
                     window.Show();
                 }
 
-                Application.Current.Exit();
+                Application.Current.Shutdown();
 
                 Assert.Empty(Application.Current.Windows);
             }
@@ -127,6 +127,19 @@ namespace Avalonia.Controls.UnitTests
                 resources["foo"] = "bar";
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Should_Have_MainWindow_After_First_Window_Shown()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {                
+                var mainWindow = new Window();
+
+                mainWindow.Show();            
+
+                Assert.Equal(mainWindow, Application.Current.MainWindow);
             }
         }
     }

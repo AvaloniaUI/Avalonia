@@ -36,7 +36,7 @@ namespace ControlCatalog.NetCore
 
         static void AppMain(Application app, string[] args)
         {
-            app.Run(new MainWindow());
+            app.Run();           
         }
 
         /// <summary>

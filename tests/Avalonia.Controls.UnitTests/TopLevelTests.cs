@@ -215,7 +215,7 @@ namespace Avalonia.Controls.UnitTests
                 var impl = new Mock<ITopLevelImpl>();
                 impl.SetupAllProperties();
                 var target = new TestTopLevel(impl.Object);
-                UnitTestApplication.Current.Exit();
+                UnitTestApplication.Current.Shutdown();
                 Assert.True(target.IsClosed);
             }
         }

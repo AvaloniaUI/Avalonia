@@ -49,6 +49,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
+        private static bool s_hasAddedFirstWindow;
+
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -250,7 +252,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;
+        public event EventHandler<CancelEventArgs> Closing;      
 
         private static void AddWindow(Window window)
         {
@@ -260,6 +262,18 @@ namespace Avalonia.Controls
             }
 
             Application.Current.Windows.Add(window);
+
+            if (s_hasAddedFirstWindow)
+            {
+                return;
+            }
+
+            s_hasAddedFirstWindow = true;
+
+            if (Application.Current.MainWindow == null)
+            {
+                Application.Current.MainWindow = window;
+            }
         }
 
         private static void RemoveWindow(Window window)
@@ -428,7 +442,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(owner == null)
+            if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
 
             if (IsVisible)

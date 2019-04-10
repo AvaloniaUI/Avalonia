@@ -9,5 +9,14 @@ namespace ControlCatalog
         {
             AvaloniaXamlLoader.Load(this);
         }
+
+        protected override void OnStartup()
+        {
+            base.OnStartup();
+
+            var mainWindow = new MainWindow();
+
+            mainWindow.Show();
+        }
     }
 }

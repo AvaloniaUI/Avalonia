@@ -4,7 +4,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
-using Serilog;
 
 namespace ControlCatalog
 {
@@ -15,7 +14,12 @@ namespace ControlCatalog
         {
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            BuildAvaloniaApp().Start<MainWindow>();
+            BuildAvaloniaApp().Start(AppMain, args);
+        }
+
+        private static void AppMain(Application app, string[] args)
+        {
+            app.Run();
         }
 
         /// <summary>
