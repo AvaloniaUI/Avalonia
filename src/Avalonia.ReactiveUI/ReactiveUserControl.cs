@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 using Avalonia.Controls;
 using ReactiveUI;
 
-namespace Avalonia
+namespace Avalonia.ReactiveUI
 {
     /// <summary>
     /// A ReactiveUI UserControl that implements <see cref="IViewFor{TViewModel}"/> 
