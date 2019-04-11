@@ -3,13 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
-using Avalonia.Skia;
 
 namespace ControlCatalog.NetCore
 {
     static class Program
-    {
-        
+    {       
         static void Main(string[] args)
         {
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
@@ -28,15 +26,10 @@ namespace ControlCatalog.NetCore
                 AppBuilder.Configure<App>().InitializeWithLinuxFramebuffer(tl =>
                 {
                     tl.Content = new MainView();
-                    System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
+                    ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 });
             else
-                BuildAvaloniaApp().Start(AppMain, args);
-        }
-
-        static void AppMain(Application app, string[] args)
-        {
-            app.Run();           
+                BuildAvaloniaApp().Start();
         }
 
         /// <summary>

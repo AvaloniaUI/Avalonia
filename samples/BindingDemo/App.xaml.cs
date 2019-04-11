@@ -3,13 +3,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
-using Serilog;
 
 namespace BindingDemo
 {
     public class App : Application
     {
-        public override void Initialize()
+        protected override void OnStartup(StartupEventArgs e)
         {
             AvaloniaXamlLoader.Load(this);
         }

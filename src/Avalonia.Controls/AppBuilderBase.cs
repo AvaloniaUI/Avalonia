@@ -292,7 +292,6 @@ namespace Avalonia.Controls
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
             Instance.RegisterServices();
-            Instance.Initialize();
             AfterSetupCallback(Self);
         }
     }

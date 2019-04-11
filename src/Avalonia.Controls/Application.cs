@@ -55,10 +55,10 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public event EventHandler Startup;
+        public event EventHandler<StartupEventArgs> Startup;
 
         /// <inheritdoc/>
-        public event EventHandler Exit;
+        public event EventHandler<ExitEventArgs> Exit;
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
@@ -199,14 +199,7 @@ namespace Avalonia
         /// <value>
         ///   <c>true</c> if this instance is shutting down; otherwise, <c>false</c>.
         /// </value>
-        internal bool IsShuttingDown { get; set; }
-
-        /// <summary>
-        /// Initializes the application by loading XAML etc.
-        /// </summary>
-        public virtual void Initialize()
-        {
-        }
+        internal bool IsShuttingDown { get; private set; }
 
         public void Run()
         {
@@ -217,7 +210,7 @@ namespace Avalonia
 
             _mainLoopCancellationTokenSource = new CancellationTokenSource();
 
-            Dispatcher.UIThread.Post(OnStartup, DispatcherPriority.Send);
+            Dispatcher.UIThread.Post(() => OnStartup(new StartupEventArgs()), DispatcherPriority.Send);
 
             Run(_mainLoopCancellationTokenSource.Token);
         }
@@ -233,7 +226,7 @@ namespace Avalonia
             // Make sure we call OnExit in case an error happened and OnExit() wasn't called explicitly
             if (!IsShuttingDown)
             {
-                OnExit();
+                OnExit(new ExitEventArgs());
             }
         }
 
@@ -248,9 +241,9 @@ namespace Avalonia
                 throw new Exception("Run should only called once");
             }
 
-            closable.Closed += (s, e) => OnExit();
-
             _mainLoopCancellationTokenSource = new CancellationTokenSource();
+
+            closable.Closed += (s, e) => _mainLoopCancellationTokenSource?.Cancel();
 
             Run(_mainLoopCancellationTokenSource.Token);
         }
@@ -284,26 +277,34 @@ namespace Avalonia
             Run(_mainLoopCancellationTokenSource.Token);
         }
 
-        protected virtual void OnStartup()
+        protected virtual void OnStartup(StartupEventArgs e)
         {
-            Startup?.Invoke(this, EventArgs.Empty);
+            Startup?.Invoke(this, e);
         }
 
-        protected virtual void OnExit()
+        protected virtual void OnExit(ExitEventArgs e)
         {
-            Exit?.Invoke(this, EventArgs.Empty);
+            Exit?.Invoke(this, e);
+
+            Environment.ExitCode = e.ApplicationExitCode;
         }
 
         /// <inheritdoc/>
         public void Shutdown()
         {
+            Shutdown(0);
+        }
+
+        /// <inheritdoc/>
+        public void Shutdown(int exitCode)
+        {
             IsShuttingDown = true;
 
             Windows.Clear();
 
-            _mainLoopCancellationTokenSource?.Cancel();
+            OnExit(new ExitEventArgs { ApplicationExitCode = exitCode });
 
-            OnExit();
+            _mainLoopCancellationTokenSource?.Cancel();
         }
 
         /// <inheritdoc/>
@@ -313,8 +314,6 @@ namespace Avalonia
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
         }
-
-
 
         /// <summary>
         /// Register's the services needed by Avalonia.

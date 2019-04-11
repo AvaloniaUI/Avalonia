@@ -1,18 +1,16 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog
 {
     public class App : Application
     {
-        public override void Initialize()
+        protected override void OnStartup(StartupEventArgs e)
         {
-            AvaloniaXamlLoader.Load(this);
-        }
+            base.OnStartup(e);
 
-        protected override void OnStartup()
-        {
-            base.OnStartup();
+            AvaloniaXamlLoader.Load(this);
 
             var mainWindow = new MainWindow();
 

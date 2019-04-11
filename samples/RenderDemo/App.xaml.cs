@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
 
@@ -9,7 +10,7 @@ namespace RenderDemo
 {
     public class App : Application
     {
-        public override void Initialize()
+        protected override void OnStartup(StartupEventArgs e)
         {
             AvaloniaXamlLoader.Load(this);
         }

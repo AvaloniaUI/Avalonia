@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Avalonia.DesignerSupport.TestApp
 {
     public class App : Application
     {
-        public override void Initialize()
+        protected override void OnStartup(StartupEventArgs e)
         {
             AvaloniaXamlLoader.Load(this);
         }
