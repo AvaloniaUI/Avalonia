@@ -31,11 +31,18 @@
                                               Focusable="False"/>
                             </Track.IncreaseButton>
                             <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
+                                <Thumb.Styles>
+                                    <Style Selector="Thumb">
+                                        <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <Border Background="{TemplateBinding Background}"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Thumb.Styles>
                             </Thumb>
                         </Track>
                         <RepeatButton Name="PART_LineDownButton"
@@ -85,11 +92,18 @@
                                               Focusable="False"/>
                             </Track.IncreaseButton>
                             <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
+                                <Thumb.Styles>
+                                    <Style Selector="Thumb">
+                                        <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <Border Background="{TemplateBinding Background}"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Thumb.Styles>
                             </Thumb>
                         </Track>
                         <RepeatButton Name="PART_LineDownButton"
