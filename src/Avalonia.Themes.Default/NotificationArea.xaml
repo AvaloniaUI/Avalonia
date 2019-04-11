@@ -28,6 +28,34 @@
                 </Border>
             </ControlTemplate>
         </Setter>
+
+        <Style.Animations>
+          <Animation Duration="0:0:0.200" Easing="CubicEaseInOut">
+            <KeyFrame Cue="0%">
+              <Setter Property="Opacity" Value="0"/>
+              <Setter Property="TranslateTransform.X" Value="250"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Opacity" Value="1"/>
+              <Setter Property="TranslateTransform.X" Value="0"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="Notification[IsClosing=true]">
+        <Style.Animations>
+          <Animation Duration="0:0:0.150" Easing="CubicEaseInOut" FillMode="Forward">
+            <KeyFrame Cue="0%">             
+              <Setter Property="Opacity" Value="1"/>
+              <Setter Property="TranslateTransform.X" Value="0"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="Opacity" Value="0"/>
+              <Setter Property="TranslateTransform.X" Value="250"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
     </Style>
 
     <Style Selector="Notification /template/ Button#PART_CloseButton">

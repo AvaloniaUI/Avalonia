@@ -2,13 +2,14 @@
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Notifications
 {
     public class Notification : ContentControl
     {
-        private TimeSpan _closingAnimationTime = TimeSpan.Zero;
+        private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(0.25);
 
         static Notification()
         {
@@ -42,7 +43,19 @@ namespace Avalonia.Controls.Notifications
                 });
         }
 
-        public bool IsClosing { get; set; }
+        private bool _isClosing;
+
+        /// <summary>
+        /// Determines if the notification is already closing.
+        /// </summary>
+        public bool IsClosing
+        {
+            get { return _isClosing; }
+            private set { SetAndRaise(IsClosingProperty, ref _isClosing, value); }
+        }
+
+        public static readonly DirectProperty<Notification, bool> IsClosingProperty =
+            AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosing), o => o.IsClosing);
 
         /// <summary>
         /// Defines the <see cref="NotificationCloseInvoked"/> event.
