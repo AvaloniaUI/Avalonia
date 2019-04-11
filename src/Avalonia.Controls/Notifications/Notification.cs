@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Notifications
 {
     public class Notification : ContentControl
     {
-        private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(0.25);
+        private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(1);
 
         static Notification()
         {
