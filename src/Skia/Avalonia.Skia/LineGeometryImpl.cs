@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -10,7 +9,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="Avalonia.Media.LineGeometry"/>.
     /// </summary>
-    internal class LineGeometryImpl : GeometryImpl, ILineGeometryImpl
+    internal class LineGeometryImpl : GeometryImpl
     {
         public override Rect Bounds { get; }
         public override SKPath EffectivePath { get; }

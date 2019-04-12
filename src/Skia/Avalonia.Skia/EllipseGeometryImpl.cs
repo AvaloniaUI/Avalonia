@@ -1,7 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -9,7 +8,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="Avalonia.Media.EllipseGeometry"/>.
     /// </summary>
-    internal class EllipseGeometryImpl : GeometryImpl, IEllipseGeometryImpl
+    internal class EllipseGeometryImpl : GeometryImpl
     {
         public override Rect Bounds { get; }
         public override SKPath EffectivePath { get; }

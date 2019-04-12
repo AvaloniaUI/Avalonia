@@ -40,23 +40,23 @@ namespace Avalonia.Platform
         /// Creates an ellipse geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the ellipse.</param>
-        /// <returns>An <see cref="IEllipseGeometryImpl"/>.</returns>
-        IEllipseGeometryImpl CreateEllipseGeometry(Rect rect);
+        /// <returns>An ellipse geometry..</returns>
+        IGeometryImpl CreateEllipseGeometry(Rect rect);
 
         /// <summary>
         /// Creates a line geometry implementation.
         /// </summary>
         /// <param name="p1">The start of the line.</param>
         /// <param name="p2">The end of the line.</param>
-        /// <returns>An <see cref="ILineGeometryImpl"/>.</returns>
-        ILineGeometryImpl CreateLineGeometry(Point p1, Point p2);
+        /// <returns>A line geometry.</returns>
+        IGeometryImpl CreateLineGeometry(Point p1, Point p2);
 
         /// <summary>
         /// Creates a rectangle geometry implementation.
         /// </summary>
         /// <param name="rect">The bounds of the rectangle.</param>
-        /// <returns>An <see cref="IRectangleGeometryImpl"/>.</returns>
-        IRectangleGeometryImpl CreateRectangleGeometry(Rect rect);
+        /// <returns>A rectangle.</returns>
+        IGeometryImpl CreateRectangleGeometry(Rect rect);
 
         /// <summary>
         /// Creates a stream geometry implementation.

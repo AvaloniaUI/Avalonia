@@ -56,17 +56,17 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IEllipseGeometryImpl CreateEllipseGeometry(Rect rect)
+        public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             throw new NotImplementedException();
         }
 
-        public ILineGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
         {
             throw new NotImplementedException();
         }
 
-        public IRectangleGeometryImpl CreateRectangleGeometry(Rect rect)
+        public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
             throw new NotImplementedException();
         }
