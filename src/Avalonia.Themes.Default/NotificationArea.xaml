@@ -34,11 +34,16 @@
             <Animation Duration="0:0:0.25" Easing="QuadraticEaseIn" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="ScaleTransform.ScaleX" Value="0.75"/>
-                    <Setter Property="ScaleTransform.ScaleY" Value="0.75"/>
+                    <Setter Property="TranslateTransform.Y" Value="-20"/>
+                    <Setter Property="ScaleTransform.ScaleX" Value="0.85"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="0.85"/>
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.Y" Value="20"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
                     <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="TranslateTransform.Y" Value="0"/>
                     <Setter Property="ScaleTransform.ScaleX" Value="1"/>
                     <Setter Property="ScaleTransform.ScaleY" Value="1"/>
                 </KeyFrame>
