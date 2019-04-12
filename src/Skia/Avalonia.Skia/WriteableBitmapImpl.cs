@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based writeable bitmap.
     /// </summary>
-    public class WriteableBitmapImpl : IWriteableBitmapImpl, IDrawableBitmapImpl
+    internal class WriteableBitmapImpl : IWriteableBitmapImpl, IDrawableBitmapImpl
     {
         private static readonly SKBitmapReleaseDelegate s_releaseDelegate = ReleaseProc;
         private readonly SKBitmap _bitmap;
