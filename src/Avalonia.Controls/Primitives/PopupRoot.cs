@@ -91,12 +91,12 @@ namespace Avalonia.Controls.Primitives
 
                 if (screenX > screen.Bounds.Width)
                 {
-                    Position = Position.WithX(Position.X - screenX - bounds.Width);
+                    Position = Position.WithX(Position.X - (screenX - screen.Bounds.Width));
                 }
 
                 if (screenY > screen.Bounds.Height)
                 {
-                    Position = Position.WithY(Position.Y - screenY - bounds.Height);
+                    Position = Position.WithY(Position.Y - (screenY - screen.Bounds.Height));
                 }
             }
         }

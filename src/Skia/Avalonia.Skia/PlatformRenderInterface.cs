@@ -15,14 +15,25 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia platform render interface.
     /// </summary>
-    public class PlatformRenderInterface : IPlatformRenderInterface
+    internal class PlatformRenderInterface : IPlatformRenderInterface
     {
+        private readonly ICustomSkiaGpu _customSkiaGpu;
+
         private GRContext GrContext { get; }
 
         public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
 
-        public PlatformRenderInterface()
+        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
         {
+            if (customSkiaGpu != null)
+            {
+                _customSkiaGpu = customSkiaGpu;
+
+                GrContext = _customSkiaGpu.GrContext;
+
+                return;
+            }
+
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             if (gl != null)
             {
@@ -32,12 +43,11 @@ namespace Avalonia.Skia
                     ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
                 {
-                    
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }
             }
         }
-        
+
         /// <inheritdoc />
         public IFormattedTextImpl CreateFormattedText(
             string text,
@@ -49,6 +59,12 @@ namespace Avalonia.Skia
         {
             return new FormattedTextImpl(text, typeface, textAlignment, wrapping, constraint, spans);
         }
+
+        public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
+
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);
+
+        public IGeometryImpl CreateRectangleGeometry(Rect rect) => new RectangleGeometryImpl(rect);
 
         /// <inheritdoc />
         public IStreamGeometryImpl CreateStreamGeometry()
@@ -98,13 +114,23 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = false,
                 GrContext = GrContext
             };
-            
+
             return new SurfaceRenderTarget(createInfo);
         }
 
         /// <inheritdoc />
-        public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
+            if (_customSkiaGpu != null)
+            {
+                ICustomSkiaRenderTarget customRenderTarget = _customSkiaGpu.TryCreateRenderTarget(surfaces);
+
+                if (customRenderTarget != null)
+                {
+                    return new CustomRenderTarget(customRenderTarget);
+                }
+            }
+
             foreach (var surface in surfaces)
             {
                 if (surface is IGlPlatformSurface glSurface && GrContext != null)
