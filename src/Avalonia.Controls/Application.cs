@@ -216,21 +216,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
-        /// </summary>
-        /// <param name="token">The token to track</param>
-        public void Run(CancellationToken token)
-        {
-            Dispatcher.UIThread.MainLoop(token);
-
-            // Make sure we call OnExit in case an error happened and OnExit() wasn't called explicitly
-            if (!IsShuttingDown)
-            {
-                OnExit(new ExitEventArgs());
-            }
-        }
-
-        /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
         /// </summary>
         /// <param name="closable">The closable to track</param>
@@ -279,6 +264,17 @@ namespace Avalonia
             Run(_mainLoopCancellationTokenSource.Token);
         }
 
+        /// <summary>
+        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
+        /// </summary>
+        /// <param name="token">The token to track</param>
+        public void Run(CancellationToken token)
+        {
+            Dispatcher.UIThread.MainLoop(token);
+
+            Shutdown();
+        }
+
         protected virtual void OnStartup(StartupEventArgs e)
         {
             Startup?.Invoke(this, e);
@@ -287,8 +283,6 @@ namespace Avalonia
         protected virtual void OnExit(ExitEventArgs e)
         {
             Exit?.Invoke(this, e);
-
-            Environment.ExitCode = e.ApplicationExitCode;
         }
 
         /// <inheritdoc/>
@@ -300,6 +294,11 @@ namespace Avalonia
         /// <inheritdoc/>
         public void Shutdown(int exitCode)
         {
+            if (IsShuttingDown)
+            {
+                return;
+            }
+
             IsShuttingDown = true;
 
             Windows.Clear();
