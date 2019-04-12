@@ -17,12 +17,23 @@ namespace Avalonia.Skia
     /// </summary>
     internal class PlatformRenderInterface : IPlatformRenderInterface
     {
+        private readonly ICustomSkiaGpu _customSkiaGpu;
+
         private GRContext GrContext { get; }
 
         public IEnumerable<string> InstalledFontNames => SKFontManager.Default.FontFamilies;
 
-        public PlatformRenderInterface()
+        public PlatformRenderInterface(ICustomSkiaGpu customSkiaGpu)
         {
+            if (customSkiaGpu != null)
+            {
+                _customSkiaGpu = customSkiaGpu;
+
+                GrContext = _customSkiaGpu.GrContext;
+
+                return;
+            }
+
             var gl = AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>();
             if (gl != null)
             {
@@ -32,12 +43,11 @@ namespace Avalonia.Skia
                     ? GRGlInterface.AssembleGlInterface((_, proc) => display.GlInterface.GetProcAddress(proc))
                     : GRGlInterface.AssembleGlesInterface((_, proc) => display.GlInterface.GetProcAddress(proc)))
                 {
-                    
                     GrContext = GRContext.Create(GRBackend.OpenGL, iface);
                 }
             }
         }
-        
+
         /// <inheritdoc />
         public IFormattedTextImpl CreateFormattedText(
             string text,
@@ -98,13 +108,23 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = false,
                 GrContext = GrContext
             };
-            
+
             return new SurfaceRenderTarget(createInfo);
         }
 
         /// <inheritdoc />
-        public virtual IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
+            if (_customSkiaGpu != null)
+            {
+                ICustomSkiaRenderTarget customRenderTarget = _customSkiaGpu.TryCreateRenderTarget(surfaces);
+
+                if (customRenderTarget != null)
+                {
+                    return new CustomRenderTarget(customRenderTarget);
+                }
+            }
+
             foreach (var surface in surfaces)
             {
                 if (surface is IGlPlatformSurface glSurface && GrContext != null)
