@@ -51,6 +51,7 @@ namespace Avalonia.Controls
         {
             if (TransformRoot == null || LayoutTransform == null)
             {
+                LayoutTransform = RenderTransform;
                 return base.ArrangeOverride(finalSize);
             }
 

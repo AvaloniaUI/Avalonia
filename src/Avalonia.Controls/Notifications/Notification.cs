@@ -9,11 +9,12 @@ namespace Avalonia.Controls.Notifications
 {
     public class Notification : ContentControl
     {
-        private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(1);
+        // private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(1);
 
         static Notification()
         {
             //CloseOnClickProperty.Changed.AddClassHandler<Button>(CloseOnClickChanged);
+            IsClosedProperty.Changed.AddClassHandler<Notification>(IsClosedChanged);
         }
 
         public Notification()
@@ -57,6 +58,20 @@ namespace Avalonia.Controls.Notifications
         public static readonly DirectProperty<Notification, bool> IsClosingProperty =
             AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosing), o => o.IsClosing);
 
+        private bool _isClosed;
+
+        /// <summary>
+        /// Determines if the notification is closed.
+        /// </summary>
+        public bool IsClosed
+        {
+            get { return _isClosed; }
+            set { SetAndRaise(IsClosedProperty, ref _isClosed, value); }
+        }
+
+        public static readonly DirectProperty<Notification, bool> IsClosedProperty =
+            AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosed), o => o.IsClosed, (o,v) => o.IsClosed = v );
+
         /// <summary>
         /// Defines the <see cref="NotificationCloseInvoked"/> event.
         /// </summary>
@@ -95,7 +110,7 @@ namespace Avalonia.Controls.Notifications
         }*/
 
         //public static readonly AvaloniaProperty CloseOnClickProperty =
-          //  AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
+        //  AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
 
         private static void CloseOnClickChanged(Button dependencyObject, AvaloniaPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
@@ -149,8 +164,17 @@ namespace Avalonia.Controls.Notifications
             IsClosing = true;
 
             RaiseEvent(new RoutedEventArgs(NotificationCloseInvokedEvent));
-            await Task.Delay(_closingAnimationTime);
-            RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
+        }
+
+
+        private static void IsClosedChanged(Notification target, AvaloniaPropertyChangedEventArgs arg2)
+        {
+            if (!target.IsClosing & !target.IsClosed)
+            {
+                return;
+            }
+
+            target.RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
         }
     }
 }
