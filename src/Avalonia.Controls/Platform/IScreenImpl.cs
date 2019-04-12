@@ -1,9 +1,11 @@
-﻿namespace Avalonia.Platform
+﻿using System.Collections.Generic;
+
+namespace Avalonia.Platform
 {
     public interface IScreenImpl
     {
         int ScreenCount { get; }
 
-        Screen[] AllScreens { get; }
+        IReadOnlyList<Screen> AllScreens { get; }
     }
 }

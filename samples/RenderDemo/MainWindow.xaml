@@ -33,6 +33,9 @@
       <TabItem Header="Drawing">
         <pages:DrawingPage/>
       </TabItem>
+      <TabItem Header="SkCanvas">
+        <pages:CustomSkiaPage/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>

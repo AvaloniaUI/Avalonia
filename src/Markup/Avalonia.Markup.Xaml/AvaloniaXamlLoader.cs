@@ -162,7 +162,8 @@ namespace Avalonia.Markup.Xaml
             var readerSettings = new XamlXmlReaderSettings()
             {
                 BaseUri = uri,
-                LocalAssembly = localAssembly
+                LocalAssembly = localAssembly,
+                ProvideLineInfo = true,
             };
 
             var context = IsDesignMode ? AvaloniaXamlSchemaContext.DesignInstance : AvaloniaXamlSchemaContext.Instance;

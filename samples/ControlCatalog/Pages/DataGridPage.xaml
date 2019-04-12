@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:local="clr-namespace:ControlCatalog.Models;assembly=ControlCatalog"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.DataGridPage">
+  <UserControl.Resources>
+    <local:GDPValueConverter x:Key="GDPConverter" />
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <Style Selector="DataGridCell.gdp">
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid RowDefinitions="Auto,Auto">
+    <StackPanel Orientation="Vertical" Spacing="4" Grid.Row="0">
+      <TextBlock Classes="h1">DataGrid</TextBlock>
+      <TextBlock Classes="h2">A control for displaying and interacting with a data source.</TextBlock>
+    </StackPanel>
+    <TabControl Grid.Row="1">
+      <TabItem Header="DataGrid">
+        <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
+            <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />
+            <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
+            <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
+            <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" CellStyleClasses="gdp" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </TabItem>
+      <TabItem Header="Grouping">
+        <DataGrid Name="dataGridGrouping" Margin="12">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Country" Binding="{Binding Name}" Width="6*" />
+            <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" />
+            <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" />
+            <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" />
+            <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </TabItem>
+      <TabItem Header="Editable">
+        <Grid RowDefinitions="*,Auto">
+          <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" />
+              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="*" />
+            </DataGrid.Columns>
+          </DataGrid>
+          <Button Grid.Row="1" Name="btnAdd" Margin="12,0,12,12" Content="Add" HorizontalAlignment="Right" />
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</UserControl>

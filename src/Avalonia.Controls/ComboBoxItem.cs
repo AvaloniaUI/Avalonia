@@ -7,14 +7,14 @@ using System.Reactive.Linq;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// A selectable item in a <see cref="DropDown"/>.
+    /// A selectable item in a <see cref="ComboBox"/>.
     /// </summary>
-    public class DropDownItem : ListBoxItem
+    public class ComboBoxItem : ListBoxItem
     {
-        public DropDownItem()
+        public ComboBoxItem()
         {
-            this.GetObservable(DropDownItem.IsFocusedProperty).Where(focused => focused)
-                .Subscribe(_ => (Parent as DropDown)?.ItemFocused(this));
+            this.GetObservable(ComboBoxItem.IsFocusedProperty).Where(focused => focused)
+                .Subscribe(_ => (Parent as ComboBox)?.ItemFocused(this));
         }
     }
 }
