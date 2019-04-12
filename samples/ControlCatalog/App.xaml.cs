@@ -15,6 +15,8 @@ namespace ControlCatalog
             var mainWindow = new MainWindow();
 
             mainWindow.Show();
+
+            MainWindow = mainWindow;
         }
     }
 }

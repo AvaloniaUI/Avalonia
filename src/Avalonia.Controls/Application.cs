@@ -272,6 +272,8 @@ namespace Avalonia
                 {
                     mainWindow.Show();
                 }
+
+                MainWindow = mainWindow;
             }
 
             Run(_mainLoopCancellationTokenSource.Token);

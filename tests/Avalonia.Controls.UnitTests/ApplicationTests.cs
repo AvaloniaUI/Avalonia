@@ -129,18 +129,5 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(raised);
             }
         }
-
-        [Fact]
-        public void Should_Have_MainWindow_After_First_Window_Shown()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {                
-                var mainWindow = new Window();
-
-                mainWindow.Show();            
-
-                Assert.Equal(mainWindow, Application.Current.MainWindow);
-            }
-        }
     }
 }

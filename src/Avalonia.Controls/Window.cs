@@ -49,8 +49,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
     {
-        private static bool s_hasAddedFirstWindow;
-
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
         /// </summary>
@@ -262,18 +260,6 @@ namespace Avalonia.Controls
             }
 
             Application.Current.Windows.Add(window);
-
-            if (s_hasAddedFirstWindow)
-            {
-                return;
-            }
-
-            s_hasAddedFirstWindow = true;
-
-            if (Application.Current.MainWindow == null)
-            {
-                Application.Current.MainWindow = window;
-            }
         }
 
         private static void RemoveWindow(Window window)
