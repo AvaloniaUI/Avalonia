@@ -373,6 +373,11 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Show()
         {
+            if (PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot re-show a closed window.");
+            }
+
             if (IsVisible)
             {
                 return;
