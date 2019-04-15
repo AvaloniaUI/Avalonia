@@ -50,7 +50,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 {
                     _resource = texture.QueryInterface<SharpDX.Direct3D11.Resource>();
                     
-                    Target = new RenderTarget(AvaloniaLocator.Current.GetService<SharpDX.Direct2D1.Factory>(), surface,
+                    Target = new RenderTarget(Direct2D1Platform.Direct2D1Factory, surface,
                         new RenderTargetProperties
                         {
                             DpiX = (float) dpi.X,

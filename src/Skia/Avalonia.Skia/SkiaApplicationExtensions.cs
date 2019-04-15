@@ -20,8 +20,9 @@ namespace Avalonia
         /// <returns>Configure builder.</returns>
         public static T UseSkia<T>(this T builder) where T : AppBuilderBase<T>, new()
         {
-            builder.UseRenderingSubsystem(() => SkiaPlatform.Initialize(), "Skia");
-            return builder;
+            return builder.UseRenderingSubsystem(() => SkiaPlatform.Initialize(
+                AvaloniaLocator.Current.GetService<SkiaOptions>() ?? new SkiaOptions()),
+                "Skia");
         }
     }
 }
