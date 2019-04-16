@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +11,7 @@ namespace Avalonia.Controls.Notifications
         private static readonly List<NotificationArea> Areas = new List<NotificationArea>();
         private static Window _window;
 
-        public NotificationManager()
-        {
-        }
+        public static NotificationManager Instance = new NotificationManager();
 
         public void Show(object content, string areaName = "", TimeSpan? expirationTime = null, Action onClick = null,
             Action onClose = null)

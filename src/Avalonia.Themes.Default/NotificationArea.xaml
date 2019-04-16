@@ -14,24 +14,20 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
-        <Setter Property="Height" Value="100"/>
-        <!-- <Setter Property="ContentTemplateSelector" Value="{StaticResource NotificationTemplateSelector}"/> -->
+        <Setter Property="MinHeight" Value="100"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}" 
                         BorderBrush="{TemplateBinding BorderBrush}" 
                         BorderThickness="{TemplateBinding BorderThickness}" 
                         Margin="8,8,0,0">
-                    <Grid>
-                        <ContentPresenter Content="{TemplateBinding Content}" />
-                        <Button Name="PART_CloseButton" Margin="12" Foreground="{TemplateBinding Foreground}" Opacity="0.8"/>
-                    </Grid>
+                    <ContentControl Content="{TemplateBinding Content}" />
                 </Border>
             </ControlTemplate>
         </Setter>
 
         <Style.Animations>
-            <Animation Duration="0:0:0.25" Easing="QuadraticEaseIn" FillMode="Forward">
+            <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="0"/>
                     <Setter Property="TranslateTransform.Y" Value="-20"/>
@@ -53,7 +49,7 @@
 
     <Style Selector="Notification[IsClosing=true]">
         <Style.Animations>
-            <Animation Duration="0:0:0.2" Easing="QuadraticEaseOut" FillMode="Forward">
+            <Animation Duration="0:0:0.7" Easing="QuadraticEaseOut" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="1"/>
                     <Setter Property="TranslateTransform.X" Value="0"/>
