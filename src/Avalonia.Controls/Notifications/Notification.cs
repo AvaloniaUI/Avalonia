@@ -1,19 +1,16 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Notifications
 {
     public class Notification : ContentControl
     {
-        // private TimeSpan _closingAnimationTime = TimeSpan.FromSeconds(1);
-
         static Notification()
         {
-            //CloseOnClickProperty.Changed.AddClassHandler<Button>(CloseOnClickChanged);
             IsClosedProperty.Changed.AddClassHandler<Notification>(IsClosedChanged);
         }
 
@@ -70,7 +67,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         public static readonly DirectProperty<Notification, bool> IsClosedProperty =
-            AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosed), o => o.IsClosed, (o,v) => o.IsClosed = v );
+            AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosed), o => o.IsClosed, (o, v) => o.IsClosed = v);
 
         /// <summary>
         /// Defines the <see cref="NotificationCloseInvoked"/> event.
@@ -99,7 +96,7 @@ namespace Avalonia.Controls.Notifications
             remove { RemoveHandler(NotificationClosedEvent, value); }
         }
 
-        /*public static bool GetCloseOnClick(Notification obj)
+        public static bool GetCloseOnClick(Notification obj)
         {
             return (bool)obj.GetValue(CloseOnClickProperty);
         }
@@ -107,29 +104,30 @@ namespace Avalonia.Controls.Notifications
         public static void SetCloseOnClick(Notification obj, bool value)
         {
             obj.SetValue(CloseOnClickProperty, value);
-        }*/
+        }
 
-        //public static readonly AvaloniaProperty CloseOnClickProperty =
-        //  AvaloniaProperty.RegisterDirect<Notification, bool>("CloseOnClick", GetCloseOnClick, SetCloseOnClick);
+        public static readonly AvaloniaProperty CloseOnClickProperty =
+          AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(Notification), validate: CloseOnClickChanged);
 
-        private static void CloseOnClickChanged(Button dependencyObject, AvaloniaPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
+        private static bool CloseOnClickChanged(Button button, bool value)
         {
-            var button = dependencyObject as Button;
-            if (button == null)
-            {
-                return;
-            }
-
-            var value = (bool)dependencyPropertyChangedEventArgs.NewValue;
-
             if (value)
             {
-                button.Click += (sender, args) =>
-                {
-                    var notification = button.Parent as Notification;
-                    notification?.Close();
-                };
+                button.Click += Button_Click;
             }
+            else
+            {
+                button.Click -= Button_Click;
+            }
+
+            return true;
+        }
+
+        private static void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as ILogical;
+            var notification = btn.GetLogicalAncestors().OfType<Notification>().FirstOrDefault();
+            notification?.Close();
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -138,9 +136,6 @@ namespace Avalonia.Controls.Notifications
             var closeButton = this.FindControl<Button>("PART_CloseButton");
             if (closeButton != null)
                 closeButton.Click += OnCloseButtonOnClick;
-
-            //var storyboards = Template.Triggers.OfType<EventTrigger>().FirstOrDefault(t => t.RoutedEvent == NotificationCloseInvokedEvent)?.Actions.OfType<BeginStoryboard>().Select(a => a.Storyboard);
-            //_closingAnimationTime = new TimeSpan(storyboards?.Max(s => Math.Min((s.Duration.HasTimeSpan ? s.Duration.TimeSpan + (s.BeginTime ?? TimeSpan.Zero) : TimeSpan.MaxValue).Ticks, s.Children.Select(ch => ch.Duration.TimeSpan + (s.BeginTime ?? TimeSpan.Zero)).Max().Ticks)) ?? 0);
 
         }
 
@@ -154,7 +149,7 @@ namespace Avalonia.Controls.Notifications
             Close();
         }
 
-        public async void Close()
+        public void Close()
         {
             if (IsClosing)
             {
@@ -165,7 +160,6 @@ namespace Avalonia.Controls.Notifications
 
             RaiseEvent(new RoutedEventArgs(NotificationCloseInvokedEvent));
         }
-
 
         private static void IsClosedChanged(Notification target, AvaloniaPropertyChangedEventArgs arg2)
         {

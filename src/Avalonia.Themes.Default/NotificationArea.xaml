@@ -3,7 +3,23 @@
         <Setter Property="Margin" Value="0 0 8 8"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel Name="PART_Items" />
+                <StackPanel Name="PART_Items">
+                    <StackPanel.DataTemplates>
+                        <DataTemplate DataType="NotificationContent">
+                            <Border Padding="12" MinHeight="80">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <ContentControl Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">
+                                        <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </ContentControl>
+                                    <DockPanel Grid.Column="1">
+                                        <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Opacity=".8" Margin="0,0,12,0"/>
+                                    </DockPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </StackPanel.DataTemplates>
+                </StackPanel>
             </ControlTemplate>
         </Setter>
     </Style>

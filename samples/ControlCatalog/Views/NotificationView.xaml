@@ -2,19 +2,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Views.NotificationView">
     <Border Padding="12" MinHeight="20" Background="#FF444444">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <ContentControl Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">
+        <Grid ColumnDefinitions="Auto,*">
+            <Panel Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">
                 <TextBlock Text="&#xE115;" FontFamily="Segoe UI Symbol" FontSize="20" TextAlignment="Center" VerticalAlignment="Center"/>
-            </ContentControl>
+            </Panel>
             <DockPanel Grid.Column="1">
                 <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
                 <DockPanel LastChildFill="False" DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                    <Button x:Name="Ok" Content="Ok" DockPanel.Dock="Right"  />
-                    <Button x:Name="Cancel" Content="Cancel" DockPanel.Dock="Right" Margin="0,0,8,0" />
+                    <Button Content="Ok" DockPanel.Dock="Right" Notification.CloseOnClick="True" Command="{Binding OKCommand}" />
+                    <Button Content="Cancel" DockPanel.Dock="Right" Notification.CloseOnClick="True" Margin="0,0,8,0" />
                 </DockPanel>
                 <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Opacity=".8" Margin="0,8,0,0"/>
             </DockPanel>

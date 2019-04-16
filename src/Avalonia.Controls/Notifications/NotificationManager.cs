@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.Notifications
@@ -32,7 +31,7 @@ namespace Avalonia.Controls.Notifications
 
                 _window = new Window
                 {
-                    Position =  workArea.Position,
+                    Position = workArea.Position,
                     Width = workArea.Width,
                     Height = workArea.Height
                 };

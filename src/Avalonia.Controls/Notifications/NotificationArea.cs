@@ -68,18 +68,6 @@ namespace Avalonia.Controls.Notifications
             notification.NotificationClosed += (sender, args) => onClose?.Invoke();
             notification.NotificationClosed += OnNotificationClosed;
 
-            /*if (!this.)
-            {
-                return;
-            }*/
-
-            /*var w = this.VisualRoot Window.GetWindow(this);
-            var x = PresentationSource.FromVisual(w);
-            if (x == null)
-            {
-                return;
-            }*/
-
             lock (_items)
             {
                 _items.Add(notification);
