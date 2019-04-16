@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
+using Avalonia.ReactiveUI;
 using Serilog;
 
 namespace ControlCatalog
