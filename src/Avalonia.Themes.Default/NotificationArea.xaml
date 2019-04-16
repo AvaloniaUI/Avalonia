@@ -30,7 +30,7 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
-        <Setter Property="MinHeight" Value="100"/>
+        <Setter Property="Height" Value="150"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}" 
