@@ -45,7 +45,7 @@ namespace ControlCatalog
             };
 
             
-            var themes = this.Find<DropDown>("Themes");
+            var themes = this.Find<ComboBox>("Themes");
             themes.SelectionChanged += (sender, e) =>
             {
                 switch (themes.SelectedIndex)

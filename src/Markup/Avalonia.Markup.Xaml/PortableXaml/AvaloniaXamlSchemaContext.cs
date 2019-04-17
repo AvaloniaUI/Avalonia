@@ -1,21 +1,48 @@
-﻿using Avalonia.Data;
-using Avalonia.Markup.Xaml.Context;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using System.ComponentModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Data;
+using Avalonia.Markup.Xaml.Context;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.Styling;
+using Portable.Xaml;
 
 namespace Avalonia.Markup.Xaml.PortableXaml
 {
     internal class AvaloniaXamlSchemaContext : XamlSchemaContext
     {
-        public bool IsDesignMode { get; set; }
+        private static AvaloniaXamlSchemaContext s_instance;
+        private static AvaloniaXamlSchemaContext s_designInstance;
+
+        public static AvaloniaXamlSchemaContext Instance
+        {
+            get
+            {
+                if (s_instance == null)
+                {
+                    s_instance = Create();
+                }
+
+                return s_instance;
+            }
+        }
+
+        public static AvaloniaXamlSchemaContext DesignInstance
+        {
+            get
+            {
+                if (s_designInstance == null)
+                {
+                    s_designInstance = Create();
+                    s_designInstance.IsDesignMode = true;
+                }
+
+                return s_designInstance;
+            }
+        }
+
+        public bool IsDesignMode { get; private set; }
         public static AvaloniaXamlSchemaContext Create(IRuntimeTypeProvider typeProvider = null)
         {
             return new AvaloniaXamlSchemaContext(typeProvider ?? new AvaloniaRuntimeTypeProvider());
@@ -33,7 +60,7 @@ namespace Avalonia.Markup.Xaml.PortableXaml
 
         private IRuntimeTypeProvider _avaloniaTypeProvider;
 
-        protected internal override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
+        protected override XamlType GetXamlType(string xamlNamespace, string name, params XamlType[] typeArguments)
         {
             XamlType type = null;
             try

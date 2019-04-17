@@ -117,9 +117,9 @@ namespace Avalonia.Rendering
                         }, DispatcherPriority.Render);
                     }
 
-                    foreach (var i in _items)
+                    for(int i = 0; i < _items.Count; i++)
                     {
-                        i.Render();
+                        _items[i].Render();
                     }
                 }
                 catch (Exception ex)

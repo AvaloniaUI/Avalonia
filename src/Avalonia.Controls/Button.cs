@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -32,6 +33,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Button : ContentControl
     {
+        private ICommand _command;
+
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
         /// </summary>
@@ -68,8 +71,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
             RoutedEvent.Register<Button, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
-
-        private ICommand _command;
 
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
@@ -161,6 +162,40 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            if (IsDefault)
+            {
+                if (e.Root is IInputElement inputElement)
+                {
+                    StopListeningForDefault(inputElement);
+                }
+            }
+        }
+
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged += CanExecuteChanged;
+            }
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+
+            if (Command != null)
+            {
+                Command.CanExecuteChanged -= CanExecuteChanged;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -195,20 +230,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-
-            if (IsDefault)
-            {
-                if (e.Root is IInputElement inputElement)
-                {
-                    StopListeningForDefault(inputElement);
-                }
-            }
-        }
-
         /// <summary>
         /// Invokes the <see cref="Click"/> event.
         /// </summary>
@@ -217,7 +238,7 @@ namespace Avalonia.Controls
             var e = new RoutedEventArgs(ClickEvent);
             RaiseEvent(e);
 
-            if (Command != null)
+            if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
             {
                 Command.Execute(CommandParameter);
                 e.Handled = true;
@@ -281,17 +302,17 @@ namespace Avalonia.Controls
         {
             if (e.Sender is Button button)
             {
-                var oldCommand = e.OldValue as ICommand;
-                var newCommand = e.NewValue as ICommand;
-
-                if (oldCommand != null)
+                if (((ILogical)button).IsAttachedToLogicalTree)
                 {
-                    oldCommand.CanExecuteChanged -= button.CanExecuteChanged;
-                }
+                    if (e.OldValue is ICommand oldCommand)
+                    {
+                        oldCommand.CanExecuteChanged -= button.CanExecuteChanged;
+                    }
 
-                if (newCommand != null)
-                {
-                    newCommand.CanExecuteChanged += button.CanExecuteChanged;
+                    if (e.NewValue is ICommand newCommand)
+                    {
+                        newCommand.CanExecuteChanged += button.CanExecuteChanged;
+                    }
                 }
 
                 button.CanExecuteChanged(button, EventArgs.Empty);

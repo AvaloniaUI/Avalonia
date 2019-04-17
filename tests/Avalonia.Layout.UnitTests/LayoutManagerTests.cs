@@ -1,11 +1,10 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using Avalonia.Controls;
-using Avalonia.UnitTests;
-using System;
-using Xunit;
 using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Controls;
+using Xunit;
 
 namespace Avalonia.Layout.UnitTests
 {
@@ -74,7 +73,6 @@ namespace Avalonia.Layout.UnitTests
                 }
             };
 
-
             var order = new List<ILayoutable>();
             Size MeasureOverride(ILayoutable control, Size size)
             {
@@ -109,7 +107,6 @@ namespace Avalonia.Layout.UnitTests
                     Child = control2 = new LayoutTestControl(),
                 }
             };
-
 
             var order = new List<ILayoutable>();
             Size MeasureOverride(ILayoutable control, Size size)
@@ -196,9 +193,9 @@ namespace Avalonia.Layout.UnitTests
                 Width = 100,
                 Height = 100,
             };
- 
+
             var arrangeSize = default(Size);
- 
+
             root.DoArrangeOverride = (_, s) =>
             {
                 arrangeSize = s;
@@ -207,7 +204,7 @@ namespace Avalonia.Layout.UnitTests
 
             root.LayoutManager.ExecuteInitialLayoutPass(root);
             Assert.Equal(new Size(100, 100), arrangeSize);
- 
+
             root.Width = 120;
 
             root.LayoutManager.ExecuteLayoutPass();
@@ -238,7 +235,111 @@ namespace Avalonia.Layout.UnitTests
             border.Height = 100;
 
             root.LayoutManager.ExecuteLayoutPass();
-            Assert.Equal(new Size(100, 100), panel.DesiredSize);             
+            Assert.Equal(new Size(100, 100), panel.DesiredSize);
+        }
+
+        [Fact]
+        public void LayoutManager_Should_Prevent_Infinite_Loop_On_Measure()
+        {
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            control.Measured = false;
+
+            int cnt = 0;
+            int maxcnt = 100;
+            control.DoMeasureOverride = (l, s) =>
+            {
+                //emulate a problem in the logic of a control that triggers
+                //invalidate measure during measure
+                //it can lead to an infinite loop in layoutmanager
+                if (++cnt < maxcnt)
+                {
+                    control.InvalidateMeasure();
+                }
+
+                return new Size(100, 100);
+            };
+
+            control.InvalidateMeasure();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(cnt < 100);
+        }
+
+        [Fact]
+        public void LayoutManager_Should_Prevent_Infinite_Loop_On_Arrange()
+        {
+            var control = new LayoutTestControl();
+            var root = new LayoutTestRoot { Child = control };
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+            control.Arranged = false;
+
+            int cnt = 0;
+            int maxcnt = 100;
+            control.DoArrangeOverride = (l, s) =>
+            {
+                //emulate a problem in the logic of a control that triggers
+                //invalidate measure during arrange
+                //it can lead to infinity loop in layoutmanager
+                if (++cnt < maxcnt)
+                {
+                    control.InvalidateArrange();
+                }
+
+                return new Size(100, 100);
+            };
+
+            control.InvalidateArrange();
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.True(cnt < 100);
+        }
+
+        [Fact]
+        public void LayoutManager_Should_Properly_Arrange_Visuals_Even_When_There_Are_Issues_With_Previous_Arranged()
+        {
+            var nonArrageableTargets = Enumerable.Range(1, 10).Select(_ => new LayoutTestControl()).ToArray();
+            var targets = Enumerable.Range(1, 10).Select(_ => new LayoutTestControl()).ToArray();
+
+            StackPanel panel;
+
+            var root = new LayoutTestRoot
+            {
+                Child = panel = new StackPanel()
+            };
+
+            panel.Children.AddRange(nonArrageableTargets);
+            panel.Children.AddRange(targets);
+
+            root.LayoutManager.ExecuteInitialLayoutPass(root);
+
+            foreach (var c in panel.Children.OfType<LayoutTestControl>())
+            {
+                c.Measured = c.Arranged = false;
+                c.InvalidateMeasure();
+            }
+
+            foreach (var c in nonArrageableTargets)
+            {
+                c.DoArrangeOverride = (l, s) =>
+                {
+                    //emulate a problem in the logic of a control that triggers
+                    //invalidate measure during arrange
+                    c.InvalidateMeasure();
+                    return new Size(100, 100);
+                };
+            }
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            //altough nonArrageableTargets has rubbish logic and can't be measured/arranged properly
+            //layoutmanager should process properly other visuals
+            Assert.All(targets, c => Assert.True(c.Arranged));
         }
     }
 }

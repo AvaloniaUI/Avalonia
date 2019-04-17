@@ -156,7 +156,7 @@ namespace Avalonia.X11
 
         public int ScreenCount => _impl.Screens.Length;
 
-        public Screen[] AllScreens =>
+        public IReadOnlyList<Screen> AllScreens =>
             _impl.Screens.Select(s => new Screen(s.Bounds, s.WorkingArea, s.Primary)).ToArray();
     }
 
@@ -218,6 +218,7 @@ namespace Avalonia.X11
 
     class X11Screen
     {
+        private const int FullHDWidth = 1920;
         public bool Primary { get; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
@@ -247,6 +248,6 @@ namespace Avalonia.X11
         }
 
         public static double GuessPixelDensity(double pixelWidth, double mmWidth)
-            => Math.Max(1, Math.Round(pixelWidth / mmWidth * 25.4 / 96));
+            => pixelWidth <= FullHDWidth ? 1 : Math.Max(1, Math.Round(pixelWidth / mmWidth * 25.4 / 96));
     }
 }

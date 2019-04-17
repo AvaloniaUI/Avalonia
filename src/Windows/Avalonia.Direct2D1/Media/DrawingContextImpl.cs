@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using SharpDX;
 using SharpDX.Direct2D1;
@@ -274,7 +275,7 @@ namespace Avalonia.Direct2D1.Media
             {
                 var impl = (FormattedTextImpl)text;
 
-                using (var brush = CreateBrush(foreground, impl.Size))
+                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
                 using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
                 {
                     if (brush.PlatformBrush != null)
@@ -508,5 +509,7 @@ namespace Avalonia.Direct2D1.Media
         {
             PopLayer();
         }
+        
+        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
     }
 }

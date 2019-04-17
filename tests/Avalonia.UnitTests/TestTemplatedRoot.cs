@@ -18,7 +18,10 @@ namespace Avalonia.UnitTests
 
         public TestTemplatedRoot()
         {
-            Template = new FuncControlTemplate<TestTemplatedRoot>(x => new ContentPresenter());
+            Template = new FuncControlTemplate<TestTemplatedRoot>(x => new ContentPresenter
+            {
+                Name = "PART_ContentPresenter",
+            });
         }
 
         public event EventHandler<NameScopeEventArgs> Registered

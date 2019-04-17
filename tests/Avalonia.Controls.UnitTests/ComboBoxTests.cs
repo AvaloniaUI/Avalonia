@@ -13,12 +13,12 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class DropDownTests
+    public class ComboBoxTests
     {
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
-            var target = new DropDown
+            var target = new ComboBox
             {
                 Items = new[] { "Foo", "Bar" },
             };
@@ -42,13 +42,13 @@ namespace Avalonia.Controls.UnitTests
         public void SelectionBoxItem_Is_Rectangle_With_VisualBrush_When_Selection_Is_Control()
         {
             var items = new[] { new Canvas() };
-            var target = new DropDown
+            var target = new ComboBox
             {
                 Items = items,
                 SelectedIndex = 0,
             };
 
-            var rectangle = target.GetValue(DropDown.SelectionBoxItemProperty) as Rectangle;
+            var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.NotNull(rectangle);
 
             var brush = rectangle.Fill as VisualBrush;
@@ -59,7 +59,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void SelectionBoxItem_Rectangle_Is_Removed_From_Logical_Tree()
         {
-            var target = new DropDown
+            var target = new ComboBox
             {
                 Items = new[] { new Canvas() },
                 SelectedIndex = 0,
@@ -70,7 +70,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            var rectangle = target.GetValue(DropDown.SelectionBoxItemProperty) as Rectangle;
+            var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);
             Assert.True(((ILogical)rectangle).IsAttachedToLogicalTree);
 
@@ -84,7 +84,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<DropDown>(parent =>
+            return new FuncControlTemplate<ComboBox>(parent =>
             {
                 return new Panel
                 {
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         new ContentControl
                         {
-                            [!ContentControl.ContentProperty] = parent[!DropDown.SelectionBoxItemProperty],
+                            [!ContentControl.ContentProperty] = parent[!ComboBox.SelectionBoxItemProperty],
                         },
                         new ToggleButton
                         {
@@ -105,7 +105,7 @@ namespace Avalonia.Controls.UnitTests
                             Child = new ItemsPresenter
                             {
                                 Name = "PART_ItemsPresenter",
-                                [!ItemsPresenter.ItemsProperty] = parent[!DropDown.ItemsProperty],
+                                [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
                             }
                         }
                     }

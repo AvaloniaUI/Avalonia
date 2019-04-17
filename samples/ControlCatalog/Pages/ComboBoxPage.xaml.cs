@@ -3,9 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages
 {
-    public class DropDownPage : UserControl
+    public class ComboBoxPage : UserControl
     {
-        public DropDownPage()
+        public ComboBoxPage()
         {
             this.InitializeComponent();
         }
@@ -13,9 +13,9 @@ namespace ControlCatalog.Pages
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            var fontDropDown = this.Find<DropDown>("fontDropDown");
-            fontDropDown.Items = Avalonia.Media.FontFamily.SystemFontFamilies;
-            fontDropDown.SelectedIndex = 0;
+            var fontComboBox = this.Find<ComboBox>("fontComboBox");
+            fontComboBox.Items = Avalonia.Media.FontFamily.SystemFontFamilies;
+            fontComboBox.SelectedIndex = 0;
         }
     }
 }

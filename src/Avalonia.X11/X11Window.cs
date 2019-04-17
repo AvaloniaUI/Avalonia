@@ -128,6 +128,8 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] {_x11.Atoms._NET_WM_WINDOW_TYPE_NORMAL}, 1);
 
+            if (platform.Options.WmClass != null)
+                SetWmClass(platform.Options.WmClass);
 
             var surfaces = new List<object>
             {
@@ -557,8 +559,14 @@ namespace Avalonia.X11
         
         private bool _systemDecorations = true;
         private bool _canResize = true;
-        private (Size minSize, Size maxSize) _scaledMinMaxSize;
-        private (PixelSize minSize, PixelSize maxSize) _minMaxSize;
+        private const int MaxWindowDimension = 100000;
+
+        private (Size minSize, Size maxSize) _scaledMinMaxSize =
+            (new Size(1, 1), new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+        private (PixelSize minSize, PixelSize maxSize) _minMaxSize = (new PixelSize(1, 1),
+            new PixelSize(MaxWindowDimension, MaxWindowDimension));
+        
         private double _scaling = 1;
 
         void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
@@ -867,6 +875,16 @@ namespace Avalonia.X11
             }
         }
 
+        public void SetWmClass(string wmClass)
+        {
+            var data = Encoding.ASCII.GetBytes(wmClass);
+            fixed (void* pdata = data)
+            {
+                XChangeProperty(_x11.Display, _handle, _x11.Atoms.XA_WM_CLASS, _x11.Atoms.XA_STRING, 8,
+                    PropertyMode.Replace, pdata, data.Length);
+            }
+        }
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _scaledMinMaxSize = (minSize, maxSize);
@@ -874,10 +892,10 @@ namespace Avalonia.X11
                 (int)(minSize.Width < 1 ? 1 : minSize.Width * Scaling),
                 (int)(minSize.Height < 1 ? 1 : minSize.Height * Scaling));
 
-            const int maxDim = 100000;
+            const int maxDim = MaxWindowDimension;
             var max = new PixelSize(
-                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, minSize.Width * Scaling)),
-                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, minSize.Height * Scaling)));
+                (int)(maxSize.Width > maxDim ? maxDim : Math.Max(min.Width, maxSize.Width * Scaling)),
+                (int)(maxSize.Height > maxDim ? maxDim : Math.Max(min.Height, maxSize.Height * Scaling)));
             
             _minMaxSize = (min, max);
             UpdateSizeHints(null);

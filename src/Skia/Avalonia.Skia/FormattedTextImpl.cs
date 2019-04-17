@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia formatted text implementation.
     /// </summary>
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,
@@ -89,7 +89,7 @@ namespace Avalonia.Skia
 
         public Size Constraint => _constraint;
 
-        public Size Size => _size;
+        public Rect Bounds => _bounds;
 
         public IEnumerable<FormattedTextLine> GetLines()
         {
@@ -135,7 +135,7 @@ namespace Avalonia.Skia
                 };
             }
 
-            bool end = point.X > _size.Width || point.Y > _lines.Sum(l => l.Height);
+            bool end = point.X > _bounds.Width || point.Y > _lines.Sum(l => l.Height);
 
             return new TextHitTestResult()
             {
@@ -323,7 +323,7 @@ namespace Avalonia.Skia
         private Size _constraint = new Size(double.PositiveInfinity, double.PositiveInfinity);
         private float _lineHeight = 0;
         private float _lineOffset = 0;
-        private Size _size;
+        private Rect _bounds;
         private List<AvaloniaFormattedTextLine> _skiaLines;
 
         private static void ApplyWrapperTo(ref SKPaint current, DrawingContextImpl.PaintWrapper wrapper,
@@ -639,12 +639,26 @@ namespace Avalonia.Skia
             if (_skiaLines.Count == 0)
             {
                 _lines.Add(new FormattedTextLine(0, _lineHeight));
-                _size = new Size(0, _lineHeight);
+                _bounds = new Rect(0, 0, 0, _lineHeight);
             }
             else
             {
                 var lastLine = _skiaLines[_skiaLines.Count - 1];
-                _size = new Size(maxX, lastLine.Top + lastLine.Height);
+                _bounds = new Rect(0, 0, maxX, lastLine.Top + lastLine.Height);
+
+                switch (_paint.TextAlign)
+                {
+                    case SKTextAlign.Center:
+                        _bounds = new Rect(Constraint).CenterRect(_bounds);
+                        break;
+                    case SKTextAlign.Right:
+                        _bounds = new Rect(
+                            Constraint.Width - _bounds.Width,
+                            0,
+                            _bounds.Width,
+                            _bounds.Height);
+                        break;
+                }
             }
         }
 
@@ -660,7 +674,7 @@ namespace Avalonia.Skia
             {
                 double width = Constraint.Width > 0 && !double.IsPositiveInfinity(Constraint.Width) ?
                                 Constraint.Width :
-                                _size.Width;
+                                _bounds.Width;
 
                 switch (align)
                 {

@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 using Serilog;
 
 namespace BindingDemo

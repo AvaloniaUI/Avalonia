@@ -9,6 +9,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
@@ -19,7 +20,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    public class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -98,6 +99,8 @@ namespace Avalonia.Skia
         /// Skia canvas.
         /// </summary>
         public SKCanvas Canvas { get; }
+
+        SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
 
         /// <inheritdoc />
         public void Clear(Color color)
@@ -218,7 +221,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
         {
-            using (var paint = CreatePaint(foreground, text.Size))
+            using (var paint = CreatePaint(foreground, text.Bounds.Size))
             {
                 var textImpl = (FormattedTextImpl) text;
                 textImpl.Draw(this, Canvas, origin.ToSKPoint(), paint, _canTextUseLcdRendering);
@@ -295,6 +298,8 @@ namespace Avalonia.Skia
         {
             Canvas.Restore();
         }
+
+        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
 
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)
@@ -501,7 +506,6 @@ namespace Avalonia.Skia
         {
             var paint = new SKPaint
             {
-                IsStroke = false,
                 IsAntialias = true
             };
 
@@ -558,6 +562,13 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private PaintWrapper CreatePaint(Pen pen, Size targetSize)
         {
+            // In Skia 0 thickness means - use hairline rendering
+            // and for us it means - there is nothing rendered.
+            if (pen.Thickness == 0d)
+            {
+                return default;
+            }
+
             var rv = CreatePaint(pen.Brush, targetSize);
             var paint = rv.Paint;
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using Avalonia.Logging;
 using Avalonia.Threading;
 
@@ -13,8 +12,8 @@ namespace Avalonia.Layout
     /// </summary>
     public class LayoutManager : ILayoutManager
     {
-        private readonly Queue<ILayoutable> _toMeasure = new Queue<ILayoutable>();
-        private readonly Queue<ILayoutable> _toArrange = new Queue<ILayoutable>();
+        private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
+        private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
         private bool _queued;
         private bool _running;
 
@@ -80,6 +79,9 @@ namespace Avalonia.Layout
                 var stopwatch = new System.Diagnostics.Stopwatch();
                 stopwatch.Start();
 
+                _toMeasure.BeginLoop(MaxPasses);
+                _toArrange.BeginLoop(MaxPasses);
+
                 try
                 {
                     for (var pass = 0; pass < MaxPasses; ++pass)
@@ -98,6 +100,9 @@ namespace Avalonia.Layout
                     _running = false;
                 }
 
+                _toMeasure.EndLoop();
+                _toArrange.EndLoop();
+
                 stopwatch.Stop();
                 Logger.Information(LogArea.Layout, this, "Layout pass finished in {Time}", stopwatch.Elapsed);
             }
@@ -112,7 +117,7 @@ namespace Avalonia.Layout
             Arrange(root);
 
             // Running the initial layout pass may have caused some control to be invalidated
-            // so run a full layout pass now (this usually due to scrollbars; its not known 
+            // so run a full layout pass now (this usually due to scrollbars; its not known
             // whether they will need to be shown until the layout pass has run and if the
             // first guess was incorrect the layout will need to be updated).
             ExecuteLayoutPass();
@@ -133,7 +138,7 @@ namespace Avalonia.Layout
 
         private void ExecuteArrangePass()
         {
-            while (_toArrange.Count > 0 && _toMeasure.Count == 0)
+            while (_toArrange.Count > 0)
             {
                 var control = _toArrange.Dequeue();
 

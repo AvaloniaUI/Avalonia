@@ -37,7 +37,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Header = "Foo";
             target.ApplyTemplate();
-            target.HeaderPresenter.UpdateChild();
+            ((ContentPresenter)target.HeaderPresenter).UpdateChild();
 
             var child = target.HeaderPresenter.Child;
 

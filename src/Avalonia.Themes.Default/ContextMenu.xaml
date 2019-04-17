@@ -10,11 +10,21 @@
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"
               Padding="{TemplateBinding Padding}">
-        <ItemsPresenter Name="PART_ItemsPresenter"
-                        Items="{TemplateBinding Items}"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                        KeyboardNavigation.TabNavigation="Continue"/>
+          <ScrollViewer>
+            <Panel>
+              <ItemsPresenter Name="PART_ItemsPresenter"
+                              Items="{TemplateBinding Items}"
+                              ItemsPanel="{TemplateBinding ItemsPanel}"
+                              ItemTemplate="{TemplateBinding ItemTemplate}"
+                              KeyboardNavigation.TabNavigation="Continue"/>
+              <Rectangle Name="iconSeparator"
+                         Fill="{DynamicResource ThemeControlMidBrush}"
+                         HorizontalAlignment="Left"
+                         IsHitTestVisible="False"
+                         Margin="29,2,0,2"
+                         Width="1"/>
+              </Panel>
+          </ScrollViewer>
       </Border>
     </ControlTemplate>
   </Setter>

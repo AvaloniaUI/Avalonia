@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Visuals.Media.Imaging;
 
@@ -109,6 +110,8 @@ namespace Avalonia.Media
         /// <param name="geometry">The geometry.</param>
         public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
         {
+            Contract.Requires<ArgumentNullException>(geometry != null);
+
             if (brush != null || PenIsVisible(pen))
             {
                 PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
@@ -128,6 +131,12 @@ namespace Avalonia.Media
                 PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
             }
         }
+
+        /// <summary>
+        /// Draws a custom drawing operation
+        /// </summary>
+        /// <param name="custom">custom operation</param>
+        public void Custom(ICustomDrawOperation custom) => PlatformImpl.Custom(custom);
 
         /// <summary>
         /// Draws text.

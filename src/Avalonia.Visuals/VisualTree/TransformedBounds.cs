@@ -50,5 +50,41 @@ namespace Avalonia.VisualTree
                 return Bounds.Contains(point);
             }
         }
+
+        public bool Equals(TransformedBounds other)
+        {
+            return Bounds == other.Bounds && Clip == other.Clip && Transform == other.Transform;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+
+            return obj is TransformedBounds other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Bounds.GetHashCode();
+                hashCode = (hashCode * 397) ^ Clip.GetHashCode();
+                hashCode = (hashCode * 397) ^ Transform.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(TransformedBounds left, TransformedBounds right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(TransformedBounds left, TransformedBounds right)
+        {
+            return !left.Equals(right);
+        }
     }
 }

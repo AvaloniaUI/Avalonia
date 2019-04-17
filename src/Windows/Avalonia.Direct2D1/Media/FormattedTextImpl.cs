@@ -9,7 +9,7 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,
@@ -45,12 +45,12 @@ namespace Avalonia.Direct2D1.Media
                 }
             }
 
-            Size = Measure();
+            Bounds = Measure();
         }
 
         public Size Constraint => new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public string Text { get; }
 
@@ -104,7 +104,7 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        private Size Measure()
+        private Rect Measure()
         {
             var metrics = TextLayout.Metrics;
 
@@ -115,7 +115,11 @@ namespace Avalonia.Direct2D1.Media
                 width = metrics.Width;
             }
 
-            return new Size(width, TextLayout.Metrics.Height);
+            return new Rect(
+                TextLayout.Metrics.Left,
+                TextLayout.Metrics.Top,
+                width,
+                TextLayout.Metrics.Height);
         }
     }
 }
