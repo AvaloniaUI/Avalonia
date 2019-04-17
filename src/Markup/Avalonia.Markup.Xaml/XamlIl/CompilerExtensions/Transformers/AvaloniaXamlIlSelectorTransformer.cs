@@ -35,12 +35,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 throw new XamlIlParseException("Selector property should be a text node", node);
 
             var selectorType = pn.Property.GetClrProperty().PropertyType;
-
+            var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
             XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
                 Func<string, string, IXamlIlType> typeResolver)
             {
-                XamlIlSelectorNode result = new XamlIlSelectorInitialNode(node, selectorType);
-
+                XamlIlSelectorNode result = initialNode;
+                XamlIlOrSelectorNode results = null;
                 foreach (var i in syntax)
                 {
                     switch (i)
@@ -93,12 +93,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
                             break;
+                        case SelectorGrammar.CommaSyntax comma:
+                            if (results == null) 
+                                results = new XamlIlOrSelectorNode(node, selectorType);
+                            results.Add(result);
+                            result = initialNode;
+                            break;
                         default:
                             throw new XamlIlParseException($"Unsupported selector grammar '{i.GetType()}'.", node);
                     }
                 }
 
-                return result;
+                return results ?? result;
             }
 
             IEnumerable<SelectorGrammar.ISyntax> parsed;
@@ -126,7 +132,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     
     abstract class XamlIlSelectorNode : XamlIlAstNode, IXamlIlAstValueNode, IXamlIlAstEmitableNode
     {
-        public XamlIlSelectorNode Previous { get; }
+        protected XamlIlSelectorNode Previous { get; }
         public abstract IXamlIlType TargetType { get; }
 
         public XamlIlSelectorNode(XamlIlSelectorNode previous,
@@ -286,6 +292,46 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                      && m.Parameters.Count == 3
                      && m.Parameters[1].FullName == "Avalonia.AvaloniaProperty"
                      && m.Parameters[2].Equals(context.Configuration.WellKnownTypes.Object));
+        }
+    }
+
+    class XamlIlOrSelectorNode : XamlIlSelectorNode
+    {
+        List<XamlIlSelectorNode> _selectors = new List<XamlIlSelectorNode>();
+        public XamlIlOrSelectorNode(IXamlIlLineInfo info, IXamlIlType selectorType) : base(null, info, selectorType)
+        {
+        }
+
+        public void Add(XamlIlSelectorNode node)
+        {
+            _selectors.Add(node);
+        }
+        
+        //TODO: actually find the type
+        public override IXamlIlType TargetType => _selectors.FirstOrDefault()?.TargetType;
+        protected override void DoEmit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        {
+            if (_selectors.Count == 0)
+                throw new XamlIlLoadException("Invalid selector count", this);
+            if (_selectors.Count == 1)
+            {
+                _selectors[0].Emit(context, codeGen);
+                return;
+            }
+            var listType = context.Configuration.TypeSystem.FindType("System.Collections.Generic.List`1")
+                .MakeGenericType(base.Type.GetClrType());
+            var add = listType.FindMethod("Add", context.Configuration.WellKnownTypes.Void, false, Type.GetClrType());
+            codeGen
+                .Newobj(listType.FindConstructor());
+            foreach (var s in _selectors)
+            {
+                codeGen.Dup();
+                context.Emit(s, codeGen, Type.GetClrType());
+                codeGen.EmitCall(add, true);
+            }
+
+            EmitCall(context, codeGen,
+                m => m.Name == "Or" && m.Parameters.Count == 1 && m.Parameters[0].Name.StartsWith("IReadOnlyList"));
         }
     }
 }

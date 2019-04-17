@@ -26,6 +26,7 @@ namespace Avalonia.Controls
         /// Gets or sets the binding that associates the column with a property in the data source.
         /// </summary>
         //TODO Binding
+        [AssignBinding]
         public virtual IBinding Binding
         {
             get

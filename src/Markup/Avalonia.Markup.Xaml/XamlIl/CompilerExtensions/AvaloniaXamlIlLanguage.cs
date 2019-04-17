@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             var bindingType = typeSystem.GetType("Avalonia.Data.IBinding");
             var rv = new XamlIlLanguageTypeMappings(typeSystem)
             {
-                SupportInitialize = typeSystem.GetType("Avalonia.ISupportInitialize"),
+                SupportInitialize = typeSystem.GetType("System.ComponentModel.ISupportInitialize"),
                 XmlnsAttributes =
                 {
                     typeSystem.GetType("Avalonia.Metadata.XmlnsDefinitionAttribute"),
