@@ -10,9 +10,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     public class AvaloniaXamlIlCompiler : XamlIlCompiler
     {
-        public AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
+        private readonly IXamlIlType _contextType;
+
+        private AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
         {
-            
             // Before everything else
             
             Transformers.Insert(0, new XNameTransformer());
@@ -39,6 +40,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         }
 
+        public AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration,
+            IXamlIlTypeBuilder contextTypeBuilder) : this(configuration)
+        {
+            _contextType = CreateContextType(contextTypeBuilder);
+        }
+
+        
+        public AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration,
+            IXamlIlType contextType) : this(configuration)
+        {
+            _contextType = contextType;
+        }
+        
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
         
@@ -60,7 +74,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Transform(parsed);
-            Compile(parsed, tb, PopulateName, BuildName,
+            Compile(parsed, tb, _contextType, PopulateName, BuildName,
                 "__AvaloniaXamlIlContext", "__AvaloniaXamlIlNsInfo", baseUri);
             
         }

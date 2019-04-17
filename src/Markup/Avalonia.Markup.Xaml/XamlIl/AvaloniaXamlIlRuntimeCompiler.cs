@@ -113,8 +113,10 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
+            var contextType = _sreBuilder.DefineType("XamlIlContext");
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
-                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter));
+                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
+                _sreTypeSystem.CreateTypeBuilder(contextType));
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
 
             IXamlIlType overrideType = null;
@@ -208,14 +210,19 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var def = new TypeDefinition("XamlIlLoader", safeUri,
                 TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
 
-            asm.MainModule.Types.Add(def);
-
-            var tb = _cecilTypeSystem.CreateTypeBuilder(def);
+            var contextDef = new TypeDefinition("XamlIlLoader", safeUri + "_XamlIlContext",
+                TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
             
+            asm.MainModule.Types.Add(def);
+            asm.MainModule.Types.Add(contextDef);
+            
+            var tb = _cecilTypeSystem.CreateTypeBuilder(def);
+
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_cecilTypeSystem,
-                localAssembly == null ? null : _cecilTypeSystem.FindAssembly(localAssembly.GetName().Name),
-                _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings), 
-                AvaloniaXamlIlLanguage.CustomValueConverter));
+                    localAssembly == null ? null : _cecilTypeSystem.FindAssembly(localAssembly.GetName().Name),
+                    _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings),
+                    AvaloniaXamlIlLanguage.CustomValueConverter),
+                _cecilTypeSystem.CreateTypeBuilder(contextDef));
             compiler.ParseAndCompile(xaml, uri.ToString(), tb, overrideType);
             var asmPath = Path.Combine(_cecilEmitDir, safeUri + ".dll");
             using(var f = File.Create(asmPath))
