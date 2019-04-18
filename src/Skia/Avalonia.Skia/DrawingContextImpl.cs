@@ -9,6 +9,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
@@ -19,7 +20,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    public class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -98,6 +99,8 @@ namespace Avalonia.Skia
         /// Skia canvas.
         /// </summary>
         public SKCanvas Canvas { get; }
+
+        SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
 
         /// <inheritdoc />
         public void Clear(Color color)
@@ -293,6 +296,8 @@ namespace Avalonia.Skia
         {
             Canvas.Restore();
         }
+
+        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
 
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)

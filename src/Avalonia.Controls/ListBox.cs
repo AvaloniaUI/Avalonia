@@ -30,13 +30,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<SelectionMode> SelectionModeProperty = 
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
         /// <summary>
