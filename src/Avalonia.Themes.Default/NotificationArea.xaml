@@ -30,20 +30,18 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="RenderTransformOrigin" Value="50%,75%"/>
-        <Setter Property="Height" Value="150"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}" 
-                        Margin="8,8,0,0">
-                    <ContentControl Content="{TemplateBinding Content}" />
-                </Border>
+                <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Margin="8,8,0,0">
+                        <ContentControl MinHeight="150" Content="{TemplateBinding Content}" />
+                    </Border>
+                </LayoutTransformControl>
             </ControlTemplate>
         </Setter>
 
         <Style.Animations>
-            <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
+            <Animation Duration="0:0:0.35" Easing="QuadraticEaseIn" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="0"/>
                     <Setter Property="TranslateTransform.Y" Value="-20"/>
@@ -63,25 +61,27 @@
         </Style.Animations>
     </Style>
 
-    <Style Selector="Notification[IsClosing=true]">
+    <Style Selector="Notification[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
+        <Setter Property="RenderTransformOrigin" Value="50%,0%"/>
         <Style.Animations>
-            <Animation Duration="0:0:0.7" Easing="QuadraticEaseOut" FillMode="Forward">
+            <Animation Duration="0:0:0.25" Easing="QuadraticEaseOut" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="1"/>
-                    <Setter Property="TranslateTransform.X" Value="0"/>
-                </KeyFrame>
-                <KeyFrame Cue="50%">
-                    <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="TranslateTransform.X" Value="250"/>
-                </KeyFrame>
-                <KeyFrame Cue="60%">
-                    <Setter Property="Height" Value="100"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="1"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
-                    <Setter Property="IsClosed" Value="True"/>
                     <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="TranslateTransform.X" Value="250"/>
-                    <Setter Property="Height" Value="0"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="0"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="Notification[IsClosing=true]">
+        <Style.Animations>
+            <Animation Duration="0:0:0.25" Easing="QuadraticEaseOut" FillMode="Forward">
+                <KeyFrame Cue="100%">
+                    <Setter Property="IsClosed" Value="True"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>
