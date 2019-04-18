@@ -16,7 +16,7 @@ using Buffer = HarfBuzzSharp.Buffer;
 
 namespace Avalonia.Skia.Text
 {
-    public class SKTextLayout
+    internal class SKTextLayout
     {
         private readonly SKTypeface _typeface;
 

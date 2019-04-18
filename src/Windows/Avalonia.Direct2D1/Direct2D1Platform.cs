@@ -134,6 +134,7 @@ namespace Avalonia.Direct2D1
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -143,6 +144,7 @@ namespace Avalonia.Direct2D1
                 fontSize,
                 textAlignment,
                 wrapping,
+                trimming,
                 constraint,
                 spans);
         }

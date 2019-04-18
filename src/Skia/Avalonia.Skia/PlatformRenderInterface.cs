@@ -55,6 +55,7 @@ namespace Avalonia.Skia
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {

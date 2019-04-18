@@ -20,6 +20,7 @@ namespace Avalonia.Media
         private string _text;
         private TextAlignment _textAlignment;
         private TextWrapping _wrapping;
+        private TextTrimming _trimming;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -109,6 +110,15 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets or sets the text trimming.
+        /// </summary>
+        public TextTrimming Trimming
+        {
+            get => _trimming;
+            set => Set(ref _trimming, value);
+        }
+
+        /// <summary>
         /// Gets platform-specific platform implementation.
         /// </summary>
         public IFormattedTextImpl PlatformImpl
@@ -123,6 +133,7 @@ namespace Avalonia.Media
                         _fontSize,
                         _textAlignment,
                         _wrapping,
+                        _trimming,
                         _constraint,
                         _spans);
                 }

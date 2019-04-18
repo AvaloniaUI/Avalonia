@@ -26,6 +26,7 @@ namespace Avalonia.Platform
         /// <param name="fontSize">The base font size.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="wrapping">The text wrapping mode.</param>
+        /// <param name="trimming">The text trimming mode.</param>
         /// <param name="constraint">The text layout constraints.</param>
         /// <param name="spans">The style spans.</param>
         /// <returns>An <see cref="IFormattedTextImpl"/>.</returns>
@@ -35,6 +36,7 @@ namespace Avalonia.Platform
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans);
 
