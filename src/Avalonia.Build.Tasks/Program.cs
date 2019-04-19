@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using Microsoft.Build.Framework;
 
 namespace Avalonia.Build.Tasks
@@ -19,7 +20,8 @@ namespace Avalonia.Build.Tasks
                 AssemblyFile = args[0],
                 ReferencesFilePath = args[1],
                 OutputPath = args[2],
-                BuildEngine = new ConsoleBuildEngine()
+                BuildEngine = new ConsoleBuildEngine(),
+                ProjectDirectory = Directory.GetCurrentDirectory()
             }.Execute() ?
                 0 :
                 2;

@@ -21,12 +21,15 @@ namespace Avalonia.Build.Tasks
                 File.Delete(AssemblyFile);
             }
 
-            var data = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
-                File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray());
-            if(data == null)
+            var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
+                File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
+                ProjectDirectory);
+            if (!res.Success)
+                return false;
+            if (res.Data == null)
                 File.Copy(input, OutputPath);
             else
-                File.WriteAllBytes(OutputPath, data);
+                File.WriteAllBytes(OutputPath, res.Data);
 
             return true;
         }
@@ -39,6 +42,8 @@ namespace Avalonia.Build.Tasks
         public string ReferencesFilePath { get; set; }
         [Required]
         public string OriginalCopyPath { get; set; }
+        [Required]
+        public string ProjectDirectory { get; set; }
         
         public string OutputPath { get; set; }
         

@@ -37,14 +37,14 @@
       EmbeddedResources="@(EmbeddedResources)"/>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration)"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:BuildProjectReferences=false"/>
 
   </Target>
 
   <Target
     Name="CompileAvaloniaXaml"
     AfterTargets="AfterCompile"
-    Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) == true"
+    Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
     Inputs="@(IntermediateAssembly);"
     Outputs="$(IntermediateOutputPath)$(MSBuildProjectFile).Fody.CopyLocal.cache">
     <PropertyGroup>
@@ -61,10 +61,11 @@
       AssemblyFile="@(IntermediateAssembly)"
       ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
+      ProjectDirectory="$(MSBuildProjectDirectory)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration)"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:BuildProjectReferences=false"/>
   </Target>
 
   
