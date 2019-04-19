@@ -68,8 +68,8 @@ namespace Avalonia.Markup.Xaml
             {
                 throw new InvalidOperationException(
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
-            }
-
+            }           
+            
             foreach (var uri in GetUrisFor(assetLocator, type))
             {
                 if (assetLocator.Exists(uri))
@@ -116,6 +116,19 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
+            var compiledLoader = assetLocator.GetAssembly(uri, baseUri)
+                ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
+                ?.GetMethod("TryLoad", new[] {typeof(string)});
+            if (compiledLoader != null)
+            {
+                var uriString = (!uri.IsAbsoluteUri && baseUri != null ? new Uri(baseUri, uri) : uri)
+                    .ToString();
+                var compiledResult = compiledLoader.Invoke(null, new object[] {uriString});
+                if (compiledResult != null)
+                    return compiledResult;
+            }
+            
+            
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
@@ -130,7 +143,7 @@ namespace Avalonia.Markup.Xaml
                 }
             }
         }
-
+        
         /// <summary>
         /// Loads XAML from a string.
         /// </summary>
