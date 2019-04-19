@@ -5,7 +5,10 @@ using System;
 
 namespace Avalonia.Utilities
 {
-    public ref struct CharacterReader
+#if !BUILDTASK
+    public
+#endif
+    ref struct CharacterReader
     {
         private ReadOnlySpan<char> _s;
 

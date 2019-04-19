@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Markup.Xaml.Parsers;
-using Avalonia.Utilities;
 using XamlIl;
 using XamlIl.Ast;
 using XamlIl.Transform;

@@ -74,8 +74,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Transform(parsed);
-            Compile(parsed, tb, _contextType, PopulateName, BuildName,
-                "__AvaloniaXamlIlContext", "__AvaloniaXamlIlNsInfo", baseUri);
+            Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri);
             
         }
         
