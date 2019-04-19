@@ -15,7 +15,7 @@ namespace ControlCatalog
     {
         public MainView()
         {
-            this.InitializeComponent();
+            AvaloniaXamlLoader.Load(this);
             if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
             {
                 IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
@@ -59,12 +59,6 @@ namespace ControlCatalog
                 }
             };
             Styles.Add(light);
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-            AvaloniaXamlIlRuntimeCompiler.DumpRuntimeCompilationResults();
         }
     }
 }
