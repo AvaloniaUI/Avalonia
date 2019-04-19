@@ -110,7 +110,7 @@ namespace Avalonia.Build.Tasks
                         
                         compiler.Transform(parsed);
                         var populateName = "Populate:" + res.Name;
-                        var buildName = classType != null ? "Build:" + res.Name : null; 
+                        var buildName = classType == null ? "Build:" + res.Name : null; 
                         compiler.Compile(parsed, builder, contextClass,
                             populateName, buildName,
                             "NamespaceInfo:" + res.Name, res.Uri);
