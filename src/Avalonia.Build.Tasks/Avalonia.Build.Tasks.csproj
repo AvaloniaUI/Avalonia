@@ -3,6 +3,7 @@
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <TargetFrameworks Condition="$(Configuration) == 'Debug'">netstandard2.0;netcoreapp2.0</TargetFrameworks>
         <OutputType>exe</OutputType>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
         <DefineConstants>$(DefineConstants);BUILDTASK;XAMLIL_CECIL_INTERNAL</DefineConstants>
         <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
@@ -60,8 +61,8 @@
     </ItemGroup>
     <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
     <ItemGroup>
-      <DeleteNonNeededResults Include="$(WorkingDirectory)/*.dll" />
-      <DeleteNonNeededResults Remove="$(WorkingDirectory)/Avalonia.Build.Tasks.dll" />
+      <DeleteNonNeededResults Include="$(WorkingDirectory)\*.dll" />
+      <DeleteNonNeededResults Remove="$(WorkingDirectory)\Avalonia.Build.Tasks.dll" />
     </ItemGroup>
     <Delete Files="@(DeleteNonNeededResults)" />
 
