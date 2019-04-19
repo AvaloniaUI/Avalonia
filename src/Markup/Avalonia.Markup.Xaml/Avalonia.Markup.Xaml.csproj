@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER</DefineConstants>
+    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;</DefineConstants>
+    <UseCecil>false</UseCecil>
+    <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
     <NoWarn>CS1591</NoWarn>
@@ -70,7 +72,7 @@
         <Compile Include="XamlLoadException.cs" />
         <Compile Include="PortableXaml\portable.xaml.github\src\Portable.Xaml\**\*.cs" Exclude="PortableXaml\portable.xaml.github\src\Portable.Xaml\Assembly\**\*.cs" />
         <Compile Include="XamlIl\xamlil.github\src\XamlIl\**\*.cs" />
-        <Compile Include="XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs" />
+        <Compile Condition="$(UseCecil) == true" Include="XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs" />
         <Compile Remove="XamlIl\xamlil.github\**\obj\**\*.cs" />
         <Compile Include="..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
     </ItemGroup>
@@ -85,7 +87,7 @@
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.3" />
+    <PackageReference Condition="$(UseCecil) == true" Include="Mono.Cecil" Version="0.10.3" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="XamlIl\CompilerExtensions\README.md" />

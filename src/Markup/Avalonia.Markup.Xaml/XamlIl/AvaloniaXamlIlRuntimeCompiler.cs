@@ -9,16 +9,18 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Avalonia.Platform;
-using Mono.Cecil;
-using XamlIl.Ast;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
+#if RUNTIME_XAML_CECIL
 using TypeAttributes = Mono.Cecil.TypeAttributes;
-
+using Mono.Cecil;
+using XamlIl.Ast;
+#endif
 namespace Avalonia.Markup.Xaml.XamlIl
 {
     public static class AvaloniaXamlIlRuntimeCompiler
     {
+#if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;
         private static ModuleBuilder _sreBuilder;
         private static XamlIlLanguageTypeMappings _sreMappings;
@@ -84,13 +86,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreXmlns = XamlIlXmlnsMappings.Resolve(_sreTypeSystem, _sreMappings);
         }
 
-        public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri)
-        {
-            string xaml;
-            using (var sr = new StreamReader(stream))
-                xaml = sr.ReadToEnd();
-            return LoadCecil(xaml, localAssembly, rootInstance, uri);
-        }
 
         static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
         {
@@ -107,6 +102,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     DumpRuntimeCompilationResults();
             }
         }
+
         
         static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
         {
@@ -130,7 +126,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             return LoadOrPopulate(created, rootInstance);
         }
-
+#endif
+        
         static object LoadOrPopulate(Type created, object rootInstance)
         {
             var isp = Expression.Parameter(typeof(IServiceProvider));
@@ -153,7 +150,20 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 return rootInstance;
             }
         }
+        
+        public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri)
+        {
+            string xaml;
+            using (var sr = new StreamReader(stream))
+                xaml = sr.ReadToEnd();
+#if RUNTIME_XAML_CECIL
+            return LoadCecil(xaml, localAssembly, rootInstance, uri);
+#else
+            return LoadSre(xaml, localAssembly, rootInstance, uri);
+#endif
+        }
 
+#if RUNTIME_XAML_CECIL
         private static Dictionary<string, (Action<IServiceProvider, object> populate, Func<IServiceProvider, object>
                 build)>
             s_CecilCache =
@@ -232,5 +242,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             _cecilGeneratedCache[safeUri] = loaded;
             return LoadOrPopulate(loaded, rootInstance);
         }
+#endif
     }
 }
