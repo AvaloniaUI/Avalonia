@@ -6,6 +6,7 @@
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
         <DefineConstants>$(DefineConstants);BUILDTASK;XAMLIL_CECIL_INTERNAL</DefineConstants>
         <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
+        <NoWarn>NU1605</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -44,7 +45,7 @@
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlIl\TypeSystem\SreTypeSystem.cs" />
       <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
-      <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="ILRepack.MSBuild.Task" Version="2.0.3" PrivateAssets="All" />
+      <PackageReference Condition="$(TargetFramework) == 'netstandard2.0'" Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
     </ItemGroup>
 
