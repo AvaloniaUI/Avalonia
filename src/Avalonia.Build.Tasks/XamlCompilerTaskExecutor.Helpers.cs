@@ -47,7 +47,7 @@ namespace Avalonia.Build.Tasks
                     _res = res;
                 }
 
-                public string Uri => $"resm:{Name}?assembly={_asm.Name}";
+                public string Uri => $"resm:{Name}?assembly={_asm.Name.Name}";
                 public string Name => _res.Name;
                 public byte[] GetData() => _res.GetResourceData();
                 public string FilePath => Name;
@@ -114,7 +114,7 @@ namespace Avalonia.Build.Tasks
                     _data = data;
                     Name = name;
                     FilePath = Path.Combine(projectDir, name.TrimStart('/'));
-                    Uri = $"avares://{grp._asm.Name}/{name.TrimStart('/')}";
+                    Uri = $"avares://{grp._asm.Name.Name}/{name.TrimStart('/')}";
                 }
                 public string Uri { get; }
                 public string Name { get; }
