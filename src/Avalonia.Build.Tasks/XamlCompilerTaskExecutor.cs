@@ -30,11 +30,13 @@ namespace Avalonia.Build.Tasks
         {
             public bool Success { get; set; }
             public byte[] Data { get; set; }
+            public byte[] Symbols { get; }
 
-            public CompileResult(bool success, byte[] data = null)
+            public CompileResult(bool success, byte[] data = null, byte[] symbols = null)
             {
                 Success = success;
                 Data = data;
+                Symbols = symbols;
             }
         }
         
@@ -283,8 +285,15 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             
             var ms = new MemoryStream();
-            asm.Write(ms);
-            return new CompileResult(true, ms.ToArray());
+            var symbolStream = new MemoryStream();
+            asm.Write(ms, new WriterParameters
+            {
+                SymbolStream = symbolStream,
+                WriteSymbols = true,
+                SymbolWriterProvider = new PortablePdbWriterProvider()
+            });
+
+            return new CompileResult(true, ms.ToArray(), symbolStream.Length == 0 ? null : symbolStream.ToArray());
         }
         
     }
