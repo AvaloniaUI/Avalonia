@@ -162,6 +162,7 @@ namespace Avalonia.Build.Tasks
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                            CopyDebugDocument(trampoline, compiledPopulateMethod);
 
                             var foundXamlLoader = false;
                             // Find AvaloniaXamlLoader.Load(this) and replace it with !XamlIlPopulateTrampoline(this)

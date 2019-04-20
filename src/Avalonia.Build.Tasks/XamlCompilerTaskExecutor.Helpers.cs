@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Avalonia.Utilities;
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using XamlIl.TypeSystem;
 
 namespace Avalonia.Build.Tasks
@@ -122,6 +123,26 @@ namespace Avalonia.Build.Tasks
 
                 public void Remove() => _grp._resources.Remove(Name);
             }
+        }
+
+        static void CopyDebugDocument(MethodDefinition method, MethodDefinition copyFrom)
+        {
+            if (!copyFrom.DebugInformation.HasSequencePoints)
+                return;
+            var dbg = method.DebugInformation;
+
+            dbg.Scope = new ScopeDebugInformation(method.Body.Instructions.First(), method.Body.Instructions.First())
+            {
+                End = new InstructionOffset(),
+                Import = new ImportDebugInformation()
+            };
+            dbg.SequencePoints.Add(new SequencePoint(method.Body.Instructions.First(),
+                copyFrom.DebugInformation.SequencePoints.First().Document)
+            {
+                StartLine = 0xfeefee,
+                EndLine = 0xfeefee
+            });
+
         }
     }
  
