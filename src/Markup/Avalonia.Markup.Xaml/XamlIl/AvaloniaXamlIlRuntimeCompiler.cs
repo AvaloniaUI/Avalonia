@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 overrideType = _sreTypeSystem.GetType(rootInstance.GetType());
             }
 
-            compiler.ParseAndCompile(xaml, uri?.ToString(), _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
+            compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
 
             return LoadOrPopulate(created, rootInstance);

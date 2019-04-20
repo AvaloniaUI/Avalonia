@@ -120,7 +120,7 @@ namespace Avalonia.Build.Tasks
                     try
                     {
                         // StreamReader is needed here to handle BOM
-                        var xaml = new StreamReader(new MemoryStream(res.GetData())).ReadToEnd();
+                        var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlIlParser.Parse(xaml);
 
                         var initialRoot = (XamlIlAstObjectNode)parsed.Root;
@@ -143,7 +143,7 @@ namespace Avalonia.Build.Tasks
                         var buildName = classType == null ? "Build:" + res.Name : null; 
                         compiler.Compile(parsed, builder, contextClass,
                             populateName, buildName,
-                            "NamespaceInfo:" + res.Name, res.Uri);
+                            "NamespaceInfo:" + res.Name, res.Uri, res);
 
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();

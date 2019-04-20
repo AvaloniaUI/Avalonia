@@ -3,17 +3,16 @@ using System.IO;
 using System.Linq;
 using Avalonia.Utilities;
 using Mono.Cecil;
+using XamlIl.TypeSystem;
 
 namespace Avalonia.Build.Tasks
 {
     public static partial class XamlCompilerTaskExecutor
     {
-        interface IResource
+        interface IResource : IFileSource
         {
             string Uri { get; }
             string Name { get; }
-            byte[] GetData();
-            string FilePath { get; }
             void Remove();
 
         }
@@ -49,8 +48,8 @@ namespace Avalonia.Build.Tasks
 
                 public string Uri => $"resm:{Name}?assembly={_asm.Name.Name}";
                 public string Name => _res.Name;
-                public byte[] GetData() => _res.GetResourceData();
                 public string FilePath => Name;
+                public byte[] FileContents => _res.GetResourceData();
 
                 public void Remove() => _asm.MainModule.Resources.Remove(_res);
             }
@@ -94,7 +93,7 @@ namespace Avalonia.Build.Tasks
 
                 _embedded = new EmbeddedResource("!AvaloniaResources", ManifestResourceAttributes.Public,
                     AvaloniaResourcesIndexReaderWriter.Create(_resources.ToDictionary(x => x.Key,
-                        x => x.Value.GetData())));
+                        x => x.Value.FileContents)));
                 _asm.MainModule.Resources.Add(_embedded);
             }
 
@@ -118,8 +117,8 @@ namespace Avalonia.Build.Tasks
                 }
                 public string Uri { get; }
                 public string Name { get; }
-                public byte[] GetData() => _data;
                 public string FilePath { get; }
+                public byte[] FileContents => _data;
 
                 public void Remove() => _grp._resources.Remove(Name);
             }

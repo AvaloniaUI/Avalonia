@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
         
-        public void ParseAndCompile(string xaml, string baseUri, IXamlIlTypeBuilder tb, IXamlIlType overrideRootType)
+        public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlIlTypeBuilder tb, IXamlIlType overrideRootType)
         {
             var parsed = XDocumentXamlIlParser.Parse(xaml);
             
@@ -74,7 +74,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
 
             Transform(parsed);
-            Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri);
+            Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri, fileSource);
             
         }
         
