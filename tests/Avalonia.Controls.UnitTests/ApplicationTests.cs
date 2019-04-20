@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -127,6 +128,30 @@ namespace Avalonia.Controls.UnitTests
                 resources["foo"] = "bar";
 
                 Assert.True(raised);
+            }
+        }
+
+        [Fact]
+        public void Throws_InvalidOperationException_On_Run_When_Application_Is_Already_Running()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                Application.Current.Run();
+
+                Assert.Throws<InvalidOperationException>(() => { Application.Current.Run(); });
+            }
+        }
+
+        [Fact]
+        public void Should_Set_ExitCode_After_Shutdown()
+        {
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            {
+                Application.Current.Shutdown(1337);
+
+                var exitCode = Application.Current.Run();
+
+                Assert.Equal(1337, exitCode);
             }
         }
     }

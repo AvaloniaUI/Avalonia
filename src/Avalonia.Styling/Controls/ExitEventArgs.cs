@@ -7,10 +7,6 @@ namespace Avalonia.Controls
 {
     public class ExitEventArgs : EventArgs
     {
-        public int ApplicationExitCode
-        {
-            get => Environment.ExitCode;
-            set => Environment.ExitCode = value;
-        }
+        public int ApplicationExitCode { get; set; }
     }
 }

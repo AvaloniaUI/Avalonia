@@ -43,8 +43,8 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
-
         private CancellationTokenSource _mainLoopCancellationTokenSource;
+        private int _exitCode;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Application"/> class.
@@ -201,53 +201,40 @@ namespace Avalonia
         /// </value>
         internal bool IsShuttingDown { get; private set; }
 
-        public void Run()
+        /// <summary>
+        /// Initializes the application by loading XAML etc.
+        /// </summary>
+        public virtual void Initialize() { }
+
+        public int Run()
         {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            Dispatcher.UIThread.Post(() => OnStartup(new StartupEventArgs()), DispatcherPriority.Send);
-
-            Run(_mainLoopCancellationTokenSource.Token);
+            return Run(new CancellationTokenSource());
         }
 
         /// <summary>
         /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
         /// </summary>
         /// <param name="closable">The closable to track</param>
-        public void Run(ICloseable closable)
+        public int Run(ICloseable closable)
         {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
             closable.Closed += (s, e) => _mainLoopCancellationTokenSource?.Cancel();
 
-            Run(_mainLoopCancellationTokenSource.Token);
+            return Run(new CancellationTokenSource());
         }
 
         /// <summary>
         /// Runs the application's main loop until some condition occurs that is specified by ExitMode.
         /// </summary>
         /// <param name="mainWindow">The main window</param>
-        public void Run(Window mainWindow)
+        public int Run(Window mainWindow)
         {
-            if (_mainLoopCancellationTokenSource != null)
+            Dispatcher.UIThread.Post(() =>
             {
-                throw new Exception("Run should only called once");
-            }
+                if (MainWindow != null)
+                {
+                    return;
+                }
 
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            if (MainWindow == null)
-            {
                 if (mainWindow == null)
                 {
                     throw new ArgumentNullException(nameof(mainWindow));
@@ -259,20 +246,44 @@ namespace Avalonia
                 }
 
                 MainWindow = mainWindow;
-            }
+            });
 
-            Run(_mainLoopCancellationTokenSource.Token);
+            return Run(new CancellationTokenSource());
         }
 
         /// <summary>
         /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
         /// </summary>
         /// <param name="token">The token to track</param>
-        public void Run(CancellationToken token)
+        public int Run(CancellationToken token)
         {
-            Dispatcher.UIThread.MainLoop(token);
+            return Run(CancellationTokenSource.CreateLinkedTokenSource(token));
+        }
 
-            Shutdown();
+        private int Run(CancellationTokenSource tokenSource)
+        {
+            if (IsShuttingDown)
+            {
+                throw new InvalidOperationException("Application is shutting down.");
+            }
+
+            if (_mainLoopCancellationTokenSource != null)
+            {
+                throw new InvalidOperationException("Application is already running.");
+            }
+
+            _mainLoopCancellationTokenSource = tokenSource;
+
+            Dispatcher.UIThread.Post(() => OnStartup(new StartupEventArgs()), DispatcherPriority.Send);
+
+            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
+
+            if (!IsShuttingDown)
+            {
+                Shutdown(_exitCode);
+            }
+
+            return _exitCode;
         }
 
         protected virtual void OnStartup(StartupEventArgs e)
@@ -296,16 +307,33 @@ namespace Avalonia
         {
             if (IsShuttingDown)
             {
-                return;
+                throw new InvalidOperationException("Application is already shutting down.");
             }
 
-            IsShuttingDown = true;
+            _exitCode = exitCode;
+
+            IsShuttingDown = true;         
 
             Windows.Clear();
 
-            OnExit(new ExitEventArgs { ApplicationExitCode = exitCode });
+            try
+            {
+                var e = new ExitEventArgs { ApplicationExitCode = _exitCode };
 
-            _mainLoopCancellationTokenSource?.Cancel();
+                OnExit(e);
+
+                _exitCode = e.ApplicationExitCode;
+
+                Environment.ExitCode = _exitCode;
+            }
+            finally
+            {
+                _mainLoopCancellationTokenSource?.Cancel();
+
+                _mainLoopCancellationTokenSource = null;
+
+                IsShuttingDown = false;
+            }
         }
 
         /// <inheritdoc/>

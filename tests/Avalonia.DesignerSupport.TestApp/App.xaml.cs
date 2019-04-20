@@ -5,7 +5,7 @@ namespace Avalonia.DesignerSupport.TestApp
 {
     public class App : Application
     {
-        protected override void OnStartup(StartupEventArgs e)
+        public override void Initialize()                         
         {
             AvaloniaXamlLoader.Load(this);
         }

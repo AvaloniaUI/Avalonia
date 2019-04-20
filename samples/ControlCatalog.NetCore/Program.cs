@@ -31,7 +31,7 @@ namespace ControlCatalog.NetCore
                     ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 });
             else
-                BuildAvaloniaApp().Start();
+                BuildAvaloniaApp().Start<MainWindow>();
         }
 
         /// <summary>
