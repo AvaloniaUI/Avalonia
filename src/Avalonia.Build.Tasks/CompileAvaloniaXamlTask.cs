@@ -34,22 +34,15 @@ namespace Avalonia.Build.Tasks
 
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory);
+                ProjectDirectory, OutputPath);
             if (!res.Success)
                 return false;
-            if (res.Data == null)
+            if (!res.WrittenFile)
             {
                 File.Copy(input, OutputPath, true);
                 if(File.Exists(inputPdb))
                     File.Copy(inputPdb, OutputPath, true);
             }
-            else
-            {
-                File.WriteAllBytes(OutputPath, res.Data);
-                if (res.Symbols != null)
-                    File.WriteAllBytes(outputPdb, res.Symbols);
-            }
-
             return true;
         }
 

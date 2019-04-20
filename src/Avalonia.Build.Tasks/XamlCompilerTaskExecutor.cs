@@ -29,18 +29,17 @@ namespace Avalonia.Build.Tasks
         public class CompileResult
         {
             public bool Success { get; set; }
-            public byte[] Data { get; set; }
-            public byte[] Symbols { get; }
+            public bool WrittenFile { get; }
 
-            public CompileResult(bool success, byte[] data = null, byte[] symbols = null)
+            public CompileResult(bool success, bool writtenFile = false)
             {
                 Success = success;
-                Data = data;
-                Symbols = symbols;
+                WrittenFile = writtenFile;
             }
         }
         
-        public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory)
+        public static CompileResult Compile(IBuildEngine engine, string input, string[] references, string projectDirectory,
+            string output)
         {
             var typeSystem = new CecilTypeSystem(references.Concat(new[] {input}), input);
             var asm = typeSystem.TargetAssemblyDefinition;
@@ -284,16 +283,13 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             
-            var ms = new MemoryStream();
-            var symbolStream = new MemoryStream();
-            asm.Write(ms, new WriterParameters
+            asm.Write(output, new WriterParameters
             {
-                SymbolStream = symbolStream,
                 WriteSymbols = true,
-                SymbolWriterProvider = new PortablePdbWriterProvider()
+                SymbolWriterProvider = new PortablePdbWriterProvider(),
             });
 
-            return new CompileResult(true, ms.ToArray(), symbolStream.Length == 0 ? null : symbolStream.ToArray());
+            return new CompileResult(true, true);
         }
         
     }
