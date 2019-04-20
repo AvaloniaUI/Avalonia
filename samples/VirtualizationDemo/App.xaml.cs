@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace VirtualizationDemo

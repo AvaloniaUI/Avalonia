@@ -16,12 +16,7 @@ namespace ControlCatalog
         {
             // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
             // again.
-            BuildAvaloniaApp().Start(AppMain, args);
-        }
-
-        private static void AppMain(Application app, string[] args)
-        {
-            app.Run();
+            BuildAvaloniaApp().Start<MainWindow>();
         }
 
         /// <summary>

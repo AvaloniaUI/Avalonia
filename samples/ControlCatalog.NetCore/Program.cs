@@ -9,7 +9,8 @@ using Avalonia.ReactiveUI;
 namespace ControlCatalog.NetCore
 {
     static class Program
-    {       
+    {
+
         static void Main(string[] args)
         {
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
@@ -28,10 +29,15 @@ namespace ControlCatalog.NetCore
                 AppBuilder.Configure<App>().InitializeWithLinuxFramebuffer(tl =>
                 {
                     tl.Content = new MainView();
-                    ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
+                    System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 });
             else
-                BuildAvaloniaApp().Start<MainWindow>();
+                BuildAvaloniaApp().Start(AppMain, args);
+        }
+
+        static void AppMain(Application app, string[] args)
+        {
+            app.Run(new MainWindow());
         }
 
         /// <summary>
