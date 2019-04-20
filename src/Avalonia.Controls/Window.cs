@@ -371,8 +371,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Shows the window.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
         public override void Show()
         {
+            if (PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot re-show a closed window.");
+            }
+
             if (IsVisible)
             {
                 return;
@@ -397,6 +405,9 @@ namespace Avalonia.Controls
         /// Shows the window as a dialog.
         /// </summary>
         /// <param name="owner">The dialog's owner window.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
         /// <returns>
         /// A task that can be used to track the lifetime of the dialog.
         /// </returns>
