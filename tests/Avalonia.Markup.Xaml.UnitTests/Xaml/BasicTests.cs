@@ -50,6 +50,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void AvaloniaProperty_Without_Getter_And_Setter_Is_Set()
         {
+            // It's not possible to know in compile time if a read-only property has a magic way of being not read-only
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml =
  @"<local:NonControl xmlns='https://github.com/avaloniaui' 
     xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
