@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Platform;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
@@ -54,8 +55,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreTypeSystem = new SreTypeSystem();
             if (_sreBuilder == null)
             {
-                _sreCanSave = AvaloniaLocator.Current.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsCoreClr ==
-                              false;
+                _sreCanSave = !(RuntimeInformation.FrameworkDescription.StartsWith(".NET Core"));
                 var name = new AssemblyName(Guid.NewGuid().ToString("N"));
                 if (_sreCanSave)
                 {
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
                         created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
-                return createCb(null);
+                return createCb(XamlIlRuntimeHelpers.GetRootServiceProviderV1());
             }
             else
             {
@@ -152,7 +152,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
                     Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
                     isp, epar).Compile();
-                populateCb(null, rootInstance);
+                populateCb(XamlIlRuntimeHelpers.GetRootServiceProviderV1(), rootInstance);
                 return rootInstance;
             }
         }

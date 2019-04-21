@@ -73,6 +73,10 @@ namespace Avalonia.Build.Tasks
                 asm.MainModule.ImportReference(editorBrowsableAttribute.GetConstructors()
                     .First(c => c.Parameters.Count == 1));
 
+            var runtimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+            var getRootServiceProvider = asm.MainModule.ImportReference(
+                typeSystem.GetTypeReference(runtimeHelpers).Resolve().Methods
+                    .First(x => x.Name == "GetRootServiceProviderV1"));
             
             var loaderDispatcherDef = new TypeDefinition("CompiledAvaloniaXaml", "!XamlLoader",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
@@ -158,7 +162,7 @@ namespace Avalonia.Build.Tasks
                                 MethodAttributes.Static | MethodAttributes.Private, asm.MainModule.TypeSystem.Void);
                             trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
                             classTypeDefinition.Methods.Add(trampoline);
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, getRootServiceProvider));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
@@ -243,7 +247,7 @@ namespace Avalonia.Build.Tasks
                                     i.Add(Instruction.Create(OpCodes.Newobj, parameterlessConstructor));
                                 else
                                 {
-                                    i.Add(Instruction.Create(OpCodes.Ldnull));
+                                    i.Add(Instruction.Create(OpCodes.Call, getRootServiceProvider));
                                     i.Add(Instruction.Create(OpCodes.Call, compiledBuildMethod));
                                 }
 

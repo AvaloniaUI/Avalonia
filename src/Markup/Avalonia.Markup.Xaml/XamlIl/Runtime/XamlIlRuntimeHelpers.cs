@@ -124,5 +124,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     string.Join(",", lst.Select(e => $"`{e.ClrAssemblyName}:{e.ClrNamespace}.{name}`")));
             }
         }
+        
+        public static IServiceProvider GetRootServiceProviderV1()
+        {
+            return new RootServiceProvider();
+        }
+
+        class RootServiceProvider : IServiceProvider, IAvaloniaXamlIlParentStackProvider
+        {
+            public object GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
+                    return this;
+                return null;
+            }
+
+            public IEnumerable<object> Parents
+            {
+                get
+                {
+                    if (Application.Current != null)
+                        yield return Application.Current;
+                }
+            }
+        }
     }
 }

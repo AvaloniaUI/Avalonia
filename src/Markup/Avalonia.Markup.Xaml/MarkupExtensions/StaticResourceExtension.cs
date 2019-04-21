@@ -37,7 +37,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
                 // from GetAllAmbientValues aren't necessarily of the correct type.
 
-                if (resourceProvider is IControl control && control.StylingParent != null)
+                if (AvaloniaXamlLoader.UseLegacyXamlLoader 
+                    && resourceProvider is IControl control && control.StylingParent != null)
                 {
                     // If we've got to a control that has a StylingParent then it's probably
                     // a top level control and its StylingParent is pointing to the global
