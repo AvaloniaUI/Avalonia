@@ -55,6 +55,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// <inhertidoc/>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
+            return ProvideTypedValue(serviceProvider);
+        }
+        
+        public ResourceInclude ProvideTypedValue(IServiceProvider serviceProvider)
+        {
             var tdc = (ITypeDescriptorContext)serviceProvider;
             _baseUri = tdc?.GetContextBaseUri();
             return this;

@@ -258,8 +258,8 @@ namespace Avalonia.Build.Tasks
                         int lineNumber = 0, linePosition = 0;
                         if (e is XamlIlParseException xe)
                         {
-                            lineNumber = xe.Line;
-                            linePosition = xe.Position;
+                            lineNumber = xe.LineNumber;
+                            linePosition = xe.LinePosition;
                         }
                         engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", res.FilePath,
                             lineNumber, linePosition, lineNumber, linePosition,

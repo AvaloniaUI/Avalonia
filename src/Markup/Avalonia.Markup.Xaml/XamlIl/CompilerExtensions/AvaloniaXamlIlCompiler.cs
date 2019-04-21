@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlIl;
 using XamlIl.Ast;
@@ -11,6 +12,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     public class AvaloniaXamlIlCompiler : XamlIlCompiler
     {
         private readonly IXamlIlType _contextType;
+        private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
 
         private AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
         {
@@ -18,6 +20,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             Transformers.Insert(0, new XNameTransformer());
             Transformers.Insert(1, new IgnoredDirectivesTransformer());
+            Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
             
             
             // Targeted
@@ -55,10 +58,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
-        
+
+        public bool IsDesignMode
+        {
+            get => _designTransformer.IsDesignMode;
+            set => _designTransformer.IsDesignMode = value;
+        }
+
         public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlIlTypeBuilder tb, IXamlIlType overrideRootType)
         {
-            var parsed = XDocumentXamlIlParser.Parse(xaml);
+            var parsed = XDocumentXamlIlParser.Parse(xaml, new Dictionary<string, string>
+            {
+                {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
+            });
             
             if (overrideRootType != null)
             {

@@ -23,6 +23,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
 #if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;
         private static ModuleBuilder _sreBuilder;
+        private static IXamlIlType _sreContextType; 
         private static XamlIlLanguageTypeMappings _sreMappings;
         private static XamlIlXmlnsMappings _sreXmlns;
         private static AssemblyBuilder _sreAsm;
@@ -53,7 +54,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _sreTypeSystem = new SreTypeSystem();
             if (_sreBuilder == null)
             {
-                _sreCanSave = !AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsCoreClr;
+                _sreCanSave = AvaloniaLocator.Current.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsCoreClr ==
+                              false;
                 var name = new AssemblyName(Guid.NewGuid().ToString("N"));
                 if (_sreCanSave)
                 {
@@ -77,22 +79,25 @@ namespace Avalonia.Markup.Xaml.XamlIl
                         AssemblyBuilderAccess.RunAndCollect);
                 
                 _sreBuilder = _sreAsm.DefineDynamicModule("XamlIlLoader.ildump");
-                
             }
 
             if (_sreMappings == null)
                 _sreMappings = AvaloniaXamlIlLanguage.Configure(_sreTypeSystem);
             if (_sreXmlns == null)
                 _sreXmlns = XamlIlXmlnsMappings.Resolve(_sreTypeSystem, _sreMappings);
+            if (_sreContextType == null)
+                _sreContextType = XamlIlContextDefinition.GenerateContextClass(
+                    _sreTypeSystem.CreateTypeBuilder(
+                        _sreBuilder.DefineType("XamlIlContext")), _sreTypeSystem, _sreMappings);
         }
 
 
-        static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
+        static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode)
         {
             var success = false;
             try
             {
-                var rv = LoadSreCore(xaml, localAssembly, rootInstance, uri);
+                var rv = LoadSreCore(xaml, localAssembly, rootInstance, uri, isDesignMode);
                 success = true;
                 return rv;
             }
@@ -104,15 +109,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         
-        static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
+        static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode)
         {
 
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
-            var contextType = _sreBuilder.DefineType("XamlIlContext");
+            
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
                 _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
-                _sreTypeSystem.CreateTypeBuilder(contextType));
+                _sreContextType);
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
 
             IXamlIlType overrideType = null;
@@ -121,6 +126,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 overrideType = _sreTypeSystem.GetType(rootInstance.GetType());
             }
 
+            compiler.IsDesignMode = isDesignMode;
             compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
 
@@ -151,7 +157,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
         }
         
-        public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri)
+        public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri,
+            bool isDesignMode)
         {
             string xaml;
             using (var sr = new StreamReader(stream))
@@ -159,7 +166,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
 #if RUNTIME_XAML_CECIL
             return LoadCecil(xaml, localAssembly, rootInstance, uri);
 #else
-            return LoadSre(xaml, localAssembly, rootInstance, uri);
+            return LoadSre(xaml, localAssembly, rootInstance, uri, isDesignMode);
 #endif
         }
 

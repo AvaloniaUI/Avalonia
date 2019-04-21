@@ -34,7 +34,7 @@ namespace Avalonia.UnitTests
 
         public Assembly GetAssembly(Uri uri, Uri baseUri = null)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public IEnumerable<Uri> GetAssets(Uri uri, Uri baseUri)

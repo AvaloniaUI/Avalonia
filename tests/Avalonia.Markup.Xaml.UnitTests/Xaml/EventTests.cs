@@ -31,12 +31,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var loader = new AvaloniaXamlLoader();
             var target = new MyButton();
 
-            Assert.Throws<XamlObjectWriterException>(() => loader.Load(xaml, rootInstance: target));
+            XamlTestHelpers.AssertThrowsXamlException(() => loader.Load(xaml, rootInstance: target));
         }
 
         [Fact]
         public void Exception_Is_Not_Thrown_If_Event_Not_Found_In_Design_Mode()
         {
+            // Runtime compiler should properly understand x:Class
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml = @"<Button xmlns='https://github.com/avaloniaui' Click='NotFound'/>";
             var loader = new AvaloniaXamlLoader { IsDesignMode = true };
             var target = new MyButton();

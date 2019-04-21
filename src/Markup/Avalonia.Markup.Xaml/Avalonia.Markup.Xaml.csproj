@@ -56,6 +56,7 @@
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlIl\AvaloniaXamlIlRuntimeCompiler.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDesignPropertiesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\XamlIlAvaloniaPropertyHelper.cs" />
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompiler.cs" />

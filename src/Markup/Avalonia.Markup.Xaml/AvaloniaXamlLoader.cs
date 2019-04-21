@@ -26,7 +26,7 @@ namespace Avalonia.Markup.Xaml
     {
         public bool IsDesignMode { get; set; }
 
-        public bool UseLegacyXamlLoader { get; set; } = false;
+        public static bool UseLegacyXamlLoader { get; set; } = false;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
@@ -176,7 +176,7 @@ namespace Avalonia.Markup.Xaml
         public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
         {
             if (!UseLegacyXamlLoader)
-                return AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri);
+                return AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, IsDesignMode);
 
 
             var readerSettings = new XamlXmlReaderSettings()
