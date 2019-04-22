@@ -43,8 +43,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     xmlOwner += ":";
                 xmlOwner += parsedPropertyName.owner;
                 
-                var t = XamlIlTypeReferenceResolver.ResolveType(context, xmlOwner, lineInfo, true);
-                var tref = new XamlIlAstClrTypeReference(lineInfo, t);
+                var tref = XamlIlTypeReferenceResolver.ResolveType(context, xmlOwner, false, lineInfo, true);
                 forgedReference = new XamlIlAstNamePropertyReference(lineInfo,
                     tref, parsedPropertyName.name, tref);
             }
@@ -62,7 +61,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         public XamlIlAvaloniaPropertyNode(IXamlIlLineInfo lineInfo, IXamlIlType type, IXamlIlProperty property) : base(lineInfo)
         {
-            Type = new XamlIlAstClrTypeReference(this, type);
+            Type = new XamlIlAstClrTypeReference(this, type, false);
             Property = property;
         }
 

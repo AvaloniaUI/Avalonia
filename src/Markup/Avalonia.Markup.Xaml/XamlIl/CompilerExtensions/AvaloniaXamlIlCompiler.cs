@@ -33,7 +33,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     new AvaloniaXamlIlSelectorTransformer(),
                     new AvaloniaXamlIlSetterTransformer(),
-                    new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(), 
+                    new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                    new AvaloniaXamlIlConstructorServiceProviderTransformer()
                 }
             );
             // After everything else
@@ -79,10 +80,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var originalType = XamlIlTypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
                     (XamlIlAstXmlTypeReference)rootObject.Type, true);
 
-                if (!originalType.IsAssignableFrom(overrideRootType))
+                if (!originalType.Type.IsAssignableFrom(overrideRootType))
                     throw new XamlIlLoadException(
-                        $"Unable to substitute {originalType.GetFqn()} with {overrideRootType.GetFqn()}", rootObject);
-                rootObject.Type = new XamlIlAstClrTypeReference(rootObject, overrideRootType);
+                        $"Unable to substitute {originalType.Type.GetFqn()} with {overrideRootType.GetFqn()}", rootObject);
+                rootObject.Type = new XamlIlAstClrTypeReference(rootObject, overrideRootType, false);
             }
 
             Transform(parsed);

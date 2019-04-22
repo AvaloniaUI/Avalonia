@@ -63,11 +63,8 @@
                                Grid.ColumnSpan="4"
                                Grid.RowSpan="3"
                                FontSize="{DynamicResource FontSizeSmall}"
-                               Foreground="{DynamicResource ThemeBorderHighBrush}">
-                               <TextBlock.Text>
-                                 <Binding Source="{x:Static sys:DateTime.Today}" Path="Day"/>
-                               </TextBlock.Text>
-                    </TextBlock>
+                               Foreground="{DynamicResource ThemeBorderHighBrush}"
+                               Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}"/>
 
                     <Ellipse HorizontalAlignment="Center" VerticalAlignment="Center" Fill="{DynamicResource ThemeControlLowBrush}" StrokeThickness="0" Grid.ColumnSpan="4" Width="3" Height="3"/>
                   </Grid>

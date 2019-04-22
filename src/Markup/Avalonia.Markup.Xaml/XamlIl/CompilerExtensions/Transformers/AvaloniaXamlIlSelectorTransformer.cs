@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             var selectorType = pn.Property.GetClrProperty().PropertyType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
             XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
-                Func<string, string, IXamlIlType> typeResolver)
+                Func<string, string, XamlIlAstClrTypeReference> typeResolver)
             {
                 XamlIlSelectorNode result = initialNode;
                 XamlIlOrSelectorNode results = null;
@@ -47,10 +47,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     {
 
                         case SelectorGrammar.OfTypeSyntax ofType:
-                            result = new XamlIlTypeSelector(result, typeResolver(ofType.Xmlns, ofType.TypeName), true);
+                            result = new XamlIlTypeSelector(result, typeResolver(ofType.Xmlns, ofType.TypeName).Type, true);
                             break;
                         case SelectorGrammar.IsSyntax @is:
-                            result = new XamlIlTypeSelector(result, typeResolver(@is.Xmlns, @is.TypeName), false);
+                            result = new XamlIlTypeSelector(result, typeResolver(@is.Xmlns, @is.TypeName).Type, false);
                             break;
                         case SelectorGrammar.ClassSyntax @class:
                             result = new XamlIlStringSelector(result, XamlIlStringSelector.Type.Class, @class.Class);
@@ -118,11 +118,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             }
 
             var selector = Create(parsed, (p, n) 
-                => XamlIlTypeReferenceResolver.ResolveType(context, $"{p}:{n}", node, true));
+                => XamlIlTypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
             pn.Values[0] = selector;
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType),
+                new XamlIlAstClrTypeReference(selector, selector.TargetType, false),
                 AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Style);
         }
 
@@ -140,7 +140,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IXamlIlType selectorType = null) : base(info ?? previous)
         {
             Previous = previous;
-            Type = selectorType == null ? previous.Type : new XamlIlAstClrTypeReference(this, selectorType);
+            Type = selectorType == null ? previous.Type : new XamlIlAstClrTypeReference(this, selectorType, false);
         }
 
         public IXamlIlAstTypeReference Type { get; }

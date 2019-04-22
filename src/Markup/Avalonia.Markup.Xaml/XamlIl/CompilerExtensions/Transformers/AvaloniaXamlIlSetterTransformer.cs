@@ -43,7 +43,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
 
             var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType), property.Values[0]);
+                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
             property.Values = new List<IXamlIlAstValueNode>
             {
                 avaloniaPropertyNode
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 valueProperty.Values = new List<IXamlIlAstValueNode>
                 {
                     new XamlIlAstRuntimeCastNode(converted, converted,
-                        new XamlIlAstClrTypeReference(converted, context.Configuration.WellKnownTypes.Object))
+                        new XamlIlAstClrTypeReference(converted, context.Configuration.WellKnownTypes.Object, false))
                 };
             }
 

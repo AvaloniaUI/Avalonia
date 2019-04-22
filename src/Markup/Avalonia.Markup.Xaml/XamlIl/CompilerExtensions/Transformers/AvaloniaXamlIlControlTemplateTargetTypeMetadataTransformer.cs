@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     targetType = parentScope.TargetType;
                 else
                     targetType = new XamlIlAstClrTypeReference(node,
-                        context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control"));
+                        context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control"), false);
             }
                 
                 

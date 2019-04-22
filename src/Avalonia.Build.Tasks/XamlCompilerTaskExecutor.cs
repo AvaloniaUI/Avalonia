@@ -137,7 +137,7 @@ namespace Avalonia.Build.Tasks
                             classType = typeSystem.TargetAssembly.FindType(tn.Text);
                             if (classType == null)
                                 throw new XamlIlParseException($"Unable to find type `{tn.Text}`", classDirective);
-                            initialRoot.Type = new XamlIlAstClrTypeReference(classDirective, classType);
+                            initialRoot.Type = new XamlIlAstClrTypeReference(classDirective, classType, false);
                         }
                         
                         

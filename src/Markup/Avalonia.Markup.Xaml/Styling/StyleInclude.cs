@@ -25,6 +25,11 @@ namespace Avalonia.Markup.Xaml.Styling
             _baseUri = baseUri;
         }
 
+        public StyleInclude(IServiceProvider serviceProvider)
+        {
+            _baseUri = serviceProvider.GetContextBaseUri();
+        }
+        
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged
         {

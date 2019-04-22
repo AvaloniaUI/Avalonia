@@ -15,32 +15,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            // We need to preserve the first IResourceNode from the parent XAML,
-            // so Static/DynamicResource extensions can get it
-            var resourceNode = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents.OfType<IResourceNode>()
-                .FirstOrDefault();
+            var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
+                .OfType<IResourceNode>().ToList();
 
-            return sp => builder(new DeferredParentServiceProvider(sp, resourceNode));
+            return sp => builder(new DeferredParentServiceProvider(sp, resourceNodes));
         }
 
         class DeferredParentServiceProvider : IAvaloniaXamlIlParentStackProvider, IServiceProvider
         {
             private readonly IServiceProvider _parentProvider;
-            private readonly IResourceNode _parentResourceNode;
+            private readonly List<IResourceNode> _parentResourceNodes;
 
-            public DeferredParentServiceProvider(IServiceProvider parentProvider, IResourceNode parentResourceNode)
+            public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes)
             {
                 _parentProvider = parentProvider;
-                _parentResourceNode = parentResourceNode;
+                _parentResourceNodes = parentResourceNodes;
             }
 
             public IEnumerable<object> Parents => GetParents();
 
             IEnumerable<object> GetParents()
             {
-                if(_parentResourceNode == null)
+                if(_parentResourceNodes == null)
                     yield break;
-                yield return _parentResourceNode;
+                foreach (var p in _parentResourceNodes)
+                    yield return p;
             }
 
             public object GetService(Type serviceType)
