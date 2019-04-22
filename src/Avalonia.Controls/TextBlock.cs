@@ -421,8 +421,8 @@ namespace Avalonia.Controls
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
-                Trimming = TextTrimming
+                TextWrapping = TextWrapping,
+                TextTrimming = TextTrimming
             };
         }
 
