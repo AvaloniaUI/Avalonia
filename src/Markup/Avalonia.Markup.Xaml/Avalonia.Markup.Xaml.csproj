@@ -92,8 +92,5 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Condition="$(UseCecil) == true" Include="Mono.Cecil" Version="0.10.3" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="XamlIl\CompilerExtensions\README.md" />
-  </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
 </Project>
