@@ -125,10 +125,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             }
         }
         
-        public static IServiceProvider GetRootServiceProviderV1()
-        {
-            return new RootServiceProvider();
-        }
+        public static readonly IServiceProvider RootServiceProviderV1 = new RootServiceProvider();
 
         class RootServiceProvider : IServiceProvider, IAvaloniaXamlIlParentStackProvider
         {

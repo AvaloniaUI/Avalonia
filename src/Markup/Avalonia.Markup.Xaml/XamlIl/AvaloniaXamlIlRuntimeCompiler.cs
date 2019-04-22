@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
                         created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
-                return createCb(XamlIlRuntimeHelpers.GetRootServiceProviderV1());
+                return createCb(XamlIlRuntimeHelpers.RootServiceProviderV1);
             }
             else
             {
@@ -152,7 +152,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
                     Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
                     isp, epar).Compile();
-                populateCb(XamlIlRuntimeHelpers.GetRootServiceProviderV1(), rootInstance);
+                populateCb(XamlIlRuntimeHelpers.RootServiceProviderV1, rootInstance);
                 return rootInstance;
             }
         }
