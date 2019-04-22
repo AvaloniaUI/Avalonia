@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -46,12 +47,26 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
+        /// <summary>
+        /// Defines the <see cref="LocalNotificationManager"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, INotificationManager> LocalNotificationManagerProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager);
+
+        /// <summary>
+        /// Defines the <see cref="SystemNotificationManager"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TopLevel, INotificationManager> SystemNotificationManagerProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(SystemNotificationManager), o => o.SystemNotificationManager);
+
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
+        private INotificationManager _localNotificationManager;
+        private INotificationManager _systemNotificationManager;
         private ILayoutManager _layoutManager;
 
         /// <summary>
@@ -87,6 +102,9 @@ namespace Avalonia.Controls
             }
 
             PlatformImpl = impl;
+
+            _localNotificationManager = new NotificationManager();
+
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
 
@@ -95,6 +113,13 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
+
+            _systemNotificationManager = TryGetService<INotificationManager>(dependencyResolver);
+
+            if(_systemNotificationManager == null)
+            {
+                _systemNotificationManager = _localNotificationManager;
+            }
 
             Renderer = impl.CreateRenderer(this);
 
@@ -153,6 +178,25 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the Local (in window managed) notification manager.
+        /// </summary>
+        public INotificationManager LocalNotificationManager
+        {
+            get => _localNotificationManager;
+            protected set => SetAndRaise(LocalNotificationManagerProperty, ref _localNotificationManager, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the System (native os) notification manager. If the system doesnt natively support notifications then this property
+        /// will match the <see cref="LocalNotificationManager"/>.
+        /// </summary>
+        public INotificationManager SystemNotificationManager
+        {
+            get => _systemNotificationManager;
+            protected set => SetAndRaise(SystemNotificationManagerProperty, ref _systemNotificationManager, value);
         }
 
         public ILayoutManager LayoutManager
