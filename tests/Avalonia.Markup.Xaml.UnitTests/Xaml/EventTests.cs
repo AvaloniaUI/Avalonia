@@ -4,6 +4,7 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Portable.Xaml;
 using Xunit;
 
@@ -56,11 +57,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             });
         }
 
-        class MyButton : Button
+        public class MyButton : Button
         {
             public bool Clicked { get; private set; }
 
-            public void OnClick(object sender, EventArgs e)
+            public void OnClick(object sender, RoutedEventArgs e)
             {
                 Clicked = true;
             }

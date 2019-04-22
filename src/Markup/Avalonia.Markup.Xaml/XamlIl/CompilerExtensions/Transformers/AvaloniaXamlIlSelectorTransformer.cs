@@ -254,6 +254,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public XamlIlNotSelector(XamlIlSelectorNode previous, XamlIlSelectorNode argument) : base(previous)
         {
+            Argument = argument;
         }
 
         public override IXamlIlType TargetType => Previous?.TargetType;
