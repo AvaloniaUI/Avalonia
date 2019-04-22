@@ -162,6 +162,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Non_Attached_Property_With_Attached_Property_Syntax_Throws()
         {
+            // 1) It has been allowed in AvaloniaObject.SetValue for ages
+            // 2) There is no way to know if AddOwner was called in compile-time
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml =
         @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.Text='foo'/>";
 

@@ -24,6 +24,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             
             // Targeted
+
+            Transformers.Insert(Transformers.FindIndex(x => x is XamlIlPropertyReferenceResolver),
+                new AvaloniaXamlIlTransformInstanceAttachedProperties());
             
             Transformers.Insert(Transformers.FindIndex(x => x is XamlIlXamlPropertyValueTransformer),
                 new KnownPseudoMarkupExtensionsTransformer());

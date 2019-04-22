@@ -19,7 +19,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper))
             {
-                var xaml = "<Style xmlns='https://github.com/avaloniaui'><Setter Value='{Binding}'/></Style>";
+                var xaml = "<Style Selector='Button' xmlns='https://github.com/avaloniaui'><Setter Property='Content' Value='{Binding}'/></Style>";
                 var loader = new AvaloniaXamlLoader();
                 var style = (Style)loader.Load(xaml);
                 var setter = (Setter)(style.Setters.First());

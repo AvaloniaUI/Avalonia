@@ -10,6 +10,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             "Avalonia.Data.TemplateBinding",
             "Avalonia.Data.MultiBinding",
+            "Avalonia.Data.Binding",
         };
         
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
