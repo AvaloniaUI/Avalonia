@@ -28,9 +28,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        Type IStyleable.StyleKey => typeof(UserControl);
-
-        /// <inheritdoc/>
         void INameScope.Register(string name, object element)
         {
             _nameScope.Register(name, element);

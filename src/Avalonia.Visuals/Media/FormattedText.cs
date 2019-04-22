@@ -19,7 +19,8 @@ namespace Avalonia.Media
         private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
-        private TextWrapping _textWrapping;
+        private TextWrapping _wrapping;
+        private TextTrimming _trimming;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -37,6 +38,12 @@ namespace Avalonia.Media
         {
             _platform = platform;
         }
+
+        /// <summary>
+        /// Gets the bounds of the text within the <see cref="Constraint"/>.
+        /// </summary>
+        /// <returns>The bounds of the text.</returns>
+        public Rect Bounds => PlatformImpl.Bounds;
 
         /// <summary>
         /// Gets or sets the constraint of the text.
@@ -103,6 +110,15 @@ namespace Avalonia.Media
         }
 
         /// <summary>
+        /// Gets or sets the text trimming.
+        /// </summary>
+        public TextTrimming Trimming
+        {
+            get => _trimming;
+            set => Set(ref _trimming, value);
+        }
+
+        /// <summary>
         /// Gets platform-specific platform implementation.
         /// </summary>
         public IFormattedTextImpl PlatformImpl
@@ -116,7 +132,8 @@ namespace Avalonia.Media
                         _typeface,
                         _fontSize,
                         _textAlignment,
-                        _textWrapping,
+                        _wrapping,
+                        _trimming,
                         _constraint,
                         _spans);
                 }
@@ -167,15 +184,6 @@ namespace Avalonia.Media
         public IEnumerable<Rect> HitTestTextRange(int index, int length)
         {
             return PlatformImpl.HitTestTextRange(index, length);
-        }
-
-        /// <summary>
-        /// Gets the size of the text, taking <see cref="Constraint"/> into account.
-        /// </summary>
-        /// <returns>The bounds box of the text.</returns>
-        public Size Measure()
-        {
-            return PlatformImpl.Size;
         }
 
         private void Set<T>(ref T field, T value)

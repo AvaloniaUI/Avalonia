@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.DialogsPage">
   <StackPanel Orientation="Vertical" Spacing="4" Margin="4">
+      <CheckBox Name="UseFilters">Use filters</CheckBox>
       <Button Name="OpenFile">Open File</Button>
       <Button Name="SaveFile">Save File</Button>
       <Button Name="SelectFolder">Select Folder</Button>

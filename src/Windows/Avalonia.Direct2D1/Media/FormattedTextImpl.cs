@@ -9,7 +9,7 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,
@@ -17,6 +17,7 @@ namespace Avalonia.Direct2D1.Media
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -26,6 +27,20 @@ namespace Avalonia.Direct2D1.Media
             {
                 textFormat.WordWrapping =
                     wrapping == TextWrapping.Wrap ? DWrite.WordWrapping.Wrap : DWrite.WordWrapping.NoWrap;
+
+                if (trimming != TextTrimming.None)
+                {
+                    var trimmingSign = new DWrite.EllipsisTrimming(Direct2D1Platform.DirectWriteFactory, textFormat);
+
+                    textFormat.SetTrimming(
+                        new DWrite.Trimming
+                        {
+                            Delimiter = 0,
+                            DelimiterCount = 0,
+                            Granularity = trimming == TextTrimming.WordEllipsis ? DWrite.TrimmingGranularity.Word : DWrite.TrimmingGranularity.Character
+                        },
+                        trimmingSign);
+                }
 
                 TextLayout = new DWrite.TextLayout(
                                  Direct2D1Platform.DirectWriteFactory,
@@ -46,12 +61,12 @@ namespace Avalonia.Direct2D1.Media
                 }
             }
 
-            Size = Measure();
+            Bounds = Measure();
         }
 
         public Size Constraint => new Size(TextLayout.MaxWidth, TextLayout.MaxHeight);
 
-        public Size Size { get; }
+        public Rect Bounds { get; }
 
         public string Text { get; }
 
@@ -121,7 +136,7 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        private Size Measure()
+        private Rect Measure()
         {
             var metrics = TextLayout.Metrics;
 
@@ -132,7 +147,11 @@ namespace Avalonia.Direct2D1.Media
                 width = metrics.Width;
             }
 
-            return new Size(width, TextLayout.Metrics.Height);
+            return new Rect(
+                TextLayout.Metrics.Left,
+                TextLayout.Metrics.Top,
+                width,
+                TextLayout.Metrics.Height);
         }
     }
 }
