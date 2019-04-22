@@ -103,7 +103,7 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
-            _localNotificationManager = new NotificationManager();
+            LocalNotificationManager = new NotificationManager();
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
@@ -118,7 +118,7 @@ namespace Avalonia.Controls
 
             if(_systemNotificationManager == null)
             {
-                _systemNotificationManager = _localNotificationManager;
+                SystemNotificationManager = _localNotificationManager;
             }
 
             Renderer = impl.CreateRenderer(this);
