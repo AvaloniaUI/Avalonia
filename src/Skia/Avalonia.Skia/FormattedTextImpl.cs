@@ -22,6 +22,7 @@ namespace Avalonia.Skia
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping textWrapping,
+            TextTrimming textTrimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -31,7 +32,7 @@ namespace Avalonia.Skia
 
             var skiaTypeface = TypefaceCache.GetSKTypeface(typeface);
 
-            TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, constraint, spans);
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, textTrimming, constraint, spans);
 
             foreach (var textLine in TextLayout.TextLines)
             {

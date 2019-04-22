@@ -59,7 +59,7 @@ namespace Avalonia.Skia
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            return new FormattedTextImpl(text, typeface, fontSize, textAlignment, wrapping, constraint, spans);
+            return new FormattedTextImpl(text, typeface, fontSize, textAlignment, wrapping, trimming, constraint, spans);
         }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
