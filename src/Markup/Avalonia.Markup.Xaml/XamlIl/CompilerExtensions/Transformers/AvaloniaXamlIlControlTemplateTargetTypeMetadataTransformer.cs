@@ -21,6 +21,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             IXamlIlAstTypeReference targetType;
 
+            var templatableBaseType = context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control");
+            
             if ((tt?.Values.FirstOrDefault() is XamlIlTypeExtensionNode tn))
             {
                 targetType = tn.Type;
@@ -31,9 +33,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     .FirstOrDefault();
                 if (parentScope?.Type == AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Style)
                     targetType = parentScope.TargetType;
+                else if (context.ParentNodes().Skip(1).FirstOrDefault() is XamlIlAstObjectNode directParentNode
+                         && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()))
+                    targetType = directParentNode.Type;
                 else
                     targetType = new XamlIlAstClrTypeReference(node,
-                        context.Configuration.TypeSystem.GetType("Avalonia.Controls.Control"), false);
+                        templatableBaseType, false);
             }
                 
                 
