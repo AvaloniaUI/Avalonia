@@ -17,4 +17,5 @@
   </ItemGroup>  
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

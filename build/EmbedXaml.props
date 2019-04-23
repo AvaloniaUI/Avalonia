@@ -4,8 +4,8 @@
      <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="**\*.xaml">
+    <AvaloniaResource Include="**\*.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </AvaloniaResource>
   </ItemGroup>
 </Project>

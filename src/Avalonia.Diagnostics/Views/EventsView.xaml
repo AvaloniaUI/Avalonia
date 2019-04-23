@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.EventsView">
     <UserControl.Resources>
         <vm:BoolToBrushConverter x:Key="boolToBrush" />
     </UserControl.Resources>

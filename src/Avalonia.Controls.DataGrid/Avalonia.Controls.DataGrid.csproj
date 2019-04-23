@@ -14,6 +14,8 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />    
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <!-- Compatibility with old apps -->
+    <EmbeddedResource Include="Themes\**\*.xaml"/>
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\EmbedXaml.props" />
