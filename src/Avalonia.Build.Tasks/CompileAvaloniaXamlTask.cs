@@ -41,7 +41,7 @@ namespace Avalonia.Build.Tasks
             {
                 File.Copy(input, OutputPath, true);
                 if(File.Exists(inputPdb))
-                    File.Copy(inputPdb, OutputPath, true);
+                    File.Copy(inputPdb, outputPdb, true);
             }
             return true;
         }
