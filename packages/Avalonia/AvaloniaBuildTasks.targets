@@ -45,8 +45,7 @@
     Name="CompileAvaloniaXaml"
     AfterTargets="AfterCompile"
     Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
-    Inputs="@(IntermediateAssembly);"
-    Outputs="$(IntermediateOutputPath)$(MSBuildProjectFile).Fody.CopyLocal.cache">
+    >
     <PropertyGroup>
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
       <AvaloniaXamlOriginalCopyFilePath Condition="'$(AvaloniaXamlOriginalCopyFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/original.dll</AvaloniaXamlOriginalCopyFilePath>
