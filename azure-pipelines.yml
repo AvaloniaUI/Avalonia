@@ -9,6 +9,11 @@ jobs:
       script: |
         sudo apt-get update
         sudo apt-get install castxml
+  - task: CmdLine@2
+    displayName: 'Install OSX Sdk'
+    inputs:
+      script: |
+        ./scripts/XcodeLegacy.sh -osx1013
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
