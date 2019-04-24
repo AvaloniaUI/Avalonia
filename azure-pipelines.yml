@@ -32,7 +32,7 @@ jobs:
      
 - job: macOS
   pool:
-    vmImage: 'xcode9-macos10.13'
+    vmImage: 'macOS-10.14'
   steps:
   - task: DotNetCoreInstaller@0
     inputs:
