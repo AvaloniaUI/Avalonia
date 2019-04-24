@@ -45,12 +45,6 @@ jobs:
         curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
         sudo installer -verbose -pkg ./mono.pkg -target /
 
-  - task: CmdLine@2
-    displayName: 'Install OSX Sdk'
-    inputs:
-      script: |
-        ./scripts/XcodeLegacy.sh -osx1013
-
   - task: Xcode@5
     inputs:
       actions: 'build'
