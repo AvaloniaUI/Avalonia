@@ -118,8 +118,6 @@ namespace Avalonia.Build.Tasks
                 
                 foreach (var res in group.Resources.Where(CheckXamlName))
                 {
-                    if(res.Name.Contains("DefaultTheme"))
-                        Console.WriteLine();
                     try
                     {
                         // StreamReader is needed here to handle BOM

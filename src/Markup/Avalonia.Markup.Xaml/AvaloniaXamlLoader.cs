@@ -133,14 +133,7 @@ namespace Avalonia.Markup.Xaml
             using (var stream = asset.stream)
             {
                 var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                //try
-                {
-                    return Load(stream, asset.assembly, rootInstance, absoluteUri);
-                }
-                //catch (Exception e)
-                {
-                    //throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
-                }
+                return Load(stream, asset.assembly, rootInstance, absoluteUri);
             }
         }
         
