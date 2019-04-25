@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
     // TODO: Need to track position of adorned elements and move the adorner if they move.
-    public class AdornerLayer : Panel, ICustomSimpleHitTest
+    public class AdornerLayer : Canvas, ICustomSimpleHitTest
     {
         public static readonly AttachedProperty<Visual> AdornedElementProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Visual>("AdornedElement");
