@@ -4,19 +4,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.Notifications;
+using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Threading;
+using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
-    class MainWindowViewModel
+    class MainWindowViewModel : ViewModelBase
     {
         public MainWindowViewModel()
         {
+            this.WhenAnyValue(x => x.NotificationManager).Subscribe(x =>
+            {
+
+            });
+
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
                 await Task.Delay(5000);
 
-                
+
                 Application.Current.MainWindow.LocalNotificationManager.Show(new NotificationViewModel { Title = "Warning", Message = "Please save your work before closing." });
 
                 await Task.Delay(1500);
@@ -32,6 +39,14 @@ namespace ControlCatalog.ViewModels
                 Application.Current.MainWindow.LocalNotificationManager.Show("Test5");
 
             });
+        }
+
+        private INotificationManager _notificationManager;
+
+        public INotificationManager NotificationManager
+        {
+            get { return _notificationManager; }
+            set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
         }
     }
 }

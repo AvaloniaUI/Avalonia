@@ -52,7 +52,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="LocalNotificationManager"/> property.
         /// </summary>
         public static readonly DirectProperty<TopLevel, INotificationManager> LocalNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager);
+            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager, defaultBindingMode: Data.BindingMode.OneWayToSource);
 
         /// <summary>
         /// Defines the <see cref="SystemNotificationManager"/> property.
