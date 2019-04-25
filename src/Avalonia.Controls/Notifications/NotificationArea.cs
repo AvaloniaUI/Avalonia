@@ -7,7 +7,7 @@ using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.Notifications
 {
-    public class NotificationArea : TemplatedControl
+    public class NotificationArea : TemplatedControl, INotificationManager
     {
         private IList _items;
 
@@ -31,7 +31,6 @@ namespace Avalonia.Controls.Notifications
 
         public NotificationArea()
         {
-            NotificationManager.AddArea(this);
         }
 
         static NotificationArea()
@@ -50,7 +49,7 @@ namespace Avalonia.Controls.Notifications
             _items = itemsControl?.Children;
         }
 
-        public async void Show(object content, TimeSpan expirationTime, Action onClick, Action onClose)
+        public async void Show(object content, TimeSpan? expirationTime, Action onClick, Action onClose)
         {
             var notification = new Notification
             {
@@ -82,7 +81,8 @@ namespace Avalonia.Controls.Notifications
             {
                 return;
             }
-            await Task.Delay(expirationTime);
+
+            await Task.Delay(expirationTime ?? TimeSpan.FromSeconds(5));
 
             notification.Close();
         }

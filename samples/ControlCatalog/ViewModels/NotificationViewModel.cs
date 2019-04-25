@@ -1,4 +1,5 @@
 ﻿using System.Reactive;
+using Avalonia;
 using Avalonia.Controls.Notifications;
 using ReactiveUI;
 
@@ -10,7 +11,7 @@ namespace ControlCatalog.ViewModels
         {
             OKCommand = ReactiveCommand.Create(() =>
             {
-                NotificationManager.Instance.Show("Notification Accepted", "Main");
+                Application.Current.MainWindow.LocalNotificationManager.Show("Notification Accepted");
             });
         }
 

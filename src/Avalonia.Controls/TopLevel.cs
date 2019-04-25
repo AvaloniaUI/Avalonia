@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
@@ -103,7 +104,7 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
-            LocalNotificationManager = new NotificationManager();
+            LocalNotificationManager = new NotificationArea();
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
@@ -413,6 +414,21 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
             (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            var adornerLayer = this.GetVisualDescendants()
+                .OfType<AdornerDecorator>()
+                .FirstOrDefault()
+                ?.AdornerLayer;
+
+            if (adornerLayer != null)
+            {
+                adornerLayer.Children.Add(LocalNotificationManager as IControl);
+            }
+
+            base.OnTemplateApplied(e);
         }
     }
 }
