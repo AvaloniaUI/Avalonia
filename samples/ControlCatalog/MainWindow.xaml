@@ -13,6 +13,5 @@
     </Window.DataTemplates>
     <Panel>
         <local:MainView/>
-        <NotificationArea Name="Main" Position="TopRight" MaxItems="5" />
     </Panel>
 </Window>
