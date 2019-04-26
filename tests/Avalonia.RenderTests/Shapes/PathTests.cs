@@ -334,11 +334,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
             CompareImages();
         }
 
-#if AVALONIA_SKIA_SKIP_FAIL
-        [Fact(Skip = "FIXME")]
-#else
         [Fact]
-#endif
         public async Task Path_With_PenLineCap()
         {
             Decorator target = new Decorator
@@ -351,10 +347,8 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                     StrokeThickness = 10,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    StrokeDashCap = PenLineCap.Triangle,
                     StrokeDashArray = new AvaloniaList<double>(3, 1),
-                    StrokeStartLineCap = PenLineCap.Round,
-                    StrokeEndLineCap = PenLineCap.Square,
+                    StrokeLineCap = PenLineCap.Round,
                     Data = StreamGeometry.Parse("M 20,20 L 180,180"),
                 }
             };
