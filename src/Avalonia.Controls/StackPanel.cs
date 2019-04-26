@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -219,30 +220,16 @@ namespace Avalonia.Controls
                 measuredWidth -= (hasVisibleChild ? spacing : 0);
             }
 
-            return new Size(measuredWidth, measuredHeight);
+            return new Size(measuredWidth, measuredHeight).Constrain(availableSize);
         }
 
-        /// <summary>
-        /// Arranges the control's children.
-        /// </summary>
-        /// <param name="finalSize">The size allocated to the control.</param>
-        /// <returns>The space taken.</returns>
+        /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
             var orientation = Orientation;
-            double arrangedWidth = finalSize.Width;
-            double arrangedHeight = finalSize.Height;
-            double spacing = Spacing;
-            bool hasVisibleChild = Children.Any(c => c.IsVisible);
-
-            if (Orientation == Orientation.Vertical)
-            {
-                arrangedHeight = 0;
-            }
-            else
-            {
-                arrangedWidth = 0;
-            }
+            var spacing = Spacing;
+            var finalRect = new Rect(finalSize);
+            var pos = 0.0;
 
             foreach (Control child in Children)
             {
@@ -251,32 +238,21 @@ namespace Avalonia.Controls
 
                 if (orientation == Orientation.Vertical)
                 {
-                    double width = Math.Max(childWidth, arrangedWidth);
-                    Rect childFinal = new Rect(0, arrangedHeight, width, childHeight);
-                    ArrangeChild(child, childFinal, finalSize, orientation);
-                    arrangedWidth = Math.Max(arrangedWidth, childWidth);
-                    arrangedHeight += childHeight + (child.IsVisible ? spacing : 0);
+                    var rect = new Rect(0, pos, childWidth, childHeight)
+                        .Align(finalRect, child.HorizontalAlignment, VerticalAlignment.Top);
+                    ArrangeChild(child, rect, finalSize, orientation);
+                    pos += childHeight + spacing;
                 }
                 else
                 {
-                    double height = Math.Max(childHeight, arrangedHeight);
-                    Rect childFinal = new Rect(arrangedWidth, 0, childWidth, height);
-                    ArrangeChild(child, childFinal, finalSize, orientation);
-                    arrangedWidth += childWidth + (child.IsVisible ? spacing : 0);
-                    arrangedHeight = Math.Max(arrangedHeight, childHeight);
+                    var rect = new Rect(pos, 0, childWidth, childHeight)
+                        .Align(finalRect, HorizontalAlignment.Left, child.VerticalAlignment);
+                    ArrangeChild(child, rect, finalSize, orientation);
+                    pos += childWidth + spacing;
                 }
             }
 
-            if (orientation == Orientation.Vertical)
-            {
-                arrangedHeight = Math.Max(arrangedHeight - (hasVisibleChild ? spacing : 0), finalSize.Height);
-            }
-            else
-            {
-                arrangedWidth = Math.Max(arrangedWidth - (hasVisibleChild ? spacing : 0), finalSize.Width);
-            }
-
-            return new Size(arrangedWidth, arrangedHeight);
+            return finalSize;
         }
 
         internal virtual void ArrangeChild(
