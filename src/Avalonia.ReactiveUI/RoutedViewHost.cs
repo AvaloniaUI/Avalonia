@@ -1,13 +1,17 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Avalonia;
 using ReactiveUI;
 using Splat;
 
-namespace Avalonia
+namespace Avalonia.ReactiveUI
 {
     /// <summary>
     /// This control hosts the View associated with ReactiveUI RoutingState,
@@ -157,7 +161,7 @@ namespace Avalonia
                 return;
             }
     
-            var viewLocator = ViewLocator ?? ReactiveUI.ViewLocator.Current;
+            var viewLocator = ViewLocator ?? global::ReactiveUI.ViewLocator.Current;
             var view = viewLocator.ResolveView(viewModel);
             if (view == null) throw new Exception($"Couldn't find view for '{viewModel}'. Is it registered?");
     

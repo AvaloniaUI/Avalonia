@@ -37,6 +37,28 @@ namespace Avalonia.Platform
             IReadOnlyList<FormattedTextStyleSpan> spans);
 
         /// <summary>
+        /// Creates an ellipse geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the ellipse.</param>
+        /// <returns>An ellipse geometry..</returns>
+        IGeometryImpl CreateEllipseGeometry(Rect rect);
+
+        /// <summary>
+        /// Creates a line geometry implementation.
+        /// </summary>
+        /// <param name="p1">The start of the line.</param>
+        /// <param name="p2">The end of the line.</param>
+        /// <returns>A line geometry.</returns>
+        IGeometryImpl CreateLineGeometry(Point p1, Point p2);
+
+        /// <summary>
+        /// Creates a rectangle geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the rectangle.</param>
+        /// <returns>A rectangle.</returns>
+        IGeometryImpl CreateRectangleGeometry(Rect rect);
+
+        /// <summary>
         /// Creates a stream geometry implementation.
         /// </summary>
         /// <returns>An <see cref="IStreamGeometryImpl"/>.</returns>

@@ -9,6 +9,7 @@ using System.Threading;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
@@ -19,7 +20,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    public class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -98,6 +99,8 @@ namespace Avalonia.Skia
         /// Skia canvas.
         /// </summary>
         public SKCanvas Canvas { get; }
+
+        SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
 
         /// <inheritdoc />
         public void Clear(Color color)
@@ -295,6 +298,8 @@ namespace Avalonia.Skia
         {
             Canvas.Restore();
         }
+
+        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
 
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)
@@ -573,25 +578,17 @@ namespace Avalonia.Skia
             // Need to modify dashes due to Skia modifying their lengths
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
             // TODO: Still something is off, dashes are now present, but don't look the same as D2D ones.
-            float dashLengthModifier;
-            float gapLengthModifier;
 
-            switch (pen.StartLineCap)
+            switch (pen.LineCap)
             {
                 case PenLineCap.Round:
                     paint.StrokeCap = SKStrokeCap.Round;
-                    dashLengthModifier = -paint.StrokeWidth;
-                    gapLengthModifier = paint.StrokeWidth;
                     break;
                 case PenLineCap.Square:
                     paint.StrokeCap = SKStrokeCap.Square;
-                    dashLengthModifier = -paint.StrokeWidth;
-                    gapLengthModifier = paint.StrokeWidth;
                     break;
                 default:
                     paint.StrokeCap = SKStrokeCap.Butt;
-                    dashLengthModifier = 0.0f;
-                    gapLengthModifier = 0.0f;
                     break;
             }
 
@@ -617,13 +614,12 @@ namespace Avalonia.Skia
 
                 for (var i = 0; i < srcDashes.Count; ++i)
                 {
-                    var lengthModifier = i % 2 == 0 ? dashLengthModifier : gapLengthModifier;
-
-                    // Avalonia dash lengths are relative, but Skia takes absolute sizes - need to scale
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth + lengthModifier;
+                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth;
                 }
 
-                var pe = SKPathEffect.CreateDash(dashesArray, (float) pen.DashStyle.Offset);
+                var offset = (float)(pen.DashStyle.Offset * pen.Thickness);
+
+                var pe = SKPathEffect.CreateDash(dashesArray, offset);
 
                 paint.PathEffect = pe;
                 rv.AddDisposable(pe);

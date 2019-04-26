@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Skia;
+using Avalonia.ReactiveUI;
 
 namespace ControlCatalog.NetCore
 {
