@@ -5,7 +5,7 @@ using XamlIl.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class IgnoredDirectivesTransformer : IXamlIlAstTransformer
+    class IgnoredDirectivesTransformer : IXamlIlAstTransformer
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {

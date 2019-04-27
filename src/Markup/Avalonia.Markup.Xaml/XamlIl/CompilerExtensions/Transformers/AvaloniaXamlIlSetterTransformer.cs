@@ -9,7 +9,7 @@ using XamlIl.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class AvaloniaXamlIlSetterTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlSetterTransformer : IXamlIlAstTransformer
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {

@@ -6,7 +6,7 @@ using XamlIl.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class AvaloniaXamlIlDesignPropertiesTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlDesignPropertiesTransformer : IXamlIlAstTransformer
     {
         public bool IsDesignMode { get; set; }
 

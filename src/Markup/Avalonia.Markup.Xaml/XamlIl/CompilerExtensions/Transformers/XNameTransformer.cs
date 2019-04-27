@@ -4,7 +4,7 @@ using XamlIl.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class XNameTransformer : IXamlIlAstTransformer
+    class XNameTransformer : IXamlIlAstTransformer
     {
         
         /// <summary>

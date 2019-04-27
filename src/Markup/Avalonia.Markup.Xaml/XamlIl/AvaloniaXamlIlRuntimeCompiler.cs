@@ -19,7 +19,7 @@ using XamlIl.Ast;
 #endif
 namespace Avalonia.Markup.Xaml.XamlIl
 {
-    public static class AvaloniaXamlIlRuntimeCompiler
+    static class AvaloniaXamlIlRuntimeCompiler
     {
 #if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;

@@ -4,7 +4,7 @@ using XamlIl.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class KnownPseudoMarkupExtensionsTransformer : IXamlIlAstTransformer
+    class KnownPseudoMarkupExtensionsTransformer : IXamlIlAstTransformer
     {
         private static readonly List<string> s_knownPseudoExtensions = new List<string>
         {

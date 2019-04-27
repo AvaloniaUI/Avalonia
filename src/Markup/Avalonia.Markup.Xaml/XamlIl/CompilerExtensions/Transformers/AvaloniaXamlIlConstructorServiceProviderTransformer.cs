@@ -5,7 +5,7 @@ using XamlIl.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class AvaloniaXamlIlConstructorServiceProviderTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlConstructorServiceProviderTransformer : IXamlIlAstTransformer
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {

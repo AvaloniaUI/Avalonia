@@ -9,7 +9,7 @@ using XamlIl.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
-    public class AvaloniaXamlIlCompiler : XamlIlCompiler
+    class AvaloniaXamlIlCompiler : XamlIlCompiler
     {
         private readonly IXamlIlType _contextType;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
