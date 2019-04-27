@@ -314,7 +314,7 @@ namespace Avalonia.Layout
                 try
                 {
                     _measuring = true;
-                    desiredSize = MeasureCore(availableSize).Constrain(availableSize);
+                    desiredSize = MeasureCore(availableSize);
                 }
                 finally
                 {
