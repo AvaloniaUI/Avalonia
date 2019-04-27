@@ -154,11 +154,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     if (method == null)
                         throw new XamlIlTypeSystemException(
                             "Unable to find SetValue(AvaloniaProperty, object, BindingPriority) on AvaloniaObject");
-                    var loc = emitter.DefineLocal(Parent.PropertyType);
-                    emitter
-                        .Stloc(loc)
-                        .Ldsfld(Parent._field)
-                        .Ldloc(loc);
+                    using (var loc = emitter.LocalsPool.GetLocal(Parent.PropertyType))
+                        emitter
+                            .Stloc(loc.Local)
+                            .Ldsfld(Parent._field)
+                            .Ldloc(loc.Local);
+
                     if(Parent.PropertyType.IsValueType)
                         emitter.Box(Parent.PropertyType);
                     emitter        
