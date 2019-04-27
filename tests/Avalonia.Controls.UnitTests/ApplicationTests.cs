@@ -18,6 +18,10 @@ namespace Avalonia.Controls.UnitTests
             {
                 Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
+                var hasExit = false;
+
+                Application.Current.Exit += (s, e) => hasExit = true;
+
                 var mainWindow = new Window();
 
                 mainWindow.Show();
@@ -30,7 +34,7 @@ namespace Avalonia.Controls.UnitTests
 
                 mainWindow.Close();
 
-                Assert.True(Application.Current.IsShuttingDown);
+                Assert.True(hasExit);
             }
         }
 
@@ -41,6 +45,10 @@ namespace Avalonia.Controls.UnitTests
             {
                 Application.Current.ShutdownMode = ShutdownMode.OnLastWindowClose;
 
+                var hasExit = false;
+
+                Application.Current.Exit += (s, e) => hasExit = true;
+
                 var windowA = new Window();
 
                 windowA.Show();
@@ -51,11 +59,11 @@ namespace Avalonia.Controls.UnitTests
 
                 windowA.Close();
 
-                Assert.False(Application.Current.IsShuttingDown);
+                Assert.False(hasExit);
 
                 windowB.Close();
 
-                Assert.True(Application.Current.IsShuttingDown);
+                Assert.True(hasExit);
             }
         }
 
@@ -66,6 +74,10 @@ namespace Avalonia.Controls.UnitTests
             {
                 Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
+                var hasExit = false;
+
+                Application.Current.Exit += (s, e) => hasExit = true;
+
                 var windowA = new Window();
 
                 windowA.Show();
@@ -76,15 +88,15 @@ namespace Avalonia.Controls.UnitTests
 
                 windowA.Close();
 
-                Assert.False(Application.Current.IsShuttingDown);
+                Assert.False(hasExit);
 
                 windowB.Close();
 
-                Assert.False(Application.Current.IsShuttingDown);
+                Assert.False(hasExit);
 
                 Application.Current.Shutdown();
 
-                Assert.True(Application.Current.IsShuttingDown);
+                Assert.True(hasExit);
             }
         }
 
@@ -136,9 +148,12 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
             {
-                Application.Current.Run();
+                Application.Current.Startup += (s, e) =>
+                {
+                    Assert.Throws<InvalidOperationException>(() => { Application.Current.Run(); });
+                };
 
-                Assert.Throws<InvalidOperationException>(() => { Application.Current.Run(); });
+                Application.Current.Run();               
             }
         }
 

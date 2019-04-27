@@ -228,25 +228,23 @@ namespace Avalonia
         /// <param name="mainWindow">The main window</param>
         public int Run(Window mainWindow)
         {
-            Dispatcher.UIThread.Post(() =>
+            if (mainWindow == null)
             {
-                if (MainWindow != null)
-                {
-                    return;
-                }
+                throw new ArgumentNullException(nameof(mainWindow));
+            }
 
-                if (mainWindow == null)
+            if (MainWindow == null)
+            {
+                Dispatcher.UIThread.Post(() =>
                 {
-                    throw new ArgumentNullException(nameof(mainWindow));
-                }
+                    if (!mainWindow.IsVisible)
+                    {
+                        mainWindow.Show();
+                    }
 
-                if (!mainWindow.IsVisible)
-                {
-                    mainWindow.Show();
-                }
-
-                MainWindow = mainWindow;
-            });
+                    MainWindow = mainWindow;
+                });
+            }            
 
             return Run(new CancellationTokenSource());
         }
