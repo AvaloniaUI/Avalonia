@@ -45,8 +45,7 @@ public:
                         {
                             auto url = [urls objectAtIndex:i];
                             
-                            auto string = [url absoluteString];
-                            string = [string substringFromIndex:7];
+                            auto string = [url path];
                             
                             strings[i] = (void*)[string UTF8String];
                         }
@@ -137,8 +136,7 @@ public:
                         {
                             auto url = [urls objectAtIndex:i];
                             
-                            auto string = [url absoluteString];
-                            string = [string substringFromIndex:7];
+                            auto string = [url path];
                             
                             strings[i] = (void*)[string UTF8String];
                         }
@@ -220,8 +218,7 @@ public:
                     
                     auto url = [panel URL];
                     
-                    auto string = [url absoluteString];
-                    string = [string substringFromIndex:7];     
+                    auto string = [url path];   
                     strings[0] = (void*)[string UTF8String];
                
                     events->OnCompleted(1, &strings[0]);
