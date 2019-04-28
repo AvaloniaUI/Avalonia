@@ -14,6 +14,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType IDisposable { get; }
         public XamlIlTypeWellKnownTypes XamlIlTypes { get; }
         public IXamlIlType Transitions { get; }
+        public IXamlIlType AssignBindingAttribute { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
         {
@@ -25,6 +26,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IBinding = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = ctx.Configuration.TypeSystem.GetType("System.IDisposable");
             Transitions = ctx.Configuration.TypeSystem.GetType("Avalonia.Animation.Transitions");
+            AssignBindingAttribute = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, ctx.Configuration.WellKnownTypes.Object);

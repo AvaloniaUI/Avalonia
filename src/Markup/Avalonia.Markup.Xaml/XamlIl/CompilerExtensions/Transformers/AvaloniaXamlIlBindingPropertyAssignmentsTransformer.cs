@@ -20,6 +20,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var vn = pv.Values[0];
                 if (vn.Type.GetClrType().Equals(XamlIlPseudoType.Null))
                     return node;
+
+                if (pv.Property.GetClrProperty().CustomAttributes
+                    .Any(a => a.Type.Equals(types.AssignBindingAttribute)))
+                    return node;
                 
                 // Special handling for markup extensions
                 if (vn.Type.IsMarkupExtension)
