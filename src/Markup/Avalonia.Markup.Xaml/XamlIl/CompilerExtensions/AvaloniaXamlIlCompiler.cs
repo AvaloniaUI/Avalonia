@@ -16,6 +16,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
         {
+            void InsertAfter<T>(params IXamlIlAstTransformer[] t) 
+                => Transformers.InsertRange(Transformers.FindIndex(x => x is T) + 1, t);
+
+            void InsertBefore<T>(params IXamlIlAstTransformer[] t) 
+                => Transformers.InsertRange(Transformers.FindIndex(x => x is T), t);
+
+
             // Before everything else
             
             Transformers.Insert(0, new XNameTransformer());
@@ -25,21 +32,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             // Targeted
 
-            Transformers.Insert(Transformers.FindIndex(x => x is XamlIlPropertyReferenceResolver),
-                new AvaloniaXamlIlTransformInstanceAttachedProperties());
+            InsertBefore<XamlIlPropertyReferenceResolver>(new AvaloniaXamlIlTransformInstanceAttachedProperties());
+            InsertAfter<XamlIlPropertyReferenceResolver>(new AvaloniaXamlIlAvaloniaPropertyResolver());
             
-            Transformers.Insert(Transformers.FindIndex(x => x is XamlIlXamlPropertyValueTransformer),
-                new KnownPseudoMarkupExtensionsTransformer());
+            InsertBefore<XamlIlXamlPropertyValueTransformer>(new AvaloniaXamlIlBindingPropertyAssignmentsTransformer());
 
-            Transformers.InsertRange(Transformers.FindIndex(x => x is XamlIlNewObjectTransformer),
-                new IXamlIlAstTransformer[]
-                {
-                    new AvaloniaXamlIlSelectorTransformer(),
-                    new AvaloniaXamlIlSetterTransformer(),
-                    new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
-                    new AvaloniaXamlIlConstructorServiceProviderTransformer()
-                }
+
+            InsertBefore<XamlIlNewObjectTransformer>(
+                new AvaloniaXamlIlSelectorTransformer(),
+                new AvaloniaXamlIlSetterTransformer(),
+                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
+                new AvaloniaXamlIlConstructorServiceProviderTransformer()
             );
+            
             // After everything else
             
             Transformers.Add(new AddNameScopeRegistration());

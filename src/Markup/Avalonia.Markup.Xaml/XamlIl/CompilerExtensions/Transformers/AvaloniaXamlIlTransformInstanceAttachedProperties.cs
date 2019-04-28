@@ -71,7 +71,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        class AvaloniaAttachedInstanceProperty : IXamlIlProperty
+        class AvaloniaAttachedInstanceProperty : IXamlIlAvaloniaProperty
         {
             private readonly XamlIlTransformerConfiguration _config;
             private readonly IXamlIlType _declaringType;
@@ -103,6 +103,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 Getter = new GetterMethod(this);
             }
 
+            public IXamlIlField AvaloniaProperty => _field;
             public bool Equals(IXamlIlProperty other) =>
                 other is AvaloniaAttachedInstanceProperty ap && ap._field.Equals(_field);
 

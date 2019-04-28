@@ -176,5 +176,7 @@ namespace Avalonia.Data
                 PublishValue();
             }
         }
+
+        public IBinding ProvideValue() => this;
     }
 }

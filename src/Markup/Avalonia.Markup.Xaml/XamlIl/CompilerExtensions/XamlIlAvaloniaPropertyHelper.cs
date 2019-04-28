@@ -15,6 +15,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
     {
         public static bool Emit(XamlIlEmitContext context, IXamlIlEmitter emitter, IXamlIlProperty property)
         {
+            if (property is IXamlIlAvaloniaProperty ap)
+            {
+                emitter.Ldsfld(ap.AvaloniaProperty);
+                return true;
+            }
             var type = (property.Getter ?? property.Setter).DeclaringType;
             var name = property.Name + "Property";
             var found = type.Fields.FirstOrDefault(f => f.IsStatic && f.Name == name);
@@ -74,5 +79,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 throw new XamlIlLoadException(Property.Name + " is not an AvaloniaProperty", this);
             return XamlIlNodeEmitResult.Type(0, Type.GetClrType());
         }
+    }
+
+    interface IXamlIlAvaloniaProperty : IXamlIlProperty
+    {
+        IXamlIlField AvaloniaProperty { get; }
+    }
+    
+    class XamlIlAvaloniaProperty : IXamlIlAvaloniaProperty
+    {
+        private readonly IXamlIlProperty _original;
+
+        public IXamlIlField AvaloniaProperty { get; }
+        public XamlIlAvaloniaProperty(IXamlIlProperty original, IXamlIlField field)
+        {
+            _original = original;
+            AvaloniaProperty = field;
+        }
+
+        public bool Equals(IXamlIlProperty other) =>
+            other is XamlIlAvaloniaProperty p && p.AvaloniaProperty.Equals(AvaloniaProperty);
+
+        public string Name => _original.Name;
+        public IXamlIlType PropertyType => _original.PropertyType;
+        public IXamlIlMethod Setter => _original.Setter;
+        public IXamlIlMethod Getter => _original.Getter;
+        public IReadOnlyList<IXamlIlCustomAttribute> CustomAttributes => _original.CustomAttributes;
     }
 }
