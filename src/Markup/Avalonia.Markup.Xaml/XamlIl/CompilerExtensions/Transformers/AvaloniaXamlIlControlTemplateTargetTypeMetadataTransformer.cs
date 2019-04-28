@@ -56,7 +56,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public enum ScopeType
         {
             Style,
-            ControlTemplate
+            ControlTemplate,
+            Transitions
         }
         
         public AvaloniaXamlIlTargetTypeMetadataNode(IXamlIlAstValueNode value, IXamlIlAstTypeReference targetType,

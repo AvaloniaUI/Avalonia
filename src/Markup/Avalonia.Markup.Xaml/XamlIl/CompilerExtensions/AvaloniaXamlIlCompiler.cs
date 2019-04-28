@@ -42,7 +42,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
-                new AvaloniaXamlIlConstructorServiceProviderTransformer()
+                new AvaloniaXamlIlConstructorServiceProviderTransformer(),
+                new AvaloniaXamlIlTransitionsTypeMetadataTransformer()
             );
             
             // After everything else

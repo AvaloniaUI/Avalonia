@@ -18,7 +18,21 @@ namespace Avalonia.Markup.Xaml.UnitTests
             parsed.DataContext = ctx;
             parsed.SetValue(Button.IsPressedProperty, true);
             Assert.True(ctx.IsPressed);
-            
+        }
+
+        [Fact]
+        public void Transitions_Should_Be_Properly_Parsed()
+        {
+            var parsed = (Grid)AvaloniaXamlLoader.Parse(@"
+<Grid xmlns='https://github.com/avaloniaui' >
+  <Grid.Transitions>
+    <DoubleTransition Property='Opacity'
+       Easing='CircularEaseIn'
+       Duration='0:0:0.5' />
+  </Grid.Transitions>
+</Grid>");
+            Assert.Equal(1, parsed.Transitions.Count);
+            Assert.Equal(Visual.OpacityProperty, parsed.Transitions[0].Property);
         }
         
         
