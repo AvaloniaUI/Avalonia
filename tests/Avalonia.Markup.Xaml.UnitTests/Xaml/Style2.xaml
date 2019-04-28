@@ -1,5 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui"
-       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       x:Precompile="False">
   <Style.Resources>
     <SolidColorBrush x:Key="RedBrush" Color="{DynamicResource Red}"/>
     <SolidColorBrush x:Key="GreenBrush" Color="{DynamicResource Green}"/>

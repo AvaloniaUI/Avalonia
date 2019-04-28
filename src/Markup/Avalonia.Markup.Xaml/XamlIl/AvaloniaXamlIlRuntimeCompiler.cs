@@ -137,8 +137,36 @@ namespace Avalonia.Markup.Xaml.XamlIl
         static object LoadOrPopulate(Type created, object rootInstance)
         {
             var isp = Expression.Parameter(typeof(IServiceProvider));
+
+
+            var epar = Expression.Parameter(typeof(object));
+            var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName);
+            isp = Expression.Parameter(typeof(IServiceProvider));
+            var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
+                Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
+                isp, epar).Compile();
+            
             if (rootInstance == null)
             {
+                var targetType = populate.GetParameters()[1].ParameterType;
+                var overrideField = targetType.GetField("!XamlIlPopulateOverride",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (overrideField != null)
+                {
+                    overrideField.SetValue(null,
+                        new Action<object>(
+                            target => { populateCb(XamlIlRuntimeHelpers.RootServiceProviderV1, target); }));
+                    try
+                    {
+                        return Activator.CreateInstance(targetType);
+                    }
+                    finally
+                    {
+                        overrideField.SetValue(null, null);
+                    }
+                }
+                
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
                         created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
@@ -146,12 +174,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
             else
             {
-                var epar = Expression.Parameter(typeof(object));
-                var populate = created.GetMethod(AvaloniaXamlIlCompiler.PopulateName);
-                isp = Expression.Parameter(typeof(IServiceProvider));
-                var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
-                    Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
-                    isp, epar).Compile();
                 populateCb(XamlIlRuntimeHelpers.RootServiceProviderV1, rootInstance);
                 return rootInstance;
             }

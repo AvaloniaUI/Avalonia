@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
 {
-    public class XamlIlBugTests
+    public class XamlIlTests
     {
         [Fact]
         public void Binding_Button_IsPressed_ShouldWork()
@@ -34,7 +34,24 @@ namespace Avalonia.Markup.Xaml.UnitTests
             Assert.Equal(1, parsed.Transitions.Count);
             Assert.Equal(Visual.OpacityProperty, parsed.Transitions[0].Property);
         }
-        
+
+        [Fact]
+        public void Parser_Should_Override_Precompiled_Xaml()
+        {
+            var precompiled = new XamlIlClassWithPrecompiledXaml();
+            Assert.Equal(Brushes.Red, precompiled.Background);
+            Assert.Equal(1, precompiled.Opacity);
+            var loaded = (XamlIlClassWithPrecompiledXaml)AvaloniaXamlLoader.Parse(@"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlClassWithPrecompiledXaml'
+             Opacity='0'>
+    
+</UserControl>");
+            Assert.Equal(loaded.Opacity, 0);
+            Assert.Null(loaded.Background);
+            
+        }
         
     }
 
@@ -48,6 +65,10 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+    }
+
+    public class XamlIlClassWithPrecompiledXaml : UserControl
+    {
     }
 
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlIl;
 using XamlIl.Ast;
@@ -11,11 +12,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlCompiler : XamlIlCompiler
     {
+        private readonly XamlIlTransformerConfiguration _configuration;
         private readonly IXamlIlType _contextType;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
 
         private AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
         {
+            _configuration = configuration;
+
             void InsertAfter<T>(params IXamlIlAstTransformer[] t) 
                 => Transformers.InsertRange(Transformers.FindIndex(x => x is T) + 1, t);
 
@@ -82,18 +86,33 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
             });
             
+            var rootObject = (XamlIlAstObjectNode)parsed.Root;
+
+            var classDirective = rootObject.Children
+                .OfType<XamlIlAstXmlDirective>().FirstOrDefault(x =>
+                    x.Namespace == XamlNamespaces.Xaml2006
+                    && x.Name == "Class");
+
+            var rootType =
+                classDirective != null ?
+                    new XamlIlAstClrTypeReference(classDirective,
+                        _configuration.TypeSystem.GetType(((XamlIlAstTextNode)classDirective.Values[0]).Text),
+                        false) :
+                    XamlIlTypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
+                        (XamlIlAstXmlTypeReference)rootObject.Type, true);
+            
+            
             if (overrideRootType != null)
             {
-                var rootObject = (XamlIlAstObjectNode)parsed.Root;
+                
 
-                var originalType = XamlIlTypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
-                    (XamlIlAstXmlTypeReference)rootObject.Type, true);
-
-                if (!originalType.Type.IsAssignableFrom(overrideRootType))
+                if (!rootType.Type.IsAssignableFrom(overrideRootType))
                     throw new XamlIlLoadException(
-                        $"Unable to substitute {originalType.Type.GetFqn()} with {overrideRootType.GetFqn()}", rootObject);
-                rootObject.Type = new XamlIlAstClrTypeReference(rootObject, overrideRootType, false);
+                        $"Unable to substitute {rootType.Type.GetFqn()} with {overrideRootType.GetFqn()}", rootObject);
+                rootType = new XamlIlAstClrTypeReference(rootObject, overrideRootType, false);
             }
+
+            rootObject.Type = rootType;
 
             Transform(parsed);
             Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri, fileSource);

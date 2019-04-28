@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     if (d.Namespace == XamlNamespaces.Xaml2006)
                     {
-                        if (d.Name == "Class")
+                        if (d.Name == "Precompile" || d.Name == "Class")
                             no.Children.Remove(d);
                     }
                 }

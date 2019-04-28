@@ -24,11 +24,15 @@
     </ItemGroup>
   </Target>
   
+  <PropertyGroup>
+    <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences</BuildAvaloniaResourcesDependsOn>
+  </PropertyGroup>
+  
   <Target Name="GenerateAvaloniaResources" 
           BeforeTargets="CoreCompile;CoreResGen"
           Inputs="@(AvaloniaResource);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences">
+          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
     <GenerateAvaloniaResourcesTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       Output="$(AvaloniaResourcesTemporaryFilePath)"
@@ -37,7 +41,7 @@
       EmbeddedResources="@(EmbeddedResources)"/>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
 
   </Target>
 
@@ -64,7 +68,7 @@
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
   </Target>
 
   

@@ -15,6 +15,7 @@ using XamlIl;
 using XamlIl.Ast;
 using XamlIl.Parsers;
 using XamlIl.Transform;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 
@@ -125,6 +126,20 @@ namespace Avalonia.Build.Tasks
                         var parsed = XDocumentXamlIlParser.Parse(xaml);
 
                         var initialRoot = (XamlIlAstObjectNode)parsed.Root;
+                        
+                        
+                        var precompileDirective = initialRoot.Children.OfType<XamlIlAstXmlDirective>()
+                            .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Precompile");
+                        if (precompileDirective != null)
+                        {
+                            var precompileText = (precompileDirective.Values[0] as XamlIlAstTextNode)?.Text.Trim()
+                                .ToLowerInvariant();
+                            if (precompileText == "false")
+                                continue;
+                            if (precompileText != "true")
+                                throw new XamlIlParseException("Invalid value for x:Precompile", precompileDirective);
+                        }
+                        
                         var classDirective = initialRoot.Children.OfType<XamlIlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
                         IXamlIlType classType = null;
@@ -136,6 +151,7 @@ namespace Avalonia.Build.Tasks
                             if (classType == null)
                                 throw new XamlIlParseException($"Unable to find type `{tn.Text}`", classDirective);
                             initialRoot.Type = new XamlIlAstClrTypeReference(classDirective, classType, false);
+                            initialRoot.Children.Remove(classDirective);
                         }
                         
                         
@@ -154,13 +170,43 @@ namespace Avalonia.Build.Tasks
                             var compiledPopulateMethod = typeSystem.GetTypeReference(builder).Resolve()
                                 .Methods.First(m => m.Name == populateName);
 
+                            var designLoaderFieldType = typeSystem
+                                .GetType("System.Action`1")
+                                .MakeGenericType(typeSystem.GetType("System.Object"));
+
+                            var designLoaderFieldTypeReference = (GenericInstanceType)typeSystem.GetTypeReference(designLoaderFieldType);
+                            designLoaderFieldTypeReference.GenericArguments[0] =
+                                asm.MainModule.ImportReference(designLoaderFieldTypeReference.GenericArguments[0]);
+                            designLoaderFieldTypeReference = (GenericInstanceType)
+                                asm.MainModule.ImportReference(designLoaderFieldTypeReference);
+                            
+                            var designLoaderLoad =
+                                typeSystem.GetMethodReference(
+                                    designLoaderFieldType.Methods.First(m => m.Name == "Invoke"));
+                            designLoaderLoad =
+                                asm.MainModule.ImportReference(designLoaderLoad);
+                            designLoaderLoad.DeclaringType = designLoaderFieldTypeReference;
+
+                            var designLoaderField = new FieldDefinition("!XamlIlPopulateOverride",
+                                FieldAttributes.Static | FieldAttributes.Private, designLoaderFieldTypeReference);
+                            classTypeDefinition.Fields.Add(designLoaderField);
 
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
                             var trampoline = new MethodDefinition(TrampolineName,
                                 MethodAttributes.Static | MethodAttributes.Private, asm.MainModule.TypeSystem.Void);
                             trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
                             classTypeDefinition.Methods.Add(trampoline);
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, rootServiceProviderField));
+
+                            var regularStart = Instruction.Create(OpCodes.Ldsfld, rootServiceProviderField);
+                            
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Brfalse, regularStart));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, designLoaderLoad));
+                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                            
+                            trampoline.Body.Instructions.Add(regularStart);
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
                             trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
