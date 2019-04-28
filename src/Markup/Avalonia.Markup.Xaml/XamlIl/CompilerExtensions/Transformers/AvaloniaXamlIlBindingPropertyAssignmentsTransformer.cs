@@ -18,8 +18,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var types = context.GetAvaloniaTypes();
                 
                 var vn = pv.Values[0];
-                if(vn.Type.GetClrType().Name.Contains("TemplateBinding"))
-                    Console.WriteLine();
+                
                 // Special handling for markup extensions
                 if (vn.Type.IsMarkupExtension)
                 {
