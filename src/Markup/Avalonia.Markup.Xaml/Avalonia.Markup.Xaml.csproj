@@ -62,7 +62,6 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransformInstanceAttachedProperties.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlWellKnownTypes.cs" />
-        <Compile Include="XamlIl\CompilerExtensions\Transformers\ResolveAvaloniaPropertiesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPropertyAssignmentsTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\XamlIlAvaloniaPropertyHelper.cs" />
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompiler.cs" />
