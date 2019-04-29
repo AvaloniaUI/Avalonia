@@ -144,20 +144,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Throws_InvalidOperationException_On_Run_When_Application_Is_Already_Running()
-        {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
-            {
-                Application.Current.Startup += (s, e) =>
-                {
-                    Assert.Throws<InvalidOperationException>(() => { Application.Current.Run(); });
-                };
-
-                Application.Current.Run();               
-            }
-        }
-
-        [Fact]
         public void Should_Set_ExitCode_After_Shutdown()
         {
             using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
