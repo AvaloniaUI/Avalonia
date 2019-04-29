@@ -1,17 +1,15 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Reactive.Subjects;
-using Moq;
-using Avalonia.Controls;
-using Avalonia.Data;
-using Xunit;
 using System;
-using Avalonia.Controls.Templates;
-using Avalonia.Markup.Data;
-using Avalonia.Markup;
 using System.Globalization;
+using System.Reactive.Subjects;
+using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Moq;
+using Xunit;
 
 namespace Avalonia.Styling.UnitTests
 {
@@ -22,7 +20,7 @@ namespace Avalonia.Styling.UnitTests
         {
             var target = new Setter();
 
-            Assert.Throws<ArgumentException>(() => target.Value = new Border());
+            Assert.Throws<InvalidOperationException>(() => target.Value = new Border());
         }
 
         [Fact]
