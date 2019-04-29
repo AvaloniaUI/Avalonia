@@ -309,6 +309,39 @@ namespace Avalonia.LeakTests
 
 
         [Fact]
+        public void Slider_Is_Freed()
+        {
+            using (Start())
+            {
+                Func<Window> run = () =>
+                {
+                    var window = new Window
+                    {
+                        Content = new Slider()
+                    };
+
+                    window.Show();
+
+                    // Do a layout and make sure that Slider gets added to visual tree.
+                    window.LayoutManager.ExecuteInitialLayoutPass(window);
+                    Assert.IsType<Slider>(window.Presenter.Child);
+
+                    // Clear the content and ensure the Slider is removed.
+                    window.Content = null;
+                    window.LayoutManager.ExecuteLayoutPass();
+                    Assert.Null(window.Presenter.Child);
+
+                    return window;
+                };
+
+                var result = run();
+
+                dotMemory.Check(memory =>
+                    Assert.Equal(0, memory.GetObjects(where => where.Type.Is<Slider>()).ObjectsCount));
+            }
+        }
+
+        [Fact]
         public void RendererIsDisposed()
         {
             using (Start())
