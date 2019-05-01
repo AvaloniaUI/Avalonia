@@ -7,7 +7,7 @@
         xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow" 
         LocalNotificationManager="{Binding NotificationManager, Mode=OneWayToSource}" 
-        NotificationArea.Position="BottomRight"
+        NotificationArea.Position="TopRight"
         NotificationArea.MaxItems="3">
     <Window.DataTemplates>
         <DataTemplate DataType="vm:NotificationViewModel">

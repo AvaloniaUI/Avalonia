@@ -24,6 +24,9 @@ namespace ControlCatalog.ViewModels
                 await Task.Delay(2500);
                 NotificationManager.Show(new NotificationContent { Title = "Title", Message = "Test4", Type = NotificationType.Success });
 
+                await Task.Delay(2500);
+                NotificationManager.Show(new NotificationContent { Title = "Title", Message = "Test5", Type = NotificationType.Information });
+
                 await Task.Delay(500);
                 NotificationManager.Show("Test5");
 
