@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,6 +39,9 @@ namespace Avalonia.Controls.Notifications
             PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
             PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
             PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
+
+            HorizontalAlignmentProperty.OverrideDefaultValue<NotificationArea>(Layout.HorizontalAlignment.Stretch);
+            VerticalAlignmentProperty.OverrideDefaultValue<NotificationArea>(Layout.VerticalAlignment.Stretch);
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
