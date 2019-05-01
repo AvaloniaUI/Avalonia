@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Views.NotificationView">
-    <Border Padding="12" MinHeight="20" Background="Teal">
+    <Border Padding="12" MinHeight="20" Background="DodgerBlue">
         <Grid ColumnDefinitions="Auto,*">
             <Panel Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">
                 <TextBlock Text="&#xE115;" FontFamily="Segoe UI Symbol" FontSize="20" TextAlignment="Center" VerticalAlignment="Center"/>

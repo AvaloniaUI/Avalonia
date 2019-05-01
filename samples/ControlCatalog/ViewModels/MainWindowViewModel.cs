@@ -1,7 +1,9 @@
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Threading;
+using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
@@ -9,27 +11,19 @@ namespace ControlCatalog.ViewModels
     {
         public MainWindowViewModel()
         {
-            Dispatcher.UIThread.InvokeAsync(async () =>
+            ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
             {
-                await Task.Delay(5000);
+                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
+            });
 
-                NotificationManager.Show(new NotificationViewModel (NotificationManager) { Title = "Warning", Message = "Did you know that Avalonia now supports Notifications?" });
+            ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
+            {
+                NotificationManager.Show(new NotificationContent { Title = "Welcome", Message = "Avalonia now supports Notifications.", Type = NotificationType.Information });
+            });
 
-                await Task.Delay(1500);
-                NotificationManager.Show(new NotificationContent { Title= "Title", Message = "Test2", Type = NotificationType.Error });
-
-                await Task.Delay(2000);
-                NotificationManager.Show(new NotificationContent { Title = "Title", Message = "Test3", Type = NotificationType.Warning });
-
-                await Task.Delay(2500);
-                NotificationManager.Show(new NotificationContent { Title = "Title", Message = "Test4", Type = NotificationType.Success });
-
-                await Task.Delay(2500);
-                NotificationManager.Show(new NotificationContent { Title = "Title", Message = "Test5", Type = NotificationType.Information });
-
-                await Task.Delay(500);
-                NotificationManager.Show("Test5");
-
+            ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
+            {
+                NotificationManager.Show(new NotificationContent { Title = "Error", Message = "Native Notifications are not quite ready. Coming soon.", Type = NotificationType.Error });
             });
         }
 
@@ -40,5 +34,11 @@ namespace ControlCatalog.ViewModels
             get { return _notificationManager; }
             set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
         }
+
+        public ReactiveCommand<Unit, Unit> ShowCustomManagedNotificationCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> ShowManagedNotificationCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> ShowNativeNotificationCommand { get; }
     }
 }
