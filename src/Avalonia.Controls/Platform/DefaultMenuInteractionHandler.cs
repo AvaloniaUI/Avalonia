@@ -338,7 +338,7 @@ namespace Avalonia.Controls.Platform
             {
                 if (item.IsSubMenuOpen)
                 {
-                    if (item.Parent is Menu)
+                    if (item.IsTopLevel)
                     {
                         CloseMenu(item);
                     }
