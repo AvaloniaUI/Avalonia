@@ -30,13 +30,7 @@
                                               Classes="repeattrack"
                                               Focusable="False"/>
                             </Track.IncreaseButton>
-                            <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
-                            </Thumb>
+                            <Thumb Name="thumb"/>
                         </Track>
                         <RepeatButton Name="PART_LineDownButton"
                                       Classes="repeat"
@@ -84,13 +78,7 @@
                                               Classes="repeattrack"
                                               Focusable="False"/>
                             </Track.IncreaseButton>
-                            <Thumb Name="thumb">
-                                <Thumb.Template>
-                                    <ControlTemplate>
-                                        <Border Background="{DynamicResource ThemeControlHighBrush}" />
-                                    </ControlTemplate>
-                                </Thumb.Template>
-                            </Thumb>
+                            <Thumb Name="thumb"/>
                         </Track>
                         <RepeatButton Name="PART_LineDownButton"
                                       Classes="repeat"
@@ -104,6 +92,16 @@
                     </Grid>
                 </Border>
             </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ScrollBar /template/ Thumb#thumb">
+        <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"/>
+                </ControlTemplate>
+            </Setter.Value>
         </Setter>
     </Style>
     <Style Selector="ScrollBar:horizontal /template/ Thumb#thumb">

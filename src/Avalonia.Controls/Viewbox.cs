@@ -49,7 +49,7 @@ namespace Avalonia.Controls
 
                 var scale = GetScale(availableSize, childSize, Stretch);
 
-                return childSize * scale;
+                return (childSize * scale).Constrain(availableSize);
             }
 
             return new Size();
