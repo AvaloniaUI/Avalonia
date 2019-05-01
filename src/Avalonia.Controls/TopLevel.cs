@@ -52,13 +52,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="LocalNotificationManager"/> property.
         /// </summary>
         public static readonly DirectProperty<TopLevel, INotificationManager> LocalNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager);
+            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager, (o, v) => o.LocalNotificationManager = v);
 
         /// <summary>
         /// Defines the <see cref="SystemNotificationManager"/> property.
         /// </summary>
         public static readonly DirectProperty<TopLevel, INotificationManager> SystemNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(SystemNotificationManager), o => o.SystemNotificationManager);
+            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(SystemNotificationManager), o => o.SystemNotificationManager, (o, v) => o.SystemNotificationManager = v);
 
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
