@@ -11,23 +11,43 @@ namespace Avalonia.Controls.Notifications
     {
         private IList _items;
 
+        public static NotificationPosition GetPosition(TopLevel obj)
+        {
+            return obj.GetValue(PositionProperty);
+        }
+
+        public static void SetPosition(TopLevel obj, NotificationPosition value)
+        {
+            obj.SetValue(PositionProperty, value);
+        }
+
+        public static readonly AvaloniaProperty<NotificationPosition> PositionProperty =
+          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft , inherits: true);
+
         public NotificationPosition Position
         {
-            get { return (NotificationPosition)GetValue(PositionProperty); }
+            get { return GetValue(PositionProperty); }
             set { SetValue(PositionProperty, value); }
         }
 
-        public static readonly StyledProperty<NotificationPosition> PositionProperty =
-            AvaloniaProperty.Register<NotificationArea, NotificationPosition>(nameof(Position), NotificationPosition.BottomRight);
+        public static int GetMaxItems(TopLevel obj)
+        {
+            return obj.GetValue(MaxItemsProperty);
+        }
+
+        public static void SetMaxItems(TopLevel obj, int value)
+        {
+            obj.SetValue(MaxItemsProperty, value);
+        }
+
+        public static readonly AvaloniaProperty<int> MaxItemsProperty =
+          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, int>("Position", defaultValue: 5, inherits: true);
 
         public int MaxItems
         {
-            get { return (int)GetValue(MaxItemsProperty); }
+            get { return GetValue(MaxItemsProperty); }
             set { SetValue(MaxItemsProperty, value); }
         }
-
-        public static readonly AvaloniaProperty MaxItemsProperty =
-            AvaloniaProperty.Register<NotificationArea, int>(nameof(MaxItems), int.MaxValue);
 
         static NotificationArea()
         {
