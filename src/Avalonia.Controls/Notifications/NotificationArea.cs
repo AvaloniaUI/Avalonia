@@ -29,10 +29,6 @@ namespace Avalonia.Controls.Notifications
         public static readonly AvaloniaProperty MaxItemsProperty =
             AvaloniaProperty.Register<NotificationArea, int>(nameof(MaxItems), int.MaxValue);
 
-        public NotificationArea()
-        {
-        }
-
         static NotificationArea()
         {
             PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
@@ -50,6 +46,11 @@ namespace Avalonia.Controls.Notifications
 
             var itemsControl = e.NameScope.Find<Panel>("PART_Items");
             _items = itemsControl?.Children;
+        }
+
+        public void Show(NotificationContent content, TimeSpan? expirationTime, Action onClick, Action onClose)
+        {
+             Show(content as object, expirationTime, onClick, onClose);
         }
 
         public async void Show(object content, TimeSpan? expirationTime, Action onClick, Action onClose)

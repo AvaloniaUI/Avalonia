@@ -7,18 +7,25 @@ namespace ControlCatalog.ViewModels
 {
     public class NotificationViewModel
     {
-        public NotificationViewModel()
+        public NotificationViewModel(INotificationManager manager)
         {
-            OKCommand = ReactiveCommand.Create(() =>
+            YesCommand = ReactiveCommand.Create(() =>
             {
-                Application.Current.MainWindow.LocalNotificationManager.Show("Notification Accepted");
+                manager.Show(new NotificationContent { Title = "Avalonia Notifications", Message = "Start adding notifications to your app today." });
+            });
+
+            NoCommand = ReactiveCommand.Create(() =>
+            {
+                manager.Show(new NotificationContent { Title = "Avalonia Notifications", Message = "Start adding notifications to your app today. To find out more visit..." });
             });
         }
 
         public string Title { get; set; }
         public string Message { get; set; }
 
-        public ReactiveCommand<Unit, Unit> OKCommand { get; }
+        public ReactiveCommand<Unit, Unit> YesCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> NoCommand { get; }
 
     }
 }

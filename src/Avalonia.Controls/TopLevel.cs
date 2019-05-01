@@ -51,8 +51,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="LocalNotificationManager"/> property.
         /// </summary>
-        public static readonly DirectProperty<TopLevel, INotificationManager> LocalNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(LocalNotificationManager), o => o.LocalNotificationManager, (o, v) => o.LocalNotificationManager = v);
+        public static readonly DirectProperty<TopLevel, NotificationArea> LocalNotificationManagerProperty =
+            AvaloniaProperty.RegisterDirect<TopLevel, NotificationArea>(nameof(LocalNotificationManager), o => o.LocalNotificationManager, (o, v) => o.LocalNotificationManager = v);
 
         /// <summary>
         /// Defines the <see cref="SystemNotificationManager"/> property.
@@ -66,7 +66,7 @@ namespace Avalonia.Controls
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
-        private INotificationManager _localNotificationManager;
+        private NotificationArea _localNotificationManager;
         private INotificationManager _systemNotificationManager;
         private ILayoutManager _layoutManager;
 
@@ -184,7 +184,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the Local (in window managed) notification manager.
         /// </summary>
-        public INotificationManager LocalNotificationManager
+        public NotificationArea LocalNotificationManager
         {
             get => _localNotificationManager;
             protected set => SetAndRaise(LocalNotificationManagerProperty, ref _localNotificationManager, value);

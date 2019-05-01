@@ -8,10 +8,10 @@
             </Panel>
             <DockPanel Grid.Column="1">
                 <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
-                <DockPanel LastChildFill="False" DockPanel.Dock="Bottom" Margin="0,8,0,0">
-                    <Button Content="Ok" DockPanel.Dock="Right" Notification.CloseOnClick="True" Command="{Binding OKCommand}" />
-                    <Button Content="Cancel" DockPanel.Dock="Right" Notification.CloseOnClick="True" Margin="0,0,8,0" />
-                </DockPanel>
+                <StackPanel Spacing="20" DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                    <Button Content="No" DockPanel.Dock="Right" Notification.CloseOnClick="True" Command="{Binding NoCommand}"  Margin="0,0,8,0" />
+                    <Button Content="Yes" DockPanel.Dock="Right" Notification.CloseOnClick="True" Command="{Binding YesCommand}" />
+                </StackPanel>
                 <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Opacity=".8" Margin="0,8,0,0"/>
             </DockPanel>
         </Grid>

@@ -6,17 +6,10 @@
                 <StackPanel Name="PART_Items">
                     <StackPanel.DataTemplates>
                         <DataTemplate DataType="NotificationContent">
-                            <Border Padding="12" MinHeight="80">
-                                <Grid ColumnDefinitions="Auto,*">
-                                    <ContentControl Margin="0,0,12,0" Width="25" Height="25" VerticalAlignment="Top">
-                                        <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </ContentControl>
-                                    <DockPanel Grid.Column="1">
-                                        <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
-                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Opacity=".8" Margin="0,0,12,0"/>
-                                    </DockPanel>
-                                </Grid>
-                            </Border>
+                            <StackPanel Spacing="8">
+                                <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
+                                <TextBlock MaxHeight="80" Text="{Binding Message}" TextWrapping="Wrap" Opacity=".8" Margin="0,0,12,0"/>
+                            </StackPanel>
                         </DataTemplate>
                     </StackPanel.DataTemplates>
                 </StackPanel>
@@ -33,7 +26,11 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Margin="8,8,0,0">
+                    <Border Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Margin="8,8,0,0"
+                            Padding="12">
                         <ContentControl MinHeight="150" Content="{TemplateBinding Content}" />
                     </Border>
                 </LayoutTransformControl>
@@ -41,15 +38,15 @@
         </Setter>
 
         <Style.Animations>
-            <Animation Duration="0:0:0.35" Easing="QuadraticEaseIn" FillMode="Forward">
+            <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="TranslateTransform.Y" Value="-20"/>
+                    <Setter Property="TranslateTransform.Y" Value="20"/>
                     <Setter Property="ScaleTransform.ScaleX" Value="0.85"/>
                     <Setter Property="ScaleTransform.ScaleY" Value="0.85"/>
                 </KeyFrame>
                 <KeyFrame Cue="30%">
-                    <Setter Property="TranslateTransform.Y" Value="20"/>
+                    <Setter Property="TranslateTransform.Y" Value="-20"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
                     <Setter Property="Opacity" Value="1"/>
@@ -64,14 +61,18 @@
     <Style Selector="Notification[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
         <Setter Property="RenderTransformOrigin" Value="50%,0%"/>
         <Style.Animations>
-            <Animation Duration="0:0:0.25" Easing="QuadraticEaseOut" FillMode="Forward">
+            <Animation Duration="0:0:0.75" Easing="QuadraticEaseOut" FillMode="Forward">
                 <KeyFrame Cue="0%">
-                    <Setter Property="Opacity" Value="1"/>
+                    <Setter Property="TranslateTransform.X" Value="0"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="TranslateTransform.X" Value="800"/>
                     <Setter Property="ScaleTransform.ScaleY" Value="1"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
-                    <Setter Property="Opacity" Value="0"/>
                     <Setter Property="ScaleTransform.ScaleY" Value="0"/>
+                    <Setter Property="TranslateTransform.X" Value="800"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>
@@ -79,7 +80,7 @@
 
     <Style Selector="Notification[IsClosing=true]">
         <Style.Animations>
-            <Animation Duration="0:0:0.25" Easing="QuadraticEaseOut" FillMode="Forward">
+            <Animation Duration="0:0:1.25" Easing="QuadraticEaseOut" FillMode="Forward">
                 <KeyFrame Cue="100%">
                     <Setter Property="IsClosed" Value="True"/>
                 </KeyFrame>
@@ -98,25 +99,17 @@
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
     </Style>
-
-    <Style Selector="Notification">
-        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
-        <Setter Property="Background" Value="#444444"/>
-    </Style>
+    
     <Style Selector="Notification:information">
-        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
-        <Setter Property="Background" Value="CornflowerBlue"/>
+        <Setter Property="Background" Value="Teal"/>
     </Style>
     <Style Selector="Notification:success">
-        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
         <Setter Property="Background" Value="LimeGreen"/>
     </Style>
     <Style Selector="Notification:warning">
-        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
         <Setter Property="Background" Value="Orange"/>
     </Style>
     <Style Selector="Notification:error">
-        <!--<Setter TargetName="Icon" Property="Content" Value="{StaticResource InfoIcon}"/>-->
         <Setter Property="Background" Value="OrangeRed"/>
     </Style>
 

@@ -9,6 +9,9 @@ namespace Avalonia.Controls.Notifications
 {
     public class Notification : ContentControl
     {
+        private bool _isClosed;
+        private bool _isClosing;
+
         static Notification()
         {
             IsClosedProperty.Changed.AddClassHandler<Notification>(IsClosedChanged);
@@ -41,8 +44,6 @@ namespace Avalonia.Controls.Notifications
                 });
         }
 
-        private bool _isClosing;
-
         /// <summary>
         /// Determines if the notification is already closing.
         /// </summary>
@@ -55,8 +56,6 @@ namespace Avalonia.Controls.Notifications
         public static readonly DirectProperty<Notification, bool> IsClosingProperty =
             AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosing), o => o.IsClosing);
 
-        private bool _isClosed;
-
         /// <summary>
         /// Determines if the notification is closed.
         /// </summary>
@@ -66,6 +65,9 @@ namespace Avalonia.Controls.Notifications
             set { SetAndRaise(IsClosedProperty, ref _isClosed, value); }
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsClosed"/> property.
+        /// </summary>
         public static readonly DirectProperty<Notification, bool> IsClosedProperty =
             AvaloniaProperty.RegisterDirect<Notification, bool>(nameof(IsClosed), o => o.IsClosed, (o, v) => o.IsClosed = v);
 
