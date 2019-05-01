@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    child.Arrange(new Rect(child.DesiredSize));
+                    child.Arrange(new Rect(finalSize));
                 }
             }
 
