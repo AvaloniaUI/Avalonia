@@ -193,6 +193,113 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Empty(target.Panel.Children);            
         }
 
+        [Fact]
+        public void Should_Handle_Inserting_Items_At_SelectedItem()
+        {
+            ObservableCollection<string> items = new ObservableCollection<string>
+            {
+                "item1",
+                "item2",
+                "item3",
+            };
+
+            var target = new CarouselPresenter
+            {
+                Items = items,
+                SelectedIndex = 0,
+                IsVirtualized = false,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+
+            items.Insert(1, "item1a");
+
+            var containers = target.ItemContainerGenerator.Containers.Select(x => (x.Index, (string)x.Item));
+
+            Assert.Equal(
+                new[]
+                {
+                    (0, "item1"),
+                    (1, "item1a"),
+                    (2, "item2"),
+                },
+                containers);
+
+            var visibleContainer = (ContentPresenter)target.Panel.Children.Single(x => x.IsVisible);
+            Assert.Equal("item1a", visibleContainer.Content);
+        }
+
+        [Fact]
+        public void Should_Handle_Inserting_Items_Before_SelectedItem()
+        {
+            ObservableCollection<string> items = new ObservableCollection<string>
+            {
+                "item1",
+                "item2",
+                "item3",
+            };
+
+            var target = new CarouselPresenter
+            {
+                Items = items,
+                SelectedIndex = 0,
+                IsVirtualized = false,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 2;
+
+            items.Insert(1, "item1a");
+
+            var actual = target.ItemContainerGenerator.Containers.Select(x => (x.Index, (string)x.Item));
+
+            Assert.Equal(
+                new[]
+                {
+                    (0, "item1"),
+                    (3, "item3"),
+                },
+                actual);
+
+            var visibleContainer = (ContentPresenter)target.Panel.Children.Single(x => x.IsVisible);
+            Assert.Equal("item3", visibleContainer.Content);
+        }
+
+        [Fact]
+        public void Should_Handle_Inserting_Items_After_SelectedItem()
+        {
+            ObservableCollection<string> items = new ObservableCollection<string>
+            {
+                "item1",
+                "item2",
+                "item3",
+            };
+
+            var target = new CarouselPresenter
+            {
+                Items = items,
+                SelectedIndex = 0,
+                IsVirtualized = false,
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 1;
+            target.SelectedIndex = 0;
+
+            items.Insert(1, "item1a");
+
+            var actual = target.ItemContainerGenerator.Containers.Select(x => (x.Index, (string)x.Item));
+
+            Assert.Equal(
+                new[]
+                {
+                    (0, "item1"),
+                    (2, "item2"),
+                },
+                actual);
+        }
+
         private class TestItem : ContentControl
         {
         }
