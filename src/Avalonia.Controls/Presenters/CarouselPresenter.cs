@@ -38,7 +38,6 @@ namespace Avalonia.Controls.Presenters
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
-       // private Task _current;
         private Task _currentTransition;
         private int _queuedTransitionIndex = -1;
 
@@ -105,12 +104,33 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
+            var generator = ItemContainerGenerator;
+
             switch (e.Action)
             {
+                case NotifyCollectionChangedAction.Add:
+                    var end = e.NewStartingIndex + e.NewItems.Count;
+
+                    if (end < Items.Count())
+                    {
+                        generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
+                    }
+
+                    if (SelectedIndex >= e.NewStartingIndex && SelectedIndex < end)
+                    {
+                        var newItem = GetOrCreateContainer(SelectedIndex);
+
+                        foreach (var control in Panel.Children)
+                        {
+                            control.IsVisible = control == newItem;
+                        }
+                    }
+
+                    break;
+
                 case NotifyCollectionChangedAction.Remove:
                     if (!IsVirtualized)
                     {
-                        var generator = ItemContainerGenerator;
                         var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
 
@@ -122,7 +142,6 @@ namespace Avalonia.Controls.Presenters
 
                 case NotifyCollectionChangedAction.Reset:
                     {
-                        var generator = ItemContainerGenerator;
                         var containers = generator.Containers.ToList();
                         generator.Clear();
                         Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
