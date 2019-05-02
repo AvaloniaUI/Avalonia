@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Moq;
 using Xunit;
 
@@ -108,6 +109,22 @@ namespace Avalonia.Controls.UnitTests.Platform
 
                 Mock.Get(menu).Verify(x => x.Close());
                 Assert.True(e.Handled);
+            }
+
+            [Fact]
+            public void Click_On_Open_TopLevel_Menu_Closes_Menu()
+            {
+                var target = new DefaultMenuInteractionHandler(false);
+                var menu = Mock.Of<IMenu>();
+                var item = Mock.Of<IMenuItem>(x =>
+                    x.IsSubMenuOpen == true &&
+                    x.IsTopLevel == true && 
+                    x.HasSubMenu == true &&
+                    x.Parent == menu);
+                var e = new PointerPressedEventArgs { MouseButton = MouseButton.Left, Source = item };
+
+                target.PointerPressed(item, e);
+                Mock.Get(menu).Verify(x => x.Close());
             }
 
             [Fact]
