@@ -177,6 +177,17 @@ namespace Avalonia.Controls
             return element.GetValue(RowSpanProperty);
         }
 
+
+        /// <summary>
+        /// Gets the value of the IsSharedSizeScope attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's IsSharedSizeScope value.</returns>
+        public static bool GetIsSharedSizeScope(AvaloniaObject element)
+        {
+            return element.GetValue(IsSharedSizeScopeProperty);
+        }
+
         /// <summary>
         /// Sets the value of the Column attached property for a control.
         /// </summary>
@@ -215,6 +226,16 @@ namespace Avalonia.Controls
         public static void SetRowSpan(AvaloniaObject element, int value)
         {
             element.SetValue(RowSpanProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of IsSharedSizeScope property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The IsSharedSizeScope value.</param>
+        public static void SetIsSharedSizeScope(AvaloniaObject element, bool value)
+        {
+            element.SetValue(IsSharedSizeScopeProperty, value);
         }
 
         /// <summary>

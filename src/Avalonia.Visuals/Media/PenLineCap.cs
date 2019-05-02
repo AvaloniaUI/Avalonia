@@ -4,7 +4,6 @@ namespace Avalonia.Media
     {
         Flat,
         Round,
-        Square,
-        Triangle
+        Square
     }
 }
