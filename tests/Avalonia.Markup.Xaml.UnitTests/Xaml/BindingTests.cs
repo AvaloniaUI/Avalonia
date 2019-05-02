@@ -329,6 +329,33 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.Equal("Hello world", textBlock.Text); 
             }
-        } 
+        }
+
+        [Fact]
+        public void Binding_OneWayToSource_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        ShowInTaskbar='{Binding ShowInTaskbar, Mode=OneWayToSource}'>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var viewModel = new WindowViewModel();
+
+                window.DataContext = viewModel;
+                window.ApplyTemplate();
+
+                Assert.True(window.ShowInTaskbar);
+                Assert.True(viewModel.ShowInTaskbar);
+            }
+        }
+
+        private class WindowViewModel
+        {
+            public bool ShowInTaskbar { get; set; }
+        }
     }
 }

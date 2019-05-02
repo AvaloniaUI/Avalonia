@@ -59,8 +59,8 @@ namespace Avalonia.Data.Core
                     $"Could not find a matching property accessor for {PropertyName}.");
             }
 
-            accessor.Subscribe(ValueChanged);
             _accessor = accessor;
+            accessor.Subscribe(ValueChanged);
         }
 
         protected override void StopListeningCore()
