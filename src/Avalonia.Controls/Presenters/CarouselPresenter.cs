@@ -46,6 +46,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static CarouselPresenter()
         {
+            IsVirtualizedProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.IsVirtualizedChanged);
             SelectedIndexProperty.Changed.AddClassHandler<CarouselPresenter>(x => x.SelectedIndexChanged);
         }
 
@@ -93,78 +94,72 @@ namespace Avalonia.Controls.Presenters
             set { SetValue(PageTransitionProperty, value); }
         }
 
-        /// <inheritdoc/>
         protected override void PanelCreated(IPanel panel)
         {
-#pragma warning disable 4014
-            MoveToPage(-1, SelectedIndex);
-#pragma warning restore 4014
+            base.PanelCreated(panel);
         }
 
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
-            var generator = ItemContainerGenerator;
-
-            switch (e.Action)
+            if (!IsVirtualized)
             {
-                case NotifyCollectionChangedAction.Add:
-                    var end = e.NewStartingIndex + e.NewItems.Count;
+                base.ItemsChanged(e);
 
-                    if (end < Items.Count())
-                    {
-                        generator.InsertSpace(e.NewStartingIndex, e.NewItems.Count);
-                    }
+                if (Items == null || SelectedIndex >= Items.Count())
+                {
+                    SelectedIndex = Items.Count() - 1;
+                }
 
-                    if (SelectedIndex >= e.NewStartingIndex && SelectedIndex < end)
-                    {
-                        var newItem = GetOrCreateContainer(SelectedIndex);
-
-                        foreach (var control in Panel.Children)
+                foreach (var c in ItemContainerGenerator.Containers)
+                {
+                    c.ContainerControl.IsVisible = c.Index == SelectedIndex;
+                }
+            }
+            else if (SelectedIndex != -1 && Panel != null)
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        if (e.NewStartingIndex > SelectedIndex)
                         {
-                            control.IsVisible = control == newItem;
+                            return;
                         }
-                    }
-
-                    break;
-
-                case NotifyCollectionChangedAction.Remove:
-                    if (!IsVirtualized)
-                    {
-                        var containers = generator.RemoveRange(e.OldStartingIndex, e.OldItems.Count);
-                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
-
-#pragma warning disable 4014
-                        MoveToPage(-1, SelectedIndex);
-#pragma warning restore 4014
-                    }
-                    break;
-
-                case NotifyCollectionChangedAction.Reset:
-                    {
-                        var containers = generator.Containers.ToList();
-                        generator.Clear();
-                        Panel.Children.RemoveAll(containers.Select(x => x.ContainerControl));
-
-#pragma warning disable 4014
-                        var newIndex = SelectedIndex;
-
-                        if(SelectedIndex < 0)
+                        break;
+                    case NotifyCollectionChangedAction.Remove:
+                        if (e.OldStartingIndex > SelectedIndex)
                         {
-                            if(Items != null && Items.Count() > 0)
-                            {
-                                newIndex = 0;
-                            }
-                            else
-                            {
-                                newIndex = -1;
-                            }
+                            return;
                         }
-                        
-                        MoveToPage(-1, newIndex);
-#pragma warning restore 4014
-                    }
-                    break;     
+                        break;
+                    case NotifyCollectionChangedAction.Replace:
+                        if (e.OldStartingIndex > SelectedIndex ||
+                            e.OldStartingIndex + e.OldItems.Count - 1 < SelectedIndex)
+                        {
+                            return;
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Move:
+                        if (e.OldStartingIndex > SelectedIndex &&
+                            e.NewStartingIndex > SelectedIndex)
+                        {
+                            return;
+                        }
+                        break;
+                }
+
+                if (Items == null || SelectedIndex >= Items.Count())
+                {
+                    SelectedIndex = Items.Count() - 1;
+                }
+
+                Panel.Children.Clear();
+                ItemContainerGenerator.Clear();
+
+                if (SelectedIndex != -1)
+                {
+                    GetOrCreateContainer(SelectedIndex);
+                }
             }
         }
 
@@ -229,6 +224,18 @@ namespace Avalonia.Controls.Presenters
             }
 
             return container;
+        }
+
+        /// <summary>
+        /// Called when the <see cref="IsVirtualized"/> property changes.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private void IsVirtualizedChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (Panel != null)
+            {
+                ItemsChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
 
         /// <summary>
