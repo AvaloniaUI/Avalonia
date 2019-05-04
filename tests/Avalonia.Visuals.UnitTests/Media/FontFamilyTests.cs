@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -12,18 +11,6 @@ namespace Avalonia.Visuals.UnitTests.Media
 {
     public class FontFamilyTests
     {
-        [Fact]
-        public void Exception_Should_Be_Thrown_If_Name_Is_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new FontFamily((string)null));
-        }
-
-        [Fact]
-        public void Exception_Should_Be_Thrown_If_Names_Is_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new FontFamily((IEnumerable<string>)null));
-        }
-
         [Fact]
         public void Should_Implicitly_Convert_String_To_FontFamily()
         {

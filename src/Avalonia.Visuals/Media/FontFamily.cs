@@ -11,46 +11,49 @@ namespace Avalonia.Media
 {
     public class FontFamily
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
-        /// </summary>
-        /// <param name="name">The name of the <see cref="FontFamily"/>.</param>
-        /// <exception cref="T:System.ArgumentNullException">name</exception>
-        public FontFamily(string name)
-        {
-            Contract.Requires<ArgumentNullException>(name != null);
-
-            FamilyNames = new FamilyNameCollection(new[] { name });
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
-        /// </summary>
-        /// <param name="names">The names of the <see cref="FontFamily"/>.</param>
-        /// <exception cref="T:System.ArgumentNullException">name</exception>
-        public FontFamily(IEnumerable<string> names)
-        {
-            Contract.Requires<ArgumentNullException>(names != null);
-
-            FamilyNames = new FamilyNameCollection(names);
-        }
-
         /// <inheritdoc />
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
         /// </summary>
         /// <param name="name">The name of the <see cref="T:Avalonia.Media.FontFamily" />.</param>
-        /// <param name="source">The source of font resources.</param>
-        /// <param name="baseUri"></param>
-        public FontFamily(string name, Uri source, Uri baseUri = null) : this(name)
+        public FontFamily(string name) : this(null, name)
         {
-            Key = new FontFamilyKey(source, baseUri);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:Avalonia.Media.FontFamily" /> class.
+        /// </summary>
+        /// <param name="baseUri">Specifies the base uri that is used to resolve font family assets.</param>
+        /// <param name="name">The name of the <see cref="T:Avalonia.Media.FontFamily" />.</param>
+        /// <exception cref="T:System.ArgumentException">Base uri must be an absolute uri.</exception>
+        public FontFamily(Uri baseUri, string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                FamilyNames = new FamilyNameCollection(string.Empty);
+
+                return;
+            }
+
+            var fontFamilySegment = GetFontFamilyIdentifier(name);
+
+            if (fontFamilySegment.Source != null)
+            {
+                if (baseUri != null && !baseUri.IsAbsoluteUri)
+                {
+                    throw new ArgumentException("Base uri must be an absolute uri.", nameof(baseUri));
+                }
+
+                Key = new FontFamilyKey(fontFamilySegment.Source, baseUri);
+            }
+
+            FamilyNames = new FamilyNameCollection(fontFamilySegment.Name);
         }
 
         /// <summary>
         /// Represents the default font family
         /// </summary>
-        public static FontFamily Default => new FontFamily(String.Empty);
+        public static FontFamily Default => new FontFamily(string.Empty);
 
         /// <summary>
         /// Represents all font families in the system. This can be an expensive call depending on platform implementation.
@@ -88,14 +91,54 @@ namespace Avalonia.Media
         /// <param name="s"></param>
         public static implicit operator FontFamily(string s)
         {
-            return Parse(s);
+            return new FontFamily(s);
+        }
+
+        private struct FontFamilyIdentifier
+        {
+            public FontFamilyIdentifier(string name, Uri source)
+            {
+                Name = name;
+                Source = source;
+            }
+
+            public string Name { get; }
+
+            public Uri Source { get; }
+        }
+
+        private static FontFamilyIdentifier GetFontFamilyIdentifier(string name)
+        {
+            var segments = name.Split('#');
+
+            switch (segments.Length)
+            {
+                case 1:
+                    {
+                        return new FontFamilyIdentifier(segments[0], null);
+                    }
+
+                case 2:
+                    {
+                        var source = segments[0].StartsWith("/")
+                            ? new Uri(segments[0], UriKind.Relative)
+                            : new Uri(segments[0], UriKind.RelativeOrAbsolute);
+
+                        return new FontFamilyIdentifier(segments[1], source);
+                    }
+
+                default:
+                    {
+                        throw new ArgumentException("Specified family is not supported.");
+                    }
+            }
         }
 
         /// <summary>
         /// Parses a <see cref="T:Avalonia.Media.FontFamily"/> string.
         /// </summary>
         /// <param name="s">The <see cref="T:Avalonia.Media.FontFamily"/> string.</param>
-        /// <param name="baseUri"></param>
+        /// <param name="baseUri">Specifies the base uri that is used to resolve font family assets.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">
         /// Specified family is not supported.
@@ -104,37 +147,10 @@ namespace Avalonia.Media
         {
             if (string.IsNullOrEmpty(s))
             {
-                throw new ArgumentException("Specified family is not supported.");
+                throw new ArgumentException("Specified family is not supported.", nameof(s));
             }
 
-            var segments = s.Split('#');
-
-            switch (segments.Length)
-            {
-                case 1:
-                    {
-                        var names = segments[0].Split(',')
-                            .Select(x => x.Trim())
-                            .Where(x => !string.IsNullOrWhiteSpace(x));
-                        return new FontFamily(names);
-                    }
-
-                case 2:
-                    {
-                        var uri = segments[0].StartsWith("/")
-                                      ? new Uri(segments[0], UriKind.Relative)
-                                      : new Uri(segments[0], UriKind.RelativeOrAbsolute);
-
-                        return uri.IsAbsoluteUri
-                                   ? new FontFamily(segments[1], uri)
-                                   : new FontFamily(segments[1], uri, baseUri);
-                    }
-
-                default:
-                    {
-                        throw new ArgumentException("Specified family is not supported.");
-                    }
-            }
+            return new FontFamily(baseUri, s);
         }
 
         /// <summary>
