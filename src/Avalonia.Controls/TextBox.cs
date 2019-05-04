@@ -53,7 +53,8 @@ namespace Avalonia.Controls
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
-        public static readonly DirectProperty<TextBox, string> TextProperty = TextBlock.TextProperty.AddOwner<TextBox>(
+        public static readonly DirectProperty<TextBox, string> TextProperty = 
+            TextBlock.TextProperty.AddOwner<TextBox>(
             o => o.Text,
             (o, v) => o.Text = v,
             defaultBindingMode: BindingMode.TwoWay,
@@ -126,27 +127,30 @@ namespace Avalonia.Controls
 
         public bool AcceptsReturn
         {
-            get => GetValue(AcceptsReturnProperty);
-            set => SetValue(AcceptsReturnProperty, value);
+            get { return GetValue(AcceptsReturnProperty); }
+            set { SetValue(AcceptsReturnProperty, value); }
         }
 
         public bool AcceptsTab
         {
-            get => GetValue(AcceptsTabProperty);
-            set => SetValue(AcceptsTabProperty, value);
+            get { return GetValue(AcceptsTabProperty); }
+            set { SetValue(AcceptsTabProperty, value); }
         }
 
         public int CaretIndex
         {
-            get => _caretIndex;
+            get
+            {
+                return _caretIndex;
+            }
 
             set
             {
                 value = CoerceCaretIndex(value);
 
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, value);
-
-                if (_undoRedoHelper.TryGetLastState(out var state) && state.Text == Text)
+                UndoRedoState state;
+                if (_undoRedoHelper.TryGetLastState(out  state) && state.Text == Text)
                 {
                     _undoRedoHelper.UpdateLastState();
                 }
@@ -155,26 +159,27 @@ namespace Avalonia.Controls
 
         public bool IsReadOnly
         {
-            get => GetValue(IsReadOnlyProperty);
-            set => SetValue(IsReadOnlyProperty, value);
+            get { return GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
         }
 
         public char PasswordChar
         {
-            get => GetValue(PasswordCharProperty);
-            set => SetValue(PasswordCharProperty, value);
+            get { return GetValue(PasswordCharProperty); }
+            set { SetValue(PasswordCharProperty, value); }
         }
 
         public int SelectionStart
         {
-            get => _selectionStart;
+            get
+            {
+                return _selectionStart;
+            } 
 
             set
             {
                 value = CoerceCaretIndex(value);
-
                 SetAndRaise(SelectionStartProperty, ref _selectionStart, value);
-
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionStart;
@@ -184,14 +189,15 @@ namespace Avalonia.Controls
 
         public int SelectionEnd
         {
-            get => _selectionEnd;
+            get
+            {
+                return _selectionEnd;
+            }
 
             set
             {
                 value = CoerceCaretIndex(value);
-
                 SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
-
                 if (SelectionStart == SelectionEnd)
                 {
                     CaretIndex = SelectionEnd;
@@ -202,19 +208,21 @@ namespace Avalonia.Controls
         [Content]
         public string Text
         {
-            get => _text;
+            get
+            {
+                return _text;
+            }
 
             set
             {
-                if (_ignoreTextChanges)
+                if (!_ignoreTextChanges)
                 {
+                    var caretIndex = CaretIndex;
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
                     return;
                 }
-
-                var caretIndex = CaretIndex;
-                SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
-                SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
-                CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
 
                 if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
                 {
@@ -225,30 +233,26 @@ namespace Avalonia.Controls
 
         public TextAlignment TextAlignment
         {
-            get => GetValue(TextAlignmentProperty);
-
-            set => SetValue(TextAlignmentProperty, value);
+            get { return GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
         }
 
         public string Watermark
         {
-            get => GetValue(WatermarkProperty);
-
-            set => SetValue(WatermarkProperty, value);
+            get { return GetValue(WatermarkProperty); }
+            set { SetValue(WatermarkProperty, value); }
         }
 
         public bool UseFloatingWatermark
         {
-            get => GetValue(UseFloatingWatermarkProperty);
-
-            set => SetValue(UseFloatingWatermarkProperty, value);
+            get { return GetValue(UseFloatingWatermarkProperty); }
+            set { SetValue(UseFloatingWatermarkProperty, value); }
         }
 
         public TextWrapping TextWrapping
         {
-            get => GetValue(TextWrappingProperty);
-
-            set => SetValue(TextWrappingProperty, value);
+            get { return GetValue(TextWrappingProperty); }
+            set { SetValue(TextWrappingProperty, value); }
         }
 
         /// <summary>
@@ -256,15 +260,13 @@ namespace Avalonia.Controls
         /// </summary>
         public string NewLine
         {
-            get => _newLine;
-
-            set => SetAndRaise(NewLineProperty, ref _newLine, value);
+            get { return _newLine; }
+            set { SetAndRaise(NewLineProperty, ref _newLine, value); }
         }
 
         UndoRedoState UndoRedoHelper<UndoRedoState>.IUndoRedoHost.UndoRedoState
         {
             get => new UndoRedoState(Text, CaretIndex);
-
             set
             {
                 Text = value.Text;
