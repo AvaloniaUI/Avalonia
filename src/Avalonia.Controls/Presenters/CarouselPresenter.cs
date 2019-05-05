@@ -94,11 +94,6 @@ namespace Avalonia.Controls.Presenters
             set { SetValue(PageTransitionProperty, value); }
         }
 
-        protected override void PanelCreated(IPanel panel)
-        {
-            base.PanelCreated(panel);
-        }
-
         /// <inheritdoc/>
         protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
         {
