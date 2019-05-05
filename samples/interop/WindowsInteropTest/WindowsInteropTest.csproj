@@ -104,6 +104,10 @@
       <Project>{b09b78d8-9b26-48b0-9149-d64a2f120f3f}</Project>
       <Name>Avalonia.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj">
+      <Project>{3278f3a9-9509-4a3f-a15b-bdc8b5bff632}</Project>
+      <Name>Avalonia.Controls.DataGrid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\src\Avalonia.Controls\Avalonia.Controls.csproj">
       <Project>{d2221c82-4a25-4583-9b43-d791e3f6820c}</Project>
       <Name>Avalonia.Controls</Name>
@@ -185,6 +189,5 @@
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\LegacyProject.targets" />
 </Project>
