@@ -111,7 +111,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         }
     }
 
-    public class XamlIlBugTestsAsIsConverter : IMultiValueConverter
+    public class XamlIlBugTestsBrushToColorConverter : IMultiValueConverter
     {
         public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
         {
