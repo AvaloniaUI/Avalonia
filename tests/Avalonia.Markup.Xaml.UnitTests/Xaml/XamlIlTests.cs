@@ -77,14 +77,18 @@ namespace Avalonia.Markup.Xaml.UnitTests
           <Grid><Grid><Grid>
             <Canvas>
               <Canvas.Background>
-                <MultiBinding>
-                  <MultiBinding.Converter>
-                      <local:XamlIlBugTestsAsIsConverter/>
-                  </MultiBinding.Converter>
-                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
-                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
-                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
-                </MultiBinding>
+                <SolidColorBrush>
+                  <SolidColorBrush.Color>
+                    <MultiBinding>
+                      <MultiBinding.Converter>
+                          <local:XamlIlBugTestsBrushToColorConverter/>
+                      </MultiBinding.Converter>
+                      <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                      <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                      <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                    </MultiBinding>
+                  </SolidColorBrush.Color>
+                </SolidColorBrush>
               </Canvas.Background>
             </Canvas>
           </Grid></Grid></Grid>
@@ -111,7 +115,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
     {
         public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
         {
-            return values[0];
+            return ((ISolidColorBrush)values[0]).Color;
         }
     }
 
