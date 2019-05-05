@@ -1,7 +1,14 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using JetBrains.Annotations;
 using Xunit;
 
@@ -52,7 +59,60 @@ namespace Avalonia.Markup.Xaml.UnitTests
             Assert.Null(loaded.Background);
             
         }
-        
+
+        [Fact]
+        public void RelativeSource_TemplatedParent_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+  <Window.Styles>
+    <Style Selector='Button'>
+      <Setter Property='Template'>
+        <ControlTemplate>
+          <Grid><Grid><Grid>
+            <Canvas>
+              <Canvas.Background>
+                <MultiBinding>
+                  <MultiBinding.Converter>
+                      <local:XamlIlBugTestsAsIsConverter/>
+                  </MultiBinding.Converter>
+                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                  <Binding Path='Background' RelativeSource='{RelativeSource TemplatedParent}'/>
+                </MultiBinding>
+              </Canvas.Background>
+            </Canvas>
+          </Grid></Grid></Grid>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Window.Styles>
+  <Button Background='Red' />
+
+</Window>
+");
+                var btn = ((Button)parsed.Content);
+                btn.ApplyTemplate();
+                var canvas = (Canvas)btn.GetVisualChildren().First()
+                    .VisualChildren.First()
+                    .VisualChildren.First()
+                    .VisualChildren.First();
+                Assert.Equal(Brushes.Red, canvas.Background);
+            }
+        }
+    }
+
+    public class XamlIlBugTestsAsIsConverter : IMultiValueConverter
+    {
+        public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
+        {
+            return values[0];
+        }
     }
 
     public class XamlIlBugTestsDataContext : INotifyPropertyChanged
