@@ -133,7 +133,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters
             {
-                AllowNull = false
+                AllowXNull = false
             };
 
             public IReadOnlyList<IXamlIlType> Parameters { get; set; }
