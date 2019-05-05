@@ -114,7 +114,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     .VisualChildren.First()
                     .VisualChildren.First()
                     .VisualChildren.First();
-                Assert.Equal(Brushes.Red, canvas.Background);
+                Assert.Equal(Brushes.Red.Color, ((ISolidColorBrush)canvas.Background).Color);
             }
         }
     }
@@ -123,7 +123,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
     {
         public object Convert(IList<object> values, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((ISolidColorBrush)values[0]).Color;
+            return (values[0] as ISolidColorBrush)?.Color;
         }
     }
 

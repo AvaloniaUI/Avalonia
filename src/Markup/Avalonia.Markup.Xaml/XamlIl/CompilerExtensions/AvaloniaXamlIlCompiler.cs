@@ -32,6 +32,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             Transformers.Insert(0, new XNameTransformer());
             Transformers.Insert(1, new IgnoredDirectivesTransformer());
             Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
+            Transformers.Insert(3, new AvaloniaBindingExtensionHackTransformer());
             
             
             // Targeted
