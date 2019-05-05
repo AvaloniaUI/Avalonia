@@ -65,12 +65,12 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
-<Window
+                new AvaloniaXamlLoader().Load(@"
+<Application
   xmlns='https://github.com/avaloniaui'
   xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
 >
-  <Window.Styles>
+<Application.Styles>
     <Style Selector='Button'>
       <Setter Property='Template'>
         <ControlTemplate>
@@ -95,7 +95,15 @@ namespace Avalonia.Markup.Xaml.UnitTests
         </ControlTemplate>
       </Setter>
     </Style>
-  </Window.Styles>
+  </Application.Styles>
+</Application>",
+                    null, Application.Current); 
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+  
   <Button Background='Red' />
 
 </Window>
