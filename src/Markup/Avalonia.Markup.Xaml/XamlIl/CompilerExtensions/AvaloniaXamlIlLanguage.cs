@@ -50,24 +50,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     typeSystem.GetType("Portable.Xaml.Markup.UsableDuringInitializationAttribute"),
                     typeSystem.GetType("Avalonia.Metadata.UsableDuringInitializationAttribute"),
                 },
-                MarkupExtensionCustomResultTypes =
-                {
-                    bindingType,
-                    typeSystem.GetType("Avalonia.UnsetValueType")
-                },
-                MarkupExtensionCustomResultHandler =
-                    runtimeHelpers.FindMethod(m => m.Name == "ApplyNonMatchingMarkupExtensionV1"),
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
-                ShouldIgnoreMarkupExtensionCustomResultForProperty = (prop, customType) =>
-                {
-                    if (prop.Name == "Value" && prop.Setter?.DeclaringType.FullName == "Avalonia.Styling.Setter")
-                        return true;
-                    if (customType.Equals(bindingType) &&
-                        prop.CustomAttributes.Any(a => a.Type.Equals(assignBindingAttribute)))
-                        return true;
-                    return false;
-                },
                 ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);

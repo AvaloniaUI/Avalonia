@@ -56,10 +56,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 avaloniaPropertyType.GenericArguments[0] :
                                 context.Configuration.WellKnownTypes.Object;
 
-                            return new XamlIlAstClrPropertyReference(prop,
-                                new AvaloniaAttachedInstanceProperty(prop.Name, context.Configuration,
+                            return new AvaloniaAttachedInstanceProperty(prop, context.Configuration,
                                     declaringType, propertyType, avaloniaPropertyType, avaloniaObject,
-                                    avaloniaPropertyField));
+                                    avaloniaPropertyField);
                         }
 
                     }
@@ -71,7 +70,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        class AvaloniaAttachedInstanceProperty : IXamlIlAvaloniaProperty
+        class AvaloniaAttachedInstanceProperty : XamlIlAstClrProperty, IXamlIlAvaloniaProperty
         {
             private readonly XamlIlTransformerConfiguration _config;
             private readonly IXamlIlType _declaringType;
@@ -79,13 +78,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             private readonly IXamlIlType _avaloniaObject;
             private readonly IXamlIlField _field;
 
-            public AvaloniaAttachedInstanceProperty(string name,
+            public AvaloniaAttachedInstanceProperty(XamlIlAstNamePropertyReference prop,
                 XamlIlTransformerConfiguration config,
                 IXamlIlType declaringType,
                 IXamlIlType type,
                 IXamlIlType avaloniaPropertyType,
                 IXamlIlType avaloniaObject,
-                IXamlIlField field)
+                IXamlIlField field) : base(prop, prop.Name,
+                declaringType, null)
+            
+            
             {
                 _config = config;
                 _declaringType = declaringType;
@@ -97,72 +99,50 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 
                 _avaloniaObject = avaloniaObject;
                 _field = field;
-                Name = name;
                 PropertyType = type;
-                Setter = new SetterMethod(this);
+                Setters.Add(new SetterMethod(this));
                 Getter = new GetterMethod(this);
             }
 
+            public IXamlIlType PropertyType { get;  }
+
             public IXamlIlField AvaloniaProperty => _field;
-            public bool Equals(IXamlIlProperty other) =>
-                other is AvaloniaAttachedInstanceProperty ap && ap._field.Equals(_field);
-
-            public string Name { get; }
-            public IXamlIlType PropertyType { get; }
-            public IXamlIlMethod Setter { get; }
-            public IXamlIlMethod Getter { get; }
-            public IReadOnlyList<IXamlIlCustomAttribute> CustomAttributes { get; } = new List<IXamlIlCustomAttribute>();
-
-            class Method
-            {
-                public AvaloniaAttachedInstanceProperty Parent { get; }
-                public bool IsPublic => true;
-                public bool IsStatic => true;
-                public string Name { get; protected set; }
-                public IXamlIlType DeclaringType { get; }
-                public Method(AvaloniaAttachedInstanceProperty parent)
-                {
-                    Parent = parent;
-                    DeclaringType = parent._declaringType;
-                }
-
-                public bool Equals(IXamlIlMethod other) =>
-                    other is Method m && m.Name == Name && m.DeclaringType.Equals(DeclaringType);
-            }
             
-            class SetterMethod : Method, IXamlIlCustomEmitMethod
+            class SetterMethod : IXamlIlPropertySetter
             {
-                public SetterMethod(AvaloniaAttachedInstanceProperty parent) : base(parent)
+                private readonly AvaloniaAttachedInstanceProperty _parent;
+
+                public SetterMethod(AvaloniaAttachedInstanceProperty parent)
                 {
-                    Name = "AvaloniaObject:SetValue_" + Parent.Name;
-                    Parameters = new[] {Parent._avaloniaObject, Parent.PropertyType};
+                    _parent = parent;
+                    Parameters = new[] {_parent._avaloniaObject, _parent.PropertyType};
                 }
 
-                public IXamlIlType ReturnType => Parent._config.WellKnownTypes.Void;
+                public IXamlIlType TargetType => _parent.DeclaringType;
+                public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
                 public IReadOnlyList<IXamlIlType> Parameters { get; }
-                
-                public void EmitCall(IXamlIlEmitter emitter)
+                public void Emit(IXamlIlEmitter emitter)
                 {
-                    var so = Parent._config.WellKnownTypes.Object;
-                    var method = Parent._avaloniaObject
+                    var so = _parent._config.WellKnownTypes.Object;
+                    var method = _parent._avaloniaObject
                         .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
                                          &&
                                          m.Parameters.Count == 3
-                                         && m.Parameters[0].Equals(Parent._avaloniaPropertyType)
+                                         && m.Parameters[0].Equals(_parent._avaloniaPropertyType)
                                          && m.Parameters[1].Equals(so)
                                          && m.Parameters[2].IsEnum
                         );
                     if (method == null)
                         throw new XamlIlTypeSystemException(
                             "Unable to find SetValue(AvaloniaProperty, object, BindingPriority) on AvaloniaObject");
-                    using (var loc = emitter.LocalsPool.GetLocal(Parent.PropertyType))
+                    using (var loc = emitter.LocalsPool.GetLocal(_parent.PropertyType))
                         emitter
                             .Stloc(loc.Local)
-                            .Ldsfld(Parent._field)
+                            .Ldsfld(_parent._field)
                             .Ldloc(loc.Local);
 
-                    if(Parent.PropertyType.IsValueType)
-                        emitter.Box(Parent.PropertyType);
+                    if(_parent.PropertyType.IsValueType)
+                        emitter.Box(_parent.PropertyType);
                     emitter        
                         .Ldc_I4(0)
                         .EmitCall(method);
@@ -170,14 +150,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
             }
 
-            class GetterMethod : Method, IXamlIlCustomEmitMethod
+            class GetterMethod :  IXamlIlCustomEmitMethod
             {
-                public GetterMethod(AvaloniaAttachedInstanceProperty parent) : base(parent)
+                public GetterMethod(AvaloniaAttachedInstanceProperty parent) 
                 {
+                    Parent = parent;
+                    DeclaringType = parent._declaringType;
                     Name = "AvaloniaObject:GetValue_" + Parent.Name;
                     Parameters = new[] {parent._avaloniaObject};
                 }
+                public AvaloniaAttachedInstanceProperty Parent { get; }
+                public bool IsPublic => true;
+                public bool IsStatic => true;
+                public string Name { get; protected set; }
+                public IXamlIlType DeclaringType { get; }
 
+
+                public bool Equals(IXamlIlMethod other) =>
+                    other is GetterMethod m && m.Name == Name && m.DeclaringType.Equals(DeclaringType);
                 public IXamlIlType ReturnType => Parent.PropertyType;
                 public IReadOnlyList<IXamlIlType> Parameters { get; }
                 public void EmitCall(IXamlIlEmitter emitter)

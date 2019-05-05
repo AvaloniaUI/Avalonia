@@ -39,10 +39,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<XamlIlPropertyReferenceResolver>(new AvaloniaXamlIlTransformInstanceAttachedProperties());
             InsertAfter<XamlIlPropertyReferenceResolver>(new AvaloniaXamlIlAvaloniaPropertyResolver());
             
-            InsertBefore<XamlIlXamlPropertyValueTransformer>(new AvaloniaXamlIlBindingPropertyAssignmentsTransformer());
 
 
-            InsertBefore<XamlIlNewObjectTransformer>(
+            InsertBefore<XamlIlContentConvertTransformer>(
                 new AvaloniaXamlIlSelectorTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),

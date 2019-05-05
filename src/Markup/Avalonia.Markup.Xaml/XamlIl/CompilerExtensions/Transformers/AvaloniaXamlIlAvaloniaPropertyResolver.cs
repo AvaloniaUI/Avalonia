@@ -8,14 +8,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
-            if (node is XamlIlAstClrPropertyReference prop)
+            if (node is XamlIlAstClrProperty prop)
             {
-                var n = prop.Property.Name + "Property";
+                var n = prop.Name + "Property";
                 var field =
-                    (prop.Property.Getter ?? prop.Property.Setter).DeclaringType.Fields
+                    prop.DeclaringType.Fields
                     .FirstOrDefault(f => f.Name == n);
                 if (field != null)
-                    prop.Property = new XamlIlAvaloniaProperty(prop.Property, field);
+                    return new XamlIlAvaloniaProperty(prop, field, context.GetAvaloniaTypes());
             }
 
             return node;

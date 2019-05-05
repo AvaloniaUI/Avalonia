@@ -53,21 +53,56 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 .OfType<XamlIlAstXamlPropertyValueNode>().FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
             if (valueProperty?.Values?.Count == 1 && valueProperty.Values[0] is XamlIlAstTextNode)
             {
+                var propType = avaloniaPropertyNode.Property.Getter?.ReturnType
+                               ?? avaloniaPropertyNode.Property.Setters.First().Parameters[0];
                 if (!XamlIlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
-                        avaloniaPropertyNode.Property.PropertyType, out var converted))
+                        propType, out var converted))
                     throw new XamlIlParseException(
-                        $"Unable to convert property value to {avaloniaPropertyNode.Property.PropertyType.GetFqn()}",
+                        $"Unable to convert property value to {propType.GetFqn()}",
                         valueProperty.Values[0]);
 
-                valueProperty.Values = new List<IXamlIlAstValueNode>
-                {
-                    new XamlIlAstRuntimeCastNode(converted, converted,
-                        new XamlIlAstClrTypeReference(converted, context.Configuration.WellKnownTypes.Object, false))
-                };
+                valueProperty.Property = new SetterValueProperty(valueProperty.Property,
+                    on.Type.GetClrType(), propType, context.GetAvaloniaTypes());
             }
 
             return node;
         }
-        
+
+        class SetterValueProperty : XamlIlAstClrProperty
+        {
+            public SetterValueProperty(IXamlIlLineInfo line, IXamlIlType setterType, IXamlIlType targetType,
+                AvaloniaXamlIlWellKnownTypes types)
+                : base(line, "Value", setterType, null)
+            {
+                Getter = setterType.Methods.First(m => m.Name == "get_Value");
+                var method = setterType.Methods.First(m => m.Name == "set_Value");
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType));
+            }
+            
+            class XamlIlDirectCallPropertySetter : IXamlIlPropertySetter
+            {
+                private readonly IXamlIlMethod _method;
+                private readonly IXamlIlType _type;
+                public IXamlIlType TargetType { get; }
+                public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
+                public IReadOnlyList<IXamlIlType> Parameters { get; }
+                public void Emit(IXamlIlEmitter codegen)
+                {
+                    if (_type.IsValueType)
+                        codegen.Box(_type);
+                    codegen.EmitCall(_method, true);
+                }
+
+                public XamlIlDirectCallPropertySetter(IXamlIlMethod method, IXamlIlType type)
+                {
+                    _method = method;
+                    _type = type;
+                    Parameters = new[] {type};
+                    TargetType = method.ThisOrFirstParameter();
+                }
+            }
+        }
     }
 }

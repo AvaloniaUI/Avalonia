@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return ProvideTypedValue(serviceProvider);
         }
         
-        public IBinding ProvideTypedValue(IServiceProvider serviceProvider)
+        public Binding ProvideTypedValue(IServiceProvider serviceProvider)
         {
             var descriptorContext = (ITypeDescriptorContext)serviceProvider;
 

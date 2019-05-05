@@ -34,7 +34,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(pn.Values[0] is XamlIlAstTextNode tn))
                 throw new XamlIlParseException("Selector property should be a text node", node);
 
-            var selectorType = pn.Property.GetClrProperty().PropertyType;
+            var selectorType = pn.Property.GetClrProperty().Getter.ReturnType;
             var initialNode = new XamlIlSelectorInitialNode(node, selectorType);
             XamlIlSelectorNode Create(IEnumerable<SelectorGrammar.ISyntax> syntax,
                 Func<string, string, XamlIlAstClrTypeReference> typeResolver)

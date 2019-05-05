@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 foreach (var ch in on.Children)
                 {
                     if (ch is XamlIlAstXamlPropertyValueNode pn
-                        && pn.Property.GetClrProperty().PropertyType.Equals(context.GetAvaloniaTypes().Transitions))
+                        && pn.Property.GetClrProperty().Getter?.ReturnType.Equals(context.GetAvaloniaTypes().Transitions) == true)
                     {
                         for (var c = 0; c < pn.Values.Count; c++)
                         {

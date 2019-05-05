@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using XamlIl.Ast;
 using XamlIl.Transform;
 using XamlIl.TypeSystem;
@@ -11,21 +12,50 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             if (node is XamlIlPropertyAssignmentNode pa
                 && pa.Property.Name == "Name"
-                && pa.Property.Setter.DeclaringType.FullName == "Avalonia.StyledElement")
-                return new ScopeRegistrationNode(pa);
+                && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
+            {
+                if (context.ParentNodes().FirstOrDefault() is XamlIlManipulationGroupNode mg
+                    && mg.Children.OfType<ScopeRegistrationNode>().Any())
+                    return node;
+                
+                IXamlIlAstValueNode value = null;
+                for (var c = 0; c < pa.Values.Count; c++)
+                    if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
+                    {
+                        value = pa.Values[c];
+                        if (!(value is XamlIlAstTextNode))
+                        {
+                            var local = new XamlIlAstCompilerLocalNode(value);
+                            // Wrap original in local initialization
+                            pa.Values[c] = new XamlIlAstLocalInitializationNodeEmitter(value, value, local);
+                            // Use local
+                            value = local;
+                        }
+
+                        break;
+                    }
+
+                if (value != null)
+                    return new XamlIlManipulationGroupNode(pa)
+                    {
+                        Children =
+                        {
+                            pa,
+                            new ScopeRegistrationNode(value)
+                        }
+                    };
+            }
 
             return node;
         }
 
         class ScopeRegistrationNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
         {
+            private readonly IXamlIlType _targetType;
             public IXamlIlAstValueNode Value { get; set; }
-            private IXamlIlProperty _property;
-
-            public ScopeRegistrationNode(XamlIlPropertyAssignmentNode pa) : base(pa)
+            public ScopeRegistrationNode(IXamlIlAstValueNode value) : base(value)
             {
-                _property = pa.Property;
-                Value = pa.Value;
+                Value = value;
             }
 
             public override void VisitChildren(IXamlIlAstVisitor visitor)
@@ -36,24 +66,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 var exts = context.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScopeExtensions");
                 var findNameScope = exts.FindMethod(m => m.Name == "FindNameScope");
                 var registerMethod = findNameScope.ReturnType.FindMethod(m => m.Name == "Register");
-                using (var nameLoc = context.GetLocal(context.Configuration.WellKnownTypes.String))
-                using (var targetLoc = context.GetLocal(_property.Setter.DeclaringType))
+                using (var targetLoc = context.GetLocal(context.Configuration.WellKnownTypes.Object))
                 using (var nameScopeLoc = context.GetLocal(findNameScope.ReturnType))
                 {
                     var exit = codeGen.DefineLabel();
-
-                    // var target = {target}
                     codeGen
-                        .Castclass(_property.Setter.DeclaringType)
-                        .Stloc(targetLoc.Local);
-                    
-                    // var name = {EmitName()}
-                    context.Emit(Value, codeGen, _property.PropertyType);
-                    codeGen.Stloc(nameLoc.Local)
-                        // target.Name = name
-                        .Ldloc(targetLoc.Local)
-                        .Ldloc(nameLoc.Local)
-                        .EmitCall(_property.Setter)
+                        // var target = {pop}    
+                        .Stloc(targetLoc.Local)
                         // var scope = target.FindNameScope()
                         .Ldloc(targetLoc.Local)
                         .Castclass(findNameScope.Parameters[0])
@@ -62,8 +81,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         // if({scope} != null) goto call;
                         .Ldloc(nameScopeLoc.Local)
                         .Brfalse(exit)
-                        .Ldloc(nameScopeLoc.Local)
-                        .Ldloc(nameLoc.Local)
+                        .Ldloc(nameScopeLoc.Local);
+                    context.Emit(Value, codeGen, Value.Type.GetClrType());
+                    codeGen
                         .Ldloc(targetLoc.Local)
                         .EmitCall(registerMethod)
                         .MarkLabel(exit);
