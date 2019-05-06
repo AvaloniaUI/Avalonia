@@ -48,26 +48,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IInputElement> PointerOverElementProperty =
             AvaloniaProperty.Register<TopLevel, IInputElement>(nameof(IInputRoot.PointerOverElement));
 
-        /// <summary>
-        /// Defines the <see cref="LocalNotificationManager"/> property.
-        /// </summary>
-        public static readonly DirectProperty<TopLevel, NotificationArea> LocalNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, NotificationArea>(nameof(LocalNotificationManager), o => o.LocalNotificationManager, (o, v) => o.LocalNotificationManager = v);
-
-        /// <summary>
-        /// Defines the <see cref="SystemNotificationManager"/> property.
-        /// </summary>
-        public static readonly DirectProperty<TopLevel, INotificationManager> SystemNotificationManagerProperty =
-            AvaloniaProperty.RegisterDirect<TopLevel, INotificationManager>(nameof(SystemNotificationManager), o => o.SystemNotificationManager, (o, v) => o.SystemNotificationManager = v);
-
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
         private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
-        private NotificationArea _localNotificationManager;
-        private INotificationManager _systemNotificationManager;
         private ILayoutManager _layoutManager;
 
         /// <summary>
@@ -104,8 +90,6 @@ namespace Avalonia.Controls
 
             PlatformImpl = impl;
 
-            LocalNotificationManager = new NotificationArea();
-
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
 
@@ -114,13 +98,6 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
-
-            _systemNotificationManager = TryGetService<INotificationManager>(dependencyResolver);
-
-            if(_systemNotificationManager == null)
-            {
-                SystemNotificationManager = _localNotificationManager;
-            }
 
             Renderer = impl.CreateRenderer(this);
 
@@ -179,25 +156,6 @@ namespace Avalonia.Controls
         {
             get { return _clientSize; }
             protected set { SetAndRaise(ClientSizeProperty, ref _clientSize, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the Local (in window managed) notification manager.
-        /// </summary>
-        public NotificationArea LocalNotificationManager
-        {
-            get => _localNotificationManager;
-            protected set => SetAndRaise(LocalNotificationManagerProperty, ref _localNotificationManager, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the System (native os) notification manager. If the system doesnt natively support notifications then this property
-        /// will match the <see cref="LocalNotificationManager"/>.
-        /// </summary>
-        public INotificationManager SystemNotificationManager
-        {
-            get => _systemNotificationManager;
-            protected set => SetAndRaise(SystemNotificationManagerProperty, ref _systemNotificationManager, value);
         }
 
         public ILayoutManager LayoutManager
@@ -414,21 +372,6 @@ namespace Avalonia.Controls
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)
         {
             (this as IInputRoot).MouseDevice.SceneInvalidated(this, e.DirtyRect);
-        }
-
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            var adornerLayer = this.GetVisualDescendants()
-                .OfType<AdornerDecorator>()
-                .FirstOrDefault()
-                ?.AdornerLayer;
-
-            if (adornerLayer != null)
-            {
-                adornerLayer.Children.Add(LocalNotificationManager as IControl);
-            }
-
-            base.OnTemplateApplied(e);
         }
     }
 }

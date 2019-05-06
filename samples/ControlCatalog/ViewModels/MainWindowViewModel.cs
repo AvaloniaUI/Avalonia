@@ -9,8 +9,10 @@ namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        public MainWindowViewModel()
+        public MainWindowViewModel(INotificationManager notificationManager)
         {
+            _notificationManager = notificationManager;
+
             ShowCustomManagedNotificationCommand = ReactiveCommand.Create(() =>
             {
                 NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });

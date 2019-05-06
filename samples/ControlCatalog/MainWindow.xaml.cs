@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using ControlCatalog.ViewModels;
@@ -11,6 +12,8 @@ namespace ControlCatalog
 {
     public class MainWindow : Window
     {
+        private NotificationArea _notificationArea;
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -18,7 +21,13 @@ namespace ControlCatalog
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
-            DataContext = new MainWindowViewModel();
+            _notificationArea = new NotificationArea
+            {
+                Position = NotificationPosition.TopRight,
+                MaxItems = 3
+            };
+
+            DataContext = new MainWindowViewModel(_notificationArea);
         }
 
         private void InitializeComponent()
@@ -29,6 +38,13 @@ namespace ControlCatalog
             var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
+        {
+            base.OnTemplateApplied(e);
+
+            _notificationArea.Install(this);
         }
     }
 }

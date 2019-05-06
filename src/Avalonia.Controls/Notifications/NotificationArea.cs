@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
 {
@@ -22,7 +23,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         public static readonly AvaloniaProperty<NotificationPosition> PositionProperty =
-          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft , inherits: true);
+          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft, inherits: true);
 
         public NotificationPosition Position
         {
@@ -70,7 +71,7 @@ namespace Avalonia.Controls.Notifications
 
         public void Show(NotificationContent content, TimeSpan? expirationTime, Action onClick, Action onClose)
         {
-             Show(content as object, expirationTime, onClick, onClose);
+            Show(content as object, expirationTime, onClick, onClose);
         }
 
         public async void Show(object content, TimeSpan? expirationTime, Action onClick, Action onClose)
@@ -115,6 +116,19 @@ namespace Avalonia.Controls.Notifications
         {
             var notification = sender as Notification;
             _items.Remove(notification);
+        }
+
+        public void Install(TopLevel host)
+        {
+            var adornerLayer = host.GetVisualDescendants()
+                .OfType<AdornerDecorator>()
+                .FirstOrDefault()
+                ?.AdornerLayer;
+
+            if (adornerLayer != null)
+            {
+                adornerLayer.Children.Add(this as IControl);
+            }
         }
     }
 
