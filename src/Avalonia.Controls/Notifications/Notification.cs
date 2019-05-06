@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Notifications
         public Notification()
         {
             this.GetObservable(ContentProperty)
-                .OfType<NotificationContent>()
+                .OfType<SimpleNotification>()
                 .Subscribe(x =>
                 {
                     switch (x.Type)

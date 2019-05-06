@@ -1,15 +1,15 @@
 using System.Reactive;
-using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using Avalonia.Diagnostics.ViewModels;
-using Avalonia.Threading;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        public MainWindowViewModel(INotificationManager notificationManager)
+        private IManagedNotificationManager _notificationManager;
+
+        public MainWindowViewModel(IManagedNotificationManager notificationManager)
         {
             _notificationManager = notificationManager;
 
@@ -20,18 +20,16 @@ namespace ControlCatalog.ViewModels
 
             ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
             {
-                NotificationManager.Show(new NotificationContent { Title = "Welcome", Message = "Avalonia now supports Notifications.", Type = NotificationType.Information });
+                NotificationManager.Show(SimpleNotification.Create("Welcome", "Avalonia now supports Notifications.",  NotificationType.Information));
             });
 
             ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
             {
-                NotificationManager.Show(new NotificationContent { Title = "Error", Message = "Native Notifications are not quite ready. Coming soon.", Type = NotificationType.Error });
+                NotificationManager.Show(SimpleNotification.Create("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
         }
 
-        private INotificationManager _notificationManager;
-
-        public INotificationManager NotificationManager
+        public IManagedNotificationManager NotificationManager
         {
             get { return _notificationManager; }
             set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }

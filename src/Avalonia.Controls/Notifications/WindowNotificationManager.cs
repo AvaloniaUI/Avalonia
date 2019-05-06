@@ -8,7 +8,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
 {
-    public class NotificationArea : TemplatedControl, INotificationManager
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList _items;
 
@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         public static readonly AvaloniaProperty<NotificationPosition> PositionProperty =
-          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft, inherits: true);
+          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft, inherits: true);
 
         public NotificationPosition Position
         {
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         public static readonly AvaloniaProperty<int> MaxItemsProperty =
-          AvaloniaProperty.RegisterAttached<NotificationArea, TopLevel, int>("Position", defaultValue: 5, inherits: true);
+          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, int>("Position", defaultValue: 5, inherits: true);
 
         public int MaxItems
         {
@@ -50,15 +50,15 @@ namespace Avalonia.Controls.Notifications
             set { SetValue(MaxItemsProperty, value); }
         }
 
-        static NotificationArea()
+        static WindowNotificationManager()
         {
-            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
-            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
-            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
-            PseudoClass<NotificationArea, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopLeft, ":topleft");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.TopRight, ":topright");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomLeft, ":bottomleft");
+            PseudoClass<WindowNotificationManager, NotificationPosition>(PositionProperty, x => x == NotificationPosition.BottomRight, ":bottomright");
 
-            HorizontalAlignmentProperty.OverrideDefaultValue<NotificationArea>(Layout.HorizontalAlignment.Stretch);
-            VerticalAlignmentProperty.OverrideDefaultValue<NotificationArea>(Layout.VerticalAlignment.Stretch);
+            HorizontalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.HorizontalAlignment.Stretch);
+            VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
         }
 
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
@@ -69,32 +69,39 @@ namespace Avalonia.Controls.Notifications
             _items = itemsControl?.Children;
         }
 
-        public void Show(NotificationContent content, TimeSpan? expirationTime, Action onClick, Action onClose)
+        public void Show(INotification content)
         {
-            Show(content as object, expirationTime, onClick, onClose);
+            Show(content as object);
         }
 
-        public async void Show(object content, TimeSpan? expirationTime, Action onClick, Action onClose)
+        public async void Show(object content)
         {
-            var notification = new Notification
+            var notification = content as INotification;
+
+            var notificationControl = new Notification
             {
                 Content = content
             };
 
-            notification.PointerPressed += (sender, args) =>
+            if (notification != null)
             {
-                if (onClick != null)
+                notificationControl.NotificationClosed += (sender, args) => notification.OnClose?.Invoke();
+            }
+
+            notificationControl.NotificationClosed += OnNotificationClosed;
+
+            notificationControl.PointerPressed += (sender, args) =>
+            {
+                if (notification != null && notification.OnClick != null)
                 {
-                    onClick.Invoke();
+                    notification.OnClick.Invoke();
                     (sender as Notification)?.Close();
                 }
             };
-            notification.NotificationClosed += (sender, args) => onClose?.Invoke();
-            notification.NotificationClosed += OnNotificationClosed;
 
             lock (_items)
             {
-                _items.Add(notification);
+                _items.Add(notificationControl);
 
                 if (_items.OfType<Notification>().Count(i => !i.IsClosing) > MaxItems)
                 {
@@ -102,14 +109,14 @@ namespace Avalonia.Controls.Notifications
                 }
             }
 
-            if (expirationTime == TimeSpan.MaxValue)
+            if (notification != null && notification.Expiration == TimeSpan.MaxValue)
             {
                 return;
             }
 
-            await Task.Delay(expirationTime ?? TimeSpan.FromSeconds(5));
+            await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5));
 
-            notification.Close();
+            notificationControl.Close();
         }
 
         private void OnNotificationClosed(object sender, RoutedEventArgs routedEventArgs)
@@ -118,7 +125,7 @@ namespace Avalonia.Controls.Notifications
             _items.Remove(notification);
         }
 
-        public void Install(TopLevel host)
+        public void Install(Window host)
         {
             var adornerLayer = host.GetVisualDescendants()
                 .OfType<AdornerDecorator>()

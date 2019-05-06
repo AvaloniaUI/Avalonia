@@ -1,5 +1,4 @@
 ﻿using System.Reactive;
-using Avalonia;
 using Avalonia.Controls.Notifications;
 using ReactiveUI;
 
@@ -11,12 +10,12 @@ namespace ControlCatalog.ViewModels
         {
             YesCommand = ReactiveCommand.Create(() =>
             {
-                manager.Show(new NotificationContent { Title = "Avalonia Notifications", Message = "Start adding notifications to your app today." });
+                manager.Show(SimpleNotification.Create("Avalonia Notifications", "Start adding notifications to your app today."));
             });
 
             NoCommand = ReactiveCommand.Create(() =>
             {
-                manager.Show(new NotificationContent { Title = "Avalonia Notifications", Message = "Start adding notifications to your app today. To find out more visit..." });
+                manager.Show(SimpleNotification.Create("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
             });
         }
 

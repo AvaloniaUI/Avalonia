@@ -12,7 +12,7 @@ namespace ControlCatalog
 {
     public class MainWindow : Window
     {
-        private NotificationArea _notificationArea;
+        private WindowNotificationManager _notificationArea;
 
         public MainWindow()
         {
@@ -21,7 +21,7 @@ namespace ControlCatalog
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
-            _notificationArea = new NotificationArea
+            _notificationArea = new WindowNotificationManager
             {
                 Position = NotificationPosition.TopRight,
                 MaxItems = 3

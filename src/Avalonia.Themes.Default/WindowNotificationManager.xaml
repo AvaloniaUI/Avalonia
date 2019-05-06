@@ -1,12 +1,12 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Style Selector="NotificationArea">
+    <Style Selector="WindowNotificationManager">
         <Setter Property="Margin" Value="0 0 8 8"/>
         <Setter Property="Template">
             <ControlTemplate>
                 <StackPanel Name="PART_Items">
                     <StackPanel.DataTemplates>
-                        <DataTemplate DataType="NotificationContent">
+                        <DataTemplate DataType="INotification">
                             <StackPanel Spacing="8" Margin="12">
                                 <TextBlock DockPanel.Dock="Top" Text="{Binding Title}" FontWeight="Medium" />
                                 <TextBlock MaxHeight="80" Text="{Binding Message}" TextWrapping="Wrap" Margin="0,0,12,0"/>
@@ -119,23 +119,23 @@
         <Setter Property="Background" Value="OrangeRed"/>
     </Style>
 
-    <Style Selector="NotificationArea:topleft /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:topleft /template/ StackPanel#PART_Items">
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <Style Selector="NotificationArea:topright /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:topright /template/ StackPanel#PART_Items">
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
     </Style>
 
-    <Style Selector="NotificationArea:bottomleft /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:bottomleft /template/ StackPanel#PART_Items">
         <Setter Property="ReverseOrder" Value="True"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <Style Selector="NotificationArea:bottomright /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:bottomright /template/ StackPanel#PART_Items">
         <Setter Property="ReverseOrder" Value="True"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
