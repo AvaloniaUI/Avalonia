@@ -156,18 +156,31 @@ namespace Avalonia.Build.Tasks
                         
                         
                         compiler.Transform(parsed);
-                        var populateName = "Populate:" + res.Name;
+                        var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
                         var buildName = classType == null ? "Build:" + res.Name : null; 
-                        compiler.Compile(parsed, builder, contextClass,
-                            populateName, buildName,
-                            "NamespaceInfo:" + res.Name, res.Uri, res);
-
+                        
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
+
+
+                        var populateBuilder = classTypeDefinition == null ?
+                            builder :
+                            typeSystem.CreateTypeBuilder(classTypeDefinition);
+                        compiler.Compile(parsed, contextClass,
+                            compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
+                                classTypeDefinition == null),
+                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
+                            builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
+                                true),
+                            (closureName, closureBaseType) =>
+                                populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                            res.Uri, res
+                        );
+                        
                         
                         if (classTypeDefinition != null)
                         {
-                            var compiledPopulateMethod = typeSystem.GetTypeReference(builder).Resolve()
+                            var compiledPopulateMethod = typeSystem.GetTypeReference(populateBuilder).Resolve()
                                 .Methods.First(m => m.Name == populateName);
 
                             var designLoaderFieldType = typeSystem
