@@ -197,7 +197,7 @@ namespace Avalonia.X11
     unsafe struct XIDeviceChangedEvent
     {
         public int Type; /* GenericEvent */
-        public ulong Serial; /* # of last request processed by server */
+        public UIntPtr Serial; /* # of last request processed by server */
         public Bool SendEvent; /* true if this came from a SendEvent request */
         public IntPtr Display; /* Display the event was read from */
         public int Extension; /* XI extension offset */
@@ -214,7 +214,7 @@ namespace Avalonia.X11
     struct XIDeviceEvent
     {
         public XEventName type; /* GenericEvent */
-        public ulong serial; /* # of last request processed by server */
+        public UIntPtr serial; /* # of last request processed by server */
         public Bool send_event; /* true if this came from a SendEvent request */
         public IntPtr display; /* Display the event was read from */
         public int extension; /* XI extension offset */
@@ -241,7 +241,7 @@ namespace Avalonia.X11
     unsafe struct XIEvent
     {
         public int type; /* GenericEvent */
-        public ulong serial; /* # of last request processed by server */
+        public UIntPtr serial; /* # of last request processed by server */
         public Bool send_event; /* true if this came from a SendEvent request */
         public IntPtr display; /* Display the event was read from */
         public int extension; /* XI extension offset */
