@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -48,6 +49,26 @@ namespace Avalonia.Controls.Notifications
         {
             get { return GetValue(MaxItemsProperty); }
             set { SetValue(MaxItemsProperty, value); }
+        }
+
+        public WindowNotificationManager(Window host)
+        {
+            if (VisualChildren.Count != 0)
+            {
+                Install(host);
+            }
+            else
+            {
+                IDisposable stopListening = null;
+
+                stopListening = Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied))
+                    .Subscribe(_ =>
+                    {
+                        stopListening.Dispose();
+
+                        Install(host);
+                    });
+            }
         }
 
         static WindowNotificationManager()
@@ -125,7 +146,7 @@ namespace Avalonia.Controls.Notifications
             _items.Remove(notification);
         }
 
-        public void Install(Window host)
+        private void Install(Window host)
         {
             var adornerLayer = host.GetVisualDescendants()
                 .OfType<AdornerDecorator>()

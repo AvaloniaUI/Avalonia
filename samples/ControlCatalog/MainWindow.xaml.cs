@@ -21,7 +21,7 @@ namespace ControlCatalog
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
 
-            _notificationArea = new WindowNotificationManager
+            _notificationArea = new WindowNotificationManager(this)
             {
                 Position = NotificationPosition.TopRight,
                 MaxItems = 3
@@ -38,13 +38,6 @@ namespace ControlCatalog
             var theme = new Avalonia.Themes.Default.DefaultTheme();
             theme.TryGetResource("Button", out _);
             AvaloniaXamlLoader.Load(this);
-        }
-
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-
-            _notificationArea.Install(this);
         }
     }
 }
