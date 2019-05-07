@@ -1,8 +1,9 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System.Collections.Generic;
+using System;
 using Serilog;
+using Serilog.Context;
 using AvaloniaLogEventLevel = Avalonia.Logging.LogEventLevel;
 using SerilogLogEventLevel = Serilog.Events.LogEventLevel;
 
@@ -14,7 +15,6 @@ namespace Avalonia.Logging.Serilog
     public class SerilogLogger : ILogSink
     {
         private readonly ILogger _output;
-        private readonly Dictionary<string, ILogger> _areas = new Dictionary<string, ILogger>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerilogLogger"/> class.
@@ -36,21 +36,21 @@ namespace Avalonia.Logging.Serilog
 
         /// <inheritdoc/>
         public void Log(
-            AvaloniaLogEventLevel level, 
-            string area, 
-            object source, 
-            string messageTemplate, 
+            AvaloniaLogEventLevel level,
+            string area,
+            object source,
+            string messageTemplate,
             params object[] propertyValues)
         {
-            ILogger areaLogger;
+            Contract.Requires<ArgumentNullException>(area != null);
+            Contract.Requires<ArgumentNullException>(messageTemplate != null);
 
-            if (!_areas.TryGetValue(area, out areaLogger))
+            using (LogContext.PushProperty("Area", area))
+            using (LogContext.PushProperty("SourceType", source?.GetType()))
+            using (LogContext.PushProperty("SourceHash", source?.GetHashCode()))
             {
-                areaLogger = _output.ForContext("Area", area);
-                _areas.Add(area, areaLogger);
+                _output.Write((SerilogLogEventLevel)level, messageTemplate, propertyValues);
             }
-
-            areaLogger.Write((SerilogLogEventLevel)level, messageTemplate, propertyValues);
         }
     }
 }
