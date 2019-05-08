@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
-using Avalonia.Animation.Animators; 
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
@@ -45,6 +46,9 @@ namespace Avalonia.Animation
             set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
         }
 
+        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions
+          = new Dictionary<AvaloniaProperty, IDisposable>();
+
         /// <summary>
         /// Reacts to a change in a <see cref="AvaloniaProperty"/> value in 
         /// order to animate the change if a <see cref="ITransition"/> is set for the property.
@@ -58,7 +62,12 @@ namespace Avalonia.Animation
 
                 if (match != null)
                 {
-                    match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                        dispose?.Dispose();
+
+                    var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                   
+                    _previousTransitions[e.Property] = instance;
                 }
             }
         }
