@@ -15,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -1034,7 +1035,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 {
                     Items = items,
                     ItemsPanel = VirtualizingPanelTemplate(orientation),
-                    ItemTemplate = ItemTemplate(),
+                    DataTemplates = { StringDataTemplate() },
                     VirtualizationMode = ItemVirtualizationMode.Simple,
                 }
             };
@@ -1043,7 +1044,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             return result;
         }
 
-        private static IDataTemplate ItemTemplate()
+        private static IDataTemplate StringDataTemplate()
         {
             return new FuncDataTemplate<string>(x => new Canvas
             {
@@ -1061,7 +1062,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot
+        private class TestScroller : ScrollContentPresenter, IRenderRoot, ILayoutRoot, IStyleRoot
         {
             public IRenderer Renderer { get; }
             public Size ClientSize { get; }
@@ -1094,8 +1095,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public TestContainer()
             {
-                Width = 10;
-                Height = 10;
+                Template = new FuncControlTemplate<TestContainer>(parent => new ContentPresenter
+                {
+                    Name = "PART_ContentPresenter",
+                    [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
+                    [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
+                });
             }
         }
     }
