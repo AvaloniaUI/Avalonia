@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Notifications
         {
             var notification = content as INotification;
 
-            var notificationControl = new Notification
+            var notificationControl = new NotificationCard
             {
                 Content = content
             };
@@ -116,7 +116,7 @@ namespace Avalonia.Controls.Notifications
                 if (notification != null && notification.OnClick != null)
                 {
                     notification.OnClick.Invoke();
-                    (sender as Notification)?.Close();
+                    (sender as NotificationCard)?.Close();
                 }
             };
 
@@ -124,9 +124,9 @@ namespace Avalonia.Controls.Notifications
             {
                 _items.Add(notificationControl);
 
-                if (_items.OfType<Notification>().Count(i => !i.IsClosing) > MaxItems)
+                if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
                 {
-                    _items.OfType<Notification>().First(i => !i.IsClosing).Close();
+                    _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
                 }
             }
 
@@ -142,7 +142,7 @@ namespace Avalonia.Controls.Notifications
 
         private void OnNotificationClosed(object sender, RoutedEventArgs routedEventArgs)
         {
-            var notification = sender as Notification;
+            var notification = sender as NotificationCard;
             _items.Remove(notification);
         }
 

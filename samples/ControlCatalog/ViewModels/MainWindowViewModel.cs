@@ -20,12 +20,12 @@ namespace ControlCatalog.ViewModels
 
             ShowManagedNotificationCommand = ReactiveCommand.Create(() =>
             {
-                NotificationManager.Show(SimpleNotification.Create("Welcome", "Avalonia now supports Notifications.",  NotificationType.Information));
+                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
             });
 
             ShowNativeNotificationCommand = ReactiveCommand.Create(() =>
             {
-                NotificationManager.Show(SimpleNotification.Create("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
+                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
             });
         }
 

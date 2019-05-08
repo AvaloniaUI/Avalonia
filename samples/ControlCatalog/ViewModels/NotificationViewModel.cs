@@ -10,12 +10,12 @@ namespace ControlCatalog.ViewModels
         {
             YesCommand = ReactiveCommand.Create(() =>
             {
-                manager.Show(SimpleNotification.Create("Avalonia Notifications", "Start adding notifications to your app today."));
+                manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today."));
             });
 
             NoCommand = ReactiveCommand.Create(() =>
             {
-                manager.Show(SimpleNotification.Create("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
+                manager.Show(new Avalonia.Controls.Notifications.Notification("Avalonia Notifications", "Start adding notifications to your app today. To find out more visit..."));
             });
         }
 
