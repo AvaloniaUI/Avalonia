@@ -155,7 +155,7 @@ namespace Avalonia.Controls.Notifications
 
             if (adornerLayer != null)
             {
-                adornerLayer.Children.Add(this as IControl);
+                adornerLayer.Children.Add(this);
             }
         }
     }
