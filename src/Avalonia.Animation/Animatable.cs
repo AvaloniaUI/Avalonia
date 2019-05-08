@@ -63,7 +63,7 @@ namespace Avalonia.Animation
                 if (match != null)
                 {
                     if (_previousTransitions.TryGetValue(e.Property, out var dispose))
-                        dispose?.Dispose();
+                        dispose.Dispose();
 
                     var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
                    
