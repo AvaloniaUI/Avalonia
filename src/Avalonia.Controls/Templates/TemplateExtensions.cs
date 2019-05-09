@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Styling;
@@ -19,6 +20,10 @@ namespace Avalonia.Controls.Templates
         /// <returns>An <see cref="IControl"/> or null if the control was not found.</returns>
         public static IControl FindName(this IControlTemplate template, string name, IControl templatedParent)
         {
+            Contract.Requires<ArgumentNullException>(template != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentNullException>(templatedParent != null);
+
             return ((IControl)templatedParent.GetVisualChildren().FirstOrDefault())?.FindControl<Canvas>(name);
         }
 
@@ -33,6 +38,10 @@ namespace Avalonia.Controls.Templates
         public static T FindName<T>(this IControlTemplate template, string name, IControl templatedParent)
             where T : class, IControl
         {
+            Contract.Requires<ArgumentNullException>(template != null);
+            Contract.Requires<ArgumentNullException>(name != null);
+            Contract.Requires<ArgumentNullException>(templatedParent != null);
+
             return template.FindName(name, templatedParent) as T;
         }
 
