@@ -467,6 +467,7 @@ namespace Avalonia.Skia.Text
             {
                 IsAntialias = true,
                 IsStroke = false,
+                SubpixelText = true,
                 TextEncoding = SKTextEncoding.Utf16,
                 Typeface = typeface,
                 TextSize = fontSize
