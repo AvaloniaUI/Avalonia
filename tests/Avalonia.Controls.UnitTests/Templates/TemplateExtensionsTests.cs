@@ -44,5 +44,28 @@ namespace Avalonia.Controls.Templates.UnitTests
 
             Assert.Equal(new[] { "border1", "inner", "border4" }, result);
         }
+
+        [Fact]
+        public void ControlTemplate_FindName_Finds_Named_Control()
+        {
+            var target = new TestTemplatedControl
+            {
+                Template = new FuncControlTemplate<TestTemplatedControl>(parent =>
+                    new Border
+                    {
+                        Name = "PART_Border",
+                        Child = new Canvas
+                        {
+                            Name = "PART_Canvas",
+                        }
+                    })
+            };
+
+            target.ApplyTemplate();
+
+            var result = target.Template.FindName("PART_Canvas", target);
+
+            Assert.IsType<Canvas>(result);
+        }
     }
 }
