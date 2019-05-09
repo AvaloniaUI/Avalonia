@@ -11,6 +11,7 @@ using Avalonia.Media;
 using HarfBuzzSharp;
 
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 using Buffer = HarfBuzzSharp.Buffer;
 
@@ -572,37 +573,6 @@ namespace Avalonia.Skia.Text
             return count;
         }
 
-        private static Blob GetHarfBuzzBlob(SKStreamAsset asset)
-        {
-            if (asset == null)
-            {
-                throw new ArgumentNullException(nameof(asset));
-            }
-
-            var size = asset.Length;
-
-            Blob blob;
-
-            var memoryBase = asset.GetMemoryBase();
-
-            if (memoryBase != IntPtr.Zero)
-            {
-                blob = new Blob(memoryBase, size, MemoryMode.ReadOnly, asset, p => ((SKStreamAsset)p).Dispose());
-            }
-            else
-            {
-                var ptr = Marshal.AllocCoTaskMem(size);
-
-                asset.Read(ptr, size);
-
-                blob = new Blob(ptr, size, MemoryMode.ReadOnly, ptr, p => Marshal.FreeCoTaskMem((IntPtr)p));
-            }
-
-            blob.MakeImmutable();
-
-            return blob;
-        }
-
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -614,7 +584,9 @@ namespace Avalonia.Skia.Text
         {
             Font font;
 
-            using (var blob = GetHarfBuzzBlob(textFormat.Typeface.OpenStream(out var index)))
+            var fontStream = textFormat.Typeface.OpenStream(out var index);
+
+            using (var blob = fontStream.ToHarfBuzzBlob())
             using (var face = new Face(blob, index))
             {
                 face.Index = index;
@@ -810,7 +782,7 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private SKTextRun CreateEllipsisRun(SKTextFormat textFormat, IBrush foreground)
         {
-            return CreateTextRun( s_ellipsis, new SKTextPointer(0, 1), textFormat, foreground, true);
+            return CreateTextRun(s_ellipsis, new SKTextPointer(0, 1), textFormat, foreground, true);
         }
 
         /// <summary>
@@ -1290,21 +1262,18 @@ namespace Avalonia.Skia.Text
 
                 var breakCharCount = 0;
 
-                if (textPointer.Length >= 2)
-                {
-                    var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
+                var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                    if (IsBreakChar(text[lastPosition]))
+                if (IsBreakChar(text[textPointer.StartingIndex]) || IsBreakChar(text[lastPosition]))
+                {
+                    if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
+                        || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
                     {
-                        if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
-                            || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
-                        {
-                            breakCharCount = 2;
-                        }
-                        else
-                        {
-                            breakCharCount = 1;
-                        }
+                        breakCharCount = 2;
+                    }
+                    else
+                    {
+                        breakCharCount = 1;
                     }
                 }
 
