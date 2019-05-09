@@ -98,12 +98,12 @@ namespace Avalonia.Controls.Notifications
             remove { RemoveHandler(NotificationClosedEvent, value); }
         }
 
-        public static bool GetCloseOnClick(NotificationCard obj)
+        public static bool GetCloseOnClick(Button obj)
         {
             return (bool)obj.GetValue(CloseOnClickProperty);
         }
 
-        public static void SetCloseOnClick(NotificationCard obj, bool value)
+        public static void SetCloseOnClick(Button obj, bool value)
         {
             obj.SetValue(CloseOnClickProperty, value);
         }
