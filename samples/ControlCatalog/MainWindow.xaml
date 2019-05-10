@@ -8,7 +8,7 @@
         x:Class="ControlCatalog.MainWindow">
     <Window.DataTemplates>
         <DataTemplate DataType="vm:NotificationViewModel">
-            <v:NotificationView />
+            <v:CustomNotificationView />
         </DataTemplate>
     </Window.DataTemplates>
     <Panel>

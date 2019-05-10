@@ -3,9 +3,9 @@ using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Views
 {
-    public class NotificationView : UserControl
+    public class CustomNotificationView : UserControl
     {
-        public NotificationView()
+        public CustomNotificationView()
         {
             this.InitializeComponent();
         }
