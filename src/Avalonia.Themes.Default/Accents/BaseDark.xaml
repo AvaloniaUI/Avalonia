@@ -52,8 +52,6 @@
         <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="Orange"/>
         <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="OrangeRed"/>
 
-
-
         <Thickness x:Key="ThemeBorderThickness">1,1,1,1</Thickness>
         <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>
 
