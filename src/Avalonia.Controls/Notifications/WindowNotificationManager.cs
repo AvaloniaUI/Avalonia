@@ -59,13 +59,9 @@ namespace Avalonia.Controls.Notifications
             }
             else
             {
-                IDisposable stopListening = null;
-
-                stopListening = Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied))
+                Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied)).Take(1)
                     .Subscribe(_ =>
                     {
-                        stopListening.Dispose();
-
                         Install(host);
                     });
             }
