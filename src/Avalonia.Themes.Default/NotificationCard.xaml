@@ -70,18 +70,6 @@
         </Style.Animations>
     </Style>
 
-    <Style Selector="NotificationCard /template/ Button#PART_CloseButton">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <TextBlock Text="X" FontSize="12" />
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="HorizontalAlignment" Value="Right"/>
-        <Setter Property="VerticalAlignment" Value="Top"/>
-    </Style>
-
     <Style Selector="NotificationCard">
         <Setter Property="Background" Value="#444444"/>
     </Style>
