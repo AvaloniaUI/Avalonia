@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -1262,12 +1261,12 @@ namespace Avalonia.Skia.Text
 
                 var breakCharCount = 0;
 
-                var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
+                var breakCharPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                if (IsBreakChar(text[textPointer.StartingIndex]) || IsBreakChar(text[lastPosition]))
+                if (IsBreakChar(text[breakCharPosition]))
                 {
-                    if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
-                        || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
+                    if (text[breakCharPosition] == '\r' && text[breakCharPosition - 1] == '\n'
+                        || text[breakCharPosition] == '\n' && text[breakCharPosition - 1] == '\r')
                     {
                         breakCharCount = 2;
                     }
@@ -1280,7 +1279,12 @@ namespace Avalonia.Skia.Text
                 // Replace break char with zero width space
                 if (breakCharCount > 0)
                 {
-                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+                    buffer.ContentType = ContentType.Unicode;
+
+                    if (breakCharPosition != textPointer.StartingIndex)
+                    {
+                        buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+                    }                    
 
                     var cluster = buffer.GlyphInfos.Length > 0
                                       ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
@@ -1512,7 +1516,7 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private IEnumerable<SKTextLine> BreakTextLine(ReadOnlySpan<char> text, SKTextLine textLine)
         {
-            if (!(textLine.LineMetrics.Size.Width > _constraint.Width))
+            if (textLine.LineMetrics.Size.Width < _constraint.Width)
             {
                 return new[] { textLine };
             }
@@ -1772,15 +1776,13 @@ namespace Avalonia.Skia.Text
                     text,
                     new SKTextPointer(startingIndex, length),
                     textFormat,
-                    foreground,
-                    true);
+                    foreground);
 
                 secondTextRun = CreateTextRun(
                     text,
                     new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
                     textFormat,
-                    foreground,
-                    true);
+                    foreground);
             }
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
@@ -1793,7 +1795,7 @@ namespace Avalonia.Skia.Text
         /// <param name="textRuns">The text runs.</param>
         /// <param name="length">The length of the first part.</param>
         /// <returns></returns>
-        private SplitTextLineResult SplitTextRuns(
+        private SplitTextLineResult  SplitTextRuns(
             ReadOnlySpan<char> text,
             IReadOnlyList<SKTextRun> textRuns,
             int length)

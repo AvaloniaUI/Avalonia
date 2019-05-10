@@ -121,7 +121,7 @@ namespace Avalonia.Controls
                     else
                     {
                         return ScrollBarVisibility.Hidden;
-                    }          
+                    }
                 });
             Bind(
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
@@ -325,7 +325,6 @@ namespace Avalonia.Controls
                 input = RemoveInvalidCharacters(input);
                 string text = Text ?? string.Empty;
                 int caretIndex = CaretIndex;
-
                 if (!string.IsNullOrEmpty(input))
                 {
                     DeleteSelection();
@@ -333,8 +332,8 @@ namespace Avalonia.Controls
                     CaretIndex += input.Length;
                     SelectionStart = SelectionEnd = CaretIndex;
                     _undoRedoHelper.DiscardRedo();
-                }               
-            }           
+                }
+            }
         }
 
         public string RemoveInvalidCharacters(string text)
@@ -457,7 +456,6 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -480,6 +478,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
+
             }
             else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
             {
@@ -590,6 +589,10 @@ namespace Avalonia.Controls
                             base.OnKeyDown(e);
                         }
 
+                        break;
+
+                    default:
+                        handled = false;
                         break;
                 }
             }

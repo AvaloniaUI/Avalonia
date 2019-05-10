@@ -157,14 +157,14 @@ namespace Avalonia.Skia
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
+                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
             }
         }
 
         /// <inheritdoc />
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (GeometryImpl)geometry;
+            var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -332,9 +332,7 @@ namespace Avalonia.Skia
             set
             {
                 if (_currentTransform == value)
-                {
                     return;
-                }
 
                 _currentTransform = value;
 
@@ -515,12 +513,12 @@ namespace Avalonia.Skia
 
             if (brush is ISolidColorBrush solid)
             {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte)(solid.Color.A * opacity));
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
 
                 return paintWrapper;
             }
 
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity));
+            paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
 
             if (brush is IGradientBrush gradient)
             {
@@ -573,7 +571,7 @@ namespace Avalonia.Skia
             var paint = rv.Paint;
 
             paint.IsStroke = true;
-            paint.StrokeWidth = (float)pen.Thickness;
+            paint.StrokeWidth = (float) pen.Thickness;
 
             // Need to modify dashes due to Skia modifying their lengths
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
@@ -605,7 +603,7 @@ namespace Avalonia.Skia
                     break;
             }
 
-            paint.StrokeMiter = (float)pen.MiterLimit;
+            paint.StrokeMiter = (float) pen.MiterLimit;
 
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
