@@ -106,28 +106,29 @@ namespace Avalonia.Controls.Notifications
 
             if (notification != null)
             {
-                notificationControl.NotificationClosed += (sender, args) => notification.OnClose?.Invoke();
-            }
+                notificationControl.NotificationClosed += (sender, args) =>
+                {
+                    notification.OnClose?.Invoke();
 
-            notificationControl.NotificationClosed += OnNotificationClosed;
+                    _items.Remove(notification);
+                };
+            }
 
             notificationControl.PointerPressed += (sender, args) =>
             {
                 if (notification != null && notification.OnClick != null)
                 {
                     notification.OnClick.Invoke();
-                    (sender as NotificationCard)?.Close();
                 }
+
+                (sender as NotificationCard)?.Close();
             };
 
-            lock (_items)
-            {
-                _items.Add(notificationControl);
+            _items.Add(notificationControl);
 
-                if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
-                {
-                    _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
-                }
+            if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+            {
+                _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
             }
 
             if (notification != null && notification.Expiration == TimeSpan.MaxValue)
@@ -138,12 +139,6 @@ namespace Avalonia.Controls.Notifications
             await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5));
 
             notificationControl.Close();
-        }
-
-        private void OnNotificationClosed(object sender, RoutedEventArgs routedEventArgs)
-        {
-            var notification = sender as NotificationCard;
-            _items.Remove(notification);
         }
 
         private void Install(Window host)
