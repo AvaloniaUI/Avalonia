@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
@@ -12,18 +11,6 @@ namespace Avalonia.Visuals.UnitTests.Media
 {
     public class FontFamilyTests
     {
-        [Fact]
-        public void Exception_Should_Be_Thrown_If_Name_Is_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new FontFamily((string)null));
-        }
-
-        [Fact]
-        public void Exception_Should_Be_Thrown_If_Names_Is_Null()
-        {
-            Assert.Throws<ArgumentNullException>(() => new FontFamily((IEnumerable<string>)null));
-        }
-
         [Fact]
         public void Should_Implicitly_Convert_String_To_FontFamily()
         {
@@ -41,7 +28,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Parse_Parses_FontFamily_With_Name()
+        public void Should_Parse_FontFamily_With_SystemFont_Name()
         {
             var fontFamily = FontFamily.Parse("Courier New");
 
@@ -49,7 +36,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Parse_Parses_FontFamily_With_Names()
+        public void Should_Parse_FontFamily_With_Fallbacks()
         {
             var fontFamily = FontFamily.Parse("Courier New, Times New Roman");
 
@@ -61,7 +48,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Parse_Parses_FontFamily_With_Resource_Folder()
+        public void Should_Parse_FontFamily_With_Resource_Folder()
         {
             var source = new Uri("resm:Avalonia.Visuals.UnitTests#MyFont");
 
@@ -75,7 +62,7 @@ namespace Avalonia.Visuals.UnitTests.Media
         }
 
         [Fact]
-        public void Parse_Parses_FontFamily_With_Resource_Filename()
+        public void Should_Parse_FontFamily_With_Resource_Filename()
         {
             var source = new Uri("resm:Avalonia.Visuals.UnitTests.MyFont.ttf#MyFont");
 
@@ -86,6 +73,33 @@ namespace Avalonia.Visuals.UnitTests.Media
             Assert.Equal("MyFont", fontFamily.Name);
 
             Assert.Equal(key, fontFamily.Key);
+        }
+
+        [Theory]
+        [InlineData("resm:Avalonia.Visuals.UnitTests/Assets/Fonts#MyFont")]
+        [InlineData("avares://Avalonia.Visuals.UnitTests/Assets/Fonts#MyFont")]
+        public void Should_Create_FontFamily_From_Uri(string name)
+        {
+            var fontFamily = new FontFamily(name);
+
+            Assert.Equal("MyFont", fontFamily.Name);
+
+            Assert.NotNull(fontFamily.Key);
+        }
+
+        [Theory]
+        [InlineData("resm:Avalonia.Visuals.UnitTests.Assets.Fonts", "#MyFont")]
+        [InlineData("avares://Avalonia.Visuals.UnitTests/Assets/Fonts", "#MyFont")]
+        [InlineData("avares://Avalonia.Visuals.UnitTests", "/Assets/Fonts#MyFont")]
+        public void Should_Create_FontFamily_From_Uri_With_Base_Uri(string @base, string name)
+        {
+            var baseUri = new Uri(@base);
+
+            var fontFamily = new FontFamily(baseUri, name);
+
+            Assert.Equal("MyFont", fontFamily.Name);
+
+            Assert.NotNull(fontFamily.Key);
         }
     }
 }
