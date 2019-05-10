@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
@@ -13,18 +12,8 @@ namespace Avalonia.Controls.Notifications
     {
         private IList _items;
 
-        public static NotificationPosition GetPosition(TopLevel obj)
-        {
-            return obj.GetValue(PositionProperty);
-        }
-
-        public static void SetPosition(TopLevel obj, NotificationPosition value)
-        {
-            obj.SetValue(PositionProperty, value);
-        }
-
-        public static readonly AvaloniaProperty<NotificationPosition> PositionProperty =
-          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, NotificationPosition>("Position", defaultValue: NotificationPosition.TopLeft, inherits: true);
+        public static readonly StyledProperty<NotificationPosition> PositionProperty =
+          AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(nameof(Position), NotificationPosition.TopRight);
 
         public NotificationPosition Position
         {
@@ -32,18 +21,8 @@ namespace Avalonia.Controls.Notifications
             set { SetValue(PositionProperty, value); }
         }
 
-        public static int GetMaxItems(TopLevel obj)
-        {
-            return obj.GetValue(MaxItemsProperty);
-        }
-
-        public static void SetMaxItems(TopLevel obj, int value)
-        {
-            obj.SetValue(MaxItemsProperty, value);
-        }
-
-        public static readonly AvaloniaProperty<int> MaxItemsProperty =
-          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, int>("MaxItems", defaultValue: 5, inherits: true);
+        public static readonly StyledProperty<int> MaxItemsProperty =
+          AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems), 5);
 
         public int MaxItems
         {
@@ -106,7 +85,7 @@ namespace Avalonia.Controls.Notifications
                 {
                     notification.OnClose?.Invoke();
 
-                    _items.Remove(notification);
+                    _items.Remove(sender);
                 };
             }
 
