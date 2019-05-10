@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         public static readonly AvaloniaProperty<int> MaxItemsProperty =
-          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, int>("Position", defaultValue: 5, inherits: true);
+          AvaloniaProperty.RegisterAttached<WindowNotificationManager, TopLevel, int>("MaxItems", defaultValue: 5, inherits: true);
 
         public int MaxItems
         {
