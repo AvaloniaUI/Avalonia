@@ -77,6 +77,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Not_Remove_NonCurrent_Page_When_IsVirtualized_False()
+        {
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = new[] { "foo", "bar" },
+                IsVirtualized = false,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Single(target.ItemContainerGenerator.Containers);
+            target.SelectedIndex = 1;
+            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+        }
+
+        [Fact]
         public void Selected_Item_Changes_To_First_Item_When_Items_Property_Changes()
         {
             var items = new ObservableCollection<string>
@@ -96,9 +115,9 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(3, target.GetLogicalChildren().Count());
+            Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().First();
+            var child = target.GetLogicalChildren().Single();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Foo", ((TextBlock)child).Text);
@@ -108,7 +127,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.Items = newItems;
 
-            child = target.GetLogicalChildren().First();
+            child = target.GetLogicalChildren().Single();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Bar", ((TextBlock)child).Text);
@@ -127,8 +146,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new Carousel
             {
                 Template = new FuncControlTemplate<Carousel>(CreateTemplate),
-                Items = items,
-                IsVirtualized = true,
+                Items = items
             };
 
             target.ApplyTemplate();
@@ -172,9 +190,9 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(3, target.GetLogicalChildren().Count());
+            Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().First();
+            var child = target.GetLogicalChildren().Single();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Foo", ((TextBlock)child).Text);
@@ -236,16 +254,16 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(3, target.GetLogicalChildren().Count());
+            Assert.Single(target.GetLogicalChildren());
 
-            var child = target.GetLogicalChildren().First();
+            var child = target.GetLogicalChildren().Single();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Foo", ((TextBlock)child).Text);
 
             items.RemoveAt(0);
 
-            child = target.GetLogicalChildren().First();
+            child = target.GetLogicalChildren().Single();
 
             Assert.IsType<TextBlock>(child);
             Assert.Equal("Bar", ((TextBlock)child).Text);

@@ -325,19 +325,14 @@ namespace Avalonia.Controls.Primitives
 
             if (_updateCount == 0)
             {
-                var newIndex = -1;
-
                 if (SelectedIndex != -1)
                 {
-                    newIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
+                    SelectedIndex = IndexOf((IEnumerable)e.NewValue, SelectedItem);
                 }
-
-                if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
+                else if (AlwaysSelected && Items != null && Items.Cast<object>().Any())
                 {
-                    newIndex = 0;
+                    SelectedIndex = 0;
                 }
-
-                SelectedIndex = newIndex;
             }
         }
 
