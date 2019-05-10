@@ -1,29 +1,17 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 namespace Avalonia.Controls.Notifications
 {
-    public interface INotification
-    {
-        string Title { get; }
-
-        string Message { get; }
-
-        NotificationType Type { get; }
-
-        TimeSpan Expiration { get; }
-
-        Action OnClick { get; }
-
-        Action OnClose { get; }
-    }
-
+    /// <summary>
+    /// Defines the interfaces for NotificationManagers.
+    /// </summary>
     public interface INotificationManager
     {
+        /// <summary>
+        /// Show a notification.
+        /// </summary>
+        /// <param name="notification">The notification to be displayed.</param>
         void Show(INotification notification);
-    }
-
-    public interface IManagedNotificationManager : INotificationManager
-    {
-        void Show(object content);
     }
 }

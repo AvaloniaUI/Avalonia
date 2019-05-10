@@ -1,24 +1,38 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Linq;
 using System.Reactive.Linq;
-using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls.Notifications
 {
+    /// <summary>
+    /// Control that represents and displays a notification.
+    /// </summary>
     public class NotificationCard : ContentControl
     {
         private bool _isClosed;
         private bool _isClosing;
 
-        static NotificationCard()
-        {
-            IsClosedProperty.Changed.AddClassHandler<NotificationCard>(IsClosedChanged);
-        }
-
+        /// <summary>
+        /// Instantiates a new instance of <see cref="NotificationCard"/>.
+        /// </summary>
         public NotificationCard()
         {
+            this.GetObservable(IsClosedProperty)
+                .Subscribe(x =>
+                {
+                    if (!IsClosing & !IsClosed)
+                    {
+                        return;
+                    }
+
+                    RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
+                });
+
             this.GetObservable(ContentProperty)
                 .OfType<Notification>()
                 .Subscribe(x =>
@@ -53,6 +67,9 @@ namespace Avalonia.Controls.Notifications
             private set { SetAndRaise(IsClosingProperty, ref _isClosing, value); }
         }
 
+        /// <summary>
+        /// Defines the <see cref="IsClosing"/> property.
+        /// </summary>
         public static readonly DirectProperty<NotificationCard, bool> IsClosingProperty =
             AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosing), o => o.IsClosing);
 
@@ -92,6 +109,9 @@ namespace Avalonia.Controls.Notifications
             remove { RemoveHandler(NotificationCloseInvokedEvent, value); }
         }
 
+        /// <summary>
+        /// Raised when the <see cref="NotificationCard"/> has closed.
+        /// </summary>
         public event EventHandler<RoutedEventArgs> NotificationClosed
         {
             add { AddHandler(NotificationClosedEvent, value); }
@@ -108,6 +128,9 @@ namespace Avalonia.Controls.Notifications
             obj.SetValue(CloseOnClickProperty, value);
         }
 
+        /// <summary>
+        /// Defines the CloseOnClick property.
+        /// </summary>
         public static readonly AvaloniaProperty CloseOnClickProperty =
           AvaloniaProperty.RegisterAttached<Button, bool>("CloseOnClick", typeof(NotificationCard), validate: CloseOnClickChanged);
 
@@ -125,6 +148,9 @@ namespace Avalonia.Controls.Notifications
             return true;
         }
 
+        /// <summary>
+        /// Called when a button inside the Notification is clicked.
+        /// </summary>
         private static void Button_Click(object sender, RoutedEventArgs e)
         {
             var btn = sender as ILogical;
@@ -132,25 +158,9 @@ namespace Avalonia.Controls.Notifications
             notification?.Close();
         }
 
-        protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
-        {
-            base.OnTemplateApplied(e);
-            var closeButton = this.FindControl<Button>("PART_CloseButton");
-            if (closeButton != null)
-                closeButton.Click += OnCloseButtonOnClick;
-
-        }
-
-        private void OnCloseButtonOnClick(object sender, RoutedEventArgs args)
-        {
-            var button = sender as Button;
-            if (button == null)
-                return;
-
-            button.Click -= OnCloseButtonOnClick;
-            Close();
-        }
-
+        /// <summary>
+        /// Closes the <see cref="NotificationCard"/>.
+        /// </summary>
         public void Close()
         {
             if (IsClosing)
@@ -161,16 +171,6 @@ namespace Avalonia.Controls.Notifications
             IsClosing = true;
 
             RaiseEvent(new RoutedEventArgs(NotificationCloseInvokedEvent));
-        }
-
-        private static void IsClosedChanged(NotificationCard target, AvaloniaPropertyChangedEventArgs arg2)
-        {
-            if (!target.IsClosing & !target.IsClosed)
-            {
-                return;
-            }
-
-            target.RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
         }
     }
 }

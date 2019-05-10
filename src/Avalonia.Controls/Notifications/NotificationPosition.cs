@@ -4,13 +4,13 @@
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Enumeration of types for <see cref="INotification"/>.
+    /// Enumeration of Notifications positions.
     /// </summary>
-    public enum NotificationType
+    public enum NotificationPosition
     {
-        Information,
-        Success,
-        Warning,
-        Error
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight
     }
 }

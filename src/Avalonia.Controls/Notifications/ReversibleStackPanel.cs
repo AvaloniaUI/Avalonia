@@ -1,19 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Linq;
-using System.Text;
 using Avalonia.Layout;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Implements a <see cref="StackPanel"/> where the flow direction of its items can be reversed.
+    /// </summary>
     public class ReversibleStackPanel : StackPanel
     {
         /// <summary>
         /// Defines the <see cref="ReverseOrder"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ReverseOrderProperty =
-            AvaloniaProperty.Register<ReversibleStackPanel, bool>(nameof(ReverseOrder));        
+            AvaloniaProperty.Register<ReversibleStackPanel, bool>(nameof(ReverseOrder));
 
         /// <summary>
         /// Gets or sets if the child controls will be layed out in reverse order.

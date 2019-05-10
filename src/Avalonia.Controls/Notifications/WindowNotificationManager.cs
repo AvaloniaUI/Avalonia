@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Collections;
 using System.Linq;
@@ -8,28 +11,47 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Notifications
 {
+    /// <summary>
+    /// Defines a WindowNotificationManager control.
+    /// </summary>
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList _items;
 
+        /// <summary>
+        /// Defines the <see cref="Position"/> property.
+        /// </summary>
         public static readonly StyledProperty<NotificationPosition> PositionProperty =
           AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(nameof(Position), NotificationPosition.TopRight);
 
+        /// <summary>
+        /// Defines which corner of the screen notifications can be displayed in. <seealso cref="NotificationPosition"/>.
+        /// </summary>
         public NotificationPosition Position
         {
             get { return GetValue(PositionProperty); }
             set { SetValue(PositionProperty, value); }
         }
 
+        /// <summary>
+        /// Defines the <see cref="MaxItems"/> property.
+        /// </summary>
         public static readonly StyledProperty<int> MaxItemsProperty =
           AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems), 5);
 
+        /// <summary>
+        /// Defines the maximum number of notifications visible at once.
+        /// </summary>
         public int MaxItems
         {
             get { return GetValue(MaxItemsProperty); }
             set { SetValue(MaxItemsProperty, value); }
         }
 
+        /// <summary>
+        /// Instantiates a new instance of <see cref="WindowNotificationManager"/>.
+        /// </summary>
+        /// <param name="host">The window that will host the control.</param>
         public WindowNotificationManager(Window host)
         {
             if (VisualChildren.Count != 0)
@@ -57,6 +79,7 @@ namespace Avalonia.Controls.Notifications
             VerticalAlignmentProperty.OverrideDefaultValue<WindowNotificationManager>(Layout.VerticalAlignment.Stretch);
         }
 
+        /// <inheritdoc/>
         protected override void OnTemplateApplied(TemplateAppliedEventArgs e)
         {
             base.OnTemplateApplied(e);
@@ -65,11 +88,13 @@ namespace Avalonia.Controls.Notifications
             _items = itemsControl?.Children;
         }
 
+        /// <inheritdoc/>
         public void Show(INotification content)
         {
             Show(content as object);
         }
 
+        /// <inheritdoc/>
         public async void Show(object content)
         {
             var notification = content as INotification;
@@ -106,7 +131,7 @@ namespace Avalonia.Controls.Notifications
                 _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
             }
 
-            if (notification != null && notification.Expiration == TimeSpan.MaxValue)
+            if (notification != null && notification.Expiration == TimeSpan.Zero)
             {
                 return;
             }
@@ -116,6 +141,11 @@ namespace Avalonia.Controls.Notifications
             notificationControl.Close();
         }
 
+        /// <summary>
+        /// Installs the <see cref="WindowNotificationManager"/> within the <see cref="AdornerLayer"/>
+        /// of the host <see cref="Window"/>.
+        /// </summary>
+        /// <param name="host">The <see cref="Window"/> that will be the host.</param>
         private void Install(Window host)
         {
             var adornerLayer = host.GetVisualDescendants()
@@ -128,13 +158,5 @@ namespace Avalonia.Controls.Notifications
                 adornerLayer.Children.Add(this);
             }
         }
-    }
-
-    public enum NotificationPosition
-    {
-        TopLeft,
-        TopRight,
-        BottomLeft,
-        BottomRight
     }
 }
