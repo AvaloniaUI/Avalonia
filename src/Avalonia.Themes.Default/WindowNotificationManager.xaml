@@ -4,8 +4,8 @@
         <Setter Property="Margin" Value="0 0 8 8"/>
         <Setter Property="Template">
             <ControlTemplate>
-                <StackPanel Name="PART_Items">
-                    <StackPanel.DataTemplates>
+                <ReversibleStackPanel Name="PART_Items">
+                    <ReversibleStackPanel.DataTemplates>
                         <DataTemplate DataType="INotification">
                             <StackPanel Spacing="8" Margin="12">
                                 <TextBlock Text="{Binding Title}" FontWeight="Medium" />
@@ -15,29 +15,29 @@
                         <DataTemplate DataType="x:String">
                             <TextBlock Text="{Binding }" Margin="12" />
                         </DataTemplate>
-                    </StackPanel.DataTemplates>
-                </StackPanel>
+                    </ReversibleStackPanel.DataTemplates>
+                </ReversibleStackPanel>
             </ControlTemplate>
         </Setter>
     </Style>
 
-    <Style Selector="WindowNotificationManager:topleft /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:topleft /template/ ReversibleStackPanel#PART_Items">
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <Style Selector="WindowNotificationManager:topright /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:topright /template/ ReversibleStackPanel#PART_Items">
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
     </Style>
 
-    <Style Selector="WindowNotificationManager:bottomleft /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:bottomleft /template/ ReversibleStackPanel#PART_Items">
         <Setter Property="ReverseOrder" Value="True"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
-    <Style Selector="WindowNotificationManager:bottomright /template/ StackPanel#PART_Items">
+    <Style Selector="WindowNotificationManager:bottomright /template/ ReversibleStackPanel#PART_Items">
         <Setter Property="ReverseOrder" Value="True"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
