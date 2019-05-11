@@ -15,7 +15,7 @@ namespace WindowsInteropTest
         {
             System.Windows.Forms.Application.EnableVisualStyles();
             System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
-            AppBuilder.Configure<App>().UseWin32().UseDirect2D1().SetupWithoutStarting();
+            AppBuilder.Configure<App>().UseWin32().UseDirect2D1().UseDataGrid().SetupWithoutStarting();
             System.Windows.Forms.Application.Run(new SelectorForm());
         }
     }

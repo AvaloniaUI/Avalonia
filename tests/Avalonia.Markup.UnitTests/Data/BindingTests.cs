@@ -101,6 +101,28 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [Fact]
+        public void OneWayToSource_Binding_Should_React_To_DataContext_Changed()
+        {
+            var target = new TextBlock { Text = "bar" };
+            var binding = new Binding
+            {
+                Path = "Foo",
+                Mode = BindingMode.OneWayToSource,
+            };
+
+            target.Bind(TextBox.TextProperty, binding);
+
+            var source = new Source { Foo = "foo" };
+            target.DataContext = source;
+
+            Assert.Equal("bar", source.Foo);
+            target.Text = "baz";
+            Assert.Equal("baz", source.Foo);
+            source.Foo = "quz";
+            Assert.Equal("baz", target.Text);
+        }
+
+        [Fact]
         public void Default_BindingMode_Should_Be_Used()
         {
             var source = new Source { Foo = "foo" };
