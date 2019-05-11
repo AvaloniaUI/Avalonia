@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Notifications
         private bool _isClosing;
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="NotificationCard"/>.
+        /// Initializes a new instance of the <see cref="NotificationCard"/> class.
         /// </summary>
         public NotificationCard()
         {
