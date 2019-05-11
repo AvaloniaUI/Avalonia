@@ -6,7 +6,7 @@ using System;
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Implements the INotification interfaces.
+    /// A notification that can be shown in a window or by the host operating system.
     /// Can be displayed by both <see cref="INotificationManager"/> and <see cref="IManagedNotificationManager"/>
     /// </summary>
     /// <remarks>
