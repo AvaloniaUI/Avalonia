@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <summary>
-        /// Instantiates a new instance of <see cref="WindowNotificationManager"/>.
+        /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
         /// <param name="host">The window that will host the control.</param>
         public WindowNotificationManager(Window host)
