@@ -6,7 +6,7 @@ using System;
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Interface for a notification.
+    /// Represents a notification that can be shown in a window or by the host operating system.
     /// </summary>
     public interface INotification
     {
