@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Notifications
         string Title { get; }
 
         /// <summary>
-        /// Gets the Message of the notification.
+        /// Gets the notification message.
         /// </summary>
         string Message { get; }
 
