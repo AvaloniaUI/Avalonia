@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Notifications
     public class Notification : INotification
     {
         /// <summary>
-        /// Instantiates an instance of <see cref="Notification"/>
+        /// Initializes a new instance of the <see cref="Notification"/> class.
         /// </summary>
         /// <param name="title">The title of the notification.</param>
         /// <param name="message">The message to be displayed in the notification.</param>
