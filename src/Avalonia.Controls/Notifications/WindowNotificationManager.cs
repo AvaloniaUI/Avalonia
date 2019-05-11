@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Defines a WindowNotificationManager control.
+    /// An <see cref="INotificationManager"/> that displays notifications in a <see cref="Window"/>.
     /// </summary>
     public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
