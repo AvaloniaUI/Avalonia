@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Notifications
         /// <param name="expiration">The expiry time at which the notification will close. 
         /// Use <see cref="TimeSpan.Zero"/> for notifications that will remain open.</param>
         /// <param name="onClick">An Action to call when the notification is clicked.</param>
-        /// <param name="onClose">The Action to call when the notification is closed.</param>
+        /// <param name="onClose">An Action to call when the notification is closed.</param>
         public Notification(string title,
             string message,
             NotificationType type = NotificationType.Information,
