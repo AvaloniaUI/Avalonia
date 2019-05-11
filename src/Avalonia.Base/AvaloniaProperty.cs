@@ -549,12 +549,12 @@ namespace Avalonia
         
     }
     /// <summary>
-    /// Class representing the <see cref="UnsetValue"/>.
+    /// Class representing the <see cref="AvaloniaProperty.UnsetValue"/>.
     /// </summary>
     public class UnsetValueType
     {
         /// <summary>
-        /// Returns the string representation of the <see cref="UnsetValue"/>.
+        /// Returns the string representation of the <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
         /// <returns>The string "(unset)".</returns>
         public override string ToString() => "(unset)";
