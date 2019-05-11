@@ -4,7 +4,7 @@
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Interface for a managed notification manager.
+    /// Represents a notification manager that can show arbitrary content.
     /// Managed notification managers can show any content.
     /// </summary>
     public interface IManagedNotificationManager : INotificationManager
