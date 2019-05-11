@@ -31,7 +31,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
                     .FirstOrDefault();
-                if (parentScope?.Type == AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Style)
+                if (parentScope?.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style)
                     targetType = parentScope.TargetType;
                 else if (context.ParentNodes().Skip(1).FirstOrDefault() is XamlIlAstObjectNode directParentNode
                          && templatableBaseType.IsAssignableFrom(directParentNode.Type.GetClrType()))
@@ -44,16 +44,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on, targetType,
-                AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.ControlTemplate);
+                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate);
         }
     }
 
     class AvaloniaXamlIlTargetTypeMetadataNode : XamlIlValueWithSideEffectNodeBase
     {
         public IXamlIlAstTypeReference TargetType { get; set; }
-        public ScopeType Type { get; }
+        public ScopeTypes ScopeType { get; }
 
-        public enum ScopeType
+        public enum ScopeTypes
         {
             Style,
             ControlTemplate,
@@ -61,11 +61,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
         
         public AvaloniaXamlIlTargetTypeMetadataNode(IXamlIlAstValueNode value, IXamlIlAstTypeReference targetType,
-            ScopeType type)
+            ScopeTypes type)
             : base(value, value)
         {
             TargetType = targetType;
-            Type = type;
+            ScopeType = type;
         }
     }
 }

@@ -3,7 +3,7 @@ using XamlIl.Transform;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    public class AvaloniaXamlIlTransitionsTypeMetadataTransformer : IXamlIlAstTransformer
+    class AvaloniaXamlIlTransitionsTypeMetadataTransformer : IXamlIlAstTransformer
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         for (var c = 0; c < pn.Values.Count; c++)
                         {
                             pn.Values[c] = new AvaloniaXamlIlTargetTypeMetadataNode(pn.Values[c], on.Type,
-                                AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Transitions);
+                                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Transitions);
                         }
                     }
                 }

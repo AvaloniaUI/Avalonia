@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;</DefineConstants>
+    <DefineConstants>PCL;NETSTANDARD;NETSTANDARD2_0;HAS_TYPE_CONVERTER;HAS_CUSTOM_ATTRIBUTE_PROVIDER;XAMLIL_INTERNAL</DefineConstants>
     <UseCecil>false</UseCecil>
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>

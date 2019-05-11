@@ -53,10 +53,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             result = new XamlIlTypeSelector(result, typeResolver(@is.Xmlns, @is.TypeName).Type, false);
                             break;
                         case SelectorGrammar.ClassSyntax @class:
-                            result = new XamlIlStringSelector(result, XamlIlStringSelector.Type.Class, @class.Class);
+                            result = new XamlIlStringSelector(result, XamlIlStringSelector.SelectorType.Class, @class.Class);
                             break;
                         case SelectorGrammar.NameSyntax name:
-                            result = new XamlIlStringSelector(result, XamlIlStringSelector.Type.Name, name.Name);
+                            result = new XamlIlStringSelector(result, XamlIlStringSelector.SelectorType.Name, name.Name);
                             break;
                         case SelectorGrammar.PropertySyntax property:
                         {
@@ -82,13 +82,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                             break;
                         }
                         case SelectorGrammar.ChildSyntax child:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.Type.Child);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Child);
                             break;
                         case SelectorGrammar.DescendantSyntax descendant:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.Type.Descendant);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Descendant);
                             break;
                         case SelectorGrammar.TemplateSyntax template:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.Type.Template);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Template);
                             break;
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
@@ -123,7 +123,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             return new AvaloniaXamlIlTargetTypeMetadataNode(on,
                 new XamlIlAstClrTypeReference(selector, selector.TargetType, false),
-                AvaloniaXamlIlTargetTypeMetadataNode.ScopeType.Style);
+                AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
         }
 
     }
@@ -199,15 +199,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     class XamlIlStringSelector : XamlIlSelectorNode
     {
         public string String { get; set; }
-        public enum Type
+        public enum SelectorType
         {
             Class,
             Name
         }
 
-        private Type _type;
+        private SelectorType _type;
 
-        public XamlIlStringSelector(XamlIlSelectorNode previous, Type type, string s) : base(previous)
+        public XamlIlStringSelector(XamlIlSelectorNode previous, SelectorType type, string s) : base(previous)
         {
             _type = type;
             String = s;
@@ -226,15 +226,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     class XamlIlCombinatorSelector : XamlIlSelectorNode
     {
-        private readonly Type _type;
+        private readonly SelectorType _type;
 
-        public enum Type
+        public enum SelectorType
         {
             Child,
             Descendant,
             Template
         }
-        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, Type type) : base(previous)
+        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, SelectorType type) : base(previous)
         {
             _type = type;
         }

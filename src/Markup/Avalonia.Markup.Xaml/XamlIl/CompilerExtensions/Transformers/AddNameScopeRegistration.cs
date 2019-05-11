@@ -51,7 +51,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         class ScopeRegistrationNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
         {
-            private readonly IXamlIlType _targetType;
             public IXamlIlAstValueNode Value { get; set; }
             public ScopeRegistrationNode(IXamlIlAstValueNode value) : base(value)
             {
