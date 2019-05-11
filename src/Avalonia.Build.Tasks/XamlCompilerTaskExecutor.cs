@@ -347,8 +347,7 @@ namespace Avalonia.Build.Tasks
             
             asm.Write(output, new WriterParameters
             {
-                WriteSymbols = true,
-                SymbolWriterProvider = new PortablePdbWriterProvider(),
+                WriteSymbols = asm.MainModule.HasSymbols
             });
 
             return new CompileResult(true, true);
