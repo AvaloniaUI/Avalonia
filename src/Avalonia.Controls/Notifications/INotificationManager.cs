@@ -4,7 +4,8 @@
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
-    /// Defines the interfaces for NotificationManagers.
+    /// Represents a notification manager that can be used to show notifications in a window or using
+	/// the host operating system.
     /// </summary>
     public interface INotificationManager
     {
