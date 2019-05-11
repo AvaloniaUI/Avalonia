@@ -18,14 +18,9 @@ namespace Avalonia.Controls
         event EventHandler<ExitEventArgs> Exit;
 
         /// <summary>
-        /// Shuts down an application that returns the specified exit code to the operating system.
-        /// </summary>
-        void Shutdown();
-
-        /// <summary>
-        /// Shuts down an application that returns the specified exit code to the operating system.
+        /// Shuts down the application and sets the exit code that is returned to the operating system when the application exits.
         /// </summary>
         /// <param name="exitCode">An integer exit code for an application. The default exit code is 0.</param>
-        void Shutdown(int exitCode);
+        void Shutdown(int exitCode = 0);
     }
 }

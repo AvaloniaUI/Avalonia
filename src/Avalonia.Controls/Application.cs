@@ -206,15 +206,25 @@ namespace Avalonia
         /// </summary>
         public virtual void Initialize() { }
 
+        /// <summary>
+        /// Runs the application's main loop.
+        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown()"/> was called.
+        /// </summary>
+        /// <returns>The application's exit code that is passed on the operating system.</returns>
         public int Run()
         {
             return Run(new CancellationTokenSource());
         }
 
         /// <summary>
-        /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
+        /// Runs the application's main loop.
+        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown()"/> was called.
+        /// This also returns when <see cref="ICloseable"/> is closed.
         /// </summary>
-        /// <param name="closable">The closable to track</param>
+        /// <param name="closable">The closable to track.</param>
+        /// <returns>The application's exit code that is passed on the operating system.</returns>
         public int Run(ICloseable closable)
         {
             closable.Closed += (s, e) => _mainLoopCancellationTokenSource?.Cancel();
@@ -223,9 +233,13 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Runs the application's main loop until some condition occurs that is specified by ExitMode.
+        /// Runs the application's main loop.
+        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown()"/> was called.
         /// </summary>
-        /// <param name="mainWindow">The main window</param>
+        /// <param name="mainWindow">The window that is used as <see cref="MainWindow"/>
+        /// when the <see cref="MainWindow"/> isn't already set.</param>
+        /// <returns>The application's exit code that is passed on the operating system.</returns>
         public int Run(Window mainWindow)
         {
             if (mainWindow == null)
@@ -248,11 +262,14 @@ namespace Avalonia
 
             return Run(new CancellationTokenSource());
         }
-
         /// <summary>
-        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
+        /// Runs the application's main loop.
+        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown()"/> was called.
+        /// This also returns when the <see cref="CancellationToken"/> is canceled.
         /// </summary>
-        /// <param name="token">The token to track</param>
+        /// <returns>The application's exit code that is passed on the operating system.</returns>
+        /// <param name="token">The token to track.</param>
         public int Run(CancellationToken token)
         {
             return Run(CancellationTokenSource.CreateLinkedTokenSource(token));
@@ -284,24 +301,26 @@ namespace Avalonia
             return _exitCode;
         }
 
+        /// <summary>
+        /// Raises the <see cref="Startup"/> event.
+        /// </summary>
+        /// <param name="e">A <see cref="StartupEventArgs"/> that contains the event data.</param>
         protected virtual void OnStartup(StartupEventArgs e)
         {
             Startup?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Raises the <see cref="Exit"/> event.
+        /// </summary>
+        /// <param name="e">A <see cref="ExitEventArgs"/> that contains the event data.</param>
         protected virtual void OnExit(ExitEventArgs e)
         {
             Exit?.Invoke(this, e);
         }
 
         /// <inheritdoc/>
-        public void Shutdown()
-        {
-            Shutdown(0);
-        }
-
-        /// <inheritdoc/>
-        public void Shutdown(int exitCode)
+        public void Shutdown(int exitCode = 0)
         {
             if (IsShuttingDown)
             {

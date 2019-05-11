@@ -7,10 +7,16 @@ using System.Linq;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Contains the arguments for the <see cref="IApplicationLifecycle.Startup"/> event.
+    /// </summary>
     public class StartupEventArgs : EventArgs
     {
         private string[] _args;
 
+        /// <summary>
+        /// Gets command line arguments that were passed to the application.
+        /// </summary>
         public IReadOnlyList<string> Args => _args ?? (_args = GetArgs());
 
         private static string[] GetArgs()
