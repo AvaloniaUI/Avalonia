@@ -10,7 +10,8 @@ namespace Avalonia.Controls.Notifications
     /// Can be displayed by both <see cref="INotificationManager"/> and <see cref="IManagedNotificationManager"/>
     /// </summary>
     /// <remarks>
-    /// This notification content type is compatible with native notifications.
+    /// This class represents a notification that can be displayed either in a window using
+    /// <see cref="WindowNotificationManager"/> or by the host operating system (to be implemented).
     /// </remarks>
     public class Notification : INotification
     {
