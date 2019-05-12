@@ -231,9 +231,7 @@ namespace Avalonia.Controls
             var finalRect = new Rect(finalSize);
             var pos = 0.0;
 
-            var children = Children;
-
-            foreach (Control child in children)
+            foreach (Control child in Children)
             {
                 if (!child.IsVisible)
                 {
