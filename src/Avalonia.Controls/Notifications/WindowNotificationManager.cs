@@ -25,8 +25,9 @@ namespace Avalonia.Controls.Notifications
           AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(nameof(Position), NotificationPosition.TopRight);
 
         /// <summary>
-        /// Defines which corner of the screen notifications can be displayed in. <seealso cref="NotificationPosition"/>.
+        /// Defines which corner of the screen notifications can be displayed in.
         /// </summary>
+        /// <seealso cref="NotificationPosition"/>
         public NotificationPosition Position
         {
             get { return GetValue(PositionProperty); }
