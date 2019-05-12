@@ -25,7 +25,7 @@ namespace Avalonia.Controls.Notifications
             this.GetObservable(IsClosedProperty)
                 .Subscribe(x =>
                 {
-                    if (!IsClosing & !IsClosed)
+                    if (!IsClosing && !IsClosed)
                     {
                         return;
                     }
@@ -89,25 +89,11 @@ namespace Avalonia.Controls.Notifications
             AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosed), o => o.IsClosed, (o, v) => o.IsClosed = v);
 
         /// <summary>
-        /// Defines the <see cref="NotificationCloseInvoked"/> event.
-        /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> NotificationCloseInvokedEvent =
-            RoutedEvent.Register<NotificationCard, RoutedEventArgs>(nameof(NotificationCloseInvoked), RoutingStrategies.Bubble);
-
-        /// <summary>
         /// Defines the <see cref="NotificationClosed"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> NotificationClosedEvent =
             RoutedEvent.Register<NotificationCard, RoutedEventArgs>(nameof(NotificationClosed), RoutingStrategies.Bubble);
 
-        /// <summary>
-        /// Raised when notification close event is invoked.
-        /// </summary>
-        public event EventHandler<RoutedEventArgs> NotificationCloseInvoked
-        {
-            add { AddHandler(NotificationCloseInvokedEvent, value); }
-            remove { RemoveHandler(NotificationCloseInvokedEvent, value); }
-        }
 
         /// <summary>
         /// Raised when the <see cref="NotificationCard"/> has closed.
@@ -169,8 +155,6 @@ namespace Avalonia.Controls.Notifications
             }
 
             IsClosing = true;
-
-            RaiseEvent(new RoutedEventArgs(NotificationCloseInvokedEvent));
         }
     }
 }
