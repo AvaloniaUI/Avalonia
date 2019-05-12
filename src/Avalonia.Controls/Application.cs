@@ -208,10 +208,12 @@ namespace Avalonia
 
         /// <summary>
         /// Runs the application's main loop.
-        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
-        /// or <see cref="Shutdown()"/> was called.
         /// </summary>
-        /// <returns>The application's exit code that is passed on the operating system.</returns>
+        /// <remarks>
+        /// This will return when the <see cref="Avalonia.Controls.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown(int)"/> was called. 
+        /// </remarks>
+        /// <returns>The application's exit code that is returned to the operating system on termination.</returns>
         public int Run()
         {
             return Run(new CancellationTokenSource());
@@ -219,12 +221,14 @@ namespace Avalonia
 
         /// <summary>
         /// Runs the application's main loop.
-        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
-        /// or <see cref="Shutdown()"/> was called.
-        /// This also returns when <see cref="ICloseable"/> is closed.
         /// </summary>
+        /// <remarks>
+        /// This will return when the <see cref="Avalonia.Controls.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown(int)"/> was called.
+        /// This also returns when <see cref="ICloseable"/> is closed.
+        /// </remarks>
         /// <param name="closable">The closable to track.</param>
-        /// <returns>The application's exit code that is passed on the operating system.</returns>
+        /// <returns>The application's exit code that is returned to the operating system on termination.</returns>
         public int Run(ICloseable closable)
         {
             closable.Closed += (s, e) => _mainLoopCancellationTokenSource?.Cancel();
@@ -234,12 +238,14 @@ namespace Avalonia
 
         /// <summary>
         /// Runs the application's main loop.
-        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
-        /// or <see cref="Shutdown()"/> was called.
         /// </summary>
+        /// <remarks>
+        /// This will return when the <see cref="Avalonia.Controls.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown(int)"/> was called.
+        /// </remarks>
         /// <param name="mainWindow">The window that is used as <see cref="MainWindow"/>
         /// when the <see cref="MainWindow"/> isn't already set.</param>
-        /// <returns>The application's exit code that is passed on the operating system.</returns>
+        /// <returns>The application's exit code that is returned to the operating system on termination.</returns>
         public int Run(Window mainWindow)
         {
             if (mainWindow == null)
@@ -264,11 +270,13 @@ namespace Avalonia
         }
         /// <summary>
         /// Runs the application's main loop.
-        /// This will return when the <see cref="Avalonia.ShutdownMode"/> condition is met
-        /// or <see cref="Shutdown()"/> was called.
-        /// This also returns when the <see cref="CancellationToken"/> is canceled.
         /// </summary>
-        /// <returns>The application's exit code that is passed on the operating system.</returns>
+        /// <remarks>
+        /// This will return when the <see cref="Avalonia.Controls.ShutdownMode"/> condition is met
+        /// or <see cref="Shutdown(int)"/> was called.
+        /// This also returns when the <see cref="CancellationToken"/> is canceled.
+        /// </remarks>
+        /// <returns>The application's exit code that is returned to the operating system on termination.</returns>
         /// <param name="token">The token to track.</param>
         public int Run(CancellationToken token)
         {
@@ -339,9 +347,7 @@ namespace Avalonia
 
                 OnExit(e);
 
-                _exitCode = e.ApplicationExitCode;
-
-                Environment.ExitCode = _exitCode;
+                _exitCode = e.ApplicationExitCode;                
             }
             finally
             {
@@ -350,6 +356,8 @@ namespace Avalonia
                 _mainLoopCancellationTokenSource = null;
 
                 IsShuttingDown = false;
+
+                Environment.ExitCode = _exitCode;
             }
         }
 

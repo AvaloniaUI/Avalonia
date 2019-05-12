@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         private string[] _args;
 
         /// <summary>
-        /// Gets command line arguments that were passed to the application.
+        /// Gets the command line arguments that were passed to the application.
         /// </summary>
         public IReadOnlyList<string> Args => _args ?? (_args = GetArgs());
 
