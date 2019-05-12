@@ -7,7 +7,6 @@ namespace Avalonia.Controls.Notifications
 {
     /// <summary>
     /// A notification that can be shown in a window or by the host operating system.
-    /// Can be displayed by both <see cref="INotificationManager"/> and <see cref="IManagedNotificationManager"/>
     /// </summary>
     /// <remarks>
     /// This class represents a notification that can be displayed either in a window using
