@@ -18,7 +18,6 @@
     <EmbeddedResource Include="**/*.xaml"/>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets"/>
-  <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
 </Project>
