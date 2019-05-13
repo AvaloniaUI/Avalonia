@@ -17,9 +17,10 @@ namespace Avalonia.Markup.Xaml.Converters
             if (s == null)
                 return null;
             //On Unix Uri tries to interpret paths starting with "/" as file Uris
-            if (s.StartsWith("/"))
-                return new Uri(s, UriKind.Relative);
-            return new Uri(s);
+            var kind = s.StartsWith("/") ? UriKind.Relative : UriKind.Absolute;
+            if (!Uri.TryCreate(s, kind, out var res))
+                throw new ArgumentException("Unable to parse URI: " + s);
+            return res;
         }
     }
 }

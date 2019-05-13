@@ -45,7 +45,7 @@ namespace Avalonia.Markup.Xaml.Converters
             if(uri.IsAbsoluteUri && uri.IsFile)
                 return new WindowIcon(uri.LocalPath);
             var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-            return new WindowIcon(assets.Open(uri, context.GetBaseUri()));
+            return new WindowIcon(assets.Open(uri, context.GetContextBaseUri()));
         }
     }
 }

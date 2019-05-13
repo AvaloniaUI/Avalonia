@@ -11,12 +11,5 @@ namespace Avalonia.Themes.Default
     /// </summary>
     public class DefaultTheme : Styles
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultTheme"/> class.
-        /// </summary>
-        public DefaultTheme()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
     }
 }
