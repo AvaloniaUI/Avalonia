@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Remote.Protocol;
@@ -206,7 +207,8 @@ namespace Avalonia.DesignerSupport.Remote
                 catch (Exception e)
                 {
                     var xamlException = e as XamlException;
-
+                    var xmlException = e as XmlException;
+                    
                     s_transport.Send(new UpdateXamlResultMessage
                     {
                         Error = e.ToString(),
@@ -214,8 +216,8 @@ namespace Avalonia.DesignerSupport.Remote
                         {
                             ExceptionType = e.GetType().FullName,
                             Message = e.Message.ToString(),
-                            LineNumber = xamlException?.LineNumber,
-                            LinePosition = xamlException?.LinePosition,
+                            LineNumber = xamlException?.LineNumber ?? xmlException?.LineNumber,
+                            LinePosition = xamlException?.LinePosition ?? xmlException?.LinePosition,
                         }
                     });
                 }
