@@ -1150,14 +1150,15 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private List<SKTextLine> CreateTextLines(ReadOnlySpan<char> text, IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            if (text.Length == 0)
+            if (text.Length == 0 || Math.Abs(_constraint.Width) < float.Epsilon ||
+                Math.Abs(_constraint.Height) < float.Epsilon)
             {
                 var emptyTextLine = CreateEmptyTextLine();
 
                 return new List<SKTextLine>
-                       {
-                           emptyTextLine
-                       };
+                {
+                    emptyTextLine
+                };
             }
 
             var currentTextRuns = CreateTextRuns(text);
@@ -1284,7 +1285,7 @@ namespace Avalonia.Skia.Text
                     if (breakCharPosition != textPointer.StartingIndex)
                     {
                         buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
-                    }                    
+                    }
 
                     var cluster = buffer.GlyphInfos.Length > 0
                                       ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
@@ -1795,7 +1796,7 @@ namespace Avalonia.Skia.Text
         /// <param name="textRuns">The text runs.</param>
         /// <param name="length">The length of the first part.</param>
         /// <returns></returns>
-        private SplitTextLineResult  SplitTextRuns(
+        private SplitTextLineResult SplitTextRuns(
             ReadOnlySpan<char> text,
             IReadOnlyList<SKTextRun> textRuns,
             int length)
