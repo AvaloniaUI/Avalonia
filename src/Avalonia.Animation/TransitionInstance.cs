@@ -31,7 +31,7 @@ namespace Avalonia.Animation
             var interpVal = (double)t.Ticks / _duration.Ticks;
 
             // Clamp interpolation value.
-            if (interpVal >= 1d |  (interpVal < 0d))
+            if (interpVal >= 1d | (interpVal < 0d))
             {
                 PublishNext(1d);
                 PublishCompleted();
