@@ -19,7 +19,7 @@ namespace Avalonia.Data
         /// <summary>
         /// Gets the collection of child bindings.
         /// </summary>
-        [Content]
+        [Content, AssignBinding]
         public IList<IBinding> Bindings { get; set; } = new List<IBinding>();
 
         /// <summary>

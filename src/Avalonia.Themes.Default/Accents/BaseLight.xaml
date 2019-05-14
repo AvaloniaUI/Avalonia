@@ -1,6 +1,6 @@
 <Style xmlns="https://github.com/avaloniaui"
        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:sys="clr-namespace:System;assembly=mscorlib">
+       xmlns:sys="clr-namespace:System;assembly=netstandard">
     <Style.Resources>
 
         <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
@@ -45,6 +45,12 @@
         <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorLowBrush" Color="{DynamicResource ErrorLowColor}"></SolidColorBrush>
+
+        <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444"/>
+        <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="Teal"/>
+        <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="LimeGreen"/>
+        <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="Orange"/>
+        <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="OrangeRed"/>
 
         <Thickness x:Key="ThemeBorderThickness">1</Thickness>
         <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>

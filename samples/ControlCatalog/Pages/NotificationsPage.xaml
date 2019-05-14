@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ControlCatalog.Pages.NotificationsPage">
+  <StackPanel Orientation="Vertical" Spacing="4" HorizontalAlignment="Left">
+        <TextBlock Classes="h1">Notifications</TextBlock>
+        <Button Content="Show Standard Managed Notification" Command="{Binding ShowManagedNotificationCommand}" />
+        <Button Content="Show Custom Managed Notification" Command="{Binding ShowCustomManagedNotificationCommand}" />
+        <Button Content="Show Native Notification" Command="{Binding ShowNativeNotificationCommand}" />
+    </StackPanel>
+</UserControl>

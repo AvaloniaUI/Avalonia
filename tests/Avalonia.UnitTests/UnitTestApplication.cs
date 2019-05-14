@@ -19,6 +19,11 @@ namespace Avalonia.UnitTests
     {
         private readonly TestServices _services;
 
+        public UnitTestApplication() : this(null)
+        {
+            
+        }
+        
         public UnitTestApplication(TestServices services)
         {
             _services = services ?? new TestServices();
