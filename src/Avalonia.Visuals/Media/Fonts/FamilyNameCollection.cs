@@ -4,31 +4,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 
 namespace Avalonia.Media.Fonts
 {
-    using System.Text;
-
     public class FamilyNameCollection : IEnumerable<string>
-    {    
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
         /// </summary>
         /// <param name="familyNames">The family names.</param>
         /// <exception cref="ArgumentException">familyNames</exception>
-        public FamilyNameCollection(IEnumerable<string> familyNames)
+        public FamilyNameCollection(string familyNames)
         {
-            Contract.Requires<ArgumentNullException>(familyNames != null);
+            if (familyNames == null)
+            {
+                throw new ArgumentNullException(nameof(familyNames));
+            }
 
-            var names = new List<string>(familyNames);
+            Names = familyNames.Split(',').Select(x => x.Trim()).ToArray();
 
-            if (names.Count == 0) throw new ArgumentException($"{nameof(familyNames)} must not be empty.");
-
-            Names = new ReadOnlyCollection<string>(names);
-
-            PrimaryFamilyName = Names.First();
+            PrimaryFamilyName = Names[0];
 
             HasFallbacks = Names.Count > 1;
         }
@@ -55,7 +52,7 @@ namespace Avalonia.Media.Fonts
         /// <value>
         /// The names.
         /// </value>
-        internal ReadOnlyCollection<string> Names { get; }
+        internal IReadOnlyList<string> Names { get; }
 
         /// <inheritdoc />
         /// <summary>
@@ -95,7 +92,10 @@ namespace Avalonia.Media.Fonts
             {
                 builder.Append(Names[index]);
 
-                if (index == Names.Count - 1) break;
+                if (index == Names.Count - 1)
+                {
+                    break;
+                }
 
                 builder.Append(", ");
             }
@@ -123,7 +123,10 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (!(obj is FamilyNameCollection other)) return false;
+            if (!(obj is FamilyNameCollection other))
+            {
+                return false;
+            }
 
             return other.ToString().Equals(ToString());
         }

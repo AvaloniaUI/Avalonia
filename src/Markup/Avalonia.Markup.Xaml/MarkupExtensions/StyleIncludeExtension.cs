@@ -18,10 +18,10 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         {
         }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public override object ProvideValue(IServiceProvider serviceProvider) => ProvideTypedValue(serviceProvider);
+        public IStyle ProvideTypedValue(IServiceProvider serviceProvider)
         {
-            var tdc = (ITypeDescriptorContext)serviceProvider;
-            return new StyleInclude(tdc.GetBaseUri()) { Source = Source };
+            return new StyleInclude(serviceProvider.GetContextBaseUri()) { Source = Source };
         }
 
         public Uri Source { get; set; }
