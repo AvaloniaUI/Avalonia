@@ -36,16 +36,27 @@ namespace Avalonia.Animation
 
         private Transitions _transitions;
 
-        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions
-          = new Dictionary<AvaloniaProperty, IDisposable>();
+        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions;
 
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
         public Transitions Transitions
         {
-            get { return _transitions ?? (_transitions = new Transitions()); }
-            set { SetAndRaise(TransitionsProperty, ref _transitions, value); }
+            get
+            {
+                if (_transitions == null)
+                    _transitions = new Transitions();
+
+                if (_previousTransitions == null)
+                    _previousTransitions = new Dictionary<AvaloniaProperty, IDisposable>();
+
+                return _transitions;
+            }
+            set
+            {
+                SetAndRaise(TransitionsProperty, ref _transitions, value);
+            }
         }
 
         /// <summary>
@@ -55,7 +66,7 @@ namespace Avalonia.Animation
         /// <param name="e">The event args.</param>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Priority != BindingPriority.Animation && Transitions != null)
+            if (e.Priority != BindingPriority.Animation && Transitions != null && _previousTransitions != null)
             {
                 var match = Transitions.FirstOrDefault(x => x.Property == e.Property);
 
