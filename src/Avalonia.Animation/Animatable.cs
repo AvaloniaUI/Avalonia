@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Data;
-using Avalonia.Animation.Animators; 
+using Avalonia.Animation.Animators;
 
 namespace Avalonia.Animation
 {
@@ -36,6 +36,9 @@ namespace Avalonia.Animation
 
         private Transitions _transitions;
 
+        private Dictionary<AvaloniaProperty, IDisposable> _previousTransitions
+          = new Dictionary<AvaloniaProperty, IDisposable>();
+
         /// <summary>
         /// Gets or sets the property transitions for the control.
         /// </summary>
@@ -58,7 +61,12 @@ namespace Avalonia.Animation
 
                 if (match != null)
                 {
-                    match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+                    if (_previousTransitions.TryGetValue(e.Property, out var dispose))
+                        dispose.Dispose();
+
+                    var instance = match.Apply(this, Clock ?? Avalonia.Animation.Clock.GlobalClock, e.OldValue, e.NewValue);
+
+                    _previousTransitions[e.Property] = instance;
                 }
             }
         }
