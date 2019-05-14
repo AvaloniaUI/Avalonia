@@ -31,15 +31,9 @@ namespace Avalonia.Animation
             var interpVal = (double)t.Ticks / _duration.Ticks;
 
             // Clamp interpolation value.
-            if (interpVal >= 1d)
+            if (interpVal >= 1d |  (interpVal < 0d))
             {
                 PublishNext(1d);
-                PublishCompleted();
-            }
-            // Cut-off when interpolation value is negative.
-            else if (interpVal < 0d)
-            {
-                PublishNext(0d);
                 PublishCompleted();
             }
             else
