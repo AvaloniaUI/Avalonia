@@ -33,8 +33,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class Button : ContentControl
     {
-        private ICommand _command;
-
         /// <summary>
         /// Defines the <see cref="ClickMode"/> property.
         /// </summary>
@@ -74,6 +72,9 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> IsPressedProperty =
             AvaloniaProperty.Register<Button, bool>(nameof(IsPressed));
+
+        private ICommand _command;
+        private bool _commandCanExecute = true;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.
@@ -146,6 +147,8 @@ namespace Avalonia.Controls
             get { return GetValue(IsPressedProperty); }
             private set { SetValue(IsPressedProperty, value); }
         }
+
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute; 
 
         /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -289,7 +292,11 @@ namespace Avalonia.Controls
             {
                 if (status?.ErrorType == BindingErrorType.Error)
                 {
-                    IsEnabled = false;
+                    if (_commandCanExecute)
+                    {
+                        _commandCanExecute = false;
+                        UpdateIsEffectivelyEnabled();
+                    }
                 }
             }
         }
@@ -348,9 +355,13 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object sender, EventArgs e)
         {
-            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
-            // use IsEnabledCore etc. but it will do for now.
-            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
+            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+
+            if (canExecute != _commandCanExecute)
+            {
+                _commandCanExecute = canExecute;
+                UpdateIsEffectivelyEnabled();
+            }
         }
 
         /// <summary>

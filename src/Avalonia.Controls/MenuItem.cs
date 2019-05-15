@@ -9,6 +9,7 @@ using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -20,8 +21,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable
     {
-        private ICommand _command;
-
         /// <summary>
         /// Defines the <see cref="Command"/> property.
         /// </summary>
@@ -91,9 +90,8 @@ namespace Avalonia.Controls
         private static readonly ITemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new StackPanel());
 
-        /// <summary>
-        /// The submenu popup.
-        /// </summary>
+        private ICommand _command;
+        private bool _commandCanExecute = true;
         private Popup _popup;
 
         /// <summary>
@@ -230,6 +228,8 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         IMenuElement IMenuItem.Parent => Parent as IMenuElement;
+
+        protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
@@ -400,6 +400,22 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)
+        {
+            base.UpdateDataValidation(property, status);
+            if (property == CommandProperty)
+            {
+                if (status?.ErrorType == BindingErrorType.Error)
+                {
+                    if (_commandCanExecute)
+                    {
+                        _commandCanExecute = false;
+                        UpdateIsEffectivelyEnabled();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Closes all submenus of the menu item.
         /// </summary>
@@ -443,9 +459,13 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void CanExecuteChanged(object sender, EventArgs e)
         {
-            // HACK: Just set the IsEnabled property for the moment. This needs to be changed to
-            // use IsEnabledCore etc. but it will do for now.
-            IsEnabled = Command == null || Command.CanExecute(CommandParameter);
+            var canExecute = Command == null || Command.CanExecute(CommandParameter);
+
+            if (canExecute != _commandCanExecute)
+            {
+                _commandCanExecute = canExecute;
+                UpdateIsEffectivelyEnabled();
+            }
         }
 
         /// <summary>
