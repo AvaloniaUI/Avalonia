@@ -302,7 +302,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool CanFocus(IControl control) => control.Focusable && control.IsEnabledCore && control.IsVisible;
+        private bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
 
         private void UpdateSelectionBoxItem(object item)
         {

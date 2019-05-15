@@ -146,7 +146,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="e">The element.</param>
         /// <returns>True if the element can be focused.</returns>
-        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEnabledCore && e.IsVisible;
+        private static bool CanFocus(IInputElement e) => e.Focusable && e.IsEffectivelyEnabled && e.IsVisible;
 
         /// <summary>
         /// Gets the focus scope ancestors of the specified control, traversing popups.

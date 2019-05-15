@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
 
-            Assert.False(((IInputElement)target).IsEnabledCore);
+            Assert.False(((IInputElement)target).IsEffectivelyEnabled);
         }
 
         private class TestCommand : ICommand

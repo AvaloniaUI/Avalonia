@@ -27,10 +27,10 @@ namespace Avalonia.Input
             AvaloniaProperty.Register<InputElement, bool>(nameof(IsEnabled), true);
 
         /// <summary>
-        /// Defines the <see cref="IsEnabledCore"/> property.
+        /// Defines the <see cref="IsEffectivelyEnabled"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsEnabledCoreProperty =
-            AvaloniaProperty.Register<InputElement, bool>(nameof(IsEnabledCore), true);
+        public static readonly StyledProperty<bool> IsEffectivelyEnabledProperty =
+            AvaloniaProperty.Register<InputElement, bool>(nameof(IsEffectivelyEnabled), true);
 
         /// <summary>
         /// Gets or sets associated mouse cursor.
@@ -168,7 +168,7 @@ namespace Avalonia.Input
             PointerReleasedEvent.AddClassHandler<InputElement>(x => x.OnPointerReleased);
             PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
 
-            PseudoClass<InputElement, bool>(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
             PseudoClass<InputElement>(IsFocusedProperty, ":focus");
             PseudoClass<InputElement>(IsPointerOverProperty, ":pointerover");
         }
@@ -349,23 +349,23 @@ namespace Avalonia.Input
         /// </summary>
         /// <remarks>
         /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
+        /// controls. The <see cref="IsEffectivelyEnabled"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        bool IInputElement.IsEnabledCore => IsEnabledCore;
+        bool IInputElement.IsEffectivelyEnabled => IsEffectivelyEnabled;
 
         /// <summary>
         /// Gets a value indicating whether the control is effectively enabled for user interaction.
         /// </summary>
         /// <remarks>
         /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
+        /// controls. The <see cref="IsEffectivelyEnabled"/> property takes into account the
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
-        protected bool IsEnabledCore
+        protected bool IsEffectivelyEnabled
         {
-            get { return GetValue(IsEnabledCoreProperty); }
-            set { SetValue(IsEnabledCoreProperty, value); }
+            get { return GetValue(IsEffectivelyEnabledProperty); }
+            set { SetValue(IsEffectivelyEnabledProperty, value); }
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
@@ -393,7 +393,7 @@ namespace Avalonia.Input
         protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTreeCore(e);
-            UpdateIsEnabledCore();
+            UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
@@ -488,7 +488,7 @@ namespace Avalonia.Input
 
         private static void IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            ((InputElement)e.Sender).UpdateIsEnabledCore();
+            ((InputElement)e.Sender).UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
@@ -512,32 +512,32 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Updates the <see cref="IsEnabledCore"/> property value.
+        /// Updates the <see cref="IsEffectivelyEnabled"/> property value.
         /// </summary>
-        private void UpdateIsEnabledCore()
+        private void UpdateIsEffectivelyEnabled()
         {
-            UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
+            UpdateIsEffectivelyEnabled(this.GetVisualParent<InputElement>());
         }
 
         /// <summary>
-        /// Updates the <see cref="IsEnabledCore"/> property based on the parent's
-        /// <see cref="IsEnabledCore"/>.
+        /// Updates the <see cref="IsEffectivelyEnabled"/> property based on the parent's
+        /// <see cref="IsEffectivelyEnabled"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEnabledCore(InputElement parent)
+        private void UpdateIsEffectivelyEnabled(InputElement parent)
         {
             if (parent != null)
             {
-                IsEnabledCore = IsEnabled && parent.IsEnabledCore;
+                IsEffectivelyEnabled = IsEnabled && parent.IsEffectivelyEnabled;
             }
             else
             {
-                IsEnabledCore = IsEnabled;
+                IsEffectivelyEnabled = IsEnabled;
             }
 
             foreach (var child in this.GetVisualChildren().OfType<InputElement>())
             {
-                child.UpdateIsEnabledCore(this);
+                child.UpdateIsEffectivelyEnabled(this);
             }
         }
     }
