@@ -1,3 +1,7 @@
 ﻿<ProjectConfiguration>
-  <Settings />
+  <Settings>
+    <HiddenComponentWarnings>
+      <Value>MissingOrIgnoredProjectReference</Value>
+    </HiddenComponentWarnings>
+  </Settings>
 </ProjectConfiguration>
