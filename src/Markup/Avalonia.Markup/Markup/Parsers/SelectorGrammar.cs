@@ -275,7 +275,7 @@ namespace Avalonia.Markup.Parsers
         private static TSyntax ParseType<TSyntax>(ref CharacterReader r, TSyntax syntax)
             where TSyntax : ITypeSyntax
         {
-            ReadOnlySpan<char> ns = null;
+            ReadOnlySpan<char> ns = default;
             ReadOnlySpan<char> type;
             var namespaceOrTypeName = r.ParseIdentifier();
 

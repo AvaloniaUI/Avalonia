@@ -1,5 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels">
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Avalonia.Diagnostics.Views.TreePageView">
   <Grid ColumnDefinitions="*,4,3*">    
     <TreeView Name="tree" Items="{Binding Nodes}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.DataTemplates>

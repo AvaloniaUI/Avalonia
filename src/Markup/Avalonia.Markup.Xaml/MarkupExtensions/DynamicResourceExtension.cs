@@ -28,14 +28,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public string ResourceKey { get; set; }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public override object ProvideValue(IServiceProvider serviceProvider) => ProvideTypedValue(serviceProvider);
+        
+        public IBinding ProvideTypedValue(IServiceProvider serviceProvider)
         {
-            var context = (ITypeDescriptorContext)serviceProvider;
-            var provideTarget = context.GetService<IProvideValueTarget>();
+            var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
             if (!(provideTarget.TargetObject is IResourceNode))
             {
-                _anchor = GetAnchor<IResourceNode>(context);
+                _anchor = serviceProvider.GetFirstParent<IResourceNode>();
             }
 
             return this;
@@ -55,17 +56,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
 
             return null;
-        }
-
-        private T GetAnchor<T>(ITypeDescriptorContext context) where T : class
-        {
-            var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
-            var ambientProvider = context.GetService<IAmbientProvider>();
-            var xamlType = schemaContext.GetXamlType(typeof(T));
-
-            // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
-            // from GetAllAmbientValues aren't necessarily of the correct type.
-            return ambientProvider.GetAllAmbientValues(xamlType).OfType<T>().FirstOrDefault();
         }
     }
 }

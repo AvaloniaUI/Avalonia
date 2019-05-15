@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
-        xmlns:sys='clr-namespace:System;assembly=mscorlib'
+        xmlns:sys='clr-namespace:System;assembly=netstandard'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.DataTemplates>
         <DataTemplate DataType='{x:Type sys:String}'>
