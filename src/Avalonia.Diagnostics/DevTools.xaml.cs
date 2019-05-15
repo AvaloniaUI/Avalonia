@@ -43,6 +43,12 @@ namespace Avalonia.Diagnostics
                 .Subscribe(RawKeyDown);
         }
 
+        // HACK: needed for XAMLIL, will fix that later
+        public DevTools()
+        {
+            
+        }
+
         public IControl Root { get; }
 
         public static IDisposable Attach(TopLevel control)
