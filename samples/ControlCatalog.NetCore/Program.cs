@@ -3,15 +3,17 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
-using Avalonia.Skia;
+using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
 namespace ControlCatalog.NetCore
 {
-    static class Program
+    class Program
     {
-
-        static void Main(string[] args)
+        // Initialization code. Don't use any Avalonia, third-party APIs or any
+        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+        // yet and stuff might break.
+        public static void Main(string[] args)
         {
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
             if (args.Contains("--wait-for-attach"))
@@ -35,20 +37,21 @@ namespace ControlCatalog.NetCore
                 BuildAvaloniaApp().Start(AppMain, args);
         }
 
-        static void AppMain(Application app, string[] args)
-        {
-            app.Run(new MainWindow());
-        }
-
-        /// <summary>
-        /// This method is needed for IDE previewer infrastructure
-        /// </summary>
+        // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .UseSkia()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .LogToDebug()
+                .UseDataGrid()
+                .UseReactiveUI();
+
+        // Your application's entry point. Here you can initialize your MVVM framework, DI
+        // container, etc.
+        private static void AppMain(Application app, string[] args)
+        {
+            var window = new MainWindow();
+            app.Run(window);
+        }
 
         static void ConsoleSilencer()
         {

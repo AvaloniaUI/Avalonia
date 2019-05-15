@@ -2,7 +2,7 @@
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 
-namespace VirtualizationDemo
+namespace RenderDemo
 {
     class Program
     {

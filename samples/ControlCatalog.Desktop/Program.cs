@@ -1,39 +1,30 @@
-using System;
-using System.Linq;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
-using Avalonia.Platform;
 using Avalonia.ReactiveUI;
-using Serilog;
 
 namespace ControlCatalog
 {
-    internal class Program
+    class Program
     {
-        [STAThread]
-        static void Main(string[] args)
-        {
-            // TODO: Make this work with GTK/Skia/Cairo depending on command-line args
-            // again.
-            BuildAvaloniaApp().Start<MainWindow>();
-        }
+        // Initialization code. Don't use any Avalonia, third-party APIs or any
+        // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+        // yet and stuff might break.
+        public static void Main(string[] args) => BuildAvaloniaApp().Start(AppMain, args);
 
-        /// <summary>
-        /// This method is needed for IDE previewer infrastructure
-        /// </summary>
+        // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .LogToDebug()
                 .UsePlatformDetect()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .LogToDebug()
+                .UseDataGrid()
+                .UseReactiveUI();
 
-        private static void ConfigureAssetAssembly(AppBuilder builder)
+        // Your application's entry point. Here you can initialize your MVVM framework, DI
+        // container, etc.
+        private static void AppMain(Application app, string[] args)
         {
-            AvaloniaLocator.CurrentMutable
-                .GetService<IAssetLoader>()
-                .SetDefaultAssembly(typeof(App).Assembly);
+            var window = new MainWindow();
+            app.Run(window);
         }
     }
 }
