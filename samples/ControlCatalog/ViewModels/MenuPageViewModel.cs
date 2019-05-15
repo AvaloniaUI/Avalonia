@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ReactiveUI;
@@ -11,7 +12,7 @@ namespace ControlCatalog.ViewModels
         public MenuPageViewModel()
         {
             OpenCommand = ReactiveCommand.CreateFromTask(Open);
-            SaveCommand = ReactiveCommand.Create(Save);
+            SaveCommand = ReactiveCommand.Create(Save, Observable.Return(false));
             OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
 
             MenuItems = new[]
