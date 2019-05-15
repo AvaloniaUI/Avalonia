@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -58,9 +59,30 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(0, command.SubscriptionCount);
         }
 
+        [Fact]
+        public void MenuItem_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
+        {
+            var command = new TestCommand(true);
+            var target = new MenuItem
+            {
+                IsEnabled = false,
+                Command = command,
+            };
+
+            var root = new TestRoot { Child = target };
+
+            Assert.False(((IInputElement)target).IsEnabledCore);
+        }
+
         private class TestCommand : ICommand
         {
+            private bool _enabled;
             private EventHandler _canExecuteChanged;
+
+            public TestCommand(bool enabled = true)
+            {
+                _enabled = enabled;
+            }
 
             public int SubscriptionCount { get; private set; }
 
@@ -70,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
                 remove { _canExecuteChanged -= value; --SubscriptionCount; }
             }
 
-            public bool CanExecute(object parameter) => true;
+            public bool CanExecute(object parameter) => _enabled;
 
             public void Execute(object parameter)
             {

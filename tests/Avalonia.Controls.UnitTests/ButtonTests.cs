@@ -32,6 +32,21 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Button_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
+        {
+            var command = new TestCommand(true);
+            var target = new Button
+            {
+                IsEnabled = false,
+                Command = command,
+            };
+
+            var root = new TestRoot { Child = target };
+
+            Assert.False(((IInputElement)target).IsEnabledCore);
+        }
+
+        [Fact]
         public void Button_Is_Disabled_When_Bound_Command_Doesnt_Exist()
         {
             var target = new Button
