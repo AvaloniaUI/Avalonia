@@ -12,7 +12,7 @@ using Avalonia.Animation.Easings;
 
 namespace Avalonia.Animation.UnitTests
 {
-    public class TransitionsTest
+    public class TransitionsTests
     {
         [Fact]
         public void Check_Transitions_Interpolation_Negative_Bounds_Clamp()
