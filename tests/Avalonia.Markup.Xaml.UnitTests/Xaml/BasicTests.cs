@@ -209,22 +209,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Named_UserControl_Is_Added_To_Parent_NameScope()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Window xmlns='https://github.com/avaloniaui'>
-    <UserControl Name='foo'/>
-</Window>";
-
-                var control = AvaloniaXamlLoader.Parse<Window>(xaml);
-
-                Assert.NotNull(control.FindControl<UserControl>("foo"));
-            }
-        }
-
-        [Fact]
         public void Direct_Content_In_ItemsControl_Is_Operational()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
