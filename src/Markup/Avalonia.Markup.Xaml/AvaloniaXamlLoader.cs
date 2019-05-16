@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Linq;
+using Avalonia.Markup.Xaml.XamlIl;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
 using Avalonia.Markup.Xaml.PortableXaml;
@@ -25,6 +26,8 @@ namespace Avalonia.Markup.Xaml
     {
         public bool IsDesignMode { get; set; }
 
+        public static bool UseLegacyXamlLoader { get; set; } = false;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaXamlLoader"/> class.
         /// </summary>
@@ -65,8 +68,8 @@ namespace Avalonia.Markup.Xaml
             {
                 throw new InvalidOperationException(
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
-            }
-
+            }           
+            
             foreach (var uri in GetUrisFor(assetLocator, type))
             {
                 if (assetLocator.Exists(uri))
@@ -113,21 +116,27 @@ namespace Avalonia.Markup.Xaml
                     "Could not create IAssetLoader : maybe Application.RegisterServices() wasn't called?");
             }
 
+            var compiledLoader = assetLocator.GetAssembly(uri, baseUri)
+                ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
+                ?.GetMethod("TryLoad", new[] {typeof(string)});
+            if (compiledLoader != null)
+            {
+                var uriString = (!uri.IsAbsoluteUri && baseUri != null ? new Uri(baseUri, uri) : uri)
+                    .ToString();
+                var compiledResult = compiledLoader.Invoke(null, new object[] {uriString});
+                if (compiledResult != null)
+                    return compiledResult;
+            }
+            
+            
             var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
             using (var stream = asset.stream)
             {
                 var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                try
-                {
-                    return Load(stream, asset.assembly, rootInstance, absoluteUri);
-                }
-                catch (Exception e)
-                {
-                    throw new XamlLoadException("Error loading xaml at " + absoluteUri + ": " + e.Message, e);
-                }
+                return Load(stream, asset.assembly, rootInstance, absoluteUri);
             }
         }
-
+        
         /// <summary>
         /// Loads XAML from a string.
         /// </summary>
@@ -159,10 +168,15 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null)
         {
+            if (!UseLegacyXamlLoader)
+                return AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, IsDesignMode);
+
+
             var readerSettings = new XamlXmlReaderSettings()
             {
                 BaseUri = uri,
-                LocalAssembly = localAssembly
+                LocalAssembly = localAssembly,
+                ProvideLineInfo = true,
             };
 
             var context = IsDesignMode ? AvaloniaXamlSchemaContext.DesignInstance : AvaloniaXamlSchemaContext.Instance;

@@ -24,19 +24,19 @@
 
     <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock VerticalAlignment="Center">Transition</TextBlock>
-      <DropDown Name="transition" SelectedIndex="1" VerticalAlignment="Center">
-        <DropDownItem>None</DropDownItem>
-        <DropDownItem>Slide</DropDownItem>
-        <DropDownItem>Crossfade</DropDownItem>
-      </DropDown>
+      <ComboBox Name="transition" SelectedIndex="1" VerticalAlignment="Center">
+        <ComboBoxItem>None</ComboBoxItem>
+        <ComboBoxItem>Slide</ComboBoxItem>
+        <ComboBoxItem>Crossfade</ComboBoxItem>
+      </ComboBox>
     </StackPanel>
 
     <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
-      <DropDown Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
-        <DropDownItem>Horizontal</DropDownItem>
-        <DropDownItem>Vertical</DropDownItem>
-      </DropDown>
+      <ComboBox Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
+        <ComboBoxItem>Horizontal</ComboBoxItem>
+        <ComboBoxItem>Vertical</ComboBoxItem>
+      </ComboBox>
     </StackPanel>
     
   </StackPanel>

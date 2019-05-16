@@ -9,21 +9,27 @@ namespace Avalonia
 {
     public static class AvaloniaNativePlatformExtensions
     {
-        public static T UseAvaloniaNative<T>(this T builder,
-                                             string libraryPath = null,
-                                             Action<AvaloniaNativeOptions> configure = null)
-                                             where T : AppBuilderBase<T>, new()
+        public static T UseAvaloniaNative<T>(this T builder)
+            where T : AppBuilderBase<T>, new()
         {
-            if (libraryPath == null)
-            {
-                builder.UseWindowingSubsystem(() => AvaloniaNativePlatform.Initialize(configure));
-            }
-            else
-            {
-                builder.UseWindowingSubsystem(() => AvaloniaNativePlatform.Initialize(libraryPath, configure));
-            }
-
+            builder.UseWindowingSubsystem(() =>
+                AvaloniaNativePlatform.Initialize(
+                    AvaloniaLocator.Current.GetService<AvaloniaNativePlatformOptions>() ??
+                    new AvaloniaNativePlatformOptions()));
             return builder;
         }
+    }
+
+    public class AvaloniaNativePlatformOptions
+    {
+        public bool UseDeferredRendering { get; set; } = true;
+        public bool UseGpu { get; set; } = true;
+        public string AvaloniaNativeLibraryPath { get; set; }
+    }
+
+    // ReSharper disable once InconsistentNaming
+    public class MacOSPlatformOptions
+    {
+        public bool ShowInDock { get; set; } = true;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Visuals.Media.Imaging;
 
@@ -130,6 +131,12 @@ namespace Avalonia.Media
                 PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
             }
         }
+
+        /// <summary>
+        /// Draws a custom drawing operation
+        /// </summary>
+        /// <param name="custom">custom operation</param>
+        public void Custom(ICustomDrawOperation custom) => PlatformImpl.Custom(custom);
 
         /// <summary>
         /// Draws text.

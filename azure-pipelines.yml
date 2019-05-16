@@ -32,7 +32,7 @@ jobs:
      
 - job: macOS
   pool:
-    vmImage: 'xcode9-macos10.13'
+    vmImage: 'macOS-10.14'
   steps:
   - task: DotNetCoreInstaller@0
     inputs:
@@ -49,7 +49,7 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx10.13'
+      sdk: 'macosx10.14'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
       xcodeVersion: 'default' # Options: 8, 9, default, specifyPath

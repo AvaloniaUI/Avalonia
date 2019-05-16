@@ -9,7 +9,7 @@ namespace Avalonia.Native
 {
     public class PopupImpl : WindowBaseImpl, IPopupImpl
     {
-        public PopupImpl(IAvaloniaNativeFactory factory)
+        public PopupImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
         {
             using (var e = new PopupEvents(this))
             {

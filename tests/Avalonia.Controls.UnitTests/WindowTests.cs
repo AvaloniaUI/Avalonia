@@ -293,6 +293,51 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Calling_Show_On_Closed_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var windowImpl = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
+                var target = new Window(windowImpl);
+
+                target.Show();
+                target.Close();
+
+                var openedRaised = false;
+                target.Opened += (s, e) => openedRaised = true;
+
+                var ex = Assert.Throws<InvalidOperationException>(() => target.Show());
+                Assert.Equal("Cannot re-show a closed window.", ex.Message);
+                Assert.False(openedRaised);
+            }
+        }
+
+        [Fact]
+        public async Task Calling_ShowDialog_On_Closed_Window_Should_Throw()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parent = new Mock<IWindowImpl>();
+                var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.SetupProperty(x => x.Closed);
+                windowImpl.Setup(x => x.Scaling).Returns(1);
+
+                var target = new Window(windowImpl.Object);
+                var task = target.ShowDialog<bool>(parent.Object);
+
+                windowImpl.Object.Closed();
+                await task;
+
+                var openedRaised = false;
+                target.Opened += (s, e) => openedRaised = true;
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog<bool>(parent.Object));
+                Assert.Equal("Cannot re-show a closed window.", ex.Message);
+                Assert.False(openedRaised);
+            }
+        }
+
+        [Fact]
         public void Window_Should_Be_Centered_When_WindowStartupLocation_Is_CenterScreen()
         {
             var screen1 = new Mock<Screen>(new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 1040)), true);

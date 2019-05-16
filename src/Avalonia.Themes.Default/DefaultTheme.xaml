@@ -1,4 +1,6 @@
-<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Avalonia.Themes.Default.DefaultTheme">
   <!-- Define ToolTip first so its styles can be overriden by other controls (e.g. TextBox) -->
   <StyleInclude Source="resm:Avalonia.Themes.Default.ToolTip.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.DataValidationErrors.xaml?assembly=Avalonia.Themes.Default"/>
@@ -7,9 +9,9 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.Button.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.Carousel.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.CheckBox.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.ComboBox.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.ComboBoxItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ContentControl.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.DropDown.xaml?assembly=Avalonia.Themes.Default"/>
-  <StyleInclude Source="resm:Avalonia.Themes.Default.DropDownItem.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.GridSplitter.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ItemsControl.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.ListBox.xaml?assembly=Avalonia.Themes.Default"/>
@@ -46,4 +48,6 @@
   <StyleInclude Source="resm:Avalonia.Themes.Default.ButtonSpinner.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.NumericUpDown.xaml?assembly=Avalonia.Themes.Default"/>
   <StyleInclude Source="resm:Avalonia.Themes.Default.AutoCompleteBox.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.WindowNotificationManager.xaml?assembly=Avalonia.Themes.Default"/>
+  <StyleInclude Source="resm:Avalonia.Themes.Default.NotificationCard.xaml?assembly=Avalonia.Themes.Default"/>
 </Styles>

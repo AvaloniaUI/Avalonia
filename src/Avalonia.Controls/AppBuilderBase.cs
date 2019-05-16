@@ -15,6 +15,7 @@ namespace Avalonia.Controls
     public abstract class AppBuilderBase<TAppBuilder> where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
     {
         private static bool s_setupWasAlreadyCalled;
+        private Action _optionsInitializers;
 
         /// <summary>
         /// Gets or sets the <see cref="IRuntimePlatform"/> instance.
@@ -147,13 +148,20 @@ namespace Avalonia.Controls
 
         public delegate void AppMainDelegate(Application app, string[] args);
 
+        public void Start()
+        {
+            Setup();
+            BeforeStartCallback(Self);
+            Instance.Run();
+        }
+
         public void Start(AppMainDelegate main, string[] args)
         {
             Setup();
             BeforeStartCallback(Self);
             main(Instance, args);
         }
-        
+
         /// <summary>
         /// Sets up the platform-specific services for the application, but does not run it.
         /// </summary>
@@ -219,13 +227,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the shutdown mode of the application.
         /// </summary>
-        /// <param name="exitMode">The shutdown mode.</param>
+        /// <param name="shutdownMode">The shutdown mode.</param>
         /// <returns></returns>
-        public TAppBuilder SetExitMode(ExitMode exitMode)
+        public TAppBuilder SetShutdownMode(ShutdownMode shutdownMode)
         {
-            Instance.ExitMode = exitMode;
+            Instance.ShutdownMode = shutdownMode;
             return Self;
-        }      
+        }
 
         protected virtual bool CheckSetup => true;
 
@@ -249,6 +257,24 @@ namespace Avalonia.Controls
             Delegate.Combine(moduleInitializers.ToArray()).DynamicInvoke();
         }
 
+        /// <summary>
+        /// Configures platform-specific options
+        /// </summary>
+        public TAppBuilder With<T>(T options)
+        {
+            _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToConstant(options); };
+            return Self;
+        }
+        
+        /// <summary>
+        /// Configures platform-specific options
+        /// </summary>
+        public TAppBuilder With<T>(Func<T> options)
+        {
+            _optionsInitializers += () => { AvaloniaLocator.CurrentMutable.Bind<T>().ToFunc(options); };
+            return Self;
+        }
+        
         /// <summary>
         /// Sets up the platform-speciic services for the <see cref="Application"/>.
         /// </summary>
@@ -280,7 +306,7 @@ namespace Avalonia.Controls
             }
 
             s_setupWasAlreadyCalled = true;
-
+            _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer();
             WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();

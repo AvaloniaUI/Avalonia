@@ -9,7 +9,7 @@ using DWrite = SharpDX.DirectWrite;
 
 namespace Avalonia.Direct2D1.Media
 {
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,

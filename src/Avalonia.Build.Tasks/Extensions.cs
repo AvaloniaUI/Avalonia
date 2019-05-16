@@ -1,8 +1,9 @@
+using System;
 using Microsoft.Build.Framework;
 
 namespace Avalonia.Build.Tasks
 {
-    public static class Extensions
+    static class Extensions
     {
         static string FormatErrorCode(BuildEngineErrorCode code) => $"AVLN:{(int)code:0000}";
 
