@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
+using Avalonia.Animation;
 
 namespace Avalonia.UnitTests
 {
@@ -19,6 +20,11 @@ namespace Avalonia.UnitTests
     {
         private readonly TestServices _services;
 
+        public UnitTestApplication() : this(null)
+        {
+            
+        }
+        
         public UnitTestApplication(TestServices services)
         {
             _services = services ?? new TestServices();
@@ -47,6 +53,7 @@ namespace Avalonia.UnitTests
             AvaloniaLocator.CurrentMutable
                 .Bind<IAssetLoader>().ToConstant(Services.AssetLoader)
                 .Bind<IFocusManager>().ToConstant(Services.FocusManager)
+                .Bind<IGlobalClock>().ToConstant(Services.GlobalClock)
                 .BindToSelf<IGlobalStyles>(this)
                 .Bind<IInputManager>().ToConstant(Services.InputManager)
                 .Bind<IKeyboardDevice>().ToConstant(Services.KeyboardDevice?.Invoke())

@@ -13,7 +13,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia formatted text implementation.
     /// </summary>
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         public FormattedTextImpl(
             string text,

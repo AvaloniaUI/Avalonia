@@ -19,6 +19,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <typeparam name="TTarget">The type of the target.</typeparam>
         /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
+        /// <typeparam name="TSubscriber">The type of the subscriber.</typeparam>
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
@@ -40,6 +41,7 @@ namespace Avalonia.Utilities
         /// Unsubscribes from an event.
         /// </summary>
         /// <typeparam name="TEventArgs">The type of the event arguments.</typeparam>
+        /// <typeparam name="TSubscriber">The type of the subscriber.</typeparam>
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>

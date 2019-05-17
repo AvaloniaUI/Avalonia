@@ -46,6 +46,36 @@ namespace Avalonia.Utilities
                     Entries = entries
                 });
         }
+
+        public static byte[] Create(Dictionary<string, byte[]> data)
+        {
+            var sources = data.ToList();
+            var offsets = new Dictionary<string, int>();
+            var coffset = 0;
+            foreach (var s in sources)
+            {
+                offsets[s.Key] = coffset;
+                coffset += s.Value.Length;
+            }
+            var index = sources.Select(s => new AvaloniaResourcesIndexEntry
+            {
+                Path = s.Key,
+                Size = s.Value.Length,
+                Offset = offsets[s.Key]
+            }).ToList();
+            var output = new MemoryStream();
+            var ms = new MemoryStream();
+            AvaloniaResourcesIndexReaderWriter.Write(ms, index);
+            new BinaryWriter(output).Write((int)ms.Length);
+            ms.Position = 0;
+            ms.CopyTo(output);
+            foreach (var s in sources)
+            {
+                output.Write(s.Value,0,s.Value.Length);
+            }
+
+            return output.ToArray();
+        }
     }
 
     [DataContract]

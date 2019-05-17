@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Immutable Skia bitmap.
     /// </summary>
-    public class ImmutableBitmap : IDrawableBitmapImpl
+    internal class ImmutableBitmap : IDrawableBitmapImpl
     {
         private readonly SKImage _image;
 

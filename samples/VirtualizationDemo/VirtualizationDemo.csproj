@@ -14,4 +14,5 @@
   <Import Project="..\..\build\ReactiveUI.props" />
   <Import Condition="'$(TargetFramework)'=='net461'" Project="..\..\build\NetFX.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

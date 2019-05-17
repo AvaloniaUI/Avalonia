@@ -11,7 +11,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of <see cref="IGeometryImpl"/>.
     /// </summary>
-    public abstract class GeometryImpl : IGeometryImpl
+    internal abstract class GeometryImpl : IGeometryImpl
     {
         private PathCache _pathCache;
         

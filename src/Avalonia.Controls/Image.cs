@@ -81,23 +81,22 @@ namespace Avalonia.Controls
         protected override Size MeasureOverride(Size availableSize)
         {
             var source = Source;
+            var result = new Size();
 
             if (source != null)
             {
                 Size sourceSize = new Size(source.PixelSize.Width, source.PixelSize.Height);
                 if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
                 {
-                    return sourceSize;
+                    result = sourceSize;
                 }
                 else
                 {
-                    return Stretch.CalculateSize(availableSize, sourceSize);
+                    result = Stretch.CalculateSize(availableSize, sourceSize);
                 }
             }
-            else
-            {
-                return new Size();
-            }
+
+            return result.Constrain(availableSize);
         }
 
         /// <inheritdoc/>
