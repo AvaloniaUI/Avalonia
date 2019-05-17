@@ -178,6 +178,7 @@ namespace Avalonia.Layout.UnitTests
                     It.IsAny<double>(),
                     It.IsAny<TextAlignment>(),
                     It.IsAny<TextWrapping>(),
+                    It.IsAny<TextTrimming>(),
                     It.IsAny<Size>(),
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()))
                 .Returns(new FormattedTextMock("TEST"));

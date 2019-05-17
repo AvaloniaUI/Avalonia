@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
 
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
 
 using Buffer = HarfBuzzSharp.Buffer;
 
@@ -572,6 +572,37 @@ namespace Avalonia.Skia.Text
             return count;
         }
 
+        private static Blob GetHarfBuzzBlob(SKStreamAsset asset)
+        {
+            if (asset == null)
+            {
+                throw new ArgumentNullException(nameof(asset));
+            }
+
+            var size = asset.Length;
+
+            Blob blob;
+
+            var memoryBase = asset.GetMemoryBase();
+
+            if (memoryBase != IntPtr.Zero)
+            {
+                blob = new Blob(memoryBase, size, MemoryMode.ReadOnly, asset, p => ((SKStreamAsset)p).Dispose());
+            }
+            else
+            {
+                var ptr = Marshal.AllocCoTaskMem(size);
+
+                asset.Read(ptr, size);
+
+                blob = new Blob(ptr, size, MemoryMode.ReadOnly, ptr, p => Marshal.FreeCoTaskMem((IntPtr)p));
+            }
+
+            blob.MakeImmutable();
+
+            return blob;
+        }
+
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -585,7 +616,7 @@ namespace Avalonia.Skia.Text
 
             var fontStream = textFormat.Typeface.OpenStream(out var index);
 
-            using (var blob = fontStream.ToHarfBuzzBlob())
+            using (var blob = GetHarfBuzzBlob(fontStream))
             using (var face = new Face(blob, index))
             {
                 face.Index = index;

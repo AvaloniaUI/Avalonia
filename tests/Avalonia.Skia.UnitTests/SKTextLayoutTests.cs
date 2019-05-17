@@ -31,6 +31,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity),
                 spans);
 
@@ -65,6 +66,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity),
                 spans);
 
@@ -99,6 +101,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity),
                 spans);
 
@@ -133,6 +136,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity),
                 spans);
 
@@ -165,6 +169,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity),
                 spans);
 
@@ -192,6 +197,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             Assert.Equal(s_multiLineText.Length, layout.TextLines.Sum(x => x.TextPointer.Length));
@@ -206,6 +212,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             Assert.Equal(
@@ -229,6 +236,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(200, 125),
                 spans);
 
@@ -248,6 +256,7 @@ namespace Avalonia.Skia.UnitTests
                 12.0f,
                 TextAlignment.Left,
                 TextWrapping.NoWrap,
+                TextTrimming.None,
                 new Size(double.PositiveInfinity, double.PositiveInfinity));
 
             var lineMetrics = layout.TextLines[0].LineMetrics;

@@ -166,6 +166,7 @@ namespace Avalonia.UnitTests
                     It.IsAny<double>(),
                     It.IsAny<TextAlignment>(),
                     It.IsAny<TextWrapping>(),
+                    It.IsAny<TextTrimming>(),
                     It.IsAny<Size>(),
                     It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(

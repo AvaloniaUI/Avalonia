@@ -17,6 +17,7 @@ namespace Avalonia.UnitTests
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimmming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {

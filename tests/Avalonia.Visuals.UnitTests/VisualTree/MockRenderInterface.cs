@@ -16,6 +16,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
