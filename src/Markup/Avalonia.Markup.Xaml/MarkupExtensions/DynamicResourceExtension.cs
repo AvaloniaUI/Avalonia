@@ -26,7 +26,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             ResourceKey = resourceKey;
         }
 
-        public string ResourceKey { get; set; }
+        public object ResourceKey { get; set; }
 
         public override object ProvideValue(IServiceProvider serviceProvider) => ProvideTypedValue(serviceProvider);
         
