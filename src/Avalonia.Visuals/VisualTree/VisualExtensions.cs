@@ -132,8 +132,14 @@ namespace Avalonia.VisualTree
             Contract.Requires<ArgumentNullException>(visual != null);
 
             var root = visual.GetVisualRoot();
-            p = visual.TranslatePoint(p, root);
-            return root.Renderer.HitTest(p, visual, filter);
+            var rootPoint = visual.TranslatePoint(p, root);
+
+            if (rootPoint.HasValue)
+            {
+                return root.Renderer.HitTest(rootPoint.Value, visual, filter);
+            }
+
+            return Enumerable.Empty<IVisual>();
         }
 
         /// <summary>
