@@ -250,7 +250,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;
+        public event EventHandler<CancelEventArgs> Closing;      
 
         private static void AddWindow(Window window)
         {
@@ -440,7 +440,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(owner == null)
+            if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
 
             if (IsVisible)

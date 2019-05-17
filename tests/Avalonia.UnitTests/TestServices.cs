@@ -16,6 +16,7 @@ using System.Reactive.Concurrency;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using System.Reflection;
+using Avalonia.Animation;
 
 namespace Avalonia.UnitTests
 {
@@ -58,6 +59,7 @@ namespace Avalonia.UnitTests
         public TestServices(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
+            IGlobalClock globalClock = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             IKeyboardNavigationHandler keyboardNavigation = null,
@@ -75,6 +77,7 @@ namespace Avalonia.UnitTests
         {
             AssetLoader = assetLoader;
             FocusManager = focusManager;
+            GlobalClock = globalClock;
             InputManager = inputManager;
             KeyboardDevice = keyboardDevice;
             KeyboardNavigation = keyboardNavigation;
@@ -93,6 +96,7 @@ namespace Avalonia.UnitTests
         public IAssetLoader AssetLoader { get; }
         public IInputManager InputManager { get; }
         public IFocusManager FocusManager { get; }
+        public IGlobalClock GlobalClock { get; }
         public Func<IKeyboardDevice> KeyboardDevice { get; }
         public IKeyboardNavigationHandler KeyboardNavigation { get; }
         public Func<IMouseDevice> MouseDevice { get; }
@@ -109,6 +113,7 @@ namespace Avalonia.UnitTests
         public TestServices With(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
+            IGlobalClock globalClock = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
             IKeyboardNavigationHandler keyboardNavigation = null,
@@ -127,6 +132,7 @@ namespace Avalonia.UnitTests
             return new TestServices(
                 assetLoader: assetLoader ?? AssetLoader,
                 focusManager: focusManager ?? FocusManager,
+                globalClock: globalClock ?? GlobalClock,
                 inputManager: inputManager ?? InputManager,
                 keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,

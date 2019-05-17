@@ -108,11 +108,11 @@ namespace Avalonia.Input
             {
                 if (Captured == null)
                 {
-                    SetPointerOver(this, root, clientPoint);
+                    SetPointerOver(this, root, clientPoint, InputModifiers.None);
                 }
                 else
                 {
-                    SetPointerOver(this, root, Captured);
+                    SetPointerOver(this, root, Captured, InputModifiers.None);
                 }
             }
         }
@@ -128,7 +128,7 @@ namespace Avalonia.Input
             switch (e.Type)
             {
                 case RawMouseEventType.LeaveWindow:
-                    LeaveWindow(mouse, e.Root);
+                    LeaveWindow(mouse, e.Root, e.InputModifiers);
                     break;
                 case RawMouseEventType.LeftButtonDown:
                 case RawMouseEventType.RightButtonDown:
@@ -157,12 +157,12 @@ namespace Avalonia.Input
             }
         }
 
-        private void LeaveWindow(IMouseDevice device, IInputRoot root)
+        private void LeaveWindow(IMouseDevice device, IInputRoot root, InputModifiers inputModifiers)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
 
-            ClearPointerOver(this, root);
+            ClearPointerOver(this, root, inputModifiers);
         }
 
         private bool MouseDown(IMouseDevice device, ulong timestamp, IInputElement root, Point p, MouseButton button, InputModifiers inputModifiers)
@@ -218,11 +218,11 @@ namespace Avalonia.Input
 
             if (Captured == null)
             {
-                source = SetPointerOver(this, root, p);
+                source = SetPointerOver(this, root, p, inputModifiers);
             }
             else
             {
-                SetPointerOver(this, root, Captured);
+                SetPointerOver(this, root, Captured, inputModifiers);
                 source = Captured;
             }
 
@@ -306,7 +306,7 @@ namespace Avalonia.Input
             return Captured ?? root.InputHitTest(p);
         }
 
-        private void ClearPointerOver(IPointerDevice device, IInputRoot root)
+        private void ClearPointerOver(IPointerDevice device, IInputRoot root, InputModifiers inputModifiers)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
@@ -316,6 +316,7 @@ namespace Avalonia.Input
             {
                 RoutedEvent = InputElement.PointerLeaveEvent,
                 Device = device,
+                InputModifiers = inputModifiers
             };
 
             if (element!=null && !element.IsAttachedToVisualTree)
@@ -353,7 +354,7 @@ namespace Avalonia.Input
             }
         }
 
-        private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p)
+        private IInputElement SetPointerOver(IPointerDevice device, IInputRoot root, Point p, InputModifiers inputModifiers)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
@@ -364,18 +365,18 @@ namespace Avalonia.Input
             {
                 if (element != null)
                 {
-                    SetPointerOver(device, root, element);
+                    SetPointerOver(device, root, element, inputModifiers);
                 }
                 else
                 {
-                    ClearPointerOver(device, root);
+                    ClearPointerOver(device, root, inputModifiers);
                 }
             }
 
             return element;
         }
 
-        private void SetPointerOver(IPointerDevice device, IInputRoot root, IInputElement element)
+        private void SetPointerOver(IPointerDevice device, IInputRoot root, IInputElement element, InputModifiers inputModifiers)
         {
             Contract.Requires<ArgumentNullException>(device != null);
             Contract.Requires<ArgumentNullException>(root != null);
@@ -383,7 +384,7 @@ namespace Avalonia.Input
 
             IInputElement branch = null;
 
-            var e = new PointerEventArgs { Device = device, };
+            var e = new PointerEventArgs { Device = device, InputModifiers = inputModifiers };
             var el = element;
 
             while (el != null)

@@ -1,8 +1,8 @@
 ﻿<ProjectConfiguration>
   <Settings>
     <HiddenComponentWarnings>
+      <Value>DerivedFilesIncludedInWorkspace</Value>
       <Value>MissingOrIgnoredProjectReference</Value>
     </HiddenComponentWarnings>
-    <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>
