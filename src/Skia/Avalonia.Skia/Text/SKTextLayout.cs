@@ -279,7 +279,8 @@ namespace Avalonia.Skia.Text
 
                         if (glyphCluster != null)
                         {
-                            isTrailing = _textLength == glyphCluster.TextPosition + glyphCluster.Length;
+                            isTrailing = glyphCluster.Bounds.Width > 0 &&
+                                         _textLength == glyphCluster.TextPosition + glyphCluster.Length;
 
                             return new TextHitTestResult
                             {
@@ -1289,14 +1290,16 @@ namespace Avalonia.Skia.Text
 
             using (var buffer = new Buffer())
             {
-                buffer.Language = new Language(CultureInfo.CurrentCulture);
+                buffer.ContentType = ContentType.Unicode;
 
-                var breakCharCount = 0;
+                buffer.Language = new Language(CultureInfo.CurrentCulture);
 
                 var breakCharPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
                 if (IsBreakChar(text[breakCharPosition]))
                 {
+                    var breakCharCount = 0;
+
                     if (text[breakCharPosition] == '\r' && text[breakCharPosition - 1] == '\n'
                         || text[breakCharPosition] == '\n' && text[breakCharPosition - 1] == '\r')
                     {
@@ -1305,13 +1308,7 @@ namespace Avalonia.Skia.Text
                     else
                     {
                         breakCharCount = 1;
-                    }
-                }
-
-                // Replace break char with zero width space
-                if (breakCharCount > 0)
-                {
-                    buffer.ContentType = ContentType.Unicode;
+                    }                 
 
                     if (breakCharPosition != textPointer.StartingIndex)
                     {
@@ -1319,12 +1316,22 @@ namespace Avalonia.Skia.Text
                     }
 
                     var cluster = buffer.GlyphInfos.Length > 0
-                                      ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
-                                      : (uint)textPointer.StartingIndex;
+                        ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
+                        : (uint)textPointer.StartingIndex;
 
-                    for (var i = 0; i < breakCharCount; i++)
+                    switch (breakCharCount)
                     {
-                        buffer.Add('\u200C', cluster);
+                        case 1:
+                        {
+                            buffer.Add('\u200C', cluster);
+                            break;
+                        }
+                        case 2:
+                        {
+                            buffer.Add('\u200B', cluster);
+                            buffer.Add('\u200C', cluster);
+                            break;
+                        }
                     }
                 }
                 else
