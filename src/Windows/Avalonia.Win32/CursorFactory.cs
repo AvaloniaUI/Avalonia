@@ -41,7 +41,8 @@ namespace Avalonia.Win32
         private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
             <StandardCursorType, int>
         {
-            {StandardCursorType.AppStarting, 32650},
+            {StandardCursorType.None, 0},
+            { StandardCursorType.AppStarting, 32650},
             {StandardCursorType.Arrow, 32512},
             {StandardCursorType.Cross, 32515},
             {StandardCursorType.Hand, 32649},
@@ -69,7 +70,7 @@ namespace Avalonia.Win32
             // Fallback, should have been loaded from ole32.dll
             {StandardCursorType.DragMove, 32516},
             {StandardCursorType.DragCopy, 32516},
-            {StandardCursorType.DragLink, 32516},
+            {StandardCursorType.DragLink, 32516},            
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
