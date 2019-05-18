@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -17,6 +18,7 @@ using Portable.Xaml;
 using System.Collections;
 using System.ComponentModel;
 using System.Linq;
+using System.Xml;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -48,6 +50,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void AvaloniaProperty_Without_Getter_And_Setter_Is_Set()
         {
+            // It's not possible to know in compile time if a read-only property has a magic way of being not read-only
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml =
  @"<local:NonControl xmlns='https://github.com/avaloniaui' 
     xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -61,6 +66,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void AvaloniaProperty_With_Getter_And_No_Setter_Is_Set()
         {
+            if(!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml =
 @"<local:NonControl xmlns='https://github.com/avaloniaui' 
     xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
@@ -142,23 +149,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.Equal("Foo", ToolTip.GetTip(target));
         }
-
+        
         [Fact]
         public void NonExistent_Property_Throws()
         {
             var xaml =
         @"<ContentControl xmlns='https://github.com/avaloniaui' DoesntExist='foo'/>";
 
-            Assert.Throws<XamlObjectWriterException>(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
+            XamlTestHelpers.AssertThrowsXamlException(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
         }
 
         [Fact]
         public void Non_Attached_Property_With_Attached_Property_Syntax_Throws()
         {
+            // 1) It has been allowed in AvaloniaObject.SetValue for ages
+            // 2) There is no way to know if AddOwner was called in compile-time
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
             var xaml =
         @"<ContentControl xmlns='https://github.com/avaloniaui' TextBlock.Text='foo'/>";
 
-            Assert.Throws<XamlObjectWriterException>(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
+            XamlTestHelpers.AssertThrowsXamlException(() => AvaloniaXamlLoader.Parse<ContentControl>(xaml));
         }
 
         [Fact]
@@ -518,7 +529,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-        xmlns:sys='clr-namespace:System;assembly=mscorlib'>
+        xmlns:sys='clr-namespace:System;assembly=netstandard'>
     <Style.Resources>
         <SolidColorBrush x:Key='Brush'>White</SolidColorBrush>
         <sys:Double x:Key='Double'>10</sys:Double>
@@ -587,6 +598,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Xaml_Binding_Is_Delayed()
         {
+            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
+                return;
+            
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             {
                 var xaml =

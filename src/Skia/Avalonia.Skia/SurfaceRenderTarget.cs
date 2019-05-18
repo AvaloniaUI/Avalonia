@@ -14,7 +14,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    public class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
     {
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;

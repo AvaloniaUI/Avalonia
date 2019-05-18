@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -414,7 +415,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||

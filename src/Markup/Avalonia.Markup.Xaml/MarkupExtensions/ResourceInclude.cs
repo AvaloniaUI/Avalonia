@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inhertidoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             return Loaded.TryGetResource(key, out value);
         }
@@ -55,8 +55,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         /// <inhertidoc/>
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
+            return ProvideTypedValue(serviceProvider);
+        }
+        
+        public ResourceInclude ProvideTypedValue(IServiceProvider serviceProvider)
+        {
             var tdc = (ITypeDescriptorContext)serviceProvider;
-            _baseUri = tdc?.GetBaseUri();
+            _baseUri = tdc?.GetContextBaseUri();
             return this;
         }
     }

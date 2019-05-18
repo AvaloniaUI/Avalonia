@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
+using Avalonia.Skia;
+using Avalonia.ReactiveUI;
 
 namespace ControlCatalog.NetCore
 {
@@ -45,8 +47,7 @@ namespace ControlCatalog.NetCore
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseSkia()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .UseReactiveUI();
 
         static void ConsoleSilencer()
         {

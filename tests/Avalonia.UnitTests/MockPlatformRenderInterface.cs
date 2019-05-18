@@ -17,10 +17,26 @@ namespace Avalonia.UnitTests
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimmming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
             return Mock.Of<IFormattedTextImpl>();
+        }
+
+        public IGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGeometryImpl CreateRectangleGeometry(Rect rect)
+        {
+            return Mock.Of<IGeometryImpl>();
         }
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

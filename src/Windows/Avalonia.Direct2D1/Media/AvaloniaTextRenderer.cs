@@ -62,6 +62,16 @@ namespace Avalonia.Direct2D1.Media
             return Result.Ok;
         }
 
+        public override Result DrawInlineObject(object clientDrawingContext, float originX, float originY, InlineObject inlineObject, bool isSideways, bool isRightToLeft, ComObject clientDrawingEffect)
+        {
+            if(inlineObject != null)
+            {
+                inlineObject.Draw(_renderTarget, this, originX, originY, isSideways, isRightToLeft, clientDrawingEffect);
+            }        
+
+            return Result.Ok;
+        }
+
         public override RawMatrix3x2 GetCurrentTransform(object clientDrawingContext)
         {
             return _renderTarget.Transform;

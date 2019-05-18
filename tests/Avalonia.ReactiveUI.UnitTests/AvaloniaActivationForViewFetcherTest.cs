@@ -11,6 +11,7 @@ using DynamicData;
 using Xunit;
 using Splat;
 using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 
 namespace Avalonia 
 {

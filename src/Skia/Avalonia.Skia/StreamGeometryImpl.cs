@@ -10,7 +10,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// A Skia implementation of a <see cref="IStreamGeometryImpl"/>.
     /// </summary>
-    public class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
+    internal class StreamGeometryImpl : GeometryImpl, IStreamGeometryImpl
     {
         private Rect _bounds;
         private readonly SKPath _effectivePath;

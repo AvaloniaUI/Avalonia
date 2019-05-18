@@ -26,6 +26,7 @@ namespace Avalonia.Platform
         /// <param name="fontSize">The base font size.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="wrapping">The text wrapping mode.</param>
+        /// <param name="trimming">The text trimming mode.</param>
         /// <param name="constraint">The text layout constraints.</param>
         /// <param name="spans">The style spans.</param>
         /// <returns>An <see cref="IFormattedTextImpl"/>.</returns>
@@ -35,8 +36,31 @@ namespace Avalonia.Platform
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans);
+
+        /// <summary>
+        /// Creates an ellipse geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the ellipse.</param>
+        /// <returns>An ellipse geometry..</returns>
+        IGeometryImpl CreateEllipseGeometry(Rect rect);
+
+        /// <summary>
+        /// Creates a line geometry implementation.
+        /// </summary>
+        /// <param name="p1">The start of the line.</param>
+        /// <param name="p2">The end of the line.</param>
+        /// <returns>A line geometry.</returns>
+        IGeometryImpl CreateLineGeometry(Point p1, Point p2);
+
+        /// <summary>
+        /// Creates a rectangle geometry implementation.
+        /// </summary>
+        /// <param name="rect">The bounds of the rectangle.</param>
+        /// <returns>A rectangle.</returns>
+        IGeometryImpl CreateRectangleGeometry(Rect rect);
 
         /// <summary>
         /// Creates a stream geometry implementation.

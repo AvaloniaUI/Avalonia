@@ -147,7 +147,10 @@ namespace Avalonia.Platform
                 e.Handled = true;
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
-                RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastRoot, _lastPosition, e.Modifiers);
+            {
+                if (_lastRoot != null)
+                    RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastRoot, _lastPosition, e.Modifiers);
+            }
         }
 
         private void ProcessMouseEvents(RawMouseEventArgs e)
