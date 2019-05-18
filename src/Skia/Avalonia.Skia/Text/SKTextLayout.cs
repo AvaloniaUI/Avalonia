@@ -613,68 +613,66 @@ namespace Avalonia.Skia.Text
             out SKPoint[] glyphPositions,
             out float width)
         {
-            Font font;
-
-            var fontStream = textFormat.Typeface.OpenStream(out var index);
-
-            using (var blob = GetHarfBuzzBlob(fontStream))
+            //ToDo: Cache this
+            using (var blob = GetHarfBuzzBlob(textFormat.Typeface.OpenStream(out var index)))
             using (var face = new Face(blob, index))
             {
                 face.Index = index;
 
                 face.UnitsPerEm = textFormat.Typeface.UnitsPerEm;
 
-                font = new Font(face);
+                using (var font = new Font(face))
+                {
+                    font.SetFunctionsOpenType();
 
-                font.SetFunctionsOpenType();
-            }
+                    font.Shape(buffer);
 
-            font.Shape(buffer);
+                    font.GetScale(out var scaleX, out _);
 
-            var len = buffer.Length;
+                    var textScale = textFormat.FontSize / scaleX;
 
-            var info = buffer.GetGlyphInfoReferences();
+                    var len = buffer.Length;
 
-            var pos = buffer.GetGlyphPositionReferences();
+                    var info = buffer.GetGlyphInfoReferences();
 
-            font.GetScale(out var scaleX, out _);
+                    var pos = buffer.GetGlyphPositionReferences();
 
-            var textScale = textFormat.FontSize / scaleX;
+                    glyphPositions = new SKPoint[len];
 
-            glyphPositions = new SKPoint[len];
+                    var glyphAdvances = new float[len];
 
-            var glyphAdvances = new float[len];
+                    var clusters = new int[len];
 
-            var clusters = new int[len];
+                    glyphIndices = new ushort[len];
 
-            glyphIndices = new ushort[len];
+                    var currentX = 0.0f;
+                    var currentY = 0.0f;
 
-            var currentX = 0.0f;
-            var currentY = 0.0f;
+                    for (var i = 0; i < len; i++)
+                    {
+                        glyphIndices[i] = (ushort)info[i].Codepoint;
 
-            for (var i = 0; i < len; i++)
-            {
-                glyphIndices[i] = (ushort)info[i].Codepoint;
+                        clusters[i] = (int)info[i].Cluster;
 
-                clusters[i] = (int)info[i].Cluster;
+                        var offsetX = pos[i].XOffset * textScale;
+                        var offsetY = pos[i].YOffset * textScale;
 
-                var offsetX = pos[i].XOffset * textScale;
-                var offsetY = pos[i].YOffset * textScale;
+                        glyphPositions[i] = new SKPoint(currentX + offsetX, currentY + offsetY);
 
-                glyphPositions[i] = new SKPoint(currentX + offsetX, currentY + offsetY);
+                        var advanceX = pos[i].XAdvance * textScale;
+                        var advanceY = pos[i].YAdvance * textScale;
 
-                var advanceX = pos[i].XAdvance * textScale;
-                var advanceY = pos[i].YAdvance * textScale;
+                        glyphAdvances[i] = advanceX;
 
-                glyphAdvances[i] = advanceX;
+                        currentX += advanceX;
+                        currentY += advanceY;
+                    }
 
-                currentX += advanceX;
-                currentY += advanceY;
-            }
+                    width = currentX;
 
-            width = currentX;
-
-            return CreateGlyphClusters(textPointer, fontMetrics, clusters, glyphAdvances, glyphPositions);
+                    return CreateGlyphClusters(textPointer, fontMetrics, clusters, glyphAdvances, glyphPositions);
+                }   
+            }                    
         }
 
         /// <summary>
@@ -1308,7 +1306,7 @@ namespace Avalonia.Skia.Text
                     else
                     {
                         breakCharCount = 1;
-                    }                 
+                    }
 
                     if (breakCharPosition != textPointer.StartingIndex)
                     {
@@ -1319,20 +1317,8 @@ namespace Avalonia.Skia.Text
                         ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
                         : (uint)textPointer.StartingIndex;
 
-                    switch (breakCharCount)
-                    {
-                        case 1:
-                        {
-                            buffer.Add('\u200C', cluster);
-                            break;
-                        }
-                        case 2:
-                        {
-                            buffer.Add('\u200B', cluster);
-                            buffer.Add('\u200C', cluster);
-                            break;
-                        }
-                    }
+
+                    buffer.Add('\u200C', cluster);
                 }
                 else
                 {
