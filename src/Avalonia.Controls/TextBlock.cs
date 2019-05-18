@@ -84,7 +84,6 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
             AvaloniaProperty.Register<TextBlock, TextTrimming>(nameof(TextTrimming));
 
-        private string _text;
         private FormattedText _formattedText;
         private Size _constraint;
 
@@ -117,6 +116,7 @@ namespace Avalonia.Controls
                 TextAlignmentProperty,
                 FontSizeProperty,
                 FontStyleProperty,
+                TextTrimmingProperty,
                 FontWeightProperty);
         }
 
@@ -421,8 +421,8 @@ namespace Avalonia.Controls
                 FontSize = FontSize,
                 Text = text ?? string.Empty,
                 TextAlignment = TextAlignment,
-                Wrapping = TextWrapping,
-                Trimming = TextTrimming
+                TextWrapping = TextWrapping,
+                TextTrimming = TextTrimming
             };
         }
 
