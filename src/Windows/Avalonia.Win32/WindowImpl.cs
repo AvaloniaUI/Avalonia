@@ -448,19 +448,15 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCCALCSIZE:
                     if (ToInt32(wParam) == 1 && !_decorated)
                     {
-                        if (WindowState != WindowState.Maximized)
-                        {
-                            var initialCalcSize = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
-                            var result = DefWindowProc(hWnd, msg, wParam, lParam);
-                            var calcSize = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
-                            calcSize.rgrc[0].top = initialCalcSize.rgrc[0].top;
-                            Marshal.StructureToPtr(calcSize, lParam, true);
-                            return result;
-                        }
-                        else
-                        {
-                            return IntPtr.Zero;
-                        }
+                        var initialCalcSize = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+                        var result = DefWindowProc(hWnd, msg, wParam, lParam);
+                        var calcSize = Marshal.PtrToStructure<NCCALCSIZE_PARAMS>(lParam);
+                        calcSize.rgrc[0].top = initialCalcSize.rgrc[0].top;
+                        calcSize.rgrc[0].left = initialCalcSize.rgrc[0].left;
+                        calcSize.rgrc[0].right = initialCalcSize.rgrc[0].right;
+                        calcSize.rgrc[0].bottom = initialCalcSize.rgrc[0].bottom;
+                        Marshal.StructureToPtr(calcSize, lParam, true);
+                        return result;
                     }
                     break;
 
