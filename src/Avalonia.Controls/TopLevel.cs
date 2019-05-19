@@ -127,7 +127,7 @@ namespace Avalonia.Controls
 
             if (_applicationLifecycle != null)
             {
-                _applicationLifecycle.OnExit += OnApplicationExiting;
+                _applicationLifecycle.Exit += OnApplicationExiting;
             }
 
             if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
@@ -281,7 +281,7 @@ namespace Avalonia.Controls
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
+            _applicationLifecycle.Exit -= OnApplicationExiting;
         }
 
         /// <summary>
