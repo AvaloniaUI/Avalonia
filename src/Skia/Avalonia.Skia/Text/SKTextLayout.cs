@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -18,6 +19,7 @@ namespace Avalonia.Skia.Text
 {
     internal class SKTextLayout
     {
+        private static readonly ConcurrentDictionary<SKTypeface, Font> s_fontCache = new ConcurrentDictionary<SKTypeface, Font>();
         private static readonly char[] s_ellipsis = { '\u2026' };
 
         private readonly SKTypeface _typeface;
@@ -174,21 +176,23 @@ namespace Avalonia.Skia.Text
 
                         canvas.Translate(0, textLine.LineMetrics.BaselineOrigin.Y);
 #endif
-                        if (textRun.TextFormat.Typeface != null)
+                        if (textRun.TextFormat.Typeface == null || textRun.GlyphRun.GlyphIndices.Length == 0)
                         {
-                            InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
+                            continue;
+                        }
 
-                            fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
-                            {
-                                var p = (IntPtr)buffer;
+                        InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                                // This expects an byte array so we need to pass the right length
-                                canvas.DrawPositionedText(
-                                    p,
-                                    textRun.GlyphRun.GlyphIndices.Length * 2,
-                                    textRun.GlyphRun.GlyphOffsets,
-                                    _paint);
-                            }
+                        fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
+                        {
+                            var p = (IntPtr)buffer;
+
+                            // This expects an byte array so we need to pass the right length
+                            canvas.DrawPositionedText(
+                                p,
+                                textRun.GlyphRun.GlyphIndices.Length * 2,
+                                textRun.GlyphRun.GlyphOffsets,
+                                _paint);
                         }
 
                         canvas.Translate(textRun.Width, 0);
@@ -604,6 +608,23 @@ namespace Avalonia.Skia.Text
             return blob;
         }
 
+        private static Font CreateFont(SKTypeface typeface)
+        {
+            var blob = GetHarfBuzzBlob(typeface.OpenStream(out var index));
+
+            var face = new Face(blob, index)
+            {
+                Index = index,
+                UnitsPerEm = typeface.UnitsPerEm
+            };
+
+            var font = new Font(face);
+
+            font.SetFunctionsOpenType();
+
+            return font;
+        }
+
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -613,66 +634,54 @@ namespace Avalonia.Skia.Text
             out SKPoint[] glyphPositions,
             out float width)
         {
-            //ToDo: Cache this
-            using (var blob = GetHarfBuzzBlob(textFormat.Typeface.OpenStream(out var index)))
-            using (var face = new Face(blob, index))
+            var font = s_fontCache.GetOrAdd(textFormat.Typeface, CreateFont);
+
+            font.Shape(buffer);
+
+            font.GetScale(out var scaleX, out _);
+
+            var textScale = textFormat.FontSize / scaleX;
+
+            var len = buffer.Length;
+
+            var info = buffer.GetGlyphInfoReferences();
+
+            var pos = buffer.GetGlyphPositionReferences();
+
+            glyphPositions = new SKPoint[len];
+
+            var glyphAdvances = new float[len];
+
+            var clusters = new int[len];
+
+            glyphIndices = new ushort[len];
+
+            var currentX = 0.0f;
+            var currentY = 0.0f;
+
+            for (var i = 0; i < len; i++)
             {
-                face.Index = index;
+                glyphIndices[i] = (ushort)info[i].Codepoint;
 
-                face.UnitsPerEm = textFormat.Typeface.UnitsPerEm;
+                clusters[i] = (int)info[i].Cluster;
 
-                using (var font = new Font(face))
-                {
-                    font.SetFunctionsOpenType();
+                var offsetX = pos[i].XOffset * textScale;
+                var offsetY = pos[i].YOffset * textScale;
 
-                    font.Shape(buffer);
+                glyphPositions[i] = new SKPoint(currentX + offsetX, currentY + offsetY);
 
-                    font.GetScale(out var scaleX, out _);
+                var advanceX = pos[i].XAdvance * textScale;
+                var advanceY = pos[i].YAdvance * textScale;
 
-                    var textScale = textFormat.FontSize / scaleX;
+                glyphAdvances[i] = advanceX;
 
-                    var len = buffer.Length;
+                currentX += advanceX;
+                currentY += advanceY;
+            }
 
-                    var info = buffer.GetGlyphInfoReferences();
+            width = currentX;
 
-                    var pos = buffer.GetGlyphPositionReferences();
-
-                    glyphPositions = new SKPoint[len];
-
-                    var glyphAdvances = new float[len];
-
-                    var clusters = new int[len];
-
-                    glyphIndices = new ushort[len];
-
-                    var currentX = 0.0f;
-                    var currentY = 0.0f;
-
-                    for (var i = 0; i < len; i++)
-                    {
-                        glyphIndices[i] = (ushort)info[i].Codepoint;
-
-                        clusters[i] = (int)info[i].Cluster;
-
-                        var offsetX = pos[i].XOffset * textScale;
-                        var offsetY = pos[i].YOffset * textScale;
-
-                        glyphPositions[i] = new SKPoint(currentX + offsetX, currentY + offsetY);
-
-                        var advanceX = pos[i].XAdvance * textScale;
-                        var advanceY = pos[i].YAdvance * textScale;
-
-                        glyphAdvances[i] = advanceX;
-
-                        currentX += advanceX;
-                        currentY += advanceY;
-                    }
-
-                    width = currentX;
-
-                    return CreateGlyphClusters(textPointer, fontMetrics, clusters, glyphAdvances, glyphPositions);
-                }   
-            }                    
+            return CreateGlyphClusters(textPointer, fontMetrics, clusters, glyphAdvances, glyphPositions);
         }
 
         /// <summary>
@@ -1741,7 +1750,7 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private SplitTextRunResult SplitTextRun(ReadOnlySpan<char> text, SKTextRun textRun, int length)
         {
-            if (length == 0 || textRun.TextPointer.Length < 2)
+            if (length == 0 || length == textRun.TextPointer.Length || textRun.TextPointer.Length < 2)
             {
                 return new SplitTextRunResult(textRun, null);
             }
