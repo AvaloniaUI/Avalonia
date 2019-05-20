@@ -13,7 +13,7 @@ namespace Avalonia.Gtk3
     <StandardCursorType, object>
         {
             {StandardCursorType.None, CursorType.Blank},
-            { StandardCursorType.AppStarting, CursorType.Watch},
+            {StandardCursorType.AppStarting, CursorType.Watch},
             {StandardCursorType.Arrow, CursorType.LeftPtr},
             {StandardCursorType.Cross, CursorType.Cross},
             {StandardCursorType.Hand, CursorType.Hand1},
@@ -37,7 +37,7 @@ namespace Avalonia.Gtk3
             {StandardCursorType.BottomRightCorner, CursorType.BottomRightCorner},
             {StandardCursorType.DragCopy, CursorType.CenterPtr},
             {StandardCursorType.DragMove, CursorType.Fleur},
-            {StandardCursorType.DragLink, CursorType.Cross},            
+            {StandardCursorType.DragLink, CursorType.Cross},
         };
 
         private static readonly Dictionary<StandardCursorType, IPlatformHandle> Cache =
