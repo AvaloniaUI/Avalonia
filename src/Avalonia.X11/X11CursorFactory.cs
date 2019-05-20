@@ -51,7 +51,7 @@ namespace Avalonia.X11
         
         public IPlatformHandle GetCursor(StandardCursorType cursorType)
         {
-            IntPtr handle;
+            IntPtr handle;            
             if (cursorType == StandardCursorType.None)
             {
                 handle = _nullCursor;
@@ -66,12 +66,12 @@ namespace Avalonia.X11
         }
 
         private static IntPtr GetNullCursor(IntPtr display)
-        {            
+        {
             XColor color = new XColor();
             byte[] data = new byte[] { 0 };
             IntPtr window = XLib.XRootWindow(display, 0);
-            IntPtr pixmap = XLib.XCreatePixmapFromBitmapData(display, window, data, 1, 1, IntPtr.Zero, IntPtr.Zero, 0);
-            return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);            
+            IntPtr pixmap = XLib.XCreateBitmapFromData(display, window, data, 1, 1);
+            return XLib.XCreatePixmapCursor(display, pixmap, pixmap, ref color, ref color, 0, 0);                      
         }
     }
 }
