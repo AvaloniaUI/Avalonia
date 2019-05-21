@@ -269,5 +269,28 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(2, hitTestResult.Length);
         }
+
+        [Theory]
+        [InlineData("abcde\r\n")]
+        [InlineData("abcde\n\r")]
+        public void ShouldBreakWithBreakCharPair(string text)
+        {
+            var layout = new SKTextLayout(
+                text,
+                SKTypeface.Default,
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                TextTrimming.None,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(2, layout.TextLines.Count);
+
+            Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
+
+            Assert.Equal(6, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters.Count);
+
+            Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters[5].Length);
+        }
     }
 }

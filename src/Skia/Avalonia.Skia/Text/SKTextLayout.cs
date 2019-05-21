@@ -304,16 +304,16 @@ namespace Avalonia.Skia.Text
 
             var lastLine = TextLines.Last();
 
-            var lastRun = lastLine.TextRuns.Last();
+            var lastRun = lastLine.TextRuns.LastOrDefault();
 
-            var lastCluster = lastRun.GlyphRun.GlyphClusters.Last();
+            var lastCluster = lastRun?.GlyphRun.GlyphClusters.LastOrDefault();
 
             return new TextHitTestResult
             {
                 IsInside = false,
                 IsTrailing = true,
-                TextPosition = isTrailing ? _textLength - lastCluster.Length : 0,
-                Length = lastCluster.Length
+                TextPosition = isTrailing ? _textLength - lastCluster?.Length ?? _textLength : 0,
+                Length = lastCluster?.Length ?? 0
             };
         }
 
@@ -907,7 +907,7 @@ namespace Avalonia.Skia.Text
         ///     Creates a empty text line.
         /// </summary>
         /// <returns></returns>
-        private SKTextLine CreateEmptyTextLine()
+        private SKTextLine CreateEmptyTextLine(int startingIndex)
         {
             _paint.Typeface = _typeface;
 
@@ -922,7 +922,7 @@ namespace Avalonia.Skia.Text
                 fontMetrics.Descent,
                 fontMetrics.Leading);
 
-            return new SKTextLine(new SKTextPointer(), new List<SKTextRun>(), textLineMetrics);
+            return new SKTextLine(new SKTextPointer(startingIndex, 0), new List<SKTextRun>(), textLineMetrics);
         }
 
         /// <summary>
@@ -1192,7 +1192,7 @@ namespace Avalonia.Skia.Text
             if (text.Length == 0 || Math.Abs(_constraint.Width) < float.Epsilon ||
                 Math.Abs(_constraint.Height) < float.Epsilon)
             {
-                var emptyTextLine = CreateEmptyTextLine();
+                var emptyTextLine = CreateEmptyTextLine(0);
 
                 return new List<SKTextLine>
                 {
@@ -1246,6 +1246,11 @@ namespace Avalonia.Skia.Text
                         currentTextRuns = splitResult.SecondTextRuns;
 
                         currentPosition += textLine.TextPointer.Length;
+
+                        if (length == text.Length)
+                        {
+                            textLines.Add(CreateEmptyTextLine(length));
+                        }
 
                         break;
                     }
@@ -1305,7 +1310,7 @@ namespace Avalonia.Skia.Text
 
                 if (IsBreakChar(text[breakCharPosition]))
                 {
-                    var breakCharCount = 0;
+                    int breakCharCount;
 
                     if (text[breakCharPosition] == '\r' && text[breakCharPosition - 1] == '\n'
                         || text[breakCharPosition] == '\n' && text[breakCharPosition - 1] == '\r')
@@ -1835,7 +1840,7 @@ namespace Avalonia.Skia.Text
             int length)
         {
             var firstTextRuns = new List<SKTextRun>();
-            var secondTextRuns = new List<SKTextRun>();
+            List<SKTextRun> secondTextRuns = null;
             var currentPosition = 0;
 
             for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
@@ -1858,13 +1863,9 @@ namespace Avalonia.Skia.Text
                 {
                     firstTextRuns.AddRange(textRuns.Take(runIndex + 1));
 
-                    if (textRuns.Count == firstTextRuns.Count)
+                    if (textRuns.Count != firstTextRuns.Count)
                     {
-                        secondTextRuns = null;
-                    }
-                    else
-                    {
-                        secondTextRuns.AddRange(textRuns.Skip(firstTextRuns.Count));
+                        secondTextRuns = new List<SKTextRun>(textRuns.Skip(firstTextRuns.Count));
                     }
                 }
                 else
@@ -1878,10 +1879,18 @@ namespace Avalonia.Skia.Text
 
                     firstTextRuns.Add(splitResult.FirstTextRun);
 
-                    secondTextRuns.Add(splitResult.SecondTextRun);
-
-                    if (runIndex < textRuns.Count - 1)
+                    if (splitResult.SecondTextRun != null)
                     {
+                        secondTextRuns = new List<SKTextRun> { splitResult.SecondTextRun };
+                    }
+
+                    if (runIndex + 1 < textRuns.Count)
+                    {
+                        if (secondTextRuns == null)
+                        {
+                            secondTextRuns = new List<SKTextRun>();
+                        }
+
                         secondTextRuns.AddRange(textRuns.Skip(firstTextRuns.Count));
                     }
                 }
