@@ -196,5 +196,5 @@ ModuleCache.noindex/
 Build/Intermediates.noindex/
 info.plist
 build-intermediate
-/tests/Avalonia.RenderTests/obj-Direct2D1
-/tests/Avalonia.RenderTests/obj-Skia
+obj-Direct2D1/
+obj-Skia/
