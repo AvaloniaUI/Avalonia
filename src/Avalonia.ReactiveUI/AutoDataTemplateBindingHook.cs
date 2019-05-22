@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Markup.Xaml.Templates;
 using ReactiveUI;
@@ -14,19 +16,18 @@ namespace Avalonia.ReactiveUI
     /// </summary>
     public class AutoDataTemplateBindingHook : IPropertyBindingHook
     {
-        private static Lazy<DataTemplate> DefaultItemTemplate { get; } = new Lazy<DataTemplate>(() =>
+        private static Lazy<FuncDataTemplate> DefaultItemTemplate { get; } = new Lazy<FuncDataTemplate>(() =>
         {
-            var template = @"
-<DataTemplate xmlns='https://github.com/avaloniaui'
-              xmlns:reactiveUi='http://reactiveui.net'>
-    <reactiveUi:ViewModelViewHost
-        ViewModel='{Binding Mode=OneWay}'
-        VerticalContentAlignment='Stretch'
-        HorizontalContentAlignment='Stretch' />
-</DataTemplate>";
-            
-            var loader = new AvaloniaXamlLoader();
-            return (DataTemplate)loader.Load(template);
+            return new FuncDataTemplate<object>(x =>
+            {
+                var control = new ViewModelViewHost();
+                var context = control.GetObservable(Control.DataContextProperty);
+                control.Bind(ViewModelViewHost.ViewModelProperty, context);
+                control.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+                control.VerticalContentAlignment = VerticalAlignment.Stretch;
+                return control;
+            },
+            true);
         });
 
         /// <inheritdoc/>
