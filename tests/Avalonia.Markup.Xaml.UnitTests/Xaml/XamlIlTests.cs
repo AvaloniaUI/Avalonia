@@ -141,6 +141,22 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal(20, w.Args.ClickCount);
             }
         }
+        
+        [Fact]
+        public void Custom_Properties_Should_Work_With_XClass()
+        {
+            var precompiled = new XamlIlClassWithCustomProperty();
+            Assert.Equal("123", precompiled.Test);
+            var loaded = (XamlIlClassWithCustomProperty)AvaloniaXamlLoader.Parse(@"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+             x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlClassWithCustomProperty'
+             Test='321'>
+
+</UserControl>");
+            Assert.Equal("321", loaded.Test);
+            
+        }
     }
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -169,6 +185,16 @@ namespace Avalonia.Markup.Xaml.UnitTests
 </Window>
 ", typeof(XamlIlBugTestsEventHandlerCodeBehind).Assembly, this);
             ((ItemsControl)Content).Items = new[] {"123"};
+        }
+    }
+
+    public class XamlIlClassWithCustomProperty : UserControl
+    {
+        public string Test { get; set; }
+
+        public XamlIlClassWithCustomProperty()
+        {
+            AvaloniaXamlLoader.Load(this);
         }
     }
 
