@@ -47,8 +47,7 @@ namespace ControlCatalog.NetCore
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseSkia()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .UseReactiveUI();
 
         static void ConsoleSilencer()
         {
