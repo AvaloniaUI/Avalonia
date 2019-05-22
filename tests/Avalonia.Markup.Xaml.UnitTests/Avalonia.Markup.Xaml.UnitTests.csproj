@@ -32,7 +32,8 @@
     <EmbeddedResource Include="Xaml\Style2.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml"/>
+    <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
+    <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>
