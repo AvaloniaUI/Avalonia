@@ -380,6 +380,7 @@ namespace Avalonia.Controls.Primitives
                     }
                     break;
 
+                case NotifyCollectionChangedAction.Move:
                 case NotifyCollectionChangedAction.Reset:
                     SelectedIndex = IndexOf(Items, SelectedItem);
                     break;
