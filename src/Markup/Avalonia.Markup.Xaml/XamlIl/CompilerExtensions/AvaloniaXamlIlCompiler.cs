@@ -112,13 +112,31 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 rootType = new XamlIlAstClrTypeReference(rootObject, overrideRootType, false);
             }
 
-            rootObject.Type = rootType;
+            OverrideRootType(parsed, rootType);
 
             Transform(parsed);
             Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri, fileSource);
             
         }
-        
-        
+
+        public void OverrideRootType(XamlIlDocument doc, IXamlIlAstTypeReference newType)
+        {
+            var root = (XamlIlAstObjectNode)doc.Root;
+            var oldType = root.Type;
+            if (oldType.Equals(newType))
+                return;
+
+            root.Type = newType;
+            foreach (var child in root.Children.OfType<XamlIlAstXamlPropertyValueNode>())
+            {
+                if (child.Property is XamlIlAstNamePropertyReference prop)
+                {
+                    if (prop.DeclaringType.Equals(oldType))
+                        prop.DeclaringType = newType;
+                    if (prop.TargetType.Equals(oldType))
+                        prop.TargetType = newType;
+                }
+            }
+        }
     }
 }
