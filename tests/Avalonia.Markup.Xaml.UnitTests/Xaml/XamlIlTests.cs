@@ -5,8 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using JetBrains.Annotations;
@@ -116,6 +120,55 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     .VisualChildren.First();
                 Assert.Equal(Brushes.Red.Color, ((ISolidColorBrush)canvas.Background).Color);
             }
+        }
+
+        [Fact]
+        public void Event_Handlers_Should_Work_For_Templates()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var w =new XamlIlBugTestsEventHandlerCodeBehind();
+                w.ApplyTemplate();
+                w.Show();
+
+                Dispatcher.UIThread.RunJobs();
+                var itemsPresenter = ((ItemsControl)w.Content).GetVisualChildren().FirstOrDefault();
+                var item = itemsPresenter
+                    .GetVisualChildren().First()
+                    .GetVisualChildren().First()
+                    .GetVisualChildren().First();
+                ((Control)item).RaiseEvent(new PointerPressedEventArgs {ClickCount = 20});
+                Assert.Equal(20, w.Args.ClickCount);
+            }
+        }
+    }
+    
+    public class XamlIlBugTestsEventHandlerCodeBehind : Window
+    {
+        public PointerPressedEventArgs Args;
+        public void HandlePointerPressed(object sender, PointerPressedEventArgs args)
+        {
+            Args = args;
+        }
+
+        public XamlIlBugTestsEventHandlerCodeBehind()
+        {
+            new AvaloniaXamlLoader().Load(@"
+<Window x:Class='Avalonia.Markup.Xaml.UnitTests.XamlIlBugTestsEventHandlerCodeBehind'
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+  xmlns='https://github.com/avaloniaui'
+  xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+>
+  <ItemsControl>
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <Button PointerPressed='HandlePointerPressed' Content='{Binding .}' />
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</Window>
+", typeof(XamlIlBugTestsEventHandlerCodeBehind).Assembly, this);
+            ((ItemsControl)Content).Items = new[] {"123"};
         }
     }
 
