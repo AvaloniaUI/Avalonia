@@ -528,6 +528,8 @@ namespace Avalonia.Rendering
                     oldScene?.Dispose();
                 }
 
+                _dirty.Clear();
+
                 if (SceneInvalidated != null)
                 {
                     var rect = new Rect();
@@ -540,10 +542,9 @@ namespace Avalonia.Rendering
                         }
                     }
 
+                    System.Diagnostics.Debug.WriteLine("Invalidated " + rect);
                     SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
-
-                _dirty.Clear();
             }
             else
             {
