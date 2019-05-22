@@ -13,7 +13,7 @@ using Splat;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 
-namespace Avalonia 
+namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AvaloniaActivationForViewFetcherTest
     {

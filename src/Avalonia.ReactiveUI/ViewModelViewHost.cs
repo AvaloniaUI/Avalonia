@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using System.Reactive.Disposables;
 using ReactiveUI;
 using Splat;
 
@@ -18,7 +20,20 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly AvaloniaProperty<object> ViewModelProperty =
             AvaloniaProperty.Register<ViewModelViewHost, object>(nameof(ViewModel));
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ViewModelViewHost"/> class.
+        /// </summary>
+        public ViewModelViewHost()
+        {
+            this.WhenActivated(disposables =>
+            {
+                this.WhenAnyValue(x => x.ViewModel)
+                    .Subscribe(NavigateToViewModel)
+                    .DisposeWith(disposables);
+            });
+        }
+
         /// <summary>
         /// Gets or sets the ViewModel to display.
         /// </summary>
@@ -33,16 +48,6 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public IViewLocator ViewLocator { get; set; }
 
-        /// <summary>
-        /// Updates the Content when ViewModel changes.
-        /// </summary>
-        /// <param name="e">Property changed event arguments.</param>
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property.Name == nameof(ViewModel)) NavigateToViewModel(e.NewValue);
-            base.OnPropertyChanged(e);
-        }
-        
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>

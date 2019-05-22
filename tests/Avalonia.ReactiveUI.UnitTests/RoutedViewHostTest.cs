@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Reactive;
 using Avalonia.ReactiveUI;
 
-namespace Avalonia
+namespace Avalonia.ReactiveUI.UnitTests
 {
     public class RoutedViewHostTest
     {
