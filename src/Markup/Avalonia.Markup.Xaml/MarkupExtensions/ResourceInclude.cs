@@ -47,7 +47,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inhertidoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             return Loaded.TryGetResource(key, out value);
         }
