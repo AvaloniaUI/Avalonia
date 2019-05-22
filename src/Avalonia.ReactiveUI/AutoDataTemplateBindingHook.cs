@@ -16,19 +16,16 @@ namespace Avalonia.ReactiveUI
     /// </summary>
     public class AutoDataTemplateBindingHook : IPropertyBindingHook
     {
-        private static Lazy<FuncDataTemplate> DefaultItemTemplate { get; } = new Lazy<FuncDataTemplate>(() =>
+        private static FuncDataTemplate DefaultItemTemplate = new FuncDataTemplate<object>(x =>
         {
-            return new FuncDataTemplate<object>(x =>
-            {
-                var control = new ViewModelViewHost();
-                var context = control.GetObservable(Control.DataContextProperty);
-                control.Bind(ViewModelViewHost.ViewModelProperty, context);
-                control.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-                control.VerticalContentAlignment = VerticalAlignment.Stretch;
-                return control;
-            },
-            true);
-        });
+            var control = new ViewModelViewHost();
+            var context = control.GetObservable(Control.DataContextProperty);
+            control.Bind(ViewModelViewHost.ViewModelProperty, context);
+            control.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+            control.VerticalContentAlignment = VerticalAlignment.Stretch;
+            return control;
+        },
+        true);
 
         /// <inheritdoc/>
         public bool ExecuteHook(
@@ -51,7 +48,7 @@ namespace Avalonia.ReactiveUI
             if (itemsControl.ItemTemplate != null)
                 return true;
 
-            itemsControl.ItemTemplate = DefaultItemTemplate.Value;
+            itemsControl.ItemTemplate = DefaultItemTemplate;
             return true;
         }
     }

@@ -13,6 +13,8 @@ using System.Linq;
 using Avalonia.VisualTree;
 using Avalonia.Controls.Presenters;
 using Splat;
+using System.Threading.Tasks;
+using System;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -42,8 +44,8 @@ namespace Avalonia.ReactiveUI.UnitTests
         public AutoDataTemplateBindingHookTest() 
         {
             Locator.CurrentMutable.RegisterConstant(new AutoDataTemplateBindingHook(), typeof(IPropertyBindingHook));
-            Locator.CurrentMutable.Register(() => new ExampleView(), typeof(IViewFor<ExampleViewModel>));
             Locator.CurrentMutable.RegisterConstant(new AvaloniaActivationForViewFetcher(), typeof(IActivationForViewFetcher));
+            Locator.CurrentMutable.Register(() => new NestedView(), typeof(IViewFor<NestedViewModel>));
         }
 
         [Fact]
@@ -68,6 +70,30 @@ namespace Avalonia.ReactiveUI.UnitTests
             container.UpdateChild();
 
             Assert.IsType<ViewModelViewHost>(container.Child);
+        }
+
+        [Fact]
+        public void Should_Resolve_And_Embedd_Appropriate_View_Model()
+        {
+            var view = new ExampleView();
+            var root = new TestRoot { Child = view };
+            view.ViewModel.Items.Add(new NestedViewModel());
+
+            view.List.Template = GetTemplate();
+            view.List.ApplyTemplate();
+            view.List.Presenter.ApplyTemplate();
+
+            var child = view.List.Presenter.Panel.Children[0];
+            var container = (ContentPresenter) child;
+            container.UpdateChild();
+
+            var host = (ViewModelViewHost) container.Child;
+            Assert.IsType<NestedViewModel>(host.ViewModel);
+            Assert.IsType<NestedViewModel>(host.DataContext);
+
+            host.DataContext = "changed context";
+            Assert.IsType<string>(host.ViewModel);
+            Assert.IsType<string>(host.DataContext);
         }
 
         private FuncControlTemplate GetTemplate()
