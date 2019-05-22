@@ -20,6 +20,19 @@ public:
     {
         ShowInDock = show;
         SetActivationPolicy();
+        
+        
+        /* carbon voodoo to get icon and menu without bundle */
+        ProcessSerialNumber psn = { 0, kCurrentProcess };
+        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+        SetFrontProcess(&psn);
+        
+        id menubar = [NSMenu new];
+        [menubar setTitle:@"Test"];
+        [NSApp setMainMenu:menubar];
+        
+        
+        [[NSApplication sharedApplication] finishLaunching];
         return S_OK;
     }
 };
