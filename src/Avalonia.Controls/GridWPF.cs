@@ -17,7 +17,7 @@ using Avalonia.Media;
 using Avalonia;
 using System.Collections;
 
-namespace System.Windows.Controls
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Grid
@@ -25,194 +25,35 @@ namespace System.Windows.Controls
     public class Grid : Panel
     {
         /// <summary>
-        /// <see cref="FrameworkElement.LogicalChildren"/>
+        /// Defines the Column attached property.
         /// </summary>
-        protected internal override IEnumerator LogicalChildren
-        {
-            get
-            {
-                // empty panel or a panel being used as the items
-                // host has *no* logical Children; give empty enumerator
-                bool noChildren = (base.VisualChildrenCount == 0) || IsItemsHost;
-
-                if (noChildren)
-                {
-                    ExtendedData extData = ExtData;
-
-                    if (extData == null
-                        || ((extData.ColumnDefinitions == null || extData.ColumnDefinitions.Count == 0)
-                            && (extData.RowDefinitions == null || extData.RowDefinitions.Count == 0))
-                       )
-                    {
-                        //  grid is empty
-                        return EmptyEnumerator.Instance;
-                    }
-                }
-
-                return (new GridChildrenCollectionEnumeratorSimple(this, !noChildren));
-            }
-        }
+        public static readonly AttachedProperty<int> ColumnProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "Column",
+                validate: ValidateColumn);
 
         /// <summary>
-        /// Helper for setting Column property on a Control.
+        /// Defines the ColumnSpan attached property.
         /// </summary>
-        /// <param name="element">Control to set Column property on.</param>
-        /// <param name="value">Column property value.</param>
-        public static void SetColumn(Control element, int value)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            element.SetValue(ColumnProperty, value);
-        }
+        public static readonly AttachedProperty<int> ColumnSpanProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>("ColumnSpan", 1);
 
         /// <summary>
-        /// Helper for reading Column property from a Control.
+        /// Defines the Row attached property.
         /// </summary>
-        /// <param name="element">Control to read Column property from.</param>
-        /// <returns>Column property value.</returns>
-        public static int GetColumn(Control element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(ColumnProperty));
-        }
+        public static readonly AttachedProperty<int> RowProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "Row",
+                validate: ValidateRow);
 
         /// <summary>
-        /// Helper for setting Row property on a Control.
+        /// Defines the RowSpan attached property.
         /// </summary>
-        /// <param name="element">Control to set Row property on.</param>
-        /// <param name="value">Row property value.</param>
-        public static void SetRow(Control element, int value)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
+        public static readonly AttachedProperty<int> RowSpanProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>("RowSpan", 1);
 
-            element.SetValue(RowProperty, value);
-        }
-
-        /// <summary>
-        /// Helper for reading Row property from a Control.
-        /// </summary>
-        /// <param name="element">Control to read Row property from.</param>
-        /// <returns>Row property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
-        public static int GetRow(Control element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(RowProperty));
-        }
-
-        /// <summary>
-        /// Helper for setting ColumnSpan property on a Control.
-        /// </summary>
-        /// <param name="element">Control to set ColumnSpan property on.</param>
-        /// <param name="value">ColumnSpan property value.</param>
-        public static void SetColumnSpan(Control element, int value)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            element.SetValue(ColumnSpanProperty, value);
-        }
-
-        /// <summary>
-        /// Helper for reading ColumnSpan property from a Control.
-        /// </summary>
-        /// <param name="element">Control to read ColumnSpan property from.</param>
-        /// <returns>ColumnSpan property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
-        public static int GetColumnSpan(Control element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(ColumnSpanProperty));
-        }
-
-        /// <summary>
-        /// Helper for setting RowSpan property on a Control.
-        /// </summary>
-        /// <param name="element">Control to set RowSpan property on.</param>
-        /// <param name="value">RowSpan property value.</param>
-        public static void SetRowSpan(Control element, int value)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            element.SetValue(RowSpanProperty, value);
-        }
-
-        /// <summary>
-        /// Helper for reading RowSpan property from a Control.
-        /// </summary>
-        /// <param name="element">Control to read RowSpan property from.</param>
-        /// <returns>RowSpan property value.</returns>
-        public static int GetRowSpan(Control element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(RowSpanProperty));
-        }
-
-        /// <summary>
-        /// Helper for setting IsSharedSizeScope property on a Control.
-        /// </summary>
-        /// <param name="element">Control to set IsSharedSizeScope property on.</param>
-        /// <param name="value">IsSharedSizeScope property value.</param>
-        public static void SetIsSharedSizeScope(Control element, bool value)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            element.SetValue(IsSharedSizeScopeProperty, value);
-        }
-
-        /// <summary>
-        /// Helper for reading IsSharedSizeScope property from a Control.
-        /// </summary>
-        /// <param name="element">Control to read IsSharedSizeScope property from.</param>
-        /// <returns>IsSharedSizeScope property value.</returns>
-        public static bool GetIsSharedSizeScope(Control element)
-        {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((bool)element.GetValue(IsSharedSizeScopeProperty));
-        }
-
-
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
-        #region Public Properties
+        public static readonly AttachedProperty<bool> IsSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
 
         /// <summary>
         /// ShowGridLines property.
@@ -222,86 +63,69 @@ namespace System.Windows.Controls
             get { return (CheckFlagsAnd(Flags.ShowGridLinesPropertyValue)); }
             set { SetValue(ShowGridLinesProperty, value); }
         }
+        private ColumnDefinitions _columnDefinitions;
+        private RowDefinitions _rowDefinitions;
 
         /// <summary>
-        /// Returns a ColumnDefinitionCollection of column definitions.
+        /// Gets or sets the columns definitions for the grid.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public ColumnDefinitionCollection ColumnDefinitions
+        public ColumnDefinitions ColumnDefinitions
         {
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitionCollection(this); }
 
-                return (_data.ColumnDefinitions);
-            }
-        }
-
-        /// <summary>
-        /// Returns a RowDefinitionCollection of row definitions.
-        /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public RowDefinitionCollection RowDefinitions
-        {
-            get
-            {
-                if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitionCollection(this); }
-
-                return (_data.RowDefinitions);
-            }
-        }
-
-        #endregion Public Properties
-
-        //------------------------------------------------------
-        //
-        //  Protected Methods
-        //
-        //------------------------------------------------------
-
-        #region Protected Methods
-
-        /// <summary>
-        ///   Derived class must implement to support Visual Children. The method must return
-        ///    the child at the specified index. Index must be between 0 and GetVisualChildrenCount-1.
-        ///
-        ///    By default a Visual does not have any Children.
-        ///
-        ///  Remark:
-        ///       During this virtual call it is not valid to modify the Visual tree.
-        /// </summary>
-        protected override Visual GetVisualChild(int index)
-        {
-            // because "base.Count + 1" for GridLinesRenderer
-            // argument checking done at the base class
-            if (index == base.VisualChildrenCount)
-            {
-                if (_gridLinesRenderer == null)
+                if (_columnDefinitions == null)
                 {
-                    throw new ArgumentOutOfRangeException("index", index, SR.Get(SRID.Visual_ArgumentOutOfRange));
+                    ColumnDefinitions = new ColumnDefinitions();
                 }
-                return _gridLinesRenderer;
+
+                return _columnDefinitions;
             }
-            else return base.GetVisualChild(index);
+
+            set
+            {
+
+                if (_columnDefinitions != null)
+                {
+                    throw new NotSupportedException("Reassigning ColumnDefinitions not yet implemented.");
+                }
+
+                _columnDefinitions = value;
+                _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _columnDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
+            }
         }
 
         /// <summary>
-        ///  Derived classes override this property to enable the Visual code to enumerate
-        ///  the Visual Children. Derived classes need to return the number of Children
-        ///  from this method.
-        ///
-        ///    By default a Visual does not have any Children.
-        ///
-        ///  Remark: During this virtual method the Visual tree must not be modified.
+        /// Gets or sets the row definitions for the grid.
         /// </summary>
-        protected override int VisualChildrenCount
+        public RowDefinitions RowDefinitions
         {
-            //since GridLinesRenderer has not been added as a child, so we do not subtract
-            get { return base.VisualChildrenCount + (_gridLinesRenderer != null ? 1 : 0); }
-        }
+            get
+            {
+                if (_data == null) { _data = new ExtendedData(); }
 
+                if (_rowDefinitions == null)
+                {
+                    RowDefinitions = new RowDefinitions();
+                }
+
+                return _rowDefinitions;
+            }
+
+            set
+            {
+                if (_rowDefinitions != null)
+                {
+                    throw new NotSupportedException("Reassigning RowDefinitions not yet implemented.");
+                }
+
+                _rowDefinitions = value;
+                _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+                _rowDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
+            }
+        }
 
         /// <summary>
         /// Content measurement.
@@ -315,8 +139,6 @@ namespace System.Windows.Controls
 
             try
             {
-                EnterCounterScope(Counters.MeasureOverride);
-
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
@@ -330,8 +152,9 @@ namespace System.Windows.Controls
                         if (child != null)
                         {
                             child.Measure(constraint);
-                            gridDesiredSize.Width = Math.Max(gridDesiredSize.Width, child.DesiredSize.Width);
-                            gridDesiredSize.Height = Math.Max(gridDesiredSize.Height, child.DesiredSize.Height);
+                            gridDesiredSize = new Size(
+                                Math.Max(gridDesiredSize.Width, child.DesiredSize.Width), 
+                                Math.Max(gridDesiredSize.Height, child.DesiredSize.Height));
                         }
                     }
                 }
@@ -590,17 +413,14 @@ namespace System.Windows.Controls
 
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
-                    EnterCounter(Counters._CalculateDesiredSize);
                     gridDesiredSize = new Size(
                             CalculateDesiredSize(DefinitionsU),
                             CalculateDesiredSize(DefinitionsV));
-                    ExitCounter(Counters._CalculateDesiredSize);
                 }
             }
             finally
             {
                 MeasureOverrideInProgress = false;
-                ExitCounterScope(Counters.MeasureOverride);
             }
 
             return (gridDesiredSize);
@@ -614,17 +434,14 @@ namespace System.Windows.Controls
         {
             try
             {
-                EnterCounterScope(Counters.ArrangeOverride);
 
                 ArrangeOverrideInProgress = true;
 
                 if (_data == null)
                 {
-                    ControlCollection Children = InternalChildren;
-
                     for (int i = 0, count = Children.Count; i < count; ++i)
                     {
-                        Control child = Children[i];
+                        var child = Children[i];
                         if (child != null)
                         {
                             child.Arrange(new Rect(arrangeSize));
@@ -635,18 +452,12 @@ namespace System.Windows.Controls
                 {
                     Debug.Assert(DefinitionsU.Length > 0 && DefinitionsV.Length > 0);
 
-                    EnterCounter(Counters._SetFinalSize);
-
                     SetFinalSize(DefinitionsU, arrangeSize.Width, true);
                     SetFinalSize(DefinitionsV, arrangeSize.Height, false);
 
-                    ExitCounter(Counters._SetFinalSize);
-
-                    ControlCollection Children = InternalChildren;
-
                     for (int currentCell = 0; currentCell < PrivateCells.Length; ++currentCell)
                     {
-                        Control cell = Children[currentCell];
+                        IControl cell = Children[currentCell];
                         if (cell == null)
                         {
                             continue;
@@ -663,9 +474,7 @@ namespace System.Windows.Controls
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
                             GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
 
-                        EnterCounter(Counters._ArrangeChildHelper2);
                         cell.Arrange(cellRect);
-                        ExitCounter(Counters._ArrangeChildHelper2);
                     }
 
                     //  update render bound on grid lines renderer visual
@@ -680,7 +489,6 @@ namespace System.Windows.Controls
             {
                 SetValid();
                 ArrangeOverrideInProgress = false;
-                ExitCounterScope(Counters.ArrangeOverride);
             }
             return (arrangeSize);
         }
@@ -697,7 +505,6 @@ namespace System.Windows.Controls
             base.OnVisualChildrenChanged(visualAdded, visualRemoved);
         }
 
-        #endregion Protected Methods
 
         //------------------------------------------------------
         //
@@ -821,15 +628,11 @@ namespace System.Windows.Controls
         /// </summary>
         private void ValidateCells()
         {
-            EnterCounter(Counters._ValidateCells);
-
             if (CellsStructureDirty)
             {
                 ValidateCellsCore();
                 CellsStructureDirty = false;
             }
-
-            ExitCounter(Counters._ValidateCells);
         }
 
         /// <summary>
@@ -837,7 +640,6 @@ namespace System.Windows.Controls
         /// </summary>
         private void ValidateCellsCore()
         {
-            ControlCollection Children = InternalChildren;
             ExtendedData extData = ExtData;
 
             extData.CellCachesCollection = new CellCache[Children.Count];
@@ -852,7 +654,7 @@ namespace System.Windows.Controls
 
             for (int i = PrivateCells.Length - 1; i >= 0; --i)
             {
-                Control child = Children[i];
+                var child = Children[i];
                 if (child == null)
                 {
                     continue;
@@ -1312,7 +1114,7 @@ namespace System.Windows.Controls
             }
 
             EnterCounter(Counters.__MeasureChild);
-            Control child = InternalChildren[cell];
+            IControl child = InternalChildren[cell];
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
@@ -2071,7 +1873,7 @@ namespace System.Windows.Controls
                         if (useLayoutRounding)
                         {
                             roundingErrors[i] = definitions[i].SizeCache;
-                            definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                            definitions[i].SizeCache = IControl.RoundLayoutValue(definitions[i].SizeCache, dpi);
                         }
                     }
                     definitionIndices[starDefinitionsCount++] = i;
@@ -2110,7 +1912,7 @@ namespace System.Windows.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[i] = definitions[i].SizeCache;
-                        definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                        definitions[i].SizeCache = IControl.RoundLayoutValue(definitions[i].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[i].SizeCache;
@@ -2161,7 +1963,7 @@ namespace System.Windows.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndices[i]] = definitions[definitionIndices[i]].SizeCache;
-                        definitions[definitionIndices[i]].SizeCache = Control.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
+                        definitions[definitionIndices[i]].SizeCache = IControl.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[definitionIndices[i]].SizeCache;
@@ -2186,7 +1988,7 @@ namespace System.Windows.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndex] = final;
-                        final = Control.RoundLayoutValue(finalOld, dpi);
+                        final = IControl.RoundLayoutValue(finalOld, dpi);
                         final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
                         final = Math.Min(final, definitions[definitionIndex].SizeCache);
                     }
@@ -2213,7 +2015,7 @@ namespace System.Windows.Controls
                     RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
                     Array.Sort(definitionIndices, 0, definitions.Length, roundingErrorIndexComparer);
                     double adjustedSize = allPreferredArrangeSize;
-                    double dpiIncrement = Control.RoundLayoutValue(1.0, dpi);
+                    double dpiIncrement = IControl.RoundLayoutValue(1.0, dpi);
 
                     if (allPreferredArrangeSize > finalSize)
                     {
@@ -2612,7 +2414,7 @@ namespace System.Windows.Controls
                 for (int i = 0; i < definitions.Length; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = Control.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = IControl.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2826,29 +2628,6 @@ namespace System.Windows.Controls
             }
         }
 
-        /// <summary>
-        /// Returns <c>true</c> if ColumnDefinitions collection is not empty
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeColumnDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (extData != null
-                    && extData.ColumnDefinitions != null
-                    && extData.ColumnDefinitions.Count > 0);
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if RowDefinitions collection is not empty
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public bool ShouldSerializeRowDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (extData != null
-                    && extData.RowDefinitions != null
-                    && extData.RowDefinitions.Count > 0);
-        }
 
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
@@ -2990,16 +2769,6 @@ namespace System.Windows.Controls
 
             return (result != 2);
         }
-
-        #endregion Private Methods
-
-        //------------------------------------------------------
-        //
-        //  Private Properties
-        //
-        //------------------------------------------------------
-
-        #region Private Properties
 
         /// <summary>
         /// Private version returning array of column definitions.
@@ -4036,27 +3805,6 @@ namespace System.Windows.Controls
                 return (false);
             }
 
-            public Object Current
-            {
-                get
-                {
-                    if (_currentEnumerator == -1)
-                    {
-#pragma warning suppress 6503 // IEnumerator.Current is documented to throw this exception
-                        throw new InvalidOperationException(SR.Get(SRID.EnumeratorNotStarted));
-                    }
-                    if (_currentEnumerator >= 3)
-                    {
-#pragma warning suppress 6503 // IEnumerator.Current is documented to throw this exception
-                        throw new InvalidOperationException(SR.Get(SRID.EnumeratorReachedEnd));
-                    }
-
-                    //  assert below is not true anymore since ControlCollection allowes for null Children
-                    //Debug.Assert(_currentChild != null);
-                    return (_currentChild);
-                }
-            }
-
             public void Reset()
             {
                 _currentEnumerator = -1;
@@ -4070,7 +3818,7 @@ namespace System.Windows.Controls
             private Object _currentChild;
             private ColumnDefinitionCollection.Enumerator _enumerator0;
             private RowDefinitionCollection.Enumerator _enumerator1;
-            private ControlCollection _enumerator2Collection;
+            private Controls _enumerator2Collection;
             private int _enumerator2Index;
             private int _enumerator2Count;
         }
@@ -4157,7 +3905,5 @@ namespace System.Windows.Controls
             private static readonly Pen s_evenDashPen;  //  second pen to draw dash
             private static readonly Point c_zeroPoint = new Point(0, 0);
         }
-
-        #endregion Private Structures Classes
     }
 }
