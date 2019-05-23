@@ -255,16 +255,13 @@ namespace Avalonia
 
             if (MainWindow == null)
             {
-                Dispatcher.UIThread.Post(() =>
+                if (!mainWindow.IsVisible)
                 {
-                    if (!mainWindow.IsVisible)
-                    {
-                        mainWindow.Show();
-                    }
+                    mainWindow.Show();
+                }
 
-                    MainWindow = mainWindow;
-                });
-            }            
+                MainWindow = mainWindow;
+            }
 
             return Run(new CancellationTokenSource());
         }
