@@ -868,7 +868,7 @@ namespace Avalonia.Controls
         {
             for (int i = 0; i < minSizes.Length; i++)
             {
-                if (DoubleUtil.GreaterThanOrClose(minSizes[i], 0))
+                if (MathUtilities.GreaterThanOrClose(minSizes[i], 0))
                 {
                     if (isRows)
                     {
@@ -926,7 +926,7 @@ namespace Avalonia.Controls
 
                 MeasureCell(i, forceInfinityV);
 
-                hasDesiredSizeUChanged |= !DoubleUtil.AreClose(oldWidth, Children[i].DesiredSize.Width);
+                hasDesiredSizeUChanged |= !MathUtilities.AreClose(oldWidth, Children[i].DesiredSize.Width);
 
                 if (!ignoreDesiredSizeU)
                 {
@@ -1284,10 +1284,10 @@ namespace Avalonia.Controls
 
                             //  sanity check: totalRemainingSize and sizeToDistribute must be real positive numbers
                             Debug.Assert(!double.IsInfinity(totalRemainingSize)
-                                        && !DoubleUtil.IsNaN(totalRemainingSize)
+                                        && !MathUtilities.IsNaN(totalRemainingSize)
                                         && totalRemainingSize > 0
                                         && !double.IsInfinity(sizeToDistribute)
-                                        && !DoubleUtil.IsNaN(sizeToDistribute)
+                                        && !MathUtilities.IsNaN(sizeToDistribute)
                                         && sizeToDistribute > 0);
 
                             for (int i = 0; i < count; ++i)
@@ -1320,107 +1320,6 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Must initialize LayoutSize for all Star entries in given array of definitions.
         /// </remarks>
-        private void ResolveStar(
-            DefinitionBase[] definitions,
-            double availableSize)
-        {
-            if (FrameworkAppContextSwitches.GridStarDefinitionsCanExceedAvailableSpace)
-            {
-                ResolveStarLegacy(definitions, availableSize);
-            }
-            else
-            {
-                ResolveStarMaxDiscrepancy(definitions, availableSize);
-            }
-        }
-
-        // original implementation, used from 3.0 through 4.6.2
-        private void ResolveStarLegacy(
-            DefinitionBase[] definitions,
-            double availableSize)
-        {
-            DefinitionBase[] tempDefinitions = TempDefinitions;
-            int starDefinitionsCount = 0;
-            double takenSize = 0;
-
-            for (int i = 0; i < definitions.Length; ++i)
-            {
-                switch (definitions[i].SizeType)
-                {
-                    case (LayoutTimeSizeType.Auto):
-                        takenSize += definitions[i].MinSize;
-                        break;
-                    case (LayoutTimeSizeType.Pixel):
-                        takenSize += definitions[i].MeasureSize;
-                        break;
-                    case (LayoutTimeSizeType.Star):
-                        {
-                            tempDefinitions[starDefinitionsCount++] = definitions[i];
-
-                            double starValue = definitions[i].UserSize.Value;
-
-                            if (_IsZero(starValue))
-                            {
-                                definitions[i].MeasureSize = 0;
-                                definitions[i].SizeCache = 0;
-                            }
-                            else
-                            {
-                                //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
-                                //  can be summed up without overflow
-                                starValue = Math.Min(starValue, c_starClip);
-
-                                //  Note: normalized star value is temporary cached into MeasureSize
-                                definitions[i].MeasureSize = starValue;
-                                double maxSize = Math.Max(definitions[i].MinSize, definitions[i].UserMaxSize);
-                                maxSize = Math.Min(maxSize, c_starClip);
-                                definitions[i].SizeCache = maxSize / starValue;
-                            }
-                        }
-                        break;
-                }
-            }
-
-            if (starDefinitionsCount > 0)
-            {
-                Array.Sort(tempDefinitions, 0, starDefinitionsCount, s_starDistributionOrderComparer);
-
-                //  the 'do {} while' loop below calculates sum of star weights in order to avoid fp overflow...
-                //  partial sum value is stored in each definition's SizeCache member.
-                //  this way the algorithm guarantees (starValue <= definition.SizeCache) and thus
-                //  (starValue / definition.SizeCache) will never overflow due to sum of star weights becoming zero.
-                //  this is an important change from previous implementation where the following was possible:
-                //  ((BigValueStar + SmallValueStar) - BigValueStar) resulting in 0...
-                double allStarWeights = 0;
-                int i = starDefinitionsCount - 1;
-                do
-                {
-                    allStarWeights += tempDefinitions[i].MeasureSize;
-                    tempDefinitions[i].SizeCache = allStarWeights;
-                } while (--i >= 0);
-
-                i = 0;
-                do
-                {
-                    double resolvedSize;
-                    double starValue = tempDefinitions[i].MeasureSize;
-
-                    if (_IsZero(starValue))
-                    {
-                        resolvedSize = tempDefinitions[i].MinSize;
-                    }
-                    else
-                    {
-                        double userSize = Math.Max(availableSize - takenSize, 0.0) * (starValue / tempDefinitions[i].SizeCache);
-                        resolvedSize = Math.Min(userSize, tempDefinitions[i].UserMaxSize);
-                        resolvedSize = Math.Max(tempDefinitions[i].MinSize, resolvedSize);
-                    }
-
-                    tempDefinitions[i].MeasureSize = resolvedSize;
-                    takenSize += resolvedSize;
-                } while (++i < starDefinitionsCount);
-            }
-        }
 
         // new implementation as of 4.7.  Several improvements:
         // 1. Allocate to *-defs hitting their min or max constraints, before allocating
@@ -1435,7 +1334,8 @@ namespace Avalonia.Controls
         //      discrepancy (defined below).   This avoids discontinuities - small
         //      change in available space resulting in large change to one def's allocation.
         // 3. Correct handling of large *-values, including Infinity.
-        private void ResolveStarMaxDiscrepancy(
+    
+        private void ResolveStar(
             DefinitionBase[] definitions,
             double availableSize)
         {
@@ -1755,272 +1655,7 @@ namespace Avalonia.Controls
             DefinitionBase[] definitions,
             double finalSize,
             bool columns)
-        {
-            if (FrameworkAppContextSwitches.GridStarDefinitionsCanExceedAvailableSpace)
-            {
-                SetFinalSizeLegacy(definitions, finalSize, columns);
-            }
-            else
-            {
-                SetFinalSizeMaxDiscrepancy(definitions, finalSize, columns);
-            }
-        }
-
-        // original implementation, used from 3.0 through 4.6.2
-        private void SetFinalSizeLegacy(
-            DefinitionBase[] definitions,
-            double finalSize,
-            bool columns)
-        {
-            int starDefinitionsCount = 0;                       //  traverses form the first entry up
-            int nonStarIndex = definitions.Length;              //  traverses from the last entry down
-            double allPreferredArrangeSize = 0;
-            bool useLayoutRounding = this.UseLayoutRounding;
-            int[] definitionIndices = DefinitionIndices;
-            double[] roundingErrors = null;
-
-            // If using layout rounding, check whether rounding needs to compensate for high DPI
-            double dpi = 1.0;
-
-            if (useLayoutRounding)
-            {
-                DpiScale dpiScale = GetDpi();
-                dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
-                roundingErrors = RoundingErrors;
-            }
-
-            for (int i = 0; i < definitions.Length; ++i)
-            {
-                //  if definition is shared then is cannot be star
-                Debug.Assert(!definitions[i].IsShared || !definitions[i].UserSize.IsStar);
-
-                if (definitions[i].UserSize.IsStar)
-                {
-                    double starValue = definitions[i].UserSize.Value;
-
-                    if (_IsZero(starValue))
-                    {
-                        //  cach normilized star value temporary into MeasureSize
-                        definitions[i].MeasureSize = 0;
-                        definitions[i].SizeCache = 0;
-                    }
-                    else
-                    {
-                        //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
-                        //  can be summed up without overflow
-                        starValue = Math.Min(starValue, c_starClip);
-
-                        //  Note: normalized star value is temporary cached into MeasureSize
-                        definitions[i].MeasureSize = starValue;
-                        double maxSize = Math.Max(definitions[i].MinSizeForArrange, definitions[i].UserMaxSize);
-                        maxSize = Math.Min(maxSize, c_starClip);
-                        definitions[i].SizeCache = maxSize / starValue;
-                        if (useLayoutRounding)
-                        {
-                            roundingErrors[i] = definitions[i].SizeCache;
-                            definitions[i].SizeCache = IControl.RoundLayoutValue(definitions[i].SizeCache, dpi);
-                        }
-                    }
-                    definitionIndices[starDefinitionsCount++] = i;
-                }
-                else
-                {
-                    double userSize = 0;
-
-                    switch (definitions[i].UserSize.GridUnitType)
-                    {
-                        case (GridUnitType.Pixel):
-                            userSize = definitions[i].UserSize.Value;
-                            break;
-
-                        case (GridUnitType.Auto):
-                            userSize = definitions[i].MinSizeForArrange;
-                            break;
-                    }
-
-                    double userMaxSize;
-
-                    if (definitions[i].IsShared)
-                    {
-                        //  overriding userMaxSize effectively prevents squishy-ness.
-                        //  this is a "solution" to avoid shared definitions from been sized to
-                        //  different final size at arrange time, if / when different grids receive
-                        //  different final sizes.
-                        userMaxSize = userSize;
-                    }
-                    else
-                    {
-                        userMaxSize = definitions[i].UserMaxSize;
-                    }
-
-                    definitions[i].SizeCache = Math.Max(definitions[i].MinSizeForArrange, Math.Min(userSize, userMaxSize));
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[i] = definitions[i].SizeCache;
-                        definitions[i].SizeCache = IControl.RoundLayoutValue(definitions[i].SizeCache, dpi);
-                    }
-
-                    allPreferredArrangeSize += definitions[i].SizeCache;
-                    definitionIndices[--nonStarIndex] = i;
-                }
-            }
-
-            //  indices should meet
-            Debug.Assert(nonStarIndex == starDefinitionsCount);
-
-            if (starDefinitionsCount > 0)
-            {
-                StarDistributionOrderIndexComparer starDistributionOrderIndexComparer = new StarDistributionOrderIndexComparer(definitions);
-                Array.Sort(definitionIndices, 0, starDefinitionsCount, starDistributionOrderIndexComparer);
-
-                //  the 'do {} while' loop below calculates sum of star weights in order to avoid fp overflow...
-                //  partial sum value is stored in each definition's SizeCache member.
-                //  this way the algorithm guarantees (starValue <= definition.SizeCache) and thus
-                //  (starValue / definition.SizeCache) will never overflow due to sum of star weights becoming zero.
-                //  this is an important change from previous implementation where the following was possible:
-                //  ((BigValueStar + SmallValueStar) - BigValueStar) resulting in 0...
-                double allStarWeights = 0;
-                int i = starDefinitionsCount - 1;
-                do
-                {
-                    allStarWeights += definitions[definitionIndices[i]].MeasureSize;
-                    definitions[definitionIndices[i]].SizeCache = allStarWeights;
-                } while (--i >= 0);
-
-                i = 0;
-                do
-                {
-                    double resolvedSize;
-                    double starValue = definitions[definitionIndices[i]].MeasureSize;
-
-                    if (_IsZero(starValue))
-                    {
-                        resolvedSize = definitions[definitionIndices[i]].MinSizeForArrange;
-                    }
-                    else
-                    {
-                        double userSize = Math.Max(finalSize - allPreferredArrangeSize, 0.0) * (starValue / definitions[definitionIndices[i]].SizeCache);
-                        resolvedSize = Math.Min(userSize, definitions[definitionIndices[i]].UserMaxSize);
-                        resolvedSize = Math.Max(definitions[definitionIndices[i]].MinSizeForArrange, resolvedSize);
-                    }
-
-                    definitions[definitionIndices[i]].SizeCache = resolvedSize;
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[definitionIndices[i]] = definitions[definitionIndices[i]].SizeCache;
-                        definitions[definitionIndices[i]].SizeCache = IControl.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
-                    }
-
-                    allPreferredArrangeSize += definitions[definitionIndices[i]].SizeCache;
-                } while (++i < starDefinitionsCount);
-            }
-
-            if (allPreferredArrangeSize > finalSize
-                && !_AreClose(allPreferredArrangeSize, finalSize))
-            {
-                DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(definitions);
-                Array.Sort(definitionIndices, 0, definitions.Length, distributionOrderIndexComparer);
-                double sizeToDistribute = finalSize - allPreferredArrangeSize;
-
-                for (int i = 0; i < definitions.Length; ++i)
-                {
-                    int definitionIndex = definitionIndices[i];
-                    double final = definitions[definitionIndex].SizeCache + (sizeToDistribute / (definitions.Length - i));
-                    double finalOld = final;
-                    final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
-                    final = Math.Min(final, definitions[definitionIndex].SizeCache);
-
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[definitionIndex] = final;
-                        final = IControl.RoundLayoutValue(finalOld, dpi);
-                        final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
-                        final = Math.Min(final, definitions[definitionIndex].SizeCache);
-                    }
-
-                    sizeToDistribute -= (final - definitions[definitionIndex].SizeCache);
-                    definitions[definitionIndex].SizeCache = final;
-                }
-
-                allPreferredArrangeSize = finalSize - sizeToDistribute;
-            }
-
-            if (useLayoutRounding)
-            {
-                if (!_AreClose(allPreferredArrangeSize, finalSize))
-                {
-                    // Compute deltas
-                    for (int i = 0; i < definitions.Length; ++i)
-                    {
-                        roundingErrors[i] = roundingErrors[i] - definitions[i].SizeCache;
-                        definitionIndices[i] = i;
-                    }
-
-                    // Sort rounding errors
-                    RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
-                    Array.Sort(definitionIndices, 0, definitions.Length, roundingErrorIndexComparer);
-                    double adjustedSize = allPreferredArrangeSize;
-                    double dpiIncrement = IControl.RoundLayoutValue(1.0, dpi);
-
-                    if (allPreferredArrangeSize > finalSize)
-                    {
-                        int i = definitions.Length - 1;
-                        while ((adjustedSize > finalSize && !_AreClose(adjustedSize, finalSize)) && i >= 0)
-                        {
-                            DefinitionBase definition = definitions[definitionIndices[i]];
-                            double final = definition.SizeCache - dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
-                            if (final < definition.SizeCache)
-                            {
-                                adjustedSize -= dpiIncrement;
-                            }
-                            definition.SizeCache = final;
-                            i--;
-                        }
-                    }
-                    else if (allPreferredArrangeSize < finalSize)
-                    {
-                        int i = 0;
-                        while ((adjustedSize < finalSize && !_AreClose(adjustedSize, finalSize)) && i < definitions.Length)
-                        {
-                            DefinitionBase definition = definitions[definitionIndices[i]];
-                            double final = definition.SizeCache + dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
-                            if (final > definition.SizeCache)
-                            {
-                                adjustedSize += dpiIncrement;
-                            }
-                            definition.SizeCache = final;
-                            i++;
-                        }
-                    }
-                }
-            }
-
-            definitions[0].FinalOffset = 0.0;
-            for (int i = 0; i < definitions.Length; ++i)
-            {
-                definitions[(i + 1) % definitions.Length].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
-            }
-        }
-
-        // new implementation, as of 4.7.  This incorporates the same algorithm
-        // as in ResolveStarMaxDiscrepancy.  It differs in the same way that SetFinalSizeLegacy
-        // differs from ResolveStarLegacy, namely (a) leaves results in def.SizeCache
-        // instead of def.MeasureSize, (b) implements LayoutRounding if requested,
-        // (c) stores intermediate results differently.
-        // The LayoutRounding logic is improved:
-        // 1. Use pre-rounded values during proportional allocation.  This avoids the
-        //      same kind of problems arising from interaction with min/max that
-        //      motivated the new algorithm in the first place.
-        // 2. Use correct "nudge" amount when distributing roundoff space.   This
-        //      comes into play at high DPI - greater than 134.
-        // 3. Applies rounding only to real pixel values (not to ratios)
-        private void SetFinalSizeMaxDiscrepancy(
-            DefinitionBase[] definitions,
-            double finalSize,
-            bool columns)
-        {
+        {         
             int defCount = definitions.Length;
             int[] definitionIndices = DefinitionIndices;
             int minCount = 0, maxCount = 0;
@@ -2359,7 +1994,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Length; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = IControl.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = Control.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2561,9 +2196,6 @@ namespace Avalonia.Controls
             ExtendedData extData = ExtData;
             if (extData != null)
             {
-                //                for (int i = 0; i < PrivateColumnCount; ++i) DefinitionsU[i].SetValid ();
-                //                for (int i = 0; i < PrivateRowCount; ++i) DefinitionsV[i].SetValid ();
-
                 if (extData.TempDefinitions != null)
                 {
                     //  TempDefinitions has to be cleared to avoid "memory leaks"
@@ -3403,7 +3035,7 @@ namespace Avalonia.Controls
 
             internal StarDistributionOrderIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3444,7 +3076,7 @@ namespace Avalonia.Controls
 
             internal DistributionOrderIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3487,7 +3119,7 @@ namespace Avalonia.Controls
 
             internal RoundingErrorIndexComparer(double[] errors)
             {
-                Invariant.Assert(errors != null);
+                Contract.Requires<NullReferenceException>(errors != null);
                 this.errors = errors;
             }
 
@@ -3586,7 +3218,7 @@ namespace Avalonia.Controls
 
             internal MinRatioIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3627,7 +3259,7 @@ namespace Avalonia.Controls
 
             internal MaxRatioIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3668,7 +3300,7 @@ namespace Avalonia.Controls
 
             internal StarWeightIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3699,79 +3331,11 @@ namespace Avalonia.Controls
                 return result;
             }
         }
-
-        /// <summary>
-        /// Implementation of a simple enumerator of grid's logical Children
-        /// </summary>
-        private class GridChildrenCollectionEnumeratorSimple : IEnumerator
-        {
-            internal GridChildrenCollectionEnumeratorSimple(Grid grid, bool includeChildren)
-            {
-                Debug.Assert(grid != null);
-                _currentEnumerator = -1;
-                _enumerator0 = new ColumnDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
-                _enumerator1 = new RowDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
-                // GridLineRenderer is NOT included into this enumerator.
-                _enumerator2Index = 0;
-                if (includeChildren)
-                {
-                    _enumerator2Collection = grid.Children;
-                    _enumerator2Count = _enumerator2Collection.Count;
-                }
-                else
-                {
-                    _enumerator2Collection = null;
-                    _enumerator2Count = 0;
-                }
-            }
-
-            public bool MoveNext()
-            {
-                while (_currentEnumerator < 3)
-                {
-                    if (_currentEnumerator >= 0)
-                    {
-                        switch (_currentEnumerator)
-                        {
-                            case (0): if (_enumerator0.MoveNext()) { _currentChild = _enumerator0.Current; return (true); } break;
-                            case (1): if (_enumerator1.MoveNext()) { _currentChild = _enumerator1.Current; return (true); } break;
-                            case (2):
-                                if (_enumerator2Index < _enumerator2Count)
-                                {
-                                    _currentChild = _enumerator2Collection[_enumerator2Index];
-                                    _enumerator2Index++;
-                                    return (true);
-                                }
-                                break;
-                        }
-                    }
-                    _currentEnumerator++;
-                }
-                return (false);
-            }
-
-            public void Reset()
-            {
-                _currentEnumerator = -1;
-                _currentChild = null;
-                _enumerator0.Reset();
-                _enumerator1.Reset();
-                _enumerator2Index = 0;
-            }
-
-            private int _currentEnumerator;
-            private Object _currentChild;
-            private ColumnDefinitions.Enumerator _enumerator0;
-            private RowDefinitions.Enumerator _enumerator1;
-            private Controls _enumerator2Collection;
-            private int _enumerator2Index;
-            private int _enumerator2Count;
-        }
-
+ 
         /// <summary>
         /// Helper to render grid lines.
         /// </summary>
-        internal class GridLinesRenderer : DrawingVisual
+        internal class GridLinesRenderer : Visual
         {
             /// <summary>
             /// Static initialization
