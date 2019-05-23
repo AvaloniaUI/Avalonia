@@ -165,7 +165,7 @@ namespace Avalonia.Controls
                         bool sizeToContentV = double.IsPositiveInfinity(constraint.Height);
 
                         // Clear index information and rounding errors
-                        if (RowDefinitionCollectionDirty || ColumnDefinitionCollectionDirty)
+                        if (RowDefinitionsDirty || ColumnDefinitionsDirty)
                         {
                             if (_definitionIndices != null)
                             {
@@ -494,27 +494,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="Visual.OnVisualChildrenChanged"/>
-        /// </summary>
-        protected internal override void OnVisualChildrenChanged(
-            DependencyObject visualAdded,
-            DependencyObject visualRemoved)
-        {
-            CellsStructureDirty = true;
-
-            base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-        }
-
-
-        //------------------------------------------------------
-        //
-        //  Internal Methods
-        //
-        //------------------------------------------------------
-
-        #region Internal Methods
-
-        /// <summary>
         ///     Invalidates grid caches and makes the grid dirty for measure.
         /// </summary>
         internal void Invalidate()
@@ -533,10 +512,10 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Invariant.Assert(_data != null);
+            Contract.Requires<NullReferenceException>(_data != null);
 
             //  actual value calculations require structure to be up-to-date
-            if (!ColumnDefinitionCollectionDirty)
+            if (!ColumnDefinitionsDirty)
             {
                 DefinitionBase[] definitions = DefinitionsU;
                 value = definitions[(columnIndex + 1) % definitions.Length].FinalOffset;
@@ -555,10 +534,10 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Invariant.Assert(_data != null);
+            Contract.Requires<NullReferenceException>(_data != null);
 
             //  actual value calculations require structure to be up-to-date
-            if (!RowDefinitionCollectionDirty)
+            if (!RowDefinitionsDirty)
             {
                 DefinitionBase[] definitions = DefinitionsV;
                 value = definitions[(rowIndex + 1) % definitions.Length].FinalOffset;
@@ -566,16 +545,6 @@ namespace Avalonia.Controls
             }
             return (value);
         }
-
-        #endregion Internal Methods
-
-        //------------------------------------------------------
-        //
-        //  Internal Properties
-        //
-        //------------------------------------------------------
-
-        #region Internal Properties
 
         /// <summary>
         /// Convenience accessor to MeasureOverrideInProgress bit flag.
@@ -598,7 +567,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to ValidDefinitionsUStructure bit flag.
         /// </summary>
-        internal bool ColumnDefinitionCollectionDirty
+        internal bool ColumnDefinitionsDirty
         {
             get { return (!CheckFlagsAnd(Flags.ValidDefinitionsUStructure)); }
             set { SetFlags(!value, Flags.ValidDefinitionsUStructure); }
@@ -607,21 +576,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to ValidDefinitionsVStructure bit flag.
         /// </summary>
-        internal bool RowDefinitionCollectionDirty
+        internal bool RowDefinitionsDirty
         {
             get { return (!CheckFlagsAnd(Flags.ValidDefinitionsVStructure)); }
             set { SetFlags(!value, Flags.ValidDefinitionsVStructure); }
         }
-
-        #endregion Internal Properties
-
-        //------------------------------------------------------
-        //
-        //  Private Methods
-        //
-        //------------------------------------------------------
-
-        #region Private Methods
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -665,11 +624,11 @@ namespace Avalonia.Controls
                 //
                 //  read and cache child positioning properties
                 //
-
+                
                 //  read indices from the corresponding properties
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
-                cell.ColumnIndex = Math.Min(GetColumn(child), DefinitionsU.Length - 1);
+                cell.ColumnIndex = Math.Min(Grid.ColumnProperty (child), DefinitionsU.Length - 1);
                 //      clamp to value < number_of_rows
                 //      row >= 0 is guaranteed by property value validation callback
                 cell.RowIndex = Math.Min(GetRow(child), DefinitionsV.Length - 1);
@@ -750,9 +709,7 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ValidateDefinitionsUStructure()
         {
-            EnterCounter(Counters._ValidateColsStructure);
-
-            if (ColumnDefinitionCollectionDirty)
+            if (ColumnDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
 
@@ -779,12 +736,10 @@ namespace Avalonia.Controls
                     }
                 }
 
-                ColumnDefinitionCollectionDirty = false;
+                ColumnDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Length > 0);
-
-            ExitCounter(Counters._ValidateColsStructure);
         }
 
         /// <summary>
@@ -797,9 +752,7 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ValidateDefinitionsVStructure()
         {
-            EnterCounter(Counters._ValidateRowsStructure);
-
-            if (RowDefinitionCollectionDirty)
+            if (RowDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
 
@@ -826,12 +779,10 @@ namespace Avalonia.Controls
                     }
                 }
 
-                RowDefinitionCollectionDirty = false;
+                RowDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Length > 0);
-
-            ExitCounter(Counters._ValidateRowsStructure);
         }
 
         /// <summary>
@@ -1071,8 +1022,6 @@ namespace Avalonia.Controls
             int cell,
             bool forceInfinityV)
         {
-            EnterCounter(Counters._MeasureCell);
-
             double cellMeasureWidth;
             double cellMeasureHeight;
 
@@ -1113,18 +1062,14 @@ namespace Avalonia.Controls
                                         PrivateCells[cell].RowSpan);
             }
 
-            EnterCounter(Counters.__MeasureChild);
-            IControl child = InternalChildren[cell];
+            var child = Children[cell];
+            
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
                 child.Measure(childConstraint);
             }
-            ExitCounter(Counters.__MeasureChild);
-
-            ExitCounter(Counters._MeasureCell);
         }
-
 
         /// <summary>
         /// Calculates one dimensional measure size for given definitions' range.
@@ -3032,8 +2977,8 @@ namespace Avalonia.Controls
         /// </summary>
         private class ExtendedData
         {
-            internal ColumnDefinitionCollection ColumnDefinitions;  //  collection of column definitions (logical tree support)
-            internal RowDefinitionCollection RowDefinitions;        //  collection of row definitions (logical tree support)
+            internal ColumnDefinitions ColumnDefinitions;  //  collection of column definitions (logical tree support)
+            internal RowDefinitions RowDefinitions;        //  collection of row definitions (logical tree support)
             internal DefinitionBase[] DefinitionsU;                 //  collection of column definitions used during calc
             internal DefinitionBase[] DefinitionsV;                 //  collection of row definitions used during calc
             internal CellCache[] CellCachesCollection;              //  backing store for logical Children
@@ -3764,8 +3709,8 @@ namespace Avalonia.Controls
             {
                 Debug.Assert(grid != null);
                 _currentEnumerator = -1;
-                _enumerator0 = new ColumnDefinitionCollection.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
-                _enumerator1 = new RowDefinitionCollection.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
+                _enumerator0 = new ColumnDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
+                _enumerator1 = new RowDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
                 // GridLineRenderer is NOT included into this enumerator.
                 _enumerator2Index = 0;
                 if (includeChildren)
@@ -3816,8 +3761,8 @@ namespace Avalonia.Controls
 
             private int _currentEnumerator;
             private Object _currentChild;
-            private ColumnDefinitionCollection.Enumerator _enumerator0;
-            private RowDefinitionCollection.Enumerator _enumerator1;
+            private ColumnDefinitions.Enumerator _enumerator0;
+            private RowDefinitions.Enumerator _enumerator1;
             private Controls _enumerator2Collection;
             private int _enumerator2Index;
             private int _enumerator2Count;
