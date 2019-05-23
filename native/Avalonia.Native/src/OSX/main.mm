@@ -142,6 +142,21 @@ public:
         *ppv = rv;
         return S_OK;
     }
+    
+    virtual HRESULT ObtainMainAppMenu(IAvnAppMenu** ppv) override
+    {
+        return  S_OK;
+    }
+    
+    virtual HRESULT CreateMenu (IAvnAppMenu** ppv) override
+    {
+        return S_OK;
+    }
+    
+    virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) override
+    {
+        return S_OK;
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()
