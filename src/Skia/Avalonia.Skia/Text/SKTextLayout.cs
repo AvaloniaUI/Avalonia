@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -577,44 +576,15 @@ namespace Avalonia.Skia.Text
             return count;
         }
 
-        private static Blob GetHarfBuzzBlob(SKStreamAsset asset)
+        /// <summary>
+        /// Creates a <see cref="Font"/> instance from specified <see cref="SKTypeface"/>
+        /// </summary>
+        /// <param name="typeface"></param>
+        /// <returns></returns>
+        private static Font CreateHarfBuzzFont(SKTypeface typeface)
         {
-            if (asset == null)
+            var face = new Face(new TypefaceTableLoader(typeface))
             {
-                throw new ArgumentNullException(nameof(asset));
-            }
-
-            var size = asset.Length;
-
-            Blob blob;
-
-            var memoryBase = asset.GetMemoryBase();
-
-            if (memoryBase != IntPtr.Zero)
-            {
-                blob = new Blob(memoryBase, size, MemoryMode.ReadOnly, asset, p => ((SKStreamAsset)p).Dispose());
-            }
-            else
-            {
-                var ptr = Marshal.AllocCoTaskMem(size);
-
-                asset.Read(ptr, size);
-
-                blob = new Blob(ptr, size, MemoryMode.ReadOnly, ptr, p => Marshal.FreeCoTaskMem((IntPtr)p));
-            }
-
-            blob.MakeImmutable();
-
-            return blob;
-        }
-
-        private static Font CreateFont(SKTypeface typeface)
-        {
-            var blob = GetHarfBuzzBlob(typeface.OpenStream(out var index));
-
-            var face = new Face(blob, index)
-            {
-                Index = index,
                 UnitsPerEm = typeface.UnitsPerEm
             };
 
@@ -625,6 +595,17 @@ namespace Avalonia.Skia.Text
             return font;
         }
 
+        /// <summary>
+        /// Creates glyph clusters from specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer.</param>
+        /// <param name="textPointer">The text pointer.</param>
+        /// <param name="textFormat">The text format.</param>
+        /// <param name="fontMetrics">The font metrics.</param>
+        /// <param name="glyphIndices">The glyph indices after shaping.</param>
+        /// <param name="glyphPositions">The glyph positions after shaping.</param>
+        /// <param name="width">The final width of the shaped text.</param>
+        /// <returns></returns>
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -634,7 +615,7 @@ namespace Avalonia.Skia.Text
             out SKPoint[] glyphPositions,
             out float width)
         {
-            var font = s_fontCache.GetOrAdd(textFormat.Typeface, CreateFont);
+            var font = s_fontCache.GetOrAdd(textFormat.Typeface, CreateHarfBuzzFont);
 
             font.Shape(buffer);
 
@@ -1037,7 +1018,7 @@ namespace Avalonia.Skia.Text
 
                             if (splitLength + span.Length - appliedLength >= currentTextRun.TextPointer.Length)
                             {
-                                // Apply at the end of the run      
+                                // Apply at the end of the run
                                 textRuns.RemoveAt(runIndex);
 
                                 textRuns.Insert(runIndex, start.FirstTextRun);
@@ -1951,6 +1932,35 @@ namespace Avalonia.Skia.Text
             ///     The second text line.
             /// </value>
             public IReadOnlyList<SKTextRun> SecondTextRuns { get; }
+        }
+
+        private class TypefaceTableLoader : TableLoader
+        {
+            private readonly SKTypeface _typeface;
+
+            public TypefaceTableLoader(SKTypeface typeface)
+            {
+                _typeface = typeface;
+            }
+
+            /// <summary>
+            /// Loads the requested table for use within HarfBuzz
+            /// </summary>
+            /// <param name="tag"></param>
+            /// <returns></returns>
+            protected override unsafe Blob Load(Tag tag)
+            {
+                if (_typeface.TryGetTableData(tag, out var table))
+                {
+                    fixed (byte* tablePtr = table)
+                    {
+                        // This needs to copy the array on creation (MemoryMode.Duplicate)
+                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }
