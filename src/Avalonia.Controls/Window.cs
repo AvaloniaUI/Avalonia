@@ -250,7 +250,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;
+        public event EventHandler<CancelEventArgs> Closing;      
 
         private static void AddWindow(Window window)
         {
@@ -330,8 +330,7 @@ namespace Avalonia.Controls
         protected virtual bool HandleClosing()
         {
             var args = new CancelEventArgs();
-            Closing?.Invoke(this, args);
-
+            OnClosing(args);
             return args.Cancel;
         }
 
@@ -440,7 +439,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(owner == null)
+            if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
 
             if (IsVisible)
@@ -576,6 +575,17 @@ namespace Avalonia.Controls
 
             base.HandleResized(clientSize);
         }
+
+        /// <summary>
+        /// Raises the <see cref="Closing"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// A type that derives from <see cref="Window"/>  may override <see cref="OnClosing"/>. The
+        /// overridden method must call <see cref="OnClosing"/> on the base class if the
+        /// <see cref="Closing"/> event needs to be raised.
+        /// </remarks>
+        protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
     }
 }
 

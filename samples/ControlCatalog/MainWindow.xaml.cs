@@ -1,18 +1,33 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using ControlCatalog.ViewModels;
 using System;
+using System.Threading.Tasks;
 
 namespace ControlCatalog
 {
     public class MainWindow : Window
     {
+        private WindowNotificationManager _notificationArea;
+
         public MainWindow()
         {
             this.InitializeComponent();
             this.AttachDevTools();
             //Renderer.DrawFps = true;
             //Renderer.DrawDirtyRects = Renderer.DrawFps = true;
+
+            _notificationArea = new WindowNotificationManager(this)
+            {
+                Position = NotificationPosition.TopRight,
+                MaxItems = 3
+            };
+
+            DataContext = new MainWindowViewModel(_notificationArea);
         }
 
         private void InitializeComponent()

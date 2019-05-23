@@ -9,7 +9,10 @@ namespace Avalonia.Data.Core
     /// Exception thrown when <see cref="ExpressionObserver"/> could not parse the provided
     /// expression string.
     /// </summary>
-    public class ExpressionParseException : Exception
+#if !BUILDTASK
+    public
+#endif
+    class ExpressionParseException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionParseException"/> class.

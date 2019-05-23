@@ -4,6 +4,9 @@
       <Value>..\TestFiles\Direct2D1\**.*</Value>
     </AdditionalFilesToIncludeForProject>
     <DefaultTestTimeout>3000</DefaultTestTimeout>
+    <HiddenComponentWarnings>
+      <Value>MissingOrIgnoredProjectReference</Value>
+    </HiddenComponentWarnings>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

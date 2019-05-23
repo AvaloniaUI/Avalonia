@@ -210,7 +210,7 @@ namespace Avalonia.Controls.Presenters
         {
             var container = ItemContainerGenerator.ContainerFromIndex(index);
 
-            if (container == null)
+            if (container == null && IsVirtualized)
             {
                 var item = Items.Cast<object>().ElementAt(index);
                 var materialized = ItemContainerGenerator.Materialize(index, item, MemberSelector);
