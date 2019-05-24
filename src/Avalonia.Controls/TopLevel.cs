@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -87,6 +89,7 @@ namespace Avalonia.Controls
             }
 
             PlatformImpl = impl;
+
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
             var styler = TryGetService<IStyler>(dependencyResolver);
 
@@ -124,7 +127,7 @@ namespace Avalonia.Controls
 
             if (_applicationLifecycle != null)
             {
-                _applicationLifecycle.OnExit += OnApplicationExiting;
+                _applicationLifecycle.Exit += OnApplicationExiting;
             }
 
             if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
@@ -278,7 +281,7 @@ namespace Avalonia.Controls
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
-            _applicationLifecycle.OnExit -= OnApplicationExiting;
+            _applicationLifecycle.Exit -= OnApplicationExiting;
         }
 
         /// <summary>

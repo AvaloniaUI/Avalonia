@@ -5,4 +5,9 @@
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\src\Avalonia.Desktop\Avalonia.Desktop.csproj" />
   </ItemGroup>
+  <Target Name="GatherReferences" AfterTargets="CoreCompile">
+    <WriteLinesToFile File="$(TargetPath).refs"
+                      Lines="@(ReferencePathWithRefAssemblies)"
+                      Overwrite="true" />
+  </Target>
 </Project>

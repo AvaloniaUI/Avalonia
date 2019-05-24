@@ -65,7 +65,11 @@ namespace Avalonia.Data
                         return Disposable.Empty;
                     }
                 case BindingMode.OneWayToSource:
-                    return target.GetObservable(property).Subscribe(binding.Subject);
+                    return Observable.CombineLatest(
+                        binding.Observable,
+                        target.GetObservable(property),
+                        (_, v) => v)
+                    .Subscribe(x => binding.Subject.OnNext(x));
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }

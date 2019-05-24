@@ -336,7 +336,18 @@ namespace Avalonia.Controls.Platform
 
             if (e.MouseButton == MouseButton.Left && item?.HasSubMenu == true)
             {
-                Open(item, false);
+                if (item.IsSubMenuOpen)
+                {
+                    if (item.IsTopLevel)
+                    {
+                        CloseMenu(item);
+                    }
+                }
+                else
+                {
+                    Open(item, false);
+                }
+
                 e.Handled = true;
             }
         }

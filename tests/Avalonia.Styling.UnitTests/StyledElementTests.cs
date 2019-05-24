@@ -273,13 +273,10 @@ namespace Avalonia.Styling.UnitTests
                 var root = new TestRoot();
                 var child = new Border();
 
-                ((ISupportInitialize)child).BeginInit();
+                child.BeginInit();
                 root.Child = child;
                 child.Name = "foo";
-                Assert.Null(root.FindControl<Border>("foo"));
-                ((ISupportInitialize)child).EndInit();
-
-                Assert.Same(root.FindControl<Border>("foo"), child);
+                child.EndInit();
             }
         }
 

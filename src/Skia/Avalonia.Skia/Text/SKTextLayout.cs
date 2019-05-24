@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -16,8 +16,11 @@ using Buffer = HarfBuzzSharp.Buffer;
 
 namespace Avalonia.Skia.Text
 {
-    public class SKTextLayout
+    internal class SKTextLayout
     {
+        private static readonly ConcurrentDictionary<SKTypeface, Font> s_fontCache = new ConcurrentDictionary<SKTypeface, Font>();
+        private static readonly char[] s_ellipsis = { '\u2026' };
+
         private readonly SKTypeface _typeface;
 
         private readonly float _fontSize;
@@ -25,6 +28,8 @@ namespace Avalonia.Skia.Text
         private readonly TextAlignment _textAlignment;
 
         private readonly TextWrapping _textWrapping;
+
+        private readonly TextTrimming _textTrimming;
 
         private readonly Size _constraint;
 
@@ -40,6 +45,7 @@ namespace Avalonia.Skia.Text
         /// <param name="fontSize">Size of the font.</param>
         /// <param name="textAlignment">The text alignment.</param>
         /// <param name="textWrapping">The text wrapping.</param>
+        /// <param name="textTrimming">The text trimming.</param>
         /// <param name="constraint">The constraint.</param>
         /// <param name="spans">The spans.</param>
         public SKTextLayout(
@@ -48,6 +54,7 @@ namespace Avalonia.Skia.Text
             float fontSize,
             TextAlignment textAlignment,
             TextWrapping textWrapping,
+            TextTrimming textTrimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans = null)
         {
@@ -55,6 +62,7 @@ namespace Avalonia.Skia.Text
             _fontSize = fontSize;
             _textAlignment = textAlignment;
             _textWrapping = textWrapping;
+            _textTrimming = textTrimming;
             _constraint = constraint;
             _paint = CreatePaint(typeface, fontSize);
             _textLength = text.Length;
@@ -167,21 +175,23 @@ namespace Avalonia.Skia.Text
 
                         canvas.Translate(0, textLine.LineMetrics.BaselineOrigin.Y);
 #endif
-                        if (textRun.TextFormat.Typeface != null)
+                        if (textRun.TextFormat.Typeface == null || textRun.GlyphRun.GlyphIndices.Length == 0)
                         {
-                            InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
+                            continue;
+                        }
 
-                            fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
-                            {
-                                var p = (IntPtr)buffer;
+                        InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                                // This expects an byte array so we need to pass the right length
-                                canvas.DrawPositionedText(
-                                    p,
-                                    textRun.GlyphRun.GlyphIndices.Length * 2,
-                                    textRun.GlyphRun.GlyphOffsets,
-                                    _paint);
-                            }
+                        fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
+                        {
+                            var p = (IntPtr)buffer;
+
+                            // This expects an byte array so we need to pass the right length
+                            canvas.DrawPositionedText(
+                                p,
+                                textRun.GlyphRun.GlyphIndices.Length * 2,
+                                textRun.GlyphRun.GlyphOffsets,
+                                _paint);
                         }
 
                         canvas.Translate(textRun.Width, 0);
@@ -272,7 +282,8 @@ namespace Avalonia.Skia.Text
 
                         if (glyphCluster != null)
                         {
-                            isTrailing = _textLength == glyphCluster.TextPosition + glyphCluster.Length;
+                            isTrailing = glyphCluster.Bounds.Width > 0 &&
+                                         _textLength == glyphCluster.TextPosition + glyphCluster.Length;
 
                             return new TextHitTestResult
                             {
@@ -292,16 +303,16 @@ namespace Avalonia.Skia.Text
 
             var lastLine = TextLines.Last();
 
-            var lastRun = lastLine.TextRuns.Last();
+            var lastRun = lastLine.TextRuns.LastOrDefault();
 
-            var lastCluster = lastRun.GlyphRun.GlyphClusters.Last();
+            var lastCluster = lastRun?.GlyphRun.GlyphClusters.LastOrDefault();
 
             return new TextHitTestResult
             {
                 IsInside = false,
                 IsTrailing = true,
-                TextPosition = isTrailing ? _textLength - lastCluster.Length : 0,
-                Length = lastCluster.Length
+                TextPosition = isTrailing ? _textLength - lastCluster?.Length ?? _textLength : 0,
+                Length = lastCluster?.Length ?? 0
             };
         }
 
@@ -460,6 +471,7 @@ namespace Avalonia.Skia.Text
             {
                 IsAntialias = true,
                 IsStroke = false,
+                SubpixelText = true,
                 TextEncoding = SKTextEncoding.Utf16,
                 Typeface = typeface,
                 TextSize = fontSize
@@ -564,37 +576,36 @@ namespace Avalonia.Skia.Text
             return count;
         }
 
-        private static Blob GetHarfBuzzBlob(SKStreamAsset asset)
+        /// <summary>
+        /// Creates a <see cref="Font"/> instance from specified <see cref="SKTypeface"/>
+        /// </summary>
+        /// <param name="typeface"></param>
+        /// <returns></returns>
+        private static Font CreateHarfBuzzFont(SKTypeface typeface)
         {
-            if (asset == null)
+            var face = new Face(new TypefaceTableLoader(typeface))
             {
-                throw new ArgumentNullException(nameof(asset));
-            }
+                UnitsPerEm = typeface.UnitsPerEm
+            };
 
-            var size = asset.Length;
+            var font = new Font(face);
 
-            Blob blob;
+            font.SetFunctionsOpenType();
 
-            var memoryBase = asset.GetMemoryBase();
-
-            if (memoryBase != IntPtr.Zero)
-            {
-                blob = new Blob(memoryBase, size, MemoryMode.ReadOnly, asset, p => ((SKStreamAsset)p).Dispose());
-            }
-            else
-            {
-                var ptr = Marshal.AllocCoTaskMem(size);
-
-                asset.Read(ptr, size);
-
-                blob = new Blob(ptr, size, MemoryMode.ReadOnly, ptr, p => Marshal.FreeCoTaskMem((IntPtr)p));
-            }
-
-            blob.MakeImmutable();
-
-            return blob;
+            return font;
         }
 
+        /// <summary>
+        /// Creates glyph clusters from specified buffer.
+        /// </summary>
+        /// <param name="buffer">The buffer.</param>
+        /// <param name="textPointer">The text pointer.</param>
+        /// <param name="textFormat">The text format.</param>
+        /// <param name="fontMetrics">The font metrics.</param>
+        /// <param name="glyphIndices">The glyph indices after shaping.</param>
+        /// <param name="glyphPositions">The glyph positions after shaping.</param>
+        /// <param name="width">The final width of the shaped text.</param>
+        /// <returns></returns>
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             Buffer buffer,
             SKTextPointer textPointer,
@@ -604,31 +615,19 @@ namespace Avalonia.Skia.Text
             out SKPoint[] glyphPositions,
             out float width)
         {
-            Font font;
-
-            using (var blob = GetHarfBuzzBlob(textFormat.Typeface.OpenStream(out var index)))
-            using (var face = new Face(blob, index))
-            {
-                face.Index = index;
-
-                face.UnitsPerEm = textFormat.Typeface.UnitsPerEm;
-
-                font = new Font(face);
-
-                font.SetFunctionsOpenType();
-            }
+            var font = s_fontCache.GetOrAdd(textFormat.Typeface, CreateHarfBuzzFont);
 
             font.Shape(buffer);
+
+            font.GetScale(out var scaleX, out _);
+
+            var textScale = textFormat.FontSize / scaleX;
 
             var len = buffer.Length;
 
             var info = buffer.GetGlyphInfoReferences();
 
             var pos = buffer.GetGlyphPositionReferences();
-
-            font.GetScale(out var scaleX, out _);
-
-            var textScale = textFormat.FontSize / scaleX;
 
             glyphPositions = new SKPoint[len];
 
@@ -795,6 +794,17 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
+        /// Creates an ellipsis.
+        /// </summary>
+        /// <param name="textFormat">The text format.</param>
+        /// <param name="foreground">The foreground.</param>
+        /// <returns></returns>
+        private SKTextRun CreateEllipsisRun(SKTextFormat textFormat, IBrush foreground)
+        {
+            return CreateTextRun(s_ellipsis, new SKTextPointer(0, 1), textFormat, foreground, true);
+        }
+
+        /// <summary>
         ///     Creates the text line metrics.
         /// </summary>
         /// <param name="textRuns">The text runs.</param>
@@ -878,7 +888,7 @@ namespace Avalonia.Skia.Text
         ///     Creates a empty text line.
         /// </summary>
         /// <returns></returns>
-        private SKTextLine CreateEmptyTextLine()
+        private SKTextLine CreateEmptyTextLine(int startingIndex)
         {
             _paint.Typeface = _typeface;
 
@@ -893,7 +903,7 @@ namespace Avalonia.Skia.Text
                 fontMetrics.Descent,
                 fontMetrics.Leading);
 
-            return new SKTextLine(new SKTextPointer(), new List<SKTextRun>(), textLineMetrics);
+            return new SKTextLine(new SKTextPointer(startingIndex, 0), new List<SKTextRun>(), textLineMetrics);
         }
 
         /// <summary>
@@ -1008,7 +1018,7 @@ namespace Avalonia.Skia.Text
 
                             if (splitLength + span.Length - appliedLength >= currentTextRun.TextPointer.Length)
                             {
-                                // Apply at the end of the run      
+                                // Apply at the end of the run
                                 textRuns.RemoveAt(runIndex);
 
                                 textRuns.Insert(runIndex, start.FirstTextRun);
@@ -1160,14 +1170,15 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private List<SKTextLine> CreateTextLines(ReadOnlySpan<char> text, IReadOnlyList<FormattedTextStyleSpan> spans)
         {
-            if (text.Length == 0)
+            if (text.Length == 0 || Math.Abs(_constraint.Width) < float.Epsilon ||
+                Math.Abs(_constraint.Height) < float.Epsilon)
             {
-                var emptyTextLine = CreateEmptyTextLine();
+                var emptyTextLine = CreateEmptyTextLine(0);
 
                 return new List<SKTextLine>
-                       {
-                           emptyTextLine
-                       };
+                {
+                    emptyTextLine
+                };
             }
 
             var currentTextRuns = CreateTextRuns(text);
@@ -1190,7 +1201,7 @@ namespace Avalonia.Skia.Text
                         {
                             var textLine = CreateShapedTextLine(text, currentTextRuns, currentPosition);
 
-                            var textWrappingResult = PerformTextWrapping(text, textLine);
+                            var textWrappingResult = BreakTextLine(text, textLine);
 
                             textLines.AddRange(textWrappingResult);
 
@@ -1209,13 +1220,18 @@ namespace Avalonia.Skia.Text
 
                         var textLine = CreateShapedTextLine(text, splitResult.FirstTextRuns, currentPosition);
 
-                        var textWrappingResult = PerformTextWrapping(text, textLine);
+                        var textWrappingResult = BreakTextLine(text, textLine);
 
                         textLines.AddRange(textWrappingResult);
 
                         currentTextRuns = splitResult.SecondTextRuns;
 
                         currentPosition += textLine.TextPointer.Length;
+
+                        if (length == text.Length)
+                        {
+                            textLines.Add(CreateEmptyTextLine(length));
+                        }
 
                         break;
                     }
@@ -1267,41 +1283,37 @@ namespace Avalonia.Skia.Text
 
             using (var buffer = new Buffer())
             {
+                buffer.ContentType = ContentType.Unicode;
+
                 buffer.Language = new Language(CultureInfo.CurrentCulture);
 
-                var breakCharCount = 0;
+                var breakCharPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                if (textPointer.Length >= 2)
+                if (IsBreakChar(text[breakCharPosition]))
                 {
-                    var lastPosition = textPointer.StartingIndex + textPointer.Length - 1;
+                    int breakCharCount;
 
-                    if (IsBreakChar(text[lastPosition]))
+                    if (text[breakCharPosition] == '\r' && text[breakCharPosition - 1] == '\n'
+                        || text[breakCharPosition] == '\n' && text[breakCharPosition - 1] == '\r')
                     {
-                        if ((text[lastPosition] == '\r' && text[lastPosition - 1] == '\n')
-                            || (text[lastPosition] == '\n' && text[lastPosition - 1] == '\r'))
-                        {
-                            breakCharCount = 2;
-                        }
-                        else
-                        {
-                            breakCharCount = 1;
-                        }
+                        breakCharCount = 2;
                     }
-                }
+                    else
+                    {
+                        breakCharCount = 1;
+                    }
 
-                // Replace break char with zero width space
-                if (breakCharCount > 0)
-                {
-                    buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+                    if (breakCharPosition != textPointer.StartingIndex)
+                    {
+                        buffer.AddUtf16(text, textPointer.StartingIndex, textPointer.Length - breakCharCount);
+                    }
 
                     var cluster = buffer.GlyphInfos.Length > 0
-                                      ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
-                                      : (uint)textPointer.StartingIndex;
+                        ? buffer.GlyphInfos[buffer.Length - 1].Cluster + 1
+                        : (uint)textPointer.StartingIndex;
 
-                    for (var i = 0; i < breakCharCount; i++)
-                    {
-                        buffer.Add('\u200C', cluster);
-                    }
+
+                    buffer.Add('\u200C', cluster);
                 }
                 else
                 {
@@ -1516,18 +1528,112 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Performs text wrapping if needed and returns a list of text lines.
+        /// Breaks a text line into multiple text lines.
+        /// Performs text trimming and text wrapping if applicable.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="textLine">The text line.</param>
+        /// <returns></returns>
+        private IEnumerable<SKTextLine> BreakTextLine(ReadOnlySpan<char> text, SKTextLine textLine)
+        {
+            if (textLine.LineMetrics.Size.Width < _constraint.Width)
+            {
+                return new[] { textLine };
+            }
+
+            if (_textTrimming != TextTrimming.None)
+            {
+                return PerformTextTrimming(text, textLine);
+            }
+
+            return _textWrapping == TextWrapping.Wrap ? PerformTextWrapping(text, textLine) : new[] { textLine };
+        }
+
+        /// <summary>
+        ///     Performs text trimming returns a list of text lines. 
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="textLine">The text line.</param>
+        /// <returns></returns>
+        private IEnumerable<SKTextLine> PerformTextTrimming(ReadOnlySpan<char> text, SKTextLine textLine)
+        {
+            var textLines = new List<SKTextLine>();
+            var availableLength = (float)_constraint.Width;
+            var currentWidth = 0.0f;
+            var runIndex = 0;
+            var currentPosition = textLine.TextPointer.StartingIndex;
+
+            while (runIndex < textLine.TextRuns.Count)
+            {
+                var currentRun = textLine.TextRuns[runIndex];
+
+                currentWidth += currentRun.Width;
+
+                if (currentWidth > availableLength)
+                {
+                    var ellipsisRun = CreateEllipsisRun(currentRun.TextFormat, currentRun.Foreground);
+
+                    var measuredLength = BreakGlyphs(currentRun.GlyphRun, availableLength - ellipsisRun.Width);
+
+                    if (_textTrimming == TextTrimming.WordEllipsis && measuredLength < currentRun.TextPointer.Length)
+                    {
+                        for (var i = measuredLength; i >= 0; i--)
+                        {
+                            var c = text[currentRun.TextPointer.StartingIndex + i];
+
+                            if (!char.IsWhiteSpace(c))
+                            {
+                                continue;
+                            }
+
+                            measuredLength = i;
+
+                            break;
+                        }
+                    }
+
+                    var splitResult = SplitTextRun(text, currentRun, measuredLength);
+
+                    var textRuns = new List<SKTextRun>();
+
+                    if (runIndex > 0)
+                    {
+                        textRuns.AddRange(textLine.TextRuns.Take(runIndex));
+                    }
+
+                    if (splitResult.SecondTextRun != null)
+                    {
+                        textRuns.Add(splitResult.FirstTextRun);
+                    }
+
+                    textRuns.Add(ellipsisRun);
+
+                    var textLineMetrics = CreateTextLineMetrics(textRuns, out measuredLength);
+
+                    textLines.Add(
+                        new SKTextLine(new SKTextPointer(currentPosition, measuredLength), textRuns, textLineMetrics));
+
+                    break;
+                }
+
+                availableLength -= currentRun.Width;
+
+                runIndex++;
+            }
+
+            textLines.Add(textLine);
+
+            return textLines;
+        }
+
+        /// <summary>
+        ///     Performs text wrapping returns a list of text lines.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="textLine">The text line.</param>
         /// <returns></returns>
         private IEnumerable<SKTextLine> PerformTextWrapping(ReadOnlySpan<char> text, SKTextLine textLine)
         {
-            if (_textWrapping != TextWrapping.Wrap || textLine.LineMetrics.Size.Width <= _constraint.Width)
-            {
-                return new[] { textLine };
-            }
-
             var textLines = new List<SKTextLine>();
             var availableLength = (float)_constraint.Width;
             var currentWidth = 0.0f;
@@ -1630,7 +1736,7 @@ namespace Avalonia.Skia.Text
         /// <returns></returns>
         private SplitTextRunResult SplitTextRun(ReadOnlySpan<char> text, SKTextRun textRun, int length)
         {
-            if (length == 0 || textRun.TextPointer.Length < 2)
+            if (length == 0 || length == textRun.TextPointer.Length || textRun.TextPointer.Length < 2)
             {
                 return new SplitTextRunResult(textRun, null);
             }
@@ -1690,15 +1796,13 @@ namespace Avalonia.Skia.Text
                     text,
                     new SKTextPointer(startingIndex, length),
                     textFormat,
-                    foreground,
-                    true);
+                    foreground);
 
                 secondTextRun = CreateTextRun(
                     text,
                     new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
                     textFormat,
-                    foreground,
-                    true);
+                    foreground);
             }
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
@@ -1717,7 +1821,7 @@ namespace Avalonia.Skia.Text
             int length)
         {
             var firstTextRuns = new List<SKTextRun>();
-            var secondTextRuns = new List<SKTextRun>();
+            List<SKTextRun> secondTextRuns = null;
             var currentPosition = 0;
 
             for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
@@ -1740,13 +1844,9 @@ namespace Avalonia.Skia.Text
                 {
                     firstTextRuns.AddRange(textRuns.Take(runIndex + 1));
 
-                    if (textRuns.Count == firstTextRuns.Count)
+                    if (textRuns.Count != firstTextRuns.Count)
                     {
-                        secondTextRuns = null;
-                    }
-                    else
-                    {
-                        secondTextRuns.AddRange(textRuns.Skip(firstTextRuns.Count));
+                        secondTextRuns = new List<SKTextRun>(textRuns.Skip(firstTextRuns.Count));
                     }
                 }
                 else
@@ -1760,10 +1860,18 @@ namespace Avalonia.Skia.Text
 
                     firstTextRuns.Add(splitResult.FirstTextRun);
 
-                    secondTextRuns.Add(splitResult.SecondTextRun);
-
-                    if (runIndex < textRuns.Count - 1)
+                    if (splitResult.SecondTextRun != null)
                     {
+                        secondTextRuns = new List<SKTextRun> { splitResult.SecondTextRun };
+                    }
+
+                    if (runIndex + 1 < textRuns.Count)
+                    {
+                        if (secondTextRuns == null)
+                        {
+                            secondTextRuns = new List<SKTextRun>();
+                        }
+
                         secondTextRuns.AddRange(textRuns.Skip(firstTextRuns.Count));
                     }
                 }
@@ -1824,6 +1932,35 @@ namespace Avalonia.Skia.Text
             ///     The second text line.
             /// </value>
             public IReadOnlyList<SKTextRun> SecondTextRuns { get; }
+        }
+
+        private class TypefaceTableLoader : TableLoader
+        {
+            private readonly SKTypeface _typeface;
+
+            public TypefaceTableLoader(SKTypeface typeface)
+            {
+                _typeface = typeface;
+            }
+
+            /// <summary>
+            /// Loads the requested table for use within HarfBuzz
+            /// </summary>
+            /// <param name="tag"></param>
+            /// <returns></returns>
+            protected override unsafe Blob Load(Tag tag)
+            {
+                if (_typeface.TryGetTableData(tag, out var table))
+                {
+                    fixed (byte* tablePtr = table)
+                    {
+                        // This needs to copy the array on creation (MemoryMode.Duplicate)
+                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }

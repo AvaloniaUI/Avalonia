@@ -29,7 +29,7 @@ namespace Avalonia.Markup.Xaml.Converters
                 return new Bitmap(uri.LocalPath);
 
             var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-            return new Bitmap(assets.Open(uri, context.GetBaseUri()));
+            return new Bitmap(assets.Open(uri, context.GetContextBaseUri()));
         }
     }
 }

@@ -61,8 +61,7 @@ namespace Avalonia.Direct2D1.RenderTests.Shapes
                     Points = polylinePoints,
                     Stretch = Stretch.Uniform,
                     StrokeJoin = PenLineJoin.Round,
-                    StrokeStartLineCap = PenLineCap.Round,
-                    StrokeEndLineCap = PenLineCap.Round,
+                    StrokeLineCap = PenLineCap.Round,
                     StrokeThickness = 10
                 }
             };

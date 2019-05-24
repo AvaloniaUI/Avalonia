@@ -19,7 +19,8 @@ namespace Avalonia.Media
         private double _fontSize;
         private string _text;
         private TextAlignment _textAlignment;
-        private TextWrapping _wrapping;
+        private TextWrapping _textWrapping;
+        private TextTrimming _textTrimming;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FormattedText"/> class.
@@ -102,10 +103,19 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the text wrapping.
         /// </summary>
-        public TextWrapping Wrapping
+        public TextWrapping TextWrapping
         {
-            get => _wrapping;
-            set => Set(ref _wrapping, value);
+            get => _textWrapping;
+            set => Set(ref _textWrapping, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text trimming.
+        /// </summary>
+        public TextTrimming TextTrimming
+        {
+            get => _textTrimming;
+            set => Set(ref _textTrimming, value);
         }
 
         /// <summary>
@@ -122,7 +132,8 @@ namespace Avalonia.Media
                         _typeface,
                         _fontSize,
                         _textAlignment,
-                        _wrapping,
+                        _textWrapping,
+                        _textTrimming,
                         _constraint,
                         _spans);
                 }
