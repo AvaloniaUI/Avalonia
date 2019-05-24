@@ -21,6 +21,7 @@ namespace Avalonia.Controls
         static DefinitionBase()
         {
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
+            BoundsProperty.Changed.AddClassHandler<DefinitionBase>(OnUserSizePropertyChanged);
         }
 
         /// <summary>

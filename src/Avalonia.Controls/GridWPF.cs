@@ -80,10 +80,9 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowGridLines
         {
-            get { return (CheckFlagsAnd(Flags.ShowGridLinesPropertyValue)); }
+            get { return GetValue(ShowGridLinesProperty); }
             set { SetValue(ShowGridLinesProperty, value); }
         }
-
 
         /// <summary>
         /// Gets the value of the Column attached property for a control.
@@ -186,7 +185,6 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_data == null) { _data = new ExtendedData(); }
 
                 if (_columnDefinitions == null)
                 {
@@ -204,6 +202,9 @@ namespace Avalonia.Controls
                     throw new NotSupportedException("Reassigning ColumnDefinitions not yet implemented.");
                 }
 
+                if (_data == null) { _data = new ExtendedData(); }
+
+
                 _columnDefinitions = value;
                 _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
                 _columnDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
@@ -217,8 +218,6 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_data == null) { _data = new ExtendedData(); }
-
                 if (_rowDefinitions == null)
                 {
                     RowDefinitions = new RowDefinitions();
@@ -234,11 +233,16 @@ namespace Avalonia.Controls
                     throw new NotSupportedException("Reassigning RowDefinitions not yet implemented.");
                 }
 
+                if (_data == null) { _data = new ExtendedData(); }
+
                 _rowDefinitions = value;
                 _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
                 _rowDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
             }
         }
+
+        private bool rowColDefsEmpty => (RowDefinitions == null || RowDefinitions?.Count == 0 ) &&
+                                        (ColumnDefinitions == null || ColumnDefinitions?.Count == 0);
 
         /// <summary>
         /// Content measurement.
@@ -255,7 +259,7 @@ namespace Avalonia.Controls
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
-                if (extData == null)
+                if (rowColDefsEmpty)
                 {
                     gridDesiredSize = new Size();
 
@@ -400,7 +404,7 @@ namespace Avalonia.Controls
 
                 ArrangeOverrideInProgress = true;
 
-                if (_data == null)
+                if (rowColDefsEmpty)
                 {
                     for (int i = 0, count = Children.Count; i < count; ++i)
                     {
@@ -603,7 +607,7 @@ namespace Avalonia.Controls
                 //      clamp to not exceed beyond bottom side of the grid
                 //      row_span > 0 is guaranteed by property value validation callback
                 cell.RowSpan = Math.Min(GetRowSpan(child), DefinitionsV.Length - cell.RowIndex);
-                
+
                 Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Length);
                 Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Length);
 
@@ -2275,8 +2279,6 @@ namespace Avalonia.Controls
             {
                 grid.InvalidateVisual();
             }
-
-            grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
         }
 
         private static void OnCellAttachedPropertyChanged(Visual child, AvaloniaPropertyChangedEventArgs e)
@@ -2589,11 +2591,6 @@ namespace Avalonia.Controls
             ValidDefinitionsUStructure = 0x00000001,
             ValidDefinitionsVStructure = 0x00000002,
             ValidCellsStructure = 0x00000004,
-
-            //
-            //  boolean properties state
-            //
-            ShowGridLinesPropertyValue = 0x00000100,   //  show grid lines ?
 
             //
             //  boolean flags
