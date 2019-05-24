@@ -17,6 +17,7 @@ using Avalonia.Media;
 using Avalonia;
 using System.Collections;
 using Avalonia.Utilities;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -25,6 +26,16 @@ namespace Avalonia.Controls
     /// </summary>
     public class Grid : Panel
     {
+
+        static Grid()
+        {
+            ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+            ColumnProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
+        }
+
         /// <summary>
         /// Defines the Column attached property.
         /// </summary>
@@ -582,9 +593,9 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    extData.ColumnDefinitions.InternalTrimToSize();
+                    // extData.ColumnDefinitions.InternalTrimToSize();
 
-                    if (extData.ColumnDefinitions.InternalCount == 0)
+                    if (extData.ColumnDefinitions.Count == 0)
                     {
                         //  if column definitions collection is empty
                         //  mockup array with one column
@@ -592,7 +603,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        extData.DefinitionsU = extData.ColumnDefinitions.InternalItems;
+                        extData.DefinitionsU = extData.ColumnDefinitions.ToArray();
                     }
                 }
 
@@ -625,9 +636,9 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    extData.RowDefinitions.InternalTrimToSize();
+                    // extData.RowDefinitions.InternalTrimToSize();
 
-                    if (extData.RowDefinitions.InternalCount == 0)
+                    if (extData.RowDefinitions.Count == 0)
                     {
                         //  if row definitions collection is empty
                         //  mockup array with one row
@@ -635,7 +646,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        extData.DefinitionsV = extData.RowDefinitions.InternalItems;
+                        extData.DefinitionsV = extData.RowDefinitions.ToArray();
                     }
                 }
 
@@ -1844,8 +1855,8 @@ namespace Avalonia.Controls
             // unrounded sizes, to avoid breaking assumptions in the previous phases
             if (UseLayoutRounding)
             {
-                DpiScale dpiScale = GetDpi();
-                double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
+                var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 96;
+
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0.0;
 
@@ -1853,7 +1864,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Length; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = Control.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2099,6 +2110,30 @@ namespace Avalonia.Controls
             _flags = value ? (_flags | flags) : (_flags & (~flags));
         }
 
+        private double RoundLayoutValue(double value, double dpiScale)
+        {
+            double newValue;
+
+            // If DPI == 1, don't use DPI-aware rounding.
+            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            {
+                newValue = Math.Round(value * dpiScale) / dpiScale;
+                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
+                if (double.IsNaN(newValue) ||
+                    double.IsInfinity(newValue) ||
+                    MathUtilities.AreClose(newValue, Double.MaxValue))
+                {
+                    newValue = value;
+                }
+            }
+            else
+            {
+                newValue = Math.Round(value);
+            }
+
+            return newValue;
+        }
+
         /// <summary>
         /// CheckFlagsAnd returns <c>true</c> if all the flags in the
         /// given bitmask are set on the object.
@@ -2142,10 +2177,8 @@ namespace Avalonia.Controls
             return value;
         }
 
-        private static void OnShowGridLinesPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void OnShowGridLinesPropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs e)
         {
-            var grid = e.Sender as Grid;
-
             if (grid.ExtData != null    // trivial grid is 1 by 1. there is no grid lines anyway
                 && grid.ListenToNotifications)
             {
@@ -2155,13 +2188,11 @@ namespace Avalonia.Controls
             grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
         }
 
-        private static void OnCellAttachedPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void OnCellAttachedPropertyChanged(Visual child, AvaloniaPropertyChangedEventArgs e)
         {
-            var child = e.Sender as Visual;
-
             if (child != null)
             {
-                Grid grid = child.GetVisualParent() as Grid;
+                var grid = child.GetVisualParent() as Grid;
                 if (grid != null
                     && grid.ExtData != null
                     && grid.ListenToNotifications)
