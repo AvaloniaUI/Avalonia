@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -186,7 +187,7 @@ namespace Avalonia.Controls
         internal static bool IsUserMinSizePropertyValueValid(object value)
         {
             double v = (double)value;
-            return (!DoubleUtil.IsNaN(v) && v >= 0.0d && !Double.IsPositiveInfinity(v));
+            return (!MathUtilities.IsNaN(v) && v >= 0.0d && !Double.IsPositiveInfinity(v));
         }
 
         /// <summary>
@@ -215,7 +216,7 @@ namespace Avalonia.Controls
         internal static bool IsUserMaxSizePropertyValueValid(object value)
         {
             double v = (double)value;
-            return (!DoubleUtil.IsNaN(v) && v >= 0.0d);
+            return (!MathUtilities.IsNaN(v) && v >= 0.0d);
         }
 
         /// <summary>
@@ -847,7 +848,7 @@ namespace Avalonia.Controls
                     sharedMinSize = Math.Max(sharedMinSize, _registry[i].MinSize);
                 }
 
-                bool sharedMinSizeChanged = !DoubleUtil.AreClose(_minSize, sharedMinSize);
+                bool sharedMinSizeChanged = !MathUtilities.AreClose(_minSize, sharedMinSize);
 
                 //  compare accumulated min size with min sizes of the individual definitions
                 for (int i = 0, count = _registry.Count; i < count; ++i)
@@ -857,7 +858,7 @@ namespace Avalonia.Controls
                     if (sharedMinSizeChanged || definitionBase.LayoutWasUpdated)
                     {
                         //  if definition's min size is different, then need to re-measure
-                        if (!DoubleUtil.AreClose(sharedMinSize, definitionBase.MinSize))
+                        if (!MathUtilities.AreClose(sharedMinSize, definitionBase.MinSize))
                         {
                             Grid parentGrid = (Grid)definitionBase.Parent;
                             parentGrid.InvalidateMeasure();
@@ -870,7 +871,7 @@ namespace Avalonia.Controls
                             //  if measure is valid then also need to check arrange.
                             //  Note: definitionBase.SizeCache is volatile but at this point 
                             //  it contains up-to-date final size
-                            if (!DoubleUtil.AreClose(sharedMinSize, definitionBase.SizeCache))
+                            if (!MathUtilities.AreClose(sharedMinSize, definitionBase.SizeCache))
                             {
                                 Grid parentGrid = (Grid)definitionBase.Parent;
                                 parentGrid.InvalidateArrange();

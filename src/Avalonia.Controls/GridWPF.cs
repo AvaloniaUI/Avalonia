@@ -16,6 +16,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia;
 using System.Collections;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -153,7 +154,7 @@ namespace Avalonia.Controls
                         {
                             child.Measure(constraint);
                             gridDesiredSize = new Size(
-                                Math.Max(gridDesiredSize.Width, child.DesiredSize.Width), 
+                                Math.Max(gridDesiredSize.Width, child.DesiredSize.Width),
                                 Math.Max(gridDesiredSize.Height, child.DesiredSize.Height));
                         }
                     }
@@ -198,156 +199,6 @@ namespace Avalonia.Controls
                     ValidateCells();
 
                     Debug.Assert(DefinitionsU.Length > 0 && DefinitionsV.Length > 0);
-
-                    //  Grid classifies cells into four groups depending on
-                    //  the column / row type a cell belongs to (number corresponds to
-                    //  group number):
-                    //
-                    //                   Px      Auto     Star
-                    //               +--------+--------+--------+
-                    //               |        |        |        |
-                    //            Px |    1   |    1   |    3   |
-                    //               |        |        |        |
-                    //               +--------+--------+--------+
-                    //               |        |        |        |
-                    //          Auto |    1   |    1   |    3   |
-                    //               |        |        |        |
-                    //               +--------+--------+--------+
-                    //               |        |        |        |
-                    //          Star |    4   |    2   |    4   |
-                    //               |        |        |        |
-                    //               +--------+--------+--------+
-                    //
-                    //  The group number indicates the order in which cells are measured.
-                    //  Certain order is necessary to be able to dynamically resolve star
-                    //  columns / rows sizes which are used as input for measuring of
-                    //  the cells belonging to them.
-                    //
-                    //  However, there are cases when topology of a grid causes cyclical
-                    //  size dependences. For example:
-                    //
-                    //
-                    //                         column width="Auto"      column width="*"
-                    //                      +----------------------+----------------------+
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //  row height="Auto"   |                      |      cell 1 2        |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      +----------------------+----------------------+
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //  row height="*"      |       cell 2 1       |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      |                      |                      |
-                    //                      +----------------------+----------------------+
-                    //
-                    //  In order to accurately calculate constraint width for "cell 1 2"
-                    //  (which is the remaining of grid's available width and calculated
-                    //  value of Auto column), "cell 2 1" needs to be calculated first,
-                    //  as it contributes to the Auto column's calculated value.
-                    //  At the same time in order to accurately calculate constraint
-                    //  height for "cell 2 1", "cell 1 2" needs to be calcualted first,
-                    //  as it contributes to Auto row height, which is used in the
-                    //  computation of Star row resolved height.
-                    //
-                    //  to "break" this cyclical dependency we are making (arbitrary)
-                    //  decision to treat cells like "cell 2 1" as if they appear in Auto
-                    //  rows. And then recalculate them one more time when star row
-                    //  heights are resolved.
-                    //
-                    //  (Or more strictly) the code below implement the following logic:
-                    //
-                    //                       +---------+
-                    //                       |  enter  |
-                    //                       +---------+
-                    //                            |
-                    //                            V
-                    //                    +----------------+
-                    //                    | Measure Group1 |
-                    //                    +----------------+
-                    //                            |
-                    //                            V
-                    //                          / - \
-                    //                        /       \
-                    //                  Y   /    Can    \    N
-                    //            +--------|   Resolve   |-----------+
-                    //            |         \  StarsV?  /            |
-                    //            |           \       /              |
-                    //            |             \ - /                |
-                    //            V                                  V
-                    //    +----------------+                       / - \
-                    //    | Resolve StarsV |                     /       \
-                    //    +----------------+               Y   /    Can    \    N
-                    //            |                      +----|   Resolve   |------+
-                    //            V                      |     \  StarsU?  /       |
-                    //    +----------------+             |       \       /         |
-                    //    | Measure Group2 |             |         \ - /           |
-                    //    +----------------+             |                         V
-                    //            |                      |                 +-----------------+
-                    //            V                      |                 | Measure Group2' |
-                    //    +----------------+             |                 +-----------------+
-                    //    | Resolve StarsU |             |                         |
-                    //    +----------------+             V                         V
-                    //            |              +----------------+        +----------------+
-                    //            V              | Resolve StarsU |        | Resolve StarsU |
-                    //    +----------------+     +----------------+        +----------------+
-                    //    | Measure Group3 |             |                         |
-                    //    +----------------+             V                         V
-                    //            |              +----------------+        +----------------+
-                    //            |              | Measure Group3 |        | Measure Group3 |
-                    //            |              +----------------+        +----------------+
-                    //            |                      |                         |
-                    //            |                      V                         V
-                    //            |              +----------------+        +----------------+
-                    //            |              | Resolve StarsV |        | Resolve StarsV |
-                    //            |              +----------------+        +----------------+
-                    //            |                      |                         |
-                    //            |                      |                         V
-                    //            |                      |                +------------------+
-                    //            |                      |                | Measure Group2'' |
-                    //            |                      |                +------------------+
-                    //            |                      |                         |
-                    //            +----------------------+-------------------------+
-                    //                                   |
-                    //                                   V
-                    //                           +----------------+
-                    //                           | Measure Group4 |
-                    //                           +----------------+
-                    //                                   |
-                    //                                   V
-                    //                               +--------+
-                    //                               |  exit  |
-                    //                               +--------+
-                    //
-                    //  where:
-                    //  *   all [Measure GroupN] - regular Children measure process -
-                    //      each cell is measured given contraint size as an input
-                    //      and each cell's desired size is accumulated on the
-                    //      corresponding column / row;
-                    //  *   [Measure Group2'] - is when each cell is measured with
-                    //      infinit height as a constraint and a cell's desired
-                    //      height is ignored;
-                    //  *   [Measure Groups''] - is when each cell is measured (second
-                    //      time during single Grid.MeasureOverride) regularly but its
-                    //      returned width is ignored;
-                    //
-                    //  This algorithm is believed to be as close to ideal as possible.
-                    //  It has the following drawbacks:
-                    //  *   cells belonging to Group2 can be called to measure twice;
-                    //  *   iff during second measure a cell belonging to Group2 returns
-                    //      desired width greater than desired width returned the first
-                    //      time, such a cell is going to be clipped, even though it
-                    //      appears in Auto column.
-                    //
 
                     MeasureCellsGroup(extData.CellGroup1, constraint, false, false);
 
@@ -478,7 +329,7 @@ namespace Avalonia.Controls
                     }
 
                     //  update render bound on grid lines renderer visual
-                    GridLinesRenderer gridLinesRenderer = EnsureGridLinesRenderer();
+                    var gridLinesRenderer = EnsureGridLinesRenderer();
                     if (gridLinesRenderer != null)
                     {
                         gridLinesRenderer.UpdateRenderBounds(arrangeSize);
@@ -624,23 +475,23 @@ namespace Avalonia.Controls
                 //
                 //  read and cache child positioning properties
                 //
-                
+
                 //  read indices from the corresponding properties
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
-                cell.ColumnIndex = Math.Min(Grid.ColumnProperty (child), DefinitionsU.Length - 1);
+                cell.ColumnIndex = Math.Min(child.GetValue(Grid.ColumnProperty), DefinitionsU.Length - 1);
                 //      clamp to value < number_of_rows
                 //      row >= 0 is guaranteed by property value validation callback
-                cell.RowIndex = Math.Min(GetRow(child), DefinitionsV.Length - 1);
+                cell.RowIndex = Math.Min(child.GetValue(Grid.RowProperty), DefinitionsV.Length - 1);
 
                 //  read span properties
                 //      clamp to not exceed beyond right side of the grid
                 //      column_span > 0 is guaranteed by property value validation callback
-                cell.ColumnSpan = Math.Min(GetColumnSpan(child), DefinitionsU.Length - cell.ColumnIndex);
+                cell.ColumnSpan = Math.Min(child.GetValue(Grid.ColumnSpanProperty), DefinitionsU.Length - cell.ColumnIndex);
 
                 //      clamp to not exceed beyond bottom side of the grid
                 //      row_span > 0 is guaranteed by property value validation callback
-                cell.RowSpan = Math.Min(GetRowSpan(child), DefinitionsV.Length - cell.RowIndex);
+                cell.RowSpan = Math.Min(child.GetValue(Grid.RowSpanProperty), DefinitionsV.Length - cell.RowIndex);
 
                 Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Length);
                 Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Length);
@@ -1063,7 +914,7 @@ namespace Avalonia.Controls
             }
 
             var child = Children[cell];
-            
+
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
@@ -1334,7 +1185,7 @@ namespace Avalonia.Controls
         //      discrepancy (defined below).   This avoids discontinuities - small
         //      change in available space resulting in large change to one def's allocation.
         // 3. Correct handling of large *-values, including Infinity.
-    
+
         private void ResolveStar(
             DefinitionBase[] definitions,
             double availableSize)
@@ -1655,7 +1506,7 @@ namespace Avalonia.Controls
             DefinitionBase[] definitions,
             double finalSize,
             bool columns)
-        {         
+        {
             int defCount = definitions.Length;
             int[] definitionIndices = DefinitionIndices;
             int minCount = 0, maxCount = 0;
@@ -2219,12 +2070,12 @@ namespace Avalonia.Controls
             if (ShowGridLines && (_gridLinesRenderer == null))
             {
                 _gridLinesRenderer = new GridLinesRenderer();
-                this.AddVisualChild(_gridLinesRenderer);
+                this.VisualChildren.Add(_gridLinesRenderer);
             }
 
             if ((!ShowGridLines) && (_gridLinesRenderer != null))
             {
-                this.RemoveVisualChild(_gridLinesRenderer);
+                this.VisualChildren.Remove(_gridLinesRenderer);
                 _gridLinesRenderer = null;
             }
 
@@ -2287,7 +2138,7 @@ namespace Avalonia.Controls
 
             if (child != null)
             {
-                Grid grid = VisualTreeHelper.GetParent(child) as Grid;
+                Grid grid = child.GetVisualParent() as Grid;
                 if (grid != null
                     && grid.ExtData != null
                     && grid.ListenToNotifications)
@@ -2514,7 +2365,7 @@ namespace Avalonia.Controls
         /// <returns><c>true</c> if d == 0.</returns>
         private static bool _IsZero(double d)
         {
-            return (Math.Abs(d) < c_epsilon);
+            return (Math.Abs(d) < double.Epsilon);
         }
 
         /// <summary>
@@ -2525,7 +2376,7 @@ namespace Avalonia.Controls
         /// <returns><c>true</c> if d1 == d2</returns>
         private static bool _AreClose(double d1, double d2)
         {
-            return (Math.Abs(d1 - d2) < c_epsilon);
+            return (Math.Abs(d1 - d2) < double.Epsilon);
         }
 
         /// <summary>
@@ -2554,15 +2405,6 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Properties
-
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-
-        #region Private Fields
         private ExtendedData _data;                             //  extended data instantiated on demand, for non-trivial case handling only
         private Flags _flags;                                   //  grid validity / property caches dirtiness flags
         private GridLinesRenderer _gridLinesRenderer;
@@ -2573,15 +2415,6 @@ namespace Avalonia.Controls
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
 
-        #endregion Private Fields
-
-        //------------------------------------------------------
-        //
-        //  Static Fields
-        //
-        //------------------------------------------------------
-
-        #region Static Fields
         private const double c_epsilon = 1e-5;                  //  used in fp calculations
         private const double c_starClip = 1e298;                //  used as maximum for clipping star values during normalization
         private const int c_layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
@@ -2593,16 +2426,6 @@ namespace Avalonia.Controls
         private static readonly IComparer s_minRatioComparer = new MinRatioComparer();
         private static readonly IComparer s_maxRatioComparer = new MaxRatioComparer();
         private static readonly IComparer s_starWeightComparer = new StarWeightComparer();
-
-        #endregion Static Fields
-
-        //------------------------------------------------------
-        //
-        //  Private Structures / Classes
-        //
-        //------------------------------------------------------
-
-        #region Private Structures Classes
 
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.
@@ -2656,140 +2479,6 @@ namespace Avalonia.Controls
             ArrangeOverrideInProgress = 0x00080000,   //  "1" while in the context of Grid.ArrangeOverride
         }
 
-        #endregion Private Structures Classes
-
-        //------------------------------------------------------
-        //
-        //  Properties
-        //
-        //------------------------------------------------------
-
-        #region Properties
-
-        /// <summary>
-        /// ShowGridLines property. This property is used mostly
-        /// for simplification of visual debuggig. When it is set
-        /// to <c>true</c> grid lines are drawn to visualize location
-        /// of grid lines.
-        /// </summary>
-        public static readonly DependencyProperty ShowGridLinesProperty =
-                DependencyProperty.Register(
-                      "ShowGridLines",
-                      typeof(bool),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              false,
-                              new PropertyChangedCallback(OnShowGridLinesPropertyChanged)));
-
-        /// <summary>
-        /// Column property. This is an attached property.
-        /// Grid defines Column property, so that it can be set
-        /// on any element treated as a cell. Column property
-        /// specifies child's position with respect to columns.
-        /// </summary>
-        /// <remarks>
-        /// <para> Columns are 0 - based. In order to appear in first column, element
-        /// should have Column property set to <c>0</c>. </para>
-        /// <para> Default value for the property is <c>0</c>. </para>
-        /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty ColumnProperty =
-                DependencyProperty.RegisterAttached(
-                      "Column",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              0,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueNotNegative));
-
-        /// <summary>
-        /// Row property. This is an attached property.
-        /// Grid defines Row, so that it can be set
-        /// on any element treated as a cell. Row property
-        /// specifies child's position with respect to rows.
-        /// <remarks>
-        /// <para> Rows are 0 - based. In order to appear in first row, element
-        /// should have Row property set to <c>0</c>. </para>
-        /// <para> Default value for the property is <c>0</c>. </para>
-        /// </remarks>
-        /// </summary>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty RowProperty =
-                DependencyProperty.RegisterAttached(
-                      "Row",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              0,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueNotNegative));
-
-        /// <summary>
-        /// ColumnSpan property. This is an attached property.
-        /// Grid defines ColumnSpan, so that it can be set
-        /// on any element treated as a cell. ColumnSpan property
-        /// specifies child's width with respect to columns.
-        /// Example, ColumnSpan == 2 means that child will span across two columns.
-        /// </summary>
-        /// <remarks>
-        /// Default value for the property is <c>1</c>.
-        /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty ColumnSpanProperty =
-                DependencyProperty.RegisterAttached(
-                      "ColumnSpan",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              1,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueGreaterThanZero));
-
-        /// <summary>
-        /// RowSpan property. This is an attached property.
-        /// Grid defines RowSpan, so that it can be set
-        /// on any element treated as a cell. RowSpan property
-        /// specifies child's height with respect to row grid lines.
-        /// Example, RowSpan == 3 means that child will span across three rows.
-        /// </summary>
-        /// <remarks>
-        /// Default value for the property is <c>1</c>.
-        /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty RowSpanProperty =
-                DependencyProperty.RegisterAttached(
-                      "RowSpan",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              1,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueGreaterThanZero));
-
-
-        /// <summary>
-        /// IsSharedSizeScope property marks scoping element for shared size.
-        /// </summary>
-        public static readonly DependencyProperty IsSharedSizeScopeProperty =
-                DependencyProperty.RegisterAttached(
-                      "IsSharedSizeScope",
-                      typeof(bool),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              false,
-                              new PropertyChangedCallback(DefinitionBase.OnIsSharedSizeScopePropertyChanged)));
-
-        #endregion Properties
-
-        //------------------------------------------------------
-        //
-        //  Internal Structures / Classes
-        //
-        //------------------------------------------------------
-
-        #region Internal Structures Classes
-
         /// <summary>
         /// LayoutTimeSizeType is used internally and reflects layout-time size type.
         /// </summary>
@@ -2801,16 +2490,6 @@ namespace Avalonia.Controls
             Auto = 0x02,
             Star = 0x04,
         }
-
-        #endregion Internal Structures Classes
-
-        //------------------------------------------------------
-        //
-        //  Private Structures / Classes
-        //
-        //------------------------------------------------------
-
-        #region Private Structures Classes
 
         /// <summary>
         /// CellCache stored calculated values of
@@ -3331,7 +3010,7 @@ namespace Avalonia.Controls
                 return result;
             }
         }
- 
+
         /// <summary>
         /// Helper to render grid lines.
         /// </summary>
@@ -3342,53 +3021,52 @@ namespace Avalonia.Controls
             /// </summary>
             static GridLinesRenderer()
             {
-                s_oddDashPen = new Pen(Brushes.Blue, c_penWidth);
-                DoubleCollection oddDashArray = new DoubleCollection();
+                var oddDashArray = new List<double>();
                 oddDashArray.Add(c_dashLength);
                 oddDashArray.Add(c_dashLength);
-                s_oddDashPen.DashStyle = new DashStyle(oddDashArray, 0);
-                s_oddDashPen.DashCap = PenLineCap.Flat;
-                s_oddDashPen.Freeze();
+                var ds1 = new DashStyle(oddDashArray, 0);
+                s_oddDashPen = new Pen(Brushes.Blue,
+                                       c_penWidth,
+                                       lineCap: PenLineCap.Flat,
+                                       dashStyle: ds1);
 
-                s_evenDashPen = new Pen(Brushes.Yellow, c_penWidth);
-                DoubleCollection evenDashArray = new DoubleCollection();
+                var evenDashArray = new List<double>();
                 evenDashArray.Add(c_dashLength);
                 evenDashArray.Add(c_dashLength);
-                s_evenDashPen.DashStyle = new DashStyle(evenDashArray, c_dashLength);
-                s_evenDashPen.DashCap = PenLineCap.Flat;
-                s_evenDashPen.Freeze();
+                var ds2 = new DashStyle(evenDashArray, 0);
+                s_evenDashPen = new Pen(Brushes.Yellow,
+                                       c_penWidth,
+                                       lineCap: PenLineCap.Flat,
+                                       dashStyle: ds2);
             }
 
             /// <summary>
             /// UpdateRenderBounds.
             /// </summary>
-            /// <param name="boundsSize">Size of render bounds</param>
-            internal void UpdateRenderBounds(Size boundsSize)
+            public override void Render(DrawingContext drawingContext)
             {
-                using (DrawingContext drawingContext = RenderOpen())
+                var grid = this.GetVisualParent() as Grid;
+
+                if (grid == null
+                    || grid.ShowGridLines == false)
                 {
-                    Grid grid = VisualTreeHelper.GetParent(this) as Grid;
-                    if (grid == null
-                        || grid.ShowGridLines == false)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    for (int i = 1; i < grid.DefinitionsU.Length; ++i)
-                    {
-                        DrawGridLine(
-                            drawingContext,
-                            grid.DefinitionsU[i].FinalOffset, 0.0,
-                            grid.DefinitionsU[i].FinalOffset, boundsSize.Height);
-                    }
+                for (int i = 1; i < grid.DefinitionsU.Length; ++i)
+                {
+                    DrawGridLine(
+                        drawingContext,
+                        grid.DefinitionsU[i].FinalOffset, 0.0,
+                        grid.DefinitionsU[i].FinalOffset, lastArrangeSize.Height);
+                }
 
-                    for (int i = 1; i < grid.DefinitionsV.Length; ++i)
-                    {
-                        DrawGridLine(
-                            drawingContext,
-                            0.0, grid.DefinitionsV[i].FinalOffset,
-                            boundsSize.Width, grid.DefinitionsV[i].FinalOffset);
-                    }
+                for (int i = 1; i < grid.DefinitionsV.Length; ++i)
+                {
+                    DrawGridLine(
+                        drawingContext,
+                        0.0, grid.DefinitionsV[i].FinalOffset,
+                        lastArrangeSize.Width, grid.DefinitionsV[i].FinalOffset);
                 }
             }
 
@@ -3402,12 +3080,18 @@ namespace Avalonia.Controls
                 double endX,
                 double endY)
             {
-                Point start = new Point(startX, startY);
-                Point end = new Point(endX, endY);
+                var start = new Point(startX, startY);
+                var end = new Point(endX, endY);
                 drawingContext.DrawLine(s_oddDashPen, start, end);
                 drawingContext.DrawLine(s_evenDashPen, start, end);
             }
 
+            internal void UpdateRenderBounds(Size arrangeSize)
+            {
+                lastArrangeSize = arrangeSize;
+                this.InvalidateVisual();
+            }
+            private static Size lastArrangeSize;
             private const double c_dashLength = 4.0;    //
             private const double c_penWidth = 1.0;      //
             private static readonly Pen s_oddDashPen;   //  first pen to draw dash
