@@ -57,6 +57,14 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
 
         /// <summary>
+        /// Defines the <see cref="ShowGridLines"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> ShowGridLinesProperty =
+            AvaloniaProperty.Register<Grid, bool>(
+                nameof(ShowGridLines),
+                defaultValue: false);
+
+        /// <summary>
         /// ShowGridLines property.
         /// </summary>
         public bool ShowGridLines
@@ -64,6 +72,7 @@ namespace Avalonia.Controls
             get { return (CheckFlagsAnd(Flags.ShowGridLinesPropertyValue)); }
             set { SetValue(ShowGridLinesProperty, value); }
         }
+
         private ColumnDefinitions _columnDefinitions;
         private RowDefinitions _rowDefinitions;
 
@@ -1135,10 +1144,10 @@ namespace Avalonia.Controls
 
                             //  sanity check: totalRemainingSize and sizeToDistribute must be real positive numbers
                             Debug.Assert(!double.IsInfinity(totalRemainingSize)
-                                        && !MathUtilities.IsNaN(totalRemainingSize)
+                                        && !double.IsNaN(totalRemainingSize)
                                         && totalRemainingSize > 0
                                         && !double.IsInfinity(sizeToDistribute)
-                                        && !MathUtilities.IsNaN(sizeToDistribute)
+                                        && !double.IsNaN(sizeToDistribute)
                                         && sizeToDistribute > 0);
 
                             for (int i = 0; i < count; ++i)
@@ -1163,15 +1172,6 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Resolves Star's for given array of definitions.
-        /// </summary>
-        /// <param name="definitions">Array of definitions to resolve stars.</param>
-        /// <param name="availableSize">All available size.</param>
-        /// <remarks>
-        /// Must initialize LayoutSize for all Star entries in given array of definitions.
-        /// </remarks>
-
         // new implementation as of 4.7.  Several improvements:
         // 1. Allocate to *-defs hitting their min or max constraints, before allocating
         //      to other *-defs.  A def that hits its min uses more space than its
@@ -1186,6 +1186,14 @@ namespace Avalonia.Controls
         //      change in available space resulting in large change to one def's allocation.
         // 3. Correct handling of large *-values, including Infinity.
 
+        /// <summary>
+        /// Resolves Star's for given array of definitions.
+        /// </summary>
+        /// <param name="definitions">Array of definitions to resolve stars.</param>
+        /// <param name="availableSize">All available size.</param>
+        /// <remarks>
+        /// Must initialize LayoutSize for all Star entries in given array of definitions.
+        /// </remarks>
         private void ResolveStar(
             DefinitionBase[] definitions,
             double availableSize)
@@ -2113,12 +2121,30 @@ namespace Avalonia.Controls
             return (flags == 0 || (_flags & flags) != 0);
         }
 
-        /// <summary>
-        /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
-        /// </summary>
-        private static void OnShowGridLinesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+
+        private static int ValidateColumn(AvaloniaObject o, int value)
         {
-            Grid grid = (Grid)d;
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Column value.");
+            }
+
+            return value;
+        }
+
+        private static int ValidateRow(AvaloniaObject o, int value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentException("Invalid Grid.Row value.");
+            }
+
+            return value;
+        }
+
+        private static void OnShowGridLinesPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var grid = e.Sender as Grid;
 
             if (grid.ExtData != null    // trivial grid is 1 by 1. there is no grid lines anyway
                 && grid.ListenToNotifications)
@@ -2129,12 +2155,9 @@ namespace Avalonia.Controls
             grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
         }
 
-        /// <summary>
-        /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
-        /// </summary>
-        private static void OnCellAttachedPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnCellAttachedPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            Visual child = d as Visual;
+            var child = e.Sender as Visual;
 
             if (child != null)
             {
@@ -2147,22 +2170,6 @@ namespace Avalonia.Controls
                     grid.InvalidateMeasure();
                 }
             }
-        }
-
-        /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
-        /// </summary>
-        private static bool IsIntValueNotNegative(object value)
-        {
-            return ((int)value >= 0);
-        }
-
-        /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
-        /// </summary>
-        private static bool IsIntValueGreaterThanZero(object value)
-        {
-            return ((int)value > 0);
         }
 
         /// <summary>

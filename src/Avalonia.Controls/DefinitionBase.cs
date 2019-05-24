@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Base class for <see cref="ColumnDefinition"/> and <see cref="RowDefinition"/>.
     /// </summary>
-    public class DefinitionBase : AvaloniaObject
+    public class DefinitionBase : ContentControl
     {
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Layout-time user size type.
         /// </summary>
-        internal Grid.LayoutTimeSizeType SizeType
+        internal Grid.GridLayoutTimeSizeType SizeType
         {
             get { return (_sizeType); }
             set { _sizeType = value; }
@@ -333,7 +333,7 @@ namespace Avalonia.Controls
             get
             {
                 double preferredSize = MinSize;
-                if (_sizeType != Grid.LayoutTimeSizeType.Auto
+                if (_sizeType != Grid.GridLayoutTimeSizeType.Auto
                     && preferredSize < _measureSize)
                 {
                     preferredSize = _measureSize;
@@ -635,7 +635,7 @@ namespace Avalonia.Controls
         private Flags _flags;                           //  flags reflecting various aspects of internal state
         private int _parentIndex;                       //  this instance's index in parent's children collection
 
-        private Grid.LayoutTimeSizeType _sizeType;      //  layout-time user size type. it may differ from _userSizeValueCache.UnitType when calculating "to-content"
+        private Grid.GridLayoutTimeSizeType _sizeType;      //  layout-time user size type. it may differ from _userSizeValueCache.UnitType when calculating "to-content"
 
         private double _minSize;                        //  used during measure to accumulate size for "Auto" and "Star" DefinitionBase's
         private double _measureSize;                    //  size, calculated to be the input contstraint size for Child.Measure
