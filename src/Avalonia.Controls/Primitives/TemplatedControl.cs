@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                "TemplateApplied", 
+                "TemplateApplied",
                 RoutingStrategies.Direct);
 
         private IControlTemplate _appliedTemplate;
@@ -347,18 +347,23 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Registers each control with its name scope.
         /// </summary>
-        /// <param name="control">The control.</param>
+        /// <param name="element">The styledElement.</param>
         /// <param name="nameScope">The name scope.</param>
-        private void RegisterNames(IControl control, INameScope nameScope)
+        private void RegisterNames(IStyledElement element, INameScope nameScope)
         {
-            if (control.Name != null)
+            if (element.Name != null)
             {
-                nameScope.Register(control.Name, control);
+                nameScope.Register(element.Name, element);
             }
 
-            if (control.TemplatedParent == this)
+            if (element.TemplatedParent != this)
             {
-                foreach (IControl child in control.GetLogicalChildren())
+                return;
+            }
+
+            foreach (var logical in element.GetLogicalChildren())
+            {
+                if (logical is IStyledElement child)
                 {
                     RegisterNames(child, nameScope);
                 }
