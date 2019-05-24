@@ -13,7 +13,7 @@ namespace Avalonia.Documents
     /// A collection of <see cref="Inline"/>s.
     /// </summary>
     [WhitespaceSignificantCollection]
-    public class InlineCollection : AvaloniaList<Inline>, IList
+    public class InlineCollection : AvaloniaList<Inline>
     {
         private bool _isNull;
 
@@ -95,18 +95,9 @@ namespace Avalonia.Documents
         public event EventHandler Invalidated;
 
         /// <inheirtdoc/>
-        int IList.Add(object value)
+        public void Add(string s)
         {
-            if (value is string s)
-            {
-                Add(new Run(s));
-            }
-            else
-            {
-                Add((Inline)value);
-            }
-
-            return Count - 1;
+            Add(new Run(s));
         }
 
         /// <summary>

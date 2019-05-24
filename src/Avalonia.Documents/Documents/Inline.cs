@@ -10,12 +10,10 @@ namespace Avalonia.Documents
     /// </summary>
     public abstract class Inline : TextElement
     {
-        /// <summary>
-        /// Parses a string to create an <see cref="Inline"/>.
-        /// </summary>
-        /// <param name="s">The string.</param>
-        /// <returns>The inline.</returns>
-        public Inline Parse(string s) => new Run(s);
+        public static implicit operator Inline(string s)
+        {
+            return new Run(s);
+        }
 
         /// <summary>
         /// Builds the <see cref="FormattedText"/> for the inline text element.
