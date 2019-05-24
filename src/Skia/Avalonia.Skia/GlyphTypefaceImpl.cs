@@ -2,37 +2,27 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-
 using Avalonia.Media;
-
 using HarfBuzzSharp;
 
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
 
 namespace Avalonia.Skia
-{  
+{
+    // ToDo: Use this for the TextLayout
     internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
-        private readonly Face _face;
-        private readonly Font _font;
-
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
             Typeface = typeface;
 
-            using (var blob = typeface.OpenStream(out var index).ToHarfBuzzBlob())
-            {
-                _face = new Face(blob, index);
-            }
+            Font = CreateHarfBuzzFont(typeface);
 
-            _face.MakeImmutable();
+            Font.GetScale(out var xScale, out _);
 
-            _font = new Font(_face);
+            DesignEmHeight = (short)xScale;
 
-            DesignEmHeight = (short)_font.Scale.Y;
-
-            var horizontalFontExtents = _font.HorizontalFontExtents;
+            var horizontalFontExtents = Font.HorizontalFontExtents;
 
             Ascent = -horizontalFontExtents.Ascender;
 
@@ -41,7 +31,28 @@ namespace Avalonia.Skia
             LineGap = horizontalFontExtents.LineGap;
         }
 
+        /// <summary>
+        /// Creates a <see cref="Font"/> instance from specified <see cref="SKTypeface"/>
+        /// </summary>
+        /// <param name="typeface"></param>
+        /// <returns></returns>
+        private static Font CreateHarfBuzzFont(SKTypeface typeface)
+        {
+            var face = new Face(new TypefaceTableLoader(typeface))
+            {
+                UnitsPerEm = typeface.UnitsPerEm
+            };
+
+            var font = new Font(face);
+
+            font.SetFunctionsOpenType();
+
+            return font;
+        }
+
         public SKTypeface Typeface { get; }
+
+        public Font Font { get; }
 
         public short DesignEmHeight { get; }
 
@@ -65,7 +76,7 @@ namespace Avalonia.Skia
 
             for (var i = 0; i < codePoints.Length; i++)
             {
-                glyphs[i] = (short)_font.GetGlyph(codePoints[i]);
+                glyphs[i] = (short)Font.GetGlyph(codePoints[i]);
             }
 
             return glyphs;
@@ -77,7 +88,7 @@ namespace Avalonia.Skia
 
             for (var i = 0; i < codePoints.Length; i++)
             {
-                glyphs[i] = (short)_font.GetGlyph(codePoints[i]);
+                glyphs[i] = (short)Font.GetGlyph(codePoints[i]);
             }
 
             return glyphs;
@@ -92,14 +103,41 @@ namespace Avalonia.Skia
                 indices[i] = glyphs[i];
             }
 
-            return _font.GetHorizontalGlyphAdvances(indices);
+            return Font.GetHorizontalGlyphAdvances(indices);
         }
 
         public void Dispose()
         {
-            _font.Dispose();
+            Font.Dispose();
+        }
 
-            _face.Dispose();
+        private class TypefaceTableLoader : TableLoader
+        {
+            private readonly SKTypeface _typeface;
+
+            public TypefaceTableLoader(SKTypeface typeface)
+            {
+                _typeface = typeface;
+            }
+
+            /// <summary>
+            /// Loads the requested table for use within HarfBuzz
+            /// </summary>
+            /// <param name="tag"></param>
+            /// <returns></returns>
+            protected override unsafe Blob Load(Tag tag)
+            {
+                if (_typeface.TryGetTableData(tag, out var table))
+                {
+                    fixed (byte* tablePtr = table)
+                    {
+                        // This needs to copy the array on creation (MemoryMode.Duplicate)
+                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }
