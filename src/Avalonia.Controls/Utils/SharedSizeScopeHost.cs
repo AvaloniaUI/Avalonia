@@ -395,8 +395,8 @@ namespace Avalonia.Controls
         /// </summary>
         public void Dispose()
         {
-            while (_measurementCaches.Any())
-                _measurementCaches[0].Grid.SharedScopeChanged();
+            // while (_measurementCaches.Any())
+            //     _measurementCaches[0].Grid.SharedScopeChanged();
         }
 
         /// <summary>

@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
-        public RowDefinition()
+        public RowDefinition() : base(false)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="value">The height of the row.</param>
         /// <param name="type">The height unit of the column.</param>
-        public RowDefinition(double value, GridUnitType type)
+        public RowDefinition(double value, GridUnitType type): base(false)
         {
             Height = new GridLength(value, type);
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
         /// <param name="height">The height of the column.</param>
-        public RowDefinition(GridLength height)
+        public RowDefinition(GridLength height): base(false)
         {
             Height = height;
         }

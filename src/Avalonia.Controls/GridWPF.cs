@@ -84,6 +84,98 @@ namespace Avalonia.Controls
             set { SetValue(ShowGridLinesProperty, value); }
         }
 
+
+        /// <summary>
+        /// Gets the value of the Column attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's column.</returns>
+        public static int GetColumn(AvaloniaObject element)
+        {
+            return element.GetValue(ColumnProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the ColumnSpan attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's column span.</returns>
+        public static int GetColumnSpan(AvaloniaObject element)
+        {
+            return element.GetValue(ColumnSpanProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the Row attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's row.</returns>
+        public static int GetRow(AvaloniaObject element)
+        {
+            return element.GetValue(RowProperty);
+        }
+
+        /// <summary>
+        /// Gets the value of the RowSpan attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's row span.</returns>
+        public static int GetRowSpan(AvaloniaObject element)
+        {
+            return element.GetValue(RowSpanProperty);
+        }
+
+
+        /// <summary>
+        /// Gets the value of the IsSharedSizeScope attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's IsSharedSizeScope value.</returns>
+        public static bool GetIsSharedSizeScope(AvaloniaObject element)
+        {
+            return element.GetValue(IsSharedSizeScopeProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the Column attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The column value.</param>
+        public static void SetColumn(AvaloniaObject element, int value)
+        {
+            element.SetValue(ColumnProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the ColumnSpan attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The column span value.</param>
+        public static void SetColumnSpan(AvaloniaObject element, int value)
+        {
+            element.SetValue(ColumnSpanProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the Row attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The row value.</param>
+        public static void SetRow(AvaloniaObject element, int value)
+        {
+            element.SetValue(RowProperty, value);
+        }
+
+        /// <summary>
+        /// Sets the value of the RowSpan attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <param name="value">The row span value.</param>
+        public static void SetRowSpan(AvaloniaObject element, int value)
+        {
+            element.SetValue(RowSpanProperty, value);
+        }
+
         private ColumnDefinitions _columnDefinitions;
         private RowDefinitions _rowDefinitions;
 
@@ -484,12 +576,11 @@ namespace Avalonia.Controls
 
             for (int i = PrivateCells.Length - 1; i >= 0; --i)
             {
-                var child = Children[i];
+                var child = Children[i] as Control;
                 if (child == null)
                 {
                     continue;
                 }
-
                 CellCache cell = new CellCache();
 
                 //
@@ -499,20 +590,20 @@ namespace Avalonia.Controls
                 //  read indices from the corresponding properties
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
-                cell.ColumnIndex = Math.Min(child.GetValue(Grid.ColumnProperty), DefinitionsU.Length - 1);
+                cell.ColumnIndex = Math.Min(GetColumn(child), DefinitionsU.Length - 1);
                 //      clamp to value < number_of_rows
                 //      row >= 0 is guaranteed by property value validation callback
-                cell.RowIndex = Math.Min(child.GetValue(Grid.RowProperty), DefinitionsV.Length - 1);
+                cell.RowIndex = Math.Min(GetRow(child), DefinitionsV.Length - 1);
 
                 //  read span properties
                 //      clamp to not exceed beyond right side of the grid
                 //      column_span > 0 is guaranteed by property value validation callback
-                cell.ColumnSpan = Math.Min(child.GetValue(Grid.ColumnSpanProperty), DefinitionsU.Length - cell.ColumnIndex);
+                cell.ColumnSpan = Math.Min(GetColumnSpan(child), DefinitionsU.Length - cell.ColumnIndex);
 
                 //      clamp to not exceed beyond bottom side of the grid
                 //      row_span > 0 is guaranteed by property value validation callback
-                cell.RowSpan = Math.Min(child.GetValue(Grid.RowSpanProperty), DefinitionsV.Length - cell.RowIndex);
-
+                cell.RowSpan = Math.Min(GetRowSpan(child), DefinitionsV.Length - cell.RowIndex);
+                
                 Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Length);
                 Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Length);
 

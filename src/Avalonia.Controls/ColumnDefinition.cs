@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinition"/> class.
         /// </summary>
-        public ColumnDefinition()
+        public ColumnDefinition() : base(true)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="value">The width of the column.</param>
         /// <param name="type">The width unit of the column.</param>
-        public ColumnDefinition(double value, GridUnitType type)
+        public ColumnDefinition(double value, GridUnitType type): base(true)
         {
             Width = new GridLength(value, type);
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="ColumnDefinition"/> class.
         /// </summary>
         /// <param name="width">The width of the column.</param>
-        public ColumnDefinition(GridLength width)
+        public ColumnDefinition(GridLength width): base(true)
         {
             Width = width;
         }
