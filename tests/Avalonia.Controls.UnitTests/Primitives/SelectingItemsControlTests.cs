@@ -342,6 +342,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void Moving_Selected_Item_Should_Update_Selection()
+        {
+            var items = new AvaloniaList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+
+            Assert.Equal(items[0], target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+
+            items.Move(0, 1);
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact]
         public void Resetting_Items_Collection_Should_Clear_Selection()
         {
             // Need to use ObservableCollection here as AvaloniaList signals a Clear as an
