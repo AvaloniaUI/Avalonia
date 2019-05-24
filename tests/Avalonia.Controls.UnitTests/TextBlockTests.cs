@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.NotNull(formattedText.Spans);
             Assert.Equal(1, formattedText.Spans.Count);
-            Assert.Equal(FontWeight.Bold, formattedText.Spans[0].FontWeight);
+            Assert.Equal(FontWeight.Bold, formattedText.Spans[0].Typeface.Weight);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.NotNull(formattedText.Spans);
                 Assert.Equal(1, formattedText.Spans.Count);
-                Assert.Equal(FontWeight.Bold, formattedText.Spans[0].FontWeight);
+                Assert.Equal(FontWeight.Bold, formattedText.Spans[0].Typeface.Weight);
             }
         }
 
