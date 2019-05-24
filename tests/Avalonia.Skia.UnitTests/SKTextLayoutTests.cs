@@ -245,7 +245,7 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Foreground);
         }
 
-        [Fact]
+        [Fact(Skip="Currently fails on Linux because of not present Emojis font")]
         public void ShouldHitTestSurrogatePair()
         {
             const string Text = "😄";
