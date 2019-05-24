@@ -325,6 +325,52 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
         }
 
+        [Fact]
+        public void Can_Dirty_Control_In_SceneInvalidated()
+        {
+            Border border1;
+            Border border2;
+            var root = new TestRoot
+            {
+                Width = 100,
+                Height = 100,
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        (border1 = new Border
+                        {
+                            Background = Brushes.Red,
+                            Child = new Canvas(),
+                        }),
+                        (border2 = new Border
+                        {
+                            Background = Brushes.Red,
+                            Child = new Canvas(),
+                        }),
+                    }
+                }
+            };
+
+            root.Measure(Size.Infinity);
+            root.Arrange(new Rect(root.DesiredSize));
+
+            var target = CreateTargetAndRunFrame(root);
+            var invalidated = false;
+
+            target.SceneInvalidated += (s, e) =>
+            {
+                invalidated = true;
+                target.AddDirty(border2);
+            };
+
+            target.AddDirty(border1);
+            target.Paint(new Rect(root.DesiredSize));
+
+            Assert.True(invalidated);
+            Assert.True(((IRenderLoopTask)target).NeedsUpdate);
+        }
+
         private DeferredRenderer CreateTargetAndRunFrame(
             TestRoot root,
             Mock<IRenderTimer> timer = null,
