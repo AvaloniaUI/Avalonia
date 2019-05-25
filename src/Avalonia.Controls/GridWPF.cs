@@ -207,7 +207,12 @@ namespace Avalonia.Controls
 
                 _columnDefinitions = value;
                 _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
-                _columnDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
+                _columnDefinitions.CollectionChanged += (_, __) =>
+                {
+                    _data.DefinitionsU = _columnDefinitions.Select(p => (DefinitionBase)p).ToArray();
+                    InvalidateMeasure();
+                };
+
             }
         }
 
@@ -237,11 +242,15 @@ namespace Avalonia.Controls
 
                 _rowDefinitions = value;
                 _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
-                _rowDefinitions.CollectionChanged += (_, __) => InvalidateMeasure();
+                _rowDefinitions.CollectionChanged += (_, __) =>
+                {
+                    _data.DefinitionsV = _rowDefinitions.Select(p => (DefinitionBase)p).ToArray();
+                    InvalidateMeasure();
+                };
             }
         }
 
-        private bool rowColDefsEmpty => (RowDefinitions == null || RowDefinitions?.Count == 0 ) &&
+        private bool rowColDefsEmpty => (RowDefinitions == null || RowDefinitions?.Count == 0) &&
                                         (ColumnDefinitions == null || ColumnDefinitions?.Count == 0);
 
         /// <summary>
