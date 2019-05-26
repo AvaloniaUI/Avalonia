@@ -186,6 +186,7 @@ namespace Avalonia.Controls
             get
             {
 
+
                 if (_columnDefinitions == null)
                 {
                     ColumnDefinitions = new ColumnDefinitions();
@@ -207,9 +208,13 @@ namespace Avalonia.Controls
 
                 _columnDefinitions = value;
                 _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
-                _columnDefinitions.CollectionChanged += (_, __) =>
+                ColumnDefinitionsDirty = true;
+                DefinitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
+
+                _columnDefinitions.CollectionChanged += (_, e) =>
                 {
-                    _data.DefinitionsU = _columnDefinitions.Select(p => (DefinitionBase)p).ToArray();
+                    DefinitionsU = e.NewItems.Cast<DefinitionBase>().ToArray();
+                    ColumnDefinitionsDirty = true;
                     InvalidateMeasure();
                 };
 
@@ -242,16 +247,21 @@ namespace Avalonia.Controls
 
                 _rowDefinitions = value;
                 _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
-                _rowDefinitions.CollectionChanged += (_, __) =>
+                RowDefinitionsDirty = true;
+
+                DefinitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
+
+                _rowDefinitions.CollectionChanged += (_, e) =>
                 {
-                    _data.DefinitionsV = _rowDefinitions.Select(p => (DefinitionBase)p).ToArray();
+                    DefinitionsV = e.NewItems.Cast<DefinitionBase>().ToArray();
+                    RowDefinitionsDirty = true;
                     InvalidateMeasure();
                 };
             }
         }
 
-        private bool rowColDefsEmpty => (RowDefinitions == null || RowDefinitions?.Count == 0) &&
-                                        (ColumnDefinitions == null || ColumnDefinitions?.Count == 0);
+        private bool rowColDefsEmpty => (DefinitionsU.Length == 0) &&
+                                        (DefinitionsV.Length == 0);
 
         /// <summary>
         /// Content measurement.
@@ -309,10 +319,10 @@ namespace Avalonia.Controls
                             }
                         }
 
-                        ValidateDefinitionsUStructure();
+                        // ValidateColumnDefinitionsStructure();
                         ValidateDefinitionsLayout(DefinitionsU, sizeToContentU);
 
-                        ValidateDefinitionsVStructure();
+                        // ValidateRowDefinitionsStructure();
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
                         CellsStructureDirty |= (SizeToContentU != sizeToContentU) || (SizeToContentV != sizeToContentV);
@@ -453,12 +463,12 @@ namespace Avalonia.Controls
                         cell.Arrange(cellRect);
                     }
 
-                    //  update render bound on grid lines renderer visual
-                    var gridLinesRenderer = EnsureGridLinesRenderer();
-                    if (gridLinesRenderer != null)
-                    {
-                        gridLinesRenderer.UpdateRenderBounds(arrangeSize);
-                    }
+                    // //  update render bound on grid lines renderer visual
+                    // var gridLinesRenderer = EnsureGridLinesRenderer();
+                    // if (gridLinesRenderer != null)
+                    // {
+                    //     gridLinesRenderer.UpdateRenderBounds(arrangeSize);
+                    // }
                 }
             }
             finally
@@ -493,7 +503,7 @@ namespace Avalonia.Controls
             //  actual value calculations require structure to be up-to-date
             if (!ColumnDefinitionsDirty)
             {
-                DefinitionBase[] definitions = DefinitionsU;
+                var definitions = DefinitionsU;
                 value = definitions[(columnIndex + 1) % definitions.Length].FinalOffset;
                 if (columnIndex != 0) { value -= definitions[columnIndex].FinalOffset; }
             }
@@ -515,7 +525,7 @@ namespace Avalonia.Controls
             //  actual value calculations require structure to be up-to-date
             if (!RowDefinitionsDirty)
             {
-                DefinitionBase[] definitions = DefinitionsV;
+                var definitions = DefinitionsV;
                 value = definitions[(rowIndex + 1) % definitions.Length].FinalOffset;
                 if (rowIndex != 0) { value -= definitions[rowIndex].FinalOffset; }
             }
@@ -525,38 +535,20 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to MeasureOverrideInProgress bit flag.
         /// </summary>
-        internal bool MeasureOverrideInProgress
-        {
-            get { return (CheckFlagsAnd(Flags.MeasureOverrideInProgress)); }
-            set { SetFlags(value, Flags.MeasureOverrideInProgress); }
-        }
-
+        internal bool MeasureOverrideInProgress { get; set; }
         /// <summary>
         /// Convenience accessor to ArrangeOverrideInProgress bit flag.
         /// </summary>
-        internal bool ArrangeOverrideInProgress
-        {
-            get { return (CheckFlagsAnd(Flags.ArrangeOverrideInProgress)); }
-            set { SetFlags(value, Flags.ArrangeOverrideInProgress); }
-        }
+        internal bool ArrangeOverrideInProgress { get; set; }
+        /// <summary>
+        /// Convenience accessor to ValidColumnDefinitionsStructure bit flag.
+        /// </summary>
+        internal bool ColumnDefinitionsDirty { get; set; }
 
         /// <summary>
-        /// Convenience accessor to ValidDefinitionsUStructure bit flag.
+        /// Convenience accessor to ValidRowDefinitionsStructure bit flag.
         /// </summary>
-        internal bool ColumnDefinitionsDirty
-        {
-            get { return (!CheckFlagsAnd(Flags.ValidDefinitionsUStructure)); }
-            set { SetFlags(!value, Flags.ValidDefinitionsUStructure); }
-        }
-
-        /// <summary>
-        /// Convenience accessor to ValidDefinitionsVStructure bit flag.
-        /// </summary>
-        internal bool RowDefinitionsDirty
-        {
-            get { return (!CheckFlagsAnd(Flags.ValidDefinitionsVStructure)); }
-            set { SetFlags(!value, Flags.ValidDefinitionsVStructure); }
-        }
+        internal bool RowDefinitionsDirty { get; set; }
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -672,92 +664,6 @@ namespace Avalonia.Controls
             HasStarCellsU = hasStarCellsU;
             HasStarCellsV = hasStarCellsV;
             HasGroup3CellsInAutoRows = hasGroup3CellsInAutoRows;
-        }
-
-        /// <summary>
-        /// Initializes DefinitionsU memeber either to user supplied ColumnDefinitions collection
-        /// or to a default single element collection. DefinitionsU gets trimmed to size.
-        /// </summary>
-        /// <remarks>
-        /// This is one of two methods, where ColumnDefinitions and DefinitionsU are directly accessed.
-        /// All the rest measure / arrange / render code must use DefinitionsU.
-        /// </remarks>
-        private void ValidateDefinitionsUStructure()
-        {
-            if (ColumnDefinitionsDirty)
-            {
-                ExtendedData extData = ExtData;
-
-                if (extData.ColumnDefinitions == null)
-                {
-                    if (extData.DefinitionsU == null)
-                    {
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() };
-                    }
-                }
-                else
-                {
-                    // extData.ColumnDefinitions.InternalTrimToSize();
-
-                    if (extData.ColumnDefinitions.Count == 0)
-                    {
-                        //  if column definitions collection is empty
-                        //  mockup array with one column
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() };
-                    }
-                    else
-                    {
-                        extData.DefinitionsU = extData.ColumnDefinitions.ToArray();
-                    }
-                }
-
-                ColumnDefinitionsDirty = false;
-            }
-
-            Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Length > 0);
-        }
-
-        /// <summary>
-        /// Initializes DefinitionsV memeber either to user supplied RowDefinitions collection
-        /// or to a default single element collection. DefinitionsV gets trimmed to size.
-        /// </summary>
-        /// <remarks>
-        /// This is one of two methods, where RowDefinitions and DefinitionsV are directly accessed.
-        /// All the rest measure / arrange / render code must use DefinitionsV.
-        /// </remarks>
-        private void ValidateDefinitionsVStructure()
-        {
-            if (RowDefinitionsDirty)
-            {
-                ExtendedData extData = ExtData;
-
-                if (extData.RowDefinitions == null)
-                {
-                    if (extData.DefinitionsV == null)
-                    {
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() };
-                    }
-                }
-                else
-                {
-                    // extData.RowDefinitions.InternalTrimToSize();
-
-                    if (extData.RowDefinitions.Count == 0)
-                    {
-                        //  if row definitions collection is empty
-                        //  mockup array with one row
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() };
-                    }
-                    else
-                    {
-                        extData.DefinitionsV = extData.RowDefinitions.ToArray();
-                    }
-                }
-
-                RowDefinitionsDirty = false;
-            }
-
-            Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Length > 0);
         }
 
         /// <summary>
@@ -1607,7 +1513,7 @@ namespace Avalonia.Controls
         /// <param name="definitions">Array of definitions to use for calculations.</param>
         /// <returns>Desired size.</returns>
         private double CalculateDesiredSize(
-            DefinitionBase[] definitions)
+                DefinitionBase[] definitions)
         {
             double desiredSize = 0;
 
@@ -1762,9 +1668,9 @@ namespace Avalonia.Controls
                 double remainingAvailableSize = finalSize - takenSize;
                 double remainingStarWeight = totalStarWeight - takenStarWeight;
 
-                MinRatioIndexComparer minRatioIndexComparer = new MinRatioIndexComparer(definitions);
+                MinRatioIndexComparer minRatioIndexComparer = new MinRatioIndexComparer((DefinitionBase[])definitions);
                 Array.Sort(definitionIndices, 0, minCount, minRatioIndexComparer);
-                MaxRatioIndexComparer maxRatioIndexComparer = new MaxRatioIndexComparer(definitions);
+                MaxRatioIndexComparer maxRatioIndexComparer = new MaxRatioIndexComparer((DefinitionBase[])definitions);
                 Array.Sort(definitionIndices, defCount, maxCount, maxRatioIndexComparer);
 
                 while (minCount + maxCount > 0 && remainingAvailableSize > 0.0)
@@ -2147,7 +2053,7 @@ namespace Avalonia.Controls
         /// <param name="count">Number of items in the range.</param>
         /// <returns>Final size.</returns>
         private double GetFinalSizeForRange(
-            DefinitionBase[] definitions,
+           DefinitionBase[] definitions,
             int start,
             int count)
         {
@@ -2336,22 +2242,6 @@ namespace Avalonia.Controls
             }
 
             return (result != 2);
-        }
-
-        /// <summary>
-        /// Private version returning array of column definitions.
-        /// </summary>
-        private DefinitionBase[] DefinitionsU
-        {
-            get { return (ExtData.DefinitionsU); }
-        }
-
-        /// <summary>
-        /// Private version returning array of row definitions.
-        /// </summary>
-        private DefinitionBase[] DefinitionsV
-        {
-            get { return (ExtData.DefinitionsV); }
         }
 
         /// <summary>
@@ -2545,7 +2435,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private ExtendedData _data;                             //  extended data instantiated on demand, for non-trivial case handling only
+        private ExtendedData _data = new ExtendedData();                             //  extended data instantiated on demand, for non-trivial case handling only
         private Flags _flags;                                   //  grid validity / property caches dirtiness flags
         private GridLinesRenderer _gridLinesRenderer;
 
@@ -2554,7 +2444,8 @@ namespace Avalonia.Controls
 
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
-
+        private DefinitionBase[] DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+        private DefinitionBase[] DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
         private const double c_epsilon = 1e-5;                  //  used in fp calculations
         private const double c_starClip = 1e298;                //  used as maximum for clipping star values during normalization
         private const int c_layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
@@ -2572,17 +2463,13 @@ namespace Avalonia.Controls
         /// </summary>
         private class ExtendedData
         {
-            internal ColumnDefinitions ColumnDefinitions;  //  collection of column definitions (logical tree support)
-            internal RowDefinitions RowDefinitions;        //  collection of row definitions (logical tree support)
-            internal DefinitionBase[] DefinitionsU;                 //  collection of column definitions used during calc
-            internal DefinitionBase[] DefinitionsV;                 //  collection of row definitions used during calc
             internal CellCache[] CellCachesCollection;              //  backing store for logical Children
             internal int CellGroup1;                                //  index of the first cell in first cell group
             internal int CellGroup2;                                //  index of the first cell in second cell group
             internal int CellGroup3;                                //  index of the first cell in third cell group
             internal int CellGroup4;                                //  index of the first cell in forth cell group
             internal DefinitionBase[] TempDefinitions;              //  temporary array used during layout for various purposes
-                                                                    //  TempDefinitions.Length == Max(definitionsU.Length, definitionsV.Length)
+                                                                    //  TempDefinitions.Length == Max(DefinitionsU.Length, DefinitionsV.Length)
         }
 
         /// <summary>
@@ -2597,8 +2484,8 @@ namespace Avalonia.Controls
             //  * Valid???Layout flags indicate that layout time portion of the information
             //    stored on the objects should be updated.
             //
-            ValidDefinitionsUStructure = 0x00000001,
-            ValidDefinitionsVStructure = 0x00000002,
+            ValidColumnDefinitionsStructure = 0x00000001,
+            ValidRowDefinitionsStructure = 0x00000002,
             ValidCellsStructure = 0x00000004,
 
             //
@@ -3188,20 +3075,20 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                for (int i = 1; i < grid.DefinitionsU.Length; ++i)
+                for (int i = 1; i < grid.ColumnDefinitions.Count; ++i)
                 {
                     DrawGridLine(
                         drawingContext,
-                        grid.DefinitionsU[i].FinalOffset, 0.0,
-                        grid.DefinitionsU[i].FinalOffset, lastArrangeSize.Height);
+                        grid.ColumnDefinitions[i].FinalOffset, 0.0,
+                        grid.ColumnDefinitions[i].FinalOffset, lastArrangeSize.Height);
                 }
 
-                for (int i = 1; i < grid.DefinitionsV.Length; ++i)
+                for (int i = 1; i < grid.RowDefinitions.Count; ++i)
                 {
                     DrawGridLine(
                         drawingContext,
-                        0.0, grid.DefinitionsV[i].FinalOffset,
-                        lastArrangeSize.Width, grid.DefinitionsV[i].FinalOffset);
+                        0.0, grid.RowDefinitions[i].FinalOffset,
+                        lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
                 }
             }
 
