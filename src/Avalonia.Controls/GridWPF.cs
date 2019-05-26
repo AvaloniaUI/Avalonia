@@ -185,8 +185,6 @@ namespace Avalonia.Controls
         {
             get
             {
-
-
                 if (_columnDefinitions == null)
                 {
                     ColumnDefinitions = new ColumnDefinitions();
@@ -194,18 +192,8 @@ namespace Avalonia.Controls
 
                 return _columnDefinitions;
             }
-
             set
-            {
-
-                if (_columnDefinitions != null)
-                {
-                    throw new NotSupportedException("Reassigning ColumnDefinitions not yet implemented.");
-                }
-
-                if (_data == null) { _data = new ExtendedData(); }
-
-
+            { 
                 _columnDefinitions = value;
                 _columnDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
                 ColumnDefinitionsDirty = true;
@@ -213,7 +201,7 @@ namespace Avalonia.Controls
 
                 _columnDefinitions.CollectionChanged += (_, e) =>
                 {
-                    DefinitionsU = e.NewItems.Cast<DefinitionBase>().ToArray();
+                    DefinitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
                     ColumnDefinitionsDirty = true;
                     InvalidateMeasure();
                 };
@@ -235,25 +223,18 @@ namespace Avalonia.Controls
 
                 return _rowDefinitions;
             }
-
             set
             {
-                if (_rowDefinitions != null)
-                {
-                    throw new NotSupportedException("Reassigning RowDefinitions not yet implemented.");
-                }
-
-                if (_data == null) { _data = new ExtendedData(); }
-
                 _rowDefinitions = value;
                 _rowDefinitions.TrackItemPropertyChanged(_ => InvalidateMeasure());
+
                 RowDefinitionsDirty = true;
 
                 DefinitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
 
                 _rowDefinitions.CollectionChanged += (_, e) =>
                 {
-                    DefinitionsV = e.NewItems.Cast<DefinitionBase>().ToArray();
+                    DefinitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
                     RowDefinitionsDirty = true;
                     InvalidateMeasure();
                 };
