@@ -43,13 +43,11 @@ namespace Avalonia.Controls
         /// Internal helper to access up-to-date UserMaxSize property value.
         /// </summary>
         internal abstract double UserMaxSize { get; }
-        
-        private double _minSize;                        //  used during measure to accumulate size for "Auto" and "Star" DefinitionBase's
 
         /// <summary>
         /// Layout-time user size type.
         /// </summary>
-        internal Grid.LayoutTimeSizeType SizeType {get; set;}
+        internal Grid.LayoutTimeSizeType SizeType { get; set; }
         /// <summary>
         /// Returns or sets measure size for the definition.
         /// </summary>
@@ -81,17 +79,9 @@ namespace Avalonia.Controls
         internal double SizeCache { get; set; }
 
         /// <summary>
-        /// Returns min size.
+        /// Used during measure to accumulate size for "Auto" and "Star" DefinitionBase's
         /// </summary>
-        internal double MinSize
-        {
-            get
-            {
-                double minSize = _minSize;
-                return (minSize);
-            }
-
-        }
+        internal double MinSize { get; set; }
 
         /// <summary>
         /// Updates min size.
@@ -99,28 +89,7 @@ namespace Avalonia.Controls
         /// <param name="minSize">New size.</param>
         internal void UpdateMinSize(double minSize)
         {
-            _minSize = Math.Max(_minSize, minSize);
-        }
-
-        /// <summary>
-        /// Sets min size.
-        /// </summary>
-        /// <param name="minSize">New size.</param>
-        internal void SetMinSize(double minSize)
-        {
-            _minSize = minSize;
-        }
-
-        /// <summary>
-        /// Returns min size, always taking into account shared state.
-        /// </summary>
-        internal double MinSizeForArrange
-        {
-            get
-            {
-                double minSize = _minSize;
-                return (minSize);
-            }
+            MinSize = Math.Max(MinSize, minSize);
         }
 
         /// <summary>

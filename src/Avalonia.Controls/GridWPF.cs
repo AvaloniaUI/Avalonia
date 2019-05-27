@@ -708,7 +708,7 @@ namespace Avalonia.Controls
             for (int i = 0; i < definitions.Length; ++i)
             {
                 // Reset minimum size.
-                definitions[i].SetMinSize(0);
+                definitions[i].MinSize = 0;
 
                 double userMinSize = definitions[i].UserMinSize;
                 double userMaxSize = definitions[i].UserMaxSize;
@@ -719,7 +719,7 @@ namespace Avalonia.Controls
                     case (GridUnitType.Pixel):
                         definitions[i].SizeType = LayoutTimeSizeType.Pixel;
                         userSize = definitions[i].UserSize.Value;
-                        
+
                         // this was brought with NewLayout and defeats squishy behavior
                         userMinSize = Math.Max(userMinSize, Math.Min(userSize, userMaxSize));
                         break;
@@ -784,11 +784,11 @@ namespace Avalonia.Controls
                 {
                     if (isRows)
                     {
-                        DefinitionsV[i].SetMinSize(minSizes[i]);
+                        DefinitionsV[i].MinSize = minSizes[i];
                     }
                     else
                     {
-                        DefinitionsU[i].SetMinSize(minSizes[i]);
+                        DefinitionsU[i].MinSize = minSizes[i];
                     }
                 }
             }
@@ -1642,14 +1642,14 @@ namespace Avalonia.Controls
                             double starWeight = StarWeight(def, scale);
                             totalStarWeight += starWeight;
 
-                            if (def.MinSizeForArrange > 0.0)
+                            if (def.MinSize > 0.0)
                             {
                                 // store ratio w/min in MeasureSize (for now)
                                 definitionIndices[minCount++] = i;
-                                def.MeasureSize = starWeight / def.MinSizeForArrange;
+                                def.MeasureSize = starWeight / def.MinSize;
                             }
 
-                            double effectiveMaxSize = Math.Max(def.MinSizeForArrange, def.UserMaxSize);
+                            double effectiveMaxSize = Math.Max(def.MinSize, def.UserMaxSize);
                             if (!double.IsPositiveInfinity(effectiveMaxSize))
                             {
                                 // store ratio w/max in SizeCache (for now)
@@ -1669,7 +1669,7 @@ namespace Avalonia.Controls
                                 break;
 
                             case (GridUnitType.Auto):
-                                userSize = def.MinSizeForArrange;
+                                userSize = def.MinSize;
                                 break;
                         }
 
@@ -1688,7 +1688,7 @@ namespace Avalonia.Controls
                             userMaxSize = def.UserMaxSize;
                         }
 
-                        def.SizeCache = Math.Max(def.MinSizeForArrange, Math.Min(userSize, userMaxSize));
+                        def.SizeCache = Math.Max(def.MinSize, Math.Min(userSize, userMaxSize));
                         takenSize += def.SizeCache;
                     }
                 }
@@ -1752,14 +1752,14 @@ namespace Avalonia.Controls
                     {
                         resolvedIndex = definitionIndices[minCount - 1];
                         resolvedDef = definitions[resolvedIndex];
-                        resolvedSize = resolvedDef.MinSizeForArrange;
+                        resolvedSize = resolvedDef.MinSize;
                         --minCount;
                     }
                     else
                     {
                         resolvedIndex = definitionIndices[defCount + maxCount - 1];
                         resolvedDef = definitions[resolvedIndex];
-                        resolvedSize = Math.Max(resolvedDef.MinSizeForArrange, resolvedDef.UserMaxSize);
+                        resolvedSize = Math.Max(resolvedDef.MinSize, resolvedDef.UserMaxSize);
                         --maxCount;
                     }
 
@@ -1882,7 +1882,7 @@ namespace Avalonia.Controls
 
                     // min and max should have no effect by now, but just in case...
                     resolvedSize = Math.Min(resolvedSize, def.UserMaxSize);
-                    resolvedSize = Math.Max(def.MinSizeForArrange, resolvedSize);
+                    resolvedSize = Math.Max(def.MinSize, resolvedSize);
 
                     // Use the raw (unrounded) sizes to update takenSize, so that
                     // proportions are computed in the same terms as in phase 3;
@@ -1974,7 +1974,7 @@ namespace Avalonia.Controls
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache - dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
+                            final = Math.Max(final, definition.MinSize);
                             if (final < definition.SizeCache)
                             {
                                 adjustedSize -= dpiIncrement;
@@ -1990,7 +1990,7 @@ namespace Avalonia.Controls
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache + dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
+                            final = Math.Max(final, definition.MinSize);
                             if (final > definition.SizeCache)
                             {
                                 adjustedSize += dpiIncrement;
