@@ -218,7 +218,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> ShowGridLinesProperty =
             AvaloniaProperty.Register<Grid, bool>(
                 nameof(ShowGridLines),
-                defaultValue: true);
+                defaultValue: false);
 
         /// <summary>
         /// ShowGridLines property.
