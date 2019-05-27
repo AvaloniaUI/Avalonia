@@ -32,8 +32,8 @@ namespace Avalonia.Controls
         internal bool HasStarCellsU;
         internal bool HasStarCellsV;
         internal bool HasGroup3CellsInAutoRows;
-        internal bool ColumnDefinitionsDirty;
-        internal bool RowDefinitionsDirty;
+        internal bool ColumnDefinitionsDirty = true;
+        internal bool RowDefinitionsDirty = true;
 
         //  index of the first cell in first cell group
         internal int CellGroup1;
@@ -284,13 +284,13 @@ namespace Avalonia.Controls
                 if (_rowDefinitions.Count > 0)
                     DefinitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
                 else
-                    DefinitionsV = new DefinitionBase[1] { new ColumnDefinition() };
+                    DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
 
                 _rowDefinitions.CollectionChanged += (_, e) =>
                 {
                     if (_rowDefinitions.Count == 0)
                     {
-                        DefinitionsV = new DefinitionBase[1] { new ColumnDefinition() };
+                        DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
                     }
                     else
                     {
@@ -451,14 +451,23 @@ namespace Avalonia.Controls
 
         private void ValidateColumnDefinitionsStructure()
         {
-            if (DefinitionsU == null || DefinitionsU?.Count() == 0)
-                DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+            if (ColumnDefinitionsDirty)
+            {
+                if (DefinitionsU == null)
+                    DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+                ColumnDefinitionsDirty = false;
+            }
         }
 
         private void ValidateRowDefinitionsStructure()
         {
-            if (DefinitionsV == null || DefinitionsV?.Count() == 0)
-                DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
+            if (RowDefinitionsDirty)
+            {
+                if (DefinitionsV == null)
+                    DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
+
+                RowDefinitionsDirty = false;
+            }
         }
 
         /// <summary>
@@ -521,11 +530,60 @@ namespace Avalonia.Controls
             {
                 SetValid();
             }
+
+            for (var i = 0; i < ColumnDefinitions.Count; i++)
+            {
+                ColumnDefinitions[i].ActualWidth = GetFinalColumnDefinitionWidth(i);
+            }
+
+            for (var i = 0; i < RowDefinitions.Count; i++)
+            {
+                RowDefinitions[i].ActualHeight = GetFinalRowDefinitionHeight(i);
+            }
+
             return (arrangeSize);
         }
 
         /// <summary>
-        ///     Invalidates grid caches and makes the grid dirty for measure.
+        /// Returns final width for a column.
+        /// </summary>
+        /// <remarks>
+        /// Used from public ColumnDefinition ActualWidth. Calculates final width using offset data.
+        /// </remarks>
+        internal double GetFinalColumnDefinitionWidth(int columnIndex)
+        {
+            double value = 0.0;
+
+            //  actual value calculations require structure to be up-to-date
+            if (!ColumnDefinitionsDirty)
+            {
+                value = DefinitionsU[(columnIndex + 1) % DefinitionsU.Length].FinalOffset;
+                if (columnIndex != 0) { value -= DefinitionsU[columnIndex].FinalOffset; }
+            }
+            return (value);
+        }
+
+        /// <summary>
+        /// Returns final height for a row.
+        /// </summary>
+        /// <remarks>
+        /// Used from public RowDefinition ActualHeight. Calculates final height using offset data.
+        /// </remarks>
+        internal double GetFinalRowDefinitionHeight(int rowIndex)
+        {
+            double value = 0.0;
+
+            //  actual value calculations require structure to be up-to-date
+            if (!RowDefinitionsDirty)
+            {
+                value = DefinitionsV[(rowIndex + 1) % DefinitionsV.Length].FinalOffset;
+                if (rowIndex != 0) { value -= DefinitionsV[rowIndex].FinalOffset; }
+            }
+            return (value);
+        }
+
+        /// <summary>
+        /// Invalidates grid caches and makes the grid dirty for measure.
         /// </summary>
         internal void Invalidate()
         {
@@ -2695,7 +2753,7 @@ namespace Avalonia.Controls
                 var grid = this.GetVisualParent<Grid>();
 
                 if (grid == null
-                    || !grid.ShowGridLines 
+                    || !grid.ShowGridLines
                     || grid.IsTrivialGrid)
                 {
                     return;
