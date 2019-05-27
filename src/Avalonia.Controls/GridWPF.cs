@@ -33,6 +33,11 @@ namespace Avalonia.Controls
         internal bool HasStarCellsU;
         internal bool HasStarCellsV;
         internal bool HasGroup3CellsInAutoRows;
+        internal bool MeasureOverrideInProgress;
+        internal bool ArrangeOverrideInProgress;
+        internal bool ColumnDefinitionsDirty;
+        internal bool RowDefinitionsDirty;
+
 
         //  index of the first cell in first cell group
         internal int CellGroup1;
@@ -44,7 +49,6 @@ namespace Avalonia.Controls
         internal int CellGroup3;
 
         //  index of the first cell in fourth cell group
-
         internal int CellGroup4;
 
         //  temporary array used during layout for various purposes
@@ -60,9 +64,9 @@ namespace Avalonia.Controls
 
         // Stores unrounded values and rounding errors during layout rounding.
         private double[] _roundingErrors;
-        private DefinitionBase[] DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
-        private DefinitionBase[] DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
-        private const int c_layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
+        private DefinitionBase[] DefinitionsU;
+        private DefinitionBase[] DefinitionsV;
+        private const int layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
         private static readonly LocalDataStoreSlot s_tempDefinitionsDataSlot = Thread.AllocateDataSlot();
         private static readonly IComparer s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
         private static readonly IComparer s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
@@ -73,6 +77,7 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+
             ColumnProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
             ColumnSpanProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
             RowProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
@@ -167,7 +172,6 @@ namespace Avalonia.Controls
             return element.GetValue(RowSpanProperty);
         }
 
-
         /// <summary>
         /// Gets the value of the IsSharedSizeScope attached property for a control.
         /// </summary>
@@ -243,6 +247,8 @@ namespace Avalonia.Controls
 
                 if (_columnDefinitions.Count > 0)
                     DefinitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
+                else
+                    DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
 
                 _columnDefinitions.CollectionChanged += (_, e) =>
                 {
@@ -283,6 +289,8 @@ namespace Avalonia.Controls
 
                 if (_rowDefinitions.Count > 0)
                     DefinitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
+                else
+                    DefinitionsV = new DefinitionBase[1] { new ColumnDefinition() };
 
                 _rowDefinitions.CollectionChanged += (_, e) =>
                 {
@@ -300,8 +308,8 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool rowColDefsEmpty => (DefinitionsU.Length == 0) &&
-                                        (DefinitionsV.Length == 0);
+        private bool IsTrivialGrid => (DefinitionsU?.Length <= 1) &&
+                                      (DefinitionsV?.Length <= 1);
 
         /// <summary>
         /// Content measurement.
@@ -317,7 +325,7 @@ namespace Avalonia.Controls
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
-                if (rowColDefsEmpty)
+                if (IsTrivialGrid)
                 {
                     gridDesiredSize = new Size();
 
@@ -358,10 +366,10 @@ namespace Avalonia.Controls
                             }
                         }
 
-                        // ValidateColumnDefinitionsStructure();
+                        ValidateColumnDefinitionsStructure();
                         ValidateDefinitionsLayout(DefinitionsU, sizeToContentU);
 
-                        // ValidateRowDefinitionsStructure();
+                        ValidateRowDefinitionsStructure();
                         ValidateDefinitionsLayout(DefinitionsV, sizeToContentV);
 
                         CellsStructureDirty |= (SizeToContentU != sizeToContentU) || (SizeToContentV != sizeToContentV);
@@ -429,9 +437,9 @@ namespace Avalonia.Controls
                                     ApplyCachedMinSizes(group2MinSizes, false);
 
                                     if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                                    MeasureCellsGroup(CellGroup2, constraint, cnt == c_layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    MeasureCellsGroup(CellGroup2, constraint, cnt == layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                 }
-                                while (hasDesiredSizeUChanged && ++cnt <= c_layoutLoopMaxCount);
+                                while (hasDesiredSizeUChanged && ++cnt <= layoutLoopMaxCount);
                             }
                         }
                     }
@@ -451,6 +459,18 @@ namespace Avalonia.Controls
             return (gridDesiredSize);
         }
 
+        private void ValidateColumnDefinitionsStructure()
+        {
+            if (DefinitionsU == null || DefinitionsU?.Count() == 0)
+                DefinitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+        }
+
+        private void ValidateRowDefinitionsStructure()
+        {
+            if (DefinitionsV == null || DefinitionsV?.Count() == 0)
+                DefinitionsV = new DefinitionBase[1] { new RowDefinition() };
+        }
+
         /// <summary>
         /// Content arrangement.
         /// </summary>
@@ -459,10 +479,9 @@ namespace Avalonia.Controls
         {
             try
             {
-
                 ArrangeOverrideInProgress = true;
 
-                if (rowColDefsEmpty)
+                if (IsTrivialGrid)
                 {
                     for (int i = 0, count = Children.Count; i < count; ++i)
                     {
@@ -526,11 +545,6 @@ namespace Avalonia.Controls
             CellsStructureDirty = true;
             InvalidateMeasure();
         }
-
-        internal bool MeasureOverrideInProgress;
-        internal bool ArrangeOverrideInProgress;
-        internal bool ColumnDefinitionsDirty;
-        internal bool RowDefinitionsDirty;
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -1638,9 +1652,9 @@ namespace Avalonia.Controls
                 double remainingAvailableSize = finalSize - takenSize;
                 double remainingStarWeight = totalStarWeight - takenStarWeight;
 
-                MinRatioIndexComparer minRatioIndexComparer = new MinRatioIndexComparer((DefinitionBase[])definitions);
+                MinRatioIndexComparer minRatioIndexComparer = new MinRatioIndexComparer(definitions);
                 Array.Sort(definitionIndices, 0, minCount, minRatioIndexComparer);
-                MaxRatioIndexComparer maxRatioIndexComparer = new MaxRatioIndexComparer((DefinitionBase[])definitions);
+                MaxRatioIndexComparer maxRatioIndexComparer = new MaxRatioIndexComparer(definitions);
                 Array.Sort(definitionIndices, defCount, maxCount, maxRatioIndexComparer);
 
                 while (minCount + maxCount > 0 && remainingAvailableSize > 0.0)
@@ -1835,7 +1849,7 @@ namespace Avalonia.Controls
             // unrounded sizes, to avoid breaking assumptions in the previous phases
             if (UseLayoutRounding)
             {
-                var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 96;
+                var dpi = (VisualRoot as ILayoutRoot)?.LayoutScaling ?? 1.0;
 
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0.0;
@@ -2043,7 +2057,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void SetValid()
         {
-            if (rowColDefsEmpty)
+            if (IsTrivialGrid)
             {
                 if (_tempDefinitions != null)
                 {
@@ -2127,7 +2141,7 @@ namespace Avalonia.Controls
 
         private static void OnShowGridLinesPropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs e)
         {
-            if (grid.rowColDefsEmpty   // trivial grid is 1 by 1. there is no grid lines anyway
+            if (!grid.IsTrivialGrid   // trivial grid is 1 by 1. there is no grid lines anyway
                 && grid.ListenToNotifications)
             {
                 grid.InvalidateVisual();
@@ -2140,7 +2154,7 @@ namespace Avalonia.Controls
             {
                 var grid = child.GetVisualParent() as Grid;
                 if (grid != null
-                    && grid.rowColDefsEmpty
+                    && !grid.IsTrivialGrid
                     && grid.ListenToNotifications)
                 {
                     grid.CellsStructureDirty = true;
@@ -2153,7 +2167,7 @@ namespace Avalonia.Controls
         /// Helper for Comparer methods.
         /// </summary>
         /// <returns>
-        /// true iff one or both of x and y are null, in which case result holds
+        /// true if one or both of x and y are null, in which case result holds
         /// the relative sort order.
         /// </returns>
         private static bool CompareNullRefs(object x, object y, out int result)
