@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Layout-time user size type.
         /// </summary>
-        internal Grid.LayoutTimeSizeType SizeType { get; set; }
+        internal LayoutTimeSizeType SizeType { get; set; }
         
         /// <summary>
         /// Returns or sets measure size for the definition.
@@ -65,12 +65,12 @@ namespace Avalonia.Controls
             get
             {
                 double preferredSize = MinSize;
-                if (SizeType != Grid.LayoutTimeSizeType.Auto
+                if (SizeType != LayoutTimeSizeType.Auto
                     && preferredSize < MeasureSize)
                 {
                     preferredSize = MeasureSize;
                 }
-                return (preferredSize);
+            return (preferredSize);
             }
         }
 

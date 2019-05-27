@@ -9,11 +9,9 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
-using Avalonia.VisualTree;
 using System.Threading;
 using JetBrains.Annotations;
 using Avalonia.Controls;
-using Avalonia.Media;
 using Avalonia;
 using System.Collections;
 using Avalonia.Utilities;
@@ -21,9 +19,6 @@ using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
-    /// <summary>
-    /// Grid
-    /// </summary>
     public class Grid : Panel
     {
         internal bool CellsStructureDirty = true;
@@ -55,8 +50,7 @@ namespace Avalonia.Controls
         // Keeps track of definition indices.
         private int[] _definitionIndices;
 
-        private CellCache[] _cellCache;
-
+        private GridCellCache[] _cellCache;
 
         // Stores unrounded values and rounding errors during layout rounding.
         private double[] _roundingErrors;
@@ -309,7 +303,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool IsTrivialGrid => (_definitionsU?.Length <= 1) &&
+        internal bool IsTrivialGrid => (_definitionsU?.Length <= 1) &&
                                       (_definitionsV?.Length <= 1);
 
         /// <summary>
@@ -607,7 +601,7 @@ namespace Avalonia.Controls
         {
             if (!CellsStructureDirty) return;
 
-            _cellCache = new CellCache[Children.Count];
+            _cellCache = new GridCellCache[Children.Count];
             CellGroup1 = int.MaxValue;
             CellGroup2 = int.MaxValue;
             CellGroup3 = int.MaxValue;
@@ -626,7 +620,7 @@ namespace Avalonia.Controls
                     continue;
                 }
 
-                var cell = new CellCache();
+                var cell = new GridCellCache();
 
                 //  read indices from the corresponding properties
                 //      clamp to value < number_of_columns
@@ -895,7 +889,7 @@ namespace Avalonia.Controls
             {
                 foreach (DictionaryEntry e in spanStore)
                 {
-                    SpanKey key = (SpanKey)e.Key;
+                    GridSpanKey key = (GridSpanKey)e.Key;
                     double requestedSize = (double)e.Value;
 
                     EnsureMinSizeInDefinitionRange(
@@ -928,7 +922,7 @@ namespace Avalonia.Controls
                 store = new Hashtable();
             }
 
-            SpanKey key = new SpanKey(start, count, u);
+            GridSpanKey key = new GridSpanKey(start, count, u);
             object o = store[key];
 
             if (o == null
@@ -2127,7 +2121,6 @@ namespace Avalonia.Controls
             }
         }
 
-
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
         /// by adding / removing GridLinesRenderer visual.
@@ -2213,7 +2206,7 @@ namespace Avalonia.Controls
         /// true if one or both of x and y are null, in which case result holds
         /// the relative sort order.
         /// </returns>
-        private static bool CompareNullRefs(object x, object y, out int result)
+        internal static bool CompareNullRefs(object x, object y, out int result)
         {
             result = 2;
 
@@ -2327,498 +2320,6 @@ namespace Avalonia.Controls
             {
                 return def.UserSize.Value * scale;
             }
-        }
-
-        /// <summary>
-        /// LayoutTimeSizeType is used internally and reflects layout-time size type.
-        /// </summary>
-        [System.Flags]
-        internal enum LayoutTimeSizeType : byte
-        {
-            None = 0x00,
-            Pixel = 0x01,
-            Auto = 0x02,
-            Star = 0x04,
-        }
-
-        /// <summary>
-        /// CellCache stored calculated values of
-        /// 1. attached cell positioning properties;
-        /// 2. size type;
-        /// 3. index of a next cell in the group;
-        /// </summary>
-        private struct CellCache
-        {
-            internal int ColumnIndex;
-            internal int RowIndex;
-            internal int ColumnSpan;
-            internal int RowSpan;
-            internal LayoutTimeSizeType SizeTypeU;
-            internal LayoutTimeSizeType SizeTypeV;
-            internal int Next;
-            internal bool IsStarU { get { return ((SizeTypeU & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoU { get { return ((SizeTypeU & LayoutTimeSizeType.Auto) != 0); } }
-            internal bool IsStarV { get { return ((SizeTypeV & LayoutTimeSizeType.Star) != 0); } }
-            internal bool IsAutoV { get { return ((SizeTypeV & LayoutTimeSizeType.Auto) != 0); } }
-        }
-
-        /// <summary>
-        /// Helper class for representing a key for a span in hashtable.
-        /// </summary>
-        private class SpanKey
-        {
-            /// <summary>
-            /// Constructor.
-            /// </summary>
-            /// <param name="start">Starting index of the span.</param>
-            /// <param name="count">Span count.</param>
-            /// <param name="u"><c>true</c> for columns; <c>false</c> for rows.</param>
-            internal SpanKey(int start, int count, bool u)
-            {
-                _start = start;
-                _count = count;
-                _u = u;
-            }
-
-            /// <summary>
-            /// <see cref="object.GetHashCode"/>
-            /// </summary>
-            public override int GetHashCode()
-            {
-                int hash = (_start ^ (_count << 2));
-
-                if (_u) hash &= 0x7ffffff;
-                else hash |= 0x8000000;
-
-                return (hash);
-            }
-
-            /// <summary>
-            /// <see cref="object.Equals(object)"/>
-            /// </summary>
-            public override bool Equals(object obj)
-            {
-                SpanKey sk = obj as SpanKey;
-                return (sk != null
-                        && sk._start == _start
-                        && sk._count == _count
-                        && sk._u == _u);
-            }
-
-            /// <summary>
-            /// Returns start index of the span.
-            /// </summary>
-            internal int Start { get { return (_start); } }
-
-            /// <summary>
-            /// Returns span count.
-            /// </summary>
-            internal int Count { get { return (_count); } }
-
-            /// <summary>
-            /// Returns <c>true</c> if this is a column span.
-            /// <c>false</c> if this is a row span.
-            /// </summary>
-            internal bool U { get { return (_u); } }
-
-            private int _start;
-            private int _count;
-            private bool _u;
-        }
-
-        /// <summary>
-        /// SpanPreferredDistributionOrderComparer.
-        /// </summary>
-        private class SpanPreferredDistributionOrderComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    if (definitionX.UserSize.IsAuto)
-                    {
-                        if (definitionY.UserSize.IsAuto)
-                        {
-                            result = definitionX.MinSize.CompareTo(definitionY.MinSize);
-                        }
-                        else
-                        {
-                            result = -1;
-                        }
-                    }
-                    else
-                    {
-                        if (definitionY.UserSize.IsAuto)
-                        {
-                            result = +1;
-                        }
-                        else
-                        {
-                            result = definitionX.PreferredSize.CompareTo(definitionY.PreferredSize);
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// SpanMaxDistributionOrderComparer.
-        /// </summary>
-        private class SpanMaxDistributionOrderComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    if (definitionX.UserSize.IsAuto)
-                    {
-                        if (definitionY.UserSize.IsAuto)
-                        {
-                            result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                        }
-                        else
-                        {
-                            result = +1;
-                        }
-                    }
-                    else
-                    {
-                        if (definitionY.UserSize.IsAuto)
-                        {
-                            result = -1;
-                        }
-                        else
-                        {
-                            result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// RoundingErrorIndexComparer.
-        /// </summary>
-        private class RoundingErrorIndexComparer : IComparer
-        {
-            private readonly double[] errors;
-
-            internal RoundingErrorIndexComparer(double[] errors)
-            {
-                Contract.Requires<NullReferenceException>(errors != null);
-                this.errors = errors;
-            }
-
-            public int Compare(object x, object y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                int result;
-
-                if (!CompareNullRefs(indexX, indexY, out result))
-                {
-                    double errorX = errors[indexX.Value];
-                    double errorY = errors[indexY.Value];
-                    result = errorX.CompareTo(errorY);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// MinRatioComparer.
-        /// Sort by w/min (stored in MeasureSize), descending.
-        /// We query the list from the back, i.e. in ascending order of w/min.
-        /// </summary>
-        private class MinRatioComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionY, definitionX, out result))
-                {
-                    result = definitionY.MeasureSize.CompareTo(definitionX.MeasureSize);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// MaxRatioComparer.
-        /// Sort by w/max (stored in SizeCache), ascending.
-        /// We query the list from the back, i.e. in descending order of w/max.
-        /// </summary>
-        private class MaxRatioComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// StarWeightComparer.
-        /// Sort by *-weight (stored in MeasureSize), ascending.
-        /// </summary>
-        private class StarWeightComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.MeasureSize.CompareTo(definitionY.MeasureSize);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// MinRatioIndexComparer.
-        /// </summary>
-        private class MinRatioIndexComparer : IComparer
-        {
-            private readonly DefinitionBase[] definitions;
-
-            internal MinRatioIndexComparer(DefinitionBase[] definitions)
-            {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
-            }
-
-            public int Compare(object x, object y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionY, definitionX, out result))
-                {
-                    result = definitionY.MeasureSize.CompareTo(definitionX.MeasureSize);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// MaxRatioIndexComparer.
-        /// </summary>
-        private class MaxRatioIndexComparer : IComparer
-        {
-            private readonly DefinitionBase[] definitions;
-
-            internal MaxRatioIndexComparer(DefinitionBase[] definitions)
-            {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
-            }
-
-            public int Compare(object x, object y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// MaxRatioIndexComparer.
-        /// </summary>
-        private class StarWeightIndexComparer : IComparer
-        {
-            private readonly DefinitionBase[] definitions;
-
-            internal StarWeightIndexComparer(DefinitionBase[] definitions)
-            {
-                Contract.Requires<NullReferenceException>(definitions != null);
-                this.definitions = definitions;
-            }
-
-            public int Compare(object x, object y)
-            {
-                int? indexX = x as int?;
-                int? indexY = y as int?;
-
-                DefinitionBase definitionX = null;
-                DefinitionBase definitionY = null;
-
-                if (indexX != null)
-                {
-                    definitionX = definitions[indexX.Value];
-                }
-                if (indexY != null)
-                {
-                    definitionY = definitions[indexY.Value];
-                }
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.MeasureSize.CompareTo(definitionY.MeasureSize);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Helper to render grid lines.
-        /// </summary>
-        private class GridLinesRenderer : Control
-        {
-            /// <summary>
-            /// Static initialization
-            /// </summary>
-            static GridLinesRenderer()
-            {
-                var oddDashArray = new List<double>();
-                oddDashArray.Add(_dashLength);
-                oddDashArray.Add(_dashLength);
-                var ds1 = new DashStyle(oddDashArray, 0);
-                _oddDashPen = new Pen(Brushes.Blue,
-                                       _penWidth,
-                                       lineCap: PenLineCap.Flat,
-                                       dashStyle: ds1);
-
-                var evenDashArray = new List<double>();
-                evenDashArray.Add(_dashLength);
-                evenDashArray.Add(_dashLength);
-                var ds2 = new DashStyle(evenDashArray, 0);
-                _evenDashPen = new Pen(Brushes.Yellow,
-                                       _penWidth,
-                                       lineCap: PenLineCap.Flat,
-                                       dashStyle: ds2);
-            }
-
-            /// <summary>
-            /// UpdateRenderBounds.
-            /// </summary>
-            public override void Render(DrawingContext drawingContext)
-            {
-                var grid = this.GetVisualParent<Grid>();
-
-                if (grid == null
-                    || !grid.ShowGridLines
-                    || grid.IsTrivialGrid)
-                {
-                    return;
-                }
-
-                for (int i = 1; i < grid.ColumnDefinitions.Count; ++i)
-                {
-                    DrawGridLine(
-                        drawingContext,
-                        grid.ColumnDefinitions[i].FinalOffset, 0.0,
-                        grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
-                }
-
-                for (int i = 1; i < grid.RowDefinitions.Count; ++i)
-                {
-                    DrawGridLine(
-                        drawingContext,
-                        0.0, grid.RowDefinitions[i].FinalOffset,
-                        _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
-                }
-            }
-
-            /// <summary>
-            /// Draw single hi-contrast line.
-            /// </summary>
-            private static void DrawGridLine(
-                DrawingContext drawingContext,
-                double startX,
-                double startY,
-                double endX,
-                double endY)
-            {
-                var start = new Point(startX, startY);
-                var end = new Point(endX, endY);
-                drawingContext.DrawLine(_oddDashPen, start, end);
-                drawingContext.DrawLine(_evenDashPen, start, end);
-            }
-
-            internal void UpdateRenderBounds(Size arrangeSize)
-            {
-                _lastArrangeSize = arrangeSize;
-                this.InvalidateVisual();
-            }
-
-            private static Size _lastArrangeSize;
-            private const double _dashLength = 4.0;    //
-            private const double _penWidth = 1.0;      //
-            private static readonly Pen _oddDashPen;   //  first pen to draw dash
-            private static readonly Pen _evenDashPen;  //  second pen to draw dash
         }
     }
 }
