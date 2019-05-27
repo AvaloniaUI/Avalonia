@@ -179,6 +179,5 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.False(target.IsMeasureValid);
         }
-
     }
 }

@@ -17,50 +17,50 @@ namespace Avalonia.Controls.UnitTests
         {
         }
 
-        [Fact]
-        public void All_Descendant_Grids_Are_Registered_When_Added_After_Setting_Scope()
-        {
-            var grids = new[] { new Grid(), new Grid(), new Grid() };
-            var scope = new Panel();
-            scope.Children.AddRange(grids);
+        // [Fact]
+        // public void All_Descendant_Grids_Are_Registered_When_Added_After_Setting_Scope()
+        // {
+        //     var grids = new[] { new Grid(), new Grid(), new Grid() };
+        //     var scope = new Panel();
+        //     scope.Children.AddRange(grids);
 
-            var root = new TestRoot();
-            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-            root.Child = scope;
+        //     var root = new TestRoot();
+        //     root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+        //     root.Child = scope;
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
-        }
+        //     Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+        // }
 
-        [Fact]
-        public void All_Descendant_Grids_Are_Registered_When_Setting_Scope()
-        {
-            var grids = new[] { new Grid(), new Grid(), new Grid() };
-            var scope = new Panel();
-            scope.Children.AddRange(grids);
+        // [Fact]
+        // public void All_Descendant_Grids_Are_Registered_When_Setting_Scope()
+        // {
+        //     var grids = new[] { new Grid(), new Grid(), new Grid() };
+        //     var scope = new Panel();
+        //     scope.Children.AddRange(grids);
 
-            var root = new TestRoot();
-            root.Child = scope;
-            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+        //     var root = new TestRoot();
+        //     root.Child = scope;
+        //     root.SetValue(Grid.IsSharedSizeScopeProperty, true);
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
-        }
+        //     Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+        // }
 
-        [Fact]
-        public void All_Descendant_Grids_Are_Unregistered_When_Resetting_Scope()
-        {
-            var grids = new[] { new Grid(), new Grid(), new Grid() };
-            var scope = new Panel();
-            scope.Children.AddRange(grids);
+        // [Fact]
+        // public void All_Descendant_Grids_Are_Unregistered_When_Resetting_Scope()
+        // {
+        //     var grids = new[] { new Grid(), new Grid(), new Grid() };
+        //     var scope = new Panel();
+        //     scope.Children.AddRange(grids);
 
-            var root = new TestRoot();
-            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-            root.Child = scope;
+        //     var root = new TestRoot();
+        //     root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+        //     root.Child = scope;
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
-            root.SetValue(Grid.IsSharedSizeScopeProperty, false);
-            Assert.All(grids, g => Assert.False(g.HasSharedSizeScope()));
-            Assert.Equal(null, root.GetValue(Grid.s_sharedSizeScopeHostProperty));
-        }
+        //     Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+        //     root.SetValue(Grid.IsSharedSizeScopeProperty, false);
+        //     Assert.All(grids, g => Assert.False(g.HasSharedSizeScope()));
+        //     Assert.Equal(null, root.GetValue(Grid.s_sharedSizeScopeHostProperty));
+        // }
 
         [Fact]
         public void Size_Is_Propagated_Between_Grids()
