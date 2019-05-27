@@ -38,7 +38,6 @@ namespace Avalonia.Controls
         internal bool ColumnDefinitionsDirty;
         internal bool RowDefinitionsDirty;
 
-
         //  index of the first cell in first cell group
         internal int CellGroup1;
 
@@ -77,11 +76,7 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
-
-            ColumnProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
-            ColumnSpanProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
-            RowProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
-            RowSpanProperty.Changed.AddClassHandler<Visual>(OnCellAttachedPropertyChanged);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
         /// <summary>
@@ -521,12 +516,12 @@ namespace Avalonia.Controls
                         cell.Arrange(cellRect);
                     }
 
-                    // //  update render bound on grid lines renderer visual
-                    // var gridLinesRenderer = EnsureGridLinesRenderer();
-                    // if (gridLinesRenderer != null)
-                    // {
-                    //     gridLinesRenderer.UpdateRenderBounds(arrangeSize);
-                    // }
+                    //  update render bound on grid lines renderer visual
+                    var gridLinesRenderer = EnsureGridLinesRenderer();
+                    if (gridLinesRenderer != null)
+                    {
+                        gridLinesRenderer.UpdateRenderBounds(arrangeSize);
+                    }
                 }
             }
             finally
@@ -2144,22 +2139,7 @@ namespace Avalonia.Controls
             if (!grid.IsTrivialGrid   // trivial grid is 1 by 1. there is no grid lines anyway
                 && grid.ListenToNotifications)
             {
-                grid.InvalidateVisual();
-            }
-        }
-
-        private static void OnCellAttachedPropertyChanged(Visual child, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (child != null)
-            {
-                var grid = child.GetVisualParent() as Grid;
-                if (grid != null
-                    && !grid.IsTrivialGrid
-                    && grid.ListenToNotifications)
-                {
-                    grid.CellsStructureDirty = true;
-                    grid.InvalidateMeasure();
-                }
+                grid.Invalidate();
             }
         }
 
@@ -2692,7 +2672,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Helper to render grid lines.
         /// </summary>
-        internal class GridLinesRenderer : Visual
+        internal class GridLinesRenderer : Control
         {
             /// <summary>
             /// Static initialization
@@ -2769,6 +2749,7 @@ namespace Avalonia.Controls
                 lastArrangeSize = arrangeSize;
                 this.InvalidateVisual();
             }
+
             private static Size lastArrangeSize;
             private const double c_dashLength = 4.0;    //
             private const double c_penWidth = 1.0;      //
