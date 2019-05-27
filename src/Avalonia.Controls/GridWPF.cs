@@ -649,7 +649,7 @@ namespace Avalonia.Controls
         {
             for (int i = 0; i < definitions.Length; ++i)
             {
-                definitions[i].OnBeforeLayout(this);
+                // definitions[i].OnBeforeLayout(this);
 
                 double userMinSize = definitions[i].UserMinSize;
                 double userMaxSize = definitions[i].UserMaxSize;
@@ -1215,17 +1215,17 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (Double.IsPositiveInfinity(maxStar))
+            if (double.IsPositiveInfinity(maxStar))
             {
                 // negative scale means one or more of the weights was Infinity
                 scale = -1.0;
             }
             else if (starCount > 0)
             {
-                // if maxStar * starCount > Double.Max, summing all the weights could cause
+                // if maxStar * starCount > double.Max, summing all the weights could cause
                 // floating-point overflow.  To avoid that, scale the weights by a factor to keep
                 // the sum within limits.  Choose a power of 2, to preserve precision.
-                double power = Math.Floor(Math.Log(Double.MaxValue / maxStar / starCount, 2.0));
+                double power = Math.Floor(Math.Log(double.MaxValue / maxStar / starCount, 2.0));
                 if (power < 0.0)
                 {
                     scale = Math.Pow(2.0, power - 4.0); // -4 is just for paranoia
@@ -1277,7 +1277,7 @@ namespace Avalonia.Controls
                                 }
 
                                 double effectiveMaxSize = Math.Max(def.MinSize, def.UserMaxSize);
-                                if (!Double.IsPositiveInfinity(effectiveMaxSize))
+                                if (!double.IsPositiveInfinity(effectiveMaxSize))
                                 {
                                     // store ratio w/max in SizeCache (for now)
                                     tempDefinitions[defCount + maxCount++] = def;
@@ -1322,7 +1322,7 @@ namespace Avalonia.Controls
                         remainingStarWeight = totalStarWeight - takenStarWeight;
                     }
 
-                    double minRatio = (minCount > 0) ? tempDefinitions[minCount - 1].MeasureSize : Double.PositiveInfinity;
+                    double minRatio = (minCount > 0) ? tempDefinitions[minCount - 1].MeasureSize : double.PositiveInfinity;
                     double maxRatio = (maxCount > 0) ? tempDefinitions[defCount + maxCount - 1].SizeCache : -1.0;
 
                     // choose the def with larger ratio to the current proportion ("max discrepancy")
@@ -1532,17 +1532,17 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (Double.IsPositiveInfinity(maxStar))
+            if (double.IsPositiveInfinity(maxStar))
             {
                 // negative scale means one or more of the weights was Infinity
                 scale = -1.0;
             }
             else if (starCount > 0)
             {
-                // if maxStar * starCount > Double.Max, summing all the weights could cause
+                // if maxStar * starCount > double.Max, summing all the weights could cause
                 // floating-point overflow.  To avoid that, scale the weights by a factor to keep
                 // the sum within limits.  Choose a power of 2, to preserve precision.
-                double power = Math.Floor(Math.Log(Double.MaxValue / maxStar / starCount, 2.0));
+                double power = Math.Floor(Math.Log(double.MaxValue / maxStar / starCount, 2.0));
                 if (power < 0.0)
                 {
                     scale = Math.Pow(2.0, power - 4.0); // -4 is just for paranoia
@@ -1590,7 +1590,7 @@ namespace Avalonia.Controls
                             }
 
                             double effectiveMaxSize = Math.Max(def.MinSizeForArrange, def.UserMaxSize);
-                            if (!Double.IsPositiveInfinity(effectiveMaxSize))
+                            if (!double.IsPositiveInfinity(effectiveMaxSize))
                             {
                                 // store ratio w/max in SizeCache (for now)
                                 definitionIndices[defCount + maxCount++] = i;
@@ -1670,7 +1670,7 @@ namespace Avalonia.Controls
                         remainingStarWeight = totalStarWeight - takenStarWeight;
                     }
 
-                    double minRatio = (minCount > 0) ? definitions[definitionIndices[minCount - 1]].MeasureSize : Double.PositiveInfinity;
+                    double minRatio = (minCount > 0) ? definitions[definitionIndices[minCount - 1]].MeasureSize : double.PositiveInfinity;
                     double maxRatio = (maxCount > 0) ? definitions[definitionIndices[defCount + maxCount - 1]].SizeCache : -1.0;
 
                     // choose the def with larger ratio to the current proportion ("max discrepancy")
@@ -1950,19 +1950,17 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
-        /// Choose the ratio with maximum discrepancy from the current proportion.
-        /// Returns:
-        ///     true    if proportion fails a min constraint but not a max, or
-        ///                 if the min constraint has higher discrepancy
-        ///     false   if proportion fails a max constraint but not a min, or
-        ///                 if the max constraint has higher discrepancy
-        ///     null    if proportion doesn't fail a min or max constraint
-        /// The discrepancy is the ratio of the proportion to the max- or min-ratio.
-        /// When both ratios hit the constraint,  minRatio < proportion < maxRatio,
-        /// and the minRatio has higher discrepancy if
-        ///         (proportion / minRatio) > (maxRatio / proportion)
-        /// </summary>
+        // Choose the ratio with maximum discrepancy from the current proportion.
+        // Returns:
+        //     true    if proportion fails a min constraint but not a max, or
+        //                 if the min constraint has higher discrepancy
+        //     false   if proportion fails a max constraint but not a min, or
+        //                 if the max constraint has higher discrepancy
+        //     null    if proportion doesn't fail a min or max constraint
+        // The discrepancy is the ratio of the proportion to the max- or min-ratio.
+        // When both ratios hit the constraint,  minRatio < proportion < maxRatio,
+        // and the minRatio has higher discrepancy if
+        //         (proportion / minRatio) > (maxRatio / proportion)
         private static bool? Choose(double minRatio, double maxRatio, double proportion)
         {
             if (minRatio < proportion)
@@ -2092,7 +2090,7 @@ namespace Avalonia.Controls
                 // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
                 if (double.IsNaN(newValue) ||
                     double.IsInfinity(newValue) ||
-                    MathUtilities.AreClose(newValue, Double.MaxValue))
+                    MathUtilities.AreClose(newValue, double.MaxValue))
                 {
                     newValue = value;
                 }
@@ -2249,7 +2247,7 @@ namespace Avalonia.Controls
                 // if one of the *-weights is Infinity, adjust the weights by mapping
                 // Infinty to 1.0 and everything else to 0.0:  the infinite items share the
                 // available space equally, everyone else gets nothing.
-                return (Double.IsPositiveInfinity(def.UserSize.Value)) ? 1.0 : 0.0;
+                return (double.IsPositiveInfinity(def.UserSize.Value)) ? 1.0 : 0.0;
             }
             else
             {

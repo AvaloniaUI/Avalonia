@@ -88,10 +88,10 @@ namespace Avalonia.Controls
             set { SetValue(WidthProperty, value); }
         }
 
-        internal override GridLength UserSizeValueCache => this.Width;
+        internal override GridLength UserSize => this.Width;
 
-        internal override double UserMinSizeValueCache => this.MinWidth;
+        internal override double UserMinSize => this.MinWidth;
 
-        internal override double UserMaxSizeValueCache => this.MaxWidth;
+        internal override double UserMaxSize => this.MaxWidth;
     }
 }

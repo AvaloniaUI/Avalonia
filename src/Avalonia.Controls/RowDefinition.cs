@@ -89,10 +89,10 @@ namespace Avalonia.Controls
         }
 
 
-        internal override GridLength UserSizeValueCache => this.Height;
+        internal override GridLength UserSize => this.Height;
 
-        internal override double UserMinSizeValueCache => this.MinHeight;
+        internal override double UserMinSize => this.MinHeight;
 
-        internal override double UserMaxSizeValueCache => this.MaxHeight;
+        internal override double UserMaxSize => this.MaxHeight;
     }
 }
