@@ -21,31 +21,58 @@ namespace Avalonia.Controls
 {
     public class Grid : Panel
     {
-        
         internal bool CellsStructureDirty = true;
         internal bool SizeToContentU;
         internal bool SizeToContentV;
         internal bool HasStarCellsU;
         internal bool HasStarCellsV;
         internal bool HasGroup3CellsInAutoRows;
-        internal bool ColumnDefinitionsDirty = true;
-        internal bool RowDefinitionsDirty = true;
-
-        //  index of the first cell in first cell group
+        internal bool DefinitionsDirty;
+        internal bool IsTrivialGrid => (_definitionsU?.Length <= 1) &&
+                                       (_definitionsV?.Length <= 1);
         internal int CellGroup1;
-
-        //  index of the first cell in second cell group
         internal int CellGroup2;
-
-        //  index of the first cell in third cell group
         internal int CellGroup3;
-
-        //  index of the first cell in fourth cell group
         internal int CellGroup4;
+
+        /// <summary>
+        /// Helper for Comparer methods.
+        /// </summary>
+        /// <returns>
+        /// true if one or both of x and y are null, in which case result holds
+        /// the relative sort order.
+        /// </returns>
+        internal static bool CompareNullRefs(object x, object y, out int result)
+        {
+            result = 2;
+
+            if (x == null)
+            {
+                if (y == null)
+                {
+                    result = 0;
+                }
+                else
+                {
+                    result = -1;
+                }
+            }
+            else
+            {
+                if (y == null)
+                {
+                    result = 1;
+                }
+            }
+
+            return (result != 2);
+        }
 
         //  temporary array used during layout for various purposes
         //  TempDefinitions.Length == Max(DefinitionsU.Length, DefinitionsV.Length)
         private DefinitionBase[] _tempDefinitions;
+
+
         private GridLinesRenderer _gridLinesRenderer;
 
         // Keeps track of definition indices.
@@ -55,8 +82,10 @@ namespace Avalonia.Controls
 
         // Stores unrounded values and rounding errors during layout rounding.
         private double[] _roundingErrors;
-        private DefinitionBase[] _definitionsU;
-        private DefinitionBase[] _definitionsV;
+        private ColumnDefinitions _columnDefinitions;
+        private RowDefinitions _rowDefinitions;
+        private DefinitionBase[] _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+        private DefinitionBase[] _definitionsV = new DefinitionBase[1] { new RowDefinition() };
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int _layoutLoopMaxCount = 5;
@@ -66,6 +95,78 @@ namespace Avalonia.Controls
         private static readonly IComparer _minRatioComparer;
         private static readonly IComparer _maxRatioComparer;
         private static readonly IComparer _starWeightComparer;
+
+        /// <summary>
+        /// Helper accessor to layout time array of definitions.
+        /// </summary>
+        private DefinitionBase[] TempDefinitions
+        {
+            get
+            {
+                int requiredLength = Math.Max(_definitionsU.Length, _definitionsV.Length) * 2;
+
+                if (_tempDefinitions == null
+                    || _tempDefinitions.Length < requiredLength)
+                {
+                    WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(_tempDefinitionsDataSlot);
+                    if (tempDefinitionsWeakRef == null)
+                    {
+                        _tempDefinitions = new DefinitionBase[requiredLength];
+                        Thread.SetData(_tempDefinitionsDataSlot, new WeakReference(_tempDefinitions));
+                    }
+                    else
+                    {
+                        _tempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
+                        if (_tempDefinitions == null
+                            || _tempDefinitions.Length < requiredLength)
+                        {
+                            _tempDefinitions = new DefinitionBase[requiredLength];
+                            tempDefinitionsWeakRef.Target = _tempDefinitions;
+                        }
+                    }
+                }
+                return (_tempDefinitions);
+            }
+        }
+
+        /// <summary>
+        /// Helper accessor to definition indices.
+        /// </summary>
+        private int[] DefinitionIndices
+        {
+            get
+            {
+                int requiredLength = Math.Max(Math.Max(_definitionsU.Length, _definitionsV.Length), 1) * 2;
+
+                if (_definitionIndices == null || _definitionIndices.Length < requiredLength)
+                {
+                    _definitionIndices = new int[requiredLength];
+                }
+
+                return _definitionIndices;
+            }
+        }
+
+        /// <summary>
+        /// Helper accessor to rounding errors.
+        /// </summary>
+        private double[] RoundingErrors
+        {
+            get
+            {
+                int requiredLength = Math.Max(_definitionsU.Length, _definitionsV.Length);
+
+                if (_roundingErrors == null && requiredLength == 0)
+                {
+                    _roundingErrors = new double[1];
+                }
+                else if (_roundingErrors == null || _roundingErrors.Length < requiredLength)
+                {
+                    _roundingErrors = new double[requiredLength];
+                }
+                return _roundingErrors;
+            }
+        }
 
         static Grid()
         {
@@ -127,6 +228,86 @@ namespace Avalonia.Controls
             get { return GetValue(ShowGridLinesProperty); }
             set { SetValue(ShowGridLinesProperty, value); }
         }
+
+        /// <summary>
+        /// Gets or sets the columns definitions for the grid.
+        /// </summary>
+        public ColumnDefinitions ColumnDefinitions
+        {
+            get
+            {
+                if (_columnDefinitions == null)
+                {
+                    ColumnDefinitions = new ColumnDefinitions();
+                }
+
+                return _columnDefinitions;
+            }
+            set
+            {
+                _columnDefinitions = value;
+                _columnDefinitions.TrackItemPropertyChanged(_ => Invalidate());
+                DefinitionsDirty = true;
+
+                if (_columnDefinitions.Count > 0)
+                    _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
+
+                _columnDefinitions.CollectionChanged += delegate
+                {
+                    if (_columnDefinitions.Count == 0)
+                    {
+                        _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
+                    }
+                    else
+                    {
+                        _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
+                        DefinitionsDirty = true;
+                    }
+                    Invalidate();
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the row definitions for the grid.
+        /// </summary>
+        public RowDefinitions RowDefinitions
+        {
+            get
+            {
+                if (_rowDefinitions == null)
+                {
+                    RowDefinitions = new RowDefinitions();
+                }
+
+                return _rowDefinitions;
+            }
+            set
+            {
+                _rowDefinitions = value;
+                _rowDefinitions.TrackItemPropertyChanged(_ => Invalidate());
+
+                DefinitionsDirty = true;
+
+                if (_rowDefinitions.Count > 0)
+                    _definitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
+
+                _rowDefinitions.CollectionChanged += delegate
+                {
+                    if (_rowDefinitions.Count == 0)
+                    {
+                        _definitionsV = new DefinitionBase[1] { new RowDefinition() };
+                    }
+                    else
+                    {
+                        _definitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
+                        DefinitionsDirty = true;
+                    }
+                    Invalidate();
+                };
+            }
+        }
+
 
         /// <summary>
         /// Gets the value of the Column attached property for a control.
@@ -218,95 +399,6 @@ namespace Avalonia.Controls
             element.SetValue(RowSpanProperty, value);
         }
 
-        private ColumnDefinitions _columnDefinitions;
-        private RowDefinitions _rowDefinitions;
-
-        /// <summary>
-        /// Gets or sets the columns definitions for the grid.
-        /// </summary>
-        public ColumnDefinitions ColumnDefinitions
-        {
-            get
-            {
-                if (_columnDefinitions == null)
-                {
-                    ColumnDefinitions = new ColumnDefinitions();
-                }
-
-                return _columnDefinitions;
-            }
-            set
-            {
-                _columnDefinitions = value;
-                _columnDefinitions.TrackItemPropertyChanged(_ => Invalidate());
-                ColumnDefinitionsDirty = true;
-
-                if (_columnDefinitions.Count > 0)
-                    _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
-                else
-                    _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
-
-                _columnDefinitions.CollectionChanged += (_, e) =>
-                {
-                    if (_columnDefinitions.Count == 0)
-                    {
-                        _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
-                    }
-                    else
-                    {
-                        _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
-                        ColumnDefinitionsDirty = true;
-                    }
-                    Invalidate();
-                };
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the row definitions for the grid.
-        /// </summary>
-        public RowDefinitions RowDefinitions
-        {
-            get
-            {
-                if (_rowDefinitions == null)
-                {
-                    RowDefinitions = new RowDefinitions();
-                }
-
-                return _rowDefinitions;
-            }
-            set
-            {
-                _rowDefinitions = value;
-                _rowDefinitions.TrackItemPropertyChanged(_ => Invalidate());
-
-                RowDefinitionsDirty = true;
-
-                if (_rowDefinitions.Count > 0)
-                    _definitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
-                else
-                    _definitionsV = new DefinitionBase[1] { new RowDefinition() };
-
-                _rowDefinitions.CollectionChanged += (_, e) =>
-                {
-                    if (_rowDefinitions.Count == 0)
-                    {
-                        _definitionsV = new DefinitionBase[1] { new RowDefinition() };
-                    }
-                    else
-                    {
-                        _definitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
-                        RowDefinitionsDirty = true;
-                    }
-                    Invalidate();
-                };
-            }
-        }
-
-        internal bool IsTrivialGrid => (_definitionsU?.Length <= 1) &&
-                                      (_definitionsV?.Length <= 1);
-
         /// <summary>
         /// Content measurement.
         /// </summary>
@@ -341,7 +433,7 @@ namespace Avalonia.Controls
                         bool sizeToContentV = double.IsPositiveInfinity(constraint.Height);
 
                         // Clear index information and rounding errors
-                        if (RowDefinitionsDirty || ColumnDefinitionsDirty)
+                        if (DefinitionsDirty)
                         {
                             if (_definitionIndices != null)
                             {
@@ -357,12 +449,11 @@ namespace Avalonia.Controls
                                     _roundingErrors = null;
                                 }
                             }
+
+                            DefinitionsDirty = false;
                         }
 
-                        ValidateColumnDefinitionsStructure();
                         ValidateDefinitionsLayout(_definitionsU, sizeToContentU);
-
-                        ValidateRowDefinitionsStructure();
                         ValidateDefinitionsLayout(_definitionsV, sizeToContentV);
 
                         CellsStructureDirty |= (SizeToContentU != sizeToContentU)
@@ -453,27 +544,6 @@ namespace Avalonia.Controls
             return (gridDesiredSize);
         }
 
-        private void ValidateColumnDefinitionsStructure()
-        {
-            if (ColumnDefinitionsDirty)
-            {
-                if (_definitionsU == null)
-                    _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
-                ColumnDefinitionsDirty = false;
-            }
-        }
-
-        private void ValidateRowDefinitionsStructure()
-        {
-            if (RowDefinitionsDirty)
-            {
-                if (_definitionsV == null)
-                    _definitionsV = new DefinitionBase[1] { new RowDefinition() };
-
-                RowDefinitionsDirty = false;
-            }
-        }
-
         /// <summary>
         /// Content arrangement.
         /// </summary>
@@ -554,12 +624,12 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Used from public ColumnDefinition ActualWidth. Calculates final width using offset data.
         /// </remarks>
-        internal double GetFinalColumnDefinitionWidth(int columnIndex)
+        private double GetFinalColumnDefinitionWidth(int columnIndex)
         {
             double value = 0.0;
 
             //  actual value calculations require structure to be up-to-date
-            if (!ColumnDefinitionsDirty)
+            if (!DefinitionsDirty)
             {
                 value = _definitionsU[(columnIndex + 1) % _definitionsU.Length].FinalOffset;
                 if (columnIndex != 0) { value -= _definitionsU[columnIndex].FinalOffset; }
@@ -573,12 +643,12 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Used from public RowDefinition ActualHeight. Calculates final height using offset data.
         /// </remarks>
-        internal double GetFinalRowDefinitionHeight(int rowIndex)
+        private double GetFinalRowDefinitionHeight(int rowIndex)
         {
             double value = 0.0;
 
             //  actual value calculations require structure to be up-to-date
-            if (!RowDefinitionsDirty)
+            if (!DefinitionsDirty)
             {
                 value = _definitionsV[(rowIndex + 1) % _definitionsV.Length].FinalOffset;
                 if (rowIndex != 0) { value -= _definitionsV[rowIndex].FinalOffset; }
@@ -589,7 +659,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invalidates grid caches and makes the grid dirty for measure.
         /// </summary>
-        internal void Invalidate()
+        private void Invalidate()
         {
             CellsStructureDirty = true;
             InvalidateMeasure();
@@ -2111,14 +2181,11 @@ namespace Avalonia.Controls
         /// </summary>
         private void SetValid()
         {
-            if (IsTrivialGrid)
+            if (IsTrivialGrid && _tempDefinitions != null)
             {
-                if (_tempDefinitions != null)
-                {
-                    //  TempDefinitions has to be cleared to avoid "memory leaks"
-                    Array.Clear(_tempDefinitions, 0, Math.Max(_definitionsU.Length, _definitionsV.Length));
-                    _tempDefinitions = null;
-                }
+                //  TempDefinitions has to be cleared to avoid "memory leaks"
+                Array.Clear(_tempDefinitions, 0, Math.Max(_definitionsU.Length, _definitionsV.Length));
+                _tempDefinitions = null;
             }
         }
 
@@ -2171,7 +2238,6 @@ namespace Avalonia.Controls
             return newValue;
         }
 
-
         private static int ValidateColumn(AvaloniaObject o, int value)
         {
             if (value < 0)
@@ -2201,114 +2267,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for Comparer methods.
-        /// </summary>
-        /// <returns>
-        /// true if one or both of x and y are null, in which case result holds
-        /// the relative sort order.
-        /// </returns>
-        internal static bool CompareNullRefs(object x, object y, out int result)
-        {
-            result = 2;
-
-            if (x == null)
-            {
-                if (y == null)
-                {
-                    result = 0;
-                }
-                else
-                {
-                    result = -1;
-                }
-            }
-            else
-            {
-                if (y == null)
-                {
-                    result = 1;
-                }
-            }
-
-            return (result != 2);
-        }
-
-        /// <summary>
-        /// Helper accessor to layout time array of definitions.
-        /// </summary>
-        private DefinitionBase[] TempDefinitions
-        {
-            get
-            {
-                int requiredLength = Math.Max(_definitionsU.Length, _definitionsV.Length) * 2;
-
-                if (_tempDefinitions == null
-                    || _tempDefinitions.Length < requiredLength)
-                {
-                    WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(_tempDefinitionsDataSlot);
-                    if (tempDefinitionsWeakRef == null)
-                    {
-                        _tempDefinitions = new DefinitionBase[requiredLength];
-                        Thread.SetData(_tempDefinitionsDataSlot, new WeakReference(_tempDefinitions));
-                    }
-                    else
-                    {
-                        _tempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
-                        if (_tempDefinitions == null
-                            || _tempDefinitions.Length < requiredLength)
-                        {
-                            _tempDefinitions = new DefinitionBase[requiredLength];
-                            tempDefinitionsWeakRef.Target = _tempDefinitions;
-                        }
-                    }
-                }
-                return (_tempDefinitions);
-            }
-        }
-
-        /// <summary>
-        /// Helper accessor to definition indices.
-        /// </summary>
-        private int[] DefinitionIndices
-        {
-            get
-            {
-                int requiredLength = Math.Max(Math.Max(_definitionsU.Length, _definitionsV.Length), 1) * 2;
-
-                if (_definitionIndices == null || _definitionIndices.Length < requiredLength)
-                {
-                    _definitionIndices = new int[requiredLength];
-                }
-
-                return _definitionIndices;
-            }
-        }
-
-        /// <summary>
-        /// Helper accessor to rounding errors.
-        /// </summary>
-        private double[] RoundingErrors
-        {
-            get
-            {
-                int requiredLength = Math.Max(_definitionsU.Length, _definitionsV.Length);
-
-                if (_roundingErrors == null && requiredLength == 0)
-                {
-                    _roundingErrors = new double[1];
-                }
-                else if (_roundingErrors == null || _roundingErrors.Length < requiredLength)
-                {
-                    _roundingErrors = new double[requiredLength];
-                }
-                return _roundingErrors;
-            }
-        }
-
-        /// <summary>
         /// Returns *-weight, adjusted for scale computed during Phase 1
         /// </summary>
-        static double StarWeight(DefinitionBase def, double scale)
+        private static double StarWeight(DefinitionBase def, double scale)
         {
             if (scale < 0.0)
             {
