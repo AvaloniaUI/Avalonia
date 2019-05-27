@@ -48,6 +48,7 @@ namespace Avalonia.Controls
         /// Layout-time user size type.
         /// </summary>
         internal Grid.LayoutTimeSizeType SizeType { get; set; }
+        
         /// <summary>
         /// Returns or sets measure size for the definition.
         /// </summary>
@@ -79,7 +80,7 @@ namespace Avalonia.Controls
         internal double SizeCache { get; set; }
 
         /// <summary>
-        /// Used during measure to accumulate size for "Auto" and "Star" DefinitionBase's
+        /// Used during measure and arrange to accumulate size for "Auto" and "Star" DefinitionBase's
         /// </summary>
         internal double MinSize { get; set; }
 
@@ -96,10 +97,5 @@ namespace Avalonia.Controls
         /// Offset.
         /// </summary>
         internal double FinalOffset { get; set; }
-
-        /// <summary>
-        /// Returns <c>true</c> if this definition is a part of shared group.
-        /// </summary>
-        internal bool IsShared { get; set; }
     }
 }
