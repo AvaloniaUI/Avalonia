@@ -2779,16 +2779,16 @@ namespace Avalonia.Controls
                 {
                     DrawGridLine(
                         drawingContext,
-                        grid.ColumnDefinitions[i].ActualWidth, 0.0,
-                        grid.ColumnDefinitions[i].ActualWidth, _lastArrangeSize.Height);
+                        grid.ColumnDefinitions[i].FinalOffset, 0.0,
+                        grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
                 }
 
                 for (int i = 1; i < grid.RowDefinitions.Count; ++i)
                 {
                     DrawGridLine(
                         drawingContext,
-                        0.0, grid.RowDefinitions[i].ActualHeight,
-                        _lastArrangeSize.Width, grid.RowDefinitions[i].ActualHeight);
+                        0.0, grid.RowDefinitions[i].FinalOffset,
+                        _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
                 }
             }
 
