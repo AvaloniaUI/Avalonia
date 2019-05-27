@@ -21,6 +21,7 @@ namespace Avalonia.Controls
 {
     public class Grid : Panel
     {
+        
         internal bool CellsStructureDirty = true;
         internal bool SizeToContentU;
         internal bool SizeToContentV;
