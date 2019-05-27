@@ -14,19 +14,15 @@ namespace Avalonia.Controls
         /// </summary>
         static GridLinesRenderer()
         {
-            var oddDashArray = new List<double>();
-            oddDashArray.Add(_dashLength);
-            oddDashArray.Add(_dashLength);
-            var ds1 = new DashStyle(oddDashArray, 0);
+            var dashArray = new List<double>() { _dashLength, _dashLength };
+
+            var ds1 = new DashStyle(dashArray, 0);
             _oddDashPen = new Pen(Brushes.Blue,
                                    _penWidth,
                                    lineCap: PenLineCap.Flat,
                                    dashStyle: ds1);
 
-            var evenDashArray = new List<double>();
-            evenDashArray.Add(_dashLength);
-            evenDashArray.Add(_dashLength);
-            var ds2 = new DashStyle(evenDashArray, 0);
+            var ds2 = new DashStyle(dashArray, _dashLength);
             _evenDashPen = new Pen(Brushes.Yellow,
                                    _penWidth,
                                    lineCap: PenLineCap.Flat,
