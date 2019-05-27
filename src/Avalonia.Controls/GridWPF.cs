@@ -27,14 +27,11 @@ namespace Avalonia.Controls
     public class Grid : Panel
     {
         internal bool CellsStructureDirty = true;
-        internal bool ListenToNotifications;
         internal bool SizeToContentU;
         internal bool SizeToContentV;
         internal bool HasStarCellsU;
         internal bool HasStarCellsV;
         internal bool HasGroup3CellsInAutoRows;
-        internal bool MeasureOverrideInProgress;
-        internal bool ArrangeOverrideInProgress;
         internal bool ColumnDefinitionsDirty;
         internal bool RowDefinitionsDirty;
 
@@ -65,13 +62,15 @@ namespace Avalonia.Controls
         private double[] _roundingErrors;
         private DefinitionBase[] DefinitionsU;
         private DefinitionBase[] DefinitionsV;
-        private const int layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
-        private static readonly LocalDataStoreSlot s_tempDefinitionsDataSlot = Thread.AllocateDataSlot();
-        private static readonly IComparer s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
-        private static readonly IComparer s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
-        private static readonly IComparer s_minRatioComparer = new MinRatioComparer();
-        private static readonly IComparer s_maxRatioComparer = new MaxRatioComparer();
-        private static readonly IComparer s_starWeightComparer = new StarWeightComparer();
+
+        // 5 is an arbitrary constant chosen to end the measure loop
+        private const int _layoutLoopMaxCount = 5;
+        private static readonly LocalDataStoreSlot _tempDefinitionsDataSlot = Thread.AllocateDataSlot();
+        private static readonly IComparer _spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
+        private static readonly IComparer _spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
+        private static readonly IComparer _minRatioComparer = new MinRatioComparer();
+        private static readonly IComparer _maxRatioComparer = new MaxRatioComparer();
+        private static readonly IComparer _starWeightComparer = new StarWeightComparer();
 
         static Grid()
         {
@@ -317,9 +316,6 @@ namespace Avalonia.Controls
 
             try
             {
-                ListenToNotifications = true;
-                MeasureOverrideInProgress = true;
-
                 if (IsTrivialGrid)
                 {
                     gridDesiredSize = new Size();
@@ -432,9 +428,9 @@ namespace Avalonia.Controls
                                     ApplyCachedMinSizes(group2MinSizes, false);
 
                                     if (HasStarCellsV) { ResolveStar(DefinitionsV, constraint.Height); }
-                                    MeasureCellsGroup(CellGroup2, constraint, cnt == layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
+                                    MeasureCellsGroup(CellGroup2, constraint, cnt == _layoutLoopMaxCount, false, out hasDesiredSizeUChanged);
                                 }
-                                while (hasDesiredSizeUChanged && ++cnt <= layoutLoopMaxCount);
+                                while (hasDesiredSizeUChanged && ++cnt <= _layoutLoopMaxCount);
                             }
                         }
                     }
@@ -448,7 +444,6 @@ namespace Avalonia.Controls
             }
             finally
             {
-                MeasureOverrideInProgress = false;
             }
 
             return (gridDesiredSize);
@@ -474,8 +469,6 @@ namespace Avalonia.Controls
         {
             try
             {
-                ArrangeOverrideInProgress = true;
-
                 if (IsTrivialGrid)
                 {
                     for (int i = 0, count = Children.Count; i < count; ++i)
@@ -527,7 +520,6 @@ namespace Avalonia.Controls
             finally
             {
                 SetValid();
-                ArrangeOverrideInProgress = false;
             }
             return (arrangeSize);
         }
@@ -1061,7 +1053,7 @@ namespace Avalonia.Controls
                         double sizeToDistribute;
                         int i;
 
-                        Array.Sort(tempDefinitions, 0, count, s_spanPreferredDistributionOrderComparer);
+                        Array.Sort(tempDefinitions, 0, count, _spanPreferredDistributionOrderComparer);
                         for (i = 0, sizeToDistribute = requestedSize; i < autoDefinitionsCount; ++i)
                         {
                             //  sanity check: only auto definitions allowed in this loop
@@ -1098,7 +1090,7 @@ namespace Avalonia.Controls
                         double sizeToDistribute;
                         int i;
 
-                        Array.Sort(tempDefinitions, 0, count, s_spanMaxDistributionOrderComparer);
+                        Array.Sort(tempDefinitions, 0, count, _spanMaxDistributionOrderComparer);
                         for (i = 0, sizeToDistribute = requestedSize - rangePreferredSize; i < count - autoDefinitionsCount; ++i)
                         {
                             //  sanity check: no auto definitions allowed in this loop
@@ -1301,8 +1293,8 @@ namespace Avalonia.Controls
                 double takenStarWeight = 0.0;
                 double remainingAvailableSize = availableSize - takenSize;
                 double remainingStarWeight = totalStarWeight - takenStarWeight;
-                Array.Sort(tempDefinitions, 0, minCount, s_minRatioComparer);
-                Array.Sort(tempDefinitions, defCount, maxCount, s_maxRatioComparer);
+                Array.Sort(tempDefinitions, 0, minCount, _minRatioComparer);
+                Array.Sort(tempDefinitions, defCount, maxCount, _maxRatioComparer);
 
                 while (minCount + maxCount > 0 && remainingAvailableSize > 0.0)
                 {
@@ -1458,7 +1450,7 @@ namespace Avalonia.Controls
 
             if (starCount > 0)
             {
-                Array.Sort(tempDefinitions, 0, starCount, s_starWeightComparer);
+                Array.Sort(tempDefinitions, 0, starCount, _starWeightComparer);
 
                 // compute the partial sums of *-weight, in increasing order of weight
                 // for minimal loss of precision.
@@ -2136,8 +2128,7 @@ namespace Avalonia.Controls
 
         private static void OnShowGridLinesPropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs e)
         {
-            if (!grid.IsTrivialGrid   // trivial grid is 1 by 1. there is no grid lines anyway
-                && grid.ListenToNotifications)
+            if (!grid.IsTrivialGrid)  // trivial grid is 1 by 1. there is no grid lines anyway
             {
                 grid.Invalidate();
             }
@@ -2188,11 +2179,11 @@ namespace Avalonia.Controls
                 if (_tempDefinitions == null
                     || _tempDefinitions.Length < requiredLength)
                 {
-                    WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(s_tempDefinitionsDataSlot);
+                    WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(_tempDefinitionsDataSlot);
                     if (tempDefinitionsWeakRef == null)
                     {
                         _tempDefinitions = new DefinitionBase[requiredLength];
-                        Thread.SetData(s_tempDefinitionsDataSlot, new WeakReference(_tempDefinitions));
+                        Thread.SetData(_tempDefinitionsDataSlot, new WeakReference(_tempDefinitions));
                     }
                     else
                     {
@@ -2672,7 +2663,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Helper to render grid lines.
         /// </summary>
-        internal class GridLinesRenderer : Control
+        private class GridLinesRenderer : Control
         {
             /// <summary>
             /// Static initialization
@@ -2703,10 +2694,11 @@ namespace Avalonia.Controls
             /// </summary>
             public override void Render(DrawingContext drawingContext)
             {
-                var grid = this.GetVisualParent() as Grid;
+                var grid = this.GetVisualParent<Grid>();
 
                 if (grid == null
-                    || grid.ShowGridLines == false)
+                    || !grid.ShowGridLines 
+                    || grid.IsTrivialGrid)
                 {
                     return;
                 }
@@ -2755,7 +2747,6 @@ namespace Avalonia.Controls
             private const double c_penWidth = 1.0;      //
             private static readonly Pen s_oddDashPen;   //  first pen to draw dash
             private static readonly Pen s_evenDashPen;  //  second pen to draw dash
-            private static readonly Point c_zeroPoint = new Point(0, 0);
         }
     }
 }
