@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <TargetFrameworks>netstandard2.0;net461;netcoreapp2.0</TargetFrameworks>
+      <PackageId>Avalonia</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
