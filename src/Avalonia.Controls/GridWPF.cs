@@ -707,7 +707,8 @@ namespace Avalonia.Controls
         {
             for (int i = 0; i < definitions.Length; ++i)
             {
-                // definitions[i].OnBeforeLayout(this);
+                // Reset minimum size.
+                definitions[i].SetMinSize(0);
 
                 double userMinSize = definitions[i].UserMinSize;
                 double userMaxSize = definitions[i].UserMaxSize;
@@ -718,6 +719,7 @@ namespace Avalonia.Controls
                     case (GridUnitType.Pixel):
                         definitions[i].SizeType = LayoutTimeSizeType.Pixel;
                         userSize = definitions[i].UserSize.Value;
+                        
                         // this was brought with NewLayout and defeats squishy behavior
                         userMinSize = Math.Max(userMinSize, Math.Min(userSize, userMaxSize));
                         break;
