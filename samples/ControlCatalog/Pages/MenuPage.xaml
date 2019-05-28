@@ -10,6 +10,25 @@
               HorizontalAlignment="Center"
               Spacing="16">
             <StackPanel>
+                <TextBlock Classes="h3" Margin="4 8">AppMenu Defined in XAML</TextBlock>
+                <NativeMenu>
+                    <NativeMenuItem Text="_First">
+                        <NativeMenuItem Text="Standard _Menu Item"/>
+                        <NativeMenuItem Text="Menu with _Submenu">
+                            <NativeMenuItem Text="Submenu _1"/>
+                            <NativeMenuItem Text="Submenu _2"/>
+                        </NativeMenuItem>
+                        <NativeMenuItem Text="Menu Item with _Icon"/>
+                        <NativeMenuItem Text="Menu Item with _Checkbox"/>
+
+                    </NativeMenuItem>
+                    <NativeMenuItem Text="_Second">
+                        <NativeMenuItem Text="Second _Menu Item"/>
+                    </NativeMenuItem>
+                </NativeMenu>
+            </StackPanel>
+            
+            <StackPanel>
                 <TextBlock Classes="h3" Margin="4 8">Defined in XAML</TextBlock>
                 <Menu>
                     <MenuItem Header="_First">
