@@ -86,6 +86,7 @@ namespace Avalonia.Controls
         private RowDefinitions _rowDefinitions;
         private DefinitionBase[] _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
         private DefinitionBase[] _definitionsV = new DefinitionBase[1] { new RowDefinition() };
+        internal SharedSizeScope sharedSizeScope;
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int _layoutLoopMaxCount = 5;
@@ -171,6 +172,9 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Grid>(IsSharedSizeScopePropertyChanged);
+            BoundsProperty.Changed.AddClassHandler<Grid>(BoundsPropertyChanged);
+
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
 
             _tempDefinitionsDataSlot = Thread.AllocateDataSlot();
@@ -179,6 +183,26 @@ namespace Avalonia.Controls
             _minRatioComparer = new MinRatioComparer();
             _maxRatioComparer = new MaxRatioComparer();
             _starWeightComparer = new StarWeightComparer();
+        }
+
+        private static void BoundsPropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs arg2)
+        {
+            for (int i = 0; i < grid._definitionsU.Length; i++)
+                grid._definitionsU[i].OnUserSizePropertyChanged(arg2);
+            for (int i = 0; i < grid._definitionsV.Length; i++)
+                grid._definitionsV[i].OnUserSizePropertyChanged(arg2);
+        }
+
+        private static void IsSharedSizeScopePropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                grid.sharedSizeScope = new SharedSizeScope();
+            }
+            else
+            {
+                grid.sharedSizeScope = null;
+            }
         }
 
         /// <summary>
@@ -252,8 +276,12 @@ namespace Avalonia.Controls
                 if (_columnDefinitions.Count > 0)
                     _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
 
+                CallEnterParentTree(_definitionsU);
+
                 _columnDefinitions.CollectionChanged += delegate
                 {
+                    CallExitParentTree(_definitionsU);
+
                     if (_columnDefinitions.Count == 0)
                     {
                         _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
@@ -263,9 +291,24 @@ namespace Avalonia.Controls
                         _definitionsU = _columnDefinitions.Cast<DefinitionBase>().ToArray();
                         DefinitionsDirty = true;
                     }
+
+                    CallEnterParentTree(_definitionsU);
+
                     Invalidate();
                 };
             }
+        }
+
+        private void CallEnterParentTree(DefinitionBase[] definitionsU)
+        {
+            for (int i = 0; i < definitionsU.Length; i++)
+                definitionsU[i].OnEnterParentTree(this, i);
+        }
+
+        private void CallExitParentTree(DefinitionBase[] definitionsU)
+        {
+            for (int i = 0; i < definitionsU.Length; i++)
+                definitionsU[i].OnExitParentTree();
         }
 
         /// <summary>
@@ -294,6 +337,8 @@ namespace Avalonia.Controls
 
                 _rowDefinitions.CollectionChanged += delegate
                 {
+                    CallExitParentTree(_definitionsU);
+
                     if (_rowDefinitions.Count == 0)
                     {
                         _definitionsV = new DefinitionBase[1] { new RowDefinition() };
@@ -303,6 +348,8 @@ namespace Avalonia.Controls
                         _definitionsV = _rowDefinitions.Cast<DefinitionBase>().ToArray();
                         DefinitionsDirty = true;
                     }
+                    CallEnterParentTree(_definitionsU);
+
                     Invalidate();
                 };
             }
@@ -357,6 +404,16 @@ namespace Avalonia.Controls
         public static bool GetIsSharedSizeScope(AvaloniaObject element)
         {
             return element.GetValue(IsSharedSizeScopeProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the IsSharedSizeScope attached property for a control.
+        /// </summary>
+        /// <param name="element">The control.</param>
+        /// <returns>The control's IsSharedSizeScope value.</returns>
+        public static void SetIsSharedSizeScope(AvaloniaObject element, bool value)
+        {
+            element.SetValue(IsSharedSizeScopeProperty, value);
         }
 
         /// <summary>
@@ -659,7 +716,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Invalidates grid caches and makes the grid dirty for measure.
         /// </summary>
-        private void Invalidate()
+        internal void Invalidate()
         {
             CellsStructureDirty = true;
             InvalidateMeasure();
@@ -780,8 +837,7 @@ namespace Avalonia.Controls
         {
             for (int i = 0; i < definitions.Length; ++i)
             {
-                // Reset minimum size.
-                definitions[i].MinSize = 0;
+                definitions[i].OnBeforeLayout(this);
 
                 double userMinSize = definitions[i].UserMinSize;
                 double userMaxSize = definitions[i].UserMaxSize;
@@ -858,11 +914,11 @@ namespace Avalonia.Controls
                 {
                     if (isRows)
                     {
-                        _definitionsV[i].MinSize = minSizes[i];
+                        _definitionsV[i].SetMinSize(minSizes[i]);
                     }
                     else
                     {
-                        _definitionsU[i].MinSize = minSizes[i];
+                        _definitionsU[i].SetMinSize(minSizes[i]);
                     }
                 }
             }
@@ -1710,7 +1766,7 @@ namespace Avalonia.Controls
 
                     if (def.UserSize.IsStar)
                     {
-                        // Debug.Assert(!def.IsShared, "*-defs cannot be shared");
+                        Debug.Assert(!def.IsShared, "*-defs cannot be shared");
 
                         if (def.MeasureSize < 0.0)
                         {
@@ -1721,14 +1777,14 @@ namespace Avalonia.Controls
                             double starWeight = StarWeight(def, scale);
                             totalStarWeight += starWeight;
 
-                            if (def.MinSize > 0.0)
+                            if (def.MinSizeForArrange > 0.0)
                             {
                                 // store ratio w/min in MeasureSize (for now)
                                 definitionIndices[minCount++] = i;
-                                def.MeasureSize = starWeight / def.MinSize;
+                                def.MeasureSize = starWeight / def.MinSizeForArrange;
                             }
 
-                            double effectiveMaxSize = Math.Max(def.MinSize, def.UserMaxSize);
+                            double effectiveMaxSize = Math.Max(def.MinSizeForArrange, def.UserMaxSize);
                             if (!double.IsPositiveInfinity(effectiveMaxSize))
                             {
                                 // store ratio w/max in SizeCache (for now)
@@ -1748,26 +1804,26 @@ namespace Avalonia.Controls
                                 break;
 
                             case (GridUnitType.Auto):
-                                userSize = def.MinSize;
+                                userSize = def.MinSizeForArrange;
                                 break;
                         }
 
                         double userMaxSize;
 
-                        // if (def.IsShared)
-                        // {
-                        //     //  overriding userMaxSize effectively prevents squishy-ness.
-                        //     //  this is a "solution" to avoid shared definitions from been sized to
-                        //     //  different final size at arrange time, if / when different grids receive
-                        //     //  different final sizes.
-                        //     userMaxSize = userSize;
-                        // }
-                        // else
-                        // {
-                        userMaxSize = def.UserMaxSize;
-                        // }
+                        if (def.IsShared)
+                        {
+                            //  overriding userMaxSize effectively prevents squishy-ness.
+                            //  this is a "solution" to avoid shared definitions from been sized to
+                            //  different final size at arrange time, if / when different grids receive
+                            //  different final sizes.
+                            userMaxSize = userSize;
+                        }
+                        else
+                        {
+                            userMaxSize = def.UserMaxSize;
+                        }
 
-                        def.SizeCache = Math.Max(def.MinSize, Math.Min(userSize, userMaxSize));
+                        def.SizeCache = Math.Max(def.MinSizeForArrange, Math.Min(userSize, userMaxSize));
                         takenSize += def.SizeCache;
                     }
                 }
@@ -1831,14 +1887,14 @@ namespace Avalonia.Controls
                     {
                         resolvedIndex = definitionIndices[minCount - 1];
                         resolvedDef = definitions[resolvedIndex];
-                        resolvedSize = resolvedDef.MinSize;
+                        resolvedSize = resolvedDef.MinSizeForArrange;
                         --minCount;
                     }
                     else
                     {
                         resolvedIndex = definitionIndices[defCount + maxCount - 1];
                         resolvedDef = definitions[resolvedIndex];
-                        resolvedSize = Math.Max(resolvedDef.MinSize, resolvedDef.UserMaxSize);
+                        resolvedSize = Math.Max(resolvedDef.MinSizeForArrange, resolvedDef.UserMaxSize);
                         --maxCount;
                     }
 
@@ -1961,7 +2017,7 @@ namespace Avalonia.Controls
 
                     // min and max should have no effect by now, but just in case...
                     resolvedSize = Math.Min(resolvedSize, def.UserMaxSize);
-                    resolvedSize = Math.Max(def.MinSize, resolvedSize);
+                    resolvedSize = Math.Max(def.MinSizeForArrange, resolvedSize);
 
                     // Use the raw (unrounded) sizes to update takenSize, so that
                     // proportions are computed in the same terms as in phase 3;
@@ -2053,7 +2109,7 @@ namespace Avalonia.Controls
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache - dpiIncrement;
-                            final = Math.Max(final, definition.MinSize);
+                            final = Math.Max(final, definition.MinSizeForArrange);
                             if (final < definition.SizeCache)
                             {
                                 adjustedSize -= dpiIncrement;
@@ -2069,7 +2125,7 @@ namespace Avalonia.Controls
                         {
                             DefinitionBase definition = definitions[definitionIndices[i]];
                             double final = definition.SizeCache + dpiIncrement;
-                            final = Math.Max(final, definition.MinSize);
+                            final = Math.Max(final, definition.MinSizeForArrange);
                             if (final > definition.SizeCache)
                             {
                                 adjustedSize += dpiIncrement;
