@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Avalonia.Skia</RootNamespace>
     <AssemblyName>Avalonia.Skia</AssemblyName>
+    <PackageId>Avalonia.Skia</PackageId>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
