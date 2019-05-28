@@ -35,6 +35,11 @@ namespace Avalonia.Controls
         internal int CellGroup3;
         internal int CellGroup4;
 
+        internal bool HasSharedSizeScope()
+        {
+            return this.GetValue(Grid.PrivateSharedSizeScopeProperty) != null;
+        }
+
         /// <summary>
         /// Helper for Comparer methods.
         /// </summary>

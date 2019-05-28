@@ -31,7 +31,6 @@ namespace Avalonia.Controls
         private double _offset;                         //  offset of the DefinitionBase from left / top corner (assuming LTR case)
         internal SharedSizeScope _privateSharedSizeScope;
         private SharedSizeState _sharedState;           //  reference to shared state object this instance is registered with
-        private bool _successUpdateSharedScope;
 
         /// <summary>
         /// Defines the <see cref="SharedSizeGroup"/> property.
@@ -60,13 +59,11 @@ namespace Avalonia.Controls
         {
             if (_sharedState == null & 
                 SharedSizeGroup != null & 
-                Parent?.PrivateSharedSizeScope != null & 
-                !_successUpdateSharedScope)
+                Parent?.PrivateSharedSizeScope != null )
             {
                 _privateSharedSizeScope = Parent.PrivateSharedSizeScope;
                 _sharedState = _privateSharedSizeScope.EnsureSharedState(SharedSizeGroup);
                 _sharedState.AddMember(this);
-                _successUpdateSharedScope = true;
             }
         }
 
