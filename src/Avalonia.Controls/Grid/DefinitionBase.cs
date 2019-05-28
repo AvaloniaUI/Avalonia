@@ -19,6 +19,7 @@ namespace Avalonia.Controls
         {
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
         }
+        
         internal bool UseSharedMinimum { get; set; }
         internal bool LayoutWasUpdated { get; set; }
         
@@ -59,10 +60,10 @@ namespace Avalonia.Controls
         {
             if (_sharedState == null & 
                 SharedSizeGroup != null & 
-                Parent?.sharedSizeScope != null & 
+                Parent?.PrivateSharedSizeScope != null & 
                 !_successUpdateSharedScope)
             {
-                _privateSharedSizeScope = Parent.sharedSizeScope;
+                _privateSharedSizeScope = Parent.PrivateSharedSizeScope;
                 _sharedState = _privateSharedSizeScope.EnsureSharedState(SharedSizeGroup);
                 _sharedState.AddMember(this);
                 _successUpdateSharedScope = true;

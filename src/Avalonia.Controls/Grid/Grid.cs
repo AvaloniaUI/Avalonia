@@ -86,7 +86,12 @@ namespace Avalonia.Controls
         private RowDefinitions _rowDefinitions;
         private DefinitionBase[] _definitionsU = new DefinitionBase[1] { new ColumnDefinition() };
         private DefinitionBase[] _definitionsV = new DefinitionBase[1] { new RowDefinition() };
-        internal SharedSizeScope sharedSizeScope;
+
+        internal SharedSizeScope PrivateSharedSizeScope
+        {
+            get { return GetPrivateSharedSizeScope(this); }
+            set { SetPrivateSharedSizeScope(this, value); }
+        }
 
         // 5 is an arbitrary constant chosen to end the measure loop
         private const int _layoutLoopMaxCount = 5;
@@ -197,11 +202,11 @@ namespace Avalonia.Controls
         {
             if ((bool)e.NewValue)
             {
-                grid.sharedSizeScope = new SharedSizeScope();
+                grid.PrivateSharedSizeScope = new SharedSizeScope();
             }
             else
             {
-                grid.sharedSizeScope = null;
+                grid.PrivateSharedSizeScope = null;
             }
         }
 
@@ -235,6 +240,9 @@ namespace Avalonia.Controls
 
         public static readonly AttachedProperty<bool> IsSharedSizeScopeProperty =
             AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
+
+        internal static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScope>("PrivateSharedSizeScope", null, inherits: true);
 
         /// <summary>
         /// Defines the <see cref="ShowGridLines"/> property.
@@ -409,11 +417,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Sets the value of the IsSharedSizeScope attached property for a control.
         /// </summary>
-        /// <param name="element">The control.</param>
-        /// <returns>The control's IsSharedSizeScope value.</returns>
         public static void SetIsSharedSizeScope(AvaloniaObject element, bool value)
         {
             element.SetValue(IsSharedSizeScopeProperty, value);
+        }
+
+        internal static SharedSizeScope GetPrivateSharedSizeScope(AvaloniaObject element)
+        {
+            return element.GetValue(PrivateSharedSizeScopeProperty);
+        }
+
+        internal static void SetPrivateSharedSizeScope(AvaloniaObject element, SharedSizeScope value)
+        {
+            element.SetValue(PrivateSharedSizeScopeProperty, value);
         }
 
         /// <summary>
