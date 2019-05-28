@@ -216,9 +216,9 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     var caretIndex = CaretIndex;
-                    SelectionStart = CoerceCaretIndex(SelectionStart, value);
-                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value);
-                    CaretIndex = CoerceCaretIndex(caretIndex, value);
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
                     {
@@ -684,7 +684,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
+        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
 
         private int CoerceCaretIndex(int value, int length)
         {
