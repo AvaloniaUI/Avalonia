@@ -22,6 +22,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 {
     public class SelectingItemsControlTests
     {
+        private MouseTestHelper _helper = new MouseTestHelper();
+        
         [Fact]
         public void SelectedIndex_Should_Initially_Be_Minus_1()
         {
@@ -675,12 +677,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
 
             var panel = target.Presenter.Panel;
 
@@ -703,11 +700,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _helper.Down(target.Presenter.Panel.Children[1]);
 
             items.RemoveAt(1);
 

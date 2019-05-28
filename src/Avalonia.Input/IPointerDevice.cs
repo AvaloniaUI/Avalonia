@@ -12,7 +12,5 @@ namespace Avalonia.Input
         void Capture(IInputElement control);
 
         Point GetPosition(IVisual relativeTo);
-
-        void SceneInvalidated(IInputRoot root, Rect rect);
     }
 }

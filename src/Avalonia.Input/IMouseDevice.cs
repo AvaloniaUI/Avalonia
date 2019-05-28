@@ -12,5 +12,7 @@ namespace Avalonia.Input
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
         PixelPoint Position { get; }
+
+        void SceneInvalidated(IInputRoot root, Rect rect);
     }
 }
