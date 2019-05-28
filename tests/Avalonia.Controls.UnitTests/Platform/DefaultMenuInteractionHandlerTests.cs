@@ -12,6 +12,8 @@ namespace Avalonia.Controls.UnitTests.Platform
     {
         class FakePointer : IPointer
         {
+            public int Id { get; } = PointerIds.Next();
+
             public void Capture(IInputElement control)
             {
                 Captured = control;

@@ -9,6 +9,8 @@ namespace Avalonia.Controls.UnitTests
 
         class TestPointer : IPointer
         {
+            public int Id { get; } = PointerIds.Next();
+
             public void Capture(IInputElement control)
             {
                 Captured = control;

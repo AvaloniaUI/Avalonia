@@ -24,6 +24,7 @@ namespace Avalonia.Input
 
         PointerType IPointer.Type => PointerType.Mouse;
         bool IPointer.IsPrimary => true;
+        int IPointer.Id { get; } = PointerIds.Next();
         
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.

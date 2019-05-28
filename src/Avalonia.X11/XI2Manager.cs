@@ -11,6 +11,7 @@ namespace Avalonia.X11
     unsafe class XI2Manager
     {
         private X11Info _x11;
+        private bool _multitouch;
         private Dictionary<IntPtr, IXI2Client> _clients = new Dictionary<IntPtr, IXI2Client>();
         class DeviceInfo
         {
@@ -77,11 +78,14 @@ namespace Avalonia.X11
         
         private PointerDeviceInfo _pointerDevice;
         private AvaloniaX11Platform _platform;
+        private readonly TouchDevice _touchDevice = new TouchDevice();
+
 
         public bool Init(AvaloniaX11Platform platform)
         {
             _platform = platform;
             _x11 = platform.Info;
+            _multitouch = platform.Options?.EnableMultiTouch ?? false;
             var devices =(XIDeviceInfo*) XIQueryDevice(_x11.Display,
                 (int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
             for (var c = 0; c < num; c++)
@@ -121,16 +125,23 @@ namespace Avalonia.X11
         public XEventMask AddWindow(IntPtr xid, IXI2Client window)
         {
             _clients[xid] = window;
-
-            XiSelectEvents(_x11.Display, xid, new Dictionary<int, List<XiEventType>>
+            var events = new List<XiEventType>
             {
-                [_pointerDevice.Id] = new List<XiEventType>()
+                XiEventType.XI_Motion,
+                XiEventType.XI_ButtonPress,
+                XiEventType.XI_ButtonRelease
+            };
+
+            if (_multitouch)
+                events.AddRange(new[]
                 {
-                    XiEventType.XI_Motion,
-                    XiEventType.XI_ButtonPress,
-                    XiEventType.XI_ButtonRelease,
-                }
-            });
+                    XiEventType.XI_TouchBegin,
+                    XiEventType.XI_TouchUpdate,
+                    XiEventType.XI_TouchEnd
+                });
+
+            XiSelectEvents(_x11.Display, xid,
+                new Dictionary<int, List<XiEventType>> {[_pointerDevice.Id] = events});
                 
             // We are taking over mouse input handling from here
             return XEventMask.PointerMotionMask
@@ -154,8 +165,9 @@ namespace Avalonia.X11
                 _pointerDevice.Update(changed->Classes, changed->NumClasses);
             }
 
-            //TODO: this should only be used for non-touch devices
-            if (xev->evtype >= XiEventType.XI_ButtonPress && xev->evtype <= XiEventType.XI_Motion)
+            
+            if ((xev->evtype >= XiEventType.XI_ButtonPress && xev->evtype <= XiEventType.XI_Motion)
+                || (xev->evtype>=XiEventType.XI_TouchBegin&&xev->evtype<=XiEventType.XI_TouchEnd))
             {
                 var dev = (XIDeviceEvent*)xev;
                 if (_clients.TryGetValue(dev->EventWindow, out var client))
@@ -165,6 +177,23 @@ namespace Avalonia.X11
 
         void OnDeviceEvent(IXI2Client client, ParsedDeviceEvent ev)
         {
+            if (ev.Type == XiEventType.XI_TouchBegin 
+                || ev.Type == XiEventType.XI_TouchUpdate 
+                || ev.Type == XiEventType.XI_TouchEnd)
+            {
+                var type = ev.Type == XiEventType.XI_TouchBegin ?
+                    RawMouseEventType.TouchBegin :
+                    (ev.Type == XiEventType.XI_TouchUpdate ?
+                        RawMouseEventType.TouchUpdate :
+                        RawMouseEventType.TouchEnd);
+                client.ScheduleInput(new RawTouchEventArgs(_touchDevice,
+                    ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
+                return;
+            }
+
+            if (_multitouch && ev.Emulated)
+                return;
+            
             if (ev.Type == XiEventType.XI_Motion)
             {
                 Vector scrollDelta = default;
@@ -210,7 +239,7 @@ namespace Avalonia.X11
                     client.ScheduleInput(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
-
+            
             _pointerDevice.UpdateValuators(ev.Valuators);
         }
     }
@@ -222,6 +251,8 @@ namespace Avalonia.X11
         public ulong Timestamp { get; }
         public Point Position { get; }
         public int Button { get; set; }
+        public int Detail { get; set; }
+        public bool Emulated { get; set; }
         public Dictionary<int, double> Valuators { get; }
         public ParsedDeviceEvent(XIDeviceEvent* ev)
         {
@@ -258,6 +289,8 @@ namespace Avalonia.X11
                     Valuators[c] = *values++;
             if (Type == XiEventType.XI_ButtonPress || Type == XiEventType.XI_ButtonRelease)
                 Button = ev->detail;
+            Detail = ev->detail;
+            Emulated = ev->flags.HasFlag(XiDeviceEventFlags.XIPointerEmulated);
         }
     }
     

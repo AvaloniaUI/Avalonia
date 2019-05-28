@@ -28,6 +28,7 @@ namespace Avalonia.X11
         public X11PlatformOptions Options { get; private set; }
         public void Initialize(X11PlatformOptions options)
         {
+            Options = options;
             XInitThreads();
             Display = XOpenDisplay(IntPtr.Zero);
             DeferredDisplay = XOpenDisplay(IntPtr.Zero);
@@ -66,7 +67,7 @@ namespace Avalonia.X11
                     GlxGlPlatformFeature.TryInitialize(Info);
             }
 
-            Options = options;
+            
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -96,6 +97,7 @@ namespace Avalonia
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+        public bool? EnableMultiTouch { get; set; }
     }
     public static class AvaloniaX11PlatformExtensions
     {
