@@ -375,14 +375,14 @@ AVNCOM(IAvnAppMenu, 17) : IUnknown
 {
     virtual HRESULT AddItem (IAvnAppMenuItem* item) = 0;
     virtual HRESULT RemoveItem (IAvnAppMenuItem* item) = 0;
-    virtual HRESULT SetTitle (const char* title) = 0;
+    virtual HRESULT SetTitle (void* utf8String) = 0;
 };
 
 AVNCOM(IAvnAppMenuItem, 18) : IUnknown
 {
     virtual HRESULT SetSubMenu (IAvnAppMenu* menu) = 0;
-    virtual HRESULT SetTitle (const char* title) = 0;
-    virtual HRESULT SetGesture (const char* gesture) = 0;
+    virtual HRESULT SetTitle (void* utf8String) = 0;
+    virtual HRESULT SetGesture (void* utf8String) = 0;
     virtual HRESULT SetAction (IAvnActionCallback* callback) = 0;
 };
 

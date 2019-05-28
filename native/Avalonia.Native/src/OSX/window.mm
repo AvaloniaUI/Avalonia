@@ -89,26 +89,7 @@ public:
     virtual HRESULT Show() override
     {
         @autoreleasepool
-        {
-            id appMenu = [NSMenu new];
-            [appMenu setTitle:@"AppMenu"];
-            id appName = [[NSProcessInfo processInfo] processName];
-            [[NSProcessInfo processInfo] setProcessName:@"Test"];
-            id quitTitle = [@"Quit " stringByAppendingString:appName];
-            id quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
-                                                         action:@selector(terminate:) keyEquivalent:@"q"];
-            
-            
-            id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-            [appMenu addItem:testMenuItem];
-            [appMenu addItem:quitMenuItem];
-            
-            
-            id appMenuItem = [NSMenuItem new];
-            [[[NSApplication sharedApplication] mainMenu] addItem:appMenuItem];
-            
-            [appMenuItem setSubmenu:appMenu];
-            
+        {   
             SetPosition(lastPositionSet);
             UpdateStyle();
             
