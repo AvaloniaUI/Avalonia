@@ -39,6 +39,37 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
+        public void DataTemplate_Can_Contain_Named_UserControl()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:sys='clr-namespace:System;assembly=mscorlib'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ItemsControl Name='itemsControl' Items='{Binding}'>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <UserControl Name='foo'/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var itemsControl = window.FindControl<ItemsControl>("itemsControl");
+
+                window.DataContext = new[] { "item1", "item2" };
+
+                window.ApplyTemplate();
+                itemsControl.ApplyTemplate();
+                itemsControl.Presenter.ApplyTemplate();
+
+                Assert.Equal(2, itemsControl.Presenter.Panel.Children.Count);
+            }
+        }
+
+        [Fact]
         public void Can_Set_DataContext_In_DataTemplate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
