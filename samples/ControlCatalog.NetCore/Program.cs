@@ -46,6 +46,7 @@ namespace ControlCatalog.NetCore
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .With(new X11PlatformOptions{EnableMultiTouch = true})
                 .UseSkia()
                 .UseReactiveUI();
 
