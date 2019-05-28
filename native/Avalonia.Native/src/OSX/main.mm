@@ -31,20 +31,7 @@ public:
         [NSApp setMainMenu:menubar];
         id appName = [[NSProcessInfo processInfo] processName];
         
-        id fileMenu = [NSMenu new];
-        [fileMenu setTitle:@"File"];
-        
-        id fileMenuItem = [NSMenuItem new];
-        [[[NSApplication sharedApplication] mainMenu] addItem:fileMenuItem];
-        [fileMenuItem setSubmenu:fileMenu];
-        
-        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Generate Wallet" action:NULL keyEquivalent:@""]];
-        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Recover Wallet" action:NULL keyEquivalent:@""]];
-        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Load Wallet" action:NULL keyEquivalent:@""]];
-        
-        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Open" action:NULL keyEquivalent:@""]];
-        
-        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Exit" action:NULL keyEquivalent:@""]];
+       /*
         
         id toolsMenu = [NSMenu new];
         [toolsMenu setTitle:@"Tools"];
@@ -73,7 +60,7 @@ public:
         
         [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Legal Issues" action:NULL keyEquivalent:@""]];
         
-        
+        */
         [[NSApplication sharedApplication] finishLaunching];
         return S_OK;
     }
@@ -187,16 +174,19 @@ public:
     
     virtual HRESULT ObtainMainAppMenu(IAvnAppMenu** ppv) override
     {
+        *ppv = ::GetAppMenu();
         return  S_OK;
     }
     
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) override
     {
+        *ppv = ::CreateAppMenu();
         return S_OK;
     }
     
     virtual HRESULT CreateMenuItem (IAvnAppMenuItem** ppv) override
     {
+        *ppv = ::CreateAppMenuItem();
         return S_OK;
     }
 };

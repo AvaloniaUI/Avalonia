@@ -83,7 +83,7 @@ namespace Avalonia.Native
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
-                .Bind<INativeMenuExporter>().ToConstant(new NativeMenuExporterImpl())
+                .Bind<INativeMenuExporter>().ToConstant(new NativeMenuExporterImpl(_factory))
                 .Bind<IWindowingPlatformGlFeature>().ToConstant(new GlPlatformFeature(_factory.ObtainGlFeature()))
                 .Bind<PlatformHotkeyConfiguration>()
                 .ToConstant(new PlatformHotkeyConfiguration(InputModifiers.Windows));

@@ -10,6 +10,19 @@ public:
     AvnAppMenuItem()
     {
         _native = [NSMenuItem new];
+        
+        id fileMenu = [NSMenu new];
+        [fileMenu setTitle:@"File"];
+        
+        [_native setSubmenu:fileMenu];
+        
+        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Generate Wallet" action:NULL keyEquivalent:@""]];
+        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Recover Wallet" action:NULL keyEquivalent:@""]];
+        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Load Wallet" action:NULL keyEquivalent:@""]];
+        
+        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Open" action:NULL keyEquivalent:@""]];
+        
+        [fileMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Exit" action:NULL keyEquivalent:@""]];
     }
     
     NSMenuItem* Native()
@@ -53,6 +66,11 @@ public:
         _native = [NSMenu new];
     }
     
+    AvnAppMenu(NSMenu* native)
+    {
+        _native = native;
+    }
+    
     virtual HRESULT AddItem (IAvnAppMenuItem* item) override
     {
         auto avnMenuItem = dynamic_cast<AvnAppMenuItem*>(item);
@@ -85,8 +103,20 @@ public:
     }
 };
 
-extern IAvnAppMenu* CreateAppMenu()
+static IAvnAppMenu* s_MainAppMenu = nullptr;
+
+extern IAvnAppMenu* GetAppMenu()
 {
+    if(s_MainAppMenu == nullptr)
+    {
+        s_MainAppMenu = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
+    }
+    
+    return s_MainAppMenu;
+}
+
+extern IAvnAppMenu* CreateAppMenu()
+{   
     return new AvnAppMenu();
 }
 
