@@ -28,8 +28,7 @@ namespace Avalonia.ReactiveUI.UnitTests
         {
             var target = new TransitioningContentControl
             {
-                FadeInAnimation = null,
-                FadeOutAnimation = null,
+                PageTransition = null,
                 Template = GetTemplate(),
                 Content = "Foo"
             };

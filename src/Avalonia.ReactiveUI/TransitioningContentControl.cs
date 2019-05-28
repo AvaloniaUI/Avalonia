@@ -14,18 +14,11 @@ namespace Avalonia.ReactiveUI
     public class TransitioningContentControl : ContentControl, IStyleable
     {
         /// <summary>
-        /// <see cref="AvaloniaProperty"/> for the <see cref="FadeInAnimation"/> property.
+        /// <see cref="AvaloniaProperty"/> for the <see cref="PageTransition"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<IAnimation> FadeInAnimationProperty =
-            AvaloniaProperty.Register<TransitioningContentControl, IAnimation>(nameof(DefaultContent),
-                CreateOpacityAnimation(0d, 1d, TimeSpan.FromSeconds(0.25)));
-
-        /// <summary>
-        /// <see cref="AvaloniaProperty"/> for the <see cref="FadeOutAnimation"/> property.
-        /// </summary>
-        public static readonly AvaloniaProperty<IAnimation> FadeOutAnimationProperty =
-            AvaloniaProperty.Register<TransitioningContentControl, IAnimation>(nameof(DefaultContent),
-                CreateOpacityAnimation(1d, 0d, TimeSpan.FromSeconds(0.25)));
+        public static readonly AvaloniaProperty<IPageTransition> PageTransitionProperty =
+            AvaloniaProperty.Register<TransitioningContentControl, IPageTransition>(nameof(DefaultContent),
+                new CrossFade(TimeSpan.FromSeconds(0.5)));
 
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
@@ -34,23 +27,14 @@ namespace Avalonia.ReactiveUI
             AvaloniaProperty.Register<TransitioningContentControl, object>(nameof(DefaultContent));
         
         /// <summary>
-        /// Gets or sets the animation played when content appears.
+        /// Gets or sets the animation played when content appears and disappears.
         /// </summary>
-        public IAnimation FadeInAnimation
+        public IPageTransition PageTransition
         {
-            get => GetValue(FadeInAnimationProperty);
-            set => SetValue(FadeInAnimationProperty, value);
+            get => GetValue(PageTransitionProperty);
+            set => SetValue(PageTransitionProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the animation played when content disappears.
-        /// </summary>
-        public IAnimation FadeOutAnimation
-        {
-            get => GetValue(FadeOutAnimationProperty);
-            set => SetValue(FadeOutAnimationProperty, value);
-        }
-        
         /// <summary>
         /// Gets or sets the content displayed whenever there is no page currently routed.
         /// </summary>
@@ -81,53 +65,11 @@ namespace Avalonia.ReactiveUI
         /// <param name="content">New content to set.</param>
         private async void UpdateContentWithTransition(object content)
         {
-            if (FadeOutAnimation != null)
-                await FadeOutAnimation.RunAsync(this, Clock);
+            if (PageTransition != null)
+                await PageTransition.Start(this, null, true);
             base.Content = content;
-            if (FadeInAnimation != null)
-                await FadeInAnimation.RunAsync(this, Clock);
-        }
-        
-        /// <summary>
-        /// Creates opacity animation for this routed view host.
-        /// </summary>
-        /// <param name="from">Opacity to start from.</param>
-        /// <param name="to">Opacity to finish with.</param>
-        /// <param name="duration">Duration of the animation.</param>
-        /// <returns>Animation object instance.</returns>
-        private static IAnimation CreateOpacityAnimation(double from, double to, TimeSpan duration) 
-        {
-            return new Avalonia.Animation.Animation
-            {
-                Duration = duration,
-                Children =
-                {
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter
-                            {
-                                Property = OpacityProperty,
-                                Value = from
-                            }
-                        },
-                        Cue = new Cue(0d)
-                    },
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter
-                            {
-                                Property = OpacityProperty,
-                                Value = to
-                            }
-                        },
-                        Cue = new Cue(1d)
-                    }
-                }
-            };
+            if (PageTransition != null)
+                await PageTransition.Start(null, this, true);
         }
     }
 }

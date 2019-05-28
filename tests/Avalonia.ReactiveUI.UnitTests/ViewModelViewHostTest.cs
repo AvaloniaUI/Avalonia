@@ -33,8 +33,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             var host = new ViewModelViewHost 
             {
                 DefaultContent = defaultContent,
-                FadeOutAnimation = null,
-                FadeInAnimation = null
+                PageTransition = null
             };
 
             var root = new TestRoot 

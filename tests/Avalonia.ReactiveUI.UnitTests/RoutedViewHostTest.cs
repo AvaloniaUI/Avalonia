@@ -62,8 +62,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             { 
                 Router = screen.Router,
                 DefaultContent = defaultContent,
-                FadeOutAnimation = null,
-                FadeInAnimation = null
+                PageTransition = null
             };
 
             var root = new TestRoot 
