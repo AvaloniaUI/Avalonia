@@ -1,4 +1,5 @@
 ﻿using Avalonia.Collections;
+using Avalonia.Controls.Platform;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -12,13 +13,15 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            if(true) // todo: check to see if we have native menu exporter available.
-            {
+            var exporter = AvaloniaLocator.Current.GetService<INativeMenuExporter>();
 
+            if (exporter != null)
+            {
+                exporter.SetMenu(Items);
             }
             else
             {
-
+                // TODO decorate a Menu and add a template for NativeMenu items.
             }
         }
     }
