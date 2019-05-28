@@ -13,7 +13,7 @@ namespace Avalonia.ReactiveUI
     /// the ViewModel property and display it. This control is very useful
     /// inside a DataTemplate to display the View associated with a ViewModel.
     /// </summary>
-    public class ViewModelViewHost : TransitioningUserControl, IViewFor, IEnableLogger
+    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.

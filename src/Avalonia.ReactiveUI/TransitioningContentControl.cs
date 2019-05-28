@@ -11,27 +11,27 @@ namespace Avalonia.ReactiveUI
     /// <summary>
     /// A ContentControl that animates the transition when its content is changed.
     /// </summary>
-    public class TransitioningUserControl : UserControl
+    public class TransitioningContentControl : ContentControl, IStyleable
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="FadeInAnimation"/> property.
         /// </summary>
         public static readonly AvaloniaProperty<IAnimation> FadeInAnimationProperty =
-            AvaloniaProperty.Register<TransitioningUserControl, IAnimation>(nameof(DefaultContent),
+            AvaloniaProperty.Register<TransitioningContentControl, IAnimation>(nameof(DefaultContent),
                 CreateOpacityAnimation(0d, 1d, TimeSpan.FromSeconds(0.25)));
 
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="FadeOutAnimation"/> property.
         /// </summary>
         public static readonly AvaloniaProperty<IAnimation> FadeOutAnimationProperty =
-            AvaloniaProperty.Register<TransitioningUserControl, IAnimation>(nameof(DefaultContent),
+            AvaloniaProperty.Register<TransitioningContentControl, IAnimation>(nameof(DefaultContent),
                 CreateOpacityAnimation(1d, 0d, TimeSpan.FromSeconds(0.25)));
 
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
         /// </summary>
         public static readonly AvaloniaProperty<object> DefaultContentProperty =
-            AvaloniaProperty.Register<TransitioningUserControl, object>(nameof(DefaultContent));
+            AvaloniaProperty.Register<TransitioningContentControl, object>(nameof(DefaultContent));
         
         /// <summary>
         /// Gets or sets the animation played when content appears.
@@ -68,6 +68,12 @@ namespace Avalonia.ReactiveUI
             get => base.Content;
             set => UpdateContentWithTransition(value);
         }
+        
+        /// <summary>
+        /// TransitioningContentControl uses the default ContentControl 
+        /// template from Avalonia default theme.
+        /// </summary>
+        Type IStyleable.StyleKey => typeof(ContentControl);
 
         /// <summary>
         /// Updates the content with transitions.
