@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -15,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Data;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -216,9 +216,9 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     var caretIndex = CaretIndex;
-                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
-                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
-                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
                     {
@@ -328,6 +328,8 @@ namespace Avalonia.Controls
                 if (!string.IsNullOrEmpty(input))
                 {
                     DeleteSelection();
+                    caretIndex = CaretIndex;
+                    text = Text ?? string.Empty;
                     SetTextInternal(text.Substring(0, caretIndex) + input + text.Substring(caretIndex));
                     CaretIndex += input.Length;
                     SelectionStart = SelectionEnd = CaretIndex;
@@ -456,6 +458,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
+                
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -470,7 +473,6 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
-
             }
             else if (Match(keymap.MoveCursorToTheEndOfDocumentWithSelection))
             {
@@ -478,7 +480,6 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
-
             }
             else if (Match(keymap.MoveCursorToTheStartOfLineWithSelection))
             {
@@ -486,6 +487,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
+                
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {
@@ -661,7 +663,7 @@ namespace Avalonia.Controls
             {
                 var point = e.GetPosition(_presenter);
 
-                point = new Point(MathUtilities.Clamp(point.X, 0, _presenter.Bounds.Width - 1),MathUtilities.Clamp(point.Y, 0, _presenter.Bounds.Height - 1));
+                point = new Point(MathUtilities.Clamp(point.X, 0, _presenter.Bounds.Width - 1), MathUtilities.Clamp(point.Y, 0, _presenter.Bounds.Height - 1));
                 CaretIndex = SelectionEnd = _presenter.GetCaretIndex(point);
             }
         }
@@ -682,7 +684,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
+        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
 
         private int CoerceCaretIndex(int value, int length)
         {
@@ -702,7 +704,6 @@ namespace Avalonia.Controls
         private void MoveHorizontal(int direction, bool wholeWord)
         {
             var text = Text ?? string.Empty;
-
             var caretIndex = CaretIndex;
 
             if (!wholeWord)
@@ -713,11 +714,9 @@ namespace Avalonia.Controls
                 {
                     return;
                 }
-
-                if (index == text.Length)
+                else if (index == text.Length)
                 {
                     CaretIndex = index;
-
                     return;
                 }
 
