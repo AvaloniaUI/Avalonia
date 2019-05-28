@@ -33,7 +33,7 @@ namespace Avalonia.Controls
 
         private string _text;
         public static readonly DirectProperty<NativeMenuItem, string> TextProperty =
-            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>("Text", o => o._text, (o, v) => o._text = v);
+            AvaloniaProperty.RegisterDirect<NativeMenuItem, string>(nameof(Text), o => o._text, (o, v) => o._text = v);
 
         public string Text
         {
@@ -46,7 +46,7 @@ namespace Avalonia.Controls
 
         public static readonly DirectProperty<NativeMenuItem, AvaloniaList<NativeMenuItem>> SubItemsProperty =
            AvaloniaProperty.RegisterDirect<NativeMenuItem, AvaloniaList<NativeMenuItem>>(
-               "SubItems", o => o._subItems, (o, v) => o._subItems = v);
+               nameof(SubItems), o => o._subItems, (o, v) => o._subItems = v);
 
         [Content]
         public AvaloniaList<NativeMenuItem> SubItems
@@ -59,7 +59,7 @@ namespace Avalonia.Controls
         private ICommand _command;
 
         public static readonly DirectProperty<NativeMenuItem, ICommand> CommandProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, ICommand>("Command",
+           AvaloniaProperty.RegisterDirect<NativeMenuItem, ICommand>(nameof(Command),
                o => o._command, (o, v) =>
                {
                    if (o._command != null)
@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         private bool _enabled = true;
 
         public static readonly DirectProperty<NativeMenuItem, bool> EnabledProperty =
-           AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>("Enabled", o => o._enabled,
+           AvaloniaProperty.RegisterDirect<NativeMenuItem, bool>(nameof(Enabled), o => o._enabled,
                (o, v) => o._enabled = v, true);
 
         public bool Enabled
