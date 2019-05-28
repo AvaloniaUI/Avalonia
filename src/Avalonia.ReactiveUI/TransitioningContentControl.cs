@@ -17,7 +17,7 @@ namespace Avalonia.ReactiveUI
         /// <see cref="AvaloniaProperty"/> for the <see cref="PageTransition"/> property.
         /// </summary>
         public static readonly AvaloniaProperty<IPageTransition> PageTransitionProperty =
-            AvaloniaProperty.Register<TransitioningContentControl, IPageTransition>(nameof(DefaultContent),
+            AvaloniaProperty.Register<TransitioningContentControl, IPageTransition>(nameof(PageTransition),
                 new CrossFade(TimeSpan.FromSeconds(0.5)));
 
         /// <summary>
