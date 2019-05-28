@@ -177,7 +177,7 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
-            IsSharedSizeScopeProperty.Changed.AddClassHandler<Grid>(IsSharedSizeScopePropertyChanged);
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(IsSharedSizeScopePropertyChanged);
             BoundsProperty.Changed.AddClassHandler<Grid>(BoundsPropertyChanged);
 
             AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
@@ -196,18 +196,30 @@ namespace Avalonia.Controls
                 grid._definitionsU[i].OnUserSizePropertyChanged(arg2);
             for (int i = 0; i < grid._definitionsV.Length; i++)
                 grid._definitionsV[i].OnUserSizePropertyChanged(arg2);
+
+            UpdateSharedSizeScopes(grid);
         }
 
-        private static void IsSharedSizeScopePropertyChanged(Grid grid, AvaloniaPropertyChangedEventArgs e)
+        private static void IsSharedSizeScopePropertyChanged(Control control, AvaloniaPropertyChangedEventArgs e)
         {
             if ((bool)e.NewValue)
             {
-                grid.PrivateSharedSizeScope = new SharedSizeScope();
+                control.SetValue(Grid.PrivateSharedSizeScopeProperty, new SharedSizeScope());
             }
             else
             {
-                grid.PrivateSharedSizeScope = null;
+                control.SetValue(Grid.PrivateSharedSizeScopeProperty, null);
             }
+        }
+
+        static void UpdateSharedSizeScopes(Grid grid)
+        {
+            for (int i = 0; i < grid._definitionsU.Length; i++)
+                if (grid._definitionsU[i].SharedSizeGroup != null)
+                    grid._definitionsU[i].UpdateSharedScope();
+            for (int i = 0; i < grid._definitionsV.Length; i++)
+                if (grid._definitionsV[i].SharedSizeGroup != null)
+                    grid._definitionsV[i].UpdateSharedScope();
         }
 
         /// <summary>
@@ -242,7 +254,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, bool>("IsSharedSizeScope", false);
 
         internal static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
-            AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScope>("PrivateSharedSizeScope", null, inherits: true);
+            AvaloniaProperty.RegisterAttached<Grid, Control, SharedSizeScope>("&&PrivateSharedSizeScope", null, inherits: true);
 
         /// <summary>
         /// Defines the <see cref="ShowGridLines"/> property.
@@ -614,6 +626,7 @@ namespace Avalonia.Controls
             {
             }
 
+            UpdateSharedSizeScopes(this);
             return (gridDesiredSize);
         }
 
@@ -688,6 +701,7 @@ namespace Avalonia.Controls
                 RowDefinitions[i].ActualHeight = GetFinalRowDefinitionHeight(i);
             }
 
+            UpdateSharedSizeScopes(this);
             return (arrangeSize);
         }
 
