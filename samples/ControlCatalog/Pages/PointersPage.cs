@@ -54,6 +54,8 @@ namespace ControlCatalog.Pages
         {
             if (!_pointers.TryGetValue(e.Pointer, out var info))
             {
+                if (e.RoutedEvent == PointerMovedEvent)
+                    return;
                 var colors = AllColors.Except(_pointers.Values.Select(c => c.Color)).ToArray();
                 var color = colors[new Random().Next(0, colors.Length - 1)];
                 _pointers[e.Pointer] = info = new PointerInfo {Color = color};
@@ -66,6 +68,7 @@ namespace ControlCatalog.Pages
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             UpdatePointer(e);
+            e.Pointer.Capture(this);
             base.OnPointerPressed(e);
         }
 
