@@ -10,20 +10,6 @@ namespace Avalonia.Controls.UnitTests.Platform
 {
     public class DefaultMenuInteractionHandlerTests
     {
-        class FakePointer : IPointer
-        {
-            public int Id { get; } = Pointer.GetNextFreeId();
-
-            public void Capture(IInputElement control)
-            {
-                Captured = control;
-            }
-
-            public IInputElement Captured { get; set; }
-            public PointerType Type { get; }
-            public bool IsPrimary { get; } = true;
-        }
-        
         static PointerEventArgs CreateArgs(RoutedEvent ev, IInteractive source) 
             => new PointerEventArgs(ev, source, new FakePointer(), (IVisual)source, default, new PointerPointProperties(), default);
 
@@ -562,6 +548,20 @@ namespace Avalonia.Controls.UnitTests.Platform
 
                 _action = action;
             }
+        }
+        
+        class FakePointer : IPointer
+        {
+            public int Id { get; } = Pointer.GetNextFreeId();
+
+            public void Capture(IInputElement control)
+            {
+                Captured = control;
+            }
+
+            public IInputElement Captured { get; set; }
+            public PointerType Type { get; }
+            public bool IsPrimary { get; } = true;
         }
     }
 }
