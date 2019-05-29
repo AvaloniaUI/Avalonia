@@ -16,6 +16,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ListBoxTests
     {
+        private MouseTestHelper _mouse = new MouseTestHelper();
+        
         [Fact]
         public void Should_Use_ItemTemplate_To_Create_Item_Content()
         {
@@ -225,12 +227,7 @@ namespace Avalonia.Controls.UnitTests
 
         private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
         {
-            listBox.RaiseEvent(new PointerPressedEventArgs
-            {
-                Source = item,
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = mouseButton
-            });
+            _mouse.Click(listBox, item, mouseButton);
         }
 
         [Fact]
