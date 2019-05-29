@@ -14,6 +14,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ButtonTests
     {
+        private MouseTestHelper _helper = new MouseTestHelper();
+        
         [Fact]
         public void Button_Is_Disabled_When_Command_Is_Disabled()
         {
@@ -130,12 +132,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Raises_Click()
         {
-            var mouse = Mock.Of<IMouseDevice>();
             var renderer = Mock.Of<IRenderer>();
-            IInputElement captured = null;
-            Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(50, 50));
-            Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
-            Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            var pt = new Point(50, 50);
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
@@ -150,15 +148,15 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target, mouse);
-            RaisePointerMove(target, mouse);
-            RaisePointerPressed(target, mouse, 1, MouseButton.Left);
+            RaisePointerEnter(target);
+            RaisePointerMove(target, pt);
+            RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
-            Assert.Equal(captured, target);
+            Assert.Equal(_helper.Captured, target);
 
-            RaisePointerReleased(target, mouse, MouseButton.Left);
+            RaisePointerReleased(target, MouseButton.Left, pt);
 
-            Assert.Equal(captured, null);
+            Assert.Equal(_helper.Captured, null);
 
             Assert.True(clicked);
         }
@@ -166,12 +164,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            var mouse = Mock.Of<IMouseDevice>();
             var renderer = Mock.Of<IRenderer>();
-            IInputElement captured = null;
-            Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(200, 50));
-            Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
-            Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
@@ -186,16 +180,16 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target, mouse);
-            RaisePointerMove(target, mouse);
-            RaisePointerPressed(target, mouse, 1, MouseButton.Left);
-            RaisePointerLeave(target, mouse);
+            RaisePointerEnter(target);
+            RaisePointerMove(target, new Point(50,50));
+            RaisePointerPressed(target, 1, MouseButton.Left, new Point(50, 50));
+            RaisePointerLeave(target);
 
-            Assert.Equal(captured, target);
+            Assert.Equal(_helper.Captured, target);
 
-            RaisePointerReleased(target, mouse, MouseButton.Left);
+            RaisePointerReleased(target, MouseButton.Left, new Point(200, 50));
 
-            Assert.Equal(captured, null);
+            Assert.Equal(_helper.Captured, null);
 
             Assert.False(clicked);
         }
@@ -203,12 +197,8 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_With_RenderTransform_Raises_Click()
         {
-            var mouse = Mock.Of<IMouseDevice>();
             var renderer = Mock.Of<IRenderer>();
-            IInputElement captured = null;
-            Mock.Get(mouse).Setup(m => m.GetPosition(It.IsAny<IVisual>())).Returns(new Point(150, 50));
-            Mock.Get(mouse).Setup(m => m.Capture(It.IsAny<IInputElement>())).Callback<IInputElement>(v => captured = v);
-            Mock.Get(mouse).Setup(m => m.Captured).Returns(() => captured);
+            var pt = new Point(150, 50);
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
                 .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
@@ -232,15 +222,15 @@ namespace Avalonia.Controls.UnitTests
 
             target.Click += (s, e) => clicked = true;
 
-            RaisePointerEnter(target, mouse);
-            RaisePointerMove(target, mouse);
-            RaisePointerPressed(target, mouse, 1, MouseButton.Left);
+            RaisePointerEnter(target);
+            RaisePointerMove(target, pt);
+            RaisePointerPressed(target, 1, MouseButton.Left, pt);
 
-            Assert.Equal(captured, target);
+            Assert.Equal(_helper.Captured, target);
 
-            RaisePointerReleased(target, mouse, MouseButton.Left);
+            RaisePointerReleased(target, MouseButton.Left, pt);
 
-            Assert.Equal(captured, null);
+            Assert.Equal(_helper.Captured, null);
 
             Assert.True(clicked);
         }
@@ -306,57 +296,29 @@ namespace Avalonia.Controls.UnitTests
             public PixelPoint PointToScreen(Point p) => throw new NotImplementedException();
         }
 
-        private void RaisePointerPressed(Button button, IMouseDevice device, int clickCount, MouseButton mouseButton)
+        private void RaisePointerPressed(Button button, int clickCount, MouseButton mouseButton, Point position)
         {
-            button.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                Source = button,
-                MouseButton = mouseButton,
-                ClickCount = clickCount,
-                Device = device,
-            });
+            _helper.Down(button, mouseButton, position, clickCount: clickCount);
         }
 
-        private void RaisePointerReleased(Button button, IMouseDevice device, MouseButton mouseButton)
+        private void RaisePointerReleased(Button button, MouseButton mouseButton, Point pt)
         {
-            button.RaiseEvent(new PointerReleasedEventArgs
-            {
-                RoutedEvent = InputElement.PointerReleasedEvent,
-                Source = button,
-                MouseButton = mouseButton,
-                Device = device,
-            });
+            _helper.Up(button, mouseButton, pt);
         }
 
-        private void RaisePointerEnter(Button button, IMouseDevice device)
+        private void RaisePointerEnter(Button button)
         {
-            button.RaiseEvent(new PointerEventArgs
-            {
-                RoutedEvent = InputElement.PointerEnterEvent,
-                Source = button,
-                Device = device,
-            });
+            _helper.Enter(button);
         }
 
-        private void RaisePointerLeave(Button button, IMouseDevice device)
+        private void RaisePointerLeave(Button button)
         {
-            button.RaiseEvent(new PointerEventArgs
-            {
-                RoutedEvent = InputElement.PointerLeaveEvent,
-                Source = button,
-                Device = device,
-            });
+            _helper.Leave(button);
         }
 
-        private void RaisePointerMove(Button button, IMouseDevice device)
+        private void RaisePointerMove(Button button, Point pos)
         {
-            button.RaiseEvent(new PointerEventArgs
-            {
-                RoutedEvent = InputElement.PointerMovedEvent,
-                Source = button,
-                Device = device,
-            });
+            _helper.Move(button, pos);
         }
 
         private class TestCommand : ICommand

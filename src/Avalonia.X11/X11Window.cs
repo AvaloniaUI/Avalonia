@@ -314,9 +314,9 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.FocusOut)
                 Deactivated?.Invoke();
             else if (ev.type == XEventName.MotionNotify)
-                MouseEvent(RawMouseEventType.Move, ref ev, ev.MotionEvent.state);
+                MouseEvent(RawPointerEventType.Move, ref ev, ev.MotionEvent.state);
             else if (ev.type == XEventName.LeaveNotify)
-                MouseEvent(RawMouseEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
+                MouseEvent(RawPointerEventType.LeaveWindow, ref ev, ev.CrossingEvent.state);
             else if (ev.type == XEventName.PropertyNotify)
             {
                 OnPropertyChange(ev.PropertyEvent.atom, ev.PropertyEvent.state == 0);
@@ -326,9 +326,9 @@ namespace Avalonia.X11
                 if (ActivateTransientChildIfNeeded())
                     return;
                 if (ev.ButtonEvent.button < 4)
-                    MouseEvent(ev.ButtonEvent.button == 1 ? RawMouseEventType.LeftButtonDown
-                        : ev.ButtonEvent.button == 2 ? RawMouseEventType.MiddleButtonDown
-                        : RawMouseEventType.RightButtonDown, ref ev, ev.ButtonEvent.state);
+                    MouseEvent(ev.ButtonEvent.button == 1 ? RawPointerEventType.LeftButtonDown
+                        : ev.ButtonEvent.button == 2 ? RawPointerEventType.MiddleButtonDown
+                        : RawPointerEventType.RightButtonDown, ref ev, ev.ButtonEvent.state);
                 else
                 {
                     var delta = ev.ButtonEvent.button == 4
@@ -347,9 +347,9 @@ namespace Avalonia.X11
             else if (ev.type == XEventName.ButtonRelease)
             {
                 if (ev.ButtonEvent.button < 4)
-                    MouseEvent(ev.ButtonEvent.button == 1 ? RawMouseEventType.LeftButtonUp
-                        : ev.ButtonEvent.button == 2 ? RawMouseEventType.MiddleButtonUp
-                        : RawMouseEventType.RightButtonUp, ref ev, ev.ButtonEvent.state);
+                    MouseEvent(ev.ButtonEvent.button == 1 ? RawPointerEventType.LeftButtonUp
+                        : ev.ButtonEvent.button == 2 ? RawPointerEventType.MiddleButtonUp
+                        : RawPointerEventType.RightButtonUp, ref ev, ev.ButtonEvent.state);
             }
             else if (ev.type == XEventName.ConfigureNotify)
             {
@@ -577,7 +577,7 @@ namespace Avalonia.X11
 
         public void ScheduleInput(RawInputEventArgs args)
         {
-            if (args is RawMouseEventArgs mouse)
+            if (args is RawPointerEventArgs mouse)
                 mouse.Position = mouse.Position / Scaling;
             if (args is RawDragEvent drag)
                 drag.Location = drag.Location / Scaling;
@@ -598,13 +598,13 @@ namespace Avalonia.X11
             }
         }
         
-        void MouseEvent(RawMouseEventType type, ref XEvent ev, XModifierMask mods)
+        void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
-            var mev = new RawMouseEventArgs(
+            var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
                 type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods)); 
-            if(type == RawMouseEventType.Move && _inputQueue.Count>0 && _lastEvent.Event is RawMouseEventArgs ma)
-                if (ma.Type == RawMouseEventType.Move)
+            if(type == RawPointerEventType.Move && _inputQueue.Count>0 && _lastEvent.Event is RawPointerEventArgs ma)
+                if (ma.Type == RawPointerEventType.Move)
                 {
                     _lastEvent.Event = mev;
                     return;

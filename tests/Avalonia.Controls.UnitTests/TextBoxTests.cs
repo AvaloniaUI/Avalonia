@@ -385,6 +385,21 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target.SelectionEnd <= "123".Length);
             }
         }
+        [Fact]
+        public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789\r"
+                };
+                target.CaretIndex = 11;
+
+                Assert.True(true);
+            }
+        }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<IStandardCursorFactory>());
