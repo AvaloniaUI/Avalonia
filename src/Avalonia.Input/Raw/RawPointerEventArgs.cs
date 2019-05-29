@@ -5,7 +5,7 @@ using System;
 
 namespace Avalonia.Input.Raw
 {
-    public enum RawMouseEventType
+    public enum RawPointerEventType
     {
         LeaveWindow,
         LeftButtonDown,
@@ -25,10 +25,10 @@ namespace Avalonia.Input.Raw
     /// <summary>
     /// A raw mouse event.
     /// </summary>
-    public class RawMouseEventArgs : RawInputEventArgs
+    public class RawPointerEventArgs : RawInputEventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RawMouseEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="RawPointerEventArgs"/> class.
         /// </summary>
         /// <param name="device">The associated device.</param>
         /// <param name="timestamp">The event timestamp.</param>
@@ -36,11 +36,11 @@ namespace Avalonia.Input.Raw
         /// <param name="type">The type of the event.</param>
         /// <param name="position">The mouse position, in client DIPs.</param>
         /// <param name="inputModifiers">The input modifiers.</param>
-        public RawMouseEventArgs(
+        public RawPointerEventArgs(
             IInputDevice device,
             ulong timestamp,
             IInputRoot root,
-            RawMouseEventType type,
+            RawPointerEventType type,
             Point position, 
             InputModifiers inputModifiers)
             : base(device, timestamp)
@@ -67,7 +67,7 @@ namespace Avalonia.Input.Raw
         /// <summary>
         /// Gets the type of the event.
         /// </summary>
-        public RawMouseEventType Type { get; private set; }
+        public RawPointerEventType Type { get; private set; }
 
         /// <summary>
         /// Gets the input modifiers.

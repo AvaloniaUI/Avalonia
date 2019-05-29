@@ -182,10 +182,10 @@ namespace Avalonia.X11
                 || ev.Type == XiEventType.XI_TouchEnd)
             {
                 var type = ev.Type == XiEventType.XI_TouchBegin ?
-                    RawMouseEventType.TouchBegin :
+                    RawPointerEventType.TouchBegin :
                     (ev.Type == XiEventType.XI_TouchUpdate ?
-                        RawMouseEventType.TouchUpdate :
-                        RawMouseEventType.TouchEnd);
+                        RawPointerEventType.TouchUpdate :
+                        RawPointerEventType.TouchEnd);
                 client.ScheduleInput(new RawTouchEventArgs(_touchDevice,
                     ev.Timestamp, client.InputRoot, type, ev.Position, ev.Modifiers, ev.Detail));
                 return;
@@ -223,20 +223,20 @@ namespace Avalonia.X11
                     client.ScheduleInput(new RawMouseWheelEventArgs(_platform.MouseDevice, ev.Timestamp,
                         client.InputRoot, ev.Position, scrollDelta, ev.Modifiers));
                 if (_pointerDevice.HasMotion(ev))
-                    client.ScheduleInput(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
-                        RawMouseEventType.Move, ev.Position, ev.Modifiers));
+                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                        RawPointerEventType.Move, ev.Position, ev.Modifiers));
             }
 
             if (ev.Type == XiEventType.XI_ButtonPress || ev.Type == XiEventType.XI_ButtonRelease)
             {
                 var down = ev.Type == XiEventType.XI_ButtonPress;
                 var type =
-                    ev.Button == 1 ? (down ? RawMouseEventType.LeftButtonDown : RawMouseEventType.LeftButtonUp)
-                    : ev.Button == 2 ? (down ? RawMouseEventType.MiddleButtonDown : RawMouseEventType.MiddleButtonUp)
-                    : ev.Button == 3 ? (down ? RawMouseEventType.RightButtonDown : RawMouseEventType.RightButtonUp)
-                    : (RawMouseEventType?)null;
+                    ev.Button == 1 ? (down ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp)
+                    : ev.Button == 2 ? (down ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp)
+                    : ev.Button == 3 ? (down ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp)
+                    : (RawPointerEventType?)null;
                 if (type.HasValue)
-                    client.ScheduleInput(new RawMouseEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
+                    client.ScheduleInput(new RawPointerEventArgs(_platform.MouseDevice, ev.Timestamp, client.InputRoot,
                         type.Value, ev.Position, ev.Modifiers));
             }
             

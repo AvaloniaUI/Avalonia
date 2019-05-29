@@ -6,6 +6,9 @@ namespace Avalonia.Input
 {
     public class Pointer : IPointer, IDisposable
     {
+        private static int s_NextFreePointerId = 1000;
+        public static int GetNextFreeId() => s_NextFreePointerId++;
+        
         public Pointer(int id, PointerType type, bool isPrimary, IInputElement implicitlyCaptured)
         {
             Id = id;

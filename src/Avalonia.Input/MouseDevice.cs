@@ -24,7 +24,7 @@ namespace Avalonia.Input
 
         PointerType IPointer.Type => PointerType.Mouse;
         bool IPointer.IsPrimary => true;
-        int IPointer.Id { get; } = PointerIds.Next();
+        int IPointer.Id { get; } = Pointer.GetNextFreeId();
         
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
@@ -100,7 +100,7 @@ namespace Avalonia.Input
 
         public void ProcessRawEvent(RawInputEventArgs e)
         {
-            if (!e.Handled && e is RawMouseEventArgs margs)
+            if (!e.Handled && e is RawPointerEventArgs margs)
                 ProcessRawEvent(margs);
         }
 
@@ -133,7 +133,7 @@ namespace Avalonia.Input
             return rv;
         }
         
-        private void ProcessRawEvent(RawMouseEventArgs e)
+        private void ProcessRawEvent(RawPointerEventArgs e)
         {
             Contract.Requires<ArgumentNullException>(e != null);
 
@@ -143,30 +143,30 @@ namespace Avalonia.Input
             var props = CreateProperties(e);
             switch (e.Type)
             {
-                case RawMouseEventType.LeaveWindow:
+                case RawPointerEventType.LeaveWindow:
                     LeaveWindow(mouse, e.Root, e.InputModifiers);
                     break;
-                case RawMouseEventType.LeftButtonDown:
-                case RawMouseEventType.RightButtonDown:
-                case RawMouseEventType.MiddleButtonDown:
+                case RawPointerEventType.LeftButtonDown:
+                case RawPointerEventType.RightButtonDown:
+                case RawPointerEventType.MiddleButtonDown:
                     if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Root, e.Position, props, e.InputModifiers);
                     else
                         e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position,
                             props, e.InputModifiers);
                     break;
-                case RawMouseEventType.LeftButtonUp:
-                case RawMouseEventType.RightButtonUp:
-                case RawMouseEventType.MiddleButtonUp:
+                case RawPointerEventType.LeftButtonUp:
+                case RawPointerEventType.RightButtonUp:
+                case RawPointerEventType.MiddleButtonUp:
                     if (ButtonCount(props) != 0)
                         e.Handled = MouseMove(mouse, e.Root, e.Position, props, e.InputModifiers);
                     else
                         e.Handled = MouseUp(mouse, e.Root, e.Position, props, e.InputModifiers);
                     break;
-                case RawMouseEventType.Move:
+                case RawPointerEventType.Move:
                     e.Handled = MouseMove(mouse, e.Root, e.Position, props, e.InputModifiers);
                     break;
-                case RawMouseEventType.Wheel:
+                case RawPointerEventType.Wheel:
                     e.Handled = MouseWheel(mouse, e.Root, e.Position, props, ((RawMouseWheelEventArgs)e).Delta, e.InputModifiers);
                     break;
             }
@@ -181,21 +181,21 @@ namespace Avalonia.Input
         }
 
 
-        PointerPointProperties CreateProperties(RawMouseEventArgs args)
+        PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
             var rv = new PointerPointProperties(args.InputModifiers);
 
-            if (args.Type == RawMouseEventType.LeftButtonDown)
+            if (args.Type == RawPointerEventType.LeftButtonDown)
                 rv.IsLeftButtonPressed = true;
-            if (args.Type == RawMouseEventType.MiddleButtonDown)
+            if (args.Type == RawPointerEventType.MiddleButtonDown)
                 rv.IsMiddleButtonPressed = true;
-            if (args.Type == RawMouseEventType.RightButtonDown)
+            if (args.Type == RawPointerEventType.RightButtonDown)
                 rv.IsRightButtonPressed = true;
-            if (args.Type == RawMouseEventType.LeftButtonUp)
+            if (args.Type == RawPointerEventType.LeftButtonUp)
                 rv.IsLeftButtonPressed = false;
-            if (args.Type == RawMouseEventType.MiddleButtonUp)
+            if (args.Type == RawPointerEventType.MiddleButtonUp)
                 rv.IsMiddleButtonPressed = false;
-            if (args.Type == RawMouseEventType.RightButtonDown)
+            if (args.Type == RawPointerEventType.RightButtonDown)
                 rv.IsRightButtonPressed = false;
             return rv;
         }

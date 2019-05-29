@@ -7,7 +7,9 @@ namespace Avalonia.Input
 {
     /// <summary>
     /// Handles raw touch events
-    /// This class is supposed to be used on per-toplevel basis, don't event try to have a global instance
+    /// <remarks>
+    /// This class is supposed to be used on per-toplevel basis, don't use a shared one
+    /// </remarks>
     /// </summary>
     public class TouchDevice : IInputDevice
     {
@@ -28,17 +30,17 @@ namespace Avalonia.Input
             var args = (RawTouchEventArgs)ev;
             if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
             {
-                if (args.Type == RawMouseEventType.TouchEnd)
+                if (args.Type == RawPointerEventType.TouchEnd)
                     return;
                 var hit = args.Root.InputHitTest(args.Position);
 
-                _pointers[args.TouchPointId] = pointer = new Pointer(PointerIds.Next(),
+                _pointers[args.TouchPointId] = pointer = new Pointer(Pointer.GetNextFreeId(),
                     PointerType.Touch, _pointers.Count == 0, hit);
             }
             
 
             var target = pointer.GetEffectiveCapture() ?? args.Root;
-            if (args.Type == RawMouseEventType.TouchBegin)
+            if (args.Type == RawPointerEventType.TouchBegin)
             {
                 var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
@@ -46,7 +48,7 @@ namespace Avalonia.Input
                     modifiers));
             }
 
-            if (args.Type == RawMouseEventType.TouchEnd)
+            if (args.Type == RawPointerEventType.TouchEnd)
             {
                 _pointers.Remove(args.TouchPointId);
                 var modifiers = GetModifiers(args.InputModifiers, false);
@@ -58,7 +60,7 @@ namespace Avalonia.Input
                 }
             }
 
-            if (args.Type == RawMouseEventType.TouchUpdate)
+            if (args.Type == RawPointerEventType.TouchUpdate)
             {
                 var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
                 target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,

@@ -12,7 +12,7 @@ namespace Avalonia.Controls.UnitTests.Platform
     {
         class FakePointer : IPointer
         {
-            public int Id { get; } = PointerIds.Next();
+            public int Id { get; } = Pointer.GetNextFreeId();
 
             public void Capture(IInputElement control)
             {

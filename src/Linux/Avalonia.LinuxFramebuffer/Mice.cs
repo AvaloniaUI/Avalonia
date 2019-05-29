@@ -76,9 +76,9 @@ namespace Avalonia.LinuxFramebuffer
                     _y = Math.Min(_height, Math.Max(0, _y + ev.value));
                 else
                     return;
-                Event?.Invoke(new RawMouseEventArgs(LinuxFramebufferPlatform.MouseDevice,
+                Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
-                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawMouseEventType.Move, new Point(_x, _y),
+                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
                     InputModifiers.None));
             }
             if (ev.type ==(int) EvType.EV_ABS)
@@ -89,24 +89,24 @@ namespace Avalonia.LinuxFramebuffer
                     _y = TranslateAxis(device.AbsY.Value, ev.value, _height);
                 else
                     return;
-                Event?.Invoke(new RawMouseEventArgs(LinuxFramebufferPlatform.MouseDevice,
+                Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
-                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawMouseEventType.Move, new Point(_x, _y),
+                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
                     InputModifiers.None));
             }
             if (ev.type == (short) EvType.EV_KEY)
             {
-                RawMouseEventType? type = null;
+                RawPointerEventType? type = null;
                 if (ev.code == (ushort) EvKey.BTN_LEFT)
-                    type = ev.value == 1 ? RawMouseEventType.LeftButtonDown : RawMouseEventType.LeftButtonUp;
+                    type = ev.value == 1 ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp;
                 if (ev.code == (ushort)EvKey.BTN_RIGHT)
-                    type = ev.value == 1 ? RawMouseEventType.RightButtonDown : RawMouseEventType.RightButtonUp;
+                    type = ev.value == 1 ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp;
                 if (ev.code == (ushort) EvKey.BTN_MIDDLE)
-                    type = ev.value == 1 ? RawMouseEventType.MiddleButtonDown : RawMouseEventType.MiddleButtonUp;
+                    type = ev.value == 1 ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp;
                 if (!type.HasValue)
                     return;
 
-                Event?.Invoke(new RawMouseEventArgs(LinuxFramebufferPlatform.MouseDevice,
+                Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
                     LinuxFramebufferPlatform.TopLevel.InputRoot, type.Value, new Point(_x, _y), default(InputModifiers)));
             }

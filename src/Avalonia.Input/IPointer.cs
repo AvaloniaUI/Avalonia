@@ -15,10 +15,4 @@ namespace Avalonia.Input
         Mouse,
         Touch
     }
-
-    public class PointerIds
-    {
-        private static int s_nextPointerId = 1000;
-        public static int Next() => s_nextPointerId++;
-    }
 }
