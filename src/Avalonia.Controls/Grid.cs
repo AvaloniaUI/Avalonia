@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+
 using MS.Internal;
 using MS.Internal.Controls;
 using MS.Internal.PresentationFramework;
@@ -20,7 +21,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Markup;
 
-#pragma warning disable 1634, 1691  // suppressing PreSharp warnings
+
 
 namespace System.Windows.Controls
 {
@@ -382,7 +383,7 @@ namespace System.Windows.Controls
 
             try
             {
-                EnterCounterScope(Counters.MeasureOverride);
+                
 
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
@@ -658,17 +659,17 @@ namespace System.Windows.Controls
 
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
-                    EnterCounter(Counters._CalculateDesiredSize);
+                    
                     gridDesiredSize = new Size(
                             CalculateDesiredSize(DefinitionsU),
                             CalculateDesiredSize(DefinitionsV));
-                    ExitCounter(Counters._CalculateDesiredSize);
+                    
                 }
             }
             finally
             {
                 MeasureOverrideInProgress = false;
-                ExitCounterScope(Counters.MeasureOverride);
+                
             }
 
             return (gridDesiredSize);
@@ -682,7 +683,7 @@ namespace System.Windows.Controls
         {
             try
             {
-                EnterCounterScope(Counters.ArrangeOverride);
+                
 
                 ArrangeOverrideInProgress = true;
 
@@ -703,12 +704,12 @@ namespace System.Windows.Controls
                 {
                     Debug.Assert(DefinitionsU.Length > 0 && DefinitionsV.Length > 0);
 
-                    EnterCounter(Counters._SetFinalSize);
+                    
 
                     SetFinalSize(DefinitionsU, arrangeSize.Width, true);
                     SetFinalSize(DefinitionsV, arrangeSize.Height, false);
 
-                    ExitCounter(Counters._SetFinalSize);
+                    
 
                     UIElementCollection children = InternalChildren;
 
@@ -731,9 +732,9 @@ namespace System.Windows.Controls
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
                             GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan)   );
 
-                        EnterCounter(Counters._ArrangeChildHelper2);
+                        
                         cell.Arrange(cellRect);
-                        ExitCounter(Counters._ArrangeChildHelper2);
+                        
                     }
 
                     //  update render bound on grid lines renderer visual
@@ -748,7 +749,7 @@ namespace System.Windows.Controls
             {
                 SetValid();
                 ArrangeOverrideInProgress = false;
-                ExitCounterScope(Counters.ArrangeOverride);
+                
             }
             return (arrangeSize);
         }
@@ -889,7 +890,7 @@ namespace System.Windows.Controls
         /// </summary>
         private void ValidateCells()
         {
-            EnterCounter(Counters._ValidateCells);
+            
 
             if (CellsStructureDirty)
             {
@@ -897,7 +898,7 @@ namespace System.Windows.Controls
                 CellsStructureDirty = false;
             }
 
-            ExitCounter(Counters._ValidateCells);
+            
         }
 
         /// <summary>
@@ -1016,7 +1017,7 @@ namespace System.Windows.Controls
         /// </remarks>
         private void ValidateDefinitionsUStructure()
         {
-            EnterCounter(Counters._ValidateColsStructure);
+            
 
             if (ColumnDefinitionCollectionDirty)
             {
@@ -1050,7 +1051,7 @@ namespace System.Windows.Controls
 
             Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Length > 0);
 
-            ExitCounter(Counters._ValidateColsStructure);
+            
         }
 
         /// <summary>
@@ -1063,7 +1064,7 @@ namespace System.Windows.Controls
         /// </remarks>
         private void ValidateDefinitionsVStructure()
         {
-            EnterCounter(Counters._ValidateRowsStructure);
+            
 
             if (RowDefinitionCollectionDirty)
             {
@@ -1097,7 +1098,7 @@ namespace System.Windows.Controls
 
             Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Length > 0);
 
-            ExitCounter(Counters._ValidateRowsStructure);
+            
         }
 
         /// <summary>
@@ -1338,7 +1339,7 @@ namespace System.Windows.Controls
             int cell,
             bool forceInfinityV)
         {
-            EnterCounter(Counters._MeasureCell);
+            
 
             double cellMeasureWidth;
             double cellMeasureHeight;
@@ -1380,16 +1381,16 @@ namespace System.Windows.Controls
                                         PrivateCells[cell].RowSpan);
             }
 
-            EnterCounter(Counters.__MeasureChild);
+            
             UIElement child = InternalChildren[cell];
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
                 child.Measure(childConstraint);
             }
-            ExitCounter(Counters.__MeasureChild);
+            
 
-            ExitCounter(Counters._MeasureCell);
+            
         }
 
 
@@ -4227,186 +4228,5 @@ namespace System.Windows.Controls
         }
 
         #endregion Private Structures Classes
-
-        //------------------------------------------------------
-        //
-        //  Extended debugging for grid
-        //
-        //------------------------------------------------------
-
-#if GRIDPARANOIA
-        private static double _performanceFrequency;
-        private static readonly bool _performanceFrequencyInitialized = InitializePerformanceFrequency();
-
-        //CASRemoval:[System.Security.SuppressUnmanagedCodeSecurity, System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
-
-        //CASRemoval:[System.Security.SuppressUnmanagedCodeSecurity, System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern bool QueryPerformanceFrequency(out long lpFrequency);
-
-        private static double CostInMilliseconds(long count)
-        {
-            return ((double)count / _performanceFrequency);
-        }
-
-        private static long Cost(long startCount, long endCount)
-        {
-            long l = endCount - startCount;
-            if (l < 0)  { l += long.MaxValue;   }
-            return (l);
-        }
-
-        private static bool InitializePerformanceFrequency()
-        {
-            long l;
-            QueryPerformanceFrequency(out l);
-            _performanceFrequency = (double)l * 0.001;
-            return (true);
-        }
-
-        private struct Counter
-        {
-            internal long   Start;
-            internal long   Total;
-            internal int    Calls;
-        }
-
-        private Counter[] _counters;
-        private bool _hasNewCounterInfo;
-#endif // GRIDPARANOIA
-
-        //
-        //  This property
-        //  1. Finds the correct initial size for the _effectiveValues store on the current DependencyObject
-        //  2. This is a performance optimization
-        //
-        internal override int EffectiveValuesInitialSize
-        {
-            get { return 9; }
-        }
-
-        [Conditional("GRIDPARANOIA")]
-        internal void EnterCounterScope(Counters scopeCounter)
-        {
-            #if GRIDPARANOIA
-            if (ID == "CountThis")
-            {
-                if (_counters == null)
-                {
-                    _counters = new Counter[(int)Counters.Count];
-                }
-                ExitCounterScope(Counters.Default);
-                EnterCounter(scopeCounter);
-            }
-            else
-            {
-                _counters = null;
-            }
-            #endif // GRIDPARANOIA
-        }
-
-        [Conditional("GRIDPARANOIA")]
-        internal void ExitCounterScope(Counters scopeCounter)
-        {
-            #if GRIDPARANOIA
-            if (_counters != null)
-            {
-                if (scopeCounter != Counters.Default)
-                {
-                    ExitCounter(scopeCounter);
-                }
-
-                if (_hasNewCounterInfo)
-                {
-                    string NFormat = "F6";
-                    Console.WriteLine(
-                                "\ncounter name          | total t (ms)  | # of calls    | per call t (ms)"
-                            +   "\n----------------------+---------------+---------------+----------------------" );
-
-                    for (int i = 0; i < _counters.Length; ++i)
-                    {
-                        if (_counters[i].Calls > 0)
-                        {
-                            Counters counter = (Counters)i;
-                            double total = CostInMilliseconds(_counters[i].Total);
-                            double single = total / _counters[i].Calls;
-                            string counterName = counter.ToString();
-                            string separator;
-
-                            if (counterName.Length < 8)         { separator = "\t\t\t";  }
-                            else if (counterName.Length < 16)   { separator = "\t\t";    }
-                            else                                { separator = "\t";      }
-
-                            Console.WriteLine(
-                                    counter.ToString() + separator
-                                +   total.ToString(NFormat) + "\t"
-                                +   _counters[i].Calls + "\t\t"
-                                +   single.ToString(NFormat));
-
-                            _counters[i] = new Counter();
-                        }
-                    }
-                }
-                _hasNewCounterInfo = false;
-            }
-            #endif // GRIDPARANOIA
-        }
-
-        [Conditional("GRIDPARANOIA")]
-        internal void EnterCounter(Counters counter)
-        {
-            #if GRIDPARANOIA
-            if (_counters != null)
-            {
-                Debug.Assert((int)counter < _counters.Length);
-
-                int i = (int)counter;
-                QueryPerformanceCounter(out _counters[i].Start);
-            }
-            #endif // GRIDPARANOIA
-        }
-
-        [Conditional("GRIDPARANOIA")]
-        internal void ExitCounter(Counters counter)
-        {
-            #if GRIDPARANOIA
-            if (_counters != null)
-            {
-                Debug.Assert((int)counter < _counters.Length);
-
-                int i = (int)counter;
-                long l;
-                QueryPerformanceCounter(out l);
-                l = Cost(_counters[i].Start, l);
-                _counters[i].Total += l;
-                _counters[i].Calls++;
-                _hasNewCounterInfo = true;
-            }
-            #endif // GRIDPARANOIA
-        }
-
-        internal enum Counters : int
-        {
-            Default = -1,
-
-            MeasureOverride,
-            _ValidateColsStructure,
-            _ValidateRowsStructure,
-            _ValidateCells,
-            _MeasureCell,
-            __MeasureChild,
-            _CalculateDesiredSize,
-
-            ArrangeOverride,
-            _SetFinalSize,
-            _ArrangeChildHelper2,
-            _PositionCell,
-
-            Count,
-        }
     }
 }
-
-
-
-
