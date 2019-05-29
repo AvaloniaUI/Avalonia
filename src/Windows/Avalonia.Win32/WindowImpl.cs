@@ -30,6 +30,8 @@ namespace Avalonia.Win32
         private UnmanagedMethods.WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
+        private bool _multitouch;
+        private TouchDevice _touchDevice = new TouchDevice();
         private IInputRoot _owner;
         private bool _trackingMouse;
         private bool _decorated = true;
@@ -414,6 +416,15 @@ namespace Avalonia.Win32
                 IntPtr.Zero);
         }
 
+        bool ShouldIgnoreTouchEmulatedMessage()
+        {
+            if (!_multitouch)
+                return false;
+            var marker = 0xFF515700L;
+            var info = GetMessageExtraInfo().ToInt64();
+            return (info & marker) == marker;
+        }
+        
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         protected virtual IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
@@ -519,34 +530,40 @@ namespace Avalonia.Win32
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONDOWN:
-                    e = new RawMouseEventArgs(
+                    if(ShouldIgnoreTouchEmulatedMessage())
+                        break;
+                    e = new RawPointerEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
                         msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONDOWN
-                            ? RawMouseEventType.LeftButtonDown
+                            ? RawPointerEventType.LeftButtonDown
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONDOWN
-                                ? RawMouseEventType.RightButtonDown
-                                : RawMouseEventType.MiddleButtonDown,
+                                ? RawPointerEventType.RightButtonDown
+                                : RawPointerEventType.MiddleButtonDown,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_LBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_RBUTTONUP:
                 case UnmanagedMethods.WindowsMessage.WM_MBUTTONUP:
-                    e = new RawMouseEventArgs(
+                    if(ShouldIgnoreTouchEmulatedMessage())
+                        break;
+                    e = new RawPointerEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
                         msg == (int)UnmanagedMethods.WindowsMessage.WM_LBUTTONUP
-                            ? RawMouseEventType.LeftButtonUp
+                            ? RawPointerEventType.LeftButtonUp
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_RBUTTONUP
-                                ? RawMouseEventType.RightButtonUp
-                                : RawMouseEventType.MiddleButtonUp,
+                                ? RawPointerEventType.RightButtonUp
+                                : RawPointerEventType.MiddleButtonUp,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSEMOVE:
+                    if(ShouldIgnoreTouchEmulatedMessage())
+                        break;
                     if (!_trackingMouse)
                     {
                         var tm = new UnmanagedMethods.TRACKMOUSEEVENT
@@ -560,11 +577,11 @@ namespace Avalonia.Win32
                         UnmanagedMethods.TrackMouseEvent(ref tm);
                     }
 
-                    e = new RawMouseEventArgs(
+                    e = new RawPointerEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        RawMouseEventType.Move,
+                        RawPointerEventType.Move,
                         DipFromLParam(lParam), GetMouseModifiers(wParam));
 
                     break;
@@ -589,29 +606,52 @@ namespace Avalonia.Win32
 
                 case UnmanagedMethods.WindowsMessage.WM_MOUSELEAVE:
                     _trackingMouse = false;
-                    e = new RawMouseEventArgs(
+                    e = new RawPointerEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
-                        RawMouseEventType.LeaveWindow,
+                        RawPointerEventType.LeaveWindow,
                         new Point(), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN:
                 case UnmanagedMethods.WindowsMessage.WM_NCMBUTTONDOWN:
-                    e = new RawMouseEventArgs(
+                    e = new RawPointerEventArgs(
                         WindowsMouseDevice.Instance,
                         timestamp,
                         _owner,
                         msg == (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN
-                            ? RawMouseEventType.NonClientLeftButtonDown
+                            ? RawPointerEventType.NonClientLeftButtonDown
                             : msg == (int)UnmanagedMethods.WindowsMessage.WM_NCRBUTTONDOWN
-                                ? RawMouseEventType.RightButtonDown
-                                : RawMouseEventType.MiddleButtonDown,
+                                ? RawPointerEventType.RightButtonDown
+                                : RawPointerEventType.MiddleButtonDown,
                         new Point(0, 0), GetMouseModifiers(wParam));
                     break;
-
+                case WindowsMessage.WM_TOUCH:
+                    var touchInputs = new TOUCHINPUT[wParam.ToInt32()];
+                    if (GetTouchInputInfo(lParam, (uint)wParam.ToInt32(), touchInputs, Marshal.SizeOf<TOUCHINPUT>()))
+                    {
+                        foreach (var touchInput in touchInputs)
+                        {
+                            var pt = new POINT {X = touchInput.X / 100, Y = touchInput.Y / 100};
+                            UnmanagedMethods.ScreenToClient(_hwnd, ref pt);
+                            Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
+                                _owner,
+                                touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_UP) ?
+                                    RawPointerEventType.TouchEnd :
+                                    touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_DOWN) ?
+                                        RawPointerEventType.TouchBegin :
+                                        RawPointerEventType.TouchUpdate,
+                                new Point(pt.X, pt.Y),
+                                WindowsKeyboardDevice.Instance.Modifiers,
+                                touchInput.Id));
+                        }
+                        CloseTouchInputHandle(lParam);
+                        return IntPtr.Zero;
+                    }
+                    
+                    break;
                 case WindowsMessage.WM_NCPAINT:
                     if (!_decorated)
                     {
@@ -754,6 +794,10 @@ namespace Avalonia.Win32
 
             Handle = new PlatformHandle(_hwnd, PlatformConstants.WindowHandleType);
 
+            _multitouch = Win32Platform.Options.EnableMultitouch ?? false;
+            if (_multitouch)
+                RegisterTouchWindow(_hwnd, 0);
+            
             if (UnmanagedMethods.ShCoreAvailable)
             {
                 uint dpix, dpiy;

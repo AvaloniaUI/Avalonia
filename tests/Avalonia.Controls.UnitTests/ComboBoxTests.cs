@@ -15,6 +15,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ComboBoxTests
     {
+        MouseTestHelper _helper = new MouseTestHelper();
+        
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
@@ -23,17 +25,11 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo", "Bar" },
             };
 
-            target.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-            });
-
+            _helper.Down(target);
+            _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
 
-            target.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-            });
+            _helper.Down(target);
 
             Assert.False(target.IsDropDownOpen);
         }

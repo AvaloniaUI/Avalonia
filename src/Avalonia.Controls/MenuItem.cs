@@ -337,12 +337,9 @@ namespace Avalonia.Controls
         {
             base.OnPointerEnter(e);
 
-            RaiseEvent(new PointerEventArgs
-            {
-                Device = e.Device,
-                RoutedEvent = PointerEnterItemEvent,
-                Source = this,
-            });
+            var point = e.GetPointerPoint(null);
+            RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+                point.Properties, e.InputModifiers));
         }
 
         /// <inheritdoc/>
@@ -350,12 +347,9 @@ namespace Avalonia.Controls
         {
             base.OnPointerLeave(e);
 
-            RaiseEvent(new PointerEventArgs
-            {
-                Device = e.Device,
-                RoutedEvent = PointerLeaveItemEvent,
-                Source = this,
-            });
+            var point = e.GetPointerPoint(null);
+            RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+                point.Properties, e.InputModifiers));
         }
 
         /// <summary>
