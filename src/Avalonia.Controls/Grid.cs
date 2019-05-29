@@ -1,29 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using MS.Internal;
-using MS.Internal.Controls;
-using MS.Internal.PresentationFramework;
-using MS.Internal.Telemetry.PresentationFramework;
-using MS.Utility;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Windows.Threading;
-using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Markup;
 
+using Avalonia;
+using Avalonia.Collections;
 
-
-namespace System.Windows.Controls
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Grid
