@@ -14,7 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Grid
     /// </summary>
-    public class Grid : Panel, IAddChild
+    public class Grid : Panel
     {
         //------------------------------------------------------
         //
@@ -26,7 +26,6 @@ namespace Avalonia.Controls
 
         static Grid()
         {
-            ControlsTraceLogger.AddControl(TelemetryControls.Grid);
         }
 
         /// <summary>
@@ -47,33 +46,6 @@ namespace Avalonia.Controls
 
         #region Public Methods
 
-        /// <summary>
-        /// <see cref="IAddChild.AddChild"/>
-        /// </summary>
-        void IAddChild.AddChild(object value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            UIElement cell = value as UIElement;
-            if (cell != null)
-            {
-                Children.Add(cell);
-                return;
-            }
-
-            throw (new ArgumentException(SR.Get(SRID.Grid_UnexpectedParameterType, value.GetType(), typeof(UIElement)), "value"));
-        }
-
-        /// <summary>
-        /// <see cref="IAddChild.AddText"/>
-        /// </summary>
-        void IAddChild.AddText(string text)
-        {
-            XamlSerializerUtil.ThrowIfNonWhiteSpaceInAddText(text, this);
-        }
 
         /// <summary>
         /// <see cref="FrameworkElement.LogicalChildren"/>
