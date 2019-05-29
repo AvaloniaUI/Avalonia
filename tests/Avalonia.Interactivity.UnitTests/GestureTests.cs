@@ -103,9 +103,8 @@ namespace Avalonia.Interactivity.UnitTests
             border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
             border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
 
-            border.RaiseEvent(new PointerPressedEventArgs());
-            border.RaiseEvent(new PointerReleasedEventArgs());
-            border.RaiseEvent(new PointerPressedEventArgs { ClickCount = 2 });
+            _mouse.Click(border);
+            _mouse.Down(border, clickCount: 2);
 
             Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt", "bp", "dp" }, result);
         }
