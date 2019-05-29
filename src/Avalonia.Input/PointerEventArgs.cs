@@ -27,11 +27,6 @@ namespace Avalonia.Input
             _properties = properties;
             Pointer = pointer;
             InputModifiers = modifiers;
-#pragma warning disable 612
-#pragma warning disable 618
-            Device = new EmulatedDevice(this);
-#pragma warning restore 618
-#pragma warning restore 612
         }
 
         class EmulatedDevice : IPointerDevice
@@ -55,9 +50,11 @@ namespace Avalonia.Input
         }
 
         public IPointer Pointer { get; }
-        
+
+        private IPointerDevice _device;
+
         [Obsolete("Use Pointer to get pointer-specific information")]
-        public IPointerDevice Device { get; }
+        public IPointerDevice Device => _device ?? (_device = new EmulatedDevice(this));
 
         public InputModifiers InputModifiers { get; }
 
