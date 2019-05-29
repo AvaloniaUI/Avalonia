@@ -1,18 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-//
-// Specs
-//      Grid : Grid.mht
-//      Size Sharing: Size Information Sharing.doc
-//
-// Misc
-//      Grid Tutorial: Grid Tutorial.mht
-//
-// Description: Implementation of base abstract class for ColumnDefinition
-//              and RowDefinition.
-//
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using MS.Internal;
 using MS.Internal.KnownBoxes;

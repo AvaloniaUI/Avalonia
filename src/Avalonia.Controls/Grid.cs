@@ -1,5 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
 using System.Collections;
