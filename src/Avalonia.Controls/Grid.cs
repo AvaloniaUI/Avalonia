@@ -2829,7 +2829,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Returns <c>true</c> if ColumnDefinitions collection is not empty
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeColumnDefinitions()
         {
             ExtendedData extData = ExtData;
@@ -2841,7 +2840,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Returns <c>true</c> if RowDefinitions collection is not empty
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool ShouldSerializeRowDefinitions()
         {
             ExtendedData extData = ExtData;
