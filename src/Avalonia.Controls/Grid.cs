@@ -12,6 +12,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Utilities;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -3978,60 +3979,52 @@ namespace Avalonia.Controls
         /// <summary>
         /// Helper to render grid lines.
         /// </summary>
-        internal class GridLinesRenderer : DrawingVisual
+        internal class GridLinesRenderer : Control
         {
             /// <summary>
             /// Static initialization
             /// </summary>
             static GridLinesRenderer()
             {
-                s_oddDashPen = new Pen(Brushes.Blue, c_penWidth);
-                DoubleCollection oddDashArray = new DoubleCollection();
-                oddDashArray.Add(c_dashLength);
-                oddDashArray.Add(c_dashLength);
-                s_oddDashPen.DashStyle = new DashStyle(oddDashArray, 0);
-                s_oddDashPen.DashCap = PenLineCap.Flat;
-                s_oddDashPen.Freeze();
+                var dashArray = new List<double>() { _dashLength, _dashLength };
 
-                s_evenDashPen = new Pen(Brushes.Yellow, c_penWidth);
-                DoubleCollection evenDashArray = new DoubleCollection();
-                evenDashArray.Add(c_dashLength);
-                evenDashArray.Add(c_dashLength);
-                s_evenDashPen.DashStyle = new DashStyle(evenDashArray, c_dashLength);
-                s_evenDashPen.DashCap = PenLineCap.Flat;
-                s_evenDashPen.Freeze();
+                var ds1 = new DashStyle(dashArray, 0);
+                _oddDashPen = new Pen(Brushes.Blue,
+                                    _penWidth,
+                                    lineCap: PenLineCap.Flat,
+                                    dashStyle: ds1);
+
+                var ds2 = new DashStyle(dashArray, _dashLength);
+                _evenDashPen = new Pen(Brushes.Yellow,
+                                    _penWidth,
+                                    lineCap: PenLineCap.Flat,
+                                    dashStyle: ds2);
             }
 
             /// <summary>
             /// UpdateRenderBounds.
             /// </summary>
-            /// <param name="boundsSize">Size of render bounds</param>
-            internal void UpdateRenderBounds(Size boundsSize)
+            public override void Render(DrawingContext drawingContext)
             {
-                using (DrawingContext drawingContext = RenderOpen())
+                var grid = this.GetVisualParent<Grid>();
+
+                if (grid == null || !grid.ShowGridLines)
+                    return;
+
+                for (int i = 1; i < grid.ColumnDefinitions.Count; ++i)
                 {
-                    Grid grid = VisualTreeHelper.GetParent(this) as Grid;
-                    if (    grid == null
-                        ||  grid.ShowGridLines == false )
-                    {
-                        return;
-                    }
+                    DrawGridLine(
+                        drawingContext,
+                        grid.ColumnDefinitions[i].FinalOffset, 0.0,
+                        grid.ColumnDefinitions[i].FinalOffset, _lastArrangeSize.Height);
+                }
 
-                    for (int i = 1; i < grid.DefinitionsU.Length; ++i)
-                    {
-                        DrawGridLine(
-                            drawingContext,
-                            grid.DefinitionsU[i].FinalOffset, 0.0,
-                            grid.DefinitionsU[i].FinalOffset, boundsSize.Height);
-                    }
-
-                    for (int i = 1; i < grid.DefinitionsV.Length; ++i)
-                    {
-                        DrawGridLine(
-                            drawingContext,
-                            0.0, grid.DefinitionsV[i].FinalOffset,
-                            boundsSize.Width, grid.DefinitionsV[i].FinalOffset);
-                    }
+                for (int i = 1; i < grid.RowDefinitions.Count; ++i)
+                {
+                    DrawGridLine(
+                        drawingContext,
+                        0.0, grid.RowDefinitions[i].FinalOffset,
+                        _lastArrangeSize.Width, grid.RowDefinitions[i].FinalOffset);
                 }
             }
 
@@ -4045,17 +4038,23 @@ namespace Avalonia.Controls
                 double endX,
                 double endY)
             {
-                Point start = new Point(startX, startY);
-                Point end = new Point(endX, endY);
-                drawingContext.DrawLine(s_oddDashPen, start, end);
-                drawingContext.DrawLine(s_evenDashPen, start, end);
+                var start = new Point(startX, startY);
+                var end = new Point(endX, endY);
+                drawingContext.DrawLine(_oddDashPen, start, end);
+                drawingContext.DrawLine(_evenDashPen, start, end);
             }
 
-            private const double c_dashLength = 4.0;    //
-            private const double c_penWidth = 1.0;      //
-            private static readonly Pen s_oddDashPen;   //  first pen to draw dash
-            private static readonly Pen s_evenDashPen;  //  second pen to draw dash
-            private static readonly Point c_zeroPoint = new Point(0, 0);
-        }
+            internal void UpdateRenderBounds(Size arrangeSize)
+            {
+                _lastArrangeSize = arrangeSize;
+                this.InvalidateVisual();
+            }
+
+            private static Size _lastArrangeSize;
+            private const double _dashLength = 4.0;    //
+            private const double _penWidth = 1.0;      //
+            private static readonly Pen _oddDashPen;   //  first pen to draw dash
+            private static readonly Pen _evenDashPen;  //  second pen to draw dash
+        }   
     }
 }
