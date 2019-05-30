@@ -19,6 +19,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class TreeViewTests
     {
+        MouseTestHelper _mouse = new MouseTestHelper();
+        
         [Fact]
         public void Items_Should_Be_Created()
         {
@@ -130,11 +132,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.NotNull(container);
 
-            container.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(container);
 
             Assert.Equal(item, target.SelectedItem);
             Assert.True(container.IsSelected);
@@ -165,12 +163,7 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(container.IsSelected);
 
-            container.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-                InputModifiers = InputModifiers.Control
-            });
+            _mouse.Click(container, modifiers: InputModifiers.Control);
 
             Assert.Null(target.SelectedItem);
             Assert.False(container.IsSelected);
@@ -205,13 +198,8 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.True(container1.IsSelected);
 
-            container2.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-                InputModifiers = InputModifiers.Control
-            });
-
+            _mouse.Click(container2, modifiers: InputModifiers.Control);
+            
             Assert.Equal(item2, target.SelectedItem);
             Assert.False(container1.IsSelected);
             Assert.True(container2.IsSelected);
@@ -242,15 +230,15 @@ namespace Avalonia.Controls.UnitTests
             var item1Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item1);
             var item2Container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item2);
 
-            TreeTestHelper.ClickContainer(item1Container, InputModifiers.Control);
+            ClickContainer(item1Container, InputModifiers.Control);
             Assert.True(item1Container.IsSelected);
 
-            TreeTestHelper.ClickContainer(item2Container, InputModifiers.Control);
+            ClickContainer(item2Container, InputModifiers.Control);
             Assert.True(item2Container.IsSelected);
 
             Assert.Equal(new[] {item1, item2}, target.SelectedItems.OfType<Node>());
 
-            TreeTestHelper.ClickContainer(item1Container, InputModifiers.Control);
+            ClickContainer(item1Container, InputModifiers.Control);
             Assert.False(item1Container.IsSelected);
 
             Assert.DoesNotContain(item1, target.SelectedItems.OfType<Node>());
@@ -281,12 +269,12 @@ namespace Avalonia.Controls.UnitTests
             var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
             var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+            ClickContainer(fromContainer, InputModifiers.None);
 
             Assert.True(fromContainer.IsSelected);
 
-            TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
-            TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            ClickContainer(toContainer, InputModifiers.Shift);
+            AssertChildrenSelected(target, rootNode);
         }
 
         [Fact]
@@ -314,12 +302,12 @@ namespace Avalonia.Controls.UnitTests
             var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
             var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+            ClickContainer(fromContainer, InputModifiers.None);
 
             Assert.True(fromContainer.IsSelected);
 
-            TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
-            TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            ClickContainer(toContainer, InputModifiers.Shift);
+            AssertChildrenSelected(target, rootNode);
         }
 
         [Fact]
@@ -347,12 +335,12 @@ namespace Avalonia.Controls.UnitTests
             var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
             var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-            TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+            ClickContainer(fromContainer, InputModifiers.None);
 
-            TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
-            TreeTestHelper.AssertChildrenSelected(target, rootNode);
+            ClickContainer(toContainer, InputModifiers.Shift);
+            AssertChildrenSelected(target, rootNode);
 
-            TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
+            ClickContainer(fromContainer, InputModifiers.None);
 
             Assert.True(fromContainer.IsSelected);
 
@@ -656,7 +644,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.RaiseEvent(keyEvent);
 
-                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+                AssertChildrenSelected(target, rootNode);
             }
         }
 
@@ -687,8 +675,8 @@ namespace Avalonia.Controls.UnitTests
                 var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
                 var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-                TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
-                TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
+                ClickContainer(fromContainer, InputModifiers.None);
+                ClickContainer(toContainer, InputModifiers.Shift);
 
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
@@ -702,7 +690,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.RaiseEvent(keyEvent);
 
-                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+                AssertChildrenSelected(target, rootNode);
             }
         }
 
@@ -733,8 +721,8 @@ namespace Avalonia.Controls.UnitTests
                 var fromContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(from);
                 var toContainer = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(to);
 
-                TreeTestHelper.ClickContainer(fromContainer, InputModifiers.None);
-                TreeTestHelper.ClickContainer(toContainer, InputModifiers.Shift);
+                ClickContainer(fromContainer, InputModifiers.None);
+                ClickContainer(toContainer, InputModifiers.Shift);
 
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
@@ -748,7 +736,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target.RaiseEvent(keyEvent);
 
-                TreeTestHelper.AssertChildrenSelected(target, rootNode);
+                AssertChildrenSelected(target, rootNode);
             }
         }
 
@@ -871,28 +859,21 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private static class TreeTestHelper
+        void ClickContainer(IControl container, InputModifiers modifiers)
         {
-            public static void ClickContainer(IControl container, InputModifiers modifiers)
-            {
-                container.RaiseEvent(new PointerPressedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerPressedEvent,
-                    MouseButton = MouseButton.Left,
-                    InputModifiers = modifiers
-                });
-            }
+            _mouse.Click(container, modifiers: modifiers);
+        }
 
-            public static void AssertChildrenSelected(TreeView treeView, Node rootNode)
+        void AssertChildrenSelected(TreeView treeView, Node rootNode)
+        {
+            foreach (var child in rootNode.Children)
             {
-                foreach (var child in rootNode.Children)
-                {
-                    var container = (TreeViewItem)treeView.ItemContainerGenerator.Index.ContainerFromItem(child);
+                var container = (TreeViewItem)treeView.ItemContainerGenerator.Index.ContainerFromItem(child);
 
-                    Assert.True(container.IsSelected);
-                }
+                Assert.True(container.IsSelected);
             }
         }
+
 
         private class Node : NotifyingBase
         {

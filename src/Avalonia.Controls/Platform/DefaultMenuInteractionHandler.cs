@@ -373,9 +373,9 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void RawInput(RawInputEventArgs e)
         {
-            var mouse = e as RawMouseEventArgs;
+            var mouse = e as RawPointerEventArgs;
 
-            if (mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            if (mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
                 Menu.Close();
             }
