@@ -939,7 +939,7 @@ namespace Avalonia.Controls
         static DefinitionBase()
         {
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
-            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<Control>(OnPrivateSharedSizeScopePropertyChanged);
+            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
         }
 
         #endregion Properties

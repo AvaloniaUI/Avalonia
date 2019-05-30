@@ -30,6 +30,7 @@ namespace Avalonia.Controls
 
         static Grid()
         {
+            IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
             ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
             ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
