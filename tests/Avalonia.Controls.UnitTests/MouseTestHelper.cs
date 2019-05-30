@@ -1,3 +1,4 @@
+using System.Reactive;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -22,6 +23,8 @@ namespace Avalonia.Controls.UnitTests
         }
         
         TestPointer _pointer = new TestPointer();
+        private ulong _nextStamp = 1;
+        private ulong Timestamp() => _nextStamp++;
 
         private InputModifiers _pressedButtons;
         public IInputElement Captured => _pointer.Captured;
@@ -61,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
             else
             {
                 _pressedButton = mouseButton;
-                target.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, props,
+                target.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
                     GetModifiers(modifiers), clickCount));
             }
         }
@@ -70,7 +73,7 @@ namespace Avalonia.Controls.UnitTests
         public void Move(IInteractive target, IInteractive source, in Point position, InputModifiers modifiers = default)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (IVisual)target, position,
-                new PointerPointProperties(_pressedButtons), GetModifiers(modifiers)));
+                Timestamp(), new PointerPointProperties(_pressedButtons), GetModifiers(modifiers)));
         }
 
         public void Up(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
@@ -84,7 +87,8 @@ namespace Avalonia.Controls.UnitTests
             _pressedButtons = (_pressedButtons | conv) ^ conv;
             var props = new PointerPointProperties(_pressedButtons);
             if (ButtonCount(props) == 0)
-                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position, props,
+                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
+                    Timestamp(), props,
                     GetModifiers(modifiers), _pressedButton));
             else
                 Move(target, source, position);
@@ -103,13 +107,13 @@ namespace Avalonia.Controls.UnitTests
         public void Enter(IInteractive target)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnterEvent, target, _pointer, (IVisual)target, default,
-                new PointerPointProperties(_pressedButtons), _pressedButtons));
+                Timestamp(), new PointerPointProperties(_pressedButtons), _pressedButtons));
         }
 
         public void Leave(IInteractive target)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerLeaveEvent, target, _pointer, (IVisual)target, default,
-                new PointerPointProperties(_pressedButtons), _pressedButtons));
+                Timestamp(), new PointerPointProperties(_pressedButtons), _pressedButtons));
         }
 
     }

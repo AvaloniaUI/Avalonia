@@ -44,7 +44,7 @@ namespace Avalonia.Input
             if (args.Type == RawPointerEventType.TouchBegin)
             {
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
-                    args.Root, args.Position,
+                    args.Root, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, pointer.IsPrimary)),
                     GetModifiers(args.InputModifiers, false)));
             }
@@ -55,7 +55,7 @@ namespace Avalonia.Input
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
-                        args.Root, args.Position,
+                        args.Root, args.Position, ev.Timestamp,
                         new PointerPointProperties(GetModifiers(args.InputModifiers, false)),
                         GetModifiers(args.InputModifiers, pointer.IsPrimary),
                         pointer.IsPrimary ? MouseButton.Left : MouseButton.None));
@@ -66,7 +66,7 @@ namespace Avalonia.Input
             {
                 var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
                 target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,
-                    args.Position, new PointerPointProperties(modifiers), modifiers));
+                    args.Position, ev.Timestamp, new PointerPointProperties(modifiers), modifiers));
             }
         }
         
