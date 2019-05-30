@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 using Avalonia;
 using Avalonia.Collections;
+using Avalonia.Media;
 
 namespace Avalonia.Controls
 {
@@ -24,8 +25,6 @@ namespace Avalonia.Controls
         //
         //------------------------------------------------------
 
-        #region Constructors
-
         static Grid()
         {
         }
@@ -38,15 +37,11 @@ namespace Avalonia.Controls
             SetFlags((bool) ShowGridLinesProperty.GetDefaultValue(DependencyObjectType), Flags.ShowGridLinesPropertyValue);
         }
 
-        #endregion Constructors
-
         //------------------------------------------------------
         //
         //  Public Methods
         //
         //------------------------------------------------------
-
-        #region Public Methods
 
 
         /// <summary>
@@ -232,15 +227,11 @@ namespace Avalonia.Controls
             return ((bool)element.GetValue(IsSharedSizeScopeProperty));
         }
 
-        #endregion Public Methods
-
         //------------------------------------------------------
         //
         //  Public Properties
         //
         //------------------------------------------------------
-
-        #region Public Properties
 
         /// <summary>
         /// ShowGridLines property.
@@ -281,15 +272,11 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Public Properties
-
         //------------------------------------------------------
         //
         //  Protected Methods
         //
         //------------------------------------------------------
-
-        #region Protected Methods
 
         /// <summary>
         ///   Derived class must implement to support Visual children. The method must return
@@ -726,15 +713,11 @@ namespace Avalonia.Controls
             base.OnVisualChildrenChanged(visualAdded, visualRemoved);
         }
 
-        #endregion Protected Methods
-
         //------------------------------------------------------
         //
         //  Internal Methods
         //
         //------------------------------------------------------
-
-        #region Internal Methods
 
         /// <summary>
         ///     Invalidates grid caches and makes the grid dirty for measure.
@@ -789,15 +772,11 @@ namespace Avalonia.Controls
             return (value);
         }
 
-        #endregion Internal Methods
-
         //------------------------------------------------------
         //
         //  Internal Properties
         //
         //------------------------------------------------------
-
-        #region Internal Properties
 
         /// <summary>
         /// Convenience accessor to MeasureOverrideInProgress bit flag.
@@ -835,15 +814,11 @@ namespace Avalonia.Controls
             set { SetFlags(!value, Flags.ValidDefinitionsVStructure); }
         }
 
-        #endregion Internal Properties
-
         //------------------------------------------------------
         //
         //  Private Methods
         //
         //------------------------------------------------------
-
-        #region Private Methods
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
@@ -3021,15 +2996,11 @@ namespace Avalonia.Controls
             return (result != 2);
         }
 
-        #endregion Private Methods
-
         //------------------------------------------------------
         //
         //  Private Properties
         //
         //------------------------------------------------------
-
-        #region Private Properties
 
         /// <summary>
         /// Private version returning array of column definitions.
@@ -3238,15 +3209,11 @@ namespace Avalonia.Controls
             }
         }
 
-        #endregion Private Properties
-
         //------------------------------------------------------
         //
         //  Private Fields
         //
         //------------------------------------------------------
-
-        #region Private Fields
         private ExtendedData _data;                             //  extended data instantiated on demand, for non-trivial case handling only
         private Flags _flags;                                   //  grid validity / property caches dirtiness flags
         private GridLinesRenderer _gridLinesRenderer;
@@ -3257,15 +3224,11 @@ namespace Avalonia.Controls
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
 
-        #endregion Private Fields
-
         //------------------------------------------------------
         //
         //  Static Fields
         //
         //------------------------------------------------------
-
-        #region Static Fields
         private const double c_epsilon = 1e-5;                  //  used in fp calculations
         private const double c_starClip = 1e298;                //  used as maximum for clipping star values during normalization
         private const int c_layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
@@ -3278,15 +3241,11 @@ namespace Avalonia.Controls
         private static readonly IComparer s_maxRatioComparer = new MaxRatioComparer();
         private static readonly IComparer s_starWeightComparer = new StarWeightComparer();
 
-        #endregion Static Fields
-
         //------------------------------------------------------
         //
         //  Private Structures / Classes
         //
         //------------------------------------------------------
-
-        #region Private Structures Classes
 
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.
@@ -3340,15 +3299,11 @@ namespace Avalonia.Controls
             ArrangeOverrideInProgress               = 0x00080000,   //  "1" while in the context of Grid.ArrangeOverride
         }
 
-        #endregion Private Structures Classes
-
         //------------------------------------------------------
         //
         //  Properties
         //
         //------------------------------------------------------
-
-        #region Properties
 
         /// <summary>
         /// ShowGridLines property. This property is used mostly
@@ -3464,15 +3419,11 @@ namespace Avalonia.Controls
                               false,
                               new PropertyChangedCallback(DefinitionBase.OnIsSharedSizeScopePropertyChanged)));
 
-        #endregion Properties
-
         //------------------------------------------------------
         //
         //  Internal Structures / Classes
         //
         //------------------------------------------------------
-
-        #region Internal Structures Classes
 
         /// <summary>
         /// LayoutTimeSizeType is used internally and reflects layout-time size type.
@@ -3486,15 +3437,11 @@ namespace Avalonia.Controls
             Star        = 0x04,
         }
 
-        #endregion Internal Structures Classes
-
         //------------------------------------------------------
         //
         //  Private Structures / Classes
         //
         //------------------------------------------------------
-
-        #region Private Structures Classes
 
         /// <summary>
         /// CellCache stored calculated values of
@@ -4071,12 +4018,10 @@ namespace Avalonia.Controls
                 {
                     if (_currentEnumerator == -1)
                     {
-                        #pragma warning suppress 6503 // IEnumerator.Current is documented to throw this exception
                         throw new InvalidOperationException(SR.Get(SRID.EnumeratorNotStarted));
                     }
                     if (_currentEnumerator >= 3)
                     {
-                        #pragma warning suppress 6503 // IEnumerator.Current is documented to throw this exception
                         throw new InvalidOperationException(SR.Get(SRID.EnumeratorReachedEnd));
                     }
 
@@ -4186,7 +4131,5 @@ namespace Avalonia.Controls
             private static readonly Pen s_evenDashPen;  //  second pen to draw dash
             private static readonly Point c_zeroPoint = new Point(0, 0);
         }
-
-        #endregion Private Structures Classes
     }
 }

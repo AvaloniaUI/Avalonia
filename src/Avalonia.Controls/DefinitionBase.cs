@@ -17,7 +17,6 @@ namespace Avalonia.Controls
     /// DefinitionBase provides core functionality used internally by Grid
     /// and ColumnDefinitionCollection / RowDefinitionCollection
     /// </summary>
-    [Localizability(LocalizationCategory.Ignore)]
     public abstract class DefinitionBase : FrameworkContentElement
     {
         //------------------------------------------------------
