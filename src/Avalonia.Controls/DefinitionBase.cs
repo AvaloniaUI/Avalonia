@@ -68,6 +68,7 @@ namespace Avalonia.Controls
         /// </summary>
         internal void OnEnterParentTree()
         {
+            this.InheritanceParent = Parent;
             if (_sharedState == null)
             {
                 //  start with getting SharedSizeGroup value. 
@@ -87,7 +88,7 @@ namespace Avalonia.Controls
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property.PropertyType == typeof(GridLength)
+            if (e.Property.PropertyType == typeof(GridLength)
              || e.Property.PropertyType == typeof(double))
                 OnUserSizePropertyChanged(e);
                 
@@ -165,7 +166,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
         /// <summary>
         /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
@@ -939,7 +939,7 @@ namespace Avalonia.Controls
         static DefinitionBase()
         {
             SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
-            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
+            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<Control>(OnPrivateSharedSizeScopePropertyChanged);
         }
 
         #endregion Properties
