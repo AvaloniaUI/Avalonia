@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 using Avalonia;
 using Avalonia.Collections;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -17,7 +18,7 @@ namespace Avalonia.Controls
     /// DefinitionBase provides core functionality used internally by Grid
     /// and ColumnDefinitionCollection / RowDefinitionCollection
     /// </summary>
-    public abstract class DefinitionBase : FrameworkContentElement
+    public abstract class DefinitionBase : AvaloniaObject
     {
         //------------------------------------------------------
         //
@@ -27,11 +28,11 @@ namespace Avalonia.Controls
 
         #region Constructors
 
-        internal DefinitionBase(bool isColumnDefinition)
+        /* internal DefinitionBase(bool isColumnDefinition)
         {
             _isColumnDefinition = isColumnDefinition;
             _parentIndex = -1;
-        }
+        }*/
 
         #endregion Constructors
 
@@ -134,7 +135,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
         /// </remarks>
-        internal static void OnUserSizePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        internal static void OnUserSizePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             DefinitionBase definition = (DefinitionBase) d;
 
@@ -161,7 +162,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
@@ -177,7 +178,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
         /// </remarks>
-        internal static void OnUserMinSizePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        internal static void OnUserMinSizePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             DefinitionBase definition = (DefinitionBase) d;
 
@@ -189,7 +190,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
@@ -197,7 +198,7 @@ namespace Avalonia.Controls
         internal static bool IsUserMinSizePropertyValueValid(object value)
         {
             double v = (double)value;
-            return (!DoubleUtil.IsNaN(v) && v >= 0.0d && !Double.IsPositiveInfinity(v));
+            return (!double.IsNaN(v) && v >= 0.0d && !Double.IsPositiveInfinity(v));
         }
 
         /// <summary>
@@ -206,7 +207,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
         /// </remarks>
-        internal static void OnUserMaxSizePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        internal static void OnUserMaxSizePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             DefinitionBase definition = (DefinitionBase) d;
 
@@ -218,7 +219,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
@@ -226,7 +227,7 @@ namespace Avalonia.Controls
         internal static bool IsUserMaxSizePropertyValueValid(object value)
         {
             double v = (double)value;
-            return (!DoubleUtil.IsNaN(v) && v >= 0.0d);
+            return (!double.IsNaN(v) && v >= 0.0d);
         }
 
         /// <summary>
@@ -240,7 +241,7 @@ namespace Avalonia.Controls
         /// elements belonging to a certain scope can easily access SharedSizeState collection. As well
         /// as been norified about enter / exit a scope.
         /// </remarks>
-        internal static void OnIsSharedSizeScopePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        internal static void OnIsSharedSizeScopePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             //  is it possible to optimize here something like this:
             //  if ((bool)d.GetValue(Grid.IsSharedSizeScopeProperty) == (d.GetLocalValue(PrivateSharedSizeScopeProperty) != null)
@@ -456,6 +457,8 @@ namespace Avalonia.Controls
             get { return (_parentIndex != -1); }
         }
 
+        internal Grid Parent { get; set; }
+
         #endregion Internal Properties
 
         //------------------------------------------------------
@@ -487,7 +490,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
         /// </summary>
-        private static void OnSharedSizeGroupPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnSharedSizeGroupPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             DefinitionBase definition = (DefinitionBase) d;
             
@@ -518,7 +521,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         /// <remarks>
         /// Verifies that Shared Size Group Property string
@@ -569,7 +572,7 @@ namespace Avalonia.Controls
         /// existing scope just left. In both cases if the DefinitionBase object is already registered
         /// in SharedSizeState, it should un-register and register itself in a new one.
         /// </remark>
-        private static void OnPrivateSharedSizeScopePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnPrivateSharedSizeScopePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             DefinitionBase definition = (DefinitionBase)d;
 
@@ -646,7 +649,7 @@ namespace Avalonia.Controls
         #region Private Fields
         private readonly bool _isColumnDefinition;      //  when "true", this is a ColumnDefinition; when "false" this is a RowDefinition (faster than a type check)
         private Flags _flags;                           //  flags reflecting various aspects of internal state
-        private int _parentIndex;                       //  this instance's index in parent's children collection
+        private int _parentIndex = -1;                  //  this instance's index in parent's children collection
 
         private Grid.LayoutTimeSizeType _sizeType;      //  layout-time user size type. it may differ from _userSizeValueCache.UnitType when calculating "to-content"
 
@@ -783,7 +786,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// Makes sure that one and only one layout updated handler is registered for this shared state.
             /// </summary>
-            internal void EnsureDeferredValidation(UIElement layoutUpdatedHost)
+            internal void EnsureDeferredValidation(Control layoutUpdatedHost)
             {
                 if (_layoutUpdatedHost == null)
                 {
@@ -861,7 +864,7 @@ namespace Avalonia.Controls
                     sharedMinSize = Math.Max(sharedMinSize, _registry[i].MinSize);
                 }
 
-                bool sharedMinSizeChanged = !DoubleUtil.AreClose(_minSize, sharedMinSize);
+                bool sharedMinSizeChanged = !MathUtilities.AreClose(_minSize, sharedMinSize);
 
                 //  compare accumulated min size with min sizes of the individual definitions
                 for (int i = 0, count = _registry.Count; i < count; ++i)
@@ -871,7 +874,7 @@ namespace Avalonia.Controls
                     if (sharedMinSizeChanged ||  definitionBase.LayoutWasUpdated)
                     {
                         //  if definition's min size is different, then need to re-measure
-                        if (!DoubleUtil.AreClose(sharedMinSize, definitionBase.MinSize))
+                        if (!MathUtilities.AreClose(sharedMinSize, definitionBase.MinSize))
                         {
                             Grid parentGrid = (Grid)definitionBase.Parent;
                             parentGrid.InvalidateMeasure();
@@ -884,7 +887,7 @@ namespace Avalonia.Controls
                             //  if measure is valid then also need to check arrange.
                             //  Note: definitionBase.SizeCache is volatile but at this point 
                             //  it contains up-to-date final size
-                            if (!DoubleUtil.AreClose(sharedMinSize, definitionBase.SizeCache))
+                            if (!MathUtilities.AreClose(sharedMinSize, definitionBase.SizeCache))
                             {
                                 Grid parentGrid = (Grid)definitionBase.Parent;
                                 parentGrid.InvalidateArrange();
@@ -907,7 +910,7 @@ namespace Avalonia.Controls
             private readonly string _sharedSizeGroupId;         //  Id of the shared size group this object is servicing
             private readonly List<DefinitionBase> _registry;    //  registry of participating definitions
             private readonly EventHandler _layoutUpdated;       //  instance event handler for layout updated event
-            private UIElement _layoutUpdatedHost;               //  UIElement for which layout updated event handler is registered
+            private Control _layoutUpdatedHost;               //  Control for which layout updated event handler is registered
             private bool _broadcastInvalidation;                //  "true" when broadcasting of invalidation is needed
             private bool _userSizeValid;                        //  "true" when _userSize is up to date
             private GridLength _userSize;                       //  shared state
@@ -928,8 +931,8 @@ namespace Avalonia.Controls
         /// Private shared size scope property holds a collection of shared state objects for the a given shared size scope.
         /// <see cref="OnIsSharedSizeScopePropertyChanged"/>
         /// </summary>
-        internal static readonly DependencyProperty PrivateSharedSizeScopeProperty =
-                DependencyProperty.RegisterAttached(
+        internal static readonly AvaloniaProperty PrivateSharedSizeScopeProperty =
+                AvaloniaProperty.RegisterAttached(
                         "PrivateSharedSizeScope",
                         typeof(SharedSizeScope),
                         typeof(DefinitionBase),
@@ -954,8 +957,8 @@ namespace Avalonia.Controls
         /// </description></item>
         /// </list>
         /// </remarks>
-        public static readonly DependencyProperty SharedSizeGroupProperty =
-                DependencyProperty.Register(
+        public static readonly AvaloniaProperty SharedSizeGroupProperty =
+                AvaloniaProperty.Register(
                         "SharedSizeGroup",
                         typeof(string),
                         typeof(DefinitionBase),
