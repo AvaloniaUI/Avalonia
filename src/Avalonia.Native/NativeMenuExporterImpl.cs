@@ -16,25 +16,70 @@ namespace Avalonia.Native
             _factory = factory;
         }
 
+        private void CreateSubmenu(IAvnAppMenuItem parent, NativeMenuItem item, ICollection<NativeMenuItem> children)
+        {
+            var menu = _factory.CreateMenu();
+
+            using (var buffer = new Utf8Buffer(item.Text))
+            {
+                menu.Title = buffer.DangerousGetHandle();
+            }
+            
+            SetChildren(menu, children);
+        }
+
+        private void SetChildren(IAvnAppMenu menu, ICollection<NativeMenuItem> children)
+        {
+            foreach (var item in children)
+            {
+                var menuItem = _factory.CreateMenuItem();
+
+                using (var buffer = new Utf8Buffer(item.Text))
+                {
+                    menuItem.Title = buffer.DangerousGetHandle();
+                }
+
+                menu.AddItem(menuItem);
+
+                if (item.SubItems.Count > 0)
+                {
+                    CreateSubmenu(menuItem, item, item.SubItems);
+                }
+            }
+        }
+
         public void SetMenu(ICollection<NativeMenuItem> menuItems)
         {
             var mainMenu = _factory.ObtainMainAppMenu();
 
-            using (var buffer = new Utf8Buffer("MainMenu"))
-            {
-                mainMenu.Title = buffer.DangerousGetHandle();
-            }
 
             foreach (var menuItem in menuItems)
             {
-                var item = _factory.CreateMenuItem();
-
-                using (var buffer = new Utf8Buffer(menuItem.Text))
+                if (menuItem.SubItems.Count > 0)
                 {
-                    item.Title = buffer.DangerousGetHandle();
-                }
+                    var menu = _factory.CreateMenu();
 
-                mainMenu.AddItem(item);
+
+                    var item = _factory.CreateMenuItem();
+
+                    using (var buffer = new Utf8Buffer(menuItem.Text))
+                    {
+
+                        menu.Title = buffer.DangerousGetHandle();
+                    }
+
+                    using (var buffer = new Utf8Buffer("ItemTitle"))
+                    {
+
+                        item.Title = buffer.DangerousGetHandle();
+                    }
+
+                    mainMenu.AddItem(item);
+
+                    item.SetSubMenu(menu);
+                    
+                    SetChildren(menu, menuItem.SubItems);
+                }
             }
         }
     }

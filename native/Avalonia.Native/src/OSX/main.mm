@@ -28,40 +28,12 @@ public:
         SetFrontProcess(&psn);
         
         id menubar = [NSMenu new];
+        [menubar setTitle:@"Test"];
         [NSApp setMainMenu:menubar];
         id appName = [[NSProcessInfo processInfo] processName];
         
-       /*
-        
-        id toolsMenu = [NSMenu new];
-        [toolsMenu setTitle:@"Tools"];
-        
-        id toolsMenuItem = [NSMenuItem new];
-        [[[NSApplication sharedApplication] mainMenu] addItem:toolsMenuItem];
-        [toolsMenuItem setSubmenu:toolsMenu];
-        
-        [toolsMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Wallet Manager" action:NULL keyEquivalent:@""]];
-        [toolsMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Settings"     action:NULL keyEquivalent:@""]];
-        
-        id helpMenu = [NSMenu new];
-        [helpMenu setTitle:@"Help"];
-        
-        id helpMenuItem = [NSMenuItem new];
-        [[[NSApplication sharedApplication] mainMenu] addItem:helpMenuItem];
-        [helpMenuItem setSubmenu:helpMenu];
-        
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"About" action:NULL keyEquivalent:@""]];
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Customer Support" action:NULL keyEquivalent:@""]];
-        
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Report Bug" action:NULL keyEquivalent:@""]];
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"FAQ" action:NULL keyEquivalent:@""]];
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Privacy Policy" action:NULL keyEquivalent:@""]];
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Terms and Conditions" action:NULL keyEquivalent:@""]];
-        
-        [helpMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Legal Issues" action:NULL keyEquivalent:@""]];
-        
-        */
-        [[NSApplication sharedApplication] finishLaunching];
+       
+        [NSApp finishLaunching];
         return S_OK;
     }
 };
