@@ -85,6 +85,15 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property.PropertyType == typeof(GridLength)
+             || e.Property.PropertyType == typeof(double))
+                OnUserSizePropertyChanged(e);
+                
+            base.OnPropertyChanged(e);
+        }
+
         /// <summary>
         /// Callback to notify about exitting model tree.
         /// </summary>
@@ -108,7 +117,7 @@ namespace Avalonia.Controls
             LayoutWasUpdated = true;
 
             //  defer verification for shared definitions
-            if (_sharedState != null)   {   _sharedState.EnsureDeferredValidation(grid);    }
+            if (_sharedState != null) { _sharedState.EnsureDeferredValidation(grid); }
         }
 
         /// <summary>
@@ -135,32 +144,28 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This method needs to be internal to be accessable from derived classes.
         /// </remarks>
-        internal static void OnUserSizePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        internal void OnUserSizePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            DefinitionBase definition = (DefinitionBase) d;
-
-            if (definition.InParentLogicalTree)
+            if (InParentLogicalTree)
             {
-                if (definition._sharedState != null)
+                if (_sharedState != null)
                 {
-                    definition._sharedState.Invalidate();
+                    _sharedState.Invalidate();
                 }
                 else
                 {
-                    Grid parentGrid = (Grid) definition.Parent;
-
-                    if (((GridLength) e.OldValue).GridUnitType != ((GridLength) e.NewValue).GridUnitType)
+                    if (((GridLength)e.OldValue).GridUnitType != ((GridLength)e.NewValue).GridUnitType)
                     {
-                        parentGrid.Invalidate();
+                        Parent.Invalidate();
                     }
                     else
-                    {   
-                        parentGrid.InvalidateMeasure();     
+                    {
+                        Parent.InvalidateMeasure();
                     }
                 }
             }
         }
-
+        
         /// <summary>
         /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>

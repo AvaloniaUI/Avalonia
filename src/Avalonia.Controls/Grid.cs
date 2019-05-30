@@ -656,11 +656,8 @@ namespace Avalonia.Controls
                     }
 
                     //  update render bound on grid lines renderer visual
-                    GridLinesRenderer gridLinesRenderer = EnsureGridLinesRenderer();
-                    if (gridLinesRenderer != null)
-                    {
-                        gridLinesRenderer.UpdateRenderBounds(arrangeSize);
-                    }
+                    var gridLinesRenderer = EnsureGridLinesRenderer();
+                    gridLinesRenderer?.UpdateRenderBounds(arrangeSize);
                 }
             }
             finally
@@ -956,6 +953,7 @@ namespace Avalonia.Controls
                 for(int i = 0; i < extData.DefinitionsU.Count;i++)
                 {
                     var definition = extData.DefinitionsU[i];
+                    definition.Parent = this;
                     definition.Index = i;
                     definition.OnEnterParentTree();
                 }
@@ -1009,6 +1007,7 @@ namespace Avalonia.Controls
                 for(int i = 0; i < extData.DefinitionsV.Count;i++)
                 {
                     var definition = extData.DefinitionsV[i];
+                    definition.Parent = this;
                     definition.Index = i;
                     definition.OnEnterParentTree();
                 }
@@ -4075,6 +4074,7 @@ namespace Avalonia.Controls
             internal void UpdateRenderBounds(Size arrangeSize)
             {
                 _lastArrangeSize = arrangeSize;
+                this.InvalidateMeasure();
                 this.InvalidateVisual();
             }
 

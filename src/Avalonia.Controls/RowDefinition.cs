@@ -55,11 +55,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated height of the row.
         /// </summary>
-        public double ActualHeight
-        {
-            get;
-            internal set;
-        }
+        public double ActualHeight => Parent?.GetFinalRowDefinitionHeight(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum height of the row in DIPs.
