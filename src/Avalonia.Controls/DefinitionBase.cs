@@ -529,13 +529,9 @@ namespace Avalonia.Controls
         /// b) contains only letters, digits and underscore ('_').
         /// c) does not start with a digit.
         /// </remarks>
-        private static bool SharedSizeGroupPropertyValueValid(object value)
+        private static string SharedSizeGroupPropertyValueValid(Control _, string value)
         {
-            //  null is default value
-            if (value == null)
-            {
-                return (true);
-            }
+            Contract.Requires<ArgumentNullException>(value != null);
 
             string id = (string)value;
 
@@ -557,11 +553,11 @@ namespace Avalonia.Controls
 
                 if (i == id.Length)
                 {
-                    return (true);
+                    return value;
                 }
             }
 
-            return (false);
+            throw new ArgumentException("Invalid SharedSizeGroup string.");            
         }
 
         /// <summary>
@@ -931,14 +927,9 @@ namespace Avalonia.Controls
         /// Private shared size scope property holds a collection of shared state objects for the a given shared size scope.
         /// <see cref="OnIsSharedSizeScopePropertyChanged"/>
         /// </summary>
-        internal static readonly AvaloniaProperty PrivateSharedSizeScopeProperty =
-                AvaloniaProperty.RegisterAttached(
-                        "PrivateSharedSizeScope",
-                        typeof(SharedSizeScope),
-                        typeof(DefinitionBase),
-                        new FrameworkPropertyMetadata(
-                                null,
-                                FrameworkPropertyMetadataOptions.Inherits));
+        private static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, SharedSizeScope>(
+                "PrivateSharedSizeScope");
 
         /// <summary>
         /// Shared size group property marks column / row definition as belonging to a group "Foo" or "Bar".
@@ -956,23 +947,19 @@ namespace Avalonia.Controls
         /// String must not start with a digit.
         /// </description></item>
         /// </list>
-        /// </remarks>
-        public static readonly AvaloniaProperty SharedSizeGroupProperty =
-                AvaloniaProperty.Register(
-                        "SharedSizeGroup",
-                        typeof(string),
-                        typeof(DefinitionBase),
-                        new FrameworkPropertyMetadata(new PropertyChangedCallback(OnSharedSizeGroupPropertyChanged)),
-                        new ValidateValueCallback(SharedSizeGroupPropertyValueValid));
+        /// </remarks> 
+        public static readonly AttachedProperty<string> SharedSizeGroupProperty =
+            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, string>(
+                "SharedSizeGroup",
+                validate:SharedSizeGroupPropertyValueValid);
 
         /// <summary>
         /// Static ctor. Used for static registration of properties.
         /// </summary>
         static DefinitionBase()
         {
-            PrivateSharedSizeScopeProperty.OverrideMetadata(
-                    typeof(DefinitionBase),
-                    new FrameworkPropertyMetadata(new PropertyChangedCallback(OnPrivateSharedSizeScopePropertyChanged)));
+            SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
+            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
         }
 
         #endregion Properties
