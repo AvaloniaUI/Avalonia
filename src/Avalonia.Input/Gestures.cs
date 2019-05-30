@@ -18,6 +18,14 @@ namespace Avalonia.Input
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
+        public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
+            RoutedEvent.Register<ScrollGestureEventArgs>(
+                "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
+ 
+        public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEndedEvent =
+            RoutedEvent.Register<ScrollGestureEventArgs>(
+                "ScrollGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+
         private static WeakReference s_lastPress;
 
         static Gestures()

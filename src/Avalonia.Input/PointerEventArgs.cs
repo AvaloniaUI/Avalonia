@@ -116,4 +116,15 @@ namespace Avalonia.Input
         [Obsolete()]
         public MouseButton MouseButton { get; private set; }
     }
+
+    public class PointerCaptureLostEventArgs : RoutedEventArgs
+    {
+        public IPointer Pointer { get; }
+
+        public PointerCaptureLostEventArgs(IInteractive source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
+        {
+            Pointer = pointer;
+            Source = source;
+        }
+    }
 }

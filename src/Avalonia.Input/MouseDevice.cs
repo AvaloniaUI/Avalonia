@@ -14,18 +14,14 @@ namespace Avalonia.Input
     /// <summary>
     /// Represents a mouse device.
     /// </summary>
-    public class MouseDevice : IMouseDevice, IPointer
+    public class MouseDevice : IMouseDevice
     {
         private int _clickCount;
         private Rect _lastClickRect;
         private ulong _lastClickTime;
-        private IInputElement _captured;
-        private IDisposable _capturedSubscription;
 
-        PointerType IPointer.Type => PointerType.Mouse;
-        bool IPointer.IsPrimary => true;
-        int IPointer.Id { get; } = Pointer.GetNextFreeId();
-        
+        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
@@ -34,27 +30,9 @@ namespace Avalonia.Input
         /// within the control's bounds or not. To set the mouse capture, call the 
         /// <see cref="Capture"/> method.
         /// </remarks>
-        public IInputElement Captured
-        {
-            get => _captured;
-            protected set
-            {
-                _capturedSubscription?.Dispose();
-                _capturedSubscription = null;
+        [Obsolete("Use IPointer instead")]
+        public IInputElement Captured => _pointer.Captured;
 
-                if (value != null)
-                {
-                    _capturedSubscription = Observable.FromEventPattern<VisualTreeAttachmentEventArgs>(
-                        x => value.DetachedFromVisualTree += x,
-                        x => value.DetachedFromVisualTree -= x)
-                        .Take(1)
-                        .Subscribe(_ => Captured = null);
-                }
-
-                _captured = value;
-            }
-        }
-        
         /// <summary>
         /// Gets the mouse position, in screen coordinates.
         /// </summary>
@@ -75,8 +53,7 @@ namespace Avalonia.Input
         /// </remarks>
         public virtual void Capture(IInputElement control)
         {
-            // TODO: Check visibility and enabled state before setting capture.
-            Captured = control;
+            _pointer.Capture(control);
         }
 
         /// <summary>
@@ -110,13 +87,13 @@ namespace Avalonia.Input
 
             if (rect.Contains(clientPoint))
             {
-                if (Captured == null)
+                if (_pointer.Captured == null)
                 {
                     SetPointerOver(this, root, clientPoint, InputModifiers.None);
                 }
                 else
                 {
-                    SetPointerOver(this, root, Captured, InputModifiers.None);
+                    SetPointerOver(this, root, _pointer.Captured, InputModifiers.None);
                 }
             }
         }
@@ -212,8 +189,8 @@ namespace Avalonia.Input
 
             if (hit != null)
             {
-                IInteractive source = GetSource(hit);
-
+                _pointer.Capture(hit);
+                var source = GetSource(hit);
                 if (source != null)
                 {
                     var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
@@ -229,8 +206,7 @@ namespace Avalonia.Input
                     _lastClickRect = new Rect(p, new Size())
                         .Inflate(new Thickness(settings.DoubleClickSize.Width / 2, settings.DoubleClickSize.Height / 2));
                     _lastMouseDownButton = properties.GetObsoleteMouseButton();
-                    var e = new PointerPressedEventArgs(source, this, root, p, properties, inputModifiers, _clickCount);
-
+                    var e = new PointerPressedEventArgs(source, _pointer, root, p, properties, inputModifiers, _clickCount);
                     source.RaiseEvent(e);
                     return e.Handled;
                 }
@@ -247,17 +223,17 @@ namespace Avalonia.Input
 
             IInputElement source;
 
-            if (Captured == null)
+            if (_pointer.Captured == null)
             {
                 source = SetPointerOver(this, root, p, inputModifiers);
             }
             else
             {
-                SetPointerOver(this, root, Captured, inputModifiers);
-                source = Captured;
+                SetPointerOver(this, root, _pointer.Captured, inputModifiers);
+                source = _pointer.Captured;
             }
 
-            var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, this, root,
+            var e = new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, root,
                 p, properties, inputModifiers);
 
             source?.RaiseEvent(e);
@@ -275,9 +251,10 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerReleasedEventArgs(source, this, root, p, props, inputModifiers, _lastMouseDownButton);
+                var e = new PointerReleasedEventArgs(source, _pointer, root, p, props, inputModifiers, _lastMouseDownButton);
 
                 source?.RaiseEvent(e);
+                _pointer.Capture(null);
                 return e.Handled;
             }
 
@@ -296,7 +273,7 @@ namespace Avalonia.Input
             if (hit != null)
             {
                 var source = GetSource(hit);
-                var e = new PointerWheelEventArgs(source, this, root, p, props, inputModifiers, delta);
+                var e = new PointerWheelEventArgs(source, _pointer, root, p, props, inputModifiers, delta);
 
                 source?.RaiseEvent(e);
                 return e.Handled;
@@ -309,7 +286,7 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(hit != null);
 
-            return Captured ??
+            return _pointer.Captured ??
                 (hit as IInteractive) ??
                 hit.GetSelfAndVisualAncestors().OfType<IInteractive>().FirstOrDefault();
         }
@@ -318,12 +295,12 @@ namespace Avalonia.Input
         {
             Contract.Requires<ArgumentNullException>(root != null);
 
-            return Captured ?? root.InputHitTest(p);
+            return _pointer.Captured ?? root.InputHitTest(p);
         }
 
         PointerEventArgs CreateSimpleEvent(RoutedEvent ev, IInteractive source, InputModifiers inputModifiers)
         {
-            return new PointerEventArgs(ev, source, this, null, default,
+            return new PointerEventArgs(ev, source, _pointer, null, default,
                 new PointerPointProperties(inputModifiers), inputModifiers);
         }
 

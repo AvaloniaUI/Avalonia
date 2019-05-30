@@ -35,28 +35,30 @@ namespace Avalonia.Input
                 var hit = args.Root.InputHitTest(args.Position);
 
                 _pointers[args.TouchPointId] = pointer = new Pointer(Pointer.GetNextFreeId(),
-                    PointerType.Touch, _pointers.Count == 0, hit);
+                    PointerType.Touch, _pointers.Count == 0);
+                pointer.Capture(hit);
             }
             
 
-            var target = pointer.GetEffectiveCapture() ?? args.Root;
+            var target = pointer.Captured ?? args.Root;
             if (args.Type == RawPointerEventType.TouchBegin)
             {
-                var modifiers = GetModifiers(args.InputModifiers, false);
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
-                    args.Root, args.Position, new PointerPointProperties(modifiers),
-                    modifiers));
+                    args.Root, args.Position,
+                    new PointerPointProperties(GetModifiers(args.InputModifiers, pointer.IsPrimary)),
+                    GetModifiers(args.InputModifiers, false)));
             }
 
             if (args.Type == RawPointerEventType.TouchEnd)
             {
                 _pointers.Remove(args.TouchPointId);
-                var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
-                        args.Root, args.Position, new PointerPointProperties(modifiers),
-                        modifiers, pointer.IsPrimary ? MouseButton.Left : MouseButton.None));
+                        args.Root, args.Position,
+                        new PointerPointProperties(GetModifiers(args.InputModifiers, false)),
+                        GetModifiers(args.InputModifiers, pointer.IsPrimary),
+                        pointer.IsPrimary ? MouseButton.Left : MouseButton.None));
                 }
             }
 
