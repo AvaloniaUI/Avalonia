@@ -655,7 +655,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Collection of shared states objects for a single scope
         /// </summary>
-        private class SharedSizeScope
+        internal class SharedSizeScope
         {
             /// <summary>
             /// Returns SharedSizeState object for a given group.
@@ -690,7 +690,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Implementation of per shared group state object
         /// </summary>
-        private class SharedSizeState
+        internal class SharedSizeState
         {
             /// <summary>
             /// Default ctor.
@@ -900,9 +900,11 @@ namespace Avalonia.Controls
         /// Private shared size scope property holds a collection of shared state objects for the a given shared size scope.
         /// <see cref="OnIsSharedSizeScopePropertyChanged"/>
         /// </summary>
-        private static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
+        internal static readonly AttachedProperty<SharedSizeScope> PrivateSharedSizeScopeProperty =
             AvaloniaProperty.RegisterAttached<DefinitionBase, Control, SharedSizeScope>(
-                "PrivateSharedSizeScope");
+                "PrivateSharedSizeScope",
+                defaultValue: null,
+                inherits: true);
 
         /// <summary>
         /// Shared size group property marks column / row definition as belonging to a group "Foo" or "Bar".

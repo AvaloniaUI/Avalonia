@@ -12,6 +12,11 @@ namespace Avalonia.Controls.UnitTests
 {
     public class SharedSizeScopeTests
     {
+        public bool HasSharedSizeScope(Control control)
+        {
+            return control.GetValue(DefinitionBase.PrivateSharedSizeScopeProperty) != null;
+        }
+
         [Fact]
         public void All_Descendant_Grids_Are_Registered_When_Added_After_Setting_Scope()
         {
@@ -23,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Child = scope;
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+            Assert.All(grids, g => Assert.True(HasSharedSizeScope(g)));
         }
 
         [Fact]
@@ -37,7 +42,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = scope;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+            Assert.All(grids, g => Assert.True(HasSharedSizeScope(g)));
         }
 
         [Fact]
@@ -51,10 +56,10 @@ namespace Avalonia.Controls.UnitTests
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Child = scope;
 
-            Assert.All(grids, g => Assert.True(g.HasSharedSizeScope()));
+            Assert.All(grids, g => Assert.True(HasSharedSizeScope(g)));
             root.SetValue(Grid.IsSharedSizeScopeProperty, false);
-            Assert.All(grids, g => Assert.False(g.HasSharedSizeScope()));
-            Assert.Equal(null, root.GetValue(Grid.PrivateSharedSizeScopeProperty));
+            Assert.All(grids, g => Assert.False(HasSharedSizeScope(g)));
+            Assert.Equal(null, root.GetValue(DefinitionBase.PrivateSharedSizeScopeProperty));
         }
 
         [Fact]

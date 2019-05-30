@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Collections;
@@ -922,8 +923,6 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ValidateDefinitionsUStructure()
         {
-            
-
             if (ColumnDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
@@ -937,8 +936,6 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    // extData.ColumnDefinitions.InternalTrimToSize();
-
                     if (extData.ColumnDefinitions.Count == 0)
                     {
                         //  if column definitions collection is empty
@@ -947,16 +944,26 @@ namespace Avalonia.Controls
                     }
                     else
                     {
+                        foreach(var definition in extData.DefinitionsU 
+                                               ?? Enumerable.Empty<DefinitionBase>())
+                            definition.OnExitParentTree();
+
                         extData.DefinitionsU = extData.ColumnDefinitions;
                     }
+                }
+
+                // adds index information.
+                for(int i = 0; i < extData.DefinitionsU.Count;i++)
+                {
+                    var definition = extData.DefinitionsU[i];
+                    definition.Index = i;
+                    definition.OnEnterParentTree();
                 }
 
                 ColumnDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Count > 0);
-
-            
         }
 
         /// <summary>
@@ -969,8 +976,6 @@ namespace Avalonia.Controls
         /// </remarks>
         private void ValidateDefinitionsVStructure()
         {
-            
-
             if (RowDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
@@ -984,8 +989,6 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    // extData.RowDefinitions.InternalTrimToSize();
-
                     if (extData.RowDefinitions.Count == 0)
                     {
                         //  if row definitions collection is empty
@@ -994,16 +997,26 @@ namespace Avalonia.Controls
                     }
                     else
                     {
+                        foreach(var definition in extData.DefinitionsV 
+                                               ?? Enumerable.Empty<DefinitionBase>())
+                            definition.OnExitParentTree();
+                        
                         extData.DefinitionsV = extData.RowDefinitions;
                     }
+                }
+
+                // adds index information.
+                for(int i = 0; i < extData.DefinitionsV.Count;i++)
+                {
+                    var definition = extData.DefinitionsV[i];
+                    definition.Index = i;
+                    definition.OnEnterParentTree();
                 }
 
                 RowDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Count > 0);
-
-            
         }
 
         /// <summary>
