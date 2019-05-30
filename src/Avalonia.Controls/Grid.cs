@@ -32,10 +32,12 @@ namespace Avalonia.Controls
         {
             IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+
             ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
             ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
             RowProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
             RowSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
         /// <summary>
@@ -2925,7 +2927,6 @@ namespace Avalonia.Controls
                     &&  grid.ListenToNotifications  )
                 {
                     grid.CellsStructureDirty = true;
-                    grid.InvalidateMeasure();
                 }
             }
         }
