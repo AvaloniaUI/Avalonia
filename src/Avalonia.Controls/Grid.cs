@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
-            SetFlags((bool) ShowGridLinesProperty.GetDefaultValue(DependencyObjectType), Flags.ShowGridLinesPropertyValue);
+            SetFlags((bool) ShowGridLinesProperty.GetDefaultValue(AvaloniaObjectType), Flags.ShowGridLinesPropertyValue);
         }
 
         //------------------------------------------------------
@@ -700,8 +700,8 @@ namespace Avalonia.Controls
         /// <see cref="Visual.OnVisualChildrenChanged"/>
         /// </summary>
         protected internal override void OnVisualChildrenChanged(
-            DependencyObject visualAdded,
-            DependencyObject visualRemoved)
+            AvaloniaObject visualAdded,
+            AvaloniaObject visualRemoved)
         {
             CellsStructureDirty = true;
 
@@ -2909,7 +2909,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
         /// </summary>
-        private static void OnShowGridLinesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             Grid grid = (Grid)d;
 
@@ -2925,7 +2925,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
         /// </summary>
-        private static void OnCellAttachedPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             Visual child = d as Visual;
 
@@ -2943,7 +2943,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         private static bool IsIntValueNotNegative(object value)
         {
@@ -2951,7 +2951,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// <see cref="DependencyProperty.ValidateValueCallback"/>
+        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         private static bool IsIntValueGreaterThanZero(object value)
         {
@@ -3306,8 +3306,8 @@ namespace Avalonia.Controls
         /// to <c>true</c> grid lines are drawn to visualize location
         /// of grid lines.
         /// </summary>
-        public static readonly DependencyProperty ShowGridLinesProperty =
-                DependencyProperty.Register(
+        public static readonly AvaloniaProperty ShowGridLinesProperty =
+                AvaloniaProperty.Register(
                       "ShowGridLines",
                       typeof(bool),
                       typeof(Grid),
@@ -3326,9 +3326,9 @@ namespace Avalonia.Controls
         /// should have Column property set to <c>0</c>. </para>
         /// <para> Default value for the property is <c>0</c>. </para>
         /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty ColumnProperty =
-                DependencyProperty.RegisterAttached(
+        [CommonAvaloniaProperty]
+        public static readonly AvaloniaProperty ColumnProperty =
+                AvaloniaProperty.RegisterAttached(
                       "Column",
                       typeof(int),
                       typeof(Grid),
@@ -3348,9 +3348,9 @@ namespace Avalonia.Controls
         /// <para> Default value for the property is <c>0</c>. </para>
         /// </remarks>
         /// </summary>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty RowProperty =
-                DependencyProperty.RegisterAttached(
+        [CommonAvaloniaProperty]
+        public static readonly AvaloniaProperty RowProperty =
+                AvaloniaProperty.RegisterAttached(
                       "Row",
                       typeof(int),
                       typeof(Grid),
@@ -3369,9 +3369,9 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Default value for the property is <c>1</c>.
         /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty ColumnSpanProperty =
-                DependencyProperty.RegisterAttached(
+        [CommonAvaloniaProperty]
+        public static readonly AvaloniaProperty ColumnSpanProperty =
+                AvaloniaProperty.RegisterAttached(
                       "ColumnSpan",
                       typeof(int),
                       typeof(Grid),
@@ -3390,9 +3390,9 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Default value for the property is <c>1</c>.
         /// </remarks>
-        [CommonDependencyProperty]
-        public static readonly DependencyProperty RowSpanProperty =
-                DependencyProperty.RegisterAttached(
+        [CommonAvaloniaProperty]
+        public static readonly AvaloniaProperty RowSpanProperty =
+                AvaloniaProperty.RegisterAttached(
                       "RowSpan",
                       typeof(int),
                       typeof(Grid),
@@ -3405,8 +3405,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.
         /// </summary>
-        public static readonly DependencyProperty IsSharedSizeScopeProperty  =
-                DependencyProperty.RegisterAttached(
+        public static readonly AvaloniaProperty IsSharedSizeScopeProperty  =
+                AvaloniaProperty.RegisterAttached(
                       "IsSharedSizeScope",
                       typeof(bool),
                       typeof(Grid),
