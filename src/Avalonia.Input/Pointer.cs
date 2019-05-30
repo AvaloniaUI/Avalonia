@@ -40,7 +40,7 @@ namespace Avalonia.Input
                 foreach (var notifyTarget in oldCapture.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)
-                        return;
+                        break;
                     notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
                 }
             }
