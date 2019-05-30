@@ -733,7 +733,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Invariant.Assert(_data != null);
+            Contract.Requires<NullReferenceException>(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!ColumnDefinitionsDirty)
@@ -755,7 +755,7 @@ namespace Avalonia.Controls
         {
             double value = 0.0;
 
-            Invariant.Assert(_data != null);
+            Contract.Requires<NullReferenceException>(_data != null);
 
             //  actual value calculations require structure to be up-to-date
             if (!RowDefinitionsDirty)
@@ -3661,7 +3661,7 @@ namespace Avalonia.Controls
 
             internal StarDistributionOrderIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3702,7 +3702,7 @@ namespace Avalonia.Controls
 
             internal DistributionOrderIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3745,7 +3745,7 @@ namespace Avalonia.Controls
 
             internal RoundingErrorIndexComparer(double[] errors)
             {
-                Invariant.Assert(errors != null);
+                Contract.Requires<NullReferenceException>(errors != null);
                 this.errors = errors;
             }
 
@@ -3844,7 +3844,7 @@ namespace Avalonia.Controls
 
             internal MinRatioIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3885,7 +3885,7 @@ namespace Avalonia.Controls
 
             internal MaxRatioIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
@@ -3926,7 +3926,7 @@ namespace Avalonia.Controls
 
             internal StarWeightIndexComparer(DefinitionBase[] definitions)
             {
-                Invariant.Assert(definitions != null);
+                Contract.Requires<NullReferenceException>(definitions != null);
                 this.definitions = definitions;
             }
 
