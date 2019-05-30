@@ -1999,8 +1999,9 @@ namespace Avalonia.Controls
 
             if (useLayoutRounding)
             {
-                DpiScale dpiScale = GetDpi();
-                dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
+                // DpiScale dpiScale = GetDpi();
+                // dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
+                dpi = (VisualRoot as Layout.ILayoutRoot)?.LayoutScaling ?? 1.0;
                 roundingErrors = RoundingErrors;
             }
 
@@ -2033,7 +2034,7 @@ namespace Avalonia.Controls
                         if (useLayoutRounding)
                         {
                             roundingErrors[i] = definitions[i].SizeCache;
-                            definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                            definitions[i].SizeCache = MathUtilities.RoundLayoutValue(definitions[i].SizeCache, dpi);
                         }
                     }
                     definitionIndices[starDefinitionsCount++] = i;
@@ -2072,7 +2073,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[i] = definitions[i].SizeCache;
-                        definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                        definitions[i].SizeCache = MathUtilities.RoundLayoutValue(definitions[i].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[i].SizeCache;
@@ -2123,7 +2124,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndices[i]] = definitions[definitionIndices[i]].SizeCache;
-                        definitions[definitionIndices[i]].SizeCache = Control.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
+                        definitions[definitionIndices[i]].SizeCache = MathUtilities.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[definitionIndices[i]].SizeCache;
@@ -2148,7 +2149,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndex] = final;
-                        final = Control.RoundLayoutValue(finalOld, dpi);
+                        final = MathUtilities.RoundLayoutValue(finalOld, dpi);
                         final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
                         final = Math.Min(final, definitions[definitionIndex].SizeCache);
                     }
@@ -2175,7 +2176,7 @@ namespace Avalonia.Controls
                     RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
                     Array.Sort(definitionIndices, 0, definitions.Count, roundingErrorIndexComparer);
                     double adjustedSize = allPreferredArrangeSize;
-                    double dpiIncrement = Control.RoundLayoutValue(1.0, dpi);
+                    double dpiIncrement = MathUtilities.RoundLayoutValue(1.0, dpi);
 
                     if (allPreferredArrangeSize > finalSize)
                     {
@@ -2565,8 +2566,9 @@ namespace Avalonia.Controls
             // unrounded sizes, to avoid breaking assumptions in the previous phases
             if (UseLayoutRounding)
             {
-                DpiScale dpiScale = GetDpi();
-                double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
+                // DpiScale dpiScale = GetDpi();
+                // double dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
+                var dpi = (VisualRoot as Layout.ILayoutRoot)?.LayoutScaling ?? 1.0;
                 double[] roundingErrors = RoundingErrors;
                 double roundedTakenSize = 0.0;
 
@@ -2574,7 +2576,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Count; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = Control.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = MathUtilities.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -2823,12 +2825,12 @@ namespace Avalonia.Controls
             if (ShowGridLines && (_gridLinesRenderer == null))
             {
                 _gridLinesRenderer = new GridLinesRenderer();
-                this.AddVisualChild(_gridLinesRenderer);
+                this.VisualChildren.Add(_gridLinesRenderer);
             }
 
             if ((!ShowGridLines) && (_gridLinesRenderer != null))
             {
-                this.RemoveVisualChild(_gridLinesRenderer);
+                this.VisualChildren.Add(_gridLinesRenderer);
                 _gridLinesRenderer = null;
             }
 
