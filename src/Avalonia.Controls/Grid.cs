@@ -295,16 +295,16 @@ namespace Avalonia.Controls
                 if (extData == null)
                 {
                     gridDesiredSize = new Size();
-                    Controls children = InternalChildren;
+                    var children = this.Children;
 
                     for (int i = 0, count = children.Count; i < count; ++i)
                     {
-                        Control child = children[i];
+                        var child = children[i];
                         if (child != null)
                         {
                             child.Measure(constraint);
-                            gridDesiredSize.Width = Math.Max(gridDesiredSize.Width, child.DesiredSize.Width);
-                            gridDesiredSize.Height = Math.Max(gridDesiredSize.Height, child.DesiredSize.Height);
+                            gridDesiredSize = new Size(Math.Max(gridDesiredSize.Width, child.DesiredSize.Width),
+                                                       Math.Max(gridDesiredSize.Height, child.DesiredSize.Height));
                         }
                     }
                 }
@@ -593,11 +593,11 @@ namespace Avalonia.Controls
 
                 if (_data == null)
                 {
-                    Controls children = InternalChildren;
+                    var children = this.Children;
 
                     for (int i = 0, count = children.Count; i < count; ++i)
                     {
-                        Control child = children[i];
+                        var child = children[i];
                         if (child != null)
                         {
                             child.Arrange(new Rect(arrangeSize));
@@ -615,11 +615,11 @@ namespace Avalonia.Controls
 
                     
 
-                    Controls children = InternalChildren;
+                    var children = this.Children;
 
                     for (int currentCell = 0; currentCell < PrivateCells.Length; ++currentCell)
                     {
-                        Control cell = children[currentCell];
+                        var cell = children[currentCell];
                         if (cell == null)
                         {
                             continue;
@@ -798,7 +798,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void ValidateCellsCore()
         {
-            Controls children = InternalChildren;
+            var children = this.Children;
             ExtendedData extData = ExtData;
 
             extData.CellCachesCollection = new CellCache[children.Count];
@@ -813,7 +813,7 @@ namespace Avalonia.Controls
 
             for (int i = PrivateCells.Length - 1; i >= 0; --i)
             {
-                Control child = children[i];
+                var child = children[i];
                 if (child == null)
                 {
                     continue;
@@ -828,19 +828,19 @@ namespace Avalonia.Controls
                 //  read indices from the corresponding properties
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
-                cell.ColumnIndex = Math.Min(GetColumn(child), DefinitionsU.Count - 1);
+                cell.ColumnIndex = Math.Min(GetColumn((Control)child), DefinitionsU.Count - 1);
                 //      clamp to value < number_of_rows
                 //      row >= 0 is guaranteed by property value validation callback
-                cell.RowIndex = Math.Min(GetRow(child), DefinitionsV.Count - 1);
+                cell.RowIndex = Math.Min(GetRow((Control)child), DefinitionsV.Count - 1);
 
                 //  read span properties
                 //      clamp to not exceed beyond right side of the grid
                 //      column_span > 0 is guaranteed by property value validation callback
-                cell.ColumnSpan = Math.Min(GetColumnSpan(child), DefinitionsU.Count - cell.ColumnIndex);
+                cell.ColumnSpan = Math.Min(GetColumnSpan((Control)child), DefinitionsU.Count - cell.ColumnIndex);
 
                 //      clamp to not exceed beyond bottom side of the grid
                 //      row_span > 0 is guaranteed by property value validation callback
-                cell.RowSpan = Math.Min(GetRowSpan(child), DefinitionsV.Count - cell.RowIndex);
+                cell.RowSpan = Math.Min(GetRowSpan((Control)child), DefinitionsV.Count - cell.RowIndex);
 
                 Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Count);
                 Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Count);
@@ -1076,7 +1076,7 @@ namespace Avalonia.Controls
         {
             for (int i=0; i<minSizes.Length; i++)
             {
-                if (DoubleUtil.GreaterThanOrClose(minSizes[i], 0))
+                if (MathUtilities.GreaterThanOrClose(minSizes[i], 0))
                 {
                     if (isRows)
                     {
@@ -1124,7 +1124,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            Controls children = InternalChildren;
+            var children = this.Children;
             Hashtable spanStore = null;
             bool ignoreDesiredSizeV = forceInfinityV;
 
@@ -1274,7 +1274,7 @@ namespace Avalonia.Controls
             }
 
             
-            Control child = InternalChildren[cell];
+            var child = this.Children[cell];
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
