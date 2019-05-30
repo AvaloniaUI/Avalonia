@@ -242,7 +242,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Returns a ColumnDefinitions of column definitions.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public ColumnDefinitions ColumnDefinitions
         {
             get
@@ -257,7 +256,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Returns a RowDefinitions of row definitions.
         /// </summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public RowDefinitions RowDefinitions
         {
             get
