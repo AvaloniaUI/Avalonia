@@ -113,40 +113,52 @@ public:
     }
 };
 
-static IAvnAppMenu* s_MainAppMenu = nullptr;
+static IAvnAppMenu* s_AppBar = nullptr;
+
+static IAvnAppMenu* s_AppMenu = nullptr;
 
 extern IAvnAppMenu* GetAppMenu()
 {
     @autoreleasepool
     {
-        if(s_MainAppMenu == nullptr)
+        if(s_AppMenu == nullptr)
         {
-            s_MainAppMenu = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
-            @autoreleasepool {
-                
-            
             id appMenu = [NSMenu new];
             [appMenu setTitle:@"AppMenu"];
+            
+            s_AppMenu = new AvnAppMenu(appMenu);
+            
             id appName = [[NSProcessInfo processInfo] processName];
-            [[NSProcessInfo processInfo] setProcessName:@"Test"];
-            id quitTitle = [@"Quit " stringByAppendingString:appName];
-            id quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
-                                                         action:@selector(terminate:) keyEquivalent:@"q"];
+            
+            //id quitTitle = [@"Quit " stringByAppendingString:appName];
+            //d quitMenuItem = [[NSMenuItem alloc] initWithTitle:quitTitle
+            //                                          action:@selector(terminate:) keyEquivalent:@"q"];
             
             
-            id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
-            [appMenu addItem:testMenuItem];
-            [appMenu addItem:quitMenuItem];
-            
+            //id testMenuItem = [[NSMenuItem alloc] initWithTitle:@"Test" action:NULL keyEquivalent:@""];
+            //[appMenu addItem:testMenuItem];
+            //   [appMenu addItem:quitMenuItem];
             
             id appMenuItem = [NSMenuItem new];
             [[NSApp mainMenu] addItem:appMenuItem];
             
             [appMenuItem setSubmenu:appMenu];
-            }
         }
         
-        return s_MainAppMenu;
+        return s_AppMenu;
+    }
+}
+
+extern IAvnAppMenu* GetAppBar()
+{
+    @autoreleasepool
+    {
+        if(s_AppBar == nullptr)
+        {
+            s_AppBar = new AvnAppMenu([[NSApplication sharedApplication] mainMenu]);
+        }
+        
+        return s_AppBar;
     }
 }
 

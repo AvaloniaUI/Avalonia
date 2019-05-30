@@ -16,16 +16,13 @@ namespace Avalonia.Native
             _factory = factory;
         }
 
-        private void CreateSubmenu(IAvnAppMenuItem parent, NativeMenuItem item, ICollection<NativeMenuItem> children)
+        private IAvnAppMenu CreateSubmenu(ICollection<NativeMenuItem> children)
         {
             var menu = _factory.CreateMenu();
 
-            using (var buffer = new Utf8Buffer(item.Text))
-            {
-                menu.Title = buffer.DangerousGetHandle();
-            }
-            
             SetChildren(menu, children);
+
+            return menu;
         }
 
         private void SetChildren(IAvnAppMenu menu, ICollection<NativeMenuItem> children)
@@ -43,14 +40,54 @@ namespace Avalonia.Native
 
                 if (item.SubItems.Count > 0)
                 {
-                    CreateSubmenu(menuItem, item, item.SubItems);
+                    var submenu = _factory.CreateMenu();
+
+                    using (var buffer = new Utf8Buffer(item.Text))
+                    {
+                        submenu.Title = buffer.DangerousGetHandle();
+                    }
+
+                    menuItem.SetSubMenu(submenu);
+                    
+                    AddItemsToMenu(submenu, item.SubItems);
                 }
+            }
+        }
+
+        private void AddItemsToMenu(IAvnAppMenu menu, ICollection<NativeMenuItem> items, bool isMainMenu = false)
+        {
+            foreach (var item in items)
+            {
+                var menuItem = _factory.CreateMenuItem();
+
+                if (item.SubItems.Count > 0 || isMainMenu)
+                {
+                    var subMenu = CreateSubmenu(item.SubItems);
+
+                    menuItem.SetSubMenu(subMenu);
+                    
+                    using (var buffer = new Utf8Buffer(item.Text))
+                    {
+                        subMenu.Title = buffer.DangerousGetHandle();
+                    }
+                }
+                else
+                {
+                    using (var buffer = new Utf8Buffer(item.Text))
+                    {
+                        menuItem.Title = buffer.DangerousGetHandle();
+                    }
+                }
+
+                menu.AddItem(menuItem);
             }
         }
 
         public void SetMenu(ICollection<NativeMenuItem> menuItems)
         {
-            var mainMenu = _factory.ObtainMainAppMenu();
+            var mainMenu = _factory.ObtainAppMenu();
+            AddItemsToMenu(_factory.ObtainAppBar(), menuItems);
+            /*var mainMenu = _factory.ObtainMainAppMenu();
 
 
             foreach (var menuItem in menuItems)
@@ -80,7 +117,7 @@ namespace Avalonia.Native
                     
                     SetChildren(menu, menuItem.SubItems);
                 }
-            }
+            }*/
         }
     }
 }

@@ -144,10 +144,16 @@ public:
         return S_OK;
     }
     
-    virtual HRESULT ObtainMainAppMenu(IAvnAppMenu** ppv) override
+    virtual HRESULT ObtainAppBar(IAvnAppMenu** ppv) override
+    {
+        *ppv = ::GetAppBar();
+        return  S_OK;
+    }
+    
+    virtual HRESULT ObtainAppMenu(IAvnAppMenu** ppv) override
     {
         *ppv = ::GetAppMenu();
-        return  S_OK;
+        return S_OK;
     }
     
     virtual HRESULT CreateMenu (IAvnAppMenu** ppv) override
