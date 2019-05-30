@@ -42,7 +42,7 @@ namespace Avalonia.Input
             var target = pointer.GetEffectiveCapture() ?? args.Root;
             if (args.Type == RawPointerEventType.TouchBegin)
             {
-                var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
+                var modifiers = GetModifiers(args.InputModifiers, false);
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
                     args.Root, args.Position, new PointerPointProperties(modifiers),
                     modifiers));
@@ -51,7 +51,7 @@ namespace Avalonia.Input
             if (args.Type == RawPointerEventType.TouchEnd)
             {
                 _pointers.Remove(args.TouchPointId);
-                var modifiers = GetModifiers(args.InputModifiers, false);
+                var modifiers = GetModifiers(args.InputModifiers, pointer.IsPrimary);
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
