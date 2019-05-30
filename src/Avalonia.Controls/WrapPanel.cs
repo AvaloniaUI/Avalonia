@@ -112,7 +112,7 @@ namespace Avalonia.Controls
                 //this is the size of the child in UV space
                 var sz = new UVSize(Orientation, child.DesiredSize.Width, child.DesiredSize.Height);
 
-                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U) //need to switch to another line
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) //need to switch to another line
                 {
                     panelSize.U = Max(curLineSize.U, panelSize.U);
                     panelSize.V += curLineSize.V;
