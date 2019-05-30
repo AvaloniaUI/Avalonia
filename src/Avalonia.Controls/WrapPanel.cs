@@ -156,14 +156,14 @@ namespace Avalonia.Controls
 
                 var sz = new UVSize(Orientation, child.DesiredSize.Width, child.DesiredSize.Height);
 
-                if ((curLineSize.U + sz.U) > uvFinalSize.U) //need to switch to another line
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) //need to switch to another line
                 {
                     arrangeLine(accumulatedV, curLineSize.V, firstInLine, i);
 
                     accumulatedV += curLineSize.V;
                     curLineSize = sz;
 
-                    if (sz.U > uvFinalSize.U) //the element is wider then the constraint - give it a separate line                    
+                    if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) //the element is wider then the constraint - give it a separate line                    
                     {
                         //switch to next line which only contain one element
                         arrangeLine(accumulatedV, sz.V, i, ++i);
