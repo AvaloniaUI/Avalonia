@@ -94,7 +94,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="element">Control to read Column property from.</param>
         /// <returns>Column property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
         public static int GetColumn(Control element)
         {
             if (element == null)
@@ -125,7 +124,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="element">Control to read Row property from.</param>
         /// <returns>Row property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
         public static int GetRow(Control element)
         {
             if (element == null)
@@ -156,7 +154,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="element">Control to read ColumnSpan property from.</param>
         /// <returns>ColumnSpan property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
         public static int GetColumnSpan(Control element)
         {
             if (element == null)
@@ -187,7 +184,6 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="element">Control to read RowSpan property from.</param>
         /// <returns>RowSpan property value.</returns>
-        [AttachedPropertyBrowsableForChildren()]
         public static int GetRowSpan(Control element)
         {
             if (element == null)
