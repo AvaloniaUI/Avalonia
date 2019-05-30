@@ -50,7 +50,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// <see cref="FrameworkElement.LogicalChildren"/>
         /// </summary>
-        protected internal override IEnumerator LogicalChildren
+        /*  protected internal override IEnumerator LogicalChildren
         {
             get
             {
@@ -74,7 +74,7 @@ namespace Avalonia.Controls
 
                 return (new GridChildrenCollectionEnumeratorSimple(this, !noChildren));
             }
-        }
+        } */
 
         /// <summary>
         /// Helper for setting Column property on a Control.
@@ -235,7 +235,7 @@ namespace Avalonia.Controls
         //
         //------------------------------------------------------
 
-        /// <summary>
+        /* /// <summary>
         ///   Derived class must implement to support Visual children. The method must return
         ///    the child at the specified index. Index must be between 0 and GetVisualChildrenCount-1.
         ///
@@ -272,7 +272,7 @@ namespace Avalonia.Controls
         {
             //since GridLinesRenderer has not been added as a child, so we do not subtract
             get { return base.VisualChildrenCount + (_gridLinesRenderer != null ? 1 : 0); }
-        }
+        }*/
 
 
         /// <summary>
@@ -2902,7 +2902,7 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
+        /* /// <summary>
         /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
         /// </summary>
         private static bool IsIntValueNotNegative(object value)
@@ -2916,7 +2916,7 @@ namespace Avalonia.Controls
         private static bool IsIntValueGreaterThanZero(object value)
         {
             return ((int)value > 0);
-        }
+        }*/
 
         /// <summary>
         /// Helper for Comparer methods.
@@ -3890,7 +3890,7 @@ namespace Avalonia.Controls
             }
         }
 
-        /// <summary>
+        /*  /// <summary>
         /// Implementation of a simple enumerator of grid's logical children
         /// </summary>
         private class GridChildrenCollectionEnumeratorSimple : IEnumerator
@@ -3974,7 +3974,7 @@ namespace Avalonia.Controls
             private Controls _enumerator2Collection;
             private int _enumerator2Index;
             private int _enumerator2Count;
-        }
+        }*/
 
         /// <summary>
         /// Helper to render grid lines.
