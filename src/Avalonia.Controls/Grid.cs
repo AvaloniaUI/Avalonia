@@ -28,6 +28,8 @@ namespace Avalonia.Controls
 
         static Grid()
         {
+            ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
+            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
         }
 
         /// <summary>
@@ -35,7 +37,6 @@ namespace Avalonia.Controls
         /// </summary>
         public Grid()
         {
-            SetFlags((bool) ShowGridLinesProperty.GetDefaultValue(AvaloniaObjectType), Flags.ShowGridLinesPropertyValue);
         }
 
         //------------------------------------------------------
@@ -81,11 +82,7 @@ namespace Avalonia.Controls
         /// <param name="value">Column property value.</param>
         public static void SetColumn(Control element, int value)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
+            Contract.Requires<ArgumentNullException>(element != null);
             element.SetValue(ColumnProperty, value);
         }
 
@@ -96,12 +93,8 @@ namespace Avalonia.Controls
         /// <returns>Column property value.</returns>
         public static int GetColumn(Control element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(ColumnProperty));
+            Contract.Requires<ArgumentNullException>(element != null);
+            return element.GetValue(ColumnProperty);
         }
 
         /// <summary>
@@ -111,11 +104,7 @@ namespace Avalonia.Controls
         /// <param name="value">Row property value.</param>
         public static void SetRow(Control element, int value)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
+            Contract.Requires<ArgumentNullException>(element != null);
             element.SetValue(RowProperty, value);
         }
 
@@ -126,12 +115,8 @@ namespace Avalonia.Controls
         /// <returns>Row property value.</returns>
         public static int GetRow(Control element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(RowProperty));
+            Contract.Requires<ArgumentNullException>(element != null);
+            return element.GetValue(RowProperty);
         }
 
         /// <summary>
@@ -141,11 +126,7 @@ namespace Avalonia.Controls
         /// <param name="value">ColumnSpan property value.</param>
         public static void SetColumnSpan(Control element, int value)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
+            Contract.Requires<ArgumentNullException>(element != null);
             element.SetValue(ColumnSpanProperty, value);
         }
 
@@ -156,12 +137,8 @@ namespace Avalonia.Controls
         /// <returns>ColumnSpan property value.</returns>
         public static int GetColumnSpan(Control element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(ColumnSpanProperty));
+            Contract.Requires<ArgumentNullException>(element != null);
+            return element.GetValue(ColumnSpanProperty);
         }
 
         /// <summary>
@@ -171,11 +148,7 @@ namespace Avalonia.Controls
         /// <param name="value">RowSpan property value.</param>
         public static void SetRowSpan(Control element, int value)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
+            Contract.Requires<ArgumentNullException>(element != null);
             element.SetValue(RowSpanProperty, value);
         }
 
@@ -186,12 +159,8 @@ namespace Avalonia.Controls
         /// <returns>RowSpan property value.</returns>
         public static int GetRowSpan(Control element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((int)element.GetValue(RowSpanProperty));
+            Contract.Requires<ArgumentNullException>(element != null);
+            return element.GetValue(RowSpanProperty);
         }
 
         /// <summary>
@@ -201,11 +170,7 @@ namespace Avalonia.Controls
         /// <param name="value">IsSharedSizeScope property value.</param>
         public static void SetIsSharedSizeScope(Control element, bool value)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
+            Contract.Requires<ArgumentNullException>(element != null);
             element.SetValue(IsSharedSizeScopeProperty, value);
         }
 
@@ -216,12 +181,8 @@ namespace Avalonia.Controls
         /// <returns>IsSharedSizeScope property value.</returns>
         public static bool GetIsSharedSizeScope(Control element)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException("element");
-            }
-
-            return ((bool)element.GetValue(IsSharedSizeScopeProperty));
+            Contract.Requires<ArgumentNullException>(element != null);
+            return element.GetValue(IsSharedSizeScopeProperty);
         }
 
         //------------------------------------------------------
@@ -235,7 +196,7 @@ namespace Avalonia.Controls
         /// </summary>
         public bool ShowGridLines
         {
-            get { return (CheckFlagsAnd(Flags.ShowGridLinesPropertyValue)); }
+            get { return GetValue(ShowGridLinesProperty); }
             set { SetValue(ShowGridLinesProperty, value); }
         }
 
@@ -3304,14 +3265,8 @@ namespace Avalonia.Controls
         /// to <c>true</c> grid lines are drawn to visualize location
         /// of grid lines.
         /// </summary>
-        public static readonly AvaloniaProperty ShowGridLinesProperty =
-                AvaloniaProperty.Register(
-                      "ShowGridLines",
-                      typeof(bool),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              false,
-                              new PropertyChangedCallback(OnShowGridLinesPropertyChanged)));
+        public static readonly StyledProperty<bool> ShowGridLinesProperty =
+            AvaloniaProperty.Register<Grid, bool>(nameof(ShowGridLines));
 
         /// <summary>
         /// Column property. This is an attached property.
@@ -3324,16 +3279,12 @@ namespace Avalonia.Controls
         /// should have Column property set to <c>0</c>. </para>
         /// <para> Default value for the property is <c>0</c>. </para>
         /// </remarks>
-        [CommonAvaloniaProperty]
-        public static readonly AvaloniaProperty ColumnProperty =
-                AvaloniaProperty.RegisterAttached(
-                      "Column",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              0,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueNotNegative));
+        public static readonly AttachedProperty<int> ColumnProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "Column",
+                defaultValue: 0,
+                validate: (_, v) => { if (v >= 0) return v; 
+                                      else throw new ArgumentException("Invalid Grid.Column value."); });
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -3346,16 +3297,12 @@ namespace Avalonia.Controls
         /// <para> Default value for the property is <c>0</c>. </para>
         /// </remarks>
         /// </summary>
-        [CommonAvaloniaProperty]
-        public static readonly AvaloniaProperty RowProperty =
-                AvaloniaProperty.RegisterAttached(
-                      "Row",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              0,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueNotNegative));
+        public static readonly AttachedProperty<int> RowProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "Row",
+                defaultValue: 0,
+                validate: (_, v) => { if (v >= 0) return v; 
+                                      else throw new ArgumentException("Invalid Grid.Row value."); });
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -3367,16 +3314,12 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Default value for the property is <c>1</c>.
         /// </remarks>
-        [CommonAvaloniaProperty]
-        public static readonly AvaloniaProperty ColumnSpanProperty =
-                AvaloniaProperty.RegisterAttached(
-                      "ColumnSpan",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              1,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueGreaterThanZero));
+        public static readonly AttachedProperty<int> ColumnSpanProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "ColumnSpan",
+                defaultValue: 1,
+                validate: (_, v) => { if (v >= 1) return v; 
+                                      else throw new ArgumentException("Invalid Grid.ColumnSpan value."); });
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -3388,29 +3331,19 @@ namespace Avalonia.Controls
         /// <remarks>
         /// Default value for the property is <c>1</c>.
         /// </remarks>
-        [CommonAvaloniaProperty]
-        public static readonly AvaloniaProperty RowSpanProperty =
-                AvaloniaProperty.RegisterAttached(
-                      "RowSpan",
-                      typeof(int),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              1,
-                              new PropertyChangedCallback(OnCellAttachedPropertyChanged)),
-                      new ValidateValueCallback(IsIntValueGreaterThanZero));
-
+        public static readonly AttachedProperty<int> RowSpanProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, int>(
+                "RowSpan",
+                defaultValue: 1,
+                validate: (_, v) => { if (v >= 1) return v; 
+                                      else throw new ArgumentException("Invalid Grid.RowSpan value."); });
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.
         /// </summary>
-        public static readonly AvaloniaProperty IsSharedSizeScopeProperty  =
-                AvaloniaProperty.RegisterAttached(
-                      "IsSharedSizeScope",
-                      typeof(bool),
-                      typeof(Grid),
-                      new FrameworkPropertyMetadata(
-                              false,
-                              new PropertyChangedCallback(DefinitionBase.OnIsSharedSizeScopePropertyChanged)));
+        public static readonly AttachedProperty<bool> IsSharedSizeScopeProperty =
+            AvaloniaProperty.RegisterAttached<Grid, Control, bool>(
+                "IsSharedSizeScope");
 
         //------------------------------------------------------
         //
