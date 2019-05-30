@@ -410,45 +410,18 @@ namespace Avalonia.Controls
         /// <summary>
         /// Internal helper to access up-to-date UserSize property value.
         /// </summary>
-        internal GridLength UserSizeValueCache
-        {
-            get
-            { 
-                return (GridLength) GetValue(
-                        _isColumnDefinition ?
-                        ColumnDefinition.WidthProperty :
-                        RowDefinition.HeightProperty);
-            }
-        }
+        internal abstract GridLength UserSizeValueCache { get; }
 
         /// <summary>
         /// Internal helper to access up-to-date UserMinSize property value.
         /// </summary>
-        internal double UserMinSizeValueCache
-        {
-            get
-            {
-                return (double) GetValue(
-                        _isColumnDefinition ? 
-                        ColumnDefinition.MinWidthProperty : 
-                        RowDefinition.MinHeightProperty);
-            }
-        }
+        internal abstract double UserMinSizeValueCache { get; }
 
         /// <summary>
         /// Internal helper to access up-to-date UserMaxSize property value.
         /// </summary>
-        internal double UserMaxSizeValueCache
-        {
-            get
-            {
-                return (double) GetValue(
-                        _isColumnDefinition ?
-                        ColumnDefinition.MaxWidthProperty :
-                        RowDefinition.MaxHeightProperty);
-            }
-        }
-
+        internal abstract double UserMaxSizeValueCache { get; }
+        
         /// <summary>
         /// Protected. Returns <c>true</c> if this DefinitionBase instance is in parent's logical tree.
         /// </summary>

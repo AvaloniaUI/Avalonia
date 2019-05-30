@@ -216,6 +216,11 @@ namespace Avalonia.Controls
 
                 return (_data.ColumnDefinitions);
             }
+            set
+            {
+                if (_data == null) { _data = new ExtendedData(); }
+                _data.ColumnDefinitions = value;
+            }
         }
 
         /// <summary>
@@ -229,6 +234,11 @@ namespace Avalonia.Controls
                 if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitions(); }
 
                 return (_data.RowDefinitions);
+            }
+            set
+            {
+                if (_data == null) { _data = new ExtendedData(); }
+                _data.RowDefinitions = value;
             }
         }
 

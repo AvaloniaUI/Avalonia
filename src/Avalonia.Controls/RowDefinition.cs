@@ -87,5 +87,9 @@ namespace Avalonia.Controls
             get { return GetValue(HeightProperty); }
             set { SetValue(HeightProperty, value); }
         }
+
+        internal override GridLength UserSizeValueCache => this.Height;
+        internal override double UserMinSizeValueCache => this.MinHeight;
+        internal override double UserMaxSizeValueCache => this.MaxHeight;
     }
 }
