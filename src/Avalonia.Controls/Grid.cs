@@ -30,7 +30,10 @@ namespace Avalonia.Controls
         static Grid()
         {
             ShowGridLinesProperty.Changed.AddClassHandler<Grid>(OnShowGridLinesPropertyChanged);
-            AffectsParentMeasure<Grid>(ColumnProperty, ColumnSpanProperty, RowProperty, RowSpanProperty);
+            ColumnProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            ColumnSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            RowProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
+            RowSpanProperty.Changed.AddClassHandler<Grid>(OnCellAttachedPropertyChanged);
         }
 
         /// <summary>
@@ -2893,7 +2896,7 @@ namespace Avalonia.Controls
 
             if (child != null)
             {
-                Grid grid = VisualTreeHelper.GetParent(child) as Grid;
+                Grid grid = child.GetVisualParent<Grid>();
                 if (    grid != null
                     &&  grid.ExtData != null
                     &&  grid.ListenToNotifications  )
