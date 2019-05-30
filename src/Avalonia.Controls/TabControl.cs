@@ -179,8 +179,9 @@ namespace Avalonia.Controls
             if (e.MouseButton == MouseButton.Left && e.Pointer.Type != PointerType.Mouse)
             {
                 var container = GetContainerFromEventSource(e.Source);
-                if (container.GetVisualsAt(e.GetPosition(container))
-                    .Any(c => container == c || container.IsVisualAncestorOf(c)))
+                if (container != null
+                    && container.GetVisualsAt(e.GetPosition(container))
+                        .Any(c => container == c || container.IsVisualAncestorOf(c)))
                 {
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
