@@ -7,22 +7,7 @@ namespace Avalonia.Controls.UnitTests
 {
     public class MouseTestHelper
     {
-
-        class TestPointer : IPointer
-        {
-            public int Id { get; } = Pointer.GetNextFreeId();
-
-            public void Capture(IInputElement control)
-            {
-                Captured = control;
-            }
-
-            public IInputElement Captured { get; set; }
-            public PointerType Type => PointerType.Mouse;
-            public bool IsPrimary => true;
-        }
-        
-        TestPointer _pointer = new TestPointer();
+        private Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
         private ulong _nextStamp = 1;
         private ulong Timestamp() => _nextStamp++;
 
@@ -52,8 +37,10 @@ namespace Avalonia.Controls.UnitTests
         
         public void Down(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
             InputModifiers modifiers = default, int clickCount = 1)
-            => Down(target, target, mouseButton, position, modifiers, clickCount);
-        
+        {
+            Down(target, target, mouseButton, position, modifiers, clickCount);
+        }
+
         public void Down(IInteractive target, IInteractive source, MouseButton mouseButton = MouseButton.Left, 
             Point position = default, InputModifiers modifiers = default, int clickCount = 1)
         {
@@ -64,6 +51,7 @@ namespace Avalonia.Controls.UnitTests
             else
             {
                 _pressedButton = mouseButton;
+                _pointer.Capture((IInputElement)target);
                 target.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
                     GetModifiers(modifiers), clickCount));
             }
@@ -87,9 +75,12 @@ namespace Avalonia.Controls.UnitTests
             _pressedButtons = (_pressedButtons | conv) ^ conv;
             var props = new PointerPointProperties(_pressedButtons);
             if (ButtonCount(props) == 0)
+            {
+                _pointer.Capture(null);
                 target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
                     Timestamp(), props,
                     GetModifiers(modifiers), _pressedButton));
+            }
             else
                 Move(target, source, position);
         }
