@@ -115,6 +115,39 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI.
+        /// </summary>
+        /// <param name="value">Input value to be rounded.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        /// <remarks>This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper associated with
+        /// UseLayoutRounding  property and should not be used as a general rounding utility.</remarks>
+        public static double RoundLayoutValue(double value, double dpiScale)
+        {
+            double newValue;
+
+            // If DPI == 1, don't use DPI-aware rounding.
+            if (!MathUtilities.AreClose(dpiScale, 1.0))
+            {
+                newValue = Math.Round(value * dpiScale) / dpiScale;
+                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue), use the original value.
+                if (double.IsNaN(newValue) ||
+                    double.IsInfinity(newValue) ||
+                    MathUtilities.AreClose(newValue, double.MaxValue))
+                {
+                    newValue = value;
+                }
+            }
+            else
+            {
+                newValue = Math.Round(value);
+            }
+
+            return newValue;
+        }
+
+        /// <summary>
         /// Clamps a value between a minimum and maximum value.
         /// </summary>
         /// <param name="val">The value.</param>
