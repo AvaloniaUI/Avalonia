@@ -11,6 +11,7 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Media;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -74,11 +75,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting Column property on a UIElement.
+        /// Helper for setting Column property on a Control.
         /// </summary>
-        /// <param name="element">UIElement to set Column property on.</param>
+        /// <param name="element">Control to set Column property on.</param>
         /// <param name="value">Column property value.</param>
-        public static void SetColumn(UIElement element, int value)
+        public static void SetColumn(Control element, int value)
         {
             if (element == null)
             {
@@ -89,12 +90,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for reading Column property from a UIElement.
+        /// Helper for reading Column property from a Control.
         /// </summary>
-        /// <param name="element">UIElement to read Column property from.</param>
+        /// <param name="element">Control to read Column property from.</param>
         /// <returns>Column property value.</returns>
         [AttachedPropertyBrowsableForChildren()]
-        public static int GetColumn(UIElement element)
+        public static int GetColumn(Control element)
         {
             if (element == null)
             {
@@ -105,11 +106,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting Row property on a UIElement.
+        /// Helper for setting Row property on a Control.
         /// </summary>
-        /// <param name="element">UIElement to set Row property on.</param>
+        /// <param name="element">Control to set Row property on.</param>
         /// <param name="value">Row property value.</param>
-        public static void SetRow(UIElement element, int value)
+        public static void SetRow(Control element, int value)
         {
             if (element == null)
             {
@@ -120,12 +121,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for reading Row property from a UIElement.
+        /// Helper for reading Row property from a Control.
         /// </summary>
-        /// <param name="element">UIElement to read Row property from.</param>
+        /// <param name="element">Control to read Row property from.</param>
         /// <returns>Row property value.</returns>
         [AttachedPropertyBrowsableForChildren()]
-        public static int GetRow(UIElement element)
+        public static int GetRow(Control element)
         {
             if (element == null)
             {
@@ -136,11 +137,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting ColumnSpan property on a UIElement.
+        /// Helper for setting ColumnSpan property on a Control.
         /// </summary>
-        /// <param name="element">UIElement to set ColumnSpan property on.</param>
+        /// <param name="element">Control to set ColumnSpan property on.</param>
         /// <param name="value">ColumnSpan property value.</param>
-        public static void SetColumnSpan(UIElement element, int value)
+        public static void SetColumnSpan(Control element, int value)
         {
             if (element == null)
             {
@@ -151,12 +152,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for reading ColumnSpan property from a UIElement.
+        /// Helper for reading ColumnSpan property from a Control.
         /// </summary>
-        /// <param name="element">UIElement to read ColumnSpan property from.</param>
+        /// <param name="element">Control to read ColumnSpan property from.</param>
         /// <returns>ColumnSpan property value.</returns>
         [AttachedPropertyBrowsableForChildren()]
-        public static int GetColumnSpan(UIElement element)
+        public static int GetColumnSpan(Control element)
         {
             if (element == null)
             {
@@ -167,11 +168,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting RowSpan property on a UIElement.
+        /// Helper for setting RowSpan property on a Control.
         /// </summary>
-        /// <param name="element">UIElement to set RowSpan property on.</param>
+        /// <param name="element">Control to set RowSpan property on.</param>
         /// <param name="value">RowSpan property value.</param>
-        public static void SetRowSpan(UIElement element, int value)
+        public static void SetRowSpan(Control element, int value)
         {
             if (element == null)
             {
@@ -182,12 +183,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for reading RowSpan property from a UIElement.
+        /// Helper for reading RowSpan property from a Control.
         /// </summary>
-        /// <param name="element">UIElement to read RowSpan property from.</param>
+        /// <param name="element">Control to read RowSpan property from.</param>
         /// <returns>RowSpan property value.</returns>
         [AttachedPropertyBrowsableForChildren()]
-        public static int GetRowSpan(UIElement element)
+        public static int GetRowSpan(Control element)
         {
             if (element == null)
             {
@@ -198,11 +199,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for setting IsSharedSizeScope property on a UIElement.
+        /// Helper for setting IsSharedSizeScope property on a Control.
         /// </summary>
-        /// <param name="element">UIElement to set IsSharedSizeScope property on.</param>
+        /// <param name="element">Control to set IsSharedSizeScope property on.</param>
         /// <param name="value">IsSharedSizeScope property value.</param>
-        public static void SetIsSharedSizeScope(UIElement element, bool value)
+        public static void SetIsSharedSizeScope(Control element, bool value)
         {
             if (element == null)
             {
@@ -213,11 +214,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Helper for reading IsSharedSizeScope property from a UIElement.
+        /// Helper for reading IsSharedSizeScope property from a Control.
         /// </summary>
-        /// <param name="element">UIElement to read IsSharedSizeScope property from.</param>
+        /// <param name="element">Control to read IsSharedSizeScope property from.</param>
         /// <returns>IsSharedSizeScope property value.</returns>
-        public static bool GetIsSharedSizeScope(UIElement element)
+        public static bool GetIsSharedSizeScope(Control element)
         {
             if (element == null)
             {
@@ -243,30 +244,30 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Returns a ColumnDefinitionCollection of column definitions.
+        /// Returns a ColumnDefinitions of column definitions.
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public ColumnDefinitionCollection ColumnDefinitions
+        public ColumnDefinitions ColumnDefinitions
         {
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitionCollection(this); }
+                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitions(this); }
 
                 return (_data.ColumnDefinitions);
             }
         }
 
         /// <summary>
-        /// Returns a RowDefinitionCollection of row definitions.
+        /// Returns a RowDefinitions of row definitions.
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-        public RowDefinitionCollection RowDefinitions
+        public RowDefinitions RowDefinitions
         {
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitionCollection(this); }
+                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitions(this); }
 
                 return (_data.RowDefinitions);
             }
@@ -338,11 +339,11 @@ namespace Avalonia.Controls
                 if (extData == null)
                 {
                     gridDesiredSize = new Size();
-                    UIElementCollection children = InternalChildren;
+                    Controls children = InternalChildren;
 
                     for (int i = 0, count = children.Count; i < count; ++i)
                     {
-                        UIElement child = children[i];
+                        Control child = children[i];
                         if (child != null)
                         {
                             child.Measure(constraint);
@@ -358,7 +359,7 @@ namespace Avalonia.Controls
                         bool sizeToContentV = double.IsPositiveInfinity(constraint.Height);
 
                         // Clear index information and rounding errors
-                        if (RowDefinitionCollectionDirty || ColumnDefinitionCollectionDirty)
+                        if (RowDefinitionsDirty || ColumnDefinitionsDirty)
                         {
                             if (_definitionIndices != null)
                             {
@@ -636,11 +637,11 @@ namespace Avalonia.Controls
 
                 if (_data == null)
                 {
-                    UIElementCollection children = InternalChildren;
+                    Controls children = InternalChildren;
 
                     for (int i = 0, count = children.Count; i < count; ++i)
                     {
-                        UIElement child = children[i];
+                        Control child = children[i];
                         if (child != null)
                         {
                             child.Arrange(new Rect(arrangeSize));
@@ -658,11 +659,11 @@ namespace Avalonia.Controls
 
                     
 
-                    UIElementCollection children = InternalChildren;
+                    Controls children = InternalChildren;
 
                     for (int currentCell = 0; currentCell < PrivateCells.Length; ++currentCell)
                     {
-                        UIElement cell = children[currentCell];
+                        Control cell = children[currentCell];
                         if (cell == null)
                         {
                             continue;
@@ -741,7 +742,7 @@ namespace Avalonia.Controls
             Invariant.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
-            if (!ColumnDefinitionCollectionDirty)
+            if (!ColumnDefinitionsDirty)
             {
                 DefinitionBase[] definitions = DefinitionsU;
                 value = definitions[(columnIndex + 1) % definitions.Length].FinalOffset;
@@ -763,7 +764,7 @@ namespace Avalonia.Controls
             Invariant.Assert(_data != null);
 
             //  actual value calculations require structure to be up-to-date
-            if (!RowDefinitionCollectionDirty)
+            if (!RowDefinitionsDirty)
             {
                 DefinitionBase[] definitions = DefinitionsV;
                 value = definitions[(rowIndex + 1) % definitions.Length].FinalOffset;
@@ -799,7 +800,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to ValidDefinitionsUStructure bit flag.
         /// </summary>
-        internal bool ColumnDefinitionCollectionDirty
+        internal bool ColumnDefinitionsDirty
         {
             get { return (!CheckFlagsAnd(Flags.ValidDefinitionsUStructure)); }
             set { SetFlags(!value, Flags.ValidDefinitionsUStructure); }
@@ -808,7 +809,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to ValidDefinitionsVStructure bit flag.
         /// </summary>
-        internal bool RowDefinitionCollectionDirty
+        internal bool RowDefinitionsDirty
         {
             get { return (!CheckFlagsAnd(Flags.ValidDefinitionsVStructure)); }
             set { SetFlags(!value, Flags.ValidDefinitionsVStructure); }
@@ -841,7 +842,7 @@ namespace Avalonia.Controls
         /// </summary>
         private void ValidateCellsCore()
         {
-            UIElementCollection children = InternalChildren;
+            Controls children = InternalChildren;
             ExtendedData extData = ExtData;
 
             extData.CellCachesCollection = new CellCache[children.Count];
@@ -856,7 +857,7 @@ namespace Avalonia.Controls
 
             for (int i = PrivateCells.Length - 1; i >= 0; --i)
             {
-                UIElement child = children[i];
+                Control child = children[i];
                 if (child == null)
                 {
                     continue;
@@ -954,7 +955,7 @@ namespace Avalonia.Controls
         {
             
 
-            if (ColumnDefinitionCollectionDirty)
+            if (ColumnDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
 
@@ -981,7 +982,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                ColumnDefinitionCollectionDirty = false;
+                ColumnDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsU != null && ExtData.DefinitionsU.Length > 0);
@@ -1001,7 +1002,7 @@ namespace Avalonia.Controls
         {
             
 
-            if (RowDefinitionCollectionDirty)
+            if (RowDefinitionsDirty)
             {
                 ExtendedData extData = ExtData;
 
@@ -1028,7 +1029,7 @@ namespace Avalonia.Controls
                     }
                 }
 
-                RowDefinitionCollectionDirty = false;
+                RowDefinitionsDirty = false;
             }
 
             Debug.Assert(ExtData.DefinitionsV != null && ExtData.DefinitionsV.Length > 0);
@@ -1167,7 +1168,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            UIElementCollection children = InternalChildren;
+            Controls children = InternalChildren;
             Hashtable spanStore = null;
             bool ignoreDesiredSizeV = forceInfinityV;
 
@@ -1178,7 +1179,7 @@ namespace Avalonia.Controls
 
                 MeasureCell(i, forceInfinityV);
 
-                hasDesiredSizeUChanged |= !DoubleUtil.AreClose(oldWidth, children[i].DesiredSize.Width);
+                hasDesiredSizeUChanged |= !MathUtilities.AreClose(oldWidth, children[i].DesiredSize.Width);
 
                 if (!ignoreDesiredSizeU)
                 {
@@ -1317,7 +1318,7 @@ namespace Avalonia.Controls
             }
 
             
-            UIElement child = InternalChildren[cell];
+            Control child = InternalChildren[cell];
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
@@ -1542,10 +1543,10 @@ namespace Avalonia.Controls
 
                             //  sanity check: totalRemainingSize and sizeToDistribute must be real positive numbers
                             Debug.Assert(   !double.IsInfinity(totalRemainingSize)
-                                        &&  !DoubleUtil.IsNaN(totalRemainingSize)
+                                        &&  !double.IsNaN(totalRemainingSize)
                                         &&  totalRemainingSize > 0
                                         &&  !double.IsInfinity(sizeToDistribute)
-                                        &&  !DoubleUtil.IsNaN(sizeToDistribute)
+                                        &&  !double.IsNaN(sizeToDistribute)
                                         &&  sizeToDistribute > 0    );
 
                             for (int i = 0; i < count; ++i)
@@ -2076,7 +2077,7 @@ namespace Avalonia.Controls
                         if (useLayoutRounding)
                         {
                             roundingErrors[i] = definitions[i].SizeCache;
-                            definitions[i].SizeCache = UIElement.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                            definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
                         }
                     }
                     definitionIndices[starDefinitionsCount++] = i;
@@ -2115,7 +2116,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[i] = definitions[i].SizeCache;
-                        definitions[i].SizeCache = UIElement.RoundLayoutValue(definitions[i].SizeCache, dpi);
+                        definitions[i].SizeCache = Control.RoundLayoutValue(definitions[i].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[i].SizeCache;
@@ -2166,7 +2167,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndices[i]] = definitions[definitionIndices[i]].SizeCache;
-                        definitions[definitionIndices[i]].SizeCache = UIElement.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
+                        definitions[definitionIndices[i]].SizeCache = Control.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
                     }
 
                     allPreferredArrangeSize += definitions[definitionIndices[i]].SizeCache;
@@ -2191,7 +2192,7 @@ namespace Avalonia.Controls
                     if (useLayoutRounding)
                     {
                         roundingErrors[definitionIndex] = final;
-                        final = UIElement.RoundLayoutValue(finalOld, dpi);
+                        final = Control.RoundLayoutValue(finalOld, dpi);
                         final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
                         final = Math.Min(final, definitions[definitionIndex].SizeCache);
                     }
@@ -2218,7 +2219,7 @@ namespace Avalonia.Controls
                     RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
                     Array.Sort(definitionIndices, 0, definitions.Length, roundingErrorIndexComparer);
                     double adjustedSize = allPreferredArrangeSize;
-                    double dpiIncrement = UIElement.RoundLayoutValue(1.0, dpi);
+                    double dpiIncrement = Control.RoundLayoutValue(1.0, dpi);
 
                     if (allPreferredArrangeSize > finalSize)
                     {
@@ -2617,7 +2618,7 @@ namespace Avalonia.Controls
                 for (int i = 0; i < definitions.Length; ++i)
                 {
                     DefinitionBase def = definitions[i];
-                    double roundedSize = UIElement.RoundLayoutValue(def.SizeCache, dpi);
+                    double roundedSize = Control.RoundLayoutValue(def.SizeCache, dpi);
                     roundingErrors[i] = (roundedSize - def.SizeCache);
                     def.SizeCache = roundedSize;
                     roundedTakenSize += roundedSize;
@@ -3252,8 +3253,8 @@ namespace Avalonia.Controls
         /// </summary>
         private class ExtendedData
         {
-            internal ColumnDefinitionCollection ColumnDefinitions;  //  collection of column definitions (logical tree support)
-            internal RowDefinitionCollection RowDefinitions;        //  collection of row definitions (logical tree support)
+            internal ColumnDefinitions ColumnDefinitions;  //  collection of column definitions (logical tree support)
+            internal RowDefinitions RowDefinitions;        //  collection of row definitions (logical tree support)
             internal DefinitionBase[] DefinitionsU;                 //  collection of column definitions used during calc
             internal DefinitionBase[] DefinitionsV;                 //  collection of row definitions used during calc
             internal CellCache[] CellCachesCollection;              //  backing store for logical children
@@ -3972,8 +3973,8 @@ namespace Avalonia.Controls
             {
                 Debug.Assert(grid != null);
                 _currentEnumerator = -1;
-                _enumerator0 = new ColumnDefinitionCollection.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
-                _enumerator1 = new RowDefinitionCollection.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
+                _enumerator0 = new ColumnDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
+                _enumerator1 = new RowDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
                 // GridLineRenderer is NOT included into this enumerator.
                 _enumerator2Index = 0;
                 if (includeChildren)
@@ -4025,7 +4026,7 @@ namespace Avalonia.Controls
                         throw new InvalidOperationException(SR.Get(SRID.EnumeratorReachedEnd));
                     }
 
-                    //  assert below is not true anymore since UIElementCollection allowes for null children
+                    //  assert below is not true anymore since Controls allowes for null children
                     //Debug.Assert(_currentChild != null);
                     return (_currentChild);
                 }
@@ -4042,9 +4043,9 @@ namespace Avalonia.Controls
 
             private int _currentEnumerator;
             private Object _currentChild;
-            private ColumnDefinitionCollection.Enumerator _enumerator0;
-            private RowDefinitionCollection.Enumerator _enumerator1;
-            private UIElementCollection _enumerator2Collection;
+            private ColumnDefinitions.Enumerator _enumerator0;
+            private RowDefinitions.Enumerator _enumerator1;
+            private Controls _enumerator2Collection;
             private int _enumerator2Index;
             private int _enumerator2Count;
         }
