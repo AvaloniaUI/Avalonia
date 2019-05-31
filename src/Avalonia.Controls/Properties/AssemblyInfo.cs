@@ -13,6 +13,7 @@ using Avalonia.Metadata;
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Embedding")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Presenters")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Primitives")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Repeaters")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Shapes")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Templates")]
 [assembly: XmlnsDefinition("https://github.com/avaloniaui", "Avalonia.Controls.Notifications")]
