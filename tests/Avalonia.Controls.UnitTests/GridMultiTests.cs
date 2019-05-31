@@ -1020,6 +1020,77 @@ namespace Avalonia.Controls.UnitTests
             Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(0, cd.ActualWidth));
         }
 
+                [Fact]
+        public void ColumnDefinitions_Collection_Is_ReadOnly()
+        {
+            var grid = CreateGrid(
+                ("A", new GridLength(50)),
+                ("A", new GridLength(50)),
+                ("A", new GridLength(50)),
+                ("A", new GridLength(50)));
+
+            var scope = new Grid();
+            scope.Children.Add(grid);
+
+            var root = new Grid();
+            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+                        root.Children.Add(scope);
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(new Point(), new Point(200, 200)));
+            PrintColumnDefinitions(grid);
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(50, cd.ActualWidth));
+
+            grid.ColumnDefinitions[0] = new ColumnDefinition { Width = new GridLength(25), SharedSizeGroup = "A" };
+            grid.ColumnDefinitions[1] = new ColumnDefinition { Width = new GridLength(75), SharedSizeGroup = "B" };
+            grid.ColumnDefinitions[2] = new ColumnDefinition { Width = new GridLength(75), SharedSizeGroup = "B" };
+            grid.ColumnDefinitions[3] = new ColumnDefinition { Width = new GridLength(25), SharedSizeGroup = "A" };
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(new Point(), new Point(200, 200)));
+            PrintColumnDefinitions(grid);
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(25, cd.ActualWidth));
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "B"), cd => Assert.Equal(75, cd.ActualWidth));
+        }
+
+        [Fact]
+        public void ColumnDefinitions_Collection_Reset_SharedSizeGroup()
+        {
+            var grid = CreateGrid(
+                ("A", new GridLength(25)),
+                ("B", new GridLength(75)),
+                ("B", new GridLength(75)),
+                ("A", new GridLength(25)));
+
+            var scope = new Grid();
+            scope.Children.Add(grid);
+
+            var root = new Grid();
+            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+                        root.Children.Add(scope);
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(new Point(), new Point(200, 200)));
+            PrintColumnDefinitions(grid);
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(25, cd.ActualWidth));
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "B"), cd => Assert.Equal(75, cd.ActualWidth));
+
+            grid.ColumnDefinitions[0].SharedSizeGroup = null;
+            grid.ColumnDefinitions[0].Width = new GridLength(50);
+            grid.ColumnDefinitions[1].SharedSizeGroup = null;
+            grid.ColumnDefinitions[1].Width =  new GridLength(50);
+            grid.ColumnDefinitions[2].SharedSizeGroup = null;
+            grid.ColumnDefinitions[2].Width =  new GridLength(50);
+            grid.ColumnDefinitions[3].SharedSizeGroup = null;
+            grid.ColumnDefinitions[3].Width =  new GridLength(50);
+
+            grid.Measure(new Size(200, 200));
+            grid.Arrange(new Rect(new Point(), new Point(200, 200)));
+            PrintColumnDefinitions(grid);
+            Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == null), cd => Assert.Equal(50, cd.ActualWidth));
+        }
+
+
         // grid creators
         // private Grid CreateGrid(params string[] columnGroups)
         // {
