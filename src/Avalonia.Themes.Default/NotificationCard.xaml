@@ -41,7 +41,7 @@
     </Style>
 
     <Style Selector="NotificationCard/template/ ContentControl#PART_Content">
-        <Setter Property="MinHeight" Value="100" />
+        <Setter Property="MinHeight" Value="150" />
     </Style>
 
     <Style Selector="NotificationCard[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
