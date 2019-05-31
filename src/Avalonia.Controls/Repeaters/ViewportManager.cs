@@ -188,7 +188,16 @@ namespace Avalonia.Controls.Repeaters
 
             if (!_managingViewportDisabled)
             {
+                // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
+                // we can get this from TransformedBounds, but this property is updated after layout has
+                // run, resulting in the UI being updated too late when scrolling quickly. We can
+                // partially remedey this by triggering also on Bounds changes, but this won't work so 
+                // well for nested ItemsRepeaters.
+                //
+                // UWP uses the EffectiveBoundsChanged event (which I think was implemented specially
+                // for this case): we need to implement that in Avalonia.
                 _effectiveViewportChangedRevoker = _owner.GetObservable(Visual.TransformedBoundsProperty)
+                    .Merge(_owner.GetObservable(Visual.BoundsProperty).Select(_ => _owner.TransformedBounds))
                     .Skip(1)
                     .Subscribe(OnEffectiveViewportChanged);
             }
