@@ -46,7 +46,6 @@ namespace Avalonia.Controls
             foreach (var oD in e.OldItems?.Cast<DefinitionBase>()
                             ?? Enumerable.Empty<DefinitionBase>())
             {
-                oD.Parent = null;
                 oD.OnExitParentTree();
             }
 
