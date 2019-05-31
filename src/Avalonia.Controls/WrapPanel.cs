@@ -194,7 +194,7 @@ namespace Avalonia.Controls
             double u = 0;
             bool isHorizontal = (Orientation == Orientation.Horizontal);
 
-            for (int i = 0, count = Children.Count; i < count; i++)
+            for (int i = start; i < end; i++)
             {
                 var child = Children[i];
                 if (child != null)
