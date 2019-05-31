@@ -234,8 +234,7 @@ namespace Avalonia.Build.Tasks
                                 var i = method.Body.Instructions;
                                 for (var c = 1; c < i.Count; c++)
                                 {
-                                    if (i[c - 1].OpCode == OpCodes.Ldarg_0
-                                        && i[c].OpCode == OpCodes.Call)
+                                    if (i[c].OpCode == OpCodes.Call)
                                     {
                                         var op = i[c].Operand as MethodReference;
                                         
