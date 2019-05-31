@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Repeaters
         {
             var measureSizeMinor = _orientation.Minor(measureSize);
             return _orientation.MinorMajorSize(
-                double.IsInfinity(measureSizeMinor) ?
+                !double.IsInfinity(measureSizeMinor) ?
                     Math.Max(measureSizeMinor, _orientation.Minor(desiredSize)) :
                     _orientation.Minor(desiredSize),
                 _orientation.Major(desiredSize));

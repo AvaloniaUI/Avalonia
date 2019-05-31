@@ -337,7 +337,7 @@ namespace Avalonia.Controls.Repeaters
                             // Does not fit, wrap to the previous row
                             var availableSizeMinor = _orientation.Minor(availableSize);
 
-                            _orientation.SetMinorStart(ref currentBounds, double.IsInfinity(availableSizeMinor) ? availableSizeMinor - _orientation.Minor(desiredSize) : 0);
+                            _orientation.SetMinorStart(ref currentBounds, !double.IsInfinity(availableSizeMinor) ? availableSizeMinor - _orientation.Minor(desiredSize) : 0);
                             _orientation.SetMajorStart(ref currentBounds, lineOffset - _orientation.Major(desiredSize) - lineSpacing);
 
                             if (lineNeedsReposition)
