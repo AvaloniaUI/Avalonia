@@ -64,16 +64,20 @@ namespace Avalonia.Data
             object anchor = null,
             bool enableDataValidation = false)
         {
-            if (Converter == null)
-            {
-                throw new NotSupportedException("MultiBinding without Converter not currently supported.");
-            }
-
             var targetType = targetProperty?.PropertyType ?? typeof(object);
             var children = Bindings.Select(x => x.Initiate(target, null));
             var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType));
             var mode = Mode == BindingMode.Default ?
                 targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
+            
+            // We only respect `StringFormat` if the type of the property we're assigning to will
+            // accept a string. Note that this is slightly different to WPF in that WPF only applies
+            // `StringFormat` for target type `string` (not `object`).
+            if (!string.IsNullOrWhiteSpace(StringFormat) && 
+                (targetType == typeof(string) || targetType == typeof(object)))
+            {
+                Converter = new StringFormatMultiValueConverter(StringFormat, Converter);
+            }
 
             switch (mode)
             {
@@ -95,15 +99,6 @@ namespace Avalonia.Data
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {
                 converted = FallbackValue;
-            }
-
-            // We only respect `StringFormat` if the type of the property we're assigning to will
-            // accept a string. Note that this is slightly different to WPF in that WPF only applies
-            // `StringFormat` for target type `string` (not `object`).
-            if (!string.IsNullOrWhiteSpace(StringFormat) && 
-                (targetType == typeof(string) || targetType == typeof(object)))
-            {
-                converted = string.Format(culture, StringFormat, converted);
             }
 
             return converted;
