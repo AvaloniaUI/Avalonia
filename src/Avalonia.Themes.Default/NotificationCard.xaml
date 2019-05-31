@@ -13,7 +13,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}" 
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Margin="8,8,0,0">
-                        <ContentControl MinHeight="150" Content="{TemplateBinding Content}" />
+                        <ContentControl Name="PART_Content" Content="{TemplateBinding Content}" />
                     </Border>
                 </LayoutTransformControl>
             </ControlTemplate>
@@ -38,6 +38,10 @@
                 </KeyFrame>
             </Animation>
         </Style.Animations>
+    </Style>
+
+    <Style Selector="NotificationCard/template/ ContentControl#PART_Content">
+        <Setter Property="MinHeight" Value="100" />
     </Style>
 
     <Style Selector="NotificationCard[IsClosing=true] /template/ LayoutTransformControl#PART_LayoutTransformControl">
