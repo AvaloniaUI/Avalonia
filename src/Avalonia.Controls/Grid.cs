@@ -216,7 +216,7 @@ namespace Avalonia.Controls
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitions(); }
+                if (_data.ColumnDefinitions == null) { _data.ColumnDefinitions = new ColumnDefinitions() { Parent = this }; }
 
                 return (_data.ColumnDefinitions);
             }
@@ -224,6 +224,7 @@ namespace Avalonia.Controls
             {
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.ColumnDefinitions = value;
+                _data.ColumnDefinitions.Parent = this;
             }
         }
 
@@ -235,7 +236,7 @@ namespace Avalonia.Controls
             get
             {
                 if (_data == null) { _data = new ExtendedData(); }
-                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitions(); }
+                if (_data.RowDefinitions == null) { _data.RowDefinitions = new RowDefinitions() { Parent = this }; }
 
                 return (_data.RowDefinitions);
             }
@@ -243,6 +244,7 @@ namespace Avalonia.Controls
             {
                 if (_data == null) { _data = new ExtendedData(); }
                 _data.RowDefinitions = value;
+                _data.RowDefinitions.Parent = this;
             }
         }
 
@@ -769,20 +771,20 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Convenience accessor to ValidDefinitionsUStructure bit flag.
-        /// </summary>
+        /// </summary> 
         internal bool ColumnDefinitionsDirty
         {
-            get { return (!CheckFlagsAnd(Flags.ValidDefinitionsUStructure)); }
-            set { SetFlags(!value, Flags.ValidDefinitionsUStructure); }
+            get => ColumnDefinitions?.IsDirty ?? false;
+            set => ColumnDefinitions.IsDirty = value;
         }
 
         /// <summary>
         /// Convenience accessor to ValidDefinitionsVStructure bit flag.
         /// </summary>
-        internal bool RowDefinitionsDirty
+        internal bool RowDefinitionsDirty 
         {
-            get { return (!CheckFlagsAnd(Flags.ValidDefinitionsVStructure)); }
-            set { SetFlags(!value, Flags.ValidDefinitionsVStructure); }
+            get => RowDefinitions?.IsDirty ?? false;
+            set => RowDefinitions.IsDirty = value;
         }
 
         //------------------------------------------------------
@@ -944,21 +946,8 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        foreach(var definition in extData.DefinitionsU 
-                                               ?? Enumerable.Empty<DefinitionBase>())
-                            definition.OnExitParentTree();
-
                         extData.DefinitionsU = extData.ColumnDefinitions;
                     }
-                }
-
-                // adds index information.
-                for(int i = 0; i < extData.DefinitionsU.Count;i++)
-                {
-                    var definition = extData.DefinitionsU[i];
-                    definition.Parent = this;
-                    definition.Index = i;
-                    definition.OnEnterParentTree();
                 }
 
                 ColumnDefinitionsDirty = false;
@@ -997,22 +986,9 @@ namespace Avalonia.Controls
                         extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() };
                     }
                     else
-                    {
-                        foreach(var definition in extData.DefinitionsV 
-                                               ?? Enumerable.Empty<DefinitionBase>())
-                            definition.OnExitParentTree();
-                        
+                    {                       
                         extData.DefinitionsV = extData.RowDefinitions;
                     }
-                }
-
-                // adds index information.
-                for(int i = 0; i < extData.DefinitionsV.Count;i++)
-                {
-                    var definition = extData.DefinitionsV[i];
-                    definition.Parent = this;
-                    definition.Index = i;
-                    definition.OnEnterParentTree();
                 }
 
                 RowDefinitionsDirty = false;

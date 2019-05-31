@@ -623,7 +623,7 @@ namespace Avalonia.Controls
         #region Private Fields
         private readonly bool _isColumnDefinition;      //  when "true", this is a ColumnDefinition; when "false" this is a RowDefinition (faster than a type check)
         private Flags _flags;                           //  flags reflecting various aspects of internal state
-        private int _parentIndex = -1;                  //  this instance's index in parent's children collection
+        internal int _parentIndex = -1;                  //  this instance's index in parent's children collection
 
         private Grid.LayoutTimeSizeType _sizeType;      //  layout-time user size type. it may differ from _userSizeValueCache.UnitType when calculating "to-content"
 
