@@ -933,7 +933,7 @@ namespace Avalonia.Controls
                 {
                     if (extData.DefinitionsU == null)
                     {
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() };
+                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
                     }
                 }
                 else
@@ -942,7 +942,7 @@ namespace Avalonia.Controls
                     {
                         //  if column definitions collection is empty
                         //  mockup array with one column
-                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() };
+                        extData.DefinitionsU = new DefinitionBase[] { new ColumnDefinition() { Parent = this } };
                     }
                     else
                     {
@@ -974,7 +974,7 @@ namespace Avalonia.Controls
                 {
                     if (extData.DefinitionsV == null)
                     {
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() };
+                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
                     }
                 }
                 else
@@ -983,7 +983,7 @@ namespace Avalonia.Controls
                     {
                         //  if row definitions collection is empty
                         //  mockup array with one row
-                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() };
+                        extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
                     }
                     else
                     {                       

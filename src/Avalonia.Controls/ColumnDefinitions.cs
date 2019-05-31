@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A collection of <see cref="ColumnDefinition"/>s.
     /// </summary>
-    public class ColumnDefinitions : AvaloniaList<ColumnDefinition>
+    public class ColumnDefinitions : DefinitionList<ColumnDefinition>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinitions"/> class.
@@ -21,31 +21,6 @@ namespace Avalonia.Controls
             ResetBehavior = ResetBehavior.Remove;
             CollectionChanged += OnCollectionChanged;
             this.TrackItemPropertyChanged(delegate { IsDirty = true; });
-        }
-
-        internal bool IsDirty { get; set; } = true;
-        internal Grid Parent { get; set; }
-
-        private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            foreach (var nI in this.Select((d, i) => (d, i)))
-                nI.d._parentIndex = nI.i;
-
-            foreach (var nD in e.NewItems?.Cast<DefinitionBase>()
-                            ?? Enumerable.Empty<DefinitionBase>())
-            {
-                nD.Parent = this.Parent;
-                nD.OnEnterParentTree();
-            }
-
-            foreach (var oD in e.OldItems?.Cast<DefinitionBase>()
-                            ?? Enumerable.Empty<DefinitionBase>())
-            {
-                oD.Parent = null;
-                oD.OnExitParentTree();
-            }
-
-            IsDirty = true;
         }
 
         /// <summary>

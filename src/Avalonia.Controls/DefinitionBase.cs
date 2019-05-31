@@ -315,7 +315,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                Debug.Assert(value >= -1 && _parentIndex != value);
+                Debug.Assert(value >= -1);
                 _parentIndex = value;
             }
         }
