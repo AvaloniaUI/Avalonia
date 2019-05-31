@@ -25,7 +25,7 @@ public:
         return _native;
     }
     
-    bool IsHiden ()
+    bool IsHidden ()
     {
         return _isHidden;
     }

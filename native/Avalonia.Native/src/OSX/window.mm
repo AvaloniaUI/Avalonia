@@ -354,7 +354,7 @@ public:
             this->cursor = avnCursor->GetNative();
             UpdateCursor();
             
-            if(avnCursor->IsHiden())
+            if(avnCursor->IsHidden())
             {
                 [NSCursor hide];
             }
