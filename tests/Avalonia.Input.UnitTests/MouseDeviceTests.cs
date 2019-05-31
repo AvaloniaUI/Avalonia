@@ -225,11 +225,11 @@ namespace Avalonia.Input.UnitTests
 
         private void SendMouseMove(IInputManager inputManager, TestRoot root, Point p = new Point())
         {
-            inputManager.ProcessInput(new RawMouseEventArgs(
+            inputManager.ProcessInput(new RawPointerEventArgs(
                 root.MouseDevice,
                 0,
                 root,
-                RawMouseEventType.Move,
+                RawPointerEventType.Move,
                 p,
                 InputModifiers.None));
         }
