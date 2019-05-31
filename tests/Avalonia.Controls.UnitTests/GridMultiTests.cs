@@ -44,6 +44,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, false);
             root.Children.Add(scope);
 
@@ -66,6 +67,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, false);
             root.Children.Add(scope);
 
@@ -88,6 +90,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, false);
             root.Children.Add(scope);
 
@@ -110,6 +113,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, false);
             root.Children.Add(scope);
 
@@ -132,6 +136,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -154,6 +159,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -176,6 +182,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -198,6 +205,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -221,6 +229,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -244,6 +253,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -267,6 +277,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -290,6 +301,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -313,6 +325,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -336,6 +349,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -359,6 +373,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -382,6 +397,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -406,6 +422,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -430,6 +447,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -454,6 +472,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -478,6 +497,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -500,6 +520,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -523,6 +544,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -546,6 +568,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -569,6 +592,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -593,6 +617,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -617,6 +642,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -641,6 +667,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -665,6 +692,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -689,6 +717,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -713,6 +742,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -737,6 +767,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -761,6 +792,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -786,6 +818,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -811,6 +844,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -836,6 +870,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -861,6 +896,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -885,7 +921,8 @@ namespace Avalonia.Controls.UnitTests
         //     outerScope.Children.Add(outerGrid);
         //     outerScope.Children.Add(innerScope);
 
-        //     var root = new Grid();
+        //       var root = new Grid();  
+        //      root.UseLayoutRounding = false;
         //     root.SetValue(Grid.IsSharedSizeScopeProperty, true);
         //     root.Children.Add(outerScope);
 
@@ -905,6 +942,7 @@ namespace Avalonia.Controls.UnitTests
                 scope.Children.Add(xgrids);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -941,6 +979,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -994,6 +1033,7 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
             root.Children.Add(scope);
 
@@ -1020,7 +1060,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "A"), cd => Assert.Equal(0, cd.ActualWidth));
         }
 
-                [Fact]
+        [Fact]
         public void ColumnDefinitions_Collection_Is_ReadOnly()
         {
             var grid = CreateGrid(
@@ -1033,8 +1073,9 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-                        root.Children.Add(scope);
+            root.Children.Add(scope);
 
             grid.Measure(new Size(200, 200));
             grid.Arrange(new Rect(new Point(), new Point(200, 200)));
@@ -1066,8 +1107,9 @@ namespace Avalonia.Controls.UnitTests
             scope.Children.Add(grid);
 
             var root = new Grid();
+            root.UseLayoutRounding = false;
             root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-                        root.Children.Add(scope);
+            root.Children.Add(scope);
 
             grid.Measure(new Size(200, 200));
             grid.Arrange(new Rect(new Point(), new Point(200, 200)));
@@ -1078,11 +1120,11 @@ namespace Avalonia.Controls.UnitTests
             grid.ColumnDefinitions[0].SharedSizeGroup = null;
             grid.ColumnDefinitions[0].Width = new GridLength(50);
             grid.ColumnDefinitions[1].SharedSizeGroup = null;
-            grid.ColumnDefinitions[1].Width =  new GridLength(50);
+            grid.ColumnDefinitions[1].Width = new GridLength(50);
             grid.ColumnDefinitions[2].SharedSizeGroup = null;
-            grid.ColumnDefinitions[2].Width =  new GridLength(50);
+            grid.ColumnDefinitions[2].Width = new GridLength(50);
             grid.ColumnDefinitions[3].SharedSizeGroup = null;
-            grid.ColumnDefinitions[3].Width =  new GridLength(50);
+            grid.ColumnDefinitions[3].Width = new GridLength(50);
 
             grid.Measure(new Size(200, 200));
             grid.Arrange(new Rect(new Point(), new Point(200, 200)));
