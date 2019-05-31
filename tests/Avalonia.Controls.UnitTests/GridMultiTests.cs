@@ -907,29 +907,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == "B"), cd => Assert.Equal(0, cd.ActualWidth));
         }
 
-        // [Fact]
-        // public void Size_Propagation_Is_Constrained_To_Innermost_Scope()
-        // {
-        //     var grids = new[] { CreateGrid("A", null), CreateGrid(("A", new GridLength(30)), (null, new GridLength())) };
-        //     var innerScope = new Grid();
-        //     foreach(var xgrids in grids)
-        //     innerScope.Children.Add(xgrids);
-        //     innerScope.SetValue(Grid.IsSharedSizeScopeProperty, true);
+        [Fact]
+        public void Size_Propagation_Is_Constrained_To_Innermost_Scope()
+        {
+            var grids = new[] { CreateGrid(("A", new GridLength())), CreateGrid(("A", new GridLength(30)), (null, new GridLength())) };
+            var innerScope = new Grid();
 
-        //     var outerGrid = CreateGrid(("A", new GridLength(0)));
-        //     var outerScope = new Grid();
-        //     outerScope.Children.Add(outerGrid);
-        //     outerScope.Children.Add(innerScope);
+            foreach (var grid in grids)
+                innerScope.Children.Add(grid);
 
-        //       var root = new Grid();  
-        //      root.UseLayoutRounding = false;
-        //     root.SetValue(Grid.IsSharedSizeScopeProperty, true);
-        //     root.Children.Add(outerScope);
+            innerScope.SetValue(Grid.IsSharedSizeScopeProperty, true);
 
-        //     root.Measure(new Size(50, 50));
-        //     root.Arrange(new Rect(new Point(), new Point(50, 50)));
-        //     Assert.Equal(1, outerGrid.ColumnDefinitions[0].ActualWidth);
-        // }
+            var outerGrid = CreateGrid(("A", new GridLength(0)));
+            var outerScope = new Grid();
+            outerScope.Children.Add(outerGrid);
+            outerScope.Children.Add(innerScope);
+
+            var root = new Grid();
+            root.UseLayoutRounding = false;
+            root.SetValue(Grid.IsSharedSizeScopeProperty, true);
+            root.Children.Add(outerScope);
+
+            root.Measure(new Size(50, 50));
+            root.Arrange(new Rect(new Point(), new Point(50, 50)));
+            Assert.Equal(0, outerGrid.ColumnDefinitions[0].ActualWidth);
+        }
 
         [Fact]
         public void Size_Group_Changes_Are_Tracked()
