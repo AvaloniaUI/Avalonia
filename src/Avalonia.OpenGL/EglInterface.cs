@@ -107,6 +107,18 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("eglGetConfigAttrib")]
         public EglGetConfigAttrib GetConfigAttrib { get; }
 
+        public delegate bool EglWaitGL();
+        [GlEntryPoint("eglWaitGL")]
+        public EglWaitGL WaitGL { get; }
+        
+        public delegate bool EglWaitClient();
+        [GlEntryPoint("eglWaitClient")]
+        public EglWaitGL WaitClient { get; }
+        
+        public delegate bool EglWaitNative();
+        [GlEntryPoint("eglWaitNative")]
+        public EglWaitGL WaitNative { get; }
+
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
 }
