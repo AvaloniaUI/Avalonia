@@ -656,7 +656,7 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
-        void SetLayoutOrigin()
+        private void SetLayoutOrigin()
         {
             if (IsVirtualizingContext)
             {
@@ -668,6 +668,27 @@ namespace Avalonia.Controls.Repeaters
                 // the first item
                 //MUX_ASSERT(m_lastExtent.X == 0 && m_lastExtent.Y == 0);
             }
+        }
+
+        public IControl GetElementIfRealized(int dataIndex)
+        {
+            if (_elementManager.IsDataIndexRealized(dataIndex))
+            {
+                return _elementManager.GetRealizedElement(dataIndex);
+            }
+
+            return null;
+        }
+
+        public bool TryAddElement0(IControl element)
+        {
+            if (_elementManager.GetRealizedElementCount() == 0)
+            {
+                _elementManager.Add(element, 0);
+                return true;
+            }
+
+            return false;
         }
 
         public enum LineAlignment

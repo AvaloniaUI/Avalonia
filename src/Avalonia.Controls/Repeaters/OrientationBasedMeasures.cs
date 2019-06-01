@@ -61,6 +61,13 @@
             }
         }
 
+        public Rect MinorMajorRect(double minor, double major, double minorSize, double majorSize)
+        {
+            return ScrollOrientation == Orientation.Vertical ?
+                new Rect(minor, major, minorSize, majorSize) :
+                new Rect(major, minor, majorSize, minorSize);
+        }
+
         public Point MinorMajorPoint(double minor, double major)
         {
             return ScrollOrientation == Orientation.Vertical ?

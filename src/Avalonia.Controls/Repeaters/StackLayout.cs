@@ -5,13 +5,18 @@ namespace Avalonia.Controls.Repeaters
 {
     public class StackLayout : VirtualizingLayout, IFlowLayoutAlgorithmDelegates
     {
-        public static readonly AvaloniaProperty<Orientation> OrientationProperty
-            = StackPanel.OrientationProperty.AddOwner<StackLayout>();
+        public static readonly StyledProperty<Orientation> OrientationProperty =
+            StackPanel.OrientationProperty.AddOwner<StackLayout>();
 
-        public static readonly AvaloniaProperty<double> SpacingProperty
-            = StackPanel.SpacingProperty.AddOwner<StackLayout>();
+        public static readonly StyledProperty<double> SpacingProperty =
+            StackPanel.SpacingProperty.AddOwner<StackLayout>();
 
         private readonly OrientationBasedMeasures _orientation = new OrientationBasedMeasures();
+
+        public StackLayout()
+        {
+            LayoutId = "StackLayout";
+        }
 
         public Orientation Orientation
         {
