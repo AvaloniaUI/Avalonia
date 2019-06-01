@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
@@ -15,13 +16,28 @@ namespace Avalonia.OpenGL
         {
         }
 
+        [DllImport("libegl.dll", CharSet = CharSet.Ansi)]
+        static extern IntPtr eglGetProcAddress(string proc);
+        
         static Func<string, bool, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
             if(os == OperatingSystemType.Linux || os == OperatingSystemType.Android)
                 return Load("libEGL.so.1");
             if (os == OperatingSystemType.WinNT)
-                return Load(@"libegl.dll");
+            {
+                var disp = eglGetProcAddress("eglGetPlatformDisplayEXT");
+                if (disp == IntPtr.Zero)
+                    throw new OpenGlException("libegl.dll doesn't have eglGetPlatformDisplayEXT entry point");
+                return (name, optional) =>
+                {
+                    var r = eglGetProcAddress(name);
+                    if (r == IntPtr.Zero && !optional)
+                        throw new OpenGlException($"Entry point {r} is not found");
+                    return r;
+                };
+            }
+
             throw new PlatformNotSupportedException();
         }
 
