@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -20,7 +21,8 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    public unsafe class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelWithWin32JitterHacks
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -84,7 +86,10 @@ namespace Avalonia.Win32
 
         public Action<RawInputEventArgs> Input { get; set; }
 
+        
         public Action<Rect> Paint { get; set; }
+        
+        public Action Win32JitterLastFrameRepaint { get; set; }
 
         public Action<Size> Resized { get; set; }
 
@@ -459,12 +464,26 @@ namespace Avalonia.Win32
 
                     return IntPtr.Zero;
 
+                
                 case WindowsMessage.WM_NCCALCSIZE:
-                    if (ToInt32(wParam) == 1 && !_decorated)
+                    if (ToInt32(wParam) == 1)
                     {
-                        return IntPtr.Zero;
+                        var ncargs = *(NCCALSIZEPARAMS_ARGS*)lParam;
+                        var rv = (NCCALSIZEPARAMS_RETURN*)lParam;
+
+                        if (_decorated)
+                            DefWindowProc(_hwnd, msg, wParam, lParam);
+                        else
+                        {
+                            var x = rv->NewClientRect.left;
+                            var y = rv->NewClientRect.top;
+                            rv->DstRect = rv->SrcRect = new RECT {left = x, top = y, right = x + 1, bottom = y + 1};
+                        }
+
+                        return new IntPtr(0x0400);
                     }
                     break;
+                    
 
                 case UnmanagedMethods.WindowsMessage.WM_CLOSE:
                     bool? preventClosing = Closing?.Invoke();
@@ -661,6 +680,11 @@ namespace Avalonia.Win32
                         return IntPtr.Zero;
                     }
                     break;
+                case WindowsMessage.WM_ERASEBKGND:
+
+                    if (_decorated)
+                        return new IntPtr(1);
+                    break;
 
                 case WindowsMessage.WM_NCACTIVATE:
                     if (!_decorated)
@@ -690,6 +714,11 @@ namespace Avalonia.Win32
                     {
                         // Do nothing here, just block until the pending frame render is completed on the render thread
                     }
+                    
+                    // This is needed to fool Windows™®Ⓒ to think that we've reacted to resize in time,
+                    // so it won't do atrocities to our window 
+                    Win32JitterLastFrameRepaint?.Invoke();
+                    
                     var size = (UnmanagedMethods.SizeCommand)wParam;
 
                     if (Resized != null &&
@@ -697,6 +726,7 @@ namespace Avalonia.Win32
                          size == UnmanagedMethods.SizeCommand.Maximized))
                     {
                         var clientSize = new Size(ToInt32(lParam) & 0xffff, ToInt32(lParam) >> 16);
+
                         Resized(clientSize / Scaling);
                     }
 
@@ -782,7 +812,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
-                style = (int)(ClassStyles.CS_OWNDC | ClassStyles.CS_HREDRAW | ClassStyles.CS_VREDRAW), // Unique DC helps with performance when using Gpu based rendering
+                style = (int)(ClassStyles.CS_OWNDC),// | ClassStyles.CS_HREDRAW | ClassStyles.CS_VREDRAW), // Unique DC helps with performance when using Gpu based rendering
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = UnmanagedMethods.GetModuleHandle(null),
                 hCursor = DefaultCursor,

@@ -88,6 +88,11 @@ namespace Avalonia.Rendering
             SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
         }
 
+        public void RepaintLastFrameIfExists()
+        {
+            // No-op, we don't have a saved frame
+        }
+
         /// <inheritdoc/>
         public void Resized(Size size)
         {

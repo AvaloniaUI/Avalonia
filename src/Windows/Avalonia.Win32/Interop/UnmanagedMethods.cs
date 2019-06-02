@@ -1235,23 +1235,31 @@ namespace Avalonia.Win32.Interop
         [StructLayout(LayoutKind.Sequential)]
         public struct WINDOWPOS
         {
-            public IntPtr hwnd;
-            public IntPtr hwndInsertAfter;
-            public int x;
-            public int y;
-            public int cx;
-            public int cy;
+            public IntPtr hWndInsertAfter;
+            public IntPtr hWnd;
+            public int X;
+            public int Y;
+            public int CX;
+            public int CY;
             public uint flags;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct NCCALCSIZE_PARAMS
+        public struct NCCALSIZEPARAMS_ARGS
         {
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            public RECT[] rgrc;
-            public WINDOWPOS lppos;
+            public RECT NewRect;
+            public RECT OldRect;
+            public RECT OldClientRect;
+            public WINDOWPOS WindowPos;
         }
-
+        
+        public struct NCCALSIZEPARAMS_RETURN
+        {
+            public RECT NewClientRect;
+            public RECT DstRect;
+            public RECT SrcRect;
+        }
+        
         public struct TRACKMOUSEEVENT
         {
             public int cbSize;

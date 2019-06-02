@@ -62,6 +62,8 @@ namespace Avalonia.Rendering
         /// <param name="rect">The dirty rectangle.</param>
         void Paint(Rect rect);
 
+        void RepaintLastFrameIfExists();
+
         /// <summary>
         /// Starts the renderer.
         /// </summary>

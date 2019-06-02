@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls.Notifications;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -113,6 +114,9 @@ namespace Avalonia.Controls
             impl.Paint = HandlePaint;
             impl.Resized = HandleResized;
             impl.ScalingChanged = HandleScalingChanged;
+
+            if (impl is ITopLevelWithWin32JitterHacks jitterHacks)
+                jitterHacks.Win32JitterLastFrameRepaint += HandleWin32JitterRepaint;
 
             _keyboardNavigationHandler?.SetOwner(this);
             _accessKeyHandler?.SetOwner(this);
@@ -269,6 +273,11 @@ namespace Avalonia.Controls
         protected virtual void HandlePaint(Rect rect)
         {
             Renderer?.Paint(rect);
+        }
+
+        protected virtual void HandleWin32JitterRepaint()
+        {
+            Renderer?.RepaintLastFrameIfExists();
         }
 
         /// <summary>

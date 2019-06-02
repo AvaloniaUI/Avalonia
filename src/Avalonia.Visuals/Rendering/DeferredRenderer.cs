@@ -31,6 +31,7 @@ namespace Avalonia.Rendering
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
+        private IRef<Scene> _lastRenderedScene;
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
@@ -129,6 +130,9 @@ namespace Avalonia.Rendering
                 var scene = _scene;
                 _scene = null;
                 scene?.Dispose();
+                scene = _lastRenderedScene;
+                _lastRenderedScene = null;
+                scene?.Dispose();
             }
 
             Stop();
@@ -174,6 +178,11 @@ namespace Avalonia.Rendering
                 UpdateScene();
             if(_scene?.Item != null)
                 Render(true);
+        }
+
+        public void RepaintLastFrameIfExists()
+        {
+            Render(true, true);
         }
 
         /// <inheritdoc/>
@@ -229,7 +238,7 @@ namespace Avalonia.Rendering
 
         internal void UnitTestRender() => Render(false);
 
-        private void Render(bool forceComposite)
+        private void Render(bool forceComposite, bool doNotUpdateScene = false)
         {
             using (var l = _lock.TryLock())
             {
@@ -256,12 +265,17 @@ namespace Avalonia.Rendering
 
                         }
 
-                        var (scene, updated) = UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
+                        var (scene, updated) =
+                            doNotUpdateScene ?
+                                (_lastRenderedScene?.Clone(), false) :
+                                UpdateRenderLayersAndConsumeSceneIfNeeded(GetContext);
 
                         using (scene)
                         {
                             if (scene?.Item != null)
                             {
+                                _lastRenderedScene?.Dispose();
+                                _lastRenderedScene = scene.Clone();
                                 var overlay = DrawDirtyRects || DrawFps;
                                 if (DrawDirtyRects)
                                     _dirtyRectsDisplay.Tick();
