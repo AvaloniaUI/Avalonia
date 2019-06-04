@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media;
 using HarfBuzzSharp;
 
@@ -12,11 +13,11 @@ namespace Avalonia.Skia
     // ToDo: Use this for the TextLayout
     internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
+        private readonly TableLoader _tableLoader;
+
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            Typeface = typeface;
-
-            Font = CreateHarfBuzzFont(typeface);
+            _tableLoader = new TableLoader(typeface);
 
             Font.GetScale(out var xScale, out _);
 
@@ -31,28 +32,8 @@ namespace Avalonia.Skia
             LineGap = horizontalFontExtents.LineGap;
         }
 
-        /// <summary>
-        /// Creates a <see cref="Font"/> instance from specified <see cref="SKTypeface"/>
-        /// </summary>
-        /// <param name="typeface"></param>
-        /// <returns></returns>
-        private static Font CreateHarfBuzzFont(SKTypeface typeface)
-        {
-            var face = new Face(new TypefaceTableLoader(typeface))
-            {
-                UnitsPerEm = typeface.UnitsPerEm
-            };
-
-            var font = new Font(face);
-
-            font.SetFunctionsOpenType();
-
-            return font;
-        }
-
-        public SKTypeface Typeface { get; }
-
-        public Font Font { get; }
+        public SKTypeface Typeface => _tableLoader.Typeface;
+        public Font Font => _tableLoader.Font;
 
         public short DesignEmHeight { get; }
 
@@ -108,35 +89,96 @@ namespace Avalonia.Skia
 
         public void Dispose()
         {
-            Font.Dispose();
+            _tableLoader.Dispose();
         }
 
-        private class TypefaceTableLoader : TableLoader
+        private class TableLoader : IDisposable
         {
-            private readonly SKTypeface _typeface;
 
-            public TypefaceTableLoader(SKTypeface typeface)
+            private readonly Dictionary<Tag, Blob> _tableCache = new Dictionary<Tag, Blob>();
+            private bool _isDisposed;
+
+            public TableLoader(SKTypeface typeface)
             {
-                _typeface = typeface;
+                Typeface = typeface;
+                Font = CreateFont(typeface);
             }
 
-            /// <summary>
-            /// Loads the requested table for use within HarfBuzz
-            /// </summary>
-            /// <param name="tag"></param>
-            /// <returns></returns>
-            protected override unsafe Blob Load(Tag tag)
+            public SKTypeface Typeface { get; }
+
+
+            public Font Font { get; }
+
+            private Font CreateFont(SKTypeface typeface)
             {
-                if (_typeface.TryGetTableData(tag, out var table))
+                var face = new Face(GetTable, Dispose)
+                {
+                    UnitsPerEm = typeface.UnitsPerEm
+                };
+
+                var font = new Font(face);
+
+                font.SetFunctionsOpenType();
+
+                return font;
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                _isDisposed = true;
+
+                if (!disposing)
+                {
+                    return;
+                }
+
+                foreach (var blob in _tableCache.Values)
+                {
+                    blob?.Dispose();
+                }
+
+                Font.Dispose();
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
+            private unsafe Blob CreateBlob(Tag tag)
+            {
+                if (Typeface.TryGetTableData(tag, out var table))
                 {
                     fixed (byte* tablePtr = table)
                     {
-                        // This needs to copy the array on creation (MemoryMode.Duplicate)
                         return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
                     }
                 }
 
                 return null;
+            }
+
+            private IntPtr GetTable(IntPtr face, Tag tag, IntPtr userData)
+            {
+                Blob blob;
+
+                if (_tableCache.ContainsKey(tag))
+                {
+                    blob = _tableCache[tag];
+                }
+                else
+                {
+                    blob = CreateBlob(tag);
+                    _tableCache.Add(tag, blob);
+                }
+
+                return blob?.Handle ?? IntPtr.Zero;
             }
         }
     }

@@ -3,6 +3,7 @@
 
 namespace Avalonia.Media
 {
+    // ToDo: Introduce GlyphRunImpl for better performance (caching)
     public class GlyphRun
     {
         public GlyphRun(

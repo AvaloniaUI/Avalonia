@@ -1947,6 +1947,8 @@ namespace Avalonia.Skia.Text
                 {
                     blob?.Dispose();
                 }
+
+                Font.Dispose();
             }
 
             public void Dispose()
