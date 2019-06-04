@@ -11,17 +11,23 @@ class Cursor : public ComSingleObject<IAvnCursor, &IID_IAvnCursor>
 {
 private:
     NSCursor * _native;
-
+    bool _isHidden;
 public:
     FORWARD_IUNKNOWN()
-    Cursor(NSCursor * cursor)
+    Cursor(NSCursor * cursor, bool isHidden = false)
     {
         _native = cursor;
+        _isHidden = isHidden;
     }
 
     NSCursor* GetNative()
     {
         return _native;
+    }
+    
+    bool IsHidden ()
+    {
+        return _isHidden;
     }
 };
 
