@@ -118,6 +118,19 @@ namespace Avalonia.OpenGL
         public delegate bool EglWaitNative();
         [GlEntryPoint("eglWaitNative")]
         public EglWaitGL WaitNative { get; }
+        
+        public delegate IntPtr EglQueryString(IntPtr display, int i);
+        
+        [GlEntryPoint("eglQueryString")]
+        public EglQueryString QueryStringNative { get; }
+
+        public string QueryString(IntPtr display, int i)
+        {
+            var rv = QueryStringNative(display, i);
+            if (rv == IntPtr.Zero)
+                return null;
+            return Marshal.PtrToStringAnsi(rv);
+        }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
