@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Avalonia.Platform.Interop;
 using static Avalonia.OpenGL.EglConsts;
@@ -13,21 +14,42 @@ namespace Avalonia.OpenGL
         private readonly int[] _contextAttributes;
 
         public IntPtr Handle => _display;
+        private AngleOptions.PlatformApi? _angleApi;
         public EglDisplay(EglInterface egl)
         {
             _egl = egl;  
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && _egl.GetPlatformDisplayEXT != null)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                foreach (var dapi in new[] {EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE})
+                if (_egl.GetPlatformDisplayEXT == null)
+                    throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl.dll");
+                
+                var allowedApis = AvaloniaLocator.Current.GetService<AngleOptions>()?.AllowedPlatformApis
+                              ?? new List<AngleOptions.PlatformApi> {AngleOptions.PlatformApi.DirectX9};              
+                
+                foreach (var platformApi in allowedApis)
                 {
+                    int dapi;
+                    if (platformApi == AngleOptions.PlatformApi.DirectX9)
+                        dapi = EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE;
+                    else if (platformApi == AngleOptions.PlatformApi.DirectX11)
+                        dapi = EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE;
+                    else 
+                        continue;
+                    
                     _display = _egl.GetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, IntPtr.Zero, new[]
                     {
                         EGL_PLATFORM_ANGLE_TYPE_ANGLE, dapi, EGL_NONE
                     });
-                    if(_display != IntPtr.Zero)
+                    if (_display != IntPtr.Zero)
+                    {
+                        _angleApi = platformApi;
                         break;
+                    }
                 }
+
+                if (_display == IntPtr.Zero)
+                    throw new OpenGlException("Unable to create ANGLE display");
             }
 
             if (_display == IntPtr.Zero)
@@ -64,29 +86,35 @@ namespace Avalonia.OpenGL
                 if (!_egl.BindApi(cfg.Api))
                     continue;
 
-                var attribs = new[]
+                foreach(var stencilSize in new[]{8, 1, 0})
+                foreach (var depthSize in new []{8, 1, 0})
                 {
-                    EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-                    EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
-                    EGL_RED_SIZE, 8,
-                    EGL_GREEN_SIZE, 8,
-                    EGL_BLUE_SIZE, 8,
-                    EGL_ALPHA_SIZE, 8,
-                    EGL_STENCIL_SIZE, 8,
-                    EGL_DEPTH_SIZE, 8,
-                    EGL_NONE
-                };
-                if (!_egl.ChooseConfig(_display, attribs, out _config, 1, out int numConfigs))
-                    continue;
-                if (numConfigs == 0)
-                    continue;
-                _contextAttributes = cfg.Attributes;
-                Type = cfg.Type;
+                    var attribs = new[]
+                    {
+                        EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+
+                        EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
+
+                        EGL_RED_SIZE, 8,
+                        EGL_GREEN_SIZE, 8,
+                        EGL_BLUE_SIZE, 8,
+                        EGL_ALPHA_SIZE, 8,
+                        EGL_STENCIL_SIZE, stencilSize,
+                        EGL_DEPTH_SIZE, depthSize,
+                        EGL_NONE
+                    };
+                    if (!_egl.ChooseConfig(_display, attribs, out _config, 1, out int numConfigs))
+                        continue;
+                    if (numConfigs == 0)
+                        continue;
+                    _contextAttributes = cfg.Attributes;
+                    Type = cfg.Type;
+                }
             }
 
             if (_contextAttributes == null)
                 throw new OpenGlException("No suitable EGL config was found");
-
+               
             GlInterface = GlInterface.FromNativeUtf8GetProcAddress(b => _egl.GetProcAddress(b));
         }
 
