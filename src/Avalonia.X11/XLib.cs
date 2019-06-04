@@ -322,6 +322,9 @@ namespace Avalonia.X11
             ref XColor foreground_color, ref XColor background_color, int x_hot, int y_hot);
 
         [DllImport(libX11)]
+        public static extern IntPtr XCreateBitmapFromData(IntPtr display, IntPtr drawable, byte[] data, int width, int height);
+
+        [DllImport(libX11)]
         public static extern IntPtr XCreatePixmapFromBitmapData(IntPtr display, IntPtr drawable, byte[] data, int width,
             int height, IntPtr fg, IntPtr bg, int depth);
 

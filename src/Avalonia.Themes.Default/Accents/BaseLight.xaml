@@ -46,11 +46,11 @@
         <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="ErrorLowBrush" Color="{DynamicResource ErrorLowColor}"></SolidColorBrush>
 
-        <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444"/>
-        <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="Teal"/>
-        <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="LimeGreen"/>
-        <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="Orange"/>
-        <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="OrangeRed"/>
+        <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#007ACC" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardWarningBackgroundBrush" Color="#FDB328" Opacity="0.75"/>
+        <SolidColorBrush x:Key="NotificationCardErrorBackgroundBrush" Color="#BD202C" Opacity="0.75"/>
 
         <Thickness x:Key="ThemeBorderThickness">1</Thickness>
         <sys:Double x:Key="ThemeDisabledOpacity">0.5</sys:Double>

@@ -33,7 +33,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 return null;
             }
 
-            RawMouseEventType? mouseEventType = null;
+            RawPointerEventType? mouseEventType = null;
             var eventTime = DateTime.Now;
             //Basic touch support
             switch (e.Action)
@@ -42,17 +42,17 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     //may be bot flood the evnt system with too many event especially on not so powerfull mobile devices
                     if ((eventTime - _lastTouchMoveEventTime).TotalMilliseconds > 10)
                     {
-                        mouseEventType = RawMouseEventType.Move;
+                        mouseEventType = RawPointerEventType.Move;
                     }
                     break;
 
                 case MotionEventActions.Down:
-                    mouseEventType = RawMouseEventType.LeftButtonDown;
+                    mouseEventType = RawPointerEventType.LeftButtonDown;
 
                     break;
 
                 case MotionEventActions.Up:
-                    mouseEventType = RawMouseEventType.LeftButtonUp;
+                    mouseEventType = RawPointerEventType.LeftButtonUp;
                     break;
             }
 
@@ -75,14 +75,14 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                     //we need to generate mouse move before first mouse down event
                     //as this is the way buttons are working every time
                     //otherwise there is a problem sometimes
-                    if (mouseEventType == RawMouseEventType.LeftButtonDown)
+                    if (mouseEventType == RawPointerEventType.LeftButtonDown)
                     {
-                        var me = new RawMouseEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
-                                    RawMouseEventType.Move, _point, InputModifiers.None);
+                        var me = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
+                                    RawPointerEventType.Move, _point, InputModifiers.None);
                         _view.Input(me);
                     }
 
-                    var mouseEvent = new RawMouseEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
+                    var mouseEvent = new RawPointerEventArgs(mouseDevice, (uint)eventTime.Ticks, inputRoot,
                         mouseEventType.Value, _point, InputModifiers.LeftMouseButton);
                     _view.Input(mouseEvent);
 
