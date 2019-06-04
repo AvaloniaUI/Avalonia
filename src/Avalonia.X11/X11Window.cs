@@ -717,6 +717,10 @@ namespace Avalonia.X11
             UpdateMotifHints();
         }
 
+        public void SetWindowTransparency(bool enabled)
+        {
+        }
+
 
         public void Resize(Size clientSize) => Resize(clientSize, false);
 

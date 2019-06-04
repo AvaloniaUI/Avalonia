@@ -62,6 +62,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, bool>(nameof(HasSystemDecorations), true);
 
         /// <summary>
+        /// Enables or disables system window transparency (Windows Only, can cause performance issues)
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowsTransparencyProperty =
+            AvaloniaProperty.Register<Window, bool>(nameof(AllowsTransparency), false);
+
+        /// <summary>
         /// Enables or disables the taskbar icon
         /// </summary>
         public static readonly StyledProperty<bool> ShowInTaskbarProperty =
@@ -111,6 +117,8 @@ namespace Avalonia.Controls
             TitleProperty.Changed.AddClassHandler<Window>((s, e) => s.PlatformImpl?.SetTitle((string)e.NewValue));
             HasSystemDecorationsProperty.Changed.AddClassHandler<Window>(
                 (s, e) => s.PlatformImpl?.SetSystemDecorations((bool)e.NewValue));
+            AllowsTransparencyProperty.Changed.AddClassHandler<Window>(
+                            (s, e) => s.PlatformImpl?.SetWindowTransparency((bool)e.NewValue));
 
             ShowInTaskbarProperty.Changed.AddClassHandler<Window>((w, e) => w.PlatformImpl?.ShowTaskbarIcon((bool)e.NewValue));
 
@@ -191,6 +199,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(HasSystemDecorationsProperty); }
             set { SetValue(HasSystemDecorationsProperty, value); }
+        }
+
+        /// <summary>
+        /// Enables or disables system window transparency (Windows Only, can cause performance issues)
+        /// </summary>
+        /// 
+        public bool AllowsTransparency
+        {
+            get { return GetValue(AllowsTransparencyProperty); }
+            set { SetValue(AllowsTransparencyProperty, value); }
         }
 
         /// <summary>
@@ -428,7 +446,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(owner == null)
+            if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
 
             if (IsVisible)

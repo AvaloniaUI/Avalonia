@@ -78,6 +78,9 @@ namespace Avalonia.Gtk3
         }
 
         public void SetSystemDecorations(bool enabled) => Native.GtkWindowSetDecorated(GtkWidget, enabled);
+        public void SetWindowTransparency(bool enabled)
+        {
+        }
 
         public void SetIcon(IWindowIconImpl icon) => Native.GtkWindowSetIcon(GtkWidget, (Pixbuf) icon);
 

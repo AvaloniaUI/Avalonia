@@ -14,7 +14,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.ShowWindow(Handle.Handle, UnmanagedMethods.ShowWindowCommand.ShowNoActivate);
         }
 
-        protected override IntPtr CreateWindowOverride(ushort atom)
+        protected override IntPtr CreateWindowOverride(ushort atom, bool layered = false)
         {
             UnmanagedMethods.WindowStyles style =
                 UnmanagedMethods.WindowStyles.WS_POPUP |

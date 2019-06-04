@@ -5,15 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
-using Avalonia.Threading;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -32,6 +31,7 @@ namespace Avalonia.Win32
         private IntPtr _hwnd;
         private IInputRoot _owner;
         private bool _trackingMouse;
+        private bool _layered = false;
         private bool _decorated = true;
         private bool _resizable = true;
         private bool _topmost = false;
@@ -157,7 +157,7 @@ namespace Avalonia.Win32
             int requestedClientHeight = (int)(value.Height * Scaling);
             UnmanagedMethods.RECT clientRect;
             UnmanagedMethods.GetClientRect(_hwnd, out clientRect);
-           
+
             // do comparison after scaling to avoid rounding issues
             if (requestedClientWidth != clientRect.Width || requestedClientHeight != clientRect.Height)
             {
@@ -280,8 +280,20 @@ namespace Avalonia.Win32
                 return;
             }
 
-            UpdateWMStyles(()=> _decorated = value);
+            UpdateWMStyles(() => _decorated = value);
         }
+
+        public void SetWindowTransparency(bool value)
+        {
+            if (value == _layered)
+            {
+                return;
+            }
+
+            _layered = value;
+            UpdateWindowExStyle();
+        }
+
 
         public void Invalidate(Rect rect)
         {
@@ -863,7 +875,8 @@ namespace Avalonia.Win32
 
         private static int ToInt32(IntPtr ptr)
         {
-            if (IntPtr.Size == 4) return ptr.ToInt32();
+            if (IntPtr.Size == 4)
+                return ptr.ToInt32();
 
             return (int)(ptr.ToInt64() & 0xffffffff);
         }
@@ -878,13 +891,24 @@ namespace Avalonia.Win32
 
             _taskbarIcon = value;
 
-            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
+            UpdateWindowExStyle();
+        }
+
+        private void UpdateWindowExStyle()
+        {
+            var style = (UnmanagedMethods.WindowStyles)UnmanagedMethods.GetWindowLong(_hwnd,
+                (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE);
 
             style &= ~(UnmanagedMethods.WindowStyles.WS_VISIBLE);
 
             style |= UnmanagedMethods.WindowStyles.WS_EX_TOOLWINDOW;
 
-            if (value)
+            if (_layered)
+                style |= UnmanagedMethods.WindowStyles.WS_EX_LAYERED;
+            else
+                style &= ~(UnmanagedMethods.WindowStyles.WS_EX_LAYERED);
+
+            if (_taskbarIcon)
                 style |= UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW;
             else
                 style &= ~(UnmanagedMethods.WindowStyles.WS_EX_APPWINDOW);
@@ -895,6 +919,10 @@ namespace Avalonia.Win32
                 //Toggle to make the styles stick
                 UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
                 UnmanagedMethods.SetWindowLong(_hwnd, (int)UnmanagedMethods.WindowLongParam.GWL_EXSTYLE, (uint)style);
+                if (_layered)
+                {
+                    UnmanagedMethods.SetLayeredWindowAttributes(_hwnd, new COLORREF(Colors.Transparent), 0, (uint)UnmanagedMethods.LayeredWindowFlags.LWA_COLORKEY);
+                }
                 UnmanagedMethods.ShowWindow(_hwnd, windowPlacement.ShowCmd);
             }
         }
@@ -929,8 +957,8 @@ namespace Avalonia.Win32
             var oldClientRectOrigin = new UnmanagedMethods.POINT();
             ClientToScreen(_hwnd, ref oldClientRectOrigin);
             oldClientRect.Offset(oldClientRectOrigin);
-            
-            
+
+
             SetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE, (uint)style);
 
             UnmanagedMethods.GetWindowRect(_hwnd, out var windowRect);
@@ -960,7 +988,7 @@ namespace Avalonia.Win32
                 return;
             }
 
-            UpdateWMStyles(()=> _resizable = value);
+            UpdateWMStyles(() => _resizable = value);
         }
 
         public void SetTopmost(bool value)

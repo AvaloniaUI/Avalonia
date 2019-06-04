@@ -95,6 +95,10 @@ namespace Avalonia.DesignerSupport.Remote
         {
         }
 
+        public void SetWindowTransparency(bool enabled)
+        {
+        }
+
         public void SetIcon(IWindowIconImpl icon)
         {
         }

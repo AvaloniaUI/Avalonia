@@ -38,6 +38,12 @@ namespace Avalonia.Platform
         void SetSystemDecorations(bool enabled);
 
         /// <summary>
+        /// Enables or disables window transparency (Every pixel painted by Transparent color will be transparent)
+        /// </summary>
+        /// <param name="enabled"></param>
+        void SetWindowTransparency(bool enabled);
+
+        /// <summary>
         /// Sets the icon of this window.
         /// </summary>
         void SetIcon(IWindowIconImpl icon);

@@ -212,7 +212,7 @@ namespace Avalonia.Media
         Teal = 0xff008080,
         Thistle = 0xffd8bfd8,
         Tomato = 0xffff6347,
-        Transparent = 0x00ffffff,
+        Transparent = 0xffffffee,
         Turquoise = 0xff40e0d0,
         Violet = 0xffee82ee,
         Wheat = 0xfff5deb3,

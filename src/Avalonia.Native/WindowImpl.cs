@@ -62,6 +62,10 @@ namespace Avalonia.Native
             _native.HasDecorations = enabled;
         }
 
+        public void SetWindowTransparency(bool enabled)
+        {
+        }
+
         public void SetTitleBarColor (Avalonia.Media.Color color)
         {
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });

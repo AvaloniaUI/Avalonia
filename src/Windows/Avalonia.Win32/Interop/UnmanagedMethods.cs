@@ -277,6 +277,13 @@ namespace Avalonia.Win32.Interop
         }
 
         [Flags]
+        public enum LayeredWindowFlags : uint
+        {
+            LWA_COLORKEY = 1,
+            LWA_ALPHA = 2,
+        }
+
+        [Flags]
         public enum WindowStyles : uint
         {
             WS_BORDER = 0x800000,
@@ -677,9 +684,9 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
                                                       MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-        
+
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -767,7 +774,7 @@ namespace Avalonia.Win32.Interop
 
         public static uint GetWindowLong(IntPtr hWnd, int nIndex)
         {
-            if(IntPtr.Size == 4)
+            if (IntPtr.Size == 4)
             {
                 return GetWindowLong32b(hWnd, nIndex);
             }
@@ -794,7 +801,7 @@ namespace Avalonia.Win32.Interop
                 return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
             }
         }
-        
+
         public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr handle)
         {
             if (IntPtr.Size == 4)
@@ -836,9 +843,23 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool PeekMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, uint wRemoveMsg);
-        
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
+        [DllImport("user32.dll")]
+        public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, COLORREF crKey, byte bAlpha, uint dwFlags);
+
+        // Alternate
+        [StructLayout(LayoutKind.Sequential)]
+        public struct COLORREF
+        {
+            public uint ColorDWORD;
+
+            public COLORREF(Avalonia.Media.Color color)
+            {
+                ColorDWORD = (uint)color.R + (((uint)color.G) << 8) + (((uint)color.B) << 16);
+            }
+        }
 
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
@@ -959,7 +980,7 @@ namespace Avalonia.Win32.Interop
         internal static extern int CoCreateInstance(ref Guid clsid,
             IntPtr ignore1, int ignore2, ref Guid iid, [MarshalAs(UnmanagedType.IUnknown), Out] out object pUnkOuter);
 
-        
+
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string pszPath, IntPtr pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem ppv);
 
@@ -1030,7 +1051,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
-        
+
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
@@ -1043,7 +1064,7 @@ namespace Avalonia.Win32.Interop
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
             IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
-        
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
@@ -1064,12 +1085,12 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeLow,
             string lpName);
 
-        [DllImport("msvcrt.dll", EntryPoint="memcpy", SetLastError = false, CallingConvention=CallingConvention.Cdecl)]
-        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
-        
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count);
+
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
-        
+
         [DllImport("ole32.dll", EntryPoint = "OleInitialize")]
         public static extern HRESULT OleInitialize(IntPtr val);
 
@@ -1134,9 +1155,9 @@ namespace Avalonia.Win32.Interop
             MDT_ANGULAR_DPI = 1,
             MDT_RAW_DPI = 2,
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
-        } 
+        }
 
-        public enum ClipboardFormat 
+        public enum ClipboardFormat
         {
             /// <summary>
             /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
@@ -1318,7 +1339,7 @@ namespace Avalonia.Win32.Interop
             OFN_NOREADONLYRETURN = 0x00008000,
             OFN_OVERWRITEPROMPT = 0x00000002
         }
-        
+
         public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
