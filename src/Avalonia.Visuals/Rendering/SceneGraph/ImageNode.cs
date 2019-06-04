@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
@@ -12,6 +13,8 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     internal class ImageNode : DrawOperation
     {
+        private IRef<IBitmapImpl> _snapshot;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageNode"/> class.
         /// </summary>
@@ -31,6 +34,13 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
+            if (Source.Item is IThreadUnsafeBitmapImpl vol)
+            {
+                _snapshot = RefCountable.Create(vol.Snapshot());
+                if (_snapshot == null)
+                    throw new ArgumentException(
+                        "Passed image implements IThreadUnsafeBitmapImpl, but Snapshot() returned null");
+            }
         }        
 
         /// <summary>
@@ -100,7 +110,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawImage(_snapshot ?? Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
         }
 
         /// <inheritdoc/>
@@ -109,6 +119,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Dispose()
         {
             Source?.Dispose();
+            _snapshot?.Dispose();
         }
     }
 }

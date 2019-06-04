@@ -115,7 +115,7 @@ namespace Avalonia.Skia
                 GrContext = GrContext
             };
 
-            return new SurfaceRenderTarget(createInfo);
+            return new SurfaceRenderTarget(createInfo, true);
         }
 
         /// <inheritdoc />

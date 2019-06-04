@@ -26,6 +26,9 @@
       </MenuItem>
     </Menu>
     <TabControl Classes="sidebar">
+      <TabItem Header="RenderTargetBitmap">
+        <pages:RenderTargetBitmapPage/>
+      </TabItem>
       <TabItem Header="Animations">
         <pages:AnimationsPage/>
       </TabItem>

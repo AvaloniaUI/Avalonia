@@ -55,8 +55,6 @@ namespace Avalonia.Direct2D1.RenderTests
             var platform = "Direct2D1";
 #endif
             OutputPath = Path.Combine(testFiles, platform, outputPath);
-
-            threadingInterface.MainThread = Thread.CurrentThread;
         }
 
         public string OutputPath
@@ -157,9 +155,8 @@ namespace Avalonia.Direct2D1.RenderTests
 
         private class TestThreadingInterface : IPlatformThreadingInterface
         {
-            public bool CurrentThreadIsLoopThread => MainThread.ManagedThreadId == Thread.CurrentThread.ManagedThreadId;
-
-            public Thread MainThread { get; set; }
+            public bool CurrentThreadIsLoopThread => true;
+            
 
 #pragma warning disable 67
             public event Action<DispatcherPriority?> Signaled;

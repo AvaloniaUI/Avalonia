@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 
@@ -68,6 +69,9 @@ namespace Avalonia.Skia
                     renderTarget.Dispose();
                     _grContext.Flush();
                     session.Dispose();
+                    if(Dispatcher.UIThread.CheckAccess())
+                        AvaloniaLocator.Current.GetService<IWindowingPlatformGlFeature>()
+                            .ImmediateContext.MakeCurrent();
                 }));
             }
         }

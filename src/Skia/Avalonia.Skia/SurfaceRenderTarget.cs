@@ -4,9 +4,11 @@
 using System;
 using System.IO;
 using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Skia.Helpers;
+using Avalonia.Threading;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -14,19 +16,23 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IRenderTargetBitmapImpl, IDrawableBitmapImpl, IThreadUnsafeBitmapImpl
     {
+        private readonly bool _uiThread;
+        private readonly object _lock = new object();
         private readonly SKSurface _surface;
         private readonly SKCanvas _canvas;
         private readonly bool _disableLcdRendering;
         private readonly GRContext _grContext;
-        
+
         /// <summary>
         /// Create new surface render target.
         /// </summary>
         /// <param name="createInfo">Create info.</param>
-        public SurfaceRenderTarget(CreateInfo createInfo)
+        /// <param name="b"></param>
+        public SurfaceRenderTarget(CreateInfo createInfo, bool uiThread = false)
         {
+            _uiThread = uiThread;
             PixelSize = new PixelSize(createInfo.Width, createInfo.Height);
             Dpi = createInfo.Dpi;
 
@@ -58,30 +64,57 @@ namespace Avalonia.Skia
             return SKSurface.Create(imageInfo);
         }
 
+        IDisposable Lock()
+        {
+            if(_uiThread)
+                Dispatcher.UIThread.VerifyAccess();
+            Monitor.Enter(_lock);
+            return Disposable.Create(() => Monitor.Exit(_lock));
+        }
+
         /// <inheritdoc />
         public void Dispose()
         {
-            _canvas.Dispose();
-            _surface.Dispose();
+            if (_uiThread || Dispatcher.UIThread.CheckAccess())
+            {
+                using (Lock())
+                {
+                    _canvas.Dispose();
+                    _surface.Dispose();
+                }
+            }
+            else
+                Dispatcher.UIThread.Post(Dispose, DispatcherPriority.Background);
         }
 
         /// <inheritdoc />
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
-            _canvas.RestoreToCount(-1);
-            _canvas.ResetMatrix();
-            
-            var createInfo = new DrawingContextImpl.CreateInfo
+            var l = Lock();
+            try
             {
-                Canvas = _canvas,
-                Dpi = Dpi,
-                VisualBrushRenderer = visualBrushRenderer,
-                DisableTextLcdRendering = _disableLcdRendering,
-                GrContext = _grContext
-            };
+                _canvas.RestoreToCount(-1);
+                _canvas.ResetMatrix();
 
-            return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
+                var createInfo = new DrawingContextImpl.CreateInfo
+                {
+                    Canvas = _canvas,
+                    Dpi = Dpi,
+                    VisualBrushRenderer = visualBrushRenderer,
+                    DisableTextLcdRendering = _disableLcdRendering,
+                    GrContext = _grContext
+                };
+
+                return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++), l);
+            }
+            catch
+            {
+                l.Dispose();
+                throw;
+            }
         }
+
+        public IBitmapImpl Snapshot() => new SkImageBitmap(SnapshotImage(), Dpi);
 
         /// <inheritdoc />
         public Vector Dpi { get; }
@@ -94,6 +127,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Save(string fileName)
         {
+            using(Lock())
             using (var image = SnapshotImage())
             {
                 ImageSavingHelper.SaveImage(image, fileName);
@@ -103,6 +137,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Save(Stream stream)
         {
+            using (Lock())
             using (var image = SnapshotImage())
             {
                 ImageSavingHelper.SaveImage(image, stream);
@@ -112,6 +147,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
+            using(Lock())
             using (var image = SnapshotImage())
             {
                 context.Canvas.DrawImage(image, sourceRect, destRect, paint);
@@ -124,7 +160,8 @@ namespace Avalonia.Skia
         /// <returns>Image snapshot.</returns>
         public SKImage SnapshotImage()
         {
-            return _surface.Snapshot();
+            using (Lock())
+                return _surface.Snapshot();
         }
 
         /// <summary>
