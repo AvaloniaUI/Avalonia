@@ -9,15 +9,24 @@ using Avalonia.VisualTree;
 using Avalonia.Controls;
 using ReactiveUI;
 
-namespace Avalonia
+namespace Avalonia.ReactiveUI
 {
+    /// <summary>
+    /// Determines when Avalonia IVisuals get activated.
+    /// </summary>
     public class AvaloniaActivationForViewFetcher : IActivationForViewFetcher
     {
+        /// <summary>
+        /// Returns affinity for view.
+        /// </summary>
         public int GetAffinityForView(Type view)
         {
             return typeof(IVisual).GetTypeInfo().IsAssignableFrom(view.GetTypeInfo()) ? 10 : 0;
         }
 
+        /// <summary>
+        /// Returns activation observable for activatable Avalonia view.
+        /// </summary>
         public IObservable<bool> GetActivationForView(IActivatable view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
@@ -25,6 +34,9 @@ namespace Avalonia
             return GetActivationForVisual(visual);
         }
 
+        /// <summary>
+        /// Listens to Opened and Closed events for Avalonia windows.
+        /// </summary>
         private IObservable<bool> GetActivationForWindowBase(WindowBase window) 
         {
             var windowLoaded = Observable
@@ -42,6 +54,10 @@ namespace Avalonia
                 .DistinctUntilChanged();
         }
 
+        /// <summary>
+        /// Listens to AttachedToVisualTree and DetachedFromVisualTree 
+        /// events for Avalonia IVisuals.
+        /// </summary>
         private IObservable<bool> GetActivationForVisual(IVisual visual) 
         {
             var visualLoaded = Observable

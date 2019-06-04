@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Gtk3.Interop;
 using Avalonia.Platform;
 
@@ -8,11 +9,11 @@ namespace Avalonia.Gtk3
     {
         public int ScreenCount
         {
-            get => AllScreens.Length;
+            get => _allScreens.Length;
         }
         
         private Screen[] _allScreens;
-        public Screen[] AllScreens
+        public IReadOnlyList<Screen> AllScreens
         {
             get
             {

@@ -250,7 +250,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs> Closing;
+        public event EventHandler<CancelEventArgs> Closing;      
 
         private static void AddWindow(Window window)
         {
@@ -291,7 +291,8 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="dialogResult">The dialog result.</param>
         /// <remarks>
-        /// When the window is shown with the <see cref="ShowDialog{TResult}"/> method, the
+        /// When the window is shown with the <see cref="ShowDialog{TResult}(IWindowImpl)"/>
+        /// or <see cref="ShowDialog{TResult}(Window)"/> method, the
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
@@ -329,8 +330,7 @@ namespace Avalonia.Controls
         protected virtual bool HandleClosing()
         {
             var args = new CancelEventArgs();
-            Closing?.Invoke(this, args);
-
+            OnClosing(args);
             return args.Cancel;
         }
 
@@ -370,8 +370,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Shows the window.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
         public override void Show()
         {
+            if (PlatformImpl == null)
+            {
+                throw new InvalidOperationException("Cannot re-show a closed window.");
+            }
+
             if (IsVisible)
             {
                 return;
@@ -396,6 +404,9 @@ namespace Avalonia.Controls
         /// Shows the window as a dialog.
         /// </summary>
         /// <param name="owner">The dialog's owner window.</param>
+        /// <exception cref="InvalidOperationException">
+        /// The window has already been closed.
+        /// </exception>
         /// <returns>
         /// A task that can be used to track the lifetime of the dialog.
         /// </returns>
@@ -428,7 +439,7 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(IWindowImpl owner)
         {
-            if(owner == null)
+            if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
 
             if (IsVisible)
@@ -564,6 +575,17 @@ namespace Avalonia.Controls
 
             base.HandleResized(clientSize);
         }
+
+        /// <summary>
+        /// Raises the <see cref="Closing"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        /// <remarks>
+        /// A type that derives from <see cref="Window"/>  may override <see cref="OnClosing"/>. The
+        /// overridden method must call <see cref="OnClosing"/> on the base class if the
+        /// <see cref="Closing"/> event needs to be raised.
+        /// </remarks>
+        protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
     }
 }
 

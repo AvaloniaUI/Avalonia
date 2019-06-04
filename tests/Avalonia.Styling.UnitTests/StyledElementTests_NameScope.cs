@@ -1,11 +1,6 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
-using System;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
-using Avalonia.Rendering;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -69,24 +64,6 @@ namespace Avalonia.Controls.UnitTests
             root.ApplyTemplate();
 
             Assert.Null(NameScope.GetNameScope((StyledElement)root.Presenter).Find("foo"));
-        }
-
-        [Fact]
-        public void Control_That_Is_NameScope_Should_Register_With_Parent_NameScope()
-        {
-            UserControl userControl;
-            var root = new TestTemplatedRoot
-            {
-                Content = userControl = new UserControl
-                {
-                    Name = "foo",
-                }
-            };
-
-            root.ApplyTemplate();
-
-            Assert.Same(userControl, root.FindControl<UserControl>("foo"));
-            Assert.Same(userControl, userControl.FindControl<UserControl>("foo"));
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -53,6 +54,21 @@ namespace Avalonia.Visuals.UnitTests.VisualTree
         }
 
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat? fmt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateEllipseGeometry(Rect rect)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateLineGeometry(Point p1, Point p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGeometryImpl CreateRectangleGeometry(Rect rect)
         {
             throw new NotImplementedException();
         }

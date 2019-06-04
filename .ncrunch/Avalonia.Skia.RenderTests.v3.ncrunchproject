@@ -4,6 +4,9 @@
       <Value>..\TestFiles\Skia\**.*</Value>
     </AdditionalFilesToIncludeForProject>
     <DefaultTestTimeout>3000</DefaultTestTimeout>
+    <HiddenComponentWarnings>
+      <Value>MissingOrIgnoredProjectReference</Value>
+    </HiddenComponentWarnings>
     <PreviouslyBuiltSuccessfully>True</PreviouslyBuiltSuccessfully>
   </Settings>
 </ProjectConfiguration>

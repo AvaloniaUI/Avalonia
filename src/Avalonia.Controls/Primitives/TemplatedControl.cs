@@ -357,7 +357,7 @@ namespace Avalonia.Controls.Primitives
 
             if (control.TemplatedParent == this)
             {
-                foreach (IControl child in control.GetVisualChildren())
+                foreach (IControl child in control.GetLogicalChildren())
                 {
                     RegisterNames(child, nameScope);
                 }

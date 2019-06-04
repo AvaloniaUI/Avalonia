@@ -88,12 +88,12 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
                 <TextBlock VerticalAlignment="Center">Tab Placement:</TextBlock>
-                <DropDown SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
-                    <DropDownItem>Left</DropDownItem>
-                    <DropDownItem>Bottom</DropDownItem>
-                    <DropDownItem>Right</DropDownItem>
-                    <DropDownItem>Top</DropDownItem>
-                </DropDown>
+                <ComboBox SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+                    <ComboBoxItem>Left</ComboBoxItem>
+                    <ComboBoxItem>Bottom</ComboBoxItem>
+                    <ComboBoxItem>Right</ComboBoxItem>
+                    <ComboBoxItem>Top</ComboBoxItem>
+                </ComboBox>
             </StackPanel>
         </Grid>
     </DockPanel>

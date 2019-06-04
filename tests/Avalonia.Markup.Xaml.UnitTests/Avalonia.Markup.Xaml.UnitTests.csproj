@@ -29,13 +29,11 @@
     <EmbeddedResource Include="Xaml\Style1.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Xaml\Style2.xaml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
+    <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
-  </ItemGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

@@ -16,7 +16,7 @@ namespace Avalonia.X11.NativeDialogs
     {
         private Task<bool> _initialized;
         private unsafe  Task<string[]> ShowDialog(string title, IWindowImpl parent, GtkFileChooserAction action,
-            bool multiSelect, string initialFileName)
+            bool multiSelect, string initialFileName, IEnumerable<FileDialogFilter> filters)
         {
             IntPtr dlg;
             using (var name = new Utf8Buffer(title))
@@ -35,6 +35,20 @@ namespace Avalonia.X11.NativeDialogs
                 foreach (var d in disposables) d.Dispose();
                 disposables.Clear();
             }
+            
+            if(filters != null)
+                foreach (var f in filters)
+                {
+                    var filter = gtk_file_filter_new();
+                    using (var b = new Utf8Buffer(f.Name))
+                        gtk_file_filter_set_name(filter, b);
+                    
+                    foreach (var e in f.Extensions)
+                        using (var b = new Utf8Buffer("*." + e))
+                            gtk_file_filter_add_pattern(filter, b);
+
+                    gtk_file_chooser_add_filter(dlg, filter);
+                }
 
             disposables = new List<IDisposable>
             {
@@ -68,7 +82,10 @@ namespace Avalonia.X11.NativeDialogs
                     return false;
                 })
             };
-            using (var open = new Utf8Buffer("Open"))
+            using (var open = new Utf8Buffer(
+                action == GtkFileChooserAction.Save ? "Save"
+                : action == GtkFileChooserAction.SelectFolder ? "Select"
+                : "Open"))
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Accept);
             using (var open = new Utf8Buffer("Cancel"))
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
@@ -87,7 +104,7 @@ namespace Avalonia.X11.NativeDialogs
                     dialog is OpenFileDialog ? GtkFileChooserAction.Open : GtkFileChooserAction.Save,
                     (dialog as OpenFileDialog)?.AllowMultiple ?? false,
                     Path.Combine(string.IsNullOrEmpty(dialog.InitialDirectory) ? "" : dialog.InitialDirectory,
-                        string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName)));
+                        string.IsNullOrEmpty(dialog.InitialFileName) ? "" : dialog.InitialFileName), dialog.Filters));
         }
 
         public async Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, IWindowImpl parent)
@@ -96,7 +113,7 @@ namespace Avalonia.X11.NativeDialogs
             return await await RunOnGlibThread(async () =>
             {
                 var res = await ShowDialog(dialog.Title, parent,
-                    GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory);
+                    GtkFileChooserAction.SelectFolder, false, dialog.InitialDirectory, null);
                 return res?.FirstOrDefault();
             });
         }

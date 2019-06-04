@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Platform;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
@@ -15,7 +16,7 @@ namespace Avalonia.Win32
         }
 
         private Screen[] _allScreens;
-        public  Screen[] AllScreens
+        public IReadOnlyList<Screen> AllScreens
         {
             get
             {

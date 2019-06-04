@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia formatted text implementation.
     /// </summary>
-    public class FormattedTextImpl : IFormattedTextImpl
+    internal class FormattedTextImpl : IFormattedTextImpl
     {
         private readonly List<FormattedTextLine> _lines = new List<FormattedTextLine>();
 
@@ -22,6 +22,7 @@ namespace Avalonia.Skia
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping textWrapping,
+            TextTrimming textTrimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -31,14 +32,14 @@ namespace Avalonia.Skia
 
             var skiaTypeface = TypefaceCache.GetSKTypeface(typeface);
 
-            TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, constraint, spans);
+            TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, textTrimming, constraint, spans);
 
             foreach (var textLine in TextLayout.TextLines)
             {
                 _lines.Add(new FormattedTextLine(textLine.TextPointer.Length, textLine.LineMetrics.Size.Height));
             }
 
-            Bounds = new Rect(TextLayout.Bounds.Left, TextLayout.Bounds.Top, TextLayout.Bounds.Right, TextLayout.Bounds.Bottom);
+            Bounds = TextLayout.Bounds.ToAvaloniaRect();
         }
 
         public string Text { get; }

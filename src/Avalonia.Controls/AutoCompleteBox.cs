@@ -58,7 +58,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.AutoCompleteBox.Populating" />
     /// event.
     /// </summary>
-    /// <QualityBand>Stable</QualityBand>
     public class PopulatingEventArgs : CancelEventArgs
     {
         /// <summary>
@@ -97,7 +96,6 @@ namespace Avalonia.Controls
     /// <typeparam name="T">The type used for filtering the
     /// <see cref="T:Avalonia.Controls.AutoCompleteBox" />. This type can
     /// be either a string or an object.</typeparam>
-    /// <QualityBand>Stable</QualityBand>
     public delegate bool AutoCompleteFilterPredicate<T>(string search, T item);
 
     /// <summary>
@@ -107,7 +105,6 @@ namespace Avalonia.Controls
     /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
     /// property for display in the drop-down.
     /// </summary>
-    /// <QualityBand>Stable</QualityBand>
     public enum AutoCompleteFilterMode
     {
         /// <summary>

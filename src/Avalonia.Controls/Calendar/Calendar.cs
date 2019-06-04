@@ -117,7 +117,6 @@ namespace Avalonia.Controls
     /// <see cref="E:Avalonia.Controls.Calendar.DisplayModeChanged" />
     /// event.
     /// </summary>
-    /// <QualityBand>Mature</QualityBand>
     public class CalendarModeChangedEventArgs : RoutedEventArgs
     {
         /// <summary>

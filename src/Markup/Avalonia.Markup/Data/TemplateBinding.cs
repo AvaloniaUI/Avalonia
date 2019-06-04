@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reactive.Subjects;
 using Avalonia.Data.Converters;
 using Avalonia.Reactive;
+using Avalonia.Styling;
 
 namespace Avalonia.Data
 {
@@ -12,8 +13,10 @@ namespace Avalonia.Data
     public class TemplateBinding : SingleSubscriberObservableBase<object>,
         IBinding,
         IDescription,
-        ISubject<object>
+        ISubject<object>,
+        ISetterValue
     {
+        private bool _isSetterValue;
         private IStyledElement _target;
         private Type _targetType;
 
@@ -35,10 +38,11 @@ namespace Avalonia.Data
         {
             // Usually each `TemplateBinding` will only be instantiated once; in this case we can
             // use the `TemplateBinding` object itself as the instanced binding in order to save
-            // allocating a new object. If the binding *is* instantiated more than once (which can
-            // happen if it appears in a `Setter` for example, then just make a clone and instantiate
-            // that.
-            if (_target == null)
+            // allocating a new object.
+            //
+            // If the binding appears in a `Setter`, then make a clone and instantiate that because
+            // because the setter can outlive the control and cause a leak.
+            if (_target == null && !_isSetterValue)
             {
                 _target = (IStyledElement)target;
                 _targetType = targetProperty?.PropertyType;
@@ -105,6 +109,9 @@ namespace Avalonia.Data
                 _target.TemplatedParent.SetValue(Property, value, BindingPriority.LocalValue);
             }
         }
+
+        /// <inheritdoc/>
+        void ISetterValue.Initialize(ISetter setter) => _isSetterValue = true;
 
         protected override void Subscribed()
         {
@@ -176,5 +183,7 @@ namespace Avalonia.Data
                 PublishValue();
             }
         }
+
+        public IBinding ProvideValue() => this;
     }
 }

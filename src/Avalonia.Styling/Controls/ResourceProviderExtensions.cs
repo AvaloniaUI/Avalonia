@@ -11,7 +11,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         /// <param name="key">The resource key.</param>
         /// <returns>The resource, or <see cref="AvaloniaProperty.UnsetValue"/> if not found.</returns>
-        public static object FindResource(this IResourceNode control, string key)
+        public static object FindResource(this IResourceNode control, object key)
         {
             if (control.TryFindResource(key, out var value))
             {
@@ -28,7 +28,7 @@ namespace Avalonia.Controls
         /// <param name="key">The resource key.</param>
         /// <param name="value">On return, contains the resource if found, otherwise null.</param>
         /// <returns>True if the resource was found; otherwise false.</returns>
-        public static bool TryFindResource(this IResourceNode control, string key, out object value)
+        public static bool TryFindResource(this IResourceNode control, object key, out object value)
         {
             Contract.Requires<ArgumentNullException>(control != null);
             Contract.Requires<ArgumentNullException>(key != null);
@@ -52,7 +52,7 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public static IObservable<object> GetResourceObservable(this IResourceNode target, string key)
+        public static IObservable<object> GetResourceObservable(this IResourceNode target, object key)
         {
             return new ResourceObservable(target, key);
         }
@@ -60,9 +60,9 @@ namespace Avalonia.Controls
         private class ResourceObservable : LightweightObservableBase<object>
         {
             private readonly IResourceNode _target;
-            private readonly string _key;
+            private readonly object _key;
 
-            public ResourceObservable(IResourceNode target, string key)
+            public ResourceObservable(IResourceNode target, object key)
             {
                 _target = target;
                 _key = key;
