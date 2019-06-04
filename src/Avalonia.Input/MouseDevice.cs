@@ -172,7 +172,7 @@ namespace Avalonia.Input
                 rv.IsLeftButtonPressed = false;
             if (args.Type == RawPointerEventType.MiddleButtonUp)
                 rv.IsMiddleButtonPressed = false;
-            if (args.Type == RawPointerEventType.RightButtonDown)
+            if (args.Type == RawPointerEventType.RightButtonUp)
                 rv.IsRightButtonPressed = false;
             return rv;
         }
