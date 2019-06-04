@@ -38,6 +38,7 @@ namespace Avalonia.Input
         DragMove,
         DragCopy,
         DragLink,
+        None,
 
         // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
         // We might enable them later, preferably, by loading pixmax direclty from theme with fallback image

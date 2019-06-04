@@ -2,6 +2,7 @@
 {
     enum GdkCursorType
     {
+        Blank = -2,
         CursorIsPixmap = -1,
         XCursor = 0,
         Arrow = 2,
