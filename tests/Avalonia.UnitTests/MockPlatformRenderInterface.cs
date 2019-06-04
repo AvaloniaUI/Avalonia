@@ -17,7 +17,7 @@ namespace Avalonia.UnitTests
             double fontSize,
             TextAlignment textAlignment,
             TextWrapping wrapping,
-            TextTrimming trimmming,
+            TextTrimming trimming,
             Size constraint,
             IReadOnlyList<FormattedTextStyleSpan> spans)
         {
@@ -80,6 +80,11 @@ namespace Avalonia.UnitTests
             int stride)
         {
             throw new NotImplementedException();
+        }
+
+        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        {
+            return Mock.Of<IGlyphTypefaceImpl>();
         }
     }
 }
