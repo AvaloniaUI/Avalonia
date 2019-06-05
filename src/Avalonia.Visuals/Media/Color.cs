@@ -144,5 +144,25 @@ namespace Avalonia.Media
         {
             return ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | (uint)B;
         }
+
+        public static bool operator ==(Color left, Color right) => left.Equals(right);
+
+        public static bool operator !=(Color left, Color right) => !(left == right);
+
+        public bool Equals(Color other) => A == other.A && R == other.R && G == other.G && B == other.B;
+
+        public override bool Equals(object obj) => obj is Color other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = A.GetHashCode();
+                hashCode = (hashCode * 397) ^ R.GetHashCode();
+                hashCode = (hashCode * 397) ^ G.GetHashCode();
+                hashCode = (hashCode * 397) ^ B.GetHashCode();
+                return hashCode;
+            }
+        }
     }
 }

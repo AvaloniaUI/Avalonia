@@ -35,6 +35,26 @@
           C 362.10311,267.08773 320.74941,238.7173 272.70141,238.71731 z "/>
         </Template>
       </Styles.Resources>
+      <Style Selector="Border">
+        <Style.Animations>
+          <Animation Duration="0:0:2"
+                     IterationCount="Infinite"
+                     FillMode="None"
+                     PlaybackDirection="AlternateReverse"
+                     Easing="SineEaseInOut">
+            <KeyFrame Cue="0%">
+              <Setter Property="DropShadowImageFilter.Offset" Value="0,0"/>
+              <Setter Property="DropShadowImageFilter.Blur" Value="2,4"/>
+              <Setter Property="DropShadowImageFilter.Color" Value="Green"/>
+            </KeyFrame>
+            <KeyFrame Cue="100%">
+              <Setter Property="DropShadowImageFilter.Offset" Value="20,15"/>
+              <Setter Property="DropShadowImageFilter.Blur" Value="30,10"/>
+              <Setter Property="DropShadowImageFilter.Color" Value="Blue"/>
+            </KeyFrame>
+          </Animation>
+        </Style.Animations>
+      </Style>  
       <Style Selector="Border.Test">
         <Setter Property="Margin" Value="15"/>
         <Setter Property="Width" Value="100"/>

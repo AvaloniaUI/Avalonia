@@ -118,7 +118,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Once);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0, null), Times.Once);
             context.Verify(x => x.PopOpacity(), Times.Once);
         }
 
@@ -148,7 +148,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Never);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Never);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0, null), Times.Never);
             context.Verify(x => x.PopOpacity(), Times.Never);
         }
 
@@ -174,7 +174,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var animation = new BehaviorSubject<double>(0.5);
 
             context.Verify(x => x.PushOpacityMask(Brushes.Green, new Rect(0, 0, 100, 100)), Times.Once);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0, null), Times.Once);
             context.Verify(x => x.PopOpacityMask(), Times.Once);
         }
 
@@ -293,7 +293,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = GetLayerContext(target, border);
 
             context.Verify(x => x.PushOpacity(0.5), Times.Never);
-            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0), Times.Once);
+            context.Verify(x => x.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100), 0, null), Times.Once);
             context.Verify(x => x.PopOpacity(), Times.Never);
         }
 
@@ -322,7 +322,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering
             var context = Mock.Get(target.RenderTarget.CreateDrawingContext(null));
             var borderLayer = target.Layers[border].Bitmap;
 
-            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default));
+            context.Verify(x => x.DrawImage(borderLayer, 0.5, It.IsAny<Rect>(), It.IsAny<Rect>(), BitmapInterpolationMode.Default, null));
         }
 
         [Fact]

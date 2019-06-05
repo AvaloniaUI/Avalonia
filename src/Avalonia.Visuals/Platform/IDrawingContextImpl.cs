@@ -33,7 +33,9 @@ namespace Avalonia.Platform
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default);
+        void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default,
+            IImageFilter imageFilter = null);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -58,7 +60,8 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry);
+        /// <param name="imageFilter"></param>
+        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -66,7 +69,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f);
+        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
 
         /// <summary>
         /// Draws text.
@@ -82,7 +85,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f);
+        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer

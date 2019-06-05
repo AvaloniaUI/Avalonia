@@ -100,13 +100,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
         {
             var next = NextDrawAs<GeometryNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
+            if (next == null || !next.Item.Equals(Transform, brush, pen, geometry, imageFilter))
             {
-                Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
+                Add(new GeometryNode(Transform, brush, pen, geometry, imageFilter, CreateChildScene(brush)));
             }
             else
             {
@@ -115,13 +115,15 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
         {
             var next = NextDrawAs<ImageNode>();
 
-            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode))
+            if (next == null || !next.Item.Equals(Transform, source, opacity, sourceRect, destRect,
+                    bitmapInterpolationMode, imageFilter))
             {
-                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode));
+                Add(new ImageNode(Transform, source, opacity, sourceRect, destRect, bitmapInterpolationMode, imageFilter));
             }
             else
             {
@@ -152,13 +154,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, null, pen, rect, cornerRadius, filter))
             {
-                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, CreateChildScene(pen.Brush)));
+                Add(new RectangleNode(Transform, null, pen, rect, cornerRadius, filter, CreateChildScene(pen.Brush)));
             }
             else
             {
@@ -191,13 +193,13 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
         {
             var next = NextDrawAs<RectangleNode>();
 
-            if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius))
+            if (next == null || !next.Item.Equals(Transform, brush, null, rect, cornerRadius, filter))
             {
-                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, CreateChildScene(brush)));
+                Add(new RectangleNode(Transform, brush, null, rect, cornerRadius, filter, CreateChildScene(brush)));
             }
             else
             {

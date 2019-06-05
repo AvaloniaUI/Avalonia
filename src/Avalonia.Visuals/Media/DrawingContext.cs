@@ -81,11 +81,14 @@ namespace Avalonia.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = default)
+        public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode = default,
+            IImageFilter imageFilter = null)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
-            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode);
+            PlatformImpl.DrawImage(source.PlatformImpl, opacity, sourceRect, destRect, bitmapInterpolationMode,
+                imageFilter);
         }
 
         /// <summary>
@@ -108,13 +111,13 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry, IImageFilter imageFilter = null)
         {
             Contract.Requires<ArgumentNullException>(geometry != null);
 
             if (brush != null || PenIsVisible(pen))
             {
-                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl);
+                PlatformImpl.DrawGeometry(brush, pen, geometry.PlatformImpl, imageFilter);
             }
         }
 
@@ -124,11 +127,11 @@ namespace Avalonia.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawRectangle(pen, rect, cornerRadius);
+                PlatformImpl.DrawRectangle(pen, rect, cornerRadius, filter);
             }
         }
 
@@ -160,11 +163,11 @@ namespace Avalonia.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
         {
             if (brush != null && rect != Rect.Empty)
             {
-                PlatformImpl.FillRectangle(brush, rect, cornerRadius);
+                PlatformImpl.FillRectangle(brush, rect, cornerRadius, filter);
             }
         }
 

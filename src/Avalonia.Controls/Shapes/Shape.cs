@@ -34,6 +34,9 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
+        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
+            Border.ImageFilterProperty.AddOwner<Shape>();
+        
         private Matrix _transform = Matrix.Identity;
         private Geometry _definingGeometry;
         private Geometry _renderedGeometry;
@@ -139,6 +142,12 @@ namespace Avalonia.Controls.Shapes
             set { SetValue(StrokeJoinProperty, value); }
         }
 
+        public IImageFilter ImageFilter
+        {
+            get => GetValue(ImageFilterProperty);
+            set => SetValue(ImageFilterProperty, value);
+        }
+        
         public override void Render(DrawingContext context)
         {
             var geometry = RenderedGeometry;
@@ -147,7 +156,7 @@ namespace Avalonia.Controls.Shapes
             {
                 var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray, StrokeDashOffset),
                      StrokeLineCap, StrokeJoin);
-                context.DrawGeometry(Fill, pen, geometry);
+                context.DrawGeometry(Fill, pen, geometry, ImageFilter);
             }
         }
 

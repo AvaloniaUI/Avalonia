@@ -1,6 +1,8 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
@@ -21,8 +23,9 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="sourceRect">The source rect.</param>
         /// <param name="destRect">The destination rect.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
-            : base(destRect, transform, null)
+        public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
+            : base(imageFilter.UpdateBounds(destRect), transform, null)
         {
             Transform = transform;
             Source = source.Clone();
@@ -31,6 +34,7 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
+            ImageFilter = imageFilter?.ToImmutable();
         }        
 
         /// <summary>
@@ -70,6 +74,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// The scaling mode.
         /// </value>
         public BitmapInterpolationMode BitmapInterpolationMode { get; }
+        
+        public IImageFilter ImageFilter { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -85,7 +91,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter destImageFilter)
         {
             return transform == Transform &&
                 Equals(source.Item, Source.Item) &&
@@ -93,6 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect &&
+                destImageFilter?.Equals(ImageFilter) == true &&
                 bitmapInterpolationMode == BitmapInterpolationMode;
         }
 
@@ -100,7 +108,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode);
+            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode, ImageFilter);
         }
 
         /// <inheritdoc/>

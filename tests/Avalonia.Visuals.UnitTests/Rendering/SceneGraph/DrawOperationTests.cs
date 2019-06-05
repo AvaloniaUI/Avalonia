@@ -52,7 +52,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 1,
                 new Rect(1, 1, 1, 1),
                 new Rect(1, 1, 1, 1),
-                BitmapInterpolationMode.Default);
+                BitmapInterpolationMode.Default, null);
 
             Assert.Equal(2, bitmap.RefCount);
 
@@ -69,7 +69,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
                 new Matrix(),
                 Brushes.Black,
                 null,
-                geometry);
+                geometry, null);
 
             geometryNode.HitTest(new Point());
         }

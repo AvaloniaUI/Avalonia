@@ -70,20 +70,22 @@ namespace Avalonia.Controls.Utils
             }
         }
 
-        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background, IBrush borderBrush)
+        public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background,
+            IBrush borderBrush, IImageFilter filter)
         {
             if (_useComplexRendering)
             {
                 var backgroundGeometry = _backgroundGeometryCache;
                 if (backgroundGeometry != null)
                 {
-                    context.DrawGeometry(background, null, backgroundGeometry);
+                    context.DrawGeometry(background, null, backgroundGeometry, filter);
                 }
 
                 var borderGeometry = _borderGeometryCache;
                 if (borderGeometry != null)
                 {
-                    context.DrawGeometry(borderBrush, null, borderGeometry);
+                    context.DrawGeometry(borderBrush, null, borderGeometry, 
+                        backgroundGeometry == null ? filter : null);
                 }
             }
             else
@@ -97,7 +99,7 @@ namespace Avalonia.Controls.Utils
                     var topLeft = new Point(borders.Left, borders.Top);
                     var bottomRight = new Point(size.Width - borders.Right, size.Height - borders.Bottom);
                     var innerRect = new Rect(topLeft, bottomRight);
-                    context.FillRectangle(background, innerRect, cornerRadius);
+                    context.FillRectangle(background, innerRect, cornerRadius, filter);
                 }
 
                 if (borderBrush != null && borderThickness > 0)
@@ -105,7 +107,8 @@ namespace Avalonia.Controls.Utils
                     var topLeft = new Point(top, top);
                     var bottomRight = new Point(size.Width - top, size.Height - top);
                     var outerRect = new Rect(topLeft, bottomRight);
-                    context.DrawRectangle(new Pen(borderBrush, borderThickness), outerRect, (float)radii.TopLeft);
+                    context.DrawRectangle(new Pen(borderBrush, borderThickness), outerRect, (float)radii.TopLeft,
+                        background == null ? filter : null);
                 }
             }
         }    

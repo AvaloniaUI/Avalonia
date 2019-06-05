@@ -36,6 +36,11 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
             AvaloniaProperty.Register<Border, CornerRadius>(nameof(CornerRadius));
 
+
+
+        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
+            Avalonia.ImageFilter.ImageFilterProperty.AddOwner<Border>();
+        
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
         /// <summary>
@@ -49,6 +54,7 @@ namespace Avalonia.Controls
                 BorderThicknessProperty,
                 CornerRadiusProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
+            Avalonia.ImageFilter.InitializeAffectsRender(ImageFilterProperty);
         }
 
         /// <summary>
@@ -87,13 +93,20 @@ namespace Avalonia.Controls
             set { SetValue(CornerRadiusProperty, value); }
         }
 
+        public IImageFilter ImageFilter
+        {
+            get => GetValue(ImageFilterProperty);
+            set => SetValue(ImageFilterProperty, value);
+        }
+        
         /// <summary>
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
         public override void Render(DrawingContext context)
         {
-            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
+            _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+                ImageFilter);
         }
 
         /// <summary>

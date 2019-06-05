@@ -28,14 +28,16 @@ namespace Avalonia.Rendering.SceneGraph
             Pen pen,
             Rect rect,
             float cornerRadius,
+            IImageFilter imageFilter,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(rect, transform, pen)
+            : base(imageFilter.UpdateBounds(rect), transform, pen)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Rect = rect;
             CornerRadius = cornerRadius;
+            ImageFilter = imageFilter?.ToImmutable();
             ChildScenes = childScenes;
         }
 
@@ -64,6 +66,8 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public float CornerRadius { get; }
 
+        public IImageFilter ImageFilter { get; }
+
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
 
@@ -80,12 +84,13 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius)
+        public bool Equals(Matrix transform, IBrush brush, Pen pen, Rect rect, float cornerRadius, IImageFilter imageFilter)
         {
             return transform == Transform &&
                 Equals(brush, Brush) &&
                 pen == Pen &&
                 rect == Rect &&
+                imageFilter?.Equals(ImageFilter) == true &&
                 cornerRadius == CornerRadius;
         }
 
@@ -96,12 +101,12 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (Brush != null)
             {
-                context.FillRectangle(Brush, Rect, CornerRadius);
+                context.FillRectangle(Brush, Rect, CornerRadius, ImageFilter);
             }
 
             if (Pen != null)
             {
-                context.DrawRectangle(Pen, Rect, CornerRadius);
+                context.DrawRectangle(Pen, Rect, CornerRadius, ImageFilter);
             }
         }
 

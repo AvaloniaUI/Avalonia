@@ -81,6 +81,11 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<Thickness> PaddingProperty =
             Decorator.PaddingProperty.AddOwner<ContentPresenter>();
 
+
+
+        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
+            Border.ImageFilterProperty.AddOwner<ContentPresenter>();
+
         private IControl _child;
         private bool _createdChild;
         EventHandler<AvaloniaPropertyChangedEventArgs> _childChanging;
@@ -117,6 +122,13 @@ namespace Avalonia.Controls.Presenters
             set { SetValue(BorderBrushProperty, value); }
         }
 
+        
+        public IImageFilter ImageFilter
+        {
+            get => GetValue(ImageFilterProperty);
+            set => SetValue(ImageFilterProperty, value);
+        }
+        
         /// <summary>
         /// Gets or sets the thickness of the border.
         /// </summary>
@@ -297,7 +309,8 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         public override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush);
+            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+                ImageFilter);
         }
 
         /// <summary>

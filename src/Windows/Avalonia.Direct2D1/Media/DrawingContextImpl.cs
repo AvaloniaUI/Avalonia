@@ -109,7 +109,8 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="sourceRect">The rect in the image to draw.</param>
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter filter)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
@@ -202,7 +203,8 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        /// <param name="imageFilter"></param>
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
         {
             if (brush != null)
             {
@@ -236,7 +238,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius, IImageFilter filter)
         {
             using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
@@ -292,7 +294,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius, IImageFilter filter)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

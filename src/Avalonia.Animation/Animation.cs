@@ -197,30 +197,32 @@ namespace Avalonia.Animation
         [Content]
         public KeyFrames Children { get; } = new KeyFrames();
 
-        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
+        private static List<(Func<AvaloniaProperty, bool> Condition, Type Animator, int priority)> Animators 
+            = new List<(Func<AvaloniaProperty, bool>, Type, int)>
         {
-            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
-            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator) ),
-            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator) ),
-            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator) ),
-            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator) ),
-            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator) ),
-            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator) ),
-            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator) ),
-            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator) ),
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) ),
-            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
+            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator), -1 ),
+            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator), -1 ),
+            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator), -1 ),
+            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator), -1 ),
+            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator), -1 ),
+            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator), -1 ),
+            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator), -1 ),
+            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator), -1 ),
+            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator), -1 ),
+            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator), -1 ),
+            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator), -1 ),
         };
 
-        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
+        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition, int priority = 0)
             where TAnimator : IAnimator
         {
-            Animators.Insert(0, (condition, typeof(TAnimator)));
+            Animators.Insert(0, (condition, typeof(TAnimator), priority));
+            Animators = Animators.OrderByDescending(a => a.priority).ToList();
         }
 
         private static Type GetAnimatorType(AvaloniaProperty property)
         {
-            foreach (var (condition, type) in Animators)
+            foreach (var (condition, type, _) in Animators)
             {
                 if (condition(property))
                 {

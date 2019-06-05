@@ -109,7 +109,8 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
+        public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
+            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -122,8 +123,11 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = GetInterpolationMode(bitmapInterpolationMode);
-
-                drawableImage.Draw(this, s, d, paint);
+                using (var filter = CreateImageFilter(imageFilter))
+                {
+                    paint.ImageFilter = filter;
+                    drawableImage.Draw(this, s, d, paint);
+                }
             }
         }
 
@@ -148,7 +152,7 @@ namespace Avalonia.Skia
         public void DrawImage(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
             PushOpacityMask(opacityMask, opacityMaskRect);
-            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
+            DrawImage(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default, null);
             PopOpacityMask();
         }
 
@@ -162,13 +166,17 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
-            using (var stroke = pen?.Brush != null ? CreatePaint(pen, size) : default(PaintWrapper))
+            if(imageFilter!=null)
+                Console.WriteLine();
+            using (var fill = brush != null ? CreatePaint(brush, size, imageFilter) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ?
+                CreatePaint(pen, size, brush == null ? imageFilter : null) :
+                default(PaintWrapper))
             {
                 if (fill.Paint != null)
                 {
@@ -183,9 +191,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
         {
-            using (var paint = CreatePaint(pen, rect.Size))
+            using (var paint = CreatePaint(pen, rect.Size, filter))
             {
                 var rc = rect.ToSKRect();
 
@@ -201,9 +209,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
         {
-            using (var paint = CreatePaint(brush, rect.Size))
+            using (var paint = CreatePaint(brush, rect.Size, filter))
             {
                 var rc = rect.ToSKRect();
 
@@ -496,13 +504,25 @@ namespace Avalonia.Skia
             }
         }
 
+        SKImageFilter CreateImageFilter(IImageFilter filter)
+        {
+            if (filter is IDropShadowImageFilter ds)
+            {
+                return SKImageFilter.CreateDropShadow((float)ds.Offset.X, (float)ds.Offset.Y,
+                    (float)ds.Blur.X, (float)ds.Blur.Y,
+                    ds.Color.ToSKColor(), SKDropShadowImageFilterShadowMode.DrawShadowAndForeground);
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Creates paint wrapper for given brush.
         /// </summary>
         /// <param name="brush">Source brush.</param>
         /// <param name="targetSize">Target size.</param>
         /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize)
+        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize, IImageFilter filter = null)
         {
             var paint = new SKPaint
             {
@@ -511,6 +531,13 @@ namespace Avalonia.Skia
 
             var paintWrapper = new PaintWrapper(paint);
 
+            if (filter != null)
+            {
+                var skFilter = CreateImageFilter(filter);
+                paint.ImageFilter = skFilter;
+                paintWrapper.AddDisposable(skFilter);
+            }
+            
             double opacity = brush.Opacity * _currentOpacity;
 
             if (brush is ISolidColorBrush solid)
@@ -560,7 +587,7 @@ namespace Avalonia.Skia
         /// <param name="pen">Source pen.</param>
         /// <param name="targetSize">Target size.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(Pen pen, Size targetSize)
+        private PaintWrapper CreatePaint(Pen pen, Size targetSize, IImageFilter imageFilter = null)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.
@@ -569,7 +596,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(pen.Brush, targetSize);
+            var rv = CreatePaint(pen.Brush, targetSize, imageFilter);
             var paint = rv.Paint;
 
             paint.IsStroke = true;
@@ -685,6 +712,7 @@ namespace Avalonia.Skia
             private IDisposable _disposable1;
             private IDisposable _disposable2;
             private IDisposable _disposable3;
+            private IDisposable _disposable4;
 
             public PaintWrapper(SKPaint paint)
             {
@@ -693,6 +721,7 @@ namespace Avalonia.Skia
                 _disposable1 = null;
                 _disposable2 = null;
                 _disposable3 = null;
+                _disposable4 = null;
             }
 
             public IDisposable ApplyTo(SKPaint paint)
@@ -723,6 +752,10 @@ namespace Avalonia.Skia
                 {
                     _disposable3 = disposable;
                 }
+                else if (_disposable4 == null)
+                {
+                    _disposable4 = disposable;
+                }
                 else
                 {
                     Debug.Assert(false);
@@ -740,6 +773,7 @@ namespace Avalonia.Skia
                 _disposable1?.Dispose();
                 _disposable2?.Dispose();
                 _disposable3?.Dispose();
+                _disposable4?.Dispose();
             }
         }
     }
