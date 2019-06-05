@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -64,6 +65,7 @@ namespace Avalonia.Controls.Presenters
         private Vector _offset;
         private IDisposable _logicalScrollSubscription;
         private Size _viewport;
+        private Dictionary<int, Vector> _activeLogicalGestureScrolls;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -81,6 +83,7 @@ namespace Avalonia.Controls.Presenters
         public ScrollContentPresenter()
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
+            AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
@@ -226,6 +229,72 @@ namespace Avalonia.Controls.Presenters
             Extent = Child.Bounds.Size.Inflate(Child.Margin);
             return finalSize;
         }
+
+        // Arbitrary chosen value, probably need to ask ILogicalScrollable
+        private const int LogicalScrollItemSize = 50;
+        private void OnScrollGesture(object sender, ScrollGestureEventArgs e)
+        {
+            if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
+            {
+                var scrollable = Child as ILogicalScrollable;
+                bool isLogical = scrollable?.IsLogicalScrollEnabled == true;
+
+                double x = Offset.X;
+                double y = Offset.Y;
+
+                Vector delta = default;
+                if (isLogical)
+                    _activeLogicalGestureScrolls?.TryGetValue(e.Id, out delta);
+                delta += e.Delta;
+                
+                if (Extent.Height > Viewport.Height)
+                {
+                    double dy;
+                    if (isLogical)
+                    {
+                        var logicalUnits = delta.Y / LogicalScrollItemSize;
+                        delta = delta.WithY(delta.Y - logicalUnits * LogicalScrollItemSize);
+                        dy = logicalUnits * scrollable.ScrollSize.Height;
+                    }
+                    else
+                        dy = delta.Y;
+
+
+                    y += dy;
+                    y = Math.Max(y, 0);
+                    y = Math.Min(y, Extent.Height - Viewport.Height);
+                }
+
+                if (Extent.Width > Viewport.Width)
+                {
+                    double dx;
+                    if (isLogical)
+                    {
+                        var logicalUnits = delta.X / LogicalScrollItemSize;
+                        delta = delta.WithX(delta.X - logicalUnits * LogicalScrollItemSize);
+                        dx = logicalUnits * scrollable.ScrollSize.Width;
+                    }
+                    else
+                        dx = delta.X;
+                    x += dx;
+                    x = Math.Max(x, 0);
+                    x = Math.Min(x, Extent.Width - Viewport.Width);
+                }
+
+                if (isLogical)
+                {
+                    if (_activeLogicalGestureScrolls == null)
+                        _activeLogicalGestureScrolls = new Dictionary<int, Vector>();
+                    _activeLogicalGestureScrolls[e.Id] = delta;
+                }
+
+                Offset = new Vector(x, y);
+                e.Handled = true;
+            }
+        }
+
+        private void OnScrollGestureEnded(object sender, ScrollGestureEndedEventArgs e) 
+            => _activeLogicalGestureScrolls?.Remove(e.Id);
 
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
