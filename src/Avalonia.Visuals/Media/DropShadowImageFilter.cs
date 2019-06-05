@@ -2,8 +2,8 @@ namespace Avalonia.Media
 {
     public interface IDropShadowImageFilter : IBoundsAffectingImageFilter
     {
-        Point Offset { get; }
-        Point Blur { get; }
+        Vector Offset { get; }
+        Vector Blur { get; }
         Color Color { get; }
     }
 
@@ -14,19 +14,19 @@ namespace Avalonia.Media
             AffectsRender<DropShadowImageFilter>(OffsetProperty, BlurProperty, ColorProperty);
         }
         
-        public static readonly StyledProperty<Point> OffsetProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, Point>(nameof(Offset));
+        public static readonly StyledProperty<Vector> OffsetProperty =
+            AvaloniaProperty.Register<DropShadowImageFilter, Vector>(nameof(Offset));
 
-        public Point Offset
+        public Vector Offset
         {
             get => GetValue(OffsetProperty);
             set => SetValue(OffsetProperty, value);
         }
 
-        public static readonly StyledProperty<Point> BlurProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, Point>(nameof(Blur));
+        public static readonly StyledProperty<Vector> BlurProperty =
+            AvaloniaProperty.Register<DropShadowImageFilter, Vector>(nameof(Blur));
 
-        public Point Blur
+        public Vector Blur
         {
             get => GetValue(BlurProperty);
             set => SetValue(BlurProperty, value);
@@ -57,15 +57,15 @@ namespace Avalonia.Media
 
     public struct ImmutableDropShadowImageFilter : IDropShadowImageFilter
     {
-        public ImmutableDropShadowImageFilter(Point offset, Point blur, Color color)
+        public ImmutableDropShadowImageFilter(Vector offset, Vector blur, Color color)
         {
             Offset = offset;
             Blur = blur;
             Color = color;
         }
 
-        public Point Offset { get; }
-        public Point Blur { get; }
+        public Vector Offset { get; }
+        public Vector Blur { get; }
         public Color Color { get; }
 
 

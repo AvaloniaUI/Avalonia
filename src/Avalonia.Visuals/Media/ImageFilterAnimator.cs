@@ -20,8 +20,8 @@ namespace Avalonia.Media
 
             if (_inner == null)
             {
-                if (Property.PropertyType == typeof(Point))
-                    _inner = new PointAnimator();
+                if (Property.PropertyType == typeof(Vector))
+                    _inner = new VectorAnimator();
                 else if (Property.PropertyType == typeof(Color))
                     _inner = new ColorAnimator();
                 else

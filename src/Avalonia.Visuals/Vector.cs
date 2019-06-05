@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
+using Avalonia.Utilities;
 using JetBrains.Annotations;
 
 namespace Avalonia
@@ -205,6 +206,22 @@ namespace Avalonia
         public Vector WithY(double y)
         {
             return new Vector(_x, y);
+        }
+        
+        /// <summary>
+        /// Parses a <see cref="Vector"/> string.
+        /// </summary>
+        /// <param name="s">The string.</param>
+        /// <returns>The <see cref="Vector"/>.</returns>
+        public static Vector Parse(string s)
+        {
+            using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Point"))
+            {
+                return new Point(
+                    tokenizer.ReadDouble(),
+                    tokenizer.ReadDouble()
+                );
+            }
         }
     }
 }
