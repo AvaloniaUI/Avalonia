@@ -421,9 +421,9 @@ namespace Avalonia.Controls.Primitives
 
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
-            var mouse = e as RawMouseEventArgs;
+            var mouse = e as RawPointerEventArgs;
 
-            if (!StaysOpen && mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
                 Close();
             }

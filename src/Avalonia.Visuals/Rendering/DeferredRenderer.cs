@@ -245,6 +245,11 @@ namespace Avalonia.Rendering
                         {
                             if (context != null)
                                 return context;
+                            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+                            {
+                                RenderTarget.Dispose();
+                                RenderTarget = null;
+                            }
                             if (RenderTarget == null)
                                 RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
                             return context = RenderTarget.CreateDrawingContext(this);

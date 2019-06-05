@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 
 using Avalonia.Input;
+using Avalonia.Utilities;
 
 using static System.Math;
 
@@ -92,119 +93,132 @@ namespace Avalonia.Controls
             }
         }
 
-        private UVSize CreateUVSize(Size size) => new UVSize(Orientation, size);
-
-        private UVSize CreateUVSize() => new UVSize(Orientation);
-
         /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        protected override Size MeasureOverride(Size constraint)
         {
-            var desiredSize = CreateUVSize();
-            var lineSize = CreateUVSize();
-            var uvAvailableSize = CreateUVSize(availableSize);
+            var curLineSize = new UVSize(Orientation);
+            var panelSize = new UVSize(Orientation);
+            var uvConstraint = new UVSize(Orientation, constraint.Width, constraint.Height);
 
-            foreach (var child in Children)
+            var childConstraint = new Size(constraint.Width, constraint.Height);
+
+            for (int i = 0, count = Children.Count; i < count; i++)
             {
-                child.Measure(availableSize);
-                var childSize = CreateUVSize(child.DesiredSize);
-                if (lineSize.U + childSize.U <= uvAvailableSize.U) // same line
+                var child = Children[i];
+                if (child == null) continue;
+
+                //Flow passes its own constrint to children
+                child.Measure(childConstraint);
+
+                //this is the size of the child in UV space
+                var sz = new UVSize(Orientation, child.DesiredSize.Width, child.DesiredSize.Height);
+
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvConstraint.U)) //need to switch to another line
                 {
-                    lineSize.U += childSize.U;
-                    lineSize.V = Max(lineSize.V, childSize.V);
+                    panelSize.U = Max(curLineSize.U, panelSize.U);
+                    panelSize.V += curLineSize.V;
+                    curLineSize = sz;
+
+                    if (MathUtilities.GreaterThan(sz.U, uvConstraint.U)) //the element is wider then the constrint - give it a separate line                    
+                    {
+                        panelSize.U = Max(sz.U, panelSize.U);
+                        panelSize.V += sz.V;
+                        curLineSize = new UVSize(Orientation);
+                    }
                 }
-                else // moving to next line
+                else //continue to accumulate a line
                 {
-                    desiredSize.U = Max(lineSize.U, uvAvailableSize.U);
-                    desiredSize.V += lineSize.V;
-                    lineSize = childSize;
+                    curLineSize.U += sz.U;
+                    curLineSize.V = Max(sz.V, curLineSize.V);
                 }
             }
-            // last element
-            desiredSize.U = Max(lineSize.U, desiredSize.U);
-            desiredSize.V += lineSize.V;
 
-            return desiredSize.ToSize();
+            //the last line size, if any should be added
+            panelSize.U = Max(curLineSize.U, panelSize.U);
+            panelSize.V += curLineSize.V;
+
+            //go from UV space to W/H space
+            return new Size(panelSize.Width, panelSize.Height);
         }
 
         /// <inheritdoc/>
         protected override Size ArrangeOverride(Size finalSize)
         {
+            int firstInLine = 0;
             double accumulatedV = 0;
-            var uvFinalSize = CreateUVSize(finalSize);
-            var lineSize = CreateUVSize();
-            int firstChildInLineIndex = 0;
-            for (int index = 0; index < Children.Count; index++)
+            UVSize curLineSize = new UVSize(Orientation);
+            UVSize uvFinalSize = new UVSize(Orientation, finalSize.Width, finalSize.Height);
+
+            for (int i = 0; i < Children.Count; i++)
             {
-                var child = Children[index];
-                var childSize = CreateUVSize(child.DesiredSize);
-                if (lineSize.U + childSize.U <= uvFinalSize.U) // same line
+                var child = Children[i];
+                if (child == null) continue;
+
+                var sz = new UVSize(Orientation, child.DesiredSize.Width, child.DesiredSize.Height);
+
+                if (MathUtilities.GreaterThan(curLineSize.U + sz.U, uvFinalSize.U)) //need to switch to another line
                 {
-                    lineSize.U += childSize.U;
-                    lineSize.V = Max(lineSize.V, childSize.V);
+                    arrangeLine(accumulatedV, curLineSize.V, firstInLine, i);
+
+                    accumulatedV += curLineSize.V;
+                    curLineSize = sz;
+
+                    if (MathUtilities.GreaterThan(sz.U, uvFinalSize.U)) //the element is wider then the constraint - give it a separate line                    
+                    {
+                        //switch to next line which only contain one element
+                        arrangeLine(accumulatedV, sz.V, i, ++i);
+
+                        accumulatedV += sz.V;
+                        curLineSize = new UVSize(Orientation);
+                    }
+                    firstInLine = i;
                 }
-                else // moving to next line
+                else //continue to accumulate a line
                 {
-                    var controlsInLine = GetControlsBetween(firstChildInLineIndex, index);
-                    ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
-                    accumulatedV += lineSize.V;
-                    lineSize = childSize;
-                    firstChildInLineIndex = index;
+                    curLineSize.U += sz.U;
+                    curLineSize.V = Max(sz.V, curLineSize.V);
                 }
             }
 
-            if (firstChildInLineIndex < Children.Count)
+            //arrange the last line, if any
+            if (firstInLine < Children.Count)
             {
-                var controlsInLine = GetControlsBetween(firstChildInLineIndex, Children.Count);
-                ArrangeLine(accumulatedV, lineSize.V, controlsInLine);
+                arrangeLine(accumulatedV, curLineSize.V, firstInLine, Children.Count);
             }
+
             return finalSize;
         }
 
-        private IEnumerable<IControl> GetControlsBetween(int first, int last)
-        {
-            return Children.Skip(first).Take(last - first);
-        }
-
-        private void ArrangeLine(double v, double lineV, IEnumerable<IControl> controls)
+        private void arrangeLine(double v, double lineV, int start, int end)
         {
             double u = 0;
             bool isHorizontal = (Orientation == Orientation.Horizontal);
-            foreach (var child in controls)
+
+            for (int i = start; i < end; i++)
             {
-                var childSize = CreateUVSize(child.DesiredSize);
-                var x = isHorizontal ? u : v;
-                var y = isHorizontal ? v : u;
-                var width = isHorizontal ? childSize.U : lineV;
-                var height = isHorizontal ? lineV : childSize.U;
-                child.Arrange(new Rect(x, y, width, height));
-                u += childSize.U;
+                var child = Children[i];
+                if (child != null)
+                {
+                    UVSize childSize = new UVSize(Orientation, child.DesiredSize.Width, child.DesiredSize.Height);
+                    double layoutSlotU = childSize.U;
+                    child.Arrange(new Rect(
+                        (isHorizontal ? u : v),
+                        (isHorizontal ? v : u),
+                        (isHorizontal ? layoutSlotU : lineV),
+                        (isHorizontal ? lineV : layoutSlotU)));
+                    u += layoutSlotU;
+                }
             }
         }
-        /// <summary>
-        /// Used to not not write separate code for horizontal and vertical orientation.
-        /// U is direction in line. (x if orientation is horizontal)
-        /// V is direction of lines. (y if orientation is horizontal)
-        /// </summary>
-        [DebuggerDisplay("U = {U} V = {V}")]
+
         private struct UVSize
         {
-            private readonly Orientation _orientation;
-
-            internal double U;
-
-            internal double V;
-
-            private UVSize(Orientation orientation, double width, double height)
+            internal UVSize(Orientation orientation, double width, double height)
             {
                 U = V = 0d;
                 _orientation = orientation;
                 Width = width;
                 Height = height;
-            }
-
-            internal UVSize(Orientation orientation, Size size)
-                : this(orientation, size.Width, size.Height)
-            {
             }
 
             internal UVSize(Orientation orientation)
@@ -213,41 +227,19 @@ namespace Avalonia.Controls
                 _orientation = orientation;
             }
 
-            private double Width
+            internal double U;
+            internal double V;
+            private Orientation _orientation;
+
+            internal double Width
             {
                 get { return (_orientation == Orientation.Horizontal ? U : V); }
-                set
-                {
-                    if (_orientation == Orientation.Horizontal)
-                    {
-                        U = value;
-                    }
-                    else
-                    {
-                        V = value;
-                    }
-                }
+                set { if (_orientation == Orientation.Horizontal) U = value; else V = value; }
             }
-
-            private double Height
+            internal double Height
             {
                 get { return (_orientation == Orientation.Horizontal ? V : U); }
-                set
-                {
-                    if (_orientation == Orientation.Horizontal)
-                    {
-                        V = value;
-                    }
-                    else
-                    {
-                        U = value;
-                    }
-                }
-            }
-
-            public Size ToSize()
-            {
-                return new Size(Width, Height);
+                set { if (_orientation == Orientation.Horizontal) V = value; else U = value; }
             }
         }
     }

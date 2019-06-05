@@ -38,6 +38,9 @@
       <TabItem Header="SkCanvas">
         <pages:CustomSkiaPage/>
       </TabItem>
+      <TabItem Header="RenderTargetBitmap">
+        <pages:RenderTargetBitmapPage/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>

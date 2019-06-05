@@ -22,6 +22,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
 {
     public class SelectingItemsControlTests
     {
+        private MouseTestHelper _helper = new MouseTestHelper();
+        
         [Fact]
         public void SelectedIndex_Should_Initially_Be_Minus_1()
         {
@@ -675,12 +677,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
-
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
 
             var panel = target.Presenter.Panel;
 
@@ -703,11 +700,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            target.Presenter.Panel.Children[1].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _helper.Down(target.Presenter.Panel.Children[1]);
 
             items.RemoveAt(1);
 
@@ -756,6 +749,40 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("b", target.SelectedItem);
         }
 
+        [Fact]
+        public void Mode_For_SelectedIndex_Is_TwoWay_By_Default()
+        {
+            var items = new[]
+            {
+                new Item(),
+                new Item(),
+                new Item(),
+            };
+
+            var vm = new MasterViewModel
+            {
+                Child = new ChildViewModel
+                {
+                    Items = items,
+                    SelectedIndex = 1,
+                }
+            };
+
+            var target = new SelectingItemsControl { DataContext = vm };
+            var itemsBinding = new Binding("Child.Items");
+            var selectedIndBinding = new Binding("Child.SelectedIndex");
+
+            target.Bind(SelectingItemsControl.ItemsProperty, itemsBinding);
+            target.Bind(SelectingItemsControl.SelectedIndexProperty, selectedIndBinding);
+
+            Assert.Equal(1, target.SelectedIndex);
+
+            target.SelectedIndex = 2;
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(2, vm.Child.SelectedIndex);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>(control =>
@@ -792,6 +819,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public IList<Item> Items { get; set; }
             public Item SelectedItem { get; set; }
+            public int SelectedIndex { get; set; }
         }
 
         private class RootWithItems : TestRoot

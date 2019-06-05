@@ -137,8 +137,9 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     .GetVisualChildren().First()
                     .GetVisualChildren().First()
                     .GetVisualChildren().First();
-                ((Control)item).RaiseEvent(new PointerPressedEventArgs {ClickCount = 20});
-                Assert.Equal(20, w.Args.ClickCount);
+
+                ((Control)item).DataContext = "test";
+                Assert.Equal("test", w.SavedContext);
             }
         }
         
@@ -161,10 +162,10 @@ namespace Avalonia.Markup.Xaml.UnitTests
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
     {
-        public PointerPressedEventArgs Args;
-        public void HandlePointerPressed(object sender, PointerPressedEventArgs args)
+        public object SavedContext;
+        public void HandleDataContextChanged(object sender, EventArgs args)
         {
-            Args = args;
+            SavedContext = ((Control)sender).DataContext;
         }
 
         public XamlIlBugTestsEventHandlerCodeBehind()
@@ -178,7 +179,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
   <ItemsControl>
     <ItemsControl.ItemTemplate>
       <DataTemplate>
-        <Button PointerPressed='HandlePointerPressed' Content='{Binding .}' />
+        <Button DataContextChanged='HandleDataContextChanged' Content='{Binding .}' />
       </DataTemplate>
     </ItemsControl.ItemTemplate>
   </ItemsControl>

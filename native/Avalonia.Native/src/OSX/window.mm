@@ -353,6 +353,16 @@ public:
             Cursor* avnCursor = dynamic_cast<Cursor*>(cursor);
             this->cursor = avnCursor->GetNative();
             UpdateCursor();
+            
+            if(avnCursor->IsHidden())
+            {
+                [NSCursor hide];
+            }
+            else
+            {
+                [NSCursor unhide];
+            }
+            
             return S_OK;
         }
     }
