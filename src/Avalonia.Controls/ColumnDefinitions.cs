@@ -16,10 +16,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinitions"/> class.
         /// </summary>
-        public ColumnDefinitions()
+        public ColumnDefinitions() : base ()
         {
-            ResetBehavior = ResetBehavior.Remove;
-            CollectionChanged += OnCollectionChanged;
         }
 
         /// <summary>
