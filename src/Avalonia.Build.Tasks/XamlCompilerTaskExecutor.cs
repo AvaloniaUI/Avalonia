@@ -228,35 +228,116 @@ namespace Avalonia.Build.Tasks
 
                             var foundXamlLoader = false;
                             // Find AvaloniaXamlLoader.Load(this) and replace it with !XamlIlPopulateTrampoline(this)
-                            foreach (var method in classTypeDefinition.Methods
-                                .Where(m => !m.Attributes.HasFlag(MethodAttributes.Static)))
+                            #region IL pattern matchers
+                            bool _isCall(Instruction i, out MethodReference op)
                             {
-                                var i = method.Body.Instructions;
-                                for (var c = 1; c < i.Count; c++)
+                                op = null;
+                                if (i.OpCode != OpCodes.Call) return false;
+                                op = i.Operand as MethodReference;
+                                return (op != null);
+                            }
+                            bool _matchCall(MethodReference op, string declaringType, string methodName, params string[] parameterTypes)
+                            {
+                                return op != null
+                                       && (op.Name == methodName || methodName == "*")
+                                       && op.Parameters.Count == parameterTypes.Length
+                                       && op.Parameters
+                                            .Select(x => x.ParameterType.FullName)
+                                            .Zip(parameterTypes, (a,b) =>(a,b))
+                                            .All(tup => tup.a == tup.b || tup.b == "*")
+                                       && (op.DeclaringType.FullName == declaringType || declaringType == "*");
+                            }
+                            bool _isLdfld(Instruction i, out FieldReference op)
+                            {
+                                op = null;
+                                if (i.OpCode != OpCodes.Ldfld) return false;
+                                op = i.Operand as FieldReference;
+                                return (op != null);
+                            }
+                            #endregion
+
+                            var nop = Instruction.Create(OpCodes.Nop);
+
+                            var memberInsts = classTypeDefinition
+                                .Methods
+                                .Where(m => !m.Attributes.HasFlag(MethodAttributes.Static))
+                                .SelectMany(x => Enumerable.Concat(x.Body.Instructions, new[] { nop, nop }));
+
+                            if (memberInsts.Any(x => _isCall(x, out var op) 
+                                                     && op.Name == TrampolineName))
+                            {
+                                // TODO: Throw an error
+                                // This usually happens when same XAML resource was added twice for some weird reason
+                                // We currently support it for dual-named default theme resource
+                                foundXamlLoader = true;
+                            }
+                            else
+                            {
+                                // begin instruction pattern matching.
+
+                                /** Sample pattern:
+                                    // AvaloniaXamlLoader.Load(this);
+                                    IL_01fc: ldarg.0
+                                    IL_01fd: call void [Avalonia.Markup.Xaml]Avalonia.Markup.Xaml.AvaloniaXamlLoader::Load(object)
+                                 */
+                                var directCall = memberInsts
+                                    .Zip(memberInsts.Skip(1), (a, b) => (a, b))
+                                    .Select(tup =>
+                                        {
+                                            if (tup.a.OpCode == OpCodes.Ldarg_0
+                                                && _isCall(tup.b, out var op_b)
+                                                && _matchCall(op_b, "Avalonia.Markup.Xaml.AvaloniaXamlLoader", "Load", "System.Object"))
+                                            {
+                                                return tup.b;
+                                            }
+                                            else
+                                            {
+                                                return null;
+                                            }
+                                        })
+                                    .Where(x => x != null);
+
+                                /** Sample pattern:
+                                    // AvaloniaXamlLoader.Load(LanguagePrimitives.IntrinsicFunctions.CheckThis(this.@this.contents));
+                                    IL_01fc: ldarg.0
+                                    IL_01fd: ldfld class [FSharp.Core]Microsoft.FSharp.Core.FSharpRef`1<class FVim.Cursor> FVim.Cursor::this
+                                    IL_0202: call instance !0 class [FSharp.Core]Microsoft.FSharp.Core.FSharpRef`1<class FVim.Cursor>::get_contents()
+                                    IL_0207: call !!0 [FSharp.Core]Microsoft.FSharp.Core.LanguagePrimitives/IntrinsicFunctions::CheckThis<class FVim.Cursor>(!!0)
+                                    IL_020c: call void [Avalonia.Markup.Xaml]Avalonia.Markup.Xaml.AvaloniaXamlLoader::Load(object)
+                                 */
+                                var fsharpCtorCall = memberInsts
+                                    .Zip(memberInsts.Skip(1), (a, b) => (a, b))
+                                    .Zip(memberInsts.Skip(2), (tup, c) => (tup.a, tup.b, c))
+                                    .Zip(memberInsts.Skip(3), (tup, d) => (tup.a, tup.b, tup.c, d))
+                                    .Zip(memberInsts.Skip(4), (tup, e) => (tup.a, tup.b, tup.c, tup.d, e))
+                                    .Select(tup =>
+                                        {
+                                            if (tup.a.OpCode == OpCodes.Ldarg_0
+                                                && _isLdfld(tup.b, out var op_b)
+                                                && op_b.Name == "this" 
+                                                && op_b.FieldType.FullName == "Microsoft.FSharp.Core.FSharpRef`1"
+                                                && _isCall(tup.c, out var op_c)
+                                                && _matchCall(op_c, "Microsoft.FSharp.Core.FSharpRef`1", "get_contents", "*")
+                                                && _isCall(tup.d, out var op_d)
+                                                && _matchCall(op_d, "Microsoft.FSharp.Core.LanguagePrimitives", "CheckThis", "*")
+                                                && _isCall(tup.e, out var op_e)
+                                                && _matchCall(op_e, "Avalonia.Markup.Xaml.AvaloniaXamlLoader", "Load", "System.Object"))
+                                            {
+                                                return tup.e;
+                                            }
+                                            else
+                                            {
+                                                return null;
+                                            }
+                                        })
+                                    .Where(x => x != null);
+
+                                var matchResults = new[] { directCall, fsharpCtorCall }.SelectMany(_ => _);
+
+                                foreach(var i in matchResults)
                                 {
-                                    if (i[c].OpCode == OpCodes.Call)
-                                    {
-                                        var op = i[c].Operand as MethodReference;
-                                        
-                                        // TODO: Throw an error
-                                        // This usually happens when same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resource
-                                        if (op != null
-                                            && op.Name == TrampolineName)
-                                        {
-                                            foundXamlLoader = true;
-                                            break;
-                                        }
-                                        if (op != null
-                                            && op.Name == "Load"
-                                            && op.Parameters.Count == 1
-                                            && op.Parameters[0].ParameterType.FullName == "System.Object"
-                                            && op.DeclaringType.FullName == "Avalonia.Markup.Xaml.AvaloniaXamlLoader")
-                                        {
-                                            i[c].Operand = trampoline;
-                                            foundXamlLoader = true;
-                                        }
-                                    }
+                                    i.Operand = trampoline;
+                                    foundXamlLoader = true;
                                 }
                             }
 
