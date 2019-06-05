@@ -97,7 +97,11 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         static ContentPresenter()
         {
-            AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+            AffectsRender<ContentPresenter>(BackgroundProperty,
+                ImageFilterProperty,
+                BorderBrushProperty, 
+                BorderThicknessProperty, 
+                CornerRadiusProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
             ContentProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);
             ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>(x => x.ContentChanged);

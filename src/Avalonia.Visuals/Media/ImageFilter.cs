@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
@@ -33,7 +34,7 @@ namespace Avalonia.Media
             }
         }
 
-        public static void InitializeAffectsRender(AvaloniaProperty<IImageFilter> property)
+        public static void InitializeProperty(AvaloniaProperty<IImageFilter> property)
         {
             property.Changed.Subscribe(e =>
             {
@@ -41,8 +42,13 @@ namespace Avalonia.Media
                 {
                     if(e.OldValue is ImageFilter oldFilter)
                         oldFilter._subscribers.Remove(v);
-                    if(e.NewValue is ImageFilter newFilter)
+                    if (e.NewValue is ImageFilter newFilter)
+                    {
+                        // Hack to make resources and bindings work
+                        if (newFilter is ISetLogicalParent slp)
+                            slp.SetParent(v);
                         newFilter._subscribers.Add(v);
+                    }
                 }
             });
         }

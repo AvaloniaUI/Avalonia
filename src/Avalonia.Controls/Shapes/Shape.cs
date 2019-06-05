@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Shapes
             AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty);
 
             AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty, StrokeDashOffsetProperty,
-                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty);
+                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, ImageFilterProperty);
         }
 
         public Geometry DefiningGeometry

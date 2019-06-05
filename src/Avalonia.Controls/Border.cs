@@ -50,11 +50,12 @@ namespace Avalonia.Controls
         {
             AffectsRender<Border>(
                 BackgroundProperty,
+                ImageFilterProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
-            Media.ImageFilter.InitializeAffectsRender(ImageFilterProperty);
+            Media.ImageFilter.InitializeProperty(ImageFilterProperty);
         }
 
         /// <summary>
