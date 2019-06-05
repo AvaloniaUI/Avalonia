@@ -158,6 +158,55 @@ namespace Avalonia.Markup.Xaml.UnitTests
             Assert.Equal("321", loaded.Test);
             
         }
+
+        void AssertThrows(Action callback, Func<Exception, bool> check)
+        {
+            try
+            {
+                callback();
+            }
+            catch (Exception e) when (check(e))
+            {
+                return;
+            }
+
+            throw new Exception("Expected exception was not thrown");
+        }
+        
+        public static object SomeStaticProperty { get; set; }
+
+        [Fact]
+        public void Bug2570()
+        {
+            SomeStaticProperty = "123";
+            AssertThrows(() => new AvaloniaXamlLoader() {IsDesignMode = true}
+                    .Load(@"
+<UserControl 
+    xmlns='https://github.com/avaloniaui'
+    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
+    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
+    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticPropery}'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly),
+                e => e.Message.Contains("Unable to resolve ")
+                     && e.Message.Contains(" as static field, property, constant or enum value"));
+
+        }
+        
+        [Fact]
+        public void Design_Mode_DataContext_Should_Be_Set()
+        {
+            SomeStaticProperty = "123";
+            
+            var loaded = (UserControl)new AvaloniaXamlLoader() {IsDesignMode = true}
+                .Load(@"
+<UserControl 
+    xmlns='https://github.com/avaloniaui'
+    xmlns:d='http://schemas.microsoft.com/expression/blend/2008'
+    xmlns:tests='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
+    d:DataContext='{x:Static tests:XamlIlTests.SomeStaticProperty}'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>", typeof(XamlIlTests).Assembly);
+            Assert.Equal(Design.GetDataContext(loaded), SomeStaticProperty);
+        }
     }
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -188,7 +237,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             ((ItemsControl)Content).Items = new[] {"123"};
         }
     }
-
+    
     public class XamlIlClassWithCustomProperty : UserControl
     {
         public string Test { get; set; }
