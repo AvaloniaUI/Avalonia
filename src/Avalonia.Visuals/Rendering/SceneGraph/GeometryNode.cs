@@ -86,7 +86,7 @@ namespace Avalonia.Rendering.SceneGraph
             return transform == Transform &&
                 Equals(brush, Brush) && 
                 pen == Pen &&
-                imageFilter?.Equals(ImageFilter) == true && 
+                Avalonia.Media.ImageFilter.Equals(imageFilter, ImageFilter) && 
                 Equals(geometry, Geometry);
         }
 

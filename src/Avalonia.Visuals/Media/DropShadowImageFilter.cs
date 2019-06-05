@@ -1,6 +1,4 @@
-using Avalonia.Media;
-
-namespace Avalonia
+namespace Avalonia.Media
 {
     public interface IDropShadowImageFilter : IBoundsAffectingImageFilter
     {

@@ -2,9 +2,8 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
-using Avalonia.Media;
 
-namespace Avalonia
+namespace Avalonia.Media
 {
     class ImageFilterAnimator : Animator<Point>
     {

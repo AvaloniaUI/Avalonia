@@ -90,7 +90,7 @@ namespace Avalonia.Rendering.SceneGraph
                 Equals(brush, Brush) &&
                 pen == Pen &&
                 rect == Rect &&
-                imageFilter?.Equals(ImageFilter) == true &&
+                Avalonia.Media.ImageFilter.Equals(imageFilter, ImageFilter) &&
                 cornerRadius == CornerRadius;
         }
 

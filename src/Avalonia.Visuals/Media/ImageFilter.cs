@@ -1,8 +1,7 @@
 using System;
-using Avalonia.Media;
 using Avalonia.Utilities;
 
-namespace Avalonia
+namespace Avalonia.Media
 {
     public abstract class ImageFilter : StyledElement, IMutableImageFilter
     {
@@ -46,6 +45,14 @@ namespace Avalonia
                         newFilter._subscribers.Add(v);
                 }
             });
+        }
+
+        public static bool Equals(IImageFilter left, IImageFilter right)
+        {
+            // ReSharper disable once PossibleUnintendedReferenceComparison
+            if (left == right)
+                return true;
+            return left?.Equals(right) == true;
         }
     }
 }

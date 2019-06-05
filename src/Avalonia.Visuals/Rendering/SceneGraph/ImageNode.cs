@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect &&
-                destImageFilter?.Equals(ImageFilter) == true &&
+                Media.ImageFilter.Equals(destImageFilter, ImageFilter) &&
                 bitmapInterpolationMode == BitmapInterpolationMode;
         }
 

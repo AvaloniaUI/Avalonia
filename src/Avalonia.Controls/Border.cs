@@ -39,7 +39,7 @@ namespace Avalonia.Controls
 
 
         public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
-            Avalonia.ImageFilter.ImageFilterProperty.AddOwner<Border>();
+            Media.ImageFilter.ImageFilterProperty.AddOwner<Border>();
         
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
@@ -54,7 +54,7 @@ namespace Avalonia.Controls
                 BorderThicknessProperty,
                 CornerRadiusProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
-            Avalonia.ImageFilter.InitializeAffectsRender(ImageFilterProperty);
+            Media.ImageFilter.InitializeAffectsRender(ImageFilterProperty);
         }
 
         /// <summary>
