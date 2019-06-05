@@ -637,8 +637,6 @@ namespace Avalonia.Win32
                     {
                         foreach (var touchInput in touchInputs)
                         {
-                            var pt = new POINT {X = touchInput.X / 100, Y = touchInput.Y / 100};
-                            UnmanagedMethods.ScreenToClient(_hwnd, ref pt);
                             Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                 _owner,
                                 touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_UP) ?
@@ -646,7 +644,7 @@ namespace Avalonia.Win32
                                     touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                         RawPointerEventType.TouchBegin :
                                         RawPointerEventType.TouchUpdate,
-                                new Point(pt.X, pt.Y),
+                                PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
                                 WindowsKeyboardDevice.Instance.Modifiers,
                                 touchInput.Id));
                         }
