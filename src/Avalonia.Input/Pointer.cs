@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -9,23 +11,40 @@ namespace Avalonia.Input
         private static int s_NextFreePointerId = 1000;
         public static int GetNextFreeId() => s_NextFreePointerId++;
         
-        public Pointer(int id, PointerType type, bool isPrimary, IInputElement implicitlyCaptured)
+        public Pointer(int id, PointerType type, bool isPrimary)
         {
             Id = id;
             Type = type;
             IsPrimary = isPrimary;
-            ImplicitlyCaptured = implicitlyCaptured;
-            if (ImplicitlyCaptured != null)
-                ImplicitlyCaptured.DetachedFromVisualTree += OnImplicitCaptureDetached;
         }
 
         public int Id { get; }
 
+        IInputElement FindCommonParent(IInputElement control1, IInputElement control2)
+        {
+            if (control1 == null || control2 == null)
+                return null;
+            var seen = new HashSet<IInputElement>(control1.GetSelfAndVisualAncestors().OfType<IInputElement>());
+            return control2.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(seen.Contains);
+        }
+        
         public void Capture(IInputElement control)
         {
             if (Captured != null)
                 Captured.DetachedFromVisualTree -= OnCaptureDetached;
+            var oldCapture = control;
             Captured = control;
+            if (oldCapture != null)
+            {
+                var commonParent = FindCommonParent(control, oldCapture);
+                foreach (var notifyTarget in oldCapture.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                {
+                    if (notifyTarget == commonParent)
+                        break;
+                    notifyTarget.RaiseEvent(new PointerCaptureLostEventArgs(notifyTarget, this));
+                }
+            }
+
             if (Captured != null)
                 Captured.DetachedFromVisualTree += OnCaptureDetached;
         }
@@ -38,26 +57,11 @@ namespace Avalonia.Input
             Capture(GetNextCapture(e.Parent));
         }
 
-        private void OnImplicitCaptureDetached(object sender, VisualTreeAttachmentEventArgs e)
-        {
-            ImplicitlyCaptured.DetachedFromVisualTree -= OnImplicitCaptureDetached;
-            ImplicitlyCaptured = GetNextCapture(e.Parent);
-            if (ImplicitlyCaptured != null)
-                ImplicitlyCaptured.DetachedFromVisualTree += OnImplicitCaptureDetached;
-        }
 
         public IInputElement Captured { get; private set; }
-        public IInputElement ImplicitlyCaptured { get; private set; }
-        public IInputElement GetEffectiveCapture() => Captured ?? ImplicitlyCaptured;
             
         public PointerType Type { get; }
         public bool IsPrimary { get; }
-        public void Dispose()
-        {
-            if (ImplicitlyCaptured != null)
-                ImplicitlyCaptured.DetachedFromVisualTree -= OnImplicitCaptureDetached;
-            if (Captured != null)
-                Captured.DetachedFromVisualTree -= OnCaptureDetached;
-        }
+        public void Dispose() => Capture(null);
     }
 }

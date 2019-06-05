@@ -252,7 +252,6 @@ namespace Avalonia.Controls
 
             if (e.MouseButton == MouseButton.Left)
             {
-                e.Device.Capture(this);
                 IsPressed = true;
                 e.Handled = true;
 
@@ -270,7 +269,6 @@ namespace Avalonia.Controls
 
             if (IsPressed && e.MouseButton == MouseButton.Left)
             {
-                e.Device.Capture(null);
                 IsPressed = false;
                 e.Handled = true;
 
@@ -280,6 +278,11 @@ namespace Avalonia.Controls
                     OnClick();
                 }
             }
+        }
+
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            IsPressed = false;
         }
 
         protected override void UpdateDataValidation(AvaloniaProperty property, BindingNotification status)

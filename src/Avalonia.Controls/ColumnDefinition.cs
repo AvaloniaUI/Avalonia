@@ -55,11 +55,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated width of the column.
         /// </summary>
-        public double ActualWidth
-        {
-            get;
-            internal set;
-        }
+        public double ActualWidth => Parent?.GetFinalColumnDefinitionWidth(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum width of the column in DIPs.
@@ -87,5 +83,9 @@ namespace Avalonia.Controls
             get { return GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
         }
+
+        internal override GridLength UserSizeValueCache => this.Width;
+        internal override double UserMinSizeValueCache => this.MinWidth;
+        internal override double UserMaxSizeValueCache => this.MaxWidth;
     }
 }

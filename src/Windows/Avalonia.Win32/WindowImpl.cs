@@ -33,6 +33,7 @@ namespace Avalonia.Win32
         private bool _multitouch;
         private TouchDevice _touchDevice = new TouchDevice();
         private IInputRoot _owner;
+        private ManagedDeferredRendererLock _rendererLock = new ManagedDeferredRendererLock();
         private bool _trackingMouse;
         private bool _decorated = true;
         private bool _resizable = true;
@@ -150,7 +151,9 @@ namespace Avalonia.Win32
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return Win32Platform.UseDeferredRendering ? (IRenderer)new DeferredRenderer(root, loop) : new ImmediateRenderer(root);
+            return Win32Platform.UseDeferredRendering ?
+                (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock) :
+                new ImmediateRenderer(root);
         }
 
         public void Resize(Size value)
@@ -634,8 +637,6 @@ namespace Avalonia.Win32
                     {
                         foreach (var touchInput in touchInputs)
                         {
-                            var pt = new POINT {X = touchInput.X / 100, Y = touchInput.Y / 100};
-                            UnmanagedMethods.ScreenToClient(_hwnd, ref pt);
                             Input?.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
                                 _owner,
                                 touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_UP) ?
@@ -643,7 +644,7 @@ namespace Avalonia.Win32
                                     touchInput.Flags.HasFlag(TouchInputFlags.TOUCHEVENTF_DOWN) ?
                                         RawPointerEventType.TouchBegin :
                                         RawPointerEventType.TouchUpdate,
-                                new Point(pt.X, pt.Y),
+                                PointToClient(new PixelPoint(touchInput.X / 100, touchInput.Y / 100)),
                                 WindowsKeyboardDevice.Instance.Modifiers,
                                 touchInput.Id));
                         }
@@ -667,18 +668,26 @@ namespace Avalonia.Win32
                     break;
 
                 case UnmanagedMethods.WindowsMessage.WM_PAINT:
-                    UnmanagedMethods.PAINTSTRUCT ps;
-                    if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
+                    using (_rendererLock.Lock())
                     {
-                        var f = Scaling;
-                        var r = ps.rcPaint;
-                        Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f, (r.bottom - r.top) / f));
-                        UnmanagedMethods.EndPaint(_hwnd, ref ps);
+                        UnmanagedMethods.PAINTSTRUCT ps;
+                        if (UnmanagedMethods.BeginPaint(_hwnd, out ps) != IntPtr.Zero)
+                        {
+                            var f = Scaling;
+                            var r = ps.rcPaint;
+                            Paint?.Invoke(new Rect(r.left / f, r.top / f, (r.right - r.left) / f,
+                                (r.bottom - r.top) / f));
+                            UnmanagedMethods.EndPaint(_hwnd, ref ps);
+                        }
                     }
 
                     return IntPtr.Zero;
 
                 case UnmanagedMethods.WindowsMessage.WM_SIZE:
+                    using (_rendererLock.Lock())
+                    {
+                        // Do nothing here, just block until the pending frame render is completed on the render thread
+                    }
                     var size = (UnmanagedMethods.SizeCommand)wParam;
 
                     if (Resized != null &&
@@ -744,7 +753,8 @@ namespace Avalonia.Win32
                 }
             }
 
-            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+            using (_rendererLock.Lock())
+                return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         static InputModifiers GetMouseModifiers(IntPtr wParam)
