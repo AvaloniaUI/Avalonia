@@ -20,7 +20,6 @@ namespace Avalonia.Controls
         {
             ResetBehavior = ResetBehavior.Remove;
             CollectionChanged += OnCollectionChanged;
-            this.TrackItemPropertyChanged(delegate { IsDirty = true; });
         }
 
         /// <summary>
