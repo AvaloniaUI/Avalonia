@@ -8,7 +8,7 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    internal class GlRenderTarget : IRenderTarget
+    internal class GlRenderTarget : IRenderTargetWithCorruptionInfo
     {
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
@@ -21,6 +21,8 @@ namespace Avalonia.Skia
 
         public void Dispose() => _surface.Dispose();
 
+        public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
+        
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var session = _surface.BeginDraw();
