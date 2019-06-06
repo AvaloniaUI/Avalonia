@@ -27,6 +27,11 @@ namespace Avalonia.Input
             var seen = new HashSet<IInputElement>(control1.GetSelfAndVisualAncestors().OfType<IInputElement>());
             return control2.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(seen.Contains);
         }
+
+        protected virtual void PlatformCapture(IInputElement element)
+        {
+            
+        }
         
         public void Capture(IInputElement control)
         {
@@ -34,6 +39,7 @@ namespace Avalonia.Input
                 Captured.DetachedFromVisualTree -= OnCaptureDetached;
             var oldCapture = control;
             Captured = control;
+            PlatformCapture(control);
             if (oldCapture != null)
             {
                 var commonParent = FindCommonParent(control, oldCapture);
