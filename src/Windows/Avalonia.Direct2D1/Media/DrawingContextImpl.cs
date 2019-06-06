@@ -274,8 +274,10 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="cornerRadius">The corner radius.</param>
         public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius, IImageFilter filter)
         {
-            FillRectangle(brush, rect, cornerRadius, filter);
-            DrawRectangle(pen, rect, cornerRadius);
+            if (brush != null)
+                FillRectangle(brush, rect, cornerRadius, filter);
+            if (pen != null)
+                DrawRectangle(pen, rect, cornerRadius);
         }
 
         /// <summary>
