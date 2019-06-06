@@ -1,10 +1,11 @@
 using System;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public abstract class ImageFilter : StyledElement, IMutableImageFilter
+    public abstract class ImageFilter : Animatable, IMutableImageFilter
     {
         private WeakList<Visual> _subscribers = new WeakList<Visual>();
         public abstract IImageFilter ToImmutable();
@@ -42,13 +43,8 @@ namespace Avalonia.Media
                 {
                     if(e.OldValue is ImageFilter oldFilter)
                         oldFilter._subscribers.Remove(v);
-                    if (e.NewValue is ImageFilter newFilter)
-                    {
-                        // Hack to make resources and bindings work
-                        if (newFilter is ISetLogicalParent slp)
-                            slp.SetParent(v);
+                    if (e.NewValue is ImageFilter newFilter) 
                         newFilter._subscribers.Add(v);
-                    }
                 }
             });
         }
