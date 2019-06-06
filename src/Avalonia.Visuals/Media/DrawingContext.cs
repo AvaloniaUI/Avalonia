@@ -83,7 +83,7 @@ namespace Avalonia.Media
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public void DrawImage(IBitmap source, double opacity, Rect sourceRect, Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode = default,
-            IImageFilter imageFilter = null)
+            IImageEffect imageFilter = null)
         {
             Contract.Requires<ArgumentNullException>(source != null);
 
@@ -111,7 +111,7 @@ namespace Avalonia.Media
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry, IImageFilter imageFilter = null)
+        public void DrawGeometry(IBrush brush, Pen pen, Geometry geometry, IImageEffect imageFilter = null)
         {
             Contract.Requires<ArgumentNullException>(geometry != null);
 
@@ -127,7 +127,7 @@ namespace Avalonia.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IImageEffect filter = null)
         {
             if (PenIsVisible(pen))
             {
@@ -163,7 +163,7 @@ namespace Avalonia.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IImageEffect filter = null)
         {
             if (brush != null && rect != Rect.Empty)
             {
@@ -178,7 +178,7 @@ namespace Avalonia.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
+        public void FillRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageEffect filter = null)
         {
             if (brush != null && rect != Rect.Empty)
             {

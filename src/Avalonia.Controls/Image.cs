@@ -23,8 +23,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Stretch> StretchProperty =
             AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
 
-        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
-            Border.ImageFilterProperty.AddOwner<Image>();
+        public static readonly StyledProperty<IImageEffect> FillImageEffectProperty =
+            Border.FillImageEffectProperty.AddOwner<Image>();
         
         static Image()
         {
@@ -50,10 +50,10 @@ namespace Avalonia.Controls
             set { SetValue(StretchProperty, value); }
         }
         
-        public IImageFilter ImageFilter
+        public IImageEffect FillImageEffect
         {
-            get => GetValue(ImageFilterProperty);
-            set => SetValue(ImageFilterProperty, value);
+            get => GetValue(FillImageEffectProperty);
+            set => SetValue(FillImageEffectProperty, value);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
 
                 var interpolationMode = RenderOptions.GetBitmapInterpolationMode(this);
 
-                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode, ImageFilter);
+                context.DrawImage(source, 1, sourceRect, destRect, interpolationMode, FillImageEffect);
             }
         }
 

@@ -111,7 +111,7 @@ namespace Avalonia.Skia
 
         /// <inheritdoc />
         public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
+            BitmapInterpolationMode bitmapInterpolationMode, IImageEffect imageFilter)
         {
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
@@ -124,7 +124,7 @@ namespace Avalonia.Skia
                 })
             {
                 paint.FilterQuality = GetInterpolationMode(bitmapInterpolationMode);
-                using (var filter = CreateImageFilter(imageFilter))
+                using (var filter = CreateImageEffect(imageFilter))
                 {
                     paint.ImageFilter = filter;
                     drawableImage.Draw(this, s, d, paint);
@@ -167,7 +167,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageEffect imageFilter)
         {
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
@@ -203,7 +203,7 @@ namespace Avalonia.Skia
         }
         
         /// <inheritdoc />
-        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
+        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0, IImageEffect filter = null)
         {
             
             using (var fill = brush != null ? CreatePaint(brush, rect.Size, filter) : default(PaintWrapper))
@@ -220,7 +220,7 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0, IImageEffect filter = null)
         {
             using (var paint = CreatePaint(brush, rect.Size, filter))
             {
@@ -515,9 +515,9 @@ namespace Avalonia.Skia
             }
         }
 
-        SKImageFilter CreateImageFilter(IImageFilter filter)
+        SKImageFilter CreateImageEffect(IImageEffect filter)
         {
-            if (filter is IDropShadowImageFilter ds)
+            if (filter is IDropShadowImageEffect ds)
             {
                 
                 double opacity = ds.ShadowOpacity * _currentOpacity;
@@ -535,7 +535,7 @@ namespace Avalonia.Skia
         /// <param name="brush">Source brush.</param>
         /// <param name="targetSize">Target size.</param>
         /// <returns>Paint wrapper for given brush.</returns>
-        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize, IImageFilter filter = null)
+        internal PaintWrapper CreatePaint(IBrush brush, Size targetSize, IImageEffect filter = null)
         {
             var paint = new SKPaint
             {
@@ -546,7 +546,7 @@ namespace Avalonia.Skia
 
             if (filter != null)
             {
-                var skFilter = CreateImageFilter(filter);
+                var skFilter = CreateImageEffect(filter);
                 paint.ImageFilter = skFilter;
                 paintWrapper.AddDisposable(skFilter);
             }

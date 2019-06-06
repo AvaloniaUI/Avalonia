@@ -27,14 +27,14 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush brush,
             Pen pen,
             IGeometryImpl geometry,
-            IImageFilter imageFilter,
+            IImageEffect imageFilter,
             IDictionary<IVisual, Scene> childScenes = null)
             : base(imageFilter.UpdateBounds(geometry.GetRenderBounds(pen)), transform, null)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
-            ImageFilter = imageFilter?.ToImmutable();
+            FillImageEffect = imageFilter?.ToImmutable();
             Geometry = geometry;
             ChildScenes = childScenes;
         }
@@ -63,7 +63,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the image filter to apply
         /// </summary>
-        public IImageFilter ImageFilter { get; }
+        public IImageEffect FillImageEffect { get; }
 
         /// <inheritdoc/>
         public override IDictionary<IVisual, Scene> ChildScenes { get; }
@@ -81,12 +81,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        public bool Equals(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
+        public bool Equals(Matrix transform, IBrush brush, Pen pen, IGeometryImpl geometry, IImageEffect imageFilter)
         {
             return transform == Transform &&
                 Equals(brush, Brush) && 
                 pen == Pen &&
-                Avalonia.Media.ImageFilter.Equals(imageFilter, ImageFilter) && 
+                Avalonia.Media.ImageEffect.Equals(imageFilter, FillImageEffect) && 
                 Equals(geometry, Geometry);
         }
 
@@ -94,7 +94,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawGeometry(Brush, Pen, Geometry, ImageFilter);
+            context.DrawGeometry(Brush, Pen, Geometry, FillImageEffect);
         }
 
         /// <inheritdoc/>

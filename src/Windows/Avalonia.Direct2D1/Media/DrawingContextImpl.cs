@@ -110,7 +110,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="destRect">The rect in the output to draw to.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter filter)
+            BitmapInterpolationMode bitmapInterpolationMode, IImageEffect filter)
         {
             using (var d2d = ((BitmapImpl)source.Item).GetDirect2DBitmap(_deviceContext))
             {
@@ -204,7 +204,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
         /// <param name="imageFilter"></param>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageEffect imageFilter)
         {
             if (brush != null)
             {
@@ -272,7 +272,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius, IImageFilter filter)
+        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius, IImageEffect filter)
         {
             if (brush != null)
                 FillRectangle(brush, rect, cornerRadius, filter);
@@ -309,7 +309,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="brush">The brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius, IImageFilter filter)
+        public void FillRectangle(IBrush brush, Rect rect, float cornerRadius, IImageEffect filter)
         {
             using (var b = CreateBrush(brush, rect.Size))
             {

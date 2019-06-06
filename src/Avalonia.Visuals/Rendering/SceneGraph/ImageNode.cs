@@ -24,7 +24,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="destRect">The destination rect.</param>
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         public ImageNode(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
+            BitmapInterpolationMode bitmapInterpolationMode, IImageEffect imageFilter)
             : base(imageFilter.UpdateBounds(destRect), transform, null)
         {
             Transform = transform;
@@ -34,7 +34,7 @@ namespace Avalonia.Rendering.SceneGraph
             DestRect = destRect;
             BitmapInterpolationMode = bitmapInterpolationMode;
             SourceVersion = Source.Item.Version;
-            ImageFilter = imageFilter?.ToImmutable();
+            FillImageEffect = imageFilter?.ToImmutable();
         }        
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </value>
         public BitmapInterpolationMode BitmapInterpolationMode { get; }
         
-        public IImageFilter ImageFilter { get; }
+        public IImageEffect FillImageEffect { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.
@@ -92,7 +92,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
         public bool Equals(Matrix transform, IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter destImageFilter)
+            BitmapInterpolationMode bitmapInterpolationMode, IImageEffect destImageEffect)
         {
             return transform == Transform &&
                 Equals(source.Item, Source.Item) &&
@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
                 opacity == Opacity &&
                 sourceRect == SourceRect &&
                 destRect == DestRect &&
-                Media.ImageFilter.Equals(destImageFilter, ImageFilter) &&
+                Media.ImageEffect.Equals(destImageEffect, FillImageEffect) &&
                 bitmapInterpolationMode == BitmapInterpolationMode;
         }
 
@@ -108,7 +108,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode, ImageFilter);
+            context.DrawImage(Source, Opacity, SourceRect, DestRect, BitmapInterpolationMode, FillImageEffect);
         }
 
         /// <inheritdoc/>

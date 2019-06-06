@@ -83,8 +83,8 @@ namespace Avalonia.Controls.Presenters
 
 
 
-        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
-            Border.ImageFilterProperty.AddOwner<ContentPresenter>();
+        public static readonly StyledProperty<IImageEffect> FillImageEffectProperty =
+            Border.FillImageEffectProperty.AddOwner<ContentPresenter>();
 
         private IControl _child;
         private bool _createdChild;
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.Presenters
         static ContentPresenter()
         {
             AffectsRender<ContentPresenter>(BackgroundProperty,
-                ImageFilterProperty,
+                FillImageEffectProperty,
                 BorderBrushProperty, 
                 BorderThicknessProperty, 
                 CornerRadiusProperty);
@@ -127,10 +127,10 @@ namespace Avalonia.Controls.Presenters
         }
 
         
-        public IImageFilter ImageFilter
+        public IImageEffect FillImageEffect
         {
-            get => GetValue(ImageFilterProperty);
-            set => SetValue(ImageFilterProperty, value);
+            get => GetValue(FillImageEffectProperty);
+            set => SetValue(FillImageEffectProperty, value);
         }
         
         /// <summary>
@@ -314,7 +314,7 @@ namespace Avalonia.Controls.Presenters
         public override void Render(DrawingContext context)
         {
             _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
-                ImageFilter);
+                FillImageEffect);
         }
 
         /// <summary>

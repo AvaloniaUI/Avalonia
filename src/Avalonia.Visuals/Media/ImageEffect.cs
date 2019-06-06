@@ -5,26 +5,26 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
-    public abstract class ImageFilter : Animatable, IMutableImageFilter
+    public abstract class ImageEffect : Animatable, IMutableImageEffect
     {
         private WeakList<Visual> _subscribers = new WeakList<Visual>();
-        public abstract IImageFilter ToImmutable();
+        public abstract IImageEffect ToImmutable();
 
-        public static StyledProperty<IImageFilter> ImageFilterProperty
-            = AvaloniaProperty.RegisterAttached<ImageFilter, Visual, IImageFilter>("ImageFilter");
+        public static StyledProperty<IImageEffect> FillImageEffectProperty
+            = AvaloniaProperty.RegisterAttached<ImageEffect, Visual, IImageEffect>("ImageEffect");
         
-        static ImageFilter()
+        static ImageEffect()
         {
-            Animation.Animation.RegisterAnimator<ImageFilterAnimator>(p =>
-                p.OwnerType == typeof(DropShadowImageFilter), 100);
+            Animation.Animation.RegisterAnimator<ImageEffectAnimator>(p =>
+                p.OwnerType == typeof(DropShadowImageEffect), 100);
         }
         
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
-            where T : ImageFilter
+            where T : ImageEffect
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
-                if(e.Sender is ImageFilter filter)
+                if(e.Sender is ImageEffect filter)
                     foreach (var s in filter._subscribers)
                         s.InvalidateVisual();
             }
@@ -35,21 +35,21 @@ namespace Avalonia.Media
             }
         }
 
-        public static void InitializeProperty(AvaloniaProperty<IImageFilter> property)
+        public static void InitializeProperty(AvaloniaProperty<IImageEffect> property)
         {
             property.Changed.Subscribe(e =>
             {
                 if (e.Sender is Visual v)
                 {
-                    if(e.OldValue is ImageFilter oldFilter)
+                    if(e.OldValue is ImageEffect oldFilter)
                         oldFilter._subscribers.Remove(v);
-                    if (e.NewValue is ImageFilter newFilter) 
+                    if (e.NewValue is ImageEffect newFilter) 
                         newFilter._subscribers.Add(v);
                 }
             });
         }
 
-        public static bool Equals(IImageFilter left, IImageFilter right)
+        public static bool Equals(IImageEffect left, IImageEffect right)
         {
             // ReSharper disable once PossibleUnintendedReferenceComparison
             if (left == right)

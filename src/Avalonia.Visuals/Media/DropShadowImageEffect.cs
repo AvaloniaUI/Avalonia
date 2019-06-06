@@ -1,6 +1,6 @@
 namespace Avalonia.Media
 {
-    public interface IDropShadowImageFilter : IBoundsAffectingImageFilter
+    public interface IDropShadowImageEffect : IBoundsAffectingImageEffect
     {
         Vector Offset { get; }
         Vector Blur { get; }
@@ -8,15 +8,15 @@ namespace Avalonia.Media
         double ShadowOpacity { get; }
     }
 
-    public class DropShadowImageFilter : ImageFilter, IMutableImageFilter, IDropShadowImageFilter
+    public class DropShadowImageEffect : ImageEffect, IMutableImageEffect, IDropShadowImageEffect
     {
-        static DropShadowImageFilter()
+        static DropShadowImageEffect()
         {
-            AffectsRender<DropShadowImageFilter>(OffsetProperty, BlurProperty, ColorProperty);
+            AffectsRender<DropShadowImageEffect>(OffsetProperty, BlurProperty, ColorProperty);
         }
         
         public static readonly StyledProperty<Vector> OffsetProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, Vector>(nameof(Offset));
+            AvaloniaProperty.Register<DropShadowImageEffect, Vector>(nameof(Offset));
 
         public Vector Offset
         {
@@ -25,7 +25,7 @@ namespace Avalonia.Media
         }
 
         public static readonly StyledProperty<Vector> BlurProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, Vector>(nameof(Blur));
+            AvaloniaProperty.Register<DropShadowImageEffect, Vector>(nameof(Blur));
 
         public Vector Blur
         {
@@ -34,7 +34,7 @@ namespace Avalonia.Media
         }
 
         public static readonly StyledProperty<Color> ColorProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, Color>(nameof(Color));
+            AvaloniaProperty.Register<DropShadowImageEffect, Color>(nameof(Color));
 
         public Color Color
         {
@@ -45,7 +45,7 @@ namespace Avalonia.Media
 
 
         public static readonly StyledProperty<double> ShadowOpacityProperty =
-            AvaloniaProperty.Register<DropShadowImageFilter, double>(nameof(ShadowOpacity), 1);
+            AvaloniaProperty.Register<DropShadowImageEffect, double>(nameof(ShadowOpacity), 1);
 
         public double ShadowOpacity
         {
@@ -54,23 +54,23 @@ namespace Avalonia.Media
         }
 
 
-        public override IImageFilter ToImmutable()
+        public override IImageEffect ToImmutable()
         {
-            return new ImmutableDropShadowImageFilter(Offset, Blur, Color, ShadowOpacity);
+            return new ImmutableDropShadowImageEffect(Offset, Blur, Color, ShadowOpacity);
         }
 
-        public bool Equals(IImageFilter other)
+        public bool Equals(IImageEffect other)
         {
-            return other is IDropShadowImageFilter ds
+            return other is IDropShadowImageEffect ds
                    && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset && ds.ShadowOpacity == ShadowOpacity;
         }
 
         public Rect UpdateBounds(Rect bounds) => ToImmutable().UpdateBounds(bounds);
     }
 
-    public struct ImmutableDropShadowImageFilter : IDropShadowImageFilter
+    public struct ImmutableDropShadowImageEffect : IDropShadowImageEffect
     {
-        public ImmutableDropShadowImageFilter(Vector offset, Vector blur, Color color,  double shadowOpacity)
+        public ImmutableDropShadowImageEffect(Vector offset, Vector blur, Color color,  double shadowOpacity)
         {
             Offset = offset;
             Blur = blur;
@@ -87,12 +87,12 @@ namespace Avalonia.Media
 
         public override bool Equals(object obj)
         {
-            return obj is IDropShadowImageFilter other && Equals(other);
+            return obj is IDropShadowImageEffect other && Equals(other);
         }
         
-        public bool Equals(IImageFilter other)
+        public bool Equals(IImageEffect other)
         {
-            return other is IDropShadowImageFilter ds
+            return other is IDropShadowImageEffect ds
                    && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset && ds.ShadowOpacity == ShadowOpacity;
         }
 
@@ -104,14 +104,14 @@ namespace Avalonia.Media
         }
     }
 
-    public static class ImageFilterExtensions
+    public static class ImageEffectExtensions
     {
-        public static IImageFilter ToImmutable(this IImageFilter filter) =>
-            filter is IMutableImageFilter mutable ? mutable.ToImmutable() : filter;
+        public static IImageEffect ToImmutable(this IImageEffect filter) =>
+            filter is IMutableImageEffect mutable ? mutable.ToImmutable() : filter;
         
-        public static Rect UpdateBounds(this IImageFilter filter, Rect bounds)
+        public static Rect UpdateBounds(this IImageEffect filter, Rect bounds)
         {
-            if (filter is IBoundsAffectingImageFilter baif)
+            if (filter is IBoundsAffectingImageEffect baif)
                 return baif.UpdateBounds(bounds);
             return bounds;
         }

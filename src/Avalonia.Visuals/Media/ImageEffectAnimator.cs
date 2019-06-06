@@ -6,7 +6,7 @@ using Avalonia.Collections;
 
 namespace Avalonia.Media
 {
-    class ImageFilterAnimator : AvaloniaList<AnimatorKeyFrame>, IAnimator
+    class ImageEffectAnimator : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
         private IAnimator _inner;
         public AvaloniaProperty Property { get; set; }
@@ -14,11 +14,11 @@ namespace Avalonia.Media
         public IDisposable Apply(Animation.Animation animation, Animatable control,
             IClock clock, IObservable<bool> match, Action onComplete)
         {
-            var filter = control.GetValue(ImageFilter.ImageFilterProperty);
+            var filter = control.GetValue(ImageEffect.FillImageEffectProperty);
             if (filter == null)
-                control.SetValue(ImageFilter.ImageFilterProperty, filter = new DropShadowImageFilter());
+                control.SetValue(ImageEffect.FillImageEffectProperty, filter = new DropShadowImageEffect());
 
-            if (!(filter is DropShadowImageFilter dsf))
+            if (!(filter is DropShadowImageEffect dsf))
                 return Disposable.Empty;
 
             if (_inner == null)

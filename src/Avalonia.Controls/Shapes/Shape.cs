@@ -34,8 +34,8 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<PenLineJoin> StrokeJoinProperty =
             AvaloniaProperty.Register<Shape, PenLineJoin>(nameof(StrokeJoin), PenLineJoin.Miter);
 
-        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
-            Border.ImageFilterProperty.AddOwner<Shape>();
+        public static readonly StyledProperty<IImageEffect> FillImageEffectProperty =
+            Border.FillImageEffectProperty.AddOwner<Shape>();
         
         private Matrix _transform = Matrix.Identity;
         private Geometry _definingGeometry;
@@ -47,7 +47,7 @@ namespace Avalonia.Controls.Shapes
             AffectsMeasure<Shape>(StretchProperty, StrokeThicknessProperty);
 
             AffectsRender<Shape>(FillProperty, StrokeProperty, StrokeDashArrayProperty, StrokeDashOffsetProperty,
-                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, ImageFilterProperty);
+                StrokeThicknessProperty, StrokeLineCapProperty, StrokeJoinProperty, FillImageEffectProperty);
         }
 
         public Geometry DefiningGeometry
@@ -142,10 +142,10 @@ namespace Avalonia.Controls.Shapes
             set { SetValue(StrokeJoinProperty, value); }
         }
 
-        public IImageFilter ImageFilter
+        public IImageEffect FillImageEffect
         {
-            get => GetValue(ImageFilterProperty);
-            set => SetValue(ImageFilterProperty, value);
+            get => GetValue(FillImageEffectProperty);
+            set => SetValue(FillImageEffectProperty, value);
         }
         
         public override void Render(DrawingContext context)
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.Shapes
             {
                 var pen = new Pen(Stroke, StrokeThickness, new DashStyle(StrokeDashArray, StrokeDashOffset),
                      StrokeLineCap, StrokeJoin);
-                context.DrawGeometry(Fill, pen, geometry, ImageFilter);
+                context.DrawGeometry(Fill, pen, geometry, FillImageEffect);
             }
         }
 

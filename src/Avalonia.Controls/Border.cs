@@ -38,8 +38,8 @@ namespace Avalonia.Controls
 
 
 
-        public static readonly StyledProperty<IImageFilter> ImageFilterProperty =
-            Media.ImageFilter.ImageFilterProperty.AddOwner<Border>();
+        public static readonly StyledProperty<IImageEffect> FillImageEffectProperty =
+            Media.ImageEffect.FillImageEffectProperty.AddOwner<Border>();
         
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
@@ -50,12 +50,12 @@ namespace Avalonia.Controls
         {
             AffectsRender<Border>(
                 BackgroundProperty,
-                ImageFilterProperty,
+                FillImageEffectProperty,
                 BorderBrushProperty,
                 BorderThicknessProperty,
                 CornerRadiusProperty);
             AffectsMeasure<Border>(BorderThicknessProperty);
-            Media.ImageFilter.InitializeProperty(ImageFilterProperty);
+            Media.ImageEffect.InitializeProperty(FillImageEffectProperty);
         }
 
         /// <summary>
@@ -94,10 +94,10 @@ namespace Avalonia.Controls
             set { SetValue(CornerRadiusProperty, value); }
         }
 
-        public IImageFilter ImageFilter
+        public IImageEffect FillImageEffect
         {
-            get => GetValue(ImageFilterProperty);
-            set => SetValue(ImageFilterProperty, value);
+            get => GetValue(FillImageEffectProperty);
+            set => SetValue(FillImageEffectProperty, value);
         }
         
         /// <summary>
@@ -107,7 +107,7 @@ namespace Avalonia.Controls
         public override void Render(DrawingContext context)
         {
             _borderRenderHelper.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
-                ImageFilter);
+                FillImageEffect);
         }
 
         /// <summary>

@@ -71,7 +71,7 @@ namespace Avalonia.Controls.Utils
         }
 
         public void Render(DrawingContext context, Size size, Thickness borders, CornerRadius radii, IBrush background,
-            IBrush borderBrush, IImageFilter filter)
+            IBrush borderBrush, IImageEffect filter)
         {
             if (_useComplexRendering)
             {

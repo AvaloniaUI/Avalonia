@@ -35,7 +35,7 @@ namespace Avalonia.Platform
         /// <param name="bitmapInterpolationMode">The bitmap interpolation mode.</param>
         void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
             BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default,
-            IImageFilter imageFilter = null);
+            IImageEffect imageFilter = null);
 
         /// <summary>
         /// Draws a bitmap image.
@@ -61,7 +61,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
         /// <param name="imageFilter"></param>
-        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter);
+        void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageEffect imageFilter);
 
         /// <summary>
         /// Draws the outline of a rectangle.
@@ -70,7 +70,7 @@ namespace Avalonia.Platform
         /// <param name="brush">The fill brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
+        void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageEffect imageFilter = null);
 
         /// <summary>
         /// Draws text.

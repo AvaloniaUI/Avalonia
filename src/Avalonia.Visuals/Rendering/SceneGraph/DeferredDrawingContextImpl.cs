@@ -100,7 +100,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageFilter imageFilter)
+        public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry, IImageEffect imageFilter)
         {
             var next = NextDrawAs<GeometryNode>();
 
@@ -116,7 +116,7 @@ namespace Avalonia.Rendering.SceneGraph
 
         /// <inheritdoc/>
         public void DrawImage(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect,
-            BitmapInterpolationMode bitmapInterpolationMode, IImageFilter imageFilter)
+            BitmapInterpolationMode bitmapInterpolationMode, IImageEffect imageFilter)
         {
             var next = NextDrawAs<ImageNode>();
 
@@ -154,7 +154,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
+        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0, IImageEffect filter = null)
         {
             var next = NextDrawAs<RectangleNode>();
 
