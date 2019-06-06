@@ -100,8 +100,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
-                target.DrawRectangle(new Pen(Brushes.Green, 1), new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(null, new Pen(Brushes.Green, 1), new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
@@ -122,7 +122,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Red, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Red, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
@@ -144,7 +144,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);
@@ -165,7 +165,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(new Rect(0, 0, 100, 100), layers.Single().Dirty.Single());
@@ -192,8 +192,8 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 10, 100));
-                target.FillRectangle(Brushes.Blue, new Rect(0, 0, 20, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 10, 100));
+                target.DrawRectangle(Brushes.Blue, null, new Rect(0, 0, 20, 100));
             }
 
             Assert.Equal(2, node.DrawOperations.Count);
@@ -218,7 +218,7 @@ namespace Avalonia.Visuals.UnitTests.Rendering.SceneGraph
 
             using (target.BeginUpdate(node))
             {
-                target.FillRectangle(Brushes.Green, new Rect(0, 0, 100, 100));
+                target.DrawRectangle(Brushes.Green, null, new Rect(0, 0, 100, 100));
             }
 
             Assert.Equal(1, node.DrawOperations.Count);

@@ -13,6 +13,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Visuals.Media.Imaging;
+using Serilog.Formatting.Json;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -171,11 +172,10 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            if(imageFilter!=null)
-                Console.WriteLine();
+
             using (var fill = brush != null ? CreatePaint(brush, size, imageFilter) : default(PaintWrapper))
             using (var stroke = pen?.Brush != null ?
-                CreatePaint(pen, size, brush == null ? imageFilter : null) :
+                CreatePaint(pen, size) :
                 default(PaintWrapper))
             {
                 if (fill.Paint != null)
@@ -190,21 +190,32 @@ namespace Avalonia.Skia
             }
         }
 
-        /// <inheritdoc />
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
+        void DrawRectangle(SKRect rc, float cornerRadius, SKPaint paint)
         {
-            using (var paint = CreatePaint(pen, rect.Size, filter))
+            if (Math.Abs(cornerRadius) < float.Epsilon)
+            {
+                Canvas.DrawRect(rc, paint);
+            }
+            else
+            {
+                Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint);
+            }
+        }
+        
+        /// <inheritdoc />
+        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0, IImageFilter filter = null)
+        {
+            
+            using (var fill = brush != null ? CreatePaint(brush, rect.Size, filter) : default(PaintWrapper))
+            using (var stroke = pen?.Brush != null ?
+                CreatePaint(pen, rect.Size) :
+                default(PaintWrapper))
             {
                 var rc = rect.ToSKRect();
-
-                if (Math.Abs(cornerRadius) < float.Epsilon)
-                {
-                    Canvas.DrawRect(rc, paint.Paint);
-                }
-                else
-                {
-                    Canvas.DrawRoundRect(rc, cornerRadius, cornerRadius, paint.Paint);
-                }
+                if (fill.Paint != null)
+                    DrawRectangle(rc, cornerRadius, fill.Paint);
+                if (stroke.Paint != null)
+                    DrawRectangle(rc, cornerRadius, stroke.Paint);
             }
         }
 
@@ -589,7 +600,7 @@ namespace Avalonia.Skia
         /// <param name="pen">Source pen.</param>
         /// <param name="targetSize">Target size.</param>
         /// <returns></returns>
-        private PaintWrapper CreatePaint(Pen pen, Size targetSize, IImageFilter imageFilter = null)
+        private PaintWrapper CreatePaint(Pen pen, Size targetSize)
         {
             // In Skia 0 thickness means - use hairline rendering
             // and for us it means - there is nothing rendered.
@@ -598,7 +609,7 @@ namespace Avalonia.Skia
                 return default;
             }
 
-            var rv = CreatePaint(pen.Brush, targetSize, imageFilter);
+            var rv = CreatePaint(pen.Brush, targetSize);
             var paint = rv.Paint;
 
             paint.IsStroke = true;

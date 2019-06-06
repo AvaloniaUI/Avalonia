@@ -238,7 +238,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="pen">The pen.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius, IImageFilter filter)
+        public void DrawRectangle(Pen pen, Rect rect, float cornerRadius)
         {
             using (var brush = CreateBrush(pen.Brush, rect.Size))
             using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
@@ -263,6 +263,19 @@ namespace Avalonia.Direct2D1.Media
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Draws the outline of a rectangle.
+        /// </summary>
+        /// <param name="brush">The brush</param>
+        /// <param name="pen">The pen.</param>
+        /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="cornerRadius">The corner radius.</param>
+        public void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius, IImageFilter filter)
+        {
+            FillRectangle(brush, rect, cornerRadius, filter);
+            DrawRectangle(pen, rect, cornerRadius);
         }
 
         /// <summary>

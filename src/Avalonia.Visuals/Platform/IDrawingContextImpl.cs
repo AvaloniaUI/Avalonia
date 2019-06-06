@@ -67,9 +67,10 @@ namespace Avalonia.Platform
         /// Draws the outline of a rectangle.
         /// </summary>
         /// <param name="pen">The pen.</param>
+        /// <param name="brush">The fill brush.</param>
         /// <param name="rect">The rectangle bounds.</param>
         /// <param name="cornerRadius">The corner radius.</param>
-        void DrawRectangle(Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
+        void DrawRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
 
         /// <summary>
         /// Draws text.
@@ -78,14 +79,6 @@ namespace Avalonia.Platform
         /// <param name="origin">The upper-left corner of the text.</param>
         /// <param name="text">The text.</param>
         void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text);
-
-        /// <summary>
-        /// Draws a filled rectangle.
-        /// </summary>
-        /// <param name="brush">The brush.</param>
-        /// <param name="rect">The rectangle bounds.</param>
-        /// <param name="cornerRadius">The corner radius.</param>
-        void FillRectangle(IBrush brush, Rect rect, float cornerRadius = 0.0f, IImageFilter imageFilter = null);
 
         /// <summary>
         /// Creates a new <see cref="IRenderTargetBitmapImpl"/> that can be used as a render layer

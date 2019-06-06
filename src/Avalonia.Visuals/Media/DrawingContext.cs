@@ -131,7 +131,7 @@ namespace Avalonia.Media
         {
             if (PenIsVisible(pen))
             {
-                PlatformImpl.DrawRectangle(pen, rect, cornerRadius, filter);
+                PlatformImpl.DrawRectangle(null, pen, rect, cornerRadius, filter);
             }
         }
 
@@ -167,7 +167,22 @@ namespace Avalonia.Media
         {
             if (brush != null && rect != Rect.Empty)
             {
-                PlatformImpl.FillRectangle(brush, rect, cornerRadius, filter);
+                PlatformImpl.DrawRectangle(brush, null, rect, cornerRadius, filter);
+            }
+        }
+        
+        
+        /// <summary>
+        /// Draws a filled and stoked rectangle.
+        /// </summary>
+        /// <param name="brush">The brush.</param>
+        /// <param name="rect">The rectangle bounds.</param>
+        /// <param name="cornerRadius">The corner radius.</param>
+        public void FillRectangle(IBrush brush, Pen pen, Rect rect, float cornerRadius = 0.0f, IImageFilter filter = null)
+        {
+            if (brush != null && rect != Rect.Empty)
+            {
+                PlatformImpl.DrawRectangle(brush, pen, rect, cornerRadius, filter);
             }
         }
 

@@ -98,16 +98,7 @@ namespace Avalonia.Rendering.SceneGraph
         public override void Render(IDrawingContextImpl context)
         {
             context.Transform = Transform;
-
-            if (Brush != null)
-            {
-                context.FillRectangle(Brush, Rect, CornerRadius, ImageFilter);
-            }
-
-            if (Pen != null)
-            {
-                context.DrawRectangle(Pen, Rect, CornerRadius, ImageFilter);
-            }
+            context.DrawRectangle(Brush, Pen, Rect, CornerRadius, ImageFilter);
         }
 
         // TODO: This doesn't respect CornerRadius yet.
