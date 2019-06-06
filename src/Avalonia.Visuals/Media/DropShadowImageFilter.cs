@@ -5,6 +5,7 @@ namespace Avalonia.Media
         Vector Offset { get; }
         Vector Blur { get; }
         Color Color { get; }
+        double ShadowOpacity { get; }
     }
 
     public class DropShadowImageFilter : ImageFilter, IMutableImageFilter, IDropShadowImageFilter
@@ -41,15 +42,27 @@ namespace Avalonia.Media
             set => SetValue(ColorProperty, value);
         }
 
+
+
+        public static readonly StyledProperty<double> ShadowOpacityProperty =
+            AvaloniaProperty.Register<DropShadowImageFilter, double>(nameof(ShadowOpacity), 1);
+
+        public double ShadowOpacity
+        {
+            get => GetValue(ShadowOpacityProperty);
+            set => SetValue(ShadowOpacityProperty, value);
+        }
+
+
         public override IImageFilter ToImmutable()
         {
-            return new ImmutableDropShadowImageFilter(Offset, Blur, Color);
+            return new ImmutableDropShadowImageFilter(Offset, Blur, Color, ShadowOpacity);
         }
 
         public bool Equals(IImageFilter other)
         {
             return other is IDropShadowImageFilter ds
-                   && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset;
+                   && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset && ds.ShadowOpacity == ShadowOpacity;
         }
 
         public Rect UpdateBounds(Rect bounds) => ToImmutable().UpdateBounds(bounds);
@@ -57,16 +70,18 @@ namespace Avalonia.Media
 
     public struct ImmutableDropShadowImageFilter : IDropShadowImageFilter
     {
-        public ImmutableDropShadowImageFilter(Vector offset, Vector blur, Color color)
+        public ImmutableDropShadowImageFilter(Vector offset, Vector blur, Color color,  double shadowOpacity)
         {
             Offset = offset;
             Blur = blur;
             Color = color;
+            ShadowOpacity = shadowOpacity;
         }
 
         public Vector Offset { get; }
         public Vector Blur { get; }
         public Color Color { get; }
+        public double ShadowOpacity { get; }
 
 
 
@@ -78,7 +93,7 @@ namespace Avalonia.Media
         public bool Equals(IImageFilter other)
         {
             return other is IDropShadowImageFilter ds
-                   && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset;
+                   && ds.Color == Color && ds.Blur == Blur && ds.Offset == Offset && ds.ShadowOpacity == ShadowOpacity;
         }
 
         public Rect UpdateBounds(Rect bounds)

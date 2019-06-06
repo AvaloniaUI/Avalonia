@@ -2,13 +2,16 @@ using System;
 using System.Reactive.Disposables;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
+using Avalonia.Collections;
 
 namespace Avalonia.Media
 {
-    class ImageFilterAnimator : Animator<Point>
+    class ImageFilterAnimator : AvaloniaList<AnimatorKeyFrame>, IAnimator
     {
         private IAnimator _inner;
-        public override IDisposable Apply(Animation.Animation animation, Animatable control,
+        public AvaloniaProperty Property { get; set; }
+
+        public IDisposable Apply(Animation.Animation animation, Animatable control,
             IClock clock, IObservable<bool> match, Action onComplete)
         {
             var filter = control.GetValue(ImageFilter.ImageFilterProperty);
@@ -24,6 +27,8 @@ namespace Avalonia.Media
                     _inner = new VectorAnimator();
                 else if (Property.PropertyType == typeof(Color))
                     _inner = new ColorAnimator();
+                else if (Property.PropertyType == typeof(double))
+                    _inner = new DoubleAnimator();
                 else
                     return Disposable.Empty;
                 foreach (AnimatorKeyFrame keyframe in this)
@@ -33,7 +38,5 @@ namespace Avalonia.Media
             
             return _inner.Apply(animation, dsf, clock ?? control.Clock, match, onComplete);
         }
-
-        public override Point Interpolate(double progress, Point oldValue, Point newValue) => default;
     }
 }

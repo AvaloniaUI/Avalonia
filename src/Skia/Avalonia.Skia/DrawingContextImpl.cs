@@ -508,9 +508,11 @@ namespace Avalonia.Skia
         {
             if (filter is IDropShadowImageFilter ds)
             {
+                
+                double opacity = ds.ShadowOpacity * _currentOpacity;
                 return SKImageFilter.CreateDropShadow((float)ds.Offset.X, (float)ds.Offset.Y,
                     (float)ds.Blur.X, (float)ds.Blur.Y,
-                    ds.Color.ToSKColor(), SKDropShadowImageFilterShadowMode.DrawShadowAndForeground);
+                    ds.Color.ToSKColor(opacity), SKDropShadowImageFilterShadowMode.DrawShadowAndForeground);
             }
 
             return null;
@@ -542,7 +544,7 @@ namespace Avalonia.Skia
 
             if (brush is ISolidColorBrush solid)
             {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
+                paint.Color = solid.Color.ToSKColor(opacity);
 
                 return paintWrapper;
             }

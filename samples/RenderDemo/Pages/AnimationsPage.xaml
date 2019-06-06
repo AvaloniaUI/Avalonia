@@ -46,11 +46,13 @@
               <Setter Property="DropShadowImageFilter.Offset" Value="0,0"/>
               <Setter Property="DropShadowImageFilter.Blur" Value="2,4"/>
               <Setter Property="DropShadowImageFilter.Color" Value="Green"/>
+              <Setter Property="DropShadowImageFilter.ShadowOpacity" Value="1"/>
             </KeyFrame>
             <KeyFrame Cue="100%">
               <Setter Property="DropShadowImageFilter.Offset" Value="20,15"/>
               <Setter Property="DropShadowImageFilter.Blur" Value="30,10"/>
               <Setter Property="DropShadowImageFilter.Color" Value="Blue"/>
+              <Setter Property="DropShadowImageFilter.ShadowOpacity" Value="0.7"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>

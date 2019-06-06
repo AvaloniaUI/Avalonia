@@ -47,6 +47,11 @@ namespace Avalonia.Skia
         {
             return new SKColor(c.R, c.G, c.B, c.A);
         }
+        
+        public static SKColor ToSKColor(this Media.Color c, double opacity)
+        {
+            return new SKColor(c.R, c.G, c.B, (byte) (c.A * opacity));
+        }
 
         public static SKColorType ToSkColorType(this PixelFormat fmt)
         {
