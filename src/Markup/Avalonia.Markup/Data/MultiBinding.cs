@@ -65,19 +65,20 @@ namespace Avalonia.Data
             bool enableDataValidation = false)
         {
             var targetType = targetProperty?.PropertyType ?? typeof(object);
-            var children = Bindings.Select(x => x.Initiate(target, null));
-            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType));
-            var mode = Mode == BindingMode.Default ?
-                targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
-            
+            var converter = Converter;
             // We only respect `StringFormat` if the type of the property we're assigning to will
             // accept a string. Note that this is slightly different to WPF in that WPF only applies
             // `StringFormat` for target type `string` (not `object`).
             if (!string.IsNullOrWhiteSpace(StringFormat) && 
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
-                Converter = new StringFormatMultiValueConverter(StringFormat, Converter);
+                converter = new StringFormatMultiValueConverter(StringFormat, converter);
             }
+            
+            var children = Bindings.Select(x => x.Initiate(target, null));
+            var input = children.Select(x => x.Observable).CombineLatest().Select(x => ConvertValue(x, targetType, converter));
+            var mode = Mode == BindingMode.Default ?
+                targetProperty?.GetMetadata(target.GetType()).DefaultBindingMode : Mode;
 
             switch (mode)
             {
@@ -91,10 +92,10 @@ namespace Avalonia.Data
             }
         }
 
-        private object ConvertValue(IList<object> values, Type targetType)
+        private object ConvertValue(IList<object> values, Type targetType, IMultiValueConverter converter)
         {
             var culture = CultureInfo.CurrentCulture;
-            var converted = Converter.Convert(values, targetType, ConverterParameter, culture);
+            var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 
             if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
             {
