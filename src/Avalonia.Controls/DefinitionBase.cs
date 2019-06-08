@@ -110,11 +110,11 @@ namespace Avalonia.Controls
         /// </remarks>
         internal void OnUserSizePropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (InParentLogicalTree)
+            if (Parent != null)
             {
                 if (_sharedState != null)
                 {
-                    _sharedState.Invalidate();
+                    _sharedState?.Invalidate();
                 }
                 else
                 {
@@ -129,21 +129,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        /// <remarks>
-        /// This method needs to be internal to be accessable from derived classes.
-        /// </remarks>
-        internal static void OnUserMinSizePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
-        {
-            DefinitionBase definition = (DefinitionBase)d;
-
-            if (definition.InParentLogicalTree)
-            {
-                Grid parentGrid = (Grid)definition.Parent;
-                parentGrid.InvalidateMeasure();
-            }
-        }
-
+ 
         /// <remarks>
         /// This method reflects Grid.SharedScopeProperty state by setting / clearing
         /// dynamic property PrivateSharedSizeScopeProperty. Value of PrivateSharedSizeScopeProperty
@@ -317,14 +303,6 @@ namespace Avalonia.Controls
         /// </summary>
         internal abstract double UserMaxSizeValueCache { get; }
 
-        /// <summary>
-        /// Protected. Returns <c>true</c> if this DefinitionBase instance is in parent's logical tree.
-        /// </summary>
-        internal bool InParentLogicalTree
-        {
-            get { return (_parentIndex != -1); }
-        }
-
         internal Grid Parent { get; set; }
 
         /// <summary>
@@ -349,7 +327,7 @@ namespace Avalonia.Controls
         {
             DefinitionBase definition = (DefinitionBase)d;
 
-            if (definition.InParentLogicalTree)
+            if (definition.Parent != null)
             {
                 string sharedSizeGroupId = (string)e.NewValue;
 
@@ -421,7 +399,7 @@ namespace Avalonia.Controls
         {
             DefinitionBase definition = (DefinitionBase)d;
 
-            if (definition.InParentLogicalTree)
+            if (definition.Parent != null)
             {
                 SharedSizeScope privateSharedSizeScope = (SharedSizeScope)e.NewValue;
 

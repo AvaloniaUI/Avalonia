@@ -1726,7 +1726,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="finalSize">Final size to lay out to.</param>
-        /// <param name="rows">True if sizing row definitions, false for columns</param>
+        /// <param name="columns">True if sizing row definitions, false for columns</param>
         private void SetFinalSize(
             IReadOnlyList<DefinitionBase> definitions,
             double finalSize,
@@ -2303,29 +2303,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        /// <summary>
-        /// Returns <c>true</c> if ColumnDefinitions collection is not empty
-        /// </summary>
-        public bool ShouldSerializeColumnDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (extData != null
-                    && extData.ColumnDefinitions != null
-                    && extData.ColumnDefinitions.Count > 0);
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if RowDefinitions collection is not empty
-        /// </summary>
-        public bool ShouldSerializeRowDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (extData != null
-                    && extData.RowDefinitions != null
-                    && extData.RowDefinitions.Count > 0);
-        }
-
+ 
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
         /// by adding / removing GridLinesRenderer visual.
