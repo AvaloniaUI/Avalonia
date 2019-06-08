@@ -1969,7 +1969,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="finalSize">Final size to lay out to.</param>
-        /// <param name="rows">True if sizing row definitions, false for columns</param>
+        /// <param name="columns">True if sizing column definitions, false for rows</param>
         private void SetFinalSize(
             IReadOnlyList<DefinitionBase> definitions,
             double finalSize,
@@ -2694,9 +2694,9 @@ namespace Avalonia.Controls
         ///                 if the max constraint has higher discrepancy
         ///     null    if proportion doesn't fail a min or max constraint
         /// The discrepancy is the ratio of the proportion to the max- or min-ratio.
-        /// When both ratios hit the constraint,  minRatio < proportion < maxRatio,
+        /// When both ratios hit the constraint,  minRatio &lt; proportion &gt; maxRatio,
         /// and the minRatio has higher discrepancy if
-        ///         (proportion / minRatio) > (maxRatio / proportion)
+        ///         (proportion / minRatio) &gt; (maxRatio / proportion)
         /// </summary>
         private static bool? Choose(double minRatio, double maxRatio, double proportion)
         {
