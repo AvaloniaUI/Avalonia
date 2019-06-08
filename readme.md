@@ -8,9 +8,9 @@
 
 ## About
 
-Avalonia is a WPF-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (GTK), MacOS, Android and iOS.
+Avalonia is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (libX11), MacOS, Android (experimental) and iOS (exprerimental).
 
-**Avalonia is currently in beta** which means that the framework is generally usable for writing applications, but there may be some bugs and breaking changes as we continue development.
+**Avalonia is currently in beta** which means that the framework is generally usable for writing applications, but there may be some bugs and breaking changes as we continue development, for more details about the status see https://github.com/AvaloniaUI/Avalonia/issues/2239
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
