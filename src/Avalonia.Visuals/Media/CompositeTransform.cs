@@ -28,7 +28,7 @@ namespace Avalonia.Media
         }
 
         public static readonly StyledProperty<double> ScaleXProperty =
-               AvaloniaProperty.Register<CompositeTransform, double>(nameof(ScaleX));
+               AvaloniaProperty.Register<CompositeTransform, double>(nameof(ScaleX), defaultValue: 1);
 
         public double ScaleX
         {
@@ -37,7 +37,7 @@ namespace Avalonia.Media
         }
 
         public static readonly StyledProperty<double> ScaleYProperty =
-               AvaloniaProperty.Register<CompositeTransform, double>(nameof(ScaleY));
+               AvaloniaProperty.Register<CompositeTransform, double>(nameof(ScaleY), defaultValue: 1);
 
         public double ScaleY
         {
@@ -109,6 +109,7 @@ namespace Avalonia.Media
             transform.InitializeScale();
             var sT = transform._innerTransforms[0] as ScaleTransform;
             sT.ScaleX = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void ScaleYChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
@@ -116,6 +117,7 @@ namespace Avalonia.Media
             transform.InitializeScale();
             var sT = transform._innerTransforms[0] as ScaleTransform;
             sT.ScaleY = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void SkewXChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
@@ -123,6 +125,7 @@ namespace Avalonia.Media
             transform.InitializeSkew();
             var sT = transform._innerTransforms[1] as SkewTransform;
             sT.AngleX = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void SkewYChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
@@ -130,13 +133,15 @@ namespace Avalonia.Media
             transform.InitializeSkew();
             var sT = transform._innerTransforms[1] as SkewTransform;
             sT.AngleY = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void RotationChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
         {
-            transform.InitializeSkew();
+            transform.InitializeRotation();
             var rT = transform._innerTransforms[2] as RotateTransform;
             rT.Angle = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void TranslateXChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
@@ -144,13 +149,15 @@ namespace Avalonia.Media
             transform.InitializeTranslate();
             var tT = transform._innerTransforms[3] as TranslateTransform;
             tT.X = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private static void TranslateYChanged(CompositeTransform transform, AvaloniaPropertyChangedEventArgs e)
         {
             transform.InitializeTranslate();
             var tT = transform._innerTransforms[3] as TranslateTransform;
-            tT.X = (double)e.NewValue;
+            tT.Y = (double)e.NewValue;
+            transform.RaiseChanged();
         }
 
         private void InitializeScale()

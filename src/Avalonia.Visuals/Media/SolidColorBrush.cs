@@ -20,7 +20,8 @@ namespace Avalonia.Media
 
         static SolidColorBrush()
         {
-            Animation.Animation.RegisterAnimator<SolidColorBrushAnimator>(prop => typeof(IBrush).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<SolidColorBrushAnimator>(typeof(ImmutableSolidColorBrush));
+            Animation.Animation.RegisterAnimator<SolidColorBrushAnimator>(typeof(SolidColorBrush));
             AffectsRender<SolidColorBrush>(ColorProperty);
         }
 

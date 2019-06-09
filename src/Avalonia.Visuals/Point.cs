@@ -14,7 +14,7 @@ namespace Avalonia
     {
         static Point()
         {
-            Animation.Animation.RegisterAnimator<PointAnimator>(prop => typeof(Point).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<PointAnimator>(typeof(Point));
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Avalonia
     {
         static CornerRadius()
         {
-            Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(prop => typeof(CornerRadius).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<CornerRadiusAnimator>(typeof(CornerRadius));
         }
 
         public CornerRadius(double uniformRadius)

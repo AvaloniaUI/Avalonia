@@ -22,7 +22,7 @@ namespace Avalonia.Animation.Animators
                 _colorAnimator.Add(keyframe);
             }
 
-            _colorAnimator.Property = SolidColorBrush.ColorProperty;
+            _colorAnimator.TargetProperty = "Color";
         }
 
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
@@ -39,31 +39,34 @@ namespace Avalonia.Animation.Animators
                 }
             }
 
-            // Add SCB if the target prop is empty.
-            if (control.GetValue(Property) == null)
-                control.SetValue(Property, new SolidColorBrush(Colors.Transparent));
+            var targetLV = this.GetTargetBindingExpression(control, Data.BindingPriority.LocalValue);
 
-            var targetVal = control.GetValue(Property);
+
+            // Add SCB if the target prop is empty.
+            if (GetTargetBindingExpressionValue(targetLV) == null)
+                targetLV.OnNext(new SolidColorBrush(Colors.Transparent));
+
+             var targetVal = GetTargetBindingExpressionValue(targetLV);
 
             // Continue if target prop is not empty & is a SolidColorBrush derivative. 
             if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
             {
-                if (_colorAnimator == null)
-                    InitializeColorAnimator();
+            //     if (_colorAnimator == null)
+            //         InitializeColorAnimator();
 
-                SolidColorBrush finalTarget;
+            //     SolidColorBrush finalTarget;
 
-                // If it's ISCB, change it back to SCB.
-                if (targetVal.GetType() == typeof(ImmutableSolidColorBrush))
-                {
-                    var col = (ImmutableSolidColorBrush)targetVal;
-                    targetVal = new SolidColorBrush(col.Color);
-                    control.SetValue(Property, targetVal);
-                }
+            //     // If it's ISCB, change it back to SCB.
+            //     if (targetVal.GetType() == typeof(ImmutableSolidColorBrush))
+            //     {
+            //         var col = (ImmutableSolidColorBrush)targetVal;
+            //         targetVal = new SolidColorBrush(col.Color);
+            //         // control.SetValue(Property, targetVal);
+            //     }
 
-                finalTarget = targetVal as SolidColorBrush;
+            //     finalTarget = targetVal as SolidColorBrush;
 
-                return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
+            //     return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
             }
 
             return Disposable.Empty;

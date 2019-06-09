@@ -15,7 +15,7 @@ namespace Avalonia
     {
         static Vector()
         {
-            Animation.Animation.RegisterAnimator<VectorAnimator>(prop => typeof(Vector).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<VectorAnimator>(typeof(Vector));
         }
 
         /// <summary>

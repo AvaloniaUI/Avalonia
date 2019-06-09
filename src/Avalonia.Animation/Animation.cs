@@ -14,6 +14,7 @@ using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
+using Avalonia.Data.Converters;
 
 namespace Avalonia.Animation
 {
@@ -199,65 +200,48 @@ namespace Avalonia.Animation
         [Content]
         public KeyFrames Children { get; } = new KeyFrames();
 
-        private readonly static List<(Func<AvaloniaProperty, bool> Condition, Type Animator)> Animators = new List<(Func<AvaloniaProperty, bool>, Type)>
+        private readonly static Dictionary<Type, Type> Animators = new Dictionary<Type, Type>
         {
-            ( prop => typeof(bool).IsAssignableFrom(prop.PropertyType), typeof(BoolAnimator) ),
-            ( prop => typeof(byte).IsAssignableFrom(prop.PropertyType), typeof(ByteAnimator) ),
-            ( prop => typeof(Int16).IsAssignableFrom(prop.PropertyType), typeof(Int16Animator) ),
-            ( prop => typeof(Int32).IsAssignableFrom(prop.PropertyType), typeof(Int32Animator) ),
-            ( prop => typeof(Int64).IsAssignableFrom(prop.PropertyType), typeof(Int64Animator) ),
-            ( prop => typeof(UInt16).IsAssignableFrom(prop.PropertyType), typeof(UInt16Animator) ),
-            ( prop => typeof(UInt32).IsAssignableFrom(prop.PropertyType), typeof(UInt32Animator) ),
-            ( prop => typeof(UInt64).IsAssignableFrom(prop.PropertyType), typeof(UInt64Animator) ),
-            ( prop => typeof(float).IsAssignableFrom(prop.PropertyType), typeof(FloatAnimator) ),
-            ( prop => typeof(double).IsAssignableFrom(prop.PropertyType), typeof(DoubleAnimator) ),
-            ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
+            { typeof(double), typeof(DoubleAnimator) },
+            { typeof(float), typeof(FloatAnimator) },
+            { typeof(bool), typeof(BoolAnimator) },
+            { typeof(byte), typeof(ByteAnimator) },
+            { typeof(Int16), typeof(Int16Animator) },
+            { typeof(Int32), typeof(Int32Animator) },
+            { typeof(Int64), typeof(Int64Animator) },
+            { typeof(UInt16), typeof(UInt16Animator) },
+            { typeof(UInt32), typeof(UInt32Animator) },
+            { typeof(UInt64), typeof(UInt64Animator) },
+            { typeof(decimal), typeof(DecimalAnimator) },
         };
 
-        public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
+        public static void RegisterAnimator<TAnimator>(Type Index)
             where TAnimator : IAnimator
         {
-            Animators.Insert(0, (condition, typeof(TAnimator)));
-        }
-
-        private static Type GetAnimatorType(AvaloniaProperty property)
-        {
-            foreach (var (condition, type) in Animators)
-            {
-                if (condition(property))
-                {
-                    return type;
-                }
-            }
-            return null;
+            Animators.Add(Index, typeof(TAnimator));
+            // Animators.Insert(0, (condition, typeof(TAnimator)));
         }
 
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
-            var handlerList = new List<(Type type, AvaloniaProperty property)>();
+            var handlerList = new List<(Type type, string Expression)>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
+            var newAnimatorInstances = new List<IAnimator>();
 
             foreach (var keyframe in Children)
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    // var handler = GetAnimatorType(setter.Property);
+                    var handler = Animators[setter.Value.GetType()];
 
-                    // if (handler == null)
-                    // {
-                    //     throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
-                    // }
+                    if (handler == null)
+                    {
+                        throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                    }
 
-                    // if (!handlerList.Contains((handler, setter.Property)))
-                    //     handlerList.Add((handler, setter.Property));
-
-                    var reader = new CharacterReader(setter.TargetProperty.AsSpan());
-                    var parser = new TargetExpressionParser(null);
-                    var node = new ExpressionObserver(control, parser.Parse(ref reader));
-
-                    var targetExpression = new BindingExpression(node, setter.Value.GetType(), null, null, BindingPriority.Animation);
-                    targetExpression.OnNext(setter.Value);
+                    if (!handlerList.Contains((handler, setter.TargetProperty)))
+                        handlerList.Add((handler, setter.TargetProperty));
 
                     var cue = keyframe.Cue;
 
@@ -266,7 +250,11 @@ namespace Avalonia.Animation
                         cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
                     }
 
-                    var newKF = new AnimatorKeyFrame(targetExpression, cue);
+                    var newKF = new AnimatorKeyFrame();
+
+                    newKF.Cue = cue;
+                    newKF.TargetProperty = setter.TargetProperty;
+                    newKF.AnimatorType = handler;
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 
@@ -274,19 +262,19 @@ namespace Avalonia.Animation
                 }
             }
 
-            var newAnimatorInstances = new List<IAnimator>();
 
-            foreach (var (handlerType, property) in handlerList)
+            foreach (var (handlerType, ExpressionString) in handlerList)
             {
                 var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
-                // newInstance.Property = property;
+                var newInstanceTargetType = handlerType.MemberType.GetType();
+                newInstance.TargetProperty = ExpressionString;
                 newAnimatorInstances.Add(newInstance);
             }
 
             foreach (var keyframe in animatorKeyFrames)
             {
                 var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
-                                                             a.Property == keyframe.Property);
+                                                             a.TargetProperty == keyframe.TargetProperty);
                 animator.Add(keyframe);
             }
 

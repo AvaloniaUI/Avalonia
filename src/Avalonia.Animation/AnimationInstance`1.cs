@@ -1,10 +1,15 @@
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using Avalonia.Animation.Animators;
 using Avalonia.Animation.Utils;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Animation
 {
@@ -19,12 +24,14 @@ namespace Avalonia.Animation
         private ulong? _iterationCount;
         private ulong _currentIteration;
         private bool _gotFirstKFValue;
+        private bool _neutralValueIsSet;
         private bool _playbackReversed;
         private FillMode _fillMode;
         private PlaybackDirection _playbackDirection;
         private Animator<T> _animator;
         private Animation _animation;
         private Animatable _targetControl;
+
         private T _neutralValue;
         private double _speedRatioConv;
         private TimeSpan _initialDelay;
@@ -36,8 +43,11 @@ namespace Avalonia.Animation
         private IDisposable _timerSub;
         private readonly IClock _baseClock;
         private IClock _clock;
+        private BindingExpression _targetExpressionAnimation;
+        private BindingExpression _targetExpressionLocalValue;
+        private CompositeDisposable _compositeDispose;
 
-        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator)
+        public AnimationInstance(Animation animation, Animatable control, Animator<T> animator, IClock baseClock, Action OnComplete, Func<double, T, T> Interpolator, string targetProperty)
         {
             _animator = animator;
             _animation = animation;
@@ -45,7 +55,6 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-            _neutralValue = (T)_targetControl.GetValue(_animator.Property);
 
             FetchProperties();
         }
@@ -105,7 +114,9 @@ namespace Avalonia.Animation
         private void ApplyFinalFill()
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
-                _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
+            {
+                _targetExpressionLocalValue.OnNext(_lastInterpValue);
+            }
         }
 
         private void DoComplete()
@@ -122,6 +133,33 @@ namespace Avalonia.Animation
                     PublishNext(_firstKFValue);
                 else
                     PublishNext(_lastInterpValue);
+        }
+
+        internal IDisposable Run()
+        {
+            this._compositeDispose = new CompositeDisposable();
+
+            _targetExpressionAnimation = _animator.GetTargetBindingExpression(_targetControl, BindingPriority.Animation);
+            _targetExpressionLocalValue = _animator.GetTargetBindingExpression(_targetControl, BindingPriority.LocalValue);
+
+            var bN = (BindingNotification)_targetExpressionLocalValue.Take(1).Wait();
+            
+            if (bN.ErrorType != BindingErrorType.None)
+            {
+                throw bN.Error;
+            }
+
+            _neutralValue = (T)bN.Value;
+
+            var subscribe = this.Subscribe((x) =>
+            {
+                _targetExpressionAnimation.OnNext(x);
+            });
+
+            _compositeDispose.Add(subscribe);
+            _compositeDispose.Add(this);
+
+            return _compositeDispose;
         }
 
         private void DoPlayStates()

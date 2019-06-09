@@ -15,7 +15,7 @@ namespace Avalonia
     {
         static Size()
         {
-            Animation.Animation.RegisterAnimator<SizeAnimator>(prop => typeof(Size).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<SizeAnimator>(typeof(Size));
         }
 
         /// <summary>

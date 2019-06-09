@@ -16,7 +16,7 @@ namespace Avalonia
     {
         static Thickness()
         {
-            Animation.Animation.RegisterAnimator<ThicknessAnimator>(prop => typeof(Thickness).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<ThicknessAnimator>(typeof(Thickness));
         }
 
         /// <summary>

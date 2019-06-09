@@ -74,7 +74,7 @@ namespace Avalonia
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> RenderTransformProperty =
-            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform), defaultValue: new CompositeTransform());
+            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
 
         /// <summary>
         /// Defines the <see cref="RenderTransformOrigin"/> property.
@@ -123,6 +123,7 @@ namespace Avalonia
             visualChildren.Validate = ValidateVisualChild;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
+            RenderTransform = new CompositeTransform();
         }
 
         /// <summary>

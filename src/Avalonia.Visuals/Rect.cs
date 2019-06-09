@@ -15,7 +15,7 @@ namespace Avalonia
     {
         static Rect()
         {
-            Animation.Animation.RegisterAnimator<RectAnimator>(prop => typeof(Rect).IsAssignableFrom(prop.PropertyType));
+            Animation.Animation.RegisterAnimator<RectAnimator>(typeof(Rect));
         }
 
         /// <summary>

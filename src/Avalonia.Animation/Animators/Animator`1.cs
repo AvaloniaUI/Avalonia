@@ -8,8 +8,10 @@ using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Animation.Animators
 {
@@ -24,8 +26,33 @@ namespace Avalonia.Animation.Animators
         private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
 
         private bool _isVerifiedAndConverted;
- 
-        public BindingExpression TargetProperty { get ; set; }
+
+        public string TargetProperty { get; set; }
+
+        public BindingExpression GetTargetBindingExpression(Animatable control, BindingPriority priority)
+        {
+            var reader = new CharacterReader(TargetProperty.AsSpan());
+            var parser = new TargetExpressionParser(null);
+            var node = new ExpressionObserver(control, parser.Parse(ref reader));
+            return new BindingExpression(node,
+                                         typeof(T),
+                                         DefaultValueConverter.Instance,
+                                         null,
+                                         priority);
+        }
+
+        public T GetTargetBindingExpressionValue(BindingExpression expression)
+        {
+            var bN = (BindingNotification)expression.Take(1).Wait();
+
+            if (bN.ErrorType != BindingErrorType.None)
+            {
+                throw bN.Error;
+            }
+
+            return (T)bN.Value;
+        }
+
 
         public Animator()
         {
@@ -113,11 +140,10 @@ namespace Avalonia.Animation.Animators
                 this,
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
-                InterpolationHandler);
+                InterpolationHandler,
+                TargetProperty);
 
-             return instance.Subscribe((x)=> TargetProperty.OnNext(x));
-
-            // return control.Bind<T>(TargetProperty, instance, BindingPriority.Animation);
+            return instance.Run();
         }
 
         /// <summary>
@@ -163,12 +189,12 @@ namespace Avalonia.Animation.Animators
         {
             if (!hasStartKey)
             {
-                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Insert(0, new AnimatorKeyFrame() { Cue = new Cue(0.0d), Value = default(T), isNeutral = true });
             }
 
             if (!hasEndKey)
             {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(null, new Cue(1.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Add(new AnimatorKeyFrame() { Cue = new Cue(1.0d), Value = default(T), isNeutral = true });
             }
         }
     }

@@ -15,7 +15,7 @@ namespace Avalonia.Media
     {
         static Transform()
         {
-            Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
+            // Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
         }
 
         /// <summary>

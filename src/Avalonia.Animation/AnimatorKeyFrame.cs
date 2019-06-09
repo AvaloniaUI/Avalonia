@@ -606,22 +606,11 @@ namespace Avalonia.Animation
     {
         public static readonly DirectProperty<AnimatorKeyFrame, object> ValueProperty =
             AvaloniaProperty.RegisterDirect<AnimatorKeyFrame, object>(nameof(Value), k => k.Value, (k, v) => k.Value = v);
-
-        public AnimatorKeyFrame()
-        {
-
-        }
-
-        public AnimatorKeyFrame(BindingExpression targetExpression, Cue cue)
-        {
-            TargetExpression = targetExpression;
-            Cue = cue;
-        }
-
+ 
         internal bool isNeutral;
-        public Type AnimatorType { get; }
-        public BindingExpression TargetExpression { get; }
-        public Cue Cue { get; }
+        public Type AnimatorType { get; internal set; }
+        public string TargetProperty { get; internal set; }
+        public Cue Cue { get; internal set; }
         public AvaloniaProperty Property { get; private set; }
 
         private object _value;
@@ -634,7 +623,7 @@ namespace Avalonia.Animation
 
         public IDisposable BindSetter(IAnimationSetter setter, Animatable targetControl)
         {
-            Property = setter.Property;
+            // Property = setter.Property;
             var value = setter.Value;
 
             if (value is IBinding binding)
