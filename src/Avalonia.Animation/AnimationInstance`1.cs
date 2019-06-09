@@ -115,7 +115,7 @@ namespace Avalonia.Animation
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
             {
-                _targetExpressionLocalValue.OnNext(_lastInterpValue);
+                // _targetExpressionLocalValue.OnNext(_lastInterpValue);
             }
         }
 
@@ -141,15 +141,7 @@ namespace Avalonia.Animation
 
             _targetExpressionAnimation = _animator.GetTargetBindingExpression(_targetControl, BindingPriority.Animation);
             _targetExpressionLocalValue = _animator.GetTargetBindingExpression(_targetControl, BindingPriority.LocalValue);
-
-            var bN = (BindingNotification)_targetExpressionLocalValue.Take(1).Wait();
-            
-            if (bN.ErrorType != BindingErrorType.None)
-            {
-                throw bN.Error;
-            }
-
-            _neutralValue = (T)bN.Value;
+            _neutralValue = _animator.GetTargetBindingExpressionValue(_targetExpressionLocalValue);
 
             var subscribe = this.Subscribe((x) =>
             {

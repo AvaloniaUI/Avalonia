@@ -17,6 +17,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
+        public LayoutTransformControl()
+        {
+            LayoutTransform = new CompositeTransform();
+        }
+
         public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
 
@@ -32,7 +37,6 @@ namespace Avalonia.Controls
 
             ChildProperty.Changed
                 .AddClassHandler<LayoutTransformControl>(x => x.OnChildChanged);
-            UseRenderTransformProperty.Changed.AddClassHandler<LayoutTransformControl>(x => x.OnUseRenderTransformPropertyChanged);
         }
 
         /// <summary>
@@ -42,15 +46,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(LayoutTransformProperty); }
             set { SetValue(LayoutTransformProperty, value); }
-        }
-
-        /// <summary>
-        /// Utilize the <see cref="RenderTransformProperty"/> for layout transforms.
-        /// </summary>
-        public bool UseRenderTransform
-        {
-            get { return GetValue(UseRenderTransformProperty); }
-            set { SetValue(UseRenderTransformProperty, value); }
         }
 
         public IControl TransformRoot => Child;
@@ -148,40 +143,6 @@ namespace Avalonia.Controls
         }
 
         IDisposable _renderTransformChangedEvent;
-
-        private void OnUseRenderTransformPropertyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            // HACK: In theory, this method and the UseRenderTransform shouldn't exist but
-            //       it's hard to animate this particular control with style animations without
-            //       PropertyPaths.
-            //
-            //       So until we get that implemented, we'll stick on this not-so-good
-            //       workaround.
-
-            var target = e.Sender as LayoutTransformControl;
-            var shouldUseRenderTransform = (bool)e.NewValue;
-            if (target != null)
-            {
-                if (shouldUseRenderTransform)
-                {
-                    _renderTransformChangedEvent = RenderTransformProperty.Changed
-                            .Subscribe(
-                                (x) =>
-                                {
-                                    var target2 = x.Sender as LayoutTransformControl;
-                                    if (target2 != null)
-                                    {
-                                        target2.LayoutTransform = target2.RenderTransform;
-                                    }
-                                });
-                }
-                else
-                {
-                    _renderTransformChangedEvent?.Dispose();
-                    LayoutTransform = null;
-                }
-            }
-        }
 
         private void OnChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
