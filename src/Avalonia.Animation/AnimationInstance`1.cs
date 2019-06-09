@@ -115,7 +115,7 @@ namespace Avalonia.Animation
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
             {
-                // _targetExpressionLocalValue.OnNext(_lastInterpValue);
+                _targetExpressionLocalValue.OnNext(_lastInterpValue);
             }
         }
 
@@ -123,6 +123,9 @@ namespace Avalonia.Animation
         {
             ApplyFinalFill();
             _onCompleteAction?.Invoke();
+            _targetExpressionAnimation?.OnCompleted();
+            _targetExpressionLocalValue?.OnCompleted();
+            _compositeDispose?.Dispose();
             PublishCompleted();
         }
 
