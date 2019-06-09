@@ -70,6 +70,8 @@ namespace Avalonia.Styling
             }
         }
 
+        public string TargetProperty { get ; set ; }
+
         /// <summary>
         /// Applies the setter to a control.
         /// </summary>

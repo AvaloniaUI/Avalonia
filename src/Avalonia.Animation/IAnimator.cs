@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Animation
 {
@@ -14,7 +15,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// The target property.
         /// </summary>
-        AvaloniaProperty Property {get; set;}
+        BindingExpression TargetProperty {get; set;}
 
         /// <summary>
         /// Applies the current KeyFrame group to the specified control.

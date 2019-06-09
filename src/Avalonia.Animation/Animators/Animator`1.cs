@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
 
 namespace Avalonia.Animation.Animators
@@ -23,11 +24,8 @@ namespace Avalonia.Animation.Animators
         private readonly List<AnimatorKeyFrame> _convertedKeyframes = new List<AnimatorKeyFrame>();
 
         private bool _isVerifiedAndConverted;
-
-        /// <summary>
-        /// Gets or sets the target property for the keyframe.
-        /// </summary>
-        public AvaloniaProperty Property { get; set; }
+ 
+        public BindingExpression TargetProperty { get ; set; }
 
         public Animator()
         {
@@ -116,7 +114,10 @@ namespace Avalonia.Animation.Animators
                 clock ?? control.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-            return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
+
+             return instance.Subscribe((x)=> TargetProperty.OnNext(x));
+
+            // return control.Bind<T>(TargetProperty, instance, BindingPriority.Animation);
         }
 
         /// <summary>

@@ -6,6 +6,11 @@ using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
+    public class CompositeTransform : TransformGroup
+    {
+        
+    }
+
     public class TransformGroup : Transform
     {
         /// <summary>

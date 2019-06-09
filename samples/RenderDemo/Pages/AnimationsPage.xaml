@@ -49,13 +49,13 @@
                      PlaybackDirection="AlternateReverse"
                      Easing="SineEaseInOut">
             <KeyFrame Cue="20%">
-              <Setter Property="RotateTransform.Angle" Value="45"/>
+              <Setter Property="Opacity" TargetProperty="RotateTransform.Angle" Value="45"/>
             </KeyFrame>
             <KeyFrame Cue="50%">
-              <Setter Property="ScaleTransform.ScaleX" Value="1.5"/>
+              <Setter Property="Opacity" TargetProperty="ScaleTransform.ScaleX" Value="1.5"/>
             </KeyFrame>
             <KeyFrame Cue="80%">
-              <Setter Property="RotateTransform.Angle" Value="120"/>
+              <Setter Property="Opacity" TargetProperty="RotateTransform.Angle" Value="120"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -64,8 +64,8 @@
         <Style.Animations>
           <Animation Duration="0:0:0.5" Easing="SineEaseInOut">
             <KeyFrame Cue="50%">
-              <Setter Property="ScaleTransform.ScaleX" Value="0.8"/>
-              <Setter Property="ScaleTransform.ScaleY" Value="0.8"/>
+              <Setter Property="Opacity" TargetProperty="ScaleTransform.ScaleX" Value="0.8"/>
+              <Setter Property="Opacity" TargetProperty="ScaleTransform.ScaleY" Value="0.8"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -76,8 +76,8 @@
                      Easing="QuadraticEaseInOut"
                      IterationCount="Infinite">
             <KeyFrame Cue="50%">
-              <Setter Property="ScaleTransform.ScaleX" Value="0.8"/>
-              <Setter Property="ScaleTransform.ScaleY" Value="0.8"/>
+              <Setter Property="Opacity" TargetProperty="ScaleTransform.ScaleX" Value="0.8"/>
+              <Setter Property="Opacity" TargetProperty="ScaleTransform.ScaleY" Value="0.8"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -87,8 +87,8 @@
         <Style.Animations>
           <Animation Duration="0:0:3" Easing="BounceEaseInOut">
             <KeyFrame Cue="48%">
-              <Setter Property="TranslateTransform.Y" Value="-100"/>
-              <Setter Property="Background" Value="Magenta"/>
+              <Setter Property="Opacity" TargetProperty="TranslateTransform.Y" Value="-100"/>
+              <Setter Property="Opacity" TargetProperty="RenderTransform.Children[0].ScaleX" Value="0"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>
@@ -97,10 +97,10 @@
         <Style.Animations>
           <Animation Duration="0:0:3" Easing="CircularEaseInOut">
             <KeyFrame Cue="25%">
-              <Setter Property="SkewTransform.AngleX" Value="-20"/>
+              <Setter Property="Opacity" TargetProperty="SkewTransform.AngleX" Value="-20"/>
             </KeyFrame>
             <KeyFrame Cue="75%">
-              <Setter Property="SkewTransform.AngleX" Value="20"/>
+              <Setter Property="Opacity" TargetProperty="SkewTransform.AngleX" Value="20"/>
             </KeyFrame>
           </Animation>
         </Style.Animations>

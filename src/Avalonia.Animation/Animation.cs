@@ -11,7 +11,9 @@ using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Animation
 {
@@ -240,15 +242,22 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var handler = GetAnimatorType(setter.Property);
+                    // var handler = GetAnimatorType(setter.Property);
 
-                    if (handler == null)
-                    {
-                        throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
-                    }
+                    // if (handler == null)
+                    // {
+                    //     throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                    // }
 
-                    if (!handlerList.Contains((handler, setter.Property)))
-                        handlerList.Add((handler, setter.Property));
+                    // if (!handlerList.Contains((handler, setter.Property)))
+                    //     handlerList.Add((handler, setter.Property));
+
+                    var reader = new CharacterReader(setter.TargetProperty.AsSpan());
+                    var parser = new TargetExpressionParser(null);
+                    var node = new ExpressionObserver(control, parser.Parse(ref reader));
+
+                    var targetExpression = new BindingExpression(node, setter.Value.GetType(), null, null, BindingPriority.Animation);
+                    targetExpression.OnNext(setter.Value);
 
                     var cue = keyframe.Cue;
 
@@ -257,7 +266,7 @@ namespace Avalonia.Animation
                         cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
                     }
 
-                    var newKF = new AnimatorKeyFrame(handler, cue);
+                    var newKF = new AnimatorKeyFrame(targetExpression, cue);
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 
@@ -270,7 +279,7 @@ namespace Avalonia.Animation
             foreach (var (handlerType, property) in handlerList)
             {
                 var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
-                newInstance.Property = property;
+                // newInstance.Property = property;
                 newAnimatorInstances.Add(newInstance);
             }
 
