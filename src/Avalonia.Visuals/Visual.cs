@@ -74,7 +74,7 @@ namespace Avalonia
         /// Defines the <see cref="RenderTransform"/> property.
         /// </summary>
         public static readonly StyledProperty<Transform> RenderTransformProperty =
-            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform));
+            AvaloniaProperty.Register<Visual, Transform>(nameof(RenderTransform), defaultValue: new CompositeTransform());
 
         /// <summary>
         /// Defines the <see cref="RenderTransformOrigin"/> property.
@@ -267,7 +267,7 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
-        
+
         TransformedBounds? IVisual.TransformedBounds
         {
             get { return _transformedBounds; }
@@ -355,7 +355,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();
