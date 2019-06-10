@@ -205,13 +205,13 @@ namespace Avalonia.Controls
                 // Accumulate child size.
                 if (fHorizontal)
                 {
-                    stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width + childDesiredSize.Width + (child.IsVisible ? spacing : 0));
+                    stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width + (child.IsVisible ? spacing : 0) + childDesiredSize.Width);
                     stackDesiredSize = stackDesiredSize.WithHeight(Math.Max(stackDesiredSize.Height, childDesiredSize.Height));
                 }
                 else
                 {
                     stackDesiredSize = stackDesiredSize.WithWidth(Math.Max(stackDesiredSize.Width, childDesiredSize.Width));
-                    stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height + childDesiredSize.Height + (child.IsVisible ? spacing : 0));
+                    stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height + (child.IsVisible ? spacing : 0) + childDesiredSize.Height);
                 }
             }
 
@@ -224,7 +224,9 @@ namespace Avalonia.Controls
                 stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
             }
 
-            return stackDesiredSize.Constrain(availableSize); // TODO: In WPF `.Constrain(availableSize)` is not used.
+            return stackDesiredSize;
+            // TODO: In WPF `.Constrain(availableSize)` is not used.
+            //return stackDesiredSize.Constrain(availableSize); 
         }
 
         /// <summary>
@@ -251,15 +253,15 @@ namespace Avalonia.Controls
 
                 if (fHorizontal)
                 {
-                    rcChild = rcChild.WithX(rcChild.X + previousChildSize);
-                    previousChildSize = child.DesiredSize.Width + (child.IsVisible ? spacing : 0);
+                    rcChild = rcChild.WithX(rcChild.X + previousChildSize + spacing);
+                    previousChildSize = child.DesiredSize.Width;//+ (child.IsVisible ? spacing : 0);
                     rcChild = rcChild.WithWidth(previousChildSize);
                     rcChild = rcChild.WithHeight(Math.Max(finalSize.Height, child.DesiredSize.Height));
                 }
                 else
                 {
-                    rcChild = rcChild.WithY(rcChild.Y + previousChildSize);
-                    previousChildSize = child.DesiredSize.Height + (child.IsVisible ? spacing : 0);
+                    rcChild = rcChild.WithY(rcChild.Y + previousChildSize + spacing);
+                    previousChildSize = child.DesiredSize.Height;//+ (child.IsVisible ? spacing : 0);
                     rcChild = rcChild.WithHeight(previousChildSize);
                     rcChild = rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width));
                 }
