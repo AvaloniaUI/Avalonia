@@ -215,13 +215,13 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (Orientation == Orientation.Vertical)
-            {
-                stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
-            }
-            else
+            if (fHorizontal)
             {
                 stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width - (hasVisibleChild ? spacing : 0));
+            }
+            else
+            { 
+                stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
             }
 
             return stackDesiredSize;
@@ -252,16 +252,16 @@ namespace Avalonia.Controls
                 if (fHorizontal)
                 {
                     rcChild = rcChild.WithX(rcChild.X + previousChildSize);
-                    previousChildSize = child.DesiredSize.Width;
+                    previousChildSize = child.DesiredSize.Width + (child.IsVisible ? spacing : 0);
                     rcChild = rcChild.WithWidth(previousChildSize);
-                    rcChild = rcChild.WithHeight(Math.Max(finalSize.Height, child.DesiredSize.Height) + (child.IsVisible ? spacing : 0));
+                    rcChild = rcChild.WithHeight(Math.Max(finalSize.Height, child.DesiredSize.Height));
                 }
                 else
                 {
                     rcChild = rcChild.WithY(rcChild.Y + previousChildSize);
-                    previousChildSize = child.DesiredSize.Height;
+                    previousChildSize = child.DesiredSize.Height + (child.IsVisible ? spacing : 0);
                     rcChild = rcChild.WithHeight(previousChildSize);
-                    rcChild = rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width) + (child.IsVisible ? spacing : 0));
+                    rcChild = rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width));
                 }
 
                 child.Arrange(rcChild);
