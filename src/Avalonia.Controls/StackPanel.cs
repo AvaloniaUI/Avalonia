@@ -255,17 +255,19 @@ namespace Avalonia.Controls
 
                 if (fHorizontal)
                 {
-                    rcChild = rcChild.WithX(rcChild.X + previousChildSize + spacing);
-                    previousChildSize = child.DesiredSize.Width;//+ (child.IsVisible ? spacing : 0);
+                    rcChild = rcChild.WithX(rcChild.X + previousChildSize);
+                    previousChildSize = child.DesiredSize.Width;
                     rcChild = rcChild.WithWidth(previousChildSize);
                     rcChild = rcChild.WithHeight(Math.Max(finalSize.Height, child.DesiredSize.Height));
+                    previousChildSize += spacing;
                 }
                 else
                 {
-                    rcChild = rcChild.WithY(rcChild.Y + previousChildSize + spacing);
-                    previousChildSize = child.DesiredSize.Height;//+ (child.IsVisible ? spacing : 0);
+                    rcChild = rcChild.WithY(rcChild.Y + previousChildSize);
+                    previousChildSize = child.DesiredSize.Height;
                     rcChild = rcChild.WithHeight(previousChildSize);
                     rcChild = rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width));
+                    previousChildSize += spacing;
                 }
 
                 child.Arrange(rcChild);
