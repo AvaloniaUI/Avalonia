@@ -226,9 +226,9 @@ namespace Avalonia.Controls
                 stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
             }
 
-            return stackDesiredSize;
             // TODO: In WPF `.Constrain(availableSize)` is not used.
-            //return stackDesiredSize.Constrain(availableSize); 
+            //return stackDesiredSize;
+            return stackDesiredSize.Constrain(availableSize); 
         }
 
         /// <summary>
