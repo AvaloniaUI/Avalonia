@@ -193,7 +193,9 @@ namespace Avalonia.Controls
                 if (child == null)
                 { continue; }
 
-                if (child.IsVisible)
+                bool isVisible = child.IsVisible;
+
+                if (isVisible && !hasVisibleChild)
                 {
                     hasVisibleChild = true;
                 }
@@ -205,13 +207,13 @@ namespace Avalonia.Controls
                 // Accumulate child size.
                 if (fHorizontal)
                 {
-                    stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width + (child.IsVisible ? spacing : 0) + childDesiredSize.Width);
+                    stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width + (isVisible ? spacing : 0) + childDesiredSize.Width);
                     stackDesiredSize = stackDesiredSize.WithHeight(Math.Max(stackDesiredSize.Height, childDesiredSize.Height));
                 }
                 else
                 {
                     stackDesiredSize = stackDesiredSize.WithWidth(Math.Max(stackDesiredSize.Width, childDesiredSize.Width));
-                    stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height + (child.IsVisible ? spacing : 0) + childDesiredSize.Height);
+                    stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height + (isVisible ? spacing : 0) + childDesiredSize.Height);
                 }
             }
 
