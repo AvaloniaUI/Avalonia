@@ -157,13 +157,13 @@ namespace Avalonia.Controls
         /// Children in this dimension are encouraged to be as large as they like.  In the other dimension,
         /// StackPanel will assume the maximum size of its children.
         /// </summary>
-        /// <param name="constraint">Constraint</param>
+        /// <param name="availableSize">Constraint</param>
         /// <returns>Desired size</returns>
-        protected override Size MeasureOverride(Size constraint)
+        protected override Size MeasureOverride(Size availableSize)
         {
             Size stackDesiredSize = new Size();
             var children = Children;
-            Size layoutSlotSize = constraint;
+            Size layoutSlotSize = availableSize;
             bool fHorizontal = (Orientation == Orientation.Horizontal);
             double spacing = Spacing;
             bool hasVisibleChild = false;
@@ -224,7 +224,7 @@ namespace Avalonia.Controls
                 stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
             }
 
-            return stackDesiredSize;
+            return stackDesiredSize.Constrain(availableSize); // TODO: In WPF `.Constrain(availableSize)` is not used.
         }
 
         /// <summary>
