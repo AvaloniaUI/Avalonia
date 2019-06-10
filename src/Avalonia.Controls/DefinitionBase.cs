@@ -52,15 +52,6 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property.PropertyType == typeof(GridLength)
-             || e.Property.PropertyType == typeof(double))
-                OnUserSizePropertyChanged(e);
-
-            base.OnPropertyChanged(e);
-        }
-
         /// <summary>
         /// Callback to notify about exitting model tree.
         /// </summary>
@@ -105,31 +96,6 @@ namespace Avalonia.Controls
             _minSize = minSize;
         }
 
-        /// <remarks>
-        /// This method needs to be internal to be accessable from derived classes.
-        /// </remarks>
-        internal void OnUserSizePropertyChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (Parent != null)
-            {
-                if (_sharedState != null)
-                {
-                    _sharedState?.Invalidate();
-                }
-                else
-                {
-                    if (((GridLength)e.OldValue).GridUnitType != ((GridLength)e.NewValue).GridUnitType)
-                    {
-                        Parent.Invalidate();
-                    }
-                    else
-                    {
-                        Parent.InvalidateMeasure();
-                    }
-                }
-            }
-        }
- 
         /// <remarks>
         /// This method reflects Grid.SharedScopeProperty state by setting / clearing
         /// dynamic property PrivateSharedSizeScopeProperty. Value of PrivateSharedSizeScopeProperty
