@@ -1726,7 +1726,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="definitions">Array of definitions to process.</param>
         /// <param name="finalSize">Final size to lay out to.</param>
-        /// <param name="columns">True if sizing row definitions, false for columns</param>
+        /// <param name="columns">True if sizing column definitions, false for rows</param>
         private void SetFinalSize(
             IReadOnlyList<DefinitionBase> definitions,
             double finalSize,

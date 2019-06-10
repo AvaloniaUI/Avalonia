@@ -336,6 +336,7 @@ namespace Avalonia.Win32
 
         public void BeginMoveDrag()
         {
+            WindowsMouseDevice.Instance.Capture(null);
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)UnmanagedMethods.HitTestValues.HTCAPTION), IntPtr.Zero);
         }
@@ -357,6 +358,7 @@ namespace Avalonia.Win32
 #if USE_MANAGED_DRAG
             _managedDrag.BeginResizeDrag(edge, ScreenToClient(MouseDevice.Position));
 #else
+            WindowsMouseDevice.Instance.Capture(null);
             UnmanagedMethods.DefWindowProc(_hwnd, (int)UnmanagedMethods.WindowsMessage.WM_NCLBUTTONDOWN,
                 new IntPtr((int)EdgeDic[edge]), IntPtr.Zero);
 #endif

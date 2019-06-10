@@ -20,8 +20,13 @@ namespace Avalonia.Input
         private Rect _lastClickRect;
         private ulong _lastClickTime;
 
-        private readonly Pointer _pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        private readonly Pointer _pointer;
 
+        public MouseDevice(Pointer pointer = null)
+        {
+            _pointer = pointer ?? new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
+        }
+        
         /// <summary>
         /// Gets the control that is currently capturing by the mouse, if any.
         /// </summary>
@@ -51,7 +56,7 @@ namespace Avalonia.Input
         /// within the control's bounds or not. The current mouse capture control is exposed
         /// by the <see cref="Captured"/> property.
         /// </remarks>
-        public virtual void Capture(IInputElement control)
+        public void Capture(IInputElement control)
         {
             _pointer.Capture(control);
         }
