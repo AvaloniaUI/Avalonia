@@ -44,8 +44,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             return true;
         }
 
-        public static XamlIlAvaloniaPropertyNode CreateNode(XamlIlAstTransformationContext context,
-            string propertyName, IXamlIlAstTypeReference selectorTypeReference, IXamlIlLineInfo lineInfo)
+        public static IXamlIlAvaloniaPropertyNode CreateNode(XamlIlAstTransformationContext context,
+            string propertyName, IXamlIlAstTypeReference selectorTypeReference, IXamlIlLineInfo lineInfo,
+            bool ignoreAttachedTargetType)
         {
             XamlIlAstNamePropertyReference forgedReference;
             
@@ -63,6 +64,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 xmlOwner += parsedPropertyName.owner;
                 
                 var tref = XamlIlTypeReferenceResolver.ResolveType(context, xmlOwner, false, lineInfo, true);
+                
+                if (ignoreAttachedTargetType)
+                {
+                    var propertyFieldName = parsedPropertyName.name + "Property";
+                    var found = tref.Type.GetAllFields()
+                        .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == propertyFieldName);
+                    if (found == null)
+                        throw new XamlIlParseException(
+                            $"Unable to find {propertyFieldName} field on type {tref.Type.GetFullName()}", lineInfo);
+                    return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
+                }
+                
                 forgedReference = new XamlIlAstNamePropertyReference(lineInfo,
                     tref, parsedPropertyName.name, selectorTypeReference);
             }
@@ -75,13 +88,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 clrProperty);
         }
     }
+
+    interface IXamlIlAvaloniaPropertyNode : IXamlIlAstValueNode
+    {
+        IXamlIlType AvaloniaPropertyType { get; }
+    }
     
-    class XamlIlAvaloniaPropertyNode : XamlIlAstNode, IXamlIlAstValueNode, IXamlIlAstEmitableNode
+    class XamlIlAvaloniaPropertyNode : XamlIlAstNode, IXamlIlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
     {
         public XamlIlAvaloniaPropertyNode(IXamlIlLineInfo lineInfo, IXamlIlType type, XamlIlAstClrProperty property) : base(lineInfo)
         {
             Type = new XamlIlAstClrTypeReference(this, type, false);
             Property = property;
+            AvaloniaPropertyType = Property.Getter?.ReturnType
+                                   ?? Property.Setters.First().Parameters[0];
         }
 
         public XamlIlAstClrProperty Property { get; }
@@ -93,6 +113,46 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 throw new XamlIlLoadException(Property.Name + " is not an AvaloniaProperty", this);
             return XamlIlNodeEmitResult.Type(0, Type.GetClrType());
         }
+
+        public IXamlIlType AvaloniaPropertyType { get; }
+    }
+
+    class XamlIlAvaloniaPropertyFieldNode : XamlIlAstNode, IXamlIlAstValueNode, IXamlIlAstEmitableNode, IXamlIlAvaloniaPropertyNode
+    {
+        private readonly IXamlIlField _field;
+
+        public XamlIlAvaloniaPropertyFieldNode(AvaloniaXamlIlWellKnownTypes types,
+            IXamlIlLineInfo lineInfo, IXamlIlField field) : base(lineInfo)
+        {
+            _field = field;
+            var avaloniaPropertyType = field.FieldType;
+            while (avaloniaPropertyType != null)
+            {
+                if (avaloniaPropertyType.GenericTypeDefinition?.Equals(types.AvaloniaPropertyT) == true)
+                {
+                    AvaloniaPropertyType = avaloniaPropertyType.GenericArguments[0];
+                    return;
+                }
+
+                avaloniaPropertyType = avaloniaPropertyType.BaseType;
+            }
+
+            throw new XamlIlParseException(
+                $"{field.Name}'s type {field.FieldType} doesn't inherit from AvaloniaProperty<T>, make sure to use typed properties",
+                lineInfo);
+
+        }
+        
+        
+
+        public IXamlIlAstTypeReference Type => new XamlIlAstClrTypeReference(this, _field.FieldType, false);
+        public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
+        {
+            codeGen.Ldsfld(_field);
+            return XamlIlNodeEmitResult.Type(0, _field.FieldType);
+        }
+
+        public IXamlIlType AvaloniaPropertyType { get; }
     }
 
     interface IXamlIlAvaloniaProperty

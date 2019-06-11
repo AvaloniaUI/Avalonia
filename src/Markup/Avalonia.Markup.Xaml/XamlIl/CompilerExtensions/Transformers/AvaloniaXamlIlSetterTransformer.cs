@@ -16,8 +16,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(node is XamlIlAstObjectNode on
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
-            var parent = context.ParentNodes().OfType<XamlIlAstObjectNode>()
-                .FirstOrDefault(x => x.Type.GetClrType().FullName == "Avalonia.Styling.Style");
+            
+            // This is a hack required to get complex animations (which are also a hack) to work
+            var inAnimation = false;
+
+            XamlIlAstObjectNode parent = null;
+
+            foreach (var p in context.ParentNodes().OfType<XamlIlAstObjectNode>())
+            {
+                if (p.Type.GetClrType().FullName == "Avalonia.Styling.Style")
+                {
+                    parent = p;
+                    break;
+                }
+
+                if (p.Type.GetClrType().FullName == "Avalonia.Animation.Animation")
+                    inAnimation = true;
+            }
+
             if (parent == null)
                 throw new XamlIlParseException(
                     "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
@@ -43,7 +59,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
 
             var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
+                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0],
+                // Hack to allow passing any property to an animation 
+                inAnimation);
             property.Values = new List<IXamlIlAstValueNode>
             {
                 avaloniaPropertyNode
@@ -53,8 +71,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 .OfType<XamlIlAstXamlPropertyValueNode>().FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
             if (valueProperty?.Values?.Count == 1 && valueProperty.Values[0] is XamlIlAstTextNode)
             {
-                var propType = avaloniaPropertyNode.Property.Getter?.ReturnType
-                               ?? avaloniaPropertyNode.Property.Setters.First().Parameters[0];
+                var propType = avaloniaPropertyNode.AvaloniaPropertyType;
                 if (!XamlIlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
                         propType, out var converted))
                     throw new XamlIlParseException(
