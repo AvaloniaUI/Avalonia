@@ -301,7 +301,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
     public static class XamlIlBugTestsStaticClassWithAttachedProperty
     {
-        public static readonly AvaloniaProperty TestIntProperty = AvaloniaProperty
+        public static readonly AvaloniaProperty<int> TestIntProperty = AvaloniaProperty
             .RegisterAttached<Control, int>("TestInt", typeof(XamlIlBugTestsStaticClassWithAttachedProperty));
 
         public static void SetTestInt(Control control, int value)
