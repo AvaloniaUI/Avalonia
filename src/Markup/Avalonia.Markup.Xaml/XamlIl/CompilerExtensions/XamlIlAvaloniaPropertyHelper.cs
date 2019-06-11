@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var tref = XamlIlTypeReferenceResolver.ResolveType(context, xmlOwner, false, lineInfo, true);
                 forgedReference = new XamlIlAstNamePropertyReference(lineInfo,
-                    tref, parsedPropertyName.name, tref);
+                    tref, parsedPropertyName.name, selectorTypeReference);
             }
 
             var clrProperty =
