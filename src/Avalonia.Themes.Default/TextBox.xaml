@@ -44,7 +44,8 @@
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
                                  TextWrapping="{TemplateBinding TextWrapping}"
-                                 PasswordChar="{TemplateBinding PasswordChar}"/>
+                                 PasswordChar="{TemplateBinding PasswordChar}"
+                                 CaretBrush="{TemplateBinding CaretBrush}"/>
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>

@@ -19,6 +19,9 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
+        public static readonly StyledProperty<IBrush> CaretBrushProperty =
+         AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(CaretBrushProperty));
+
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
                 o => o.SelectionStart,
@@ -35,7 +38,7 @@ namespace Avalonia.Controls.Presenters
         private int _selectionEnd;
         private bool _caretBlink;
         private IBrush _highlightBrush;
-        
+
         static TextPresenter()
         {
             AffectsRender<TextPresenter>(PasswordCharProperty);
@@ -77,6 +80,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
+        }
+
+        public IBrush CaretBrush
+        {
+            get => GetValue(CaretBrushProperty);
+            set => SetValue(CaretBrushProperty, value);
         }
 
         public int SelectionStart
@@ -144,16 +153,21 @@ namespace Avalonia.Controls.Presenters
 
             if (selectionStart == selectionEnd)
             {
-                var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
-                var caretBrush = Brushes.Black;
+                var caretBrush = CaretBrush;
 
-                if (backgroundColor.HasValue)
+                if (caretBrush is null)
                 {
-                    byte red = (byte)~(backgroundColor.Value.R);
-                    byte green = (byte)~(backgroundColor.Value.G);
-                    byte blue = (byte)~(backgroundColor.Value.B);
+                    var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
+                    if (backgroundColor.HasValue)
+                    {
+                        byte red = (byte)~(backgroundColor.Value.R);
+                        byte green = (byte)~(backgroundColor.Value.G);
+                        byte blue = (byte)~(backgroundColor.Value.B);
 
-                    caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                        caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                    }
+                    else
+                        caretBrush = Brushes.Black;
                 }
 
                 if (_caretBlink)
