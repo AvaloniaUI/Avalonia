@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using Microsoft.Build.Framework;
 
 namespace Avalonia.Build.Tasks
@@ -11,8 +12,14 @@ namespace Avalonia.Build.Tasks
         {
             if (args.Length != 3)
             {
-                Console.Error.WriteLine("input references output");
-                return 1;
+                if (args.Length == 1)
+                    args = new[] {"original.dll", "references", "out.dll"}
+                        .Select(x => Path.Combine(args[0], x)).ToArray();
+                else
+                {
+                    Console.Error.WriteLine("input references output");
+                    return 1;
+                }
             }
 
             return new CompileAvaloniaXamlTask()
