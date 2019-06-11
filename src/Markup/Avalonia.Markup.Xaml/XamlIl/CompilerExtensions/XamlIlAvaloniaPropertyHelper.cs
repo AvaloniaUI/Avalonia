@@ -45,8 +45,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         }
 
         public static IXamlIlAvaloniaPropertyNode CreateNode(XamlIlAstTransformationContext context,
-            string propertyName, IXamlIlAstTypeReference selectorTypeReference, IXamlIlLineInfo lineInfo,
-            bool ignoreAttachedTargetType)
+            string propertyName, IXamlIlAstTypeReference selectorTypeReference, IXamlIlLineInfo lineInfo)
         {
             XamlIlAstNamePropertyReference forgedReference;
             
@@ -64,20 +63,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 xmlOwner += parsedPropertyName.owner;
                 
                 var tref = XamlIlTypeReferenceResolver.ResolveType(context, xmlOwner, false, lineInfo, true);
-                
-                if (ignoreAttachedTargetType)
-                {
-                    var propertyFieldName = parsedPropertyName.name + "Property";
-                    var found = tref.Type.GetAllFields()
-                        .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == propertyFieldName);
-                    if (found == null)
-                        throw new XamlIlParseException(
-                            $"Unable to find {propertyFieldName} field on type {tref.Type.GetFullName()}", lineInfo);
-                    return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
-                }
-                
-                forgedReference = new XamlIlAstNamePropertyReference(lineInfo,
-                    tref, parsedPropertyName.name, selectorTypeReference);
+
+                var propertyFieldName = parsedPropertyName.name + "Property";
+                var found = tref.Type.GetAllFields()
+                    .FirstOrDefault(f => f.IsStatic && f.IsPublic && f.Name == propertyFieldName);
+                if (found == null)
+                    throw new XamlIlParseException(
+                        $"Unable to find {propertyFieldName} field on type {tref.Type.GetFullName()}", lineInfo);
+                return new XamlIlAvaloniaPropertyFieldNode(context.GetAvaloniaTypes(), lineInfo, found);
             }
 
             var clrProperty =

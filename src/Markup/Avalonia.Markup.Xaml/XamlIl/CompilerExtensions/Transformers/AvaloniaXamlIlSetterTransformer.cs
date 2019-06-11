@@ -16,24 +16,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(node is XamlIlAstObjectNode on
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
+
+            var parent = context.ParentNodes().OfType<XamlIlAstObjectNode>()
+                .FirstOrDefault(p => p.Type.GetClrType().FullName == "Avalonia.Styling.Style");
             
-            // This is a hack required to get complex animations (which are also a hack) to work
-            var inAnimation = false;
-
-            XamlIlAstObjectNode parent = null;
-
-            foreach (var p in context.ParentNodes().OfType<XamlIlAstObjectNode>())
-            {
-                if (p.Type.GetClrType().FullName == "Avalonia.Styling.Style")
-                {
-                    parent = p;
-                    break;
-                }
-
-                if (p.Type.GetClrType().FullName == "Avalonia.Animation.Animation")
-                    inAnimation = true;
-            }
-
             if (parent == null)
                 throw new XamlIlParseException(
                     "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
@@ -59,9 +45,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
 
             var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0],
-                // Hack to allow passing any property to an animation 
-                inAnimation);
+                new XamlIlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
             property.Values = new List<IXamlIlAstValueNode>
             {
                 avaloniaPropertyNode

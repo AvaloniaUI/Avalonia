@@ -165,7 +165,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlIlLoadException("Unable to find the parent scope for AvaloniaProperty lookup", node);
                 if (!(node is XamlIlAstTextNode text))
                     throw new XamlIlLoadException("Property should be a text node", node);
-                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text, false);
+                result = XamlIlAvaloniaPropertyHelper.CreateNode(context, text.Text, scope.TargetType, text);
                 return true;
             }
 
