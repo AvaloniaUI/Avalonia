@@ -144,6 +144,7 @@ enum AvnStandardCursorType
     CursorDragMove,
     CursorDragCopy,
     CursorDragLink,
+    CursorNone
 };
 
 enum AvnWindowEdge

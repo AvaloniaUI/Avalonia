@@ -17,7 +17,9 @@ namespace Avalonia.Input
         public PointerEventArgs(RoutedEvent routedEvent,
             IInteractive source,
             IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition, PointerPointProperties properties,
+            IVisual rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
             InputModifiers modifiers)
            : base(routedEvent)
         {
@@ -26,6 +28,7 @@ namespace Avalonia.Input
             _rootVisualPosition = rootVisualPosition;
             _properties = properties;
             Pointer = pointer;
+            Timestamp = timestamp;
             InputModifiers = modifiers;
         }
 
@@ -50,6 +53,7 @@ namespace Avalonia.Input
         }
 
         public IPointer Pointer { get; }
+        public ulong Timestamp { get; }
 
         private IPointerDevice _device;
 
@@ -86,11 +90,13 @@ namespace Avalonia.Input
         public PointerPressedEventArgs(
             IInteractive source,
             IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition, PointerPointProperties properties,
+            IVisual rootVisual, Point rootVisualPosition,
+            ulong timestamp,
+            PointerPointProperties properties,
             InputModifiers modifiers,
             int obsoleteClickCount = 1)
-            : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition, properties,
-                modifiers)
+            : base(InputElement.PointerPressedEvent, source, pointer, rootVisual, rootVisualPosition,
+                timestamp, properties, modifiers)
         {
             _obsoleteClickCount = obsoleteClickCount;
         }
@@ -105,15 +111,26 @@ namespace Avalonia.Input
     {
         public PointerReleasedEventArgs(
             IInteractive source, IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition, PointerPointProperties properties, InputModifiers modifiers,
-            MouseButton obsoleteMouseButton)
+            IVisual rootVisual, Point rootVisualPosition, ulong timestamp,
+            PointerPointProperties properties, InputModifiers modifiers, MouseButton obsoleteMouseButton)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,
-                properties, modifiers)
+                timestamp, properties, modifiers)
         {
             MouseButton = obsoleteMouseButton;
         }
 
         [Obsolete()]
         public MouseButton MouseButton { get; private set; }
+    }
+
+    public class PointerCaptureLostEventArgs : RoutedEventArgs
+    {
+        public IPointer Pointer { get; }
+
+        public PointerCaptureLostEventArgs(IInteractive source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
+        {
+            Pointer = pointer;
+            Source = source;
+        }
     }
 }
