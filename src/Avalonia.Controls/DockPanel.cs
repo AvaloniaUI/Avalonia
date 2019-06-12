@@ -1,7 +1,12 @@
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
+
+using System;
+
 namespace Avalonia.Controls
 {
-    using System;
-
     /// <summary>
     /// Defines the available docking modes for a control in a <see cref="DockPanel"/>.
     /// </summary>

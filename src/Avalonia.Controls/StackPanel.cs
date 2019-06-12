@@ -1,5 +1,7 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
 using Avalonia.Input;
