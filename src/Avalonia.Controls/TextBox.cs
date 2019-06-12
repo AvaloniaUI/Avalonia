@@ -38,6 +38,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
+        public static readonly StyledProperty<IBrush> SelectionBrushProperty =
+           AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionBrushProperty));
+
+        public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
+        AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionForegroundBrushProperty));
+
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
@@ -167,6 +173,18 @@ namespace Avalonia.Controls
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
+        }
+
+        public IBrush SelectionBrush
+        {
+            get => GetValue(SelectionBrushProperty);
+            set => SetValue(SelectionBrushProperty, value);
+        }
+
+        public IBrush SelectionForegroundBrush
+        {
+            get => GetValue(SelectionForegroundBrushProperty);
+            set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
         public int SelectionStart
@@ -456,7 +474,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                
+
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -485,7 +503,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
-                
+
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {

@@ -3,6 +3,7 @@
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
+    <Setter Property="SelectionBrush" Value="{DynamicResource HighlightBrush}"/>
     <Setter Property="Padding" Value="4"/>
     <Setter Property="Template">
       <ControlTemplate>
@@ -44,7 +45,9 @@
                                  SelectionEnd="{TemplateBinding SelectionEnd}"
                                  TextAlignment="{TemplateBinding TextAlignment}"
                                  TextWrapping="{TemplateBinding TextWrapping}"
-                                 PasswordChar="{TemplateBinding PasswordChar}"/>
+                                 PasswordChar="{TemplateBinding PasswordChar}"
+                                 SelectionBrush="{TemplateBinding SelectionBrush}"
+                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"/>
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>
