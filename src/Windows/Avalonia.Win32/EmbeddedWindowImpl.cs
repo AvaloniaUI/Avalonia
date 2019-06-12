@@ -14,10 +14,10 @@ namespace Avalonia.Win32
         private static IntPtr DefaultParentWindow = CreateParentWindow();
         private static UnmanagedMethods.WndProc _wndProcDelegate;
 
-        protected override IntPtr CreateWindowOverride(ushort atom, bool layered = false)
+        protected override IntPtr CreateWindowOverride(ushort atom)
         {
             var hWnd = UnmanagedMethods.CreateWindowEx(
-                layered ? 0x00080000 : 0,
+                0,
                 atom,
                 null,
                 (int)UnmanagedMethods.WindowStyles.WS_CHILD,
