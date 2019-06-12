@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Presenters
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush> CaretBrushProperty =
-         AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(CaretBrushProperty));
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(CaretBrushProperty));
 
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
