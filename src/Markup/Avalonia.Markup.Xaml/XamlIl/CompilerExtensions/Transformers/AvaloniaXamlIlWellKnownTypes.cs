@@ -10,6 +10,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType BindingPriority { get; }
         public IXamlIlType AvaloniaObjectExtensions { get; }
         public IXamlIlType AvaloniaProperty { get; }
+        public IXamlIlType AvaloniaPropertyT { get; }
         public IXamlIlType IBinding { get; }
         public IXamlIlMethod AvaloniaObjectBindMethod { get; }
         public IXamlIlMethod AvaloniaObjectSetValueMethod { get; }
@@ -26,6 +27,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IAvaloniaObject = ctx.Configuration.TypeSystem.GetType("Avalonia.IAvaloniaObject");
             AvaloniaObjectExtensions = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
             AvaloniaProperty = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty");
+            AvaloniaPropertyT = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
             BindingPriority = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.BindingPriority");
             IBinding = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = ctx.Configuration.TypeSystem.GetType("System.IDisposable");

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Portable.Xaml;
-using Portable.Xaml.Markup;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
 
