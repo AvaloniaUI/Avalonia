@@ -40,7 +40,6 @@ namespace Avalonia.Controls.Presenters
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
-        private IBrush _selectionBrush;
         
         static TextPresenter()
         {
@@ -147,11 +146,9 @@ namespace Avalonia.Controls.Presenters
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
-                _selectionBrush = SelectionBrush;
-
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(_selectionBrush, rect);
+                    context.FillRectangle(SelectionBrush, rect);
                 }
             }
 
