@@ -262,13 +262,12 @@ namespace Avalonia.Controls.Presenters
             var selectionEnd = SelectionEnd;
             var start = Math.Min(selectionStart, selectionEnd);
             var length = Math.Max(selectionStart, selectionEnd) - start;
-            var selectionForegroundBrush = SelectionForegroundBrush ?? Brushes.White;
 
             if (length > 0)
             {
                 result.Spans = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, foregroundBrush: selectionForegroundBrush),
+                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
                 };
             }
 
