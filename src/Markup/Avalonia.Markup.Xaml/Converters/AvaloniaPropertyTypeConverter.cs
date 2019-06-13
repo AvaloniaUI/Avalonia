@@ -11,7 +11,6 @@ using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
 {

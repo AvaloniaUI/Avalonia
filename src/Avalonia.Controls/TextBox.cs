@@ -44,6 +44,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionForegroundBrushProperty));
 
+        public static readonly StyledProperty<IBrush> CaretBrushProperty =
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(CaretBrushProperty));
+
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
@@ -185,6 +188,12 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
+        }
+
+        public IBrush CaretBrush
+        {
+            get => GetValue(CaretBrushProperty);
+            set => SetValue(CaretBrushProperty, value);
         }
 
         public int SelectionStart

@@ -5,7 +5,6 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Portable.Xaml;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
@@ -33,19 +32,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             var target = new MyButton();
 
             XamlTestHelpers.AssertThrowsXamlException(() => loader.Load(xaml, rootInstance: target));
-        }
-
-        [Fact]
-        public void Exception_Is_Not_Thrown_If_Event_Not_Found_In_Design_Mode()
-        {
-            // Runtime compiler should properly understand x:Class
-            if (!AvaloniaXamlLoader.UseLegacyXamlLoader)
-                return;
-            var xaml = @"<Button xmlns='https://github.com/avaloniaui' Click='NotFound'/>";
-            var loader = new AvaloniaXamlLoader { IsDesignMode = true };
-            var target = new MyButton();
-
-            loader.Load(xaml, rootInstance: target);
         }
 
         private void RaiseClick(MyButton target)

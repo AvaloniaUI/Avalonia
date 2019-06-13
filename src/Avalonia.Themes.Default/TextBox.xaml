@@ -48,7 +48,8 @@
                                  TextWrapping="{TemplateBinding TextWrapping}"
                                  PasswordChar="{TemplateBinding PasswordChar}"
                                  SelectionBrush="{TemplateBinding SelectionBrush}"
-                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"/>
+                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                 CaretBrush="{TemplateBinding CaretBrush}"/>
                 </Panel>
               </ScrollViewer>
             </DataValidationErrors>
