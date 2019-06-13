@@ -320,10 +320,7 @@ namespace Avalonia.Controls
 
         private void DecideCaretVisibility()
         {
-            if (!IsReadOnly)
-                _presenter?.ShowCaret();
-            else
-                _presenter?.HideCaret();
+            _presenter.ShowCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
