@@ -103,8 +103,6 @@ namespace Avalonia.Skia.Text
 
             var currentMatrix = canvas.TotalMatrix;
 
-            _paint.TextEncoding = SKTextEncoding.GlyphId;
-
             canvas.Translate(origin.X, origin.Y);
 
             using (var foregroundWrapper = context.CreatePaint(foreground, new Size(Bounds.Width, Bounds.Height)))
@@ -473,7 +471,7 @@ namespace Avalonia.Skia.Text
                 IsAntialias = true,
                 IsStroke = false,
                 SubpixelText = true,
-                TextEncoding = SKTextEncoding.Utf16,
+                TextEncoding = SKTextEncoding.GlyphId,
                 Typeface = typeface,
                 TextSize = fontSize
             };

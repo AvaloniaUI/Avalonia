@@ -24,10 +24,6 @@ namespace ControlCatalog.Pages
         {
             var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-            const double FontRenderingEmSize = 36;
-
-            var scale = FontRenderingEmSize / glyphTypeface.DesignEmHeight;
-
             var bytes = Encoding.UTF32.GetBytes("ABCDEFGHIJKL");
 
             var codePoints = new int[bytes.Length / 4];
@@ -36,11 +32,16 @@ namespace ControlCatalog.Pages
 
             var glyphs = glyphTypeface.GetGlyphs(codePoints);
 
-            var baselineOrigin = new Point(0, -glyphTypeface.Ascent * scale);
+            var baselineOrigin = new Point(Bounds.X, Bounds.Y);
 
-            var glyphRun = new GlyphRun(glyphTypeface, FontRenderingEmSize, baselineOrigin, glyphs);
+            for (var i = 12; i < 32; i++)
+            {
+                var glyphRun = new GlyphRun(glyphTypeface, i, baselineOrigin, glyphs);
 
-            drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
+                drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
+
+                baselineOrigin += new Point(0, glyphRun.Size.Height);
+            }
         }
     }
 }

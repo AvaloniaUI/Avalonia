@@ -33,6 +33,7 @@ namespace Avalonia.Skia
         }
 
         public SKTypeface Typeface => _tableLoader.Typeface;
+
         public Font Font => _tableLoader.Font;
 
         public short DesignEmHeight { get; }

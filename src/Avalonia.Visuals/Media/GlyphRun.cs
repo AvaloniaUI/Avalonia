@@ -7,7 +7,7 @@ namespace Avalonia.Media
     public class GlyphRun
     {
         public GlyphRun(
-            GlyphTypeface glyphTypeface,            
+            GlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             Point baselineOrigin,
             short[] glyphIndices,
@@ -58,9 +58,9 @@ namespace Avalonia.Media
                 {
                     width += advance * scale;
                 }
-            }            
+            }
 
-            return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent) * scale);
+            return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * scale);
         }
     }
 }

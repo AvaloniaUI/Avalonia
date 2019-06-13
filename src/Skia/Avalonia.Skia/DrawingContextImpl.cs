@@ -236,10 +236,11 @@ namespace Avalonia.Skia
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
 
                 paint.Paint.TextSize = (float)glyphRun.FontRenderingEmSize;
-
                 paint.Paint.Typeface = glyphTypefaceImpl.Typeface;
-
                 paint.Paint.TextEncoding = SKTextEncoding.GlyphId;
+                paint.Paint.IsAntialias = true;
+                paint.Paint.IsStroke = false;
+                paint.Paint.SubpixelText = true;
 
                 var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
 
