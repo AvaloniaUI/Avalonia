@@ -314,8 +314,6 @@ namespace Avalonia.Controls
             {
                 DecideCaretVisibility();
             }
-
-            e.Handled = true;
         }
 
         private void DecideCaretVisibility()
