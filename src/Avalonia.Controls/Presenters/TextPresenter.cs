@@ -19,6 +19,12 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
+        public static readonly StyledProperty<IBrush> SelectionBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(SelectionBrushProperty));
+
+        public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(SelectionForegroundBrushProperty));
+
         public static readonly StyledProperty<IBrush> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(CaretBrushProperty));
 
@@ -37,7 +43,6 @@ namespace Avalonia.Controls.Presenters
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
-        private IBrush _highlightBrush;
 
         static TextPresenter()
         {
@@ -82,6 +87,18 @@ namespace Avalonia.Controls.Presenters
             set => SetValue(PasswordCharProperty, value);
         }
 
+        public IBrush SelectionBrush
+        {
+            get => GetValue(SelectionBrushProperty);
+            set => SetValue(SelectionBrushProperty, value);
+        }
+
+        public IBrush SelectionForegroundBrush
+        {
+            get => GetValue(SelectionForegroundBrushProperty);
+            set => SetValue(SelectionForegroundBrushProperty, value);
+        }
+        
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -138,14 +155,9 @@ namespace Avalonia.Controls.Presenters
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
-                if (_highlightBrush == null)
-                {
-                    _highlightBrush = (IBrush)this.FindResource("HighlightBrush");
-                }
-
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(_highlightBrush, rect);
+                    context.FillRectangle(SelectionBrush, rect);
                 }
             }
 
@@ -266,7 +278,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result.Spans = new[]
                 {
-                    new FormattedTextStyleSpan(start, length, foregroundBrush: Brushes.White),
+                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
                 };
             }
 
