@@ -46,7 +46,9 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(PasswordCharProperty);
+            AffectsRender<TextPresenter>(PasswordCharProperty,
+                SelectionBrushProperty, SelectionForegroundBrushProperty,
+                SelectionStartProperty, SelectionEndProperty);
         }
 
         public TextPresenter()
