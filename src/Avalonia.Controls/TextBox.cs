@@ -39,10 +39,10 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
         public static readonly StyledProperty<IBrush> SelectionBrushProperty =
-           AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionBrushProperty));
 
         public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
-        AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionForegroundBrushProperty));
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionForegroundBrushProperty));
 
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
