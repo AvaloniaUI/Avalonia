@@ -30,6 +30,9 @@
       <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
+      <Compile Include="../Markup/Avalonia.Markup\Markup\Parsers\PropertyPathGrammar.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>
       <Compile Include="../Markup/Avalonia.Markup.Xaml/Parsers/PropertyParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
@@ -38,11 +41,13 @@
       </Compile>
       <Compile Include="../Avalonia.Base/Utilities/CharacterReader.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
-      </Compile>      
+      </Compile>
       <Compile Include="../Avalonia.Base/Utilities/IdentifierParser.cs">
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
-      
+      <Compile Include="../Avalonia.Base/Utilities/KeywordParser.cs">
+        <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
+      </Compile>      
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml/XamlIl\xamlil.github\src\XamlIl\TypeSystem\SreTypeSystem.cs" />
       <PackageReference Include="Avalonia.Unofficial.Cecil" Version="20190417.2.0" PrivateAssets="All" />
