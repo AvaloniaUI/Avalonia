@@ -420,6 +420,9 @@ namespace Avalonia.Controls.UnitTests
                 sp.Children.Add(target1);
                 sp.Children.Add(target2);
 
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
                 var root = new TestRoot { Child = sp };
 
                 var gfcount = 0;
