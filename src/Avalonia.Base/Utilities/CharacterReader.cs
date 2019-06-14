@@ -19,7 +19,7 @@ namespace Avalonia.Utilities
         }
 
         public bool End => _s.IsEmpty;
-        public char Peek => _s[0];
+        public char PeekOneOrThrow => _s[0];
         public int Position { get; private set; }
         public char Take()
         {
@@ -38,7 +38,7 @@ namespace Avalonia.Utilities
 
         public bool TakeIf(char c)
         {
-            if (Peek == c)
+            if (PeekOneOrThrow == c)
             {
                 Take();
                 return true;
@@ -51,7 +51,7 @@ namespace Avalonia.Utilities
 
         public bool TakeIf(Func<char, bool> condition)
         {
-            if (condition(Peek))
+            if (condition(PeekOneOrThrow))
             {
                 Take();
                 return true;
@@ -81,6 +81,24 @@ namespace Avalonia.Utilities
             _s = _s.Slice(len);
             Position += len;
             return span;
+        }
+
+        public ReadOnlySpan<char> TryPeek(int count)
+        {
+            return _s.Slice(0, count);
+        }
+
+        public ReadOnlySpan<char> PeekWhitespace()
+        {
+            var trimmed = _s.TrimStart();
+            return _s.Slice(0, _s.Length - trimmed.Length);
+        }
+
+        public void Skip(int count)
+        {
+            if (_s.Length < count)
+                throw new IndexOutOfRangeException();
+            _s = _s.Slice(count);
         }
     }
 }
