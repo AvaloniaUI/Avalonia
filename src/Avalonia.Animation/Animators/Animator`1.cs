@@ -162,12 +162,12 @@ namespace Avalonia.Animation.Animators
         {
             if (!hasStartKey)
             {
-                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, new Cue(0.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(this.GetType(), new Cue(0.0d)) { Value = default(T), isNeutral = true });
             }
 
             if (!hasEndKey)
             {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(null, new Cue(1.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Add(new AnimatorKeyFrame(this.GetType(), new Cue(1.0d)) { Value = default(T), isNeutral = true });
             }
         }
     }

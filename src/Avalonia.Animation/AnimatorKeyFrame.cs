@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Animation.Animators;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Reactive;
 
 namespace Avalonia.Animation
@@ -29,7 +31,7 @@ namespace Avalonia.Animation
         internal bool isNeutral;
         public Type AnimatorType { get; }
         public Cue Cue { get; }
-        public AvaloniaProperty Property { get; private set; }
+        public AvaloniaProperty Property { get; internal set; }
 
         private object _value;
 
@@ -41,7 +43,6 @@ namespace Avalonia.Animation
 
         public IDisposable BindSetter(IAnimationSetter setter, Animatable targetControl)
         {
-            Property = setter.Property;
             var value = setter.Value;
 
             if (value is IBinding binding)
@@ -62,7 +63,7 @@ namespace Avalonia.Animation
             {
                 throw new ArgumentNullException($"KeyFrame value can't be null.");
             }
-            if(Value is T typedValue)
+            if (Value is T typedValue)
             {
                 return typedValue;
             }

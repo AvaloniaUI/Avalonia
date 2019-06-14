@@ -111,22 +111,22 @@
                      IterationCount="Infinite"
                      PlaybackDirection="Alternate">
             <KeyFrame Cue="0%">
-              <Setter Property="Background" Value="Red"/>
+              <Setter PropertyPath="Background" Value="Red"/>
             </KeyFrame>
             <KeyFrame Cue="15%">
-              <Setter Property="Background" Value="Yellow"/>
+              <Setter PropertyPath="Background" Value="Yellow"/>
             </KeyFrame>
             <KeyFrame Cue="30%">
-              <Setter Property="Background" Value="Green"/>
+              <Setter PropertyPath="Background" Value="Green"/>
             </KeyFrame>
             <KeyFrame Cue="45%">
-              <Setter Property="Background" Value="Cyan"/>
+              <Setter PropertyPath="Background" Value="Cyan"/>
             </KeyFrame>
             <KeyFrame Cue="60%">
-              <Setter Property="Background" Value="Blue"/>
+              <Setter PropertyPath="Background" Value="Blue"/>
             </KeyFrame>
             <KeyFrame Cue="75%">
-              <Setter Property="Background" Value="Indigo"/>
+              <Setter PropertyPath="Background" Value="Indigo"/>
             </KeyFrame>
             <KeyFrame Cue="90%">
               <Setter Property="Background" Value="Violet"/>

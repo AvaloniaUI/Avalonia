@@ -11,6 +11,7 @@ using Avalonia.Animation.Animators;
 using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 
 namespace Avalonia.Animation
@@ -232,7 +233,7 @@ namespace Avalonia.Animation
 
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
-            var handlerList = new List<(Type type, AvaloniaProperty property)>();
+            var handlerList = new List<(Type type, AvaloniaProperty TargetProperty)>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
 
@@ -240,15 +241,23 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var handler = GetAnimatorType(setter.Property);
+                    AvaloniaProperty targetProp = setter.Property;
+
+                    if (targetProp == null & setter.PropertyPath != null)
+                    {
+                        var t = setter.PropertyPath.Elements.OfType<PropertyPropertyPathElement>().Last();
+                        targetProp = (AvaloniaProperty)(t).Property;
+                    }
+
+                    var handler = GetAnimatorType(targetProp);
 
                     if (handler == null)
                     {
-                        throw new InvalidOperationException($"No animator registered for the property {setter.Property}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                        throw new InvalidOperationException($"No animator registered for the property {targetProp}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
                     }
 
-                    if (!handlerList.Contains((handler, setter.Property)))
-                        handlerList.Add((handler, setter.Property));
+                    if (!handlerList.Contains((handler, targetProp)))
+                        handlerList.Add((handler, targetProp));
 
                     var cue = keyframe.Cue;
 
@@ -258,6 +267,7 @@ namespace Avalonia.Animation
                     }
 
                     var newKF = new AnimatorKeyFrame(handler, cue);
+                    newKF.Property = targetProp;
 
                     subscriptions.Add(newKF.BindSetter(setter, control));
 
@@ -276,11 +286,12 @@ namespace Avalonia.Animation
 
             foreach (var keyframe in animatorKeyFrames)
             {
+
                 var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
-                                                             a.Property == keyframe.Property);
+                                                             (IPropertyInfo)a.Property == (IPropertyInfo)keyframe.Property);
                 animator.Add(keyframe);
             }
-
+            
             return (newAnimatorInstances, subscriptions);
         }
 
