@@ -17,6 +17,8 @@ namespace Avalonia.Utilities
             var ws = r.PeekWhitespace();
 
             var chars = r.TryPeek(ws.Length + keyword.Length);
+            if (chars.IsEmpty)
+                return -1;
             if (SpanEquals(chars.Slice(ws.Length), keyword.AsSpan()))
                 return chars.Length;
             return -1;

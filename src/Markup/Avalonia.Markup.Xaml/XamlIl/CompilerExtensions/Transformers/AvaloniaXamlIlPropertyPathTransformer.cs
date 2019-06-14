@@ -17,7 +17,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is XamlIlAstXamlPropertyValueNode pv
                 && pv.Values.Count == 1
                 && pv.Values[0] is XamlIlAstTextNode text
-                && pv.Property.GetClrProperty().Getter.ReturnType.Equals(context.GetAvaloniaTypes().PropertyPath)
+                && pv.Property.GetClrProperty().Getter?.ReturnType
+                    .Equals(context.GetAvaloniaTypes().PropertyPath) == true
             )
             {
                 var parentScope = context.ParentNodes().OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
