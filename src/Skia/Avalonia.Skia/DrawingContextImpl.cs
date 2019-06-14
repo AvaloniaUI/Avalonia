@@ -159,14 +159,14 @@ namespace Avalonia.Skia
         {
             using (var paint = CreatePaint(pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
-                Canvas.DrawLine((float) p1.X, (float) p1.Y, (float) p2.X, (float) p2.Y, paint.Paint);
+                Canvas.DrawLine((float)p1.X, (float)p1.Y, (float)p2.X, (float)p2.Y, paint.Paint);
             }
         }
 
         /// <inheritdoc />
         public void DrawGeometry(IBrush brush, Pen pen, IGeometryImpl geometry)
         {
-            var impl = (GeometryImpl) geometry;
+            var impl = (GeometryImpl)geometry;
             var size = geometry.Bounds.Size;
 
             using (var fill = brush != null ? CreatePaint(brush, size) : default(PaintWrapper))
@@ -235,58 +235,62 @@ namespace Avalonia.Skia
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
 
-                paint.Paint.TextSize = (float)glyphRun.FontRenderingEmSize;
+                paint.Paint.TextSize = glyphRun.FontRenderingEmSize;
                 paint.Paint.Typeface = glyphTypefaceImpl.Typeface;
                 paint.Paint.TextEncoding = SKTextEncoding.GlyphId;
                 paint.Paint.IsAntialias = true;
                 paint.Paint.IsStroke = false;
                 paint.Paint.SubpixelText = true;
 
-                var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+                var baselineOrigin = new SKPoint((float)glyphRun.Origin.X, (float)glyphRun.Origin.Y);
 
                 SKPoint[] glyphPositions = null;
 
                 if (glyphRun.GlyphAdvances != null)
                 {
+                    var currentX = 0.0f;
+
                     if (glyphRun.GlyphOffsets != null)
                     {
                         glyphPositions = new SKPoint[glyphRun.GlyphIndices.Length];
-
-                        var currentX = baselineOrigin.X;
 
                         for (var i = 0; i < glyphRun.GlyphIndices.Length; i++)
                         {
                             var glyphOffset = glyphRun.GlyphOffsets[i];
 
-                            glyphPositions[i] = new SKPoint(currentX + (float)glyphOffset.X, baselineOrigin.Y + (float)glyphOffset.Y);
+                            glyphPositions[i] = new SKPoint(currentX + (float)glyphOffset.X, (float)glyphOffset.Y);
 
-                            currentX += (float)glyphRun.GlyphAdvances[i];
+                            currentX += glyphRun.GlyphAdvances[i];
                         }
                     }
                     else
                     {
                         glyphPositions = new SKPoint[glyphRun.GlyphAdvances.Length];
 
-                        var currentX = baselineOrigin.X;
-
                         for (var i = 0; i < glyphPositions.Length; i++)
                         {
                             glyphPositions[i] = new SKPoint(currentX, baselineOrigin.Y);
 
-                            currentX += (float)glyphRun.GlyphAdvances[i];
+                            currentX += glyphRun.GlyphAdvances[i];
                         }
                     }
                 }
 
-                fixed (short* ptr = glyphRun.GlyphIndices)
+                if (glyphPositions != null)
                 {
-                    if (glyphPositions != null)
+                    using (var builder = new SKTextBlobBuilder())
                     {
-                        Canvas.DrawPositionedText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, glyphPositions, paint.Paint);
+                        builder.AddPositionedRun(paint.Paint, glyphRun.GlyphIndices, glyphPositions);
+
+                        Canvas.DrawText(builder.Build(), baselineOrigin.X, baselineOrigin.Y, paint.Paint);
                     }
-                    else
+                }
+                else
+                {
+                    fixed (ushort* ptr = glyphRun.GlyphIndices)
                     {
-                        Canvas.DrawText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, baselineOrigin.X, baselineOrigin.Y, paint.Paint);
+                        Canvas.DrawText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, baselineOrigin.X,
+                            baselineOrigin.Y, paint.Paint);
                     }
                 }
             }
@@ -585,12 +589,12 @@ namespace Avalonia.Skia
 
             if (brush is ISolidColorBrush solid)
             {
-                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte) (solid.Color.A * opacity));
+                paint.Color = new SKColor(solid.Color.R, solid.Color.G, solid.Color.B, (byte)(solid.Color.A * opacity));
 
                 return paintWrapper;
             }
 
-            paint.Color = new SKColor(255, 255, 255, (byte) (255 * opacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity));
 
             if (brush is IGradientBrush gradient)
             {
@@ -643,7 +647,7 @@ namespace Avalonia.Skia
             var paint = rv.Paint;
 
             paint.IsStroke = true;
-            paint.StrokeWidth = (float) pen.Thickness;
+            paint.StrokeWidth = (float)pen.Thickness;
 
             // Need to modify dashes due to Skia modifying their lengths
             // https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/paths/dots
@@ -675,7 +679,7 @@ namespace Avalonia.Skia
                     break;
             }
 
-            paint.StrokeMiter = (float) pen.MiterLimit;
+            paint.StrokeMiter = (float)pen.MiterLimit;
 
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
@@ -684,7 +688,7 @@ namespace Avalonia.Skia
 
                 for (var i = 0; i < srcDashes.Count; ++i)
                 {
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth;
+                    dashesArray[i] = (float)srcDashes[i] * paint.StrokeWidth;
                 }
 
                 var offset = (float)(pen.DashStyle.Offset * pen.Thickness);

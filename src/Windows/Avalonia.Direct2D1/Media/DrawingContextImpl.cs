@@ -304,10 +304,14 @@ namespace Avalonia.Direct2D1.Media
             using (var run = new SharpDX.DirectWrite.GlyphRun())
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;
-
                 run.FontFace = new FontFace(glyphTypefaceImpl.Font);
-                run.FontSize = (float)glyphRun.FontRenderingEmSize;
-                run.Indices = glyphRun.GlyphIndices.ToArray();
+                run.FontSize = glyphRun.FontRenderingEmSize;
+                var indices = new short[glyphRun.GlyphIndices.Length];
+                for (var i = 0; i < glyphRun.GlyphIndices.Length; i++)
+                {
+                    indices[i] = (short)glyphRun.GlyphIndices[i];
+                }
+                run.Indices = indices;
                 run.Advances = glyphRun.GlyphAdvances?.Select(x => (float)x).ToArray();
                 run.Offsets = glyphRun.GlyphOffsets?.Select(
                     x => new GlyphOffset()
@@ -316,7 +320,7 @@ namespace Avalonia.Direct2D1.Media
                         AscenderOffset = (float)x.Y
                     }).ToArray();
 
-                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), run, brush.PlatformBrush, MeasuringMode.Natural);
+                _renderTarget.DrawGlyphRun(glyphRun.Origin.ToSharpDX(), run, brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 
@@ -545,7 +549,7 @@ namespace Avalonia.Direct2D1.Media
         {
             PopLayer();
         }
-        
+
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
     }
 }
