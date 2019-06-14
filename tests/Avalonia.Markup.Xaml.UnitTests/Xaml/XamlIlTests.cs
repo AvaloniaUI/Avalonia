@@ -11,6 +11,7 @@ using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -245,6 +246,53 @@ namespace Avalonia.Markup.Xaml.UnitTests
     Count='{XamlIlCheckClrPropertyInfo ExpectedPropertyName=Count}'
 />", typeof(XamlIlClassWithClrPropertyWithValue).Assembly);
             Assert.Equal(6, parsed.Count);
+        }
+
+        [Fact]
+        public void Should_Provide_PropertyPath_For_Setters()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = AvaloniaXamlLoader.Parse<Style>(@"
+<Style Selector='Animatable' xmlns='https://github.com/avaloniaui'>
+    <Setter PropertyPath=':>Visual.Bounds.BottomRight.X' Value='0' />
+    <Setter PropertyPath=':>Visual.RenderTransform:=ScaleTransform.ScaleX' Value='0' />
+    <Setter PropertyPath='(Visual.RenderTransform):=ScaleTransform.ScaleX' Value='0' />
+</Style>");
+                var s1e = ((Setter)parsed.Setters[0]).PropertyPath.Elements;
+                var s2e = ((Setter)parsed.Setters[1]).PropertyPath.Elements;
+                var s3e = ((Setter)parsed.Setters[2]).PropertyPath.Elements;
+                
+                Assert.Equal(typeof(Visual), ((CastTypePropertyPathElement)s1e[0]).Type);
+                Assert.IsType<ChildTraversalPropertyPathElement>(s1e[1]);
+                Assert.Equal("Bounds", ((AvaloniaProperty)((PropertyPropertyPathElement)s1e[2]).Property).Name);
+                Assert.IsType<ChildTraversalPropertyPathElement>(s1e[3]);
+                var bottomRight = ((PropertyPropertyPathElement)s1e[4]).Property;
+                Assert.IsType<ChildTraversalPropertyPathElement>(s1e[5]);
+                var pointX = ((PropertyPropertyPathElement)s1e[6]).Property;
+                
+                var orect = (object)(new Rect(100, 100, 200, 200));
+                var point = bottomRight.Get(orect);
+                var x = pointX.Get(point);
+                Assert.Equal(300, (double)x);
+                
+                Assert.Equal(typeof(Visual), ((CastTypePropertyPathElement)s2e[0]).Type);
+                Assert.IsType<ChildTraversalPropertyPathElement>(s2e[1]);
+                Assert.Equal("RenderTransform", ((AvaloniaProperty)((PropertyPropertyPathElement)s2e[2]).Property).Name);
+                Assert.Equal(typeof(ScaleTransform), ((EnsureTypePropertyPathElement)s2e[3]).Type);
+                Assert.IsType<ChildTraversalPropertyPathElement>(s2e[4]);
+                Assert.Equal("ScaleX", ((AvaloniaProperty)((PropertyPropertyPathElement)s2e[5]).Property).Name);
+
+
+                var s3fqp = (AvaloniaProperty)((PropertyPropertyPathElement)s3e[0]).Property;
+                Assert.Equal("RenderTransform", s3fqp.Name);
+                Assert.Equal(typeof(Visual), s3fqp.OwnerType);
+                Assert.Equal(typeof(ScaleTransform), ((EnsureTypePropertyPathElement)s3e[1]).Type);
+                Assert.IsType<ChildTraversalPropertyPathElement>(s3e[2]);
+                Assert.Equal("ScaleX", ((AvaloniaProperty)((PropertyPropertyPathElement)s3e[3]).Property).Name);
+                
+                
+            }
         }
     }
     

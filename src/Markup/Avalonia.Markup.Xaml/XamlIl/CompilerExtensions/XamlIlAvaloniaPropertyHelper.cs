@@ -94,6 +94,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 context.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty"),
                 clrProperty);
         }
+
+        public static IXamlIlType GetAvaloniaPropertyType(IXamlIlField field,
+            AvaloniaXamlIlWellKnownTypes types, IXamlIlLineInfo lineInfo)
+        {
+            var avaloniaPropertyType = field.FieldType;
+            while (avaloniaPropertyType != null)
+            {
+                if (avaloniaPropertyType.GenericTypeDefinition?.Equals(types.AvaloniaPropertyT) == true)
+                {
+                    return avaloniaPropertyType.GenericArguments[0];
+                }
+
+                avaloniaPropertyType = avaloniaPropertyType.BaseType;
+            }
+
+            throw new XamlIlParseException(
+                $"{field.Name}'s type {field.FieldType} doesn't inherit from  AvaloniaProperty<T>, make sure to use typed properties",
+                lineInfo);
+
+        }
     }
 
     interface IXamlIlAvaloniaPropertyNode : IXamlIlAstValueNode
@@ -132,22 +152,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             IXamlIlLineInfo lineInfo, IXamlIlField field) : base(lineInfo)
         {
             _field = field;
-            var avaloniaPropertyType = field.FieldType;
-            while (avaloniaPropertyType != null)
-            {
-                if (avaloniaPropertyType.GenericTypeDefinition?.Equals(types.AvaloniaPropertyT) == true)
-                {
-                    AvaloniaPropertyType = avaloniaPropertyType.GenericArguments[0];
-                    return;
-                }
-
-                avaloniaPropertyType = avaloniaPropertyType.BaseType;
-            }
-
-            throw new XamlIlParseException(
-                $"{field.Name}'s type {field.FieldType} doesn't inherit from AvaloniaProperty<T>, make sure to use typed properties",
-                lineInfo);
-
+            AvaloniaPropertyType = XamlIlAvaloniaPropertyHelper.GetAvaloniaPropertyType(field,
+                types, lineInfo);
         }
         
         

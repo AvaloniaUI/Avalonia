@@ -7,6 +7,7 @@ using System.Reflection;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using Avalonia.Metadata;
 using Avalonia.Reactive;
 
@@ -49,6 +50,11 @@ namespace Avalonia.Styling
             get;
             set;
         }
+        
+        /// <summary>
+        /// Gets or sets the property path
+        /// </summary>
+        public PropertyPath PropertyPath { get; set; }
 
         /// <summary>
         /// Gets or sets the property value.

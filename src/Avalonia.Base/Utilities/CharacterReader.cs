@@ -85,6 +85,8 @@ namespace Avalonia.Utilities
 
         public ReadOnlySpan<char> TryPeek(int count)
         {
+            if (_s.Length < count)
+                return ReadOnlySpan<char>.Empty;
             return _s.Slice(0, count);
         }
 

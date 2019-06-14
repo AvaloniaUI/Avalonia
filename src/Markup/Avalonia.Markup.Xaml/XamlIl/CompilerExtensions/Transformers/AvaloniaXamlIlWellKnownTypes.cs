@@ -21,6 +21,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType UnsetValueType { get; }
         public IXamlIlType IPropertyInfo { get; }
         public IXamlIlType ClrPropertyInfo { get; }
+        public IXamlIlType PropertyPath { get; }
+        public IXamlIlType PropertyPathBuilder { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlTransformerConfiguration cfg)
         {
@@ -43,6 +45,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
             IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
+            PropertyPath = cfg.TypeSystem.GetType("Avalonia.Data.Core.PropertyPath");
+            PropertyPathBuilder = cfg.TypeSystem.GetType("Avalonia.Data.Core.PropertyPathBuilder");
         }
     }
 

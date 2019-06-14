@@ -17,9 +17,19 @@ namespace Avalonia.Utilities
             var ws = r.PeekWhitespace();
 
             var chars = r.TryPeek(ws.Length + keyword.Length);
-            if (chars.Slice(ws.Length).Equals(keyword.AsSpan(), StringComparison.Ordinal))
+            if (SpanEquals(chars.Slice(ws.Length), keyword.AsSpan()))
                 return chars.Length;
             return -1;
+        }
+
+        static bool SpanEquals(ReadOnlySpan<char> left, ReadOnlySpan<char> right)
+        {
+            if (left.Length != right.Length)
+                return false;
+            for(var c=0; c<left.Length;c++)
+                if (left[c] != right[c])
+                    return false;
+            return true;
         }
 
         public static bool TakeIfKeyword(this ref CharacterReader r, string keyword)

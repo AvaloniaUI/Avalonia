@@ -64,6 +64,8 @@ namespace Avalonia.Markup.Parsers
         
         private static (State, ISyntax) ParseStart(ref CharacterReader r)
         {
+            if (TryParseCasts(ref r, out var rv))
+                return rv;
             r.SkipWhitespace();
 
             if (r.TakeIf('('))
@@ -130,19 +132,33 @@ namespace Avalonia.Markup.Parsers
             return (State.AfterProperty, new PropertySyntax {Name = prop.ToString()});
         }
 
+        private static bool TryParseCasts(ref CharacterReader r, out (State, ISyntax) rv)
+        {
+            if (r.TakeIfKeyword(":="))
+                rv = ParseEnsureType(ref r);
+            else if (r.TakeIfKeyword(":>") || r.TakeIfKeyword("as "))
+                rv = ParseCastType(ref r);
+            else
+            {
+                rv = default;
+                return false;
+            }
 
+            return true;
+        }
+        
         private static (State, ISyntax) ParseAfterProperty(ref CharacterReader r)
         {
+            if (TryParseCasts(ref r, out var rv))
+                return rv;
+            
             r.SkipWhitespace();
             if (r.End)
                 return (State.End, null);
             if (r.TakeIf('.'))
                 return (State.Next, ChildTraversalSyntax.Instance);
-            if (r.TakeIfKeyword(":="))
-                return ParseEnsureType(ref r);
+            
 
-            if (r.TakeIfKeyword(":>") || r.TakeIfKeyword("as "))
-                return ParseCastType(ref r);
             
             throw new ExpressionParseException(r.Position, "Unexpected character " + r.PeekOneOrThrow + " after property name");
         }

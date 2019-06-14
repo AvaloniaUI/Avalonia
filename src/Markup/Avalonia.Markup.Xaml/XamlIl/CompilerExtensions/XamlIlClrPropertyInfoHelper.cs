@@ -8,21 +8,6 @@ using XamlIl.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
-    class XamlIlClrPropertyInfoHelper
-    {
-        
-        class ClrPropertyInfoNode : XamlIlAstNode, IXamlIlAstValueNode
-        {
-            public ClrPropertyInfoNode(AvaloniaXamlIlWellKnownTypes types, IXamlIlLineInfo lineInfo) :
-                base(lineInfo)
-            {
-                Type = new XamlIlAstClrTypeReference(this, types.XamlIlTypes.Object, false);
-            }
-
-            public IXamlIlAstTypeReference Type { get; }
-        }
-    }
-
     class XamlIlClrPropertyInfoEmitter
     {
         private readonly IXamlIlTypeBuilder _builder;
@@ -62,16 +47,25 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", false, true);
 
+                void Load(IXamlIlMethod m, IXamlIlEmitter cg)
+                {
+                    cg
+                        .Ldarg_0();
+                    if (m.DeclaringType.IsValueType)
+                        cg.Unbox(m.DeclaringType);
+                    else
+                        cg.Castclass(m.DeclaringType);
+                }
+
                 var getter = property.Getter == null ?
                     null :
                     _builder.DefineMethod(types.XamlIlTypes.Object,
                         new[] {types.XamlIlTypes.Object}, name + "!Getter", false, true, false);
                 if (getter != null)
                 {
-                    getter.Generator
-                        .Ldarg_0()
-                        .Castclass(property.Getter.DeclaringType)
-                        .EmitCall(property.Getter);
+                    Load(property.Getter, getter.Generator);
+                    
+                    getter.Generator.EmitCall(property.Getter);
                     if (property.Getter.ReturnType.IsValueType)
                         getter.Generator.Box(property.Getter.ReturnType);
                     getter.Generator.Ret();
@@ -84,10 +78,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         name + "!Setter", false, true, false);
                 if (setter != null)
                 {
-                    setter.Generator
-                        .Ldarg_0()
-                        .Castclass(property.Setter.DeclaringType)
-                        .Ldarg(1);
+                    Load(property.Setter, setter.Generator);
+                    
+                    setter.Generator.Ldarg(1);
                     if (property.Setter.Parameters[0].IsValueType)
                         setter.Generator.Unbox_Any(property.Setter.Parameters[0]);
                     else
