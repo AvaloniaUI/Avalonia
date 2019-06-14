@@ -114,11 +114,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
 
             InitializeSre();
             var asm = localAssembly == null ? null : _sreTypeSystem.GetAssembly(localAssembly);
-            
-            var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_sreTypeSystem, asm,
-                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter),
-                _sreContextType);
+
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
+            var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));
+            
+            var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
+                _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder))), 
+                _sreContextType);
+            
 
             IXamlIlType overrideType = null;
             if (rootInstance != null)
@@ -129,6 +133,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             compiler.IsDesignMode = isDesignMode;
             compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
+            clrPropertyBuilder.CreateTypeInfo();
 
             return LoadOrPopulate(created, rootInstance);
         }

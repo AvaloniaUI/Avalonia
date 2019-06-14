@@ -49,13 +49,18 @@ namespace Avalonia.Build.Tasks
             if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return new CompileResult(true);
+
+            var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(clrPropertiesDef);
             
             var xamlLanguage = AvaloniaXamlIlLanguage.Configure(typeSystem);
-            var compilerConfig = new XamlIlTransformerConfiguration(typeSystem,
+            var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
                 typeSystem.TargetAssembly,
                 xamlLanguage,
                 XamlIlXmlnsMappings.Resolve(typeSystem, xamlLanguage),
-                AvaloniaXamlIlLanguage.CustomValueConverter);
+                AvaloniaXamlIlLanguage.CustomValueConverter,
+                new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)));
 
 
             var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 

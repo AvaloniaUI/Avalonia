@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private readonly IXamlIlType _contextType;
         private readonly AvaloniaXamlIlDesignPropertiesTransformer _designTransformer;
 
-        private AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration) : base(configuration, true)
+        private AvaloniaXamlIlCompiler(AvaloniaXamlIlCompilerConfiguration configuration) : base(configuration, true)
         {
             _configuration = configuration;
 
@@ -57,14 +57,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         }
 
-        public AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration,
+        public AvaloniaXamlIlCompiler(AvaloniaXamlIlCompilerConfiguration configuration,
             IXamlIlTypeBuilder contextTypeBuilder) : this(configuration)
         {
             _contextType = CreateContextType(contextTypeBuilder);
         }
 
         
-        public AvaloniaXamlIlCompiler(XamlIlTransformerConfiguration configuration,
+        public AvaloniaXamlIlCompiler(AvaloniaXamlIlCompilerConfiguration configuration,
             IXamlIlType contextType) : this(configuration)
         {
             _contextType = contextType;

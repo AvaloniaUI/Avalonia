@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Data.Converters;
+using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -234,6 +235,17 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal(100, XamlIlBugTestsStaticClassWithAttachedProperty.GetTestInt(tb));
             }
         }
+
+        [Fact]
+        public void Provide_Value_Target_Should_Provide_Clr_Property_Info()
+        {
+            var parsed = AvaloniaXamlLoader.Parse<XamlIlClassWithClrPropertyWithValue>(@"
+<XamlIlClassWithClrPropertyWithValue 
+    xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests'
+    Count='{XamlIlCheckClrPropertyInfo ExpectedPropertyName=Count}'
+/>", typeof(XamlIlClassWithClrPropertyWithValue).Assembly);
+            Assert.Equal(6, parsed.Count);
+        }
     }
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -313,5 +325,23 @@ namespace Avalonia.Markup.Xaml.UnitTests
         {
             return (int)control.GetValue(TestIntProperty);
         }
+    }
+
+    public class XamlIlCheckClrPropertyInfoExtension
+    {
+        public string ExpectedPropertyName { get; set; }
+
+        public object ProvideValue(IServiceProvider prov)
+        {
+            var pvt = prov.GetService<IProvideValueTarget>();
+            var info = (ClrPropertyInfo)pvt.TargetProperty;
+            var v = (int)info.Get(pvt.TargetObject);
+            return v + 1;
+        }
+    }
+
+    public class XamlIlClassWithClrPropertyWithValue
+    {
+        public int Count { get; set; }= 5;
     }
 }

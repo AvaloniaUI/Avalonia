@@ -19,26 +19,30 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType Transitions { get; }
         public IXamlIlType AssignBindingAttribute { get; }
         public IXamlIlType UnsetValueType { get; }
+        public IXamlIlType IPropertyInfo { get; }
+        public IXamlIlType ClrPropertyInfo { get; }
         
-        public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
+        public AvaloniaXamlIlWellKnownTypes(XamlIlTransformerConfiguration cfg)
         {
-            XamlIlTypes = ctx.Configuration.WellKnownTypes;
-            AvaloniaObject = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaObject");
-            IAvaloniaObject = ctx.Configuration.TypeSystem.GetType("Avalonia.IAvaloniaObject");
-            AvaloniaObjectExtensions = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
-            AvaloniaProperty = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty");
-            AvaloniaPropertyT = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
-            BindingPriority = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.BindingPriority");
-            IBinding = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.IBinding");
-            IDisposable = ctx.Configuration.TypeSystem.GetType("System.IDisposable");
-            Transitions = ctx.Configuration.TypeSystem.GetType("Avalonia.Animation.Transitions");
-            AssignBindingAttribute = ctx.Configuration.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
+            XamlIlTypes = cfg.WellKnownTypes;
+            AvaloniaObject = cfg.TypeSystem.GetType("Avalonia.AvaloniaObject");
+            IAvaloniaObject = cfg.TypeSystem.GetType("Avalonia.IAvaloniaObject");
+            AvaloniaObjectExtensions = cfg.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
+            AvaloniaProperty = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty");
+            AvaloniaPropertyT = cfg.TypeSystem.GetType("Avalonia.AvaloniaProperty`1");
+            BindingPriority = cfg.TypeSystem.GetType("Avalonia.Data.BindingPriority");
+            IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
+            IDisposable = cfg.TypeSystem.GetType("System.IDisposable");
+            Transitions = cfg.TypeSystem.GetType("Avalonia.Animation.Transitions");
+            AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
-                IBinding, ctx.Configuration.WellKnownTypes.Object);
-            UnsetValueType = ctx.Configuration.TypeSystem.GetType("Avalonia.UnsetValueType");
+                IBinding, cfg.WellKnownTypes.Object);
+            UnsetValueType = cfg.TypeSystem.GetType("Avalonia.UnsetValueType");
             AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
+            IPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.IPropertyInfo");
+            ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
         }
     }
 
@@ -48,7 +52,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
                 return rv;
-            ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx));
+            ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
+            return rv;
+        }
+        
+        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlIlEmitContext ctx)
+        {
+            if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
+                return rv;
+            ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
             return rv;
         }
     }

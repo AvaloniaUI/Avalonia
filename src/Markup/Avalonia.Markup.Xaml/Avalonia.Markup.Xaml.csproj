@@ -38,6 +38,7 @@
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
         <Compile Include="XamlIl\AvaloniaXamlIlRuntimeCompiler.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompilerConfiguration.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionHackTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlConstructorServiceProviderTransformer.cs" />
@@ -55,6 +56,7 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\IgnoredDirectivesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSelectorTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\XamlIlClrPropertyInfoHelper.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />

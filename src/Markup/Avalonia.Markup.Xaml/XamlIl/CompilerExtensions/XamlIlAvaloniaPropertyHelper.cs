@@ -15,6 +15,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class XamlIlAvaloniaPropertyHelper
     {
+        public static bool EmitProvideValueTarget(XamlIlEmitContext context, IXamlIlEmitter emitter,
+            XamlIlAstClrProperty property)
+        {
+            if (Emit(context, emitter, property))
+                return true;
+            var foundClr = property.DeclaringType.Properties.FirstOrDefault(p => p.Name == property.Name);
+            if (foundClr == null)
+                return false;
+            context
+                .Configuration.GetExtra<XamlIlClrPropertyInfoEmitter>()
+                .Emit(context, emitter, foundClr);
+            return true;
+        }
+        
         public static bool Emit(XamlIlEmitContext context, IXamlIlEmitter emitter, XamlIlAstClrProperty property)
         {
             if (property is IXamlIlAvaloniaProperty ap)

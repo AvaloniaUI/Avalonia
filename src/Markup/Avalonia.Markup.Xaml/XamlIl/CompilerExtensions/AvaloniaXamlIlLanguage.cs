@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
-                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.Emit,
+                ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
             return rv;
