@@ -207,8 +207,22 @@ namespace Avalonia
         /// </summary>
         public Transform RenderTransform
         {
-            get { return GetValue(RenderTransformProperty); }
-            set { SetValue(RenderTransformProperty, value); }
+            get
+            {
+                var curVal = GetValue(RenderTransformProperty);
+
+                if (curVal == null)
+                {
+                    curVal = new CompositeTransform();
+                    SetValue(RenderTransformProperty, curVal);
+                }
+
+                return curVal;
+            }
+            set
+            {
+                SetValue(RenderTransformProperty, value);
+            }
         }
 
         /// <summary>
@@ -267,7 +281,7 @@ namespace Avalonia
         /// Gets the root of the visual tree, if the control is attached to a visual tree.
         /// </summary>
         IRenderRoot IVisual.VisualRoot => VisualRoot;
-        
+
         TransformedBounds? IVisual.TransformedBounds
         {
             get { return _transformedBounds; }
@@ -355,7 +369,7 @@ namespace Avalonia
 
                     if (e.NewValue is IAffectsRender newValue)
                     {
-                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);                        
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(newValue, nameof(newValue.Invalidated), sender.AffectsRenderInvalidated);
                     }
 
                     sender.InvalidateVisual();

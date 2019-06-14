@@ -256,8 +256,8 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var parsed = AvaloniaXamlLoader.Parse<Style>(@"
 <Style Selector='Animatable' xmlns='https://github.com/avaloniaui'>
     <Setter PropertyPath=':>Visual.Bounds.BottomRight.X' Value='0' />
-    <Setter PropertyPath=':>Visual.RenderTransform:=ScaleTransform.ScaleX' Value='0' />
-    <Setter PropertyPath='(Visual.RenderTransform):=ScaleTransform.ScaleX' Value='0' />
+    <Setter PropertyPath=':>Visual.RenderTransform:=RenderTransform.ScaleX' Value='0' />
+    <Setter PropertyPath='(Visual.RenderTransform):=RenderTransform.ScaleX' Value='0' />
 </Style>");
                 var s1e = ((Setter)parsed.Setters[0]).PropertyPath.Elements;
                 var s2e = ((Setter)parsed.Setters[1]).PropertyPath.Elements;

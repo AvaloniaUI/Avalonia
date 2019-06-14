@@ -13,11 +13,6 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class Transform : Animatable
     {
-        static Transform()
-        {
-            Animation.Animation.RegisterAnimator<TransformAnimator>(prop => typeof(Transform).IsAssignableFrom(prop.OwnerType));
-        }
-
         /// <summary>
         /// Raised when the transform changes.
         /// </summary>
