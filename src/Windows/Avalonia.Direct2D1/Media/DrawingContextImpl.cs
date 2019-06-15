@@ -320,7 +320,7 @@ namespace Avalonia.Direct2D1.Media
                         AscenderOffset = (float)x.Y
                     }).ToArray();
 
-                _renderTarget.DrawGlyphRun(glyphRun.Origin.ToSharpDX(), run, brush.PlatformBrush, MeasuringMode.Natural);
+                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), run, brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
 

@@ -23,7 +23,7 @@ namespace ControlCatalog.Pages
 
         public override void Render(DrawingContext drawingContext)
         {
-            var glyphTypeface = new GlyphTypeface(new Typeface("Courier New"));
+            var glyphTypeface = Typeface.Default.GlyphTypeface;
 
             var bytes = Encoding.UTF32.GetBytes("1234567890");
 
@@ -33,13 +33,13 @@ namespace ControlCatalog.Pages
 
             var glyphs = glyphTypeface.GetGlyphs(codePoints);
 
-            var origin = new Point(Bounds.X, Bounds.Y);
+            var baselineOrigin = new Point(Bounds.X, Bounds.Y);
 
-            for (var i = 12; i < 33; i++)
+            for (var i = 18; i < 30; i++)
             {
                 var scale = (float)i / glyphTypeface.DesignEmHeight;
 
-                origin += new Point(0, i * 1.5f);
+                baselineOrigin += new Point(0, i * 1.5f);
 
                 var advances = Enumerable.Repeat(i * 0.6f, 10).ToArray();
 
@@ -57,11 +57,11 @@ namespace ControlCatalog.Pages
                     offsets[j] = new Vector(0, offsetY-- * i * 0.06);
                 }
 
-                var glyphRun = new GlyphRun(glyphTypeface, i, origin, glyphs, advances, offsets);
+                var glyphRun = new GlyphRun(glyphTypeface, i, baselineOrigin, glyphs, advances, offsets);
 
-                var baselineOrigin = origin - new Point(0, (glyphTypeface.Descent + glyphTypeface.LineGap) * scale);
+                drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
 
-                var overline = origin - new Point(0, (glyphTypeface.Descent - glyphTypeface.Ascent + glyphTypeface.LineGap) * scale);
+                var overline = baselineOrigin + new Point(0, glyphTypeface.Ascent * scale);
 
                 drawingContext.DrawLine(new Pen(Brushes.Red), overline, overline + new Point(glyphRun.Size.Width, 0));
 
@@ -71,11 +71,11 @@ namespace ControlCatalog.Pages
 
                 drawingContext.DrawLine(new Pen(Brushes.Transparent), baselineOrigin, baselineOrigin - new Point(glyphRun.Size.Width, 0));
 
-                drawingContext.DrawLine(new Pen(Brushes.Green), origin, origin + new Point(glyphRun.Size.Width, 0));
+                var underline = baselineOrigin + new Point(0, (glyphTypeface.Descent + glyphTypeface.LineGap) * scale);
 
-                drawingContext.DrawLine(new Pen(Brushes.Transparent), origin, origin - new Point(glyphRun.Size.Width, 0));
+                drawingContext.DrawLine(new Pen(Brushes.Green), underline, underline + new Point(glyphRun.Size.Width, 0));
 
-                drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
+                drawingContext.DrawLine(new Pen(Brushes.Transparent), underline, underline - new Point(glyphRun.Size.Width, 0));
             }
         }
     }

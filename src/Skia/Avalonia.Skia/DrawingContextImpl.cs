@@ -242,7 +242,9 @@ namespace Avalonia.Skia
                 paint.Paint.IsStroke = false;
                 paint.Paint.SubpixelText = true;
 
-                var baselineOrigin = new SKPoint((float)glyphRun.Origin.X, (float)glyphRun.Origin.Y);
+                var baselineOrigin = new SKPoint((float)glyphRun.BaselineOrigin.X, (float)glyphRun.BaselineOrigin.Y);
+
+                Canvas.Translate(baselineOrigin);
 
                 SKPoint[] glyphPositions = null;
 
@@ -276,23 +278,21 @@ namespace Avalonia.Skia
                     }
                 }
 
-                if (glyphPositions != null)
+                fixed (ushort* ptr = glyphRun.GlyphIndices)
                 {
-                    using (var builder = new SKTextBlobBuilder())
+                    if (glyphPositions != null)
                     {
-                        builder.AddPositionedRun(paint.Paint, glyphRun.GlyphIndices, glyphPositions);
-
-                        Canvas.DrawText(builder.Build(), baselineOrigin.X, baselineOrigin.Y, paint.Paint);
+                        Canvas.DrawPositionedText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, glyphPositions, paint.Paint);
                     }
-                }
-                else
-                {
-                    fixed (ushort* ptr = glyphRun.GlyphIndices)
+                    else
                     {
                         Canvas.DrawText((IntPtr)ptr, glyphRun.GlyphIndices.Length * 2, baselineOrigin.X,
                             baselineOrigin.Y, paint.Paint);
+
                     }
                 }
+
+                Canvas.Translate(new SKPoint() - baselineOrigin);
             }
         }
 

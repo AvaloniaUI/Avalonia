@@ -9,7 +9,7 @@ namespace Avalonia.Media
         public GlyphRun(
             GlyphTypeface glyphTypeface,
             float fontRenderingEmSize,
-            Point origin,
+            Point baselineOrigin,
             ushort[] glyphIndices,
             float[] glyphAdvances = null,
             Vector[] glyphOffsets = null)
@@ -17,7 +17,7 @@ namespace Avalonia.Media
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             GlyphIndices = glyphIndices;
-            Origin = origin;
+            BaselineOrigin = baselineOrigin;
             GlyphAdvances = glyphAdvances;
             GlyphOffsets = glyphOffsets;
             Size = GetSize();
@@ -27,7 +27,7 @@ namespace Avalonia.Media
 
         public float FontRenderingEmSize { get; }
 
-        public Point Origin { get; }
+        public Point BaselineOrigin { get; }
 
         public ushort[] GlyphIndices { get; }
 
