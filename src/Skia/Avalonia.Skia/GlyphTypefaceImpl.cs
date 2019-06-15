@@ -64,28 +64,55 @@ namespace Avalonia.Skia
             return glyphs;
         }
 
-        public ushort[] GetGlyphs(int[] codePoints)
+        public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
-            var glyphs = new ushort[codePoints.Length];
-
-            for (var i = 0; i < codePoints.Length; i++)
-            {
-                glyphs[i] = (ushort)Font.GetGlyph(codePoints[i]);
-            }
-
-            return glyphs;
-        }
-
-        public ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs)
-        {
-            var indices = new int[glyphs.Length];
+            var glyphIndices = new int[glyphs.Length];
 
             for (var i = 0; i < glyphs.Length; i++)
             {
-                indices[i] = glyphs[i];
+                glyphIndices[i] = glyphs[i];
             }
 
-            return Font.GetHorizontalGlyphAdvances(indices);
+            return Font.GetHorizontalGlyphAdvances(glyphIndices);
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(float fontRenderingEmSize, Point baselineOrigin, IReadOnlyList<ushort> glyphIndices,
+            IReadOnlyList<float> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        {
+            var scale = fontRenderingEmSize / DesignEmHeight;
+            var currentX = 0.0f;
+
+            if (glyphOffsets == null)
+            {
+                glyphOffsets = new Vector[glyphIndices.Count];
+            }
+
+            if (glyphAdvances == null)
+            {
+                var advances = new float[glyphIndices.Count];
+
+                for (var i = 0; i < glyphIndices.Count; i++)
+                {
+                    advances[i] = Font.GetHorizontalGlyphAdvance(glyphIndices[i]) * scale;
+                }
+
+                glyphAdvances = advances;
+            }
+
+            var glyphPositions = new SKPoint[glyphIndices.Count];
+
+            for (var i = 0; i < glyphIndices.Count; i++)
+            {
+                var glyphOffset = glyphOffsets[i];
+
+                glyphPositions[i] = new SKPoint(currentX + (float)glyphOffset.X, (float)glyphOffset.Y);
+
+                currentX += glyphAdvances[i];
+            }
+
+            var bounds = new Rect(baselineOrigin.X, baselineOrigin.Y + Ascent * scale, currentX, (Descent - Ascent + LineGap) * scale);
+
+            return new GlyphRunImpl(glyphPositions, bounds);
         }
 
         public void Dispose()

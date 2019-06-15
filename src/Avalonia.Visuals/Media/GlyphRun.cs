@@ -3,9 +3,10 @@
 
 namespace Avalonia.Media
 {
-    // ToDo: Introduce GlyphRunImpl for better performance (caching)
     public class GlyphRun
     {
+        private IGlyphRunImpl _glyphRunImpl;
+
         public GlyphRun(
             GlyphTypeface glyphTypeface,
             float fontRenderingEmSize,
@@ -20,7 +21,6 @@ namespace Avalonia.Media
             BaselineOrigin = baselineOrigin;
             GlyphAdvances = glyphAdvances;
             GlyphOffsets = glyphOffsets;
-            Size = GetSize();
         }
 
         public GlyphTypeface GlyphTypeface { get; }
@@ -35,32 +35,11 @@ namespace Avalonia.Media
 
         public Vector[] GlyphOffsets { get; }
 
-        public Size Size { get; }
+        public Rect Bounds => GlyphRunImpl.Bounds;
 
-        private Size GetSize()
-        {
-            var scale = FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
-
-            var width = 0.0d;
-
-            if (GlyphAdvances != null)
-            {
-                foreach (var glyphAdvance in GlyphAdvances)
-                {
-                    width += glyphAdvance;
-                }
-            }
-            else
-            {
-                var glyphAdvances = GlyphTypeface.GetGlyphAdvances(GlyphIndices);
-
-                foreach (var advance in glyphAdvances)
-                {
-                    width += advance * scale;
-                }
-            }
-
-            return new Size(width, (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * scale);
-        }
+        public IGlyphRunImpl GlyphRunImpl =>
+            _glyphRunImpl ?? (_glyphRunImpl = GlyphTypeface.GlyphTypefaceImpl.CreateGlyphRun(
+                FontRenderingEmSize, BaselineOrigin,
+                GlyphIndices, GlyphAdvances, GlyphOffsets));
     }
 }

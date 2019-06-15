@@ -300,7 +300,7 @@ namespace Avalonia.Direct2D1.Media
         /// <param name="glyphRun">The glyph run.</param>
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Bounds.Size))
             using (var run = new SharpDX.DirectWrite.GlyphRun())
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;

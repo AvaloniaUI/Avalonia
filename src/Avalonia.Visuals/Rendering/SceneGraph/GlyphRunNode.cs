@@ -26,7 +26,7 @@ namespace Avalonia.Rendering.SceneGraph
             IBrush foreground,
             GlyphRun glyphRun,
             IDictionary<IVisual, Scene> childScenes = null)
-            : base(new Rect(new Point(), glyphRun.Size), transform, null)
+            : base(glyphRun.Bounds, transform, null)
         {
             Transform = transform;
             Foreground = foreground?.ToImmutable();
