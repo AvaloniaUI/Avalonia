@@ -3,11 +3,10 @@
 
 using System;
 using Avalonia.Data;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class RelativeSourceExtension : MarkupExtension
+    public class RelativeSourceExtension
     {
         public RelativeSourceExtension()
         {
@@ -18,7 +17,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             Mode = mode;
         }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public RelativeSource ProvideValue(IServiceProvider serviceProvider)
         {
             return new RelativeSource
             {
