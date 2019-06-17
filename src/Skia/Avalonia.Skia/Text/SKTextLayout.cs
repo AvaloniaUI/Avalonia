@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -1912,7 +1913,7 @@ namespace Avalonia.Skia.Text
 
             private Font CreateFont()
             {
-                var face = new Face(GetTable, Dispose)
+                var face = new Face(GetTable, null, Destroy)
                 {
                     UnitsPerEm = _typeface.UnitsPerEm
                 };
@@ -1922,6 +1923,28 @@ namespace Avalonia.Skia.Text
                 font.SetFunctionsOpenType();
 
                 return font;
+            }
+
+            private Blob GetTable(Face face, Tag tag, object context)
+            {
+                Blob blob;
+
+                if (_tableCache.ContainsKey(tag))
+                {
+                    blob = _tableCache[tag];
+                }
+                else
+                {
+                    blob = CreateBlob(tag);
+                    _tableCache.Add(tag, blob);
+                }
+
+                return blob;
+            }
+
+            private void Destroy(object context)
+            {
+                Dispose();
             }
 
             private void Dispose(bool disposing)
@@ -1950,34 +1973,15 @@ namespace Avalonia.Skia.Text
                 GC.SuppressFinalize(this);
             }
 
-            private unsafe Blob CreateBlob(Tag tag)
+            private Blob CreateBlob(Tag tag)
             {
-                if (_typeface.TryGetTableData(tag, out var table))
-                {
-                    fixed (byte* tablePtr = table)
-                    {
-                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
-                    }
-                }
+                var size = _typeface.GetTableSize(tag);
 
-                return null;
-            }
+                var data = Marshal.AllocCoTaskMem(size);
 
-            private IntPtr GetTable(IntPtr face, Tag tag, IntPtr userData)
-            {
-                Blob blob;
-
-                if (_tableCache.ContainsKey(tag))
-                {
-                    blob = _tableCache[tag];
-                }
-                else
-                {
-                    blob = CreateBlob(tag);
-                    _tableCache.Add(tag, blob);
-                }
-
-                return blob?.Handle ?? IntPtr.Zero;
+                return _typeface.TryGetTableData(tag, 0, size, data) ?
+                    new Blob(data, size, MemoryMode.Writeable, data, ctx => Marshal.FreeCoTaskMem((IntPtr)ctx)) :
+                    null;
             }
         }
     }

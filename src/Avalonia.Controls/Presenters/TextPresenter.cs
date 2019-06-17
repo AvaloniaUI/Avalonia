@@ -100,7 +100,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
-        
+
         public IBrush CaretBrush
         {
             get => GetValue(CaretBrushProperty);
@@ -148,6 +148,8 @@ namespace Avalonia.Controls.Presenters
 
             if (selectionStart != selectionEnd)
             {
+                var selectionBrush = SelectionBrush;
+
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -159,7 +161,7 @@ namespace Avalonia.Controls.Presenters
 
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(SelectionBrush, rect);
+                    context.FillRectangle(selectionBrush, rect);
                 }
             }
 
@@ -181,7 +183,9 @@ namespace Avalonia.Controls.Presenters
                         caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
                     }
                     else
+                    {
                         caretBrush = Brushes.Black;
+                    }
                 }
 
                 if (_caretBlink)
@@ -203,14 +207,12 @@ namespace Avalonia.Controls.Presenters
         {
             _caretBlink = true;
             _caretTimer.Start();
-            InvalidateVisual();
         }
 
         public void HideCaret()
         {
             _caretBlink = false;
             _caretTimer.Stop();
-            InvalidateVisual();
         }
 
         internal void CaretIndexChanged(int caretIndex)
@@ -222,12 +224,10 @@ namespace Avalonia.Controls.Presenters
                     _caretBlink = true;
                     _caretTimer.Stop();
                     _caretTimer.Start();
-                    InvalidateVisual();
                 }
                 else
                 {
                     _caretTimer.Start();
-                    InvalidateVisual();
                     _caretTimer.Stop();
                 }
 
@@ -278,10 +278,7 @@ namespace Avalonia.Controls.Presenters
 
             if (length > 0)
             {
-                result.Spans = new[]
-                {
-                    new FormattedTextStyleSpan(start, length, SelectionForegroundBrush),
-                };
+                result.Spans = new[] { new FormattedTextStyleSpan(start, length, foreground: SelectionForegroundBrush) };
             }
 
             return result;
