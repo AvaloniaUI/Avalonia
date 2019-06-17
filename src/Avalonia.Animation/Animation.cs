@@ -241,61 +241,57 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var target = new AnimationTarget(control, setter.Property);
+                    var target = new AnimationTarget(control, null);
 
-                    if (setter.Property == null & setter.PropertyPath != null)
+                    bool traverse = false, start = true;
+                    object tempTarget = null;
+                    foreach (var elem in setter.PropertyPath.Elements)
                     {
-                        bool traverse = false, start = true;
-                        object tempTarget = null;
-                        foreach (var elem in setter.PropertyPath.Elements.Select((e, i) => (e, i)))
+                        switch (elem)
                         {
-                            switch (elem.e)
-                            {
-                                case PropertyPropertyPathElement pp:
-                                    if (start)
+                            case PropertyPropertyPathElement pp:
+                                if (start)
+                                {
+                                    target.TargetProperty = (AvaloniaProperty)pp.Property;
+                                    var tgt = control.GetValue(target.TargetProperty);
+
+                                    if (tgt is Animatable)
+                                        tempTarget = tgt;
+                                    else
+                                        target.TargetObject = tgt;
+
+                                    start = false;
+                                }
+                                else
+                                {
+                                    if (traverse)
                                     {
                                         target.TargetProperty = (AvaloniaProperty)pp.Property;
-                                        var tgt = control.GetValue(target.TargetProperty);
-
-                                        if (tgt is Animatable)
-                                            tempTarget = tgt;
-                                        else
-                                            target.TargetObject = tgt;
-
-                                        start = false;
+                                        traverse = false;
                                     }
-                                    else
-                                    {
-                                        if (traverse)
-                                        {
-                                            target.TargetProperty = (AvaloniaProperty)pp.Property;
-                                            traverse = false;
-                                        }
-                                    }
+                                }
 
-                                    break;
-                                case CastTypePropertyPathElement ct:
-                                    if (tempTarget != null && tempTarget?.GetType() != ct.Type)
-                                    {
-                                        tempTarget = Convert.ChangeType(target.TargetAnimatable, ct.Type);
-                                    }
-                                    break;
-                                case EnsureTypePropertyPathElement et:
-                                    if (target.TargetAnimatable?.GetType() != et.Type)
-                                    {
+                                break;
+                            case CastTypePropertyPathElement ct:
+                                if (tempTarget != null && tempTarget?.GetType() != ct.Type)
+                                {
+                                    tempTarget = Convert.ChangeType(target.TargetAnimatable, ct.Type);
+                                }
+                                break;
+                            case EnsureTypePropertyPathElement et:
+                                if (target.TargetAnimatable?.GetType() != et.Type)
+                                {
 
-                                    }
-                                    break;
-                                case ChildTraversalPropertyPathElement tr:
-                                    traverse = true;
-                                    break;
-                            }
+                                }
+                                break;
+                            case ChildTraversalPropertyPathElement tr:
+                                traverse = true;
+                                break;
                         }
-
-                        if (tempTarget != null)
-                            target.TargetAnimatable = tempTarget as Animatable;
                     }
 
+                    if (tempTarget != null)
+                        target.TargetAnimatable = tempTarget as Animatable;
 
                     var handler = GetAnimatorType(target.TargetProperty);
 

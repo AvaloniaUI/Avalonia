@@ -8,7 +8,6 @@ namespace Avalonia.Animation
     public interface IAnimationSetter
     {
         PropertyPath PropertyPath {get; set; }
-        AvaloniaProperty Property { get; set; }
         object Value { get; set; }
     }
 }
