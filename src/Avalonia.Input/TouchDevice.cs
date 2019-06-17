@@ -25,7 +25,7 @@ namespace Avalonia.Input
             return modifiers;
         }
         
-        public void ProcessRawEvent(RawInputEventArgs ev)
+        public void ProcessRawEvent(RawInputEventArgs ev, IInputElement focusedElement)
         {
             var args = (RawTouchEventArgs)ev;
             if (!_pointers.TryGetValue(args.TouchPointId, out var pointer))
