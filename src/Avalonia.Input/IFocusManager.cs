@@ -1,6 +1,8 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Avalonia.Input
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Gets the currently focused <see cref="IInputElement"/>.
         /// </summary>
-        IInputElement Current { get; }
+        IInputElement FocusedElement { get; }
 
         /// <summary>
         /// Gets the current focus scope.
@@ -38,5 +40,7 @@ namespace Avalonia.Input
         /// when it activates, e.g. when a Window is activated.
         /// </remarks>
         void SetFocusScope(IFocusScope scope);
+
+        event EventHandler FocusedElementChanged;
     }
 }

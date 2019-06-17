@@ -33,6 +33,6 @@ namespace Avalonia.Input
         /// Processes a raw input event.
         /// </summary>
         /// <param name="e">The raw input event.</param>
-        void ProcessInput(RawInputEventArgs e);
+        void ProcessInput(RawInputEventArgs e, IInputElement focusedElement);
     }
 }

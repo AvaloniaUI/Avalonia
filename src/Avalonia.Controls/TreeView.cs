@@ -392,7 +392,7 @@ namespace Avalonia.Controls
 
                     if (next != null)
                     {
-                        FocusManager.Instance.Focus(next, NavigationMethod.Directional);
+                        next.Focus(NavigationMethod.Directional);
                         e.Handled = true;
                     }
                 }

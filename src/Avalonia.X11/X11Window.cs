@@ -782,6 +782,7 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
+        public IKeyboardDevice KeyboardDevice => _keyboard;
        
         public void Activate()
         {

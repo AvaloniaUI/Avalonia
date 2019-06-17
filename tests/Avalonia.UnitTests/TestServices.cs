@@ -48,8 +48,6 @@ namespace Avalonia.UnitTests
             windowingPlatform: new MockWindowingPlatform());
 
         public static readonly TestServices RealFocus = new TestServices(
-            focusManager: new FocusManager(),
-            keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager());
         
@@ -58,10 +56,8 @@ namespace Avalonia.UnitTests
 
         public TestServices(
             IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,
-            Func<IKeyboardDevice> keyboardDevice = null,
             IKeyboardNavigationHandler keyboardNavigation = null,
             Func<IMouseDevice> mouseDevice = null,
             IRuntimePlatform platform = null,
@@ -76,10 +72,8 @@ namespace Avalonia.UnitTests
             IWindowingPlatform windowingPlatform = null)
         {
             AssetLoader = assetLoader;
-            FocusManager = focusManager;
             GlobalClock = globalClock;
             InputManager = inputManager;
-            KeyboardDevice = keyboardDevice;
             KeyboardNavigation = keyboardNavigation;
             MouseDevice = mouseDevice;
             Platform = platform;
@@ -95,9 +89,7 @@ namespace Avalonia.UnitTests
 
         public IAssetLoader AssetLoader { get; }
         public IInputManager InputManager { get; }
-        public IFocusManager FocusManager { get; }
         public IGlobalClock GlobalClock { get; }
-        public Func<IKeyboardDevice> KeyboardDevice { get; }
         public IKeyboardNavigationHandler KeyboardNavigation { get; }
         public Func<IMouseDevice> MouseDevice { get; }
         public IRuntimePlatform Platform { get; }
@@ -112,7 +104,6 @@ namespace Avalonia.UnitTests
 
         public TestServices With(
             IAssetLoader assetLoader = null,
-            IFocusManager focusManager = null,
             IGlobalClock globalClock = null,
             IInputManager inputManager = null,
             Func<IKeyboardDevice> keyboardDevice = null,
@@ -131,10 +122,8 @@ namespace Avalonia.UnitTests
         {
             return new TestServices(
                 assetLoader: assetLoader ?? AssetLoader,
-                focusManager: focusManager ?? FocusManager,
                 globalClock: globalClock ?? GlobalClock,
                 inputManager: inputManager ?? InputManager,
-                keyboardDevice: keyboardDevice ?? KeyboardDevice,
                 keyboardNavigation: keyboardNavigation ?? KeyboardNavigation,
                 mouseDevice: mouseDevice ?? MouseDevice,
                 platform: platform ?? Platform,

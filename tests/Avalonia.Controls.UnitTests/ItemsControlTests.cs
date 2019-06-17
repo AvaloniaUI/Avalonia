@@ -526,7 +526,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(
                     target.Presenter.Panel.Children[1],
-                    FocusManager.Instance.Current);
+                    target.GetFocusManager()?.FocusedElement);
             }
         }
 
@@ -562,7 +562,7 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(
                     target.Presenter.Panel.Children[2],
-                    FocusManager.Instance.Current);
+                    target.GetFocusManager().FocusedElement);
             }
         }
 

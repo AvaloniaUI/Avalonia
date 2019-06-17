@@ -186,7 +186,7 @@ namespace Avalonia.Controls.UnitTests
                     Key.A, InputModifiers.None);
                 impl.Object.Input(input);
 
-                inputManagerMock.Verify(x => x.ProcessInput(input));
+                inputManagerMock.Verify(x => x.ProcessInput(input, null));
             }
         }
 

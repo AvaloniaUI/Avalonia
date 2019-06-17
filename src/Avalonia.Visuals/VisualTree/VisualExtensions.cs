@@ -215,7 +215,7 @@ namespace Avalonia.VisualTree
 
             return visual as IRenderRoot ?? visual.VisualRoot;
         }
-
+        
         /// <summary>
         /// Tests whether an <see cref="IVisual"/> is an ancestor of another visual.
         /// </summary>

@@ -120,21 +120,25 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             _lastFocusedElement = element;
         }
 
-        public void ActivateAutoShowKeyboard()
-        {
-            var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
+        private IFocusManager _focusManager;
 
-            //just in case we've called more than once the method
-            kbDevice.PropertyChanged -= KeyboardDevice_PropertyChanged;
-            kbDevice.PropertyChanged += KeyboardDevice_PropertyChanged;
-        }
-
-        private void KeyboardDevice_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public IFocusManager FocusManager
         {
-            if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
+            get => _focusManager;
+            set
             {
-                UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
+                if (_focusManager != null)
+                    _focusManager.FocusedElementChanged -= OnFocusedElementChanged;
+                _focusManager = value;
+                if (_focusManager != null)
+                    _focusManager.FocusedElementChanged += OnFocusedElementChanged;
+                UpdateKeyboardState(_focusManager?.FocusedElement);
             }
+        }
+        
+        private void OnFocusedElementChanged(object sender, EventArgs e)
+        {
+            UpdateKeyboardState(_focusManager?.FocusedElement);
         }
 
         public void Dispose()

@@ -60,7 +60,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl = this;
             _surfaces = new object[] {new WritableBitmapSurface(this), new Direct2DImageSurface(this)};
             _mouse = new WpfMouseDevice(this);
-            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
+            _keyboard = new Avalonia.Input.KeyboardDevice();
 
             ControlRoot = new CustomControlRoot(this);
             SnapsToDevicePixels = true;
@@ -100,6 +100,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         Size ITopLevelImpl.ClientSize => _finalSize;
         IMouseDevice ITopLevelImpl.MouseDevice => _mouse;
+        IKeyboardDevice ITopLevelImpl.KeyboardDevice => _keyboard;
 
         double ITopLevelImpl.Scaling => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1;
 

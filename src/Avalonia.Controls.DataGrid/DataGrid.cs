@@ -3775,7 +3775,7 @@ namespace Avalonia.Controls
             {
                 bool focusLeftDataGrid = true;
                 bool dataGridWillReceiveRoutedEvent = true;
-                IVisual focusedObject = FocusManager.Instance.Current;
+                IVisual focusedObject = this.GetFocusManager()?.FocusedElement;
 
                 while (focusedObject != null)
                 {
@@ -4651,7 +4651,7 @@ namespace Avalonia.Controls
             if (!ctrl)
             {
                 // If Enter was used by a TextBox, we shouldn't handle the key
-                if (FocusManager.Instance.Current is TextBox focusedTextBox && focusedTextBox.AcceptsReturn)
+                if (this.GetFocusManager()?.FocusedElement is TextBox focusedTextBox && focusedTextBox.AcceptsReturn)
                 {
                     return false;
                 }

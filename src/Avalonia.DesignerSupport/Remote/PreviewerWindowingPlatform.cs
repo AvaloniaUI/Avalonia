@@ -50,7 +50,6 @@ namespace Avalonia.DesignerSupport.Remote
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<IStandardCursorFactory>().ToSingleton<CursorFactoryStub>()
-                .Bind<IKeyboardDevice>().ToConstant(Keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(threading)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

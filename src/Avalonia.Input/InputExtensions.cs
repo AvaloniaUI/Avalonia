@@ -48,5 +48,19 @@ namespace Avalonia.Input
                    element.IsEnabledCore &&
                    element.IsAttachedToVisualTree;
         }
+        
+        /// <summary>
+        /// Gets the IFocusManager instance for an <see cref="IVisual"/>.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>
+        /// The focus manager or null if the visual is not rooted.
+        /// </returns>
+        public static IFocusManager GetFocusManager(this IVisual visual)
+        {
+            Contract.Requires<ArgumentNullException>(visual != null);
+
+            return (visual as IInputRoot ?? visual.VisualRoot as IInputRoot)?.FocusManager;
+        }
     }
 }

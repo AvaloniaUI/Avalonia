@@ -80,7 +80,7 @@ namespace Avalonia.Input
             return rootPoint * transform.Value;
         }
 
-        public void ProcessRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e, IInputElement focusedElement)
         {
             if (!e.Handled && e is RawPointerEventArgs margs)
                 ProcessRawEvent(margs);

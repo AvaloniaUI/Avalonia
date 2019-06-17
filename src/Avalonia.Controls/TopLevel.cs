@@ -55,6 +55,8 @@ namespace Avalonia.Controls
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
+        
+        public IFocusManager FocusManager { get; private set; }
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -87,7 +89,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException(
                     "Could not create window implementation: maybe no windowing subsystem was initialized?");
             }
-
+            FocusManager = new FocusManager(this);
             PlatformImpl = impl;
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
@@ -366,7 +368,7 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            _inputManager.ProcessInput(e);
+            _inputManager.ProcessInput(e, FocusManager.FocusedElement);
         }
 
         private void SceneInvalidated(object sender, SceneInvalidatedEventArgs e)

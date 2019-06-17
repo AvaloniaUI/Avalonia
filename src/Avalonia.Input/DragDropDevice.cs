@@ -83,7 +83,7 @@ namespace Avalonia.Input
             }
         }
 
-        public void ProcessRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e, IInputElement focusedElement)
         {
             if (!e.Handled && e is RawDragEvent margs)
                 ProcessRawEvent(margs);

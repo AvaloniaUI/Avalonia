@@ -107,5 +107,8 @@ namespace Avalonia.Platform
         /// </summary>
         [CanBeNull]
         IMouseDevice MouseDevice { get; }
+        
+        [CanBeNull]
+        IKeyboardDevice KeyboardDevice { get; }
     }
 }

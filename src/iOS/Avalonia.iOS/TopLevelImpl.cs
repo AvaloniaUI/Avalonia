@@ -21,9 +21,8 @@ namespace Avalonia.iOS
 
         public TopLevelImpl()
         {
-            _keyboardHelper = new KeyboardEventsHelper<TopLevelImpl>(this);
+            _keyboardHelper = new KeyboardEventsHelper<TopLevelImpl>(this, KeyboardDevice);
             AutoresizingMask = UIViewAutoresizing.All;
-            _keyboardHelper.ActivateAutoShowKeyboard();
         }
 
         [Export("hasText")]
@@ -53,6 +52,7 @@ namespace Avalonia.iOS
         public Size ClientSize => Bounds.Size.ToAvalonia();
 
         public IMouseDevice MouseDevice => iOSPlatform.MouseDevice;
+        public IKeyboardDevice KeyboardDevice => iOSPlatform.KeyboardDevice;
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
@@ -66,7 +66,11 @@ namespace Avalonia.iOS
 
         public void Invalidate(Rect rect) => SetNeedsDisplay();
 
-        public void SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
+        public void SetInputRoot(IInputRoot inputRoot)
+        {
+            _inputRoot = inputRoot;
+            _keyboardHelper.FocusManager = inputRoot.FocusManager;
+        }
 
         public Point PointToClient(PixelPoint point) => point.ToPoint(1);
 

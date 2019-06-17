@@ -11,6 +11,7 @@ namespace Avalonia.Input
         /// Processes raw event. Is called after preprocessing by InputManager
         /// </summary>
         /// <param name="ev"></param>
-        void ProcessRawEvent(RawInputEventArgs ev);
+        /// <param name="focusedElement"></param>
+        void ProcessRawEvent(RawInputEventArgs ev, IInputElement focusedElement);
     }
 }

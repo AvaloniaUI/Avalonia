@@ -23,8 +23,6 @@ namespace Avalonia.Native
         private object _syncRoot = new object();
         private bool _deferredRendering = false;
         private bool _gpu = false;
-        private readonly IMouseDevice _mouse;
-        private readonly IKeyboardDevice _keyboard;
         private readonly IStandardCursorFactory _cursorFactory;
         private Size _savedLogicalSize;
         private Size _lastRenderedLogicalSize;
@@ -36,8 +34,6 @@ namespace Avalonia.Native
             _gpu = opts.UseGpu;
             _deferredRendering = opts.UseDeferredRendering;
 
-            _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-            _mouse = AvaloniaLocator.Current.GetService<IMouseDevice>();
             _cursorFactory = AvaloniaLocator.Current.GetService<IStandardCursorFactory>();
         }
 
@@ -91,6 +87,7 @@ namespace Avalonia.Native
         public Action<Size> Resized { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice => AvaloniaNativePlatform.MouseDevice;
+        public IKeyboardDevice KeyboardDevice => AvaloniaNativePlatform.KeyboardDevice;
 
 
         class FramebufferWrapper : ILockedFramebuffer
@@ -197,7 +194,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawTextInputEventArgs(_keyboard, timeStamp, text);
+            var args = new RawTextInputEventArgs(KeyboardDevice, timeStamp, text);
 
             Input?.Invoke(args);
 
@@ -208,7 +205,7 @@ namespace Avalonia.Native
         {
             Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
 
-            var args = new RawKeyEventArgs(_keyboard, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers);
+            var args = new RawKeyEventArgs(KeyboardDevice, timeStamp, (RawKeyEventType)type, (Key)key, (InputModifiers)modifiers);
 
             Input?.Invoke(args);
 
@@ -222,11 +219,11 @@ namespace Avalonia.Native
             switch (type)
             {
                 case AvnRawMouseEventType.Wheel:
-                    Input?.Invoke(new RawMouseWheelEventArgs(_mouse, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, timeStamp, _inputRoot, point.ToAvaloniaPoint(), new Vector(delta.X, delta.Y), (InputModifiers)modifiers));
                     break;
 
                 default:
-                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawPointerEventArgs(MouseDevice, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
                     break;
             }
         }

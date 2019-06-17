@@ -32,10 +32,10 @@ namespace Avalonia.Input
         public IObservable<RawInputEventArgs> PostProcess => _postProcess;
 
         /// <inheritdoc/>
-        public void ProcessInput(RawInputEventArgs e)
+        public void ProcessInput(RawInputEventArgs e, IInputElement focusedElement)
         {
             _preProcess.OnNext(e);
-            e.Device?.ProcessRawEvent(e);
+            e.Device?.ProcessRawEvent(e, focusedElement);
             _process.OnNext(e);
             _postProcess.OnNext(e);
         }

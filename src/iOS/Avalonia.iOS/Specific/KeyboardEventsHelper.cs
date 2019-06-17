@@ -41,10 +41,12 @@ namespace Avalonia.iOS.Specific
     {
         private TView _view;
         private IInputElement _lastFocusedElement;
+        private IKeyboardDevice _keyboard;
 
-        public KeyboardEventsHelper(TView view)
+        public KeyboardEventsHelper(TView view, IKeyboardDevice keyboard)
         {
             _view = view;
+            _keyboard = keyboard;
 
             var uiKeyInputAttribute = view.GetType().GetCustomAttributes(typeof(AdoptsAttribute), true).OfType<AdoptsAttribute>().Where(a => a.ProtocolType == "UIKeyInput").FirstOrDefault();
 
@@ -70,13 +72,13 @@ namespace Avalonia.iOS.Specific
 
         public void InsertText(string text)
         {
-            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, text);
+            var rawTextEvent = new RawTextInputEventArgs(_keyboard, (uint)DateTime.Now.Ticks, text);
             _view.Input(rawTextEvent);
         }
 
         private void HandleKey(Key key, RawKeyEventType type)
         {
-            var rawKeyEvent = new RawKeyEventArgs(KeyboardDevice.Instance, (uint)DateTime.Now.Ticks, type, key, InputModifiers.None);
+            var rawKeyEvent = new RawKeyEventArgs(_keyboard, (uint)DateTime.Now.Ticks, type, key, InputModifiers.None);
             _view.Input(rawKeyEvent);
         }
 
@@ -122,26 +124,26 @@ namespace Avalonia.iOS.Specific
             _lastFocusedElement = element;
         }
 
-        public void ActivateAutoShowKeyboard()
-        {
-            var kbDevice = (KeyboardDevice.Instance as INotifyPropertyChanged);
+        private IFocusManager _focusManager;
 
-            //just in case we've called more than once the method
-            kbDevice.PropertyChanged -= KeyboardDevice_PropertyChanged;
-            kbDevice.PropertyChanged += KeyboardDevice_PropertyChanged;
-        }
-
-        private void KeyboardDevice_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        public IFocusManager FocusManager
         {
-            if (e.PropertyName == nameof(KeyboardDevice.FocusedElement))
+            get => _focusManager;
+            set
             {
-                UpdateKeyboardState(KeyboardDevice.Instance.FocusedElement);
+                if (_focusManager != null)
+                    _focusManager.FocusedElementChanged -= OnFocusedElementChanged;
+                _focusManager = value;
+                if (_focusManager != null)
+                    _focusManager.FocusedElementChanged += OnFocusedElementChanged;
+                UpdateKeyboardState(_focusManager?.FocusedElement);
             }
         }
 
-        public void Dispose()
+        private void OnFocusedElementChanged(object sender, EventArgs e)
         {
-            HandleEvents = false;
+            UpdateKeyboardState(_focusManager?.FocusedElement);
         }
+
     }
 }

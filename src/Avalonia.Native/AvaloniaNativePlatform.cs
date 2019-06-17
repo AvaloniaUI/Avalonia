@@ -75,8 +75,6 @@ namespace Avalonia.Native
                 .ToConstant(new PlatformThreadingInterface(_factory.CreatePlatformThreadingInterface()))
                 .Bind<IStandardCursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
-                .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IMouseDevice>().ToConstant(MouseDevice)
                 .Bind<IPlatformSettings>().ToConstant(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))

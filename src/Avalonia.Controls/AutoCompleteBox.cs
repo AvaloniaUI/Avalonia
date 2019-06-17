@@ -1385,7 +1385,7 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            IVisual focused = FocusManager.Instance.Current;
+            IVisual focused = this.GetFocusManager()?.FocusedElement;
 
             while (focused != null)
             {

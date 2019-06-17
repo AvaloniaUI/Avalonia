@@ -44,12 +44,7 @@ namespace Avalonia.Win32.Input
                 return result;
             }
         }
-
-        public void WindowActivated(Window window)
-        {
-            SetFocusedElement(window, NavigationMethod.Unspecified, InputModifiers.None);
-        }
-
+        
         public string StringFromVirtualKey(uint virtualKey)
         {
             StringBuilder result = new StringBuilder(256);

@@ -9,68 +9,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
-    public class KeyboardDevice : IKeyboardDevice, INotifyPropertyChanged
+    public class KeyboardDevice : IKeyboardDevice
     {
-        private IInputElement _focusedElement;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public static IKeyboardDevice Instance => AvaloniaLocator.Current.GetService<IKeyboardDevice>();
-
-        public IInputManager InputManager => AvaloniaLocator.Current.GetService<IInputManager>();
-
-        public IFocusManager FocusManager => AvaloniaLocator.Current.GetService<IFocusManager>();
-
-        public IInputElement FocusedElement
-        {
-            get
-            {
-                return _focusedElement;
-            }
-
-            private set
-            {
-                _focusedElement = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        public void SetFocusedElement(
-            IInputElement element, 
-            NavigationMethod method,
-            InputModifiers modifiers)
-        {
-            if (element != FocusedElement)
-            {
-                var interactive = FocusedElement as IInteractive;
-                FocusedElement = element;
-
-                interactive?.RaiseEvent(new RoutedEventArgs
-                {
-                    RoutedEvent = InputElement.LostFocusEvent,
-                });
-
-                interactive = element as IInteractive;
-
-                interactive?.RaiseEvent(new GotFocusEventArgs
-                {
-                    RoutedEvent = InputElement.GotFocusEvent,
-                    NavigationMethod = method,
-                    InputModifiers = modifiers,
-                });
-            }
-        }
-
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public void ProcessRawEvent(RawInputEventArgs e)
+        public void ProcessRawEvent(RawInputEventArgs e, IInputElement focusedElement)
         {
             if(e.Handled)
                 return;
-            IInputElement element = FocusedElement;
+            IInputElement element = focusedElement;
 
             if (element != null)
             {

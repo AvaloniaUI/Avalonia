@@ -65,6 +65,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
 
         public IMouseDevice MouseDevice => AndroidMouseDevice.Instance;
+        public IKeyboardDevice KeyboardDevice => AndroidKeyboardDevice.Instance;
 
         public Action Closed { get; set; }
 
@@ -117,6 +118,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetInputRoot(IInputRoot inputRoot)
         {
             InputRoot = inputRoot;
+            _keyboardHelper.FocusManager = inputRoot?.FocusManager;
         }
         
         public virtual void Show()

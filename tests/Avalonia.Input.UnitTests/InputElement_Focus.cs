@@ -23,7 +23,7 @@ namespace Avalonia.Input.UnitTests
 
                 target.Focus();
 
-                Assert.Same(target, FocusManager.Instance.Current);
+                Assert.Same(target, target.GetFocusManager().FocusedElement);
             }
         }
 
@@ -42,7 +42,8 @@ namespace Avalonia.Input.UnitTests
                 target.Focus();
                 root.Child = null;
 
-                Assert.Null(FocusManager.Instance.Current);
+                Assert.Null(root.GetFocusManager().FocusedElement);
+                Assert.False(target.IsFocused);
             }
         }
     }

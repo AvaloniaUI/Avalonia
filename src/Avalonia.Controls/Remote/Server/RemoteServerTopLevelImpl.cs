@@ -35,8 +35,6 @@ namespace Avalonia.Controls.Remote.Server
         {
             _transport = transport;
             _transport.OnMessage += OnMessage;
-
-            KeyboardDevice = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
         }
 
         private static RawPointerEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
@@ -340,6 +338,6 @@ namespace Avalonia.Controls.Remote.Server
 
         public override IMouseDevice MouseDevice { get; } = new MouseDevice();
 
-        public IKeyboardDevice KeyboardDevice { get; }
+        public override IKeyboardDevice KeyboardDevice { get; } = new KeyboardDevice();
     }
 }

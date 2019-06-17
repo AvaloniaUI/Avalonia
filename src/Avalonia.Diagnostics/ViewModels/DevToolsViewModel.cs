@@ -10,6 +10,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class DevToolsViewModel : ViewModelBase
     {
+        private readonly IControl _root;
         private ViewModelBase _content;
         private int _selectedTab;
         private TreePageViewModel _logicalTree;
@@ -20,23 +21,38 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public DevToolsViewModel(IControl root)
         {
+            _root = root;
             _logicalTree = new TreePageViewModel(LogicalTreeNode.Create(root));
             _visualTree = new TreePageViewModel(VisualTreeNode.Create(root));
             _eventsView = new EventsViewModel(root);
 
             UpdateFocusedControl();
-            KeyboardDevice.Instance.PropertyChanged += (s, e) =>
+            IFocusManager manager = null;
+
+            void Resubscribe()
             {
-                if (e.PropertyName == nameof(KeyboardDevice.Instance.FocusedElement))
-                {
-                    UpdateFocusedControl();
-                }
+                if (manager != null)
+                    manager.FocusedElementChanged -= OnFocusedElementChanged;
+                manager = root.GetFocusManager();
+                if (manager != null)
+                    manager.FocusedElementChanged += OnFocusedElementChanged;
+            }
+
+            root.AttachedToVisualTree += (_, __) =>
+            {
+                Resubscribe();
             };
 
             SelectedTab = 0;
             root.GetObservable(TopLevel.PointerOverElementProperty)
                 .Subscribe(x => PointerOverElement = x?.GetType().Name);
         }
+
+        private void OnFocusedElementChanged(object sender, EventArgs e)
+        {
+            UpdateFocusedControl();
+        }
+
 
         public ViewModelBase Content
         {
@@ -92,7 +108,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private void UpdateFocusedControl()
         {
-            FocusedControl = KeyboardDevice.Instance.FocusedElement?.GetType().Name;
+            FocusedControl = _root.GetFocusManager()?.FocusedElement?.GetType().Name;
         }
     }
 }

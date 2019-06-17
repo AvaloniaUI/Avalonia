@@ -399,17 +399,27 @@ namespace Avalonia.Input
         /// </summary>
         public void Focus()
         {
-            FocusManager.Instance?.Focus(this);
+            this.GetFocusManager()?.Focus(this);
+        }
+        
+        /// <summary>
+        /// Focuses the control.
+        /// <param name="method">The method by which focus was changed.</param>
+        /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
+        /// </summary>
+        public void Focus(NavigationMethod method, InputModifiers modifiers = InputModifiers.None)
+        {
+            this.GetFocusManager()?.Focus(this, method, modifiers);
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            var focusManager = this.GetFocusManager();
             base.OnDetachedFromVisualTreeCore(e);
-
             if (IsFocused)
             {
-                FocusManager.Instance.Focus(null);
+                focusManager?.Focus(null);
             }
         }
 

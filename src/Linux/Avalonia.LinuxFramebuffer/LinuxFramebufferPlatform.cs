@@ -33,7 +33,6 @@ namespace Avalonia.LinuxFramebuffer
             Threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
                 .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
-                .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

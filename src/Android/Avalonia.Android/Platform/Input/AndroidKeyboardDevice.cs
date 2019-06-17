@@ -6,6 +6,7 @@ using Avalonia.Input;
 namespace Avalonia.Android.Platform.Input
 {
     public class AndroidKeyboardDevice : KeyboardDevice, IKeyboardDevice {
+        public static readonly KeyboardDevice Instance = new AndroidKeyboardDevice();
     private static readonly Dictionary<Keycode, Key> KeyDic = new Dictionary<Keycode, Key>
      {
          //   { Keycode.Cancel?, Key.Cancel },

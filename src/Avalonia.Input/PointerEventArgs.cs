@@ -41,7 +41,7 @@ namespace Avalonia.Input
                 _ev = ev;
             }
             
-            public void ProcessRawEvent(RawInputEventArgs ev) => throw new NotSupportedException();
+            public void ProcessRawEvent(RawInputEventArgs ev, IInputElement focusedElement) => throw new NotSupportedException();
 
             public IInputElement Captured => _ev.Pointer.Captured;
             public void Capture(IInputElement control)

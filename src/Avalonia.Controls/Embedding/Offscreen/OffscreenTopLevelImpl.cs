@@ -61,5 +61,6 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action Closed { get; set; }
         public abstract IMouseDevice MouseDevice { get; }
+        public abstract IKeyboardDevice KeyboardDevice { get; }
     }
 }

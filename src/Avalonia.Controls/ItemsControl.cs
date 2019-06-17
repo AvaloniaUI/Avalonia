@@ -330,19 +330,21 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                var focus = FocusManager.Instance;
+                var focus = this.GetFocusManager();
+                if(focus == null)
+                    return;
                 var direction = e.Key.ToNavigationDirection();
                 var container = Presenter?.Panel as INavigableContainer;
 
                 if (container == null ||
-                    focus.Current == null ||
+                    focus.FocusedElement == null ||
                     direction == null ||
                     direction.Value.IsTab())
                 {
                     return;
                 }
 
-                var current = focus.Current
+                var current = focus.FocusedElement
                     .GetSelfAndVisualAncestors()
                     .OfType<IInputElement>()
                     .FirstOrDefault(x => x.VisualParent == container);

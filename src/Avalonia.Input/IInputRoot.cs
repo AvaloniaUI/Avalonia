@@ -35,5 +35,10 @@ namespace Avalonia.Input
         /// </summary>
         [CanBeNull]
         IMouseDevice MouseDevice { get; }
+        
+        /// <summary>
+        /// Gets the focus manager
+        /// </summary>
+        IFocusManager FocusManager { get; }
     }
 }

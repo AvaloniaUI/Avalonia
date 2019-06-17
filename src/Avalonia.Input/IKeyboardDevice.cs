@@ -27,13 +27,8 @@ namespace Avalonia.Input
         Toggled = 2,
     }
 
-    public interface IKeyboardDevice : IInputDevice, INotifyPropertyChanged
+    public interface IKeyboardDevice : IInputDevice
     {
-        IInputElement FocusedElement { get; }
-
-        void SetFocusedElement(
-            IInputElement element, 
-            NavigationMethod method,
-            InputModifiers modifiers);
+        
     }
 }
