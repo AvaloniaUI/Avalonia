@@ -8,14 +8,14 @@ using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Embedding
 {
-    public class EmbeddableControlRoot : TopLevel, IStyleable, IFocusScope, INameScope, IDisposable
+    public class EmbeddableControlRoot : TopLevel, IStyleable, INameScope, IDisposable
     {
         public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
         {
-            
+            impl.LostFocus += () => FocusManager.SetHasEffectiveFocus(false);
         }
 
-        public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())
+        public EmbeddableControlRoot() : this(PlatformManager.CreateEmbeddableWindow())
         {
         }
 

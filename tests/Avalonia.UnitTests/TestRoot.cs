@@ -13,13 +13,14 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
         public TestRoot()
         {
             FocusManager = new FocusManager(this);
+            FocusManager.SetHasEffectiveFocus(true);
             Renderer = Mock.Of<IRenderer>();
         }
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Remote.Server;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Remote
 {
@@ -17,6 +19,7 @@ namespace Avalonia.Controls.Remote
             }
 #pragma warning disable 67
             public event Action LostFocus;
+            public Action GotFocus { get; set; }
 
         }
         

@@ -47,7 +47,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class Window : WindowBase, IStyleable, ILayoutRoot, INameScope
     {
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
