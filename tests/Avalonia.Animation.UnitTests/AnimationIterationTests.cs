@@ -9,6 +9,7 @@ using Avalonia.UnitTests;
 using Avalonia.Data;
 using Xunit;
 using Avalonia.Animation.Easings;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Animation.UnitTests
 {
@@ -21,7 +22,8 @@ namespace Avalonia.Animation.UnitTests
             {
                 Setters =
                 {
-                    new Setter(Border.WidthProperty, 200d),
+                    new Setter(null, 200d)
+                    { PropertyPath = new PropertyPathBuilder().Property(Border.WidthProperty).Build() }
                 },
                 Cue = new Cue(1d)
             };
@@ -30,7 +32,8 @@ namespace Avalonia.Animation.UnitTests
             {
                 Setters =
                 {
-                    new Setter(Border.WidthProperty, 100d),
+                    new Setter(null, 100d)
+                    { PropertyPath = new PropertyPathBuilder().Property(Border.WidthProperty).Build() }
                 },
                 Cue = new Cue(0d)
             };
@@ -82,7 +85,8 @@ namespace Avalonia.Animation.UnitTests
             {
                 Setters =
                 {
-                    new Setter(Border.WidthProperty, 0d),
+                    new Setter(null, 0d)
+                    { PropertyPath = new PropertyPathBuilder().Property(Border.WidthProperty).Build() }  
                 },
                 Cue = new Cue(0.0d)
             };
@@ -91,7 +95,8 @@ namespace Avalonia.Animation.UnitTests
             {
                 Setters =
                 {
-                    new Setter(Border.WidthProperty, 300d),
+                    new Setter(null, 300d)
+                    { PropertyPath = new PropertyPathBuilder().Property(Border.WidthProperty).Build() }
                 },
                 Cue = new Cue(1.0d)
             };
