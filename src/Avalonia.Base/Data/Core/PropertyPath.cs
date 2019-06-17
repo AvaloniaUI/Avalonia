@@ -6,6 +6,8 @@ namespace Avalonia.Data.Core
 {
     public class PropertyPath
     {
+        public Type PropertyType {get; internal set; }
+
         public IReadOnlyList<IPropertyPathElement> Elements { get; }
 
         public PropertyPath(IEnumerable<IPropertyPathElement> elements)

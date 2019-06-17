@@ -14,7 +14,7 @@ namespace Avalonia.Animation
         /// <summary>
         /// The target property.
         /// </summary>
-        AvaloniaProperty Property {get; set;}
+        AnimationTarget Target { get; set; }
 
         /// <summary>
         /// Applies the current KeyFrame group to the specified control.

@@ -23,18 +23,18 @@
             <Animation Duration="0:0:0.45" Easing="QuadraticEaseIn" FillMode="Forward">
                 <KeyFrame Cue="0%">
                     <Setter PropertyPath="Opacity" Value="0"/>
-                    <Setter PropertyPath="RenderTransform.TranslateY" Value="20"/>
-                    <Setter PropertyPath="RenderTransform.ScaleX" Value="0.85"/>
-                    <Setter PropertyPath="RenderTransform.ScaleY" Value="0.85"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateY" Value="20"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.ScaleX" Value="0.85"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.ScaleY" Value="0.85"/>
                 </KeyFrame>
                 <KeyFrame Cue="30%">
-                    <Setter PropertyPath="RenderTransform.TranslateY" Value="-20"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateY" Value="-20"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
                     <Setter PropertyPath="Opacity" Value="1"/>
-                    <Setter PropertyPath="RenderTransform.TranslateY" Value="0"/>
-                    <Setter PropertyPath="RenderTransform.ScaleX" Value="1"/>
-                    <Setter PropertyPath="RenderTransform.ScaleY" Value="1"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateY" Value="0"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.ScaleX" Value="1"/>
+                    <Setter PropertyPath="RenderTransform as CompositeTransform.ScaleY" Value="1"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>
@@ -49,16 +49,16 @@
         <Style.Animations>
             <Animation Duration="0:0:0.75" Easing="QuadraticEaseOut" FillMode="Forward">
                 <KeyFrame Cue="0%">
-                    <Setter PropertyPath="RenderTransform.TranslateX" Value="0"/>
-                    <Setter PropertyPath="RenderTransform.ScaleY" Value="1"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.TranslateX" Value="0"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.ScaleY" Value="1"/>
                 </KeyFrame>
                 <KeyFrame Cue="70%">
-                    <Setter PropertyPath="RenderTransform.TranslateX" Value="800"/>
-                    <Setter PropertyPath="RenderTransform.ScaleY" Value="1"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.TranslateX" Value="800"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.ScaleY" Value="1"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
-                    <Setter PropertyPath="RenderTransform.ScaleY" Value="0"/>
-                    <Setter PropertyPath="RenderTransform.TranslateX" Value="800"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.ScaleY" Value="0"/>
+                    <Setter PropertyPath="LayoutTransform as CompositeTransform.TranslateX" Value="800"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>

@@ -36,11 +36,11 @@
                      IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
-                  <Setter PropertyPath="RenderTransform.TranslateX"
+                  <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateX"
                           Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
               <KeyFrame Cue="100%">
-                  <Setter PropertyPath="RenderTransform.TranslateX"
+                  <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateX"
                           Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
       </Animation>
@@ -52,11 +52,11 @@
                      IterationCount="Infinite"
                      Easing="LinearEasing">
               <KeyFrame Cue="0%">
-                  <Setter PropertyPath="RenderTransform.TranslateY"
+                  <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateY"
                           Value="{Binding IndeterminateStartingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
               <KeyFrame Cue="100%">
-                  <Setter PropertyPath="RenderTransform.TranslateY"
+                  <Setter PropertyPath="RenderTransform as CompositeTransform.TranslateY"
                           Value="{Binding IndeterminateEndingOffset, RelativeSource={RelativeSource TemplatedParent}}" />
               </KeyFrame>
       </Animation>

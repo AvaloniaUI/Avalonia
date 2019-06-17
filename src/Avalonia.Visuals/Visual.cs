@@ -123,6 +123,7 @@ namespace Avalonia
             visualChildren.Validate = ValidateVisualChild;
             visualChildren.CollectionChanged += VisualChildrenChanged;
             VisualChildren = visualChildren;
+            RenderTransform = new CompositeTransform();
         }
 
         /// <summary>
@@ -207,22 +208,8 @@ namespace Avalonia
         /// </summary>
         public Transform RenderTransform
         {
-            get
-            {
-                var curVal = GetValue(RenderTransformProperty);
-
-                if (curVal == null)
-                {
-                    curVal = new CompositeTransform();
-                    SetValue(RenderTransformProperty, curVal);
-                }
-
-                return curVal;
-            }
-            set
-            {
-                SetValue(RenderTransformProperty, value);
-            }
+            get { return GetValue(RenderTransformProperty); }
+            set { SetValue(RenderTransformProperty, value); }
         }
 
         /// <summary>

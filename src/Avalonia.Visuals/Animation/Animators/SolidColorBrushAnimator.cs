@@ -13,7 +13,7 @@ namespace Avalonia.Animation.Animators
     {
         ColorAnimator _colorAnimator;
 
-        void InitializeColorAnimator()
+        void InitializeColorAnimator(Animatable target)
         {
             _colorAnimator = new ColorAnimator();
 
@@ -22,7 +22,7 @@ namespace Avalonia.Animation.Animators
                 _colorAnimator.Add(keyframe);
             }
 
-            _colorAnimator.Property = SolidColorBrush.ColorProperty;
+            _colorAnimator.Target = new AnimationTarget(target, SolidColorBrush.ColorProperty);
         }
 
         public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
@@ -39,17 +39,19 @@ namespace Avalonia.Animation.Animators
                 }
             }
 
-            // Add SCB if the target prop is empty.
-            if (control.GetValue(Property) == null)
-                control.SetValue(Property, new SolidColorBrush(Colors.Transparent));
+            var targetObj = Target.TargetObject;
+            var targetAnim = Target.TargetAnimatable;
+            var targetProp = Target.TargetProperty;
 
-            var targetVal = control.GetValue(Property);
+            // Add SCB if the target prop is empty.
+            if (targetAnim.GetValue(targetProp) == null)
+                targetAnim.SetValue(targetProp, new SolidColorBrush(Colors.Transparent));
+
+            var targetVal = targetAnim.GetValue(targetProp);
 
             // Continue if target prop is not empty & is a SolidColorBrush derivative. 
             if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
             {
-                if (_colorAnimator == null)
-                    InitializeColorAnimator();
 
                 SolidColorBrush finalTarget;
 
@@ -58,12 +60,15 @@ namespace Avalonia.Animation.Animators
                 {
                     var col = (ImmutableSolidColorBrush)targetVal;
                     targetVal = new SolidColorBrush(col.Color);
-                    control.SetValue(Property, targetVal);
+                    targetAnim.SetValue(targetProp, targetVal);
                 }
 
                 finalTarget = targetVal as SolidColorBrush;
 
-                return _colorAnimator.Apply(animation, finalTarget, clock ?? control.Clock, match, onComplete);
+                if (_colorAnimator == null)
+                    InitializeColorAnimator(finalTarget);
+
+                return _colorAnimator.Apply(animation, finalTarget, clock ?? targetAnim.Clock, match, onComplete);
             }
 
             return Disposable.Empty;

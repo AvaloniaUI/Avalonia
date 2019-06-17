@@ -45,7 +45,7 @@ namespace Avalonia.Animation
             _onCompleteAction = OnComplete;
             _interpolator = Interpolator;
             _baseClock = baseClock;
-            _neutralValue = (T)_targetControl.GetValue(_animator.Property);
+            _neutralValue = (T)_targetControl.GetValue(_animator.Target.TargetProperty);
 
             FetchProperties();
         }
@@ -105,7 +105,7 @@ namespace Avalonia.Animation
         private void ApplyFinalFill()
         {
             if (_fillMode == FillMode.Forward || _fillMode == FillMode.Both)
-                _targetControl.SetValue(_animator.Property, _lastInterpValue, BindingPriority.LocalValue);
+                _targetControl.SetValue(_animator.Target.TargetProperty, _lastInterpValue, BindingPriority.LocalValue);
         }
 
         private void DoComplete()

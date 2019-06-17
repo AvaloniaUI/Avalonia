@@ -17,6 +17,11 @@ namespace Avalonia.Controls
     /// </summary>
     public class LayoutTransformControl : Decorator
     {
+        public LayoutTransformControl()
+        {
+            LayoutTransform = new CompositeTransform();
+        }
+
         public static readonly AvaloniaProperty<Transform> LayoutTransformProperty =
             AvaloniaProperty.Register<LayoutTransformControl, Transform>(nameof(LayoutTransform));
 
@@ -36,22 +41,8 @@ namespace Avalonia.Controls
         /// </summary>
         public Transform LayoutTransform
         {
-            get
-            {
-                var curVal = GetValue(LayoutTransformProperty);
-
-                if (curVal == null)
-                {
-                    curVal = new CompositeTransform();
-                    SetValue(LayoutTransformProperty, curVal);
-                }
-
-                return curVal;
-            }
-            set
-            {
-                SetValue(LayoutTransformProperty, value);
-            }
+            get { return GetValue(LayoutTransformProperty); }
+            set { SetValue(LayoutTransformProperty, value); }
         }
 
         public IControl TransformRoot => Child;

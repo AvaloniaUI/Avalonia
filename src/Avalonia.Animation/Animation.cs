@@ -233,7 +233,7 @@ namespace Avalonia.Animation
 
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable control)
         {
-            var handlerList = new List<(Type type, AvaloniaProperty TargetProperty)>();
+            var handlerList = new List<(Type type, AnimationTarget TargetProperty)>();
             var animatorKeyFrames = new List<AnimatorKeyFrame>();
             var subscriptions = new List<IDisposable>();
 
@@ -241,23 +241,71 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    AvaloniaProperty targetProp = setter.Property;
+                    var target = new AnimationTarget(control, setter.Property);
 
-                    if (targetProp == null & setter.PropertyPath != null)
+                    if (setter.Property == null & setter.PropertyPath != null)
                     {
-                        var t = setter.PropertyPath.Elements.OfType<PropertyPropertyPathElement>().Last();
-                        targetProp = (AvaloniaProperty)(t).Property;
+                        bool traverse = false, start = true;
+                        object tempTarget = null;
+                        foreach (var elem in setter.PropertyPath.Elements.Select((e, i) => (e, i)))
+                        {
+                            switch (elem.e)
+                            {
+                                case PropertyPropertyPathElement pp:
+                                    if (start)
+                                    {
+                                        target.TargetProperty = (AvaloniaProperty)pp.Property;
+                                        var tgt = control.GetValue(target.TargetProperty);
+
+                                        if (tgt is Animatable)
+                                            tempTarget = tgt;
+                                        else
+                                            target.TargetObject = tgt;
+
+                                        start = false;
+                                    }
+                                    else
+                                    {
+                                        if (traverse)
+                                        {
+                                            target.TargetProperty = (AvaloniaProperty)pp.Property;
+                                            traverse = false;
+                                        }
+                                    }
+
+                                    break;
+                                case CastTypePropertyPathElement ct:
+                                    if (tempTarget != null && tempTarget?.GetType() != ct.Type)
+                                    {
+                                        tempTarget = Convert.ChangeType(target.TargetAnimatable, ct.Type);
+                                    }
+                                    break;
+                                case EnsureTypePropertyPathElement et:
+                                    if (target.TargetAnimatable?.GetType() != et.Type)
+                                    {
+
+                                    }
+                                    break;
+                                case ChildTraversalPropertyPathElement tr:
+                                    traverse = true;
+                                    break;
+                            }
+                        }
+
+                        if (tempTarget != null)
+                            target.TargetAnimatable = tempTarget as Animatable;
                     }
 
-                    var handler = GetAnimatorType(targetProp);
+
+                    var handler = GetAnimatorType(target.TargetProperty);
 
                     if (handler == null)
                     {
-                        throw new InvalidOperationException($"No animator registered for the property {targetProp}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                        throw new InvalidOperationException($"No animator registered for the property {target.TargetProperty}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
                     }
 
-                    if (!handlerList.Contains((handler, targetProp)))
-                        handlerList.Add((handler, targetProp));
+                    if (!handlerList.Contains((handler, target)))
+                        handlerList.Add((handler, target));
 
                     var cue = keyframe.Cue;
 
@@ -266,10 +314,9 @@ namespace Avalonia.Animation
                         cue = new Cue(keyframe.KeyTime.Ticks / Duration.Ticks);
                     }
 
-                    var newKF = new AnimatorKeyFrame(handler, cue);
-                    newKF.Property = targetProp;
+                    var newKF = new AnimatorKeyFrame(handler, cue, target);
 
-                    subscriptions.Add(newKF.BindSetter(setter, control));
+                    subscriptions.Add(newKF.BindSetter(setter, target.TargetAnimatable));
 
                     animatorKeyFrames.Add(newKF);
                 }
@@ -277,21 +324,21 @@ namespace Avalonia.Animation
 
             var newAnimatorInstances = new List<IAnimator>();
 
-            foreach (var (handlerType, property) in handlerList)
+            foreach (var (handlerType, target) in handlerList)
             {
                 var newInstance = (IAnimator)Activator.CreateInstance(handlerType);
-                newInstance.Property = property;
+                newInstance.Target = target;
                 newAnimatorInstances.Add(newInstance);
             }
 
             foreach (var keyframe in animatorKeyFrames)
             {
-
-                var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.AnimatorType &&
-                                                             (IPropertyInfo)a.Property == (IPropertyInfo)keyframe.Property);
+                var animator = newAnimatorInstances.First(a => a.GetType() == keyframe.HandlerAnimatorType &&
+                                                               (IPropertyInfo)a.Target.TargetProperty ==
+                                                               (IPropertyInfo)keyframe.Target.TargetProperty);
                 animator.Add(keyframe);
             }
-            
+
             return (newAnimatorInstances, subscriptions);
         }
 

@@ -24,10 +24,11 @@ namespace Avalonia.Animation.Animators
 
         private bool _isVerifiedAndConverted;
 
+
         /// <summary>
-        /// Gets or sets the target property for the keyframe.
-        /// </summary>
-        public AvaloniaProperty Property { get; set; }
+        /// Gets or sets the animation target for the keyframe.
+        /// </summary> 
+        public AnimationTarget Target { get; set; }
 
         public Animator()
         {
@@ -111,12 +112,14 @@ namespace Avalonia.Animation.Animators
         {
             var instance = new AnimationInstance<T>(
                 animation,
-                control,
+                Target.TargetAnimatable,
                 this,
-                clock ?? control.Clock ?? Clock.GlobalClock,
+                clock ?? Target.TargetAnimatable.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-            return control.Bind<T>((AvaloniaProperty<T>)Property, instance, BindingPriority.Animation);
+
+
+            return Target.TargetAnimatable.Bind<T>((AvaloniaProperty<T>)Target.TargetProperty, instance, BindingPriority.Animation);
         }
 
         /// <summary>
@@ -162,12 +165,12 @@ namespace Avalonia.Animation.Animators
         {
             if (!hasStartKey)
             {
-                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(this.GetType(), new Cue(0.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Insert(0, new AnimatorKeyFrame(null, new Cue(0.0d), null) { Value = default(T), isNeutral = true });
             }
 
             if (!hasEndKey)
             {
-                _convertedKeyframes.Add(new AnimatorKeyFrame(this.GetType(), new Cue(1.0d)) { Value = default(T), isNeutral = true });
+                _convertedKeyframes.Add(new AnimatorKeyFrame(null, new Cue(1.0d), null) { Value = default(T), isNeutral = true });
             }
         }
     }

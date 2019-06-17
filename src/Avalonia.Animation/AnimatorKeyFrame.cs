@@ -22,16 +22,17 @@ namespace Avalonia.Animation
 
         }
 
-        public AnimatorKeyFrame(Type animatorType, Cue cue)
+        public AnimatorKeyFrame(Type handlerAnimatorType, Cue cue, AnimationTarget target)
         {
-            AnimatorType = animatorType;
+            HandlerAnimatorType = handlerAnimatorType;
+            Target = target;            
             Cue = cue;
         }
 
         internal bool isNeutral;
-        public Type AnimatorType { get; }
+        public Type HandlerAnimatorType { get; }
         public Cue Cue { get; }
-        public AvaloniaProperty Property { get; internal set; }
+        public AnimationTarget Target {get; }
 
         private object _value;
 
