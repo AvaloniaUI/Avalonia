@@ -9,7 +9,6 @@ using System.Globalization;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Portable.Xaml.ComponentModel;
 	using System.ComponentModel;
 
     public class IconTypeConverter : TypeConverter

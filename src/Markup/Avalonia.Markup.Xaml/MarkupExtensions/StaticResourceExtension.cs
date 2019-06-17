@@ -7,13 +7,10 @@ using System.ComponentModel;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Markup.Data;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class StaticResourceExtension : MarkupExtension
+    public class StaticResourceExtension
     {
         public StaticResourceExtension()
         {
@@ -26,26 +23,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public string ResourceKey { get; set; }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public object ProvideValue(IServiceProvider serviceProvider)
         {
-
-
             // Look upwards though the ambient context for IResourceProviders which might be able
             // to give us the resource.
             foreach (var resourceProvider in serviceProvider.GetParents<IResourceNode>())
             {
-                // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
-                // from GetAllAmbientValues aren't necessarily of the correct type.
-
-                if (AvaloniaXamlLoader.UseLegacyXamlLoader 
-                    && resourceProvider is IControl control && control.StylingParent != null)
-                {
-                    // If we've got to a control that has a StylingParent then it's probably
-                    // a top level control and its StylingParent is pointing to the global
-                    // styles. If this is case just do a FindResource on it.
-                    return control.FindResource(ResourceKey);
-                }
-                else if (resourceProvider.TryGetResource(ResourceKey, out var value))
+                if (resourceProvider.TryGetResource(ResourceKey, out var value))
                 {
                     return value;
                 }
