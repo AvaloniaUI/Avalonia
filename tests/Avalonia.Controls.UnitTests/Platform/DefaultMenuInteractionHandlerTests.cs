@@ -240,7 +240,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item, e);
                 
                 Mock.Get(parentItem).Verify(x => x.Close());
-                Mock.Get(parentItem).Verify(x => x.Focus());
+                Mock.Get(parentItem).Verify(x => x.Focus(NavigationMethod.Unspecified, InputModifiers.None));
                 Assert.True(e.Handled);
             }
 
@@ -331,7 +331,7 @@ namespace Avalonia.Controls.UnitTests.Platform
                 target.KeyDown(item, e);
 
                 Mock.Get(parentItem).Verify(x => x.Close());
-                Mock.Get(parentItem).Verify(x => x.Focus());
+                Mock.Get(parentItem).Verify(x => x.Focus(NavigationMethod.Unspecified, InputModifiers.None));
                 Assert.True(e.Handled);
             }
 

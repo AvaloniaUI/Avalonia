@@ -394,26 +394,22 @@ namespace Avalonia.Input
         public GestureRecognizerCollection GestureRecognizers
             => _gestureRecognizers ?? (_gestureRecognizers = new GestureRecognizerCollection(this));
 
-        /// <summary>
-        /// Focuses the control.
-        /// </summary>
-        public bool Focus() => this.GetFocusManager()?.Focus(this) == true;
 
         /// <summary>
         /// Focuses the control.
         /// <param name="method">The method by which focus was changed.</param>
         /// <param name="modifiers">Any input modifiers active at the time of focus.</param>
         /// </summary>
-        public bool Focus(NavigationMethod method, InputModifiers modifiers = InputModifiers.None) => this.GetFocusManager()?.Focus(this, method, modifiers) == true;
+        public bool Focus(NavigationMethod method = NavigationMethod.Unspecified,
+            InputModifiers modifiers = InputModifiers.None) => this.GetFocusManager()?.Focus(this, method, modifiers) == true;
 
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
-            var focusManager = this.GetFocusManager();
             base.OnDetachedFromVisualTreeCore(e);
             if (IsFocused)
             {
-                focusManager?.Focus(null);
+                this.GetFocusManager()?.Focus(null);
             }
         }
 

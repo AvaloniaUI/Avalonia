@@ -40,14 +40,15 @@ namespace Avalonia.Input
         public event EventHandler FocusedElementChanged;
 
 
-        void UpdateFocus(Action cb, NavigationMethod method = NavigationMethod.Unspecified,
+        private void UpdateFocus(Action cb, NavigationMethod method = NavigationMethod.Unspecified,
             InputModifiers modifiers = default)
         {
             var lastFocus = FocusedElement;
             cb();
             
             // For now reset the focus if control is detached from the root
-            // We can make the focus 
+            // Later we can choose to transfer the focus to a parent focusable element
+            // like we do with pointer captures or to a parent scope once they are properly implemented
             if (_logicalFocus != null && !_root.IsVisualAncestorOf(_logicalFocus))
                 _logicalFocus = null;
             
@@ -63,9 +64,10 @@ namespace Avalonia.Input
             FocusedElementChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void SetHasEffectiveFocus(bool hasEffectiveFocus)
+        public bool HasEffectiveFocus
         {
-            UpdateFocus(() => _hasEffectiveFocus = hasEffectiveFocus);
+            get => _hasEffectiveFocus;
+            set => UpdateFocus(() => _hasEffectiveFocus = value);
         }
 
         /// <summary>

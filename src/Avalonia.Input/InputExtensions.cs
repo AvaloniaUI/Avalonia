@@ -50,7 +50,7 @@ namespace Avalonia.Input
         }
         
         /// <summary>
-        /// Gets the IFocusManager instance for an <see cref="IVisual"/>.
+        /// Gets the <see cref="IFocusManager"/> instance for an <see cref="IVisual"/>.
         /// </summary>
         /// <param name="visual">The visual.</param>
         /// <returns>

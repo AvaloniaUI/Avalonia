@@ -11,7 +11,7 @@ namespace Avalonia.Input
     public interface IFocusManager
     {
         /// <summary>
-        /// Gets the currently focused <see cref="IInputElement"/>.
+        /// Gets the currently focused <see cref="IInputElement"/> or null if <see cref="HasEffectiveFocus"/> == false
         /// </summary>
         IInputElement FocusedElement { get; }
 
@@ -26,8 +26,15 @@ namespace Avalonia.Input
             NavigationMethod method = NavigationMethod.Unspecified,
             InputModifiers modifiers = InputModifiers.None);
 
-        void SetHasEffectiveFocus(bool value);
+        /// <summary>
+        /// Gets or sets a value indicating whether this particular focus manager instance
+        /// has the effective input focus (i. e. the associated window is currently active)
+        /// </summary>
+        bool HasEffectiveFocus {get; set; }
 
+        /// <summary>
+        /// Fires when FocusedElement is changed
+        /// </summary>
         event EventHandler FocusedElementChanged;
     }
 }

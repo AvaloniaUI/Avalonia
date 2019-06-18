@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Embedding
     {
         public EmbeddableControlRoot(IEmbeddableWindowImpl impl) : base(impl)
         {
-            impl.LostFocus += () => FocusManager.SetHasEffectiveFocus(false);
+            impl.LostFocus += () => FocusManager.HasEffectiveFocus = false;
         }
 
         public EmbeddableControlRoot() : this(PlatformManager.CreateEmbeddableWindow())

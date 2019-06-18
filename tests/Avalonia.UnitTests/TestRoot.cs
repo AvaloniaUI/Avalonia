@@ -20,7 +20,7 @@ namespace Avalonia.UnitTests
         public TestRoot()
         {
             FocusManager = new FocusManager(this);
-            FocusManager.SetHasEffectiveFocus(true);
+            FocusManager.HasEffectiveFocus = true;
             Renderer = Mock.Of<IRenderer>();
         }
 

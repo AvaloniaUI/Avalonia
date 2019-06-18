@@ -280,7 +280,7 @@ namespace Avalonia.Controls
         private void HandleActivated()
         {
             Activated?.Invoke(this, EventArgs.Empty);
-            FocusManager.SetHasEffectiveFocus(true);
+            FocusManager.HasEffectiveFocus = true;
             IsActive = true;
         }
 
@@ -290,7 +290,7 @@ namespace Avalonia.Controls
         private void HandleDeactivated()
         {
             IsActive = false;
-            FocusManager.SetHasEffectiveFocus(false);
+            FocusManager.HasEffectiveFocus = false;
             Deactivated?.Invoke(this, EventArgs.Empty);
         }
 
