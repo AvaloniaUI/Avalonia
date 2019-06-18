@@ -105,7 +105,7 @@
           </Animation>
         </Style.Animations>
       </Style>
-      <Style Selector="Border.Rect6:pointerover">
+      <Style Selector="Border.Rect6">
         <Style.Animations>
           <Animation Duration="0:0:3"
                      IterationCount="Infinite"

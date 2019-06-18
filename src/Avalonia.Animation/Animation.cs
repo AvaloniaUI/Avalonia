@@ -309,7 +309,7 @@ namespace Avalonia.Animation
         private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable root, ref bool haltProcessing)
         {
             var subscriptions = new List<IDisposable>();
-            var animatorInstances = new Dictionary<(Type type, AnimationTarget animTarget), IAnimator>();
+            var animatorInstances = new Dictionary<AnimationTarget, IAnimator>(new AnimationTarget.EqualityComparer());
 
             foreach (var keyframe in Children)
             {
@@ -320,6 +320,7 @@ namespace Avalonia.Animation
                     if (haltProcessing) return (null, null);
 
                     var animatorType = GetAnimatorType(target.TargetProperty);
+                    target.AnimatorHandlerType = animatorType;
 
                     if (animatorType == null)
                     {
@@ -331,15 +332,19 @@ namespace Avalonia.Animation
                     }
 
                     IAnimator animator;
-
-                    if (!animatorInstances.Keys.Contains((animatorType, target)))
+                    var k = animatorInstances.Keys.Where(p => target.Equals(p)).Any();
+                    if (k)
+                    {
+                        animator = animatorInstances[target];
+                    }
+                    else
                     {
                         var newAnimator = (IAnimator)Activator.CreateInstance(animatorType);
                         newAnimator.Target = target;
-                        animatorInstances[(animatorType, target)] = newAnimator;
+                        animatorInstances.Add(target, newAnimator);
+                        animator = newAnimator;
                     }
 
-                    animator = animatorInstances[(animatorType, target)];
 
                     var cue = keyframe.Cue;
 

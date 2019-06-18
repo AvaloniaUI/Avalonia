@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Data.Core;
 
 namespace Avalonia.Animation
@@ -17,6 +18,8 @@ namespace Avalonia.Animation
             TargetAnimatable = root;
             TargetProperty = property;
         }
+
+        public Type AnimatorHandlerType { get; internal set; }
 
         public Animatable RootAnimatable { get; internal set; }
 
@@ -38,17 +41,31 @@ namespace Avalonia.Animation
         /// </summary>
         public object TargetObject { get; internal set; }
 
+        public class EqualityComparer : IEqualityComparer<AnimationTarget>
+        {
+            public bool Equals(AnimationTarget x, AnimationTarget y)
+            {
+                return x.Equals(y);
+            }
+
+            public int GetHashCode(AnimationTarget obj)
+            {
+                return obj.AnimatorHandlerType.GetHashCode() ^ 
+                       obj.RootAnimatable.GetHashCode() ^
+                       ((IPropertyInfo)obj.TargetProperty).GetHashCode();
+            }
+        }
+
 
         public bool Equals(AnimationTarget other)
         {
-            if (TargetProperty == null || TargetAnimatable == null ||
-                other.TargetProperty == null || other.TargetAnimatable == null)
-            {
-                return false;
-            }
+            if (other == null) return false;
 
-            return ((IPropertyInfo)this.TargetProperty).Equals((IPropertyInfo)other.TargetProperty) &&
-                   this.TargetAnimatable.Equals(other.TargetAnimatable);
+            var EQ = ((IPropertyInfo)this.TargetProperty).Equals((IPropertyInfo)other.TargetProperty) &&
+                     this.RootAnimatable.Equals(other.RootAnimatable) &&
+                     this.AnimatorHandlerType.Equals(other.AnimatorHandlerType);
+
+            return EQ;
         }
     }
 }

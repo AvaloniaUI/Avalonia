@@ -29,13 +29,20 @@ namespace Avalonia.Animation.Animators
         {
             foreach (var keyframe in this)
             {
-                if (keyframe.Value as ISolidColorBrush == null)
-                    return Disposable.Empty;
+                var k = keyframe.Value.GetType();
 
                 // Preprocess keyframe values to Color if the xaml parser converts them to ISCB.
-                if (keyframe.Value.GetType() == typeof(ImmutableSolidColorBrush))
+                if (k == typeof(ImmutableSolidColorBrush))
                 {
                     keyframe.Value = ((ImmutableSolidColorBrush)keyframe.Value).Color;
+                }
+                else if (k == typeof(Color))
+                {
+                    continue;
+                }
+                else
+                {
+                    return Disposable.Empty;
                 }
             }
 
