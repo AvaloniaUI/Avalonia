@@ -406,10 +406,14 @@ namespace Avalonia.Input
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
+            // We are saving the instance here since we won't get any focus managers
+            // once control is actually detached
+            
+            var focusManager = this.GetFocusManager();
             base.OnDetachedFromVisualTreeCore(e);
             if (IsFocused)
             {
-                this.GetFocusManager()?.Focus(null);
+                focusManager?.Focus(null);
             }
         }
 
