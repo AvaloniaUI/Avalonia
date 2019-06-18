@@ -12,6 +12,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.Logging;
 using Avalonia.Metadata;
 
 namespace Avalonia.Animation
@@ -213,11 +214,6 @@ namespace Avalonia.Animation
             ( prop => typeof(decimal).IsAssignableFrom(prop.PropertyType), typeof(DecimalAnimator) ),
         };
 
-
-        private readonly static List<(Func<AvaloniaProperty, Type, bool> Condition, Type Animator)> SecondLevelAnimators
-                            = new List<(Func<AvaloniaProperty, Type, bool> Condition, Type Animator)>();
-
-
         public static void RegisterAnimator<TAnimator>(Func<AvaloniaProperty, bool> condition)
             where TAnimator : IAnimator
         {
@@ -236,7 +232,7 @@ namespace Avalonia.Animation
             return null;
         }
 
-        AnimationTarget GetTargetFromSetter(IAnimationSetter setter, Animatable root)
+        AnimationTarget GetTargetFromSetter(IAnimationSetter setter, Animatable root, ref bool haltProcessing)
         {
             var target = new AnimationTarget(root, null);
             bool traverse = false, start = true;
@@ -269,15 +265,33 @@ namespace Avalonia.Animation
                         }
                         break;
                     case CastTypePropertyPathElement ct:
-                        if (tempTarget != null && tempTarget?.GetType() != ct.Type)
+                        var tmpTargetType = tempTarget?.GetType();
+                        var castType = ct.Type;
+                        if (!castType.IsAssignableFrom(tmpTargetType))
                         {
-                            tempTarget = Convert.ChangeType(target.TargetAnimatable, ct.Type);
+                            Logger.Error(LogArea.Animations, this,
+                                         $"Type cast mismatch: `{tempTarget?.GetType()}` is not assignable to `{ct.Type}`");
+                            haltProcessing = true;
+                            return null;
                         }
                         break;
                     case EnsureTypePropertyPathElement et:
-                        if (target.TargetAnimatable?.GetType() != et.Type)
+                        var one = tempTarget?.GetType();
+                        var two = et.Type;
+                        if (!one.IsAssignableFrom(two))
                         {
-
+                            if (et.Type.IsAssignableFrom(target.TargetProperty.PropertyType))
+                            {
+                                tempTarget = Activator.CreateInstance(et.Type);
+                            }
+                            else
+                            {
+                                Logger.Error(LogArea.Animations, this,
+                                             $"Type enforcement mismatch: `{tempTarget?.GetType()}` is not assignable to `{et.Type}`");
+                                haltProcessing = true;
+                                return null;
+                            }
+                            target.TargetAnimatable.SetValue(target.TargetProperty, tempTarget);
                         }
                         break;
                     case ChildTraversalPropertyPathElement tr:
@@ -292,7 +306,7 @@ namespace Avalonia.Animation
             return target;
         }
 
-        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable root)
+        private (IList<IAnimator> Animators, IList<IDisposable> subscriptions) InterpretKeyframes(Animatable root, ref bool haltProcessing)
         {
             var subscriptions = new List<IDisposable>();
             var animatorInstances = new Dictionary<(Type type, AnimationTarget animTarget), IAnimator>();
@@ -301,12 +315,19 @@ namespace Avalonia.Animation
             {
                 foreach (var setter in keyframe.Setters)
                 {
-                    var target = GetTargetFromSetter(setter, root);
+                    var target = GetTargetFromSetter(setter, root, ref haltProcessing);
+
+                    if (haltProcessing) return (null, null);
+
                     var animatorType = GetAnimatorType(target.TargetProperty);
 
                     if (animatorType == null)
                     {
-                        throw new InvalidOperationException($"No animator registered for the property {target.TargetProperty}. Add an animator to the Animation.Animators collection that matches this property to animate it.");
+                        Logger.Error(LogArea.Control, this, $"No animator registered for the property {target.TargetProperty}. " +
+                                                            "Add an animator to the Animation.Animators collection that matches " +
+                                                            "this property to animate it.");
+                        haltProcessing = true;
+                        return (null, null);
                     }
 
                     IAnimator animator;
@@ -328,9 +349,8 @@ namespace Avalonia.Animation
                     }
 
                     var newKF = new AnimatorKeyFrame(animatorType, cue, target);
-                    newKF.Value = setter.Value;
 
-                    subscriptions.Add(newKF.BindSetter(setter, target.TargetAnimatable));
+                    subscriptions.Add(newKF.BindSetter(setter, target.RootAnimatable));
 
                     animator.Add(newKF);
                 }
@@ -342,10 +362,14 @@ namespace Avalonia.Animation
         /// <inheritdocs/>
         public IDisposable Apply(Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
         {
-            var (animators, subscriptions) = InterpretKeyframes(control);
+            bool haltProcessing = false;
+            var (animators, subscriptions) = InterpretKeyframes(control, ref haltProcessing);
+            if (haltProcessing)
+                return Disposable.Empty;
+
             if (animators.Count == 1)
             {
-                subscriptions.Add(animators[0].Apply(this, control, clock, match, onComplete));
+                subscriptions.Add(animators[0].Apply(this, clock, match, onComplete));
             }
             else
             {
@@ -359,7 +383,7 @@ namespace Avalonia.Animation
                         animatorOnComplete = () => tcs.SetResult(null);
                         completionTasks.Add(tcs.Task);
                     }
-                    subscriptions.Add(animator.Apply(this, control, clock, match, animatorOnComplete));
+                    subscriptions.Add(animator.Apply(this, clock, match, animatorOnComplete));
                 }
 
                 if (onComplete != null)

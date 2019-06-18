@@ -37,12 +37,12 @@ namespace Avalonia.Animation.Animators
         }
 
         /// <inheritdoc/>
-        public virtual IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
+        public virtual IDisposable Apply(Animation animation, IClock clock, IObservable<bool> match, Action onComplete)
         {
             if (!_isVerifiedAndConverted)
                 VerifyConvertKeyFrames();
 
-            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
+            var subject = new DisposeAnimationInstanceSubject<T>(this, animation, clock, onComplete);
             return match.Subscribe(subject);
         }
 
@@ -108,16 +108,15 @@ namespace Avalonia.Animation.Animators
         /// <summary>
         /// Runs the KeyFrames Animation.
         /// </summary>
-        internal IDisposable Run(Animation animation, Animatable control, IClock clock, Action onComplete)
+        internal IDisposable Run(Animation animation, IClock clock, Action onComplete)
         {
             var instance = new AnimationInstance<T>(
                 animation,
                 Target.TargetAnimatable,
                 this,
-                clock ?? Target.TargetAnimatable.Clock ?? Clock.GlobalClock,
+                clock ?? Target.RootAnimatable.Clock ?? Clock.GlobalClock,
                 onComplete,
                 InterpolationHandler);
-
 
             return Target.TargetAnimatable.Bind<T>((AvaloniaProperty<T>)Target.TargetProperty, instance, BindingPriority.Animation);
         }

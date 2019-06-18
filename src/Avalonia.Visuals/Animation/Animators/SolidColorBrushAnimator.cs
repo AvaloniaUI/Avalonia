@@ -25,7 +25,7 @@ namespace Avalonia.Animation.Animators
             _colorAnimator.Target = new AnimationTarget(target, SolidColorBrush.ColorProperty);
         }
 
-        public override IDisposable Apply(Animation animation, Animatable control, IClock clock, IObservable<bool> match, Action onComplete)
+        public override IDisposable Apply(Animation animation, IClock clock, IObservable<bool> match, Action onComplete)
         {
             foreach (var keyframe in this)
             {
@@ -52,7 +52,6 @@ namespace Avalonia.Animation.Animators
             // Continue if target prop is not empty & is a SolidColorBrush derivative. 
             if (typeof(ISolidColorBrush).IsAssignableFrom(targetVal.GetType()))
             {
-
                 SolidColorBrush finalTarget;
 
                 // If it's ISCB, change it back to SCB.
@@ -68,7 +67,7 @@ namespace Avalonia.Animation.Animators
                 if (_colorAnimator == null)
                     InitializeColorAnimator(finalTarget);
 
-                return _colorAnimator.Apply(animation, finalTarget, clock ?? targetAnim.Clock, match, onComplete);
+                return _colorAnimator.Apply(animation, clock, match, onComplete);
             }
 
             return Disposable.Empty;

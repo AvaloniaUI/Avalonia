@@ -11,11 +11,14 @@ namespace Avalonia.Animation
     /// </summary>
     public class AnimationTarget : IEquatable<AnimationTarget>
     {
-        public AnimationTarget(Animatable control, AvaloniaProperty property)
+        public AnimationTarget(Animatable root, AvaloniaProperty property)
         {
-            TargetAnimatable = control;
+            RootAnimatable = root;
+            TargetAnimatable = root;
             TargetProperty = property;
         }
+
+        public Animatable RootAnimatable { get; internal set; }
 
         /// <summary>
         /// The target property of the animation.
