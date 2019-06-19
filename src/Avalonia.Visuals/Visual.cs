@@ -292,29 +292,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Returns a transform that transforms the visual's coordinates into the coordinates
-        /// of the specified <paramref name="visual"/>.
-        /// </summary>
-        /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>
-        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
-        /// common ancestor.
-        /// </returns>
-        public Matrix? TransformToVisual(IVisual visual)
-        {
-            var common = this.FindCommonVisualAncestor(visual);
-
-            if (common != null)
-            {
-                var thisOffset = GetOffsetFrom(common, this);
-                var thatOffset = GetOffsetFrom(common, visual);
-                return -thatOffset * thisOffset;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
         /// called.
         /// </summary>
@@ -478,45 +455,6 @@ namespace Avalonia
                     property,
                     e.Message);
             }
-        }
-
-        /// <summary>
-        /// Gets the visual offset from the specified ancestor.
-        /// </summary>
-        /// <param name="ancestor">The ancestor visual.</param>
-        /// <param name="visual">The visual.</param>
-        /// <returns>The visual offset.</returns>
-        private static Matrix GetOffsetFrom(IVisual ancestor, IVisual visual)
-        {
-            var result = Matrix.Identity;
-
-            while (visual != ancestor)
-            {
-                if (visual.RenderTransform?.Value != null)
-                {
-                    var origin = visual.RenderTransformOrigin.ToPixels(visual.Bounds.Size);
-                    var offset = Matrix.CreateTranslation(origin);
-                    var renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
-
-                    result *= renderTransform;
-                }
-
-                var topLeft = visual.Bounds.TopLeft;
-
-                if (topLeft != default)
-                {
-                    result *= Matrix.CreateTranslation(topLeft);
-                }
-
-                visual = visual.VisualParent;
-
-                if (visual == null)
-                {
-                    throw new ArgumentException("'visual' is not a descendant of 'ancestor'.");
-                }
-            }
-
-            return result;
         }
 
         /// <summary>

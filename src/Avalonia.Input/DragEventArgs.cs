@@ -26,8 +26,9 @@ namespace Avalonia.Input
 
             if (_target != null)
             {
-                point = _target.TranslatePoint(_targetLocation, relativeTo);
+                point = _target.TranslatePoint(_targetLocation, relativeTo) ?? point;
             }
+
             return point;
         }
 
