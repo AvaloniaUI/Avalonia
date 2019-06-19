@@ -10,6 +10,12 @@ namespace Avalonia.Controls
 {
     public abstract class DefinitionList<T> : AvaloniaList<T> where T : DefinitionBase
     {
+        public DefinitionList()
+        {
+            ResetBehavior = ResetBehavior.Remove;
+            CollectionChanged += OnCollectionChanged;
+        }
+
         internal bool IsDirty = true;
         private Grid _parent;
 
@@ -18,7 +24,6 @@ namespace Avalonia.Controls
             get => _parent;
             set => SetParent(value);
         }
-
 
         private void SetParent(Grid value)
         {
