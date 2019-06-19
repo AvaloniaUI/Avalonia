@@ -255,16 +255,13 @@ namespace Avalonia
 
             if (MainWindow == null)
             {
-                Dispatcher.UIThread.Post(() =>
+                if (!mainWindow.IsVisible)
                 {
-                    if (!mainWindow.IsVisible)
-                    {
-                        mainWindow.Show();
-                    }
+                    mainWindow.Show();
+                }
 
-                    MainWindow = mainWindow;
-                });
-            }            
+                MainWindow = mainWindow;
+            }
 
             return Run(new CancellationTokenSource());
         }
@@ -362,7 +359,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||

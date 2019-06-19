@@ -245,6 +245,11 @@ namespace Avalonia.Rendering
                         {
                             if (context != null)
                                 return context;
+                            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+                            {
+                                RenderTarget.Dispose();
+                                RenderTarget = null;
+                            }
                             if (RenderTarget == null)
                                 RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
                             return context = RenderTarget.CreateDrawingContext(this);
@@ -528,6 +533,8 @@ namespace Avalonia.Rendering
                     oldScene?.Dispose();
                 }
 
+                _dirty.Clear();
+
                 if (SceneInvalidated != null)
                 {
                     var rect = new Rect();
@@ -540,10 +547,9 @@ namespace Avalonia.Rendering
                         }
                     }
 
+                    System.Diagnostics.Debug.WriteLine("Invalidated " + rect);
                     SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
-
-                _dirty.Clear();
             }
             else
             {

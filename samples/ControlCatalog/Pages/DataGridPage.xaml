@@ -11,7 +11,7 @@
       <Setter Property="Background" Value="{Binding Path=GDP, Mode=OneWay, Converter={StaticResource GDPConverter}}" />
     </Style>
   </UserControl.Styles>
-  <Grid RowDefinitions="Auto,Auto">
+  <Grid RowDefinitions="Auto,*">
     <StackPanel Orientation="Vertical" Spacing="4" Grid.Row="0">
       <TextBlock Classes="h1">DataGrid</TextBlock>
       <TextBlock Classes="h2">A control for displaying and interacting with a data source.</TextBlock>

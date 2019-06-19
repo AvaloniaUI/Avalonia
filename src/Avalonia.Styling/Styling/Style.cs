@@ -171,7 +171,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(string key, out object result)
+        public bool TryGetResource(object key, out object result)
         {
             result = null;
             return _resources?.TryGetResource(key, out result) ?? false;
