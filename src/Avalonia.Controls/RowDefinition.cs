@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
-        public RowDefinition()
+        public RowDefinition() 
         {
         }
 
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="value">The height of the row.</param>
         /// <param name="type">The height unit of the column.</param>
-        public RowDefinition(double value, GridUnitType type)
+        public RowDefinition(double value, GridUnitType type) 
         {
             Height = new GridLength(value, type);
         }
@@ -47,7 +47,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="RowDefinition"/> class.
         /// </summary>
         /// <param name="height">The height of the column.</param>
-        public RowDefinition(GridLength height)
+        public RowDefinition(GridLength height) 
         {
             Height = height;
         }
@@ -55,11 +55,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated height of the row.
         /// </summary>
-        public double ActualHeight
-        {
-            get;
-            internal set;
-        }
+        public double ActualHeight => Parent?.GetFinalRowDefinitionHeight(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum height of the row in DIPs.
@@ -87,5 +83,9 @@ namespace Avalonia.Controls
             get { return GetValue(HeightProperty); }
             set { SetValue(HeightProperty, value); }
         }
+
+        internal override GridLength UserSizeValueCache => this.Height;
+        internal override double UserMinSizeValueCache => this.MinHeight;
+        internal override double UserMaxSizeValueCache => this.MaxHeight;
     }
 }

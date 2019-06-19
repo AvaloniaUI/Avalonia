@@ -54,7 +54,8 @@ namespace Avalonia.Controls.Primitives
                 nameof(SelectedIndex),
                 o => o.SelectedIndex,
                 (o, v) => o.SelectedIndex = v,
-                unsetValue: -1);
+                unsetValue: -1,
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="SelectedItem"/> property.

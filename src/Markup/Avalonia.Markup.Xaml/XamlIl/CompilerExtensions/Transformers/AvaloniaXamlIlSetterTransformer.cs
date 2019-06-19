@@ -16,8 +16,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (!(node is XamlIlAstObjectNode on
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
+
             var parent = context.ParentNodes().OfType<XamlIlAstObjectNode>()
-                .FirstOrDefault(x => x.Type.GetClrType().FullName == "Avalonia.Styling.Style");
+                .FirstOrDefault(p => p.Type.GetClrType().FullName == "Avalonia.Styling.Style");
+            
             if (parent == null)
                 throw new XamlIlParseException(
                     "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
@@ -53,8 +55,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 .OfType<XamlIlAstXamlPropertyValueNode>().FirstOrDefault(p => p.Property.GetClrProperty().Name == "Value");
             if (valueProperty?.Values?.Count == 1 && valueProperty.Values[0] is XamlIlAstTextNode)
             {
-                var propType = avaloniaPropertyNode.Property.Getter?.ReturnType
-                               ?? avaloniaPropertyNode.Property.Setters.First().Parameters[0];
+                var propType = avaloniaPropertyNode.AvaloniaPropertyType;
                 if (!XamlIlTransformHelpers.TryGetCorrectlyTypedValue(context, valueProperty.Values[0],
                         propType, out var converted))
                     throw new XamlIlParseException(
