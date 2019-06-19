@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
@@ -7,8 +7,6 @@
     <CastXmlPath Condition="Exists('/usr/bin/castxml')">/usr/bin/castxml</CastXmlPath>
     <CastXmlPath Condition="Exists('/usr/local/bin/castxml')">/usr/local/bin/castxml</CastXmlPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- This is needed because Rider doesn't see generated files in obj for some reason -->
-    <SharpGenGeneratedCodeFolder>$(MSBuildThisFileDirectory)/Generated</SharpGenGeneratedCodeFolder>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Release' AND '$([MSBuild]::IsOSPlatform(OSX))' == 'true'">

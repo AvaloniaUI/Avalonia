@@ -47,7 +47,7 @@ namespace Avalonia.Skia
 
             if (!_fontFamilies.TryGetValue(typeface.FontFamily.Name, out var fontFamily))
             {
-                return TypefaceCache.Default;
+                return TypefaceCache.GetTypeface(TypefaceCache.DefaultFamilyName, typeface.Style, typeface.Weight);
             }
 
             var weight = (SKFontStyleWeight)typeface.Weight;

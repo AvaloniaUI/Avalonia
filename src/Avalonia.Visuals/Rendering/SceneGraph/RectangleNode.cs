@@ -105,8 +105,28 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        // TODO: This doesn't respect CornerRadius yet.
         /// <inheritdoc/>
-        public override bool HitTest(Point p) => Bounds.Contains(p);
+        public override bool HitTest(Point p)
+        {
+            // TODO: This doesn't respect CornerRadius yet.
+            if (Transform.HasInverse)
+            {
+                p *= Transform.Invert();
+
+                if (Brush != null)
+                {
+                    var rect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    return rect.Contains(p);
+                }
+                else
+                {
+                    var borderRect = Rect.Inflate((Pen?.Thickness / 2) ?? 0);
+                    var emptyRect = Rect.Deflate((Pen?.Thickness / 2) ?? 0);
+                    return borderRect.Contains(p) && !emptyRect.Contains(p);
+                }
+            }
+
+            return false;
+        }
     }
 }

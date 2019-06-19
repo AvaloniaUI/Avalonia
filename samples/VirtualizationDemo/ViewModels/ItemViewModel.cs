@@ -10,6 +10,7 @@ namespace VirtualizationDemo.ViewModels
     {
         private string _prefix;
         private int _index;
+        private double _height = double.NaN;
 
         public ItemViewModel(int index, string prefix = "Item")
         {
@@ -18,5 +19,11 @@ namespace VirtualizationDemo.ViewModels
         }
 
         public string Header => $"{_prefix} {_index}";
+
+        public double Height
+        {
+            get => _height;
+            set => this.RaiseAndSetIfChanged(ref _height, value);
+        }
     }
 }
