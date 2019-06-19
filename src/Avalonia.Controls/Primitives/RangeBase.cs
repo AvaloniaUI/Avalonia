@@ -44,13 +44,13 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="SmallChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SmallChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 0.1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 1);
 
         /// <summary>
         /// Defines the <see cref="LargeChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LargeChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 10);
 
         private double _minimum;
         private double _maximum = 100.0;
