@@ -28,15 +28,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 XmlnsAttributes =
                 {
                     typeSystem.GetType("Avalonia.Metadata.XmlnsDefinitionAttribute"),
-                    typeSystem.FindType("Portable.Xaml.Markup.XmlnsDefinitionAttribute")
                 },
                 ContentAttributes =
                 {
                     typeSystem.GetType("Avalonia.Metadata.ContentAttribute")
                 },
-                ProvideValueTarget = typeSystem.GetType("Portable.Xaml.Markup.IProvideValueTarget"),
-                RootObjectProvider = typeSystem.GetType("Portable.Xaml.IRootObjectProvider"),
-                UriContextProvider = typeSystem.GetType("Portable.Xaml.Markup.IUriContext"),
+                ProvideValueTarget = typeSystem.GetType("Avalonia.Markup.Xaml.IProvideValueTarget"),
+                RootObjectProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IRootObjectProvider"),
+                UriContextProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IUriContext"),
                 ParentStackProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlParentStackProvider"),
 
@@ -47,7 +46,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     runtimeHelpers.FindMethod(m => m.Name == "DeferredTransformationFactoryV1"),
                 UsableDuringInitializationAttributes =
                 {
-                    typeSystem.GetType("Portable.Xaml.Markup.UsableDuringInitializationAttribute"),
                     typeSystem.GetType("Avalonia.Metadata.UsableDuringInitializationAttribute"),
                 },
                 InnerServiceProviderFactoryMethod =
@@ -79,15 +77,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 void Add(string type, string conv)
                     => AddType(typeSystem.GetType(type), typeSystem.GetType(conv));
                 
-                
-                //Add("Avalonia.AvaloniaProperty","Avalonia.Markup.Xaml.Converters.AvaloniaPropertyTypeConverter");
                 Add("Avalonia.Media.Imaging.IBitmap","Avalonia.Markup.Xaml.Converters.BitmapTypeConverter");
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));
                 Add("Avalonia.Controls.Templates.IMemberSelector",
                     "Avalonia.Markup.Xaml.Converters.MemberSelectorTypeConverter");
-                Add("Avalonia.Styling.Selector","Avalonia.Markup.Xaml.Converters.SelectorTypeConverter");
                 Add("Avalonia.Controls.WindowIcon","Avalonia.Markup.Xaml.Converters.IconTypeConverter");
                 Add("System.Globalization.CultureInfo", "System.ComponentModel.CultureInfoConverter");
                 Add("System.Uri", "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter");

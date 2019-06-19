@@ -18,6 +18,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ListBoxTests_Single
     {
+        MouseTestHelper _mouse = new MouseTestHelper();
+        
         [Fact]
         public void Focusing_Item_With_Tab_Should_Not_Select_It()
         {
@@ -68,12 +70,7 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -90,11 +87,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -111,11 +104,7 @@ namespace Avalonia.Controls.UnitTests
 
             ApplyTemplate(target);
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -133,11 +122,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(-1, target.SelectedIndex);
         }
@@ -155,11 +140,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 0;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }
@@ -177,11 +158,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplate(target);
             target.SelectedIndex = 1;
 
-            target.Presenter.Panel.Children[0].RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-                MouseButton = MouseButton.Left,
-            });
+            _mouse.Click(target.Presenter.Panel.Children[0]);
 
             Assert.Equal(0, target.SelectedIndex);
         }

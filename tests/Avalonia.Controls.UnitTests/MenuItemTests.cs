@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -23,6 +25,103 @@ namespace Avalonia.Controls.UnitTests
             var target = new MenuItem { Header = "-" };
 
             Assert.False(target.Focusable);
+        }
+
+
+        [Fact]
+        public void MenuItem_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
+        {
+            var command = new TestCommand(true);
+            var target = new MenuItem
+            {
+                IsEnabled = false,
+                Command = command,
+            };
+
+            var root = new TestRoot { Child = target };
+
+            Assert.False(((IInputElement)target).IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void MenuItem_Is_Disabled_When_Bound_Command_Doesnt_Exist()
+        {
+            var target = new MenuItem
+            {
+                [!MenuItem.CommandProperty] = new Binding("Command"),
+            };
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void MenuItem_Is_Disabled_When_Bound_Command_Is_Removed()
+        {
+            var viewModel = new
+            {
+                Command = new TestCommand(true),
+            };
+
+            var target = new MenuItem
+            {
+                DataContext = viewModel,
+                [!MenuItem.CommandProperty] = new Binding("Command"),
+            };
+
+            Assert.True(target.IsEnabled);
+            Assert.True(target.IsEffectivelyEnabled);
+
+            target.DataContext = null;
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void MenuItem_Is_Enabled_When_Bound_Command_Is_Added()
+        {
+            var viewModel = new
+            {
+                Command = new TestCommand(true),
+            };
+
+            var target = new MenuItem
+            {
+                DataContext = new object(),
+                [!MenuItem.CommandProperty] = new Binding("Command"),
+            };
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+
+            target.DataContext = viewModel;
+
+            Assert.True(target.IsEnabled);
+            Assert.True(target.IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void MenuItem_Is_Disabled_When_Disabled_Bound_Command_Is_Added()
+        {
+            var viewModel = new
+            {
+                Command = new TestCommand(false),
+            };
+
+            var target = new MenuItem
+            {
+                DataContext = new object(),
+                [!MenuItem.CommandProperty] = new Binding("Command"),
+            };
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+
+            target.DataContext = viewModel;
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
         }
 
         [Fact]
@@ -60,7 +159,13 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestCommand : ICommand
         {
+            private bool _enabled;
             private EventHandler _canExecuteChanged;
+
+            public TestCommand(bool enabled = true)
+            {
+                _enabled = enabled;
+            }
 
             public int SubscriptionCount { get; private set; }
 
@@ -70,7 +175,7 @@ namespace Avalonia.Controls.UnitTests
                 remove { _canExecuteChanged -= value; --SubscriptionCount; }
             }
 
-            public bool CanExecute(object parameter) => true;
+            public bool CanExecute(object parameter) => _enabled;
 
             public void Execute(object parameter)
             {

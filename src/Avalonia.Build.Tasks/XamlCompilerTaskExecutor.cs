@@ -150,7 +150,8 @@ namespace Avalonia.Build.Tasks
                             classType = typeSystem.TargetAssembly.FindType(tn.Text);
                             if (classType == null)
                                 throw new XamlIlParseException($"Unable to find type `{tn.Text}`", classDirective);
-                            initialRoot.Type = new XamlIlAstClrTypeReference(classDirective, classType, false);
+                            compiler.OverrideRootType(parsed,
+                                new XamlIlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
                         
@@ -233,8 +234,7 @@ namespace Avalonia.Build.Tasks
                                 var i = method.Body.Instructions;
                                 for (var c = 1; c < i.Count; c++)
                                 {
-                                    if (i[c - 1].OpCode == OpCodes.Ldarg_0
-                                        && i[c].OpCode == OpCodes.Call)
+                                    if (i[c].OpCode == OpCodes.Call)
                                     {
                                         var op = i[c].Operand as MethodReference;
                                         
@@ -253,8 +253,11 @@ namespace Avalonia.Build.Tasks
                                             && op.Parameters[0].ParameterType.FullName == "System.Object"
                                             && op.DeclaringType.FullName == "Avalonia.Markup.Xaml.AvaloniaXamlLoader")
                                         {
-                                            i[c].Operand = trampoline;
-                                            foundXamlLoader = true;
+                                            if (MatchThisCall(i, c - 1))
+                                            {
+                                                i[c].Operand = trampoline;
+                                                foundXamlLoader = true;
+                                            }
                                         }
                                     }
                                 }

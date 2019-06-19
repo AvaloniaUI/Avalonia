@@ -226,7 +226,7 @@ namespace Avalonia.Native
                     break;
 
                 default:
-                    Input?.Invoke(new RawMouseEventArgs(_mouse, timeStamp, _inputRoot, (RawMouseEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
+                    Input?.Invoke(new RawPointerEventArgs(_mouse, timeStamp, _inputRoot, (RawPointerEventType)type, point.ToAvaloniaPoint(), (InputModifiers)modifiers));
                     break;
             }
         }

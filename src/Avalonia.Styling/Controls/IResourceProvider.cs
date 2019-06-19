@@ -28,6 +28,6 @@ namespace Avalonia.Controls
         /// <returns>
         /// True if the resource if found, otherwise false.
         /// </returns>
-        bool TryGetResource(string key, out object value);
+        bool TryGetResource(object key, out object value);
     }
 }
