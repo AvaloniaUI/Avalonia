@@ -18,7 +18,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -53,7 +53,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtStart()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -88,7 +88,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtEnd()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -123,7 +123,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToSingleCharacter()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -156,7 +156,7 @@ namespace Avalonia.Skia.UnitTests
         {
             const string Text = "😄😄😄😄";
 
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -223,7 +223,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToMultiLine()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
