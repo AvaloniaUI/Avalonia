@@ -1174,7 +1174,7 @@ namespace Avalonia.Skia.Text
             var glyphRun = textRun.GlyphRun;
             var fontMetrics = textRun.FontMetrics;
             var width = textRun.Width;
-            var drawingEffect = span.Foreground ?? textRun.Foreground;
+            var drawingEffect = span.Foreground?.ToImmutable() ?? textRun.Foreground;
 
             if (span.FontSize != null || span.Typeface != null)
             {
