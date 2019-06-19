@@ -1184,7 +1184,7 @@ namespace Avalonia.Skia.Text
 
                 if (span.Typeface != null)
                 {
-                    typeFace = TypefaceCache.GetSKTypeface(span.Typeface);
+                    typeFace = TypefaceCache.GetTypeface(span.Typeface);
                 }
 
                 textFormat = new SKTextFormat(typeFace, (float)fontSize);
