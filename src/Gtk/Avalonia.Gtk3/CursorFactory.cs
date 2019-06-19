@@ -12,6 +12,7 @@ namespace Avalonia.Gtk3
         private static readonly Dictionary<StandardCursorType, object> CursorTypeMapping = new Dictionary
     <StandardCursorType, object>
         {
+            {StandardCursorType.None, CursorType.Blank},
             {StandardCursorType.AppStarting, CursorType.Watch},
             {StandardCursorType.Arrow, CursorType.LeftPtr},
             {StandardCursorType.Cross, CursorType.Cross},

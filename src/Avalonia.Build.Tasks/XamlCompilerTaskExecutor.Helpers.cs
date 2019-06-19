@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Utilities;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using XamlIl.TypeSystem;
 
 namespace Avalonia.Build.Tasks
@@ -143,6 +144,37 @@ namespace Avalonia.Build.Tasks
                 EndLine = 0xfeefee
             });
 
+        }
+        
+
+        private static bool MatchThisCall(Collection<Instruction> instructions, int idx)
+        {
+            var i = instructions[idx];
+            // A "normal" way of passing `this` to a static method:
+            
+            // ldarg.0
+            // call void [Avalonia.Markup.Xaml]Avalonia.Markup.Xaml.AvaloniaXamlLoader::Load(object)
+            
+            if (i.OpCode == OpCodes.Ldarg_0 || (i.OpCode == OpCodes.Ldarg && i.Operand?.Equals(0) == true))
+                return true;
+
+            /* F# way of using `this` in constructor emits a monstrosity like this:
+                IL_01c7: ldarg.0
+                IL_01c8: ldfld class [FSharp.Core]Microsoft.FSharp.Core.FSharpRef`1<class FVim.Cursor> FVim.Cursor::this
+                IL_01cd: call instance !0 class [FSharp.Core]Microsoft.FSharp.Core.FSharpRef`1<class FVim.Cursor>::get_contents()
+                IL_01d2: call !!0 [FSharp.Core]Microsoft.FSharp.Core.LanguagePrimitives/IntrinsicFunctions::CheckThis<class FVim.Cursor>(!!0)
+                IL_01d7: call void [Avalonia.Markup.Xaml]Avalonia.Markup.Xaml.AvaloniaXamlLoader::Load(object)
+                
+                We check for the previous call to be Microsoft.FSharp.Core.LanguagePrimitives/IntrinsicFunctions::CheckThis
+                since it actually returns `this`
+            */
+            if (i.OpCode == OpCodes.Call
+                && i.Operand is GenericInstanceMethod gim
+                && gim.Name == "CheckThis"
+                && gim.DeclaringType.FullName == "Microsoft.FSharp.Core.LanguagePrimitives/IntrinsicFunctions")
+                return true;
+
+            return false;
         }
     }
  

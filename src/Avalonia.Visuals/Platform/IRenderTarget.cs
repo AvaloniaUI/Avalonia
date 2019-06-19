@@ -23,4 +23,9 @@ namespace Avalonia.Platform
         /// </param>
         IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer);
     }
+
+    public interface IRenderTargetWithCorruptionInfo : IRenderTarget
+    {
+        bool IsCorrupted { get; }
+    }
 }
