@@ -86,11 +86,11 @@ namespace Avalonia.iOS
             {
                 var location = touch.LocationInView(this).ToAvalonia();
 
-                Input?.Invoke(new RawMouseEventArgs(
+                Input?.Invoke(new RawPointerEventArgs(
                     iOSPlatform.MouseDevice,
                     (uint)touch.Timestamp,
                     _inputRoot,
-                    RawMouseEventType.LeftButtonUp,
+                    RawPointerEventType.LeftButtonUp,
                     location,
                     InputModifiers.None));
             }
@@ -104,11 +104,11 @@ namespace Avalonia.iOS
             {
                 var location = touch.LocationInView(this).ToAvalonia();
                 _touchLastPoint = location;
-                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
-                    RawMouseEventType.Move, location, InputModifiers.None));
+                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                    RawPointerEventType.Move, location, InputModifiers.None));
 
-                Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
-                    RawMouseEventType.LeftButtonDown, location, InputModifiers.None));
+                Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                    RawPointerEventType.LeftButtonDown, location, InputModifiers.None));
             }
         }
 
@@ -119,8 +119,8 @@ namespace Avalonia.iOS
             {
                 var location = touch.LocationInView(this).ToAvalonia();
                 if (iOSPlatform.MouseDevice.Captured != null)
-                    Input?.Invoke(new RawMouseEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
-                        RawMouseEventType.Move, location, InputModifiers.LeftMouseButton));
+                    Input?.Invoke(new RawPointerEventArgs(iOSPlatform.MouseDevice, (uint)touch.Timestamp, _inputRoot,
+                        RawPointerEventType.Move, location, InputModifiers.LeftMouseButton));
                 else
                 {
                     //magic number based on test - correction of 0.02 is working perfect

@@ -145,17 +145,17 @@ namespace Avalonia.Gtk3
         private unsafe bool OnButton(IntPtr w, IntPtr ev, IntPtr userdata)
         {
             var evnt = (GdkEventButton*)ev;
-            var e = new RawMouseEventArgs(
+            var e = new RawPointerEventArgs(
                 Gtk3Platform.Mouse,
                 evnt->time,
                 _inputRoot,
                 evnt->type == GdkEventType.ButtonRelease
                     ? evnt->button == 1
-                        ? RawMouseEventType.LeftButtonUp
-                        : evnt->button == 3 ? RawMouseEventType.RightButtonUp : RawMouseEventType.MiddleButtonUp
+                        ? RawPointerEventType.LeftButtonUp
+                        : evnt->button == 3 ? RawPointerEventType.RightButtonUp : RawPointerEventType.MiddleButtonUp
                     : evnt->button == 1
-                        ? RawMouseEventType.LeftButtonDown
-                        : evnt->button == 3 ? RawMouseEventType.RightButtonDown : RawMouseEventType.MiddleButtonDown,
+                        ? RawPointerEventType.LeftButtonDown
+                        : evnt->button == 3 ? RawPointerEventType.RightButtonDown : RawPointerEventType.MiddleButtonDown,
                 new Point(evnt->x, evnt->y), GetModifierKeys(evnt->state));
             OnInput(e);
             return true;
@@ -179,11 +179,11 @@ namespace Avalonia.Gtk3
             var evnt = (GdkEventMotion*)ev;
             var position = new Point(evnt->x, evnt->y);
             Native.GdkEventRequestMotions(ev);
-            var e = new RawMouseEventArgs(
+            var e = new RawPointerEventArgs(
                 Gtk3Platform.Mouse,
                 evnt->time,
                 _inputRoot,
-                RawMouseEventType.Move,
+                RawPointerEventType.Move,
                 position, GetModifierKeys(evnt->state));
             OnInput(e);
             
@@ -237,10 +237,10 @@ namespace Avalonia.Gtk3
         {
             var evnt = (GdkEventCrossing*) pev;
             var position = new Point(evnt->x, evnt->y);
-            OnInput(new RawMouseEventArgs(Gtk3Platform.Mouse,
+            OnInput(new RawPointerEventArgs(Gtk3Platform.Mouse,
                 evnt->time,
                 _inputRoot,
-                RawMouseEventType.Move,
+                RawPointerEventType.Move,
                 position, GetModifierKeys(evnt->state)));
             return true;
         }

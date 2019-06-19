@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Avalonia.Direct2D1</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs">

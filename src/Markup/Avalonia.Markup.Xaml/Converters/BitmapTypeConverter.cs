@@ -8,8 +8,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
-    using Portable.Xaml.ComponentModel;
-	using System.ComponentModel;
+    using System.ComponentModel;
 
     public class BitmapTypeConverter : TypeConverter
     {

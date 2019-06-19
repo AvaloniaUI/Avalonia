@@ -118,10 +118,21 @@ namespace Avalonia.DesignerSupport.Tests
                     cancelled = true;
                 }
 
-                Assert.True(cancelled, $"Message Not Received.");
-                Assert.NotEqual(0, handle);
-                proc.Kill();
+                try
+                {
+                    proc.Kill();
+                }
+                catch
+                {
+                    //
+                }
+
                 proc.WaitForExit();
+                Assert.True(cancelled,
+                    $"Message Not Received.\n" + proc.StandardOutput.ReadToEnd() + "\n" +
+                    proc.StandardError.ReadToEnd());
+                Assert.NotEqual(0, handle);
+
             }
         }
     }

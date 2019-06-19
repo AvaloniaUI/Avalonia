@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Portable.Xaml.Markup;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
 
@@ -17,19 +16,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         {
             var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
                 .OfType<IResourceNode>().ToList();
-
-            return sp => builder(new DeferredParentServiceProvider(sp, resourceNodes));
+            var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
+            return sp => builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject));
         }
 
-        class DeferredParentServiceProvider : IAvaloniaXamlIlParentStackProvider, IServiceProvider
+        class DeferredParentServiceProvider :
+            IAvaloniaXamlIlParentStackProvider,
+            IServiceProvider,
+            IRootObjectProvider
         {
             private readonly IServiceProvider _parentProvider;
             private readonly List<IResourceNode> _parentResourceNodes;
 
-            public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes)
+            public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes,
+                object rootObject)
             {
                 _parentProvider = parentProvider;
                 _parentResourceNodes = parentResourceNodes;
+                RootObject = rootObject;
             }
 
             public IEnumerable<object> Parents => GetParents();
@@ -46,8 +50,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             {
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
+                if (serviceType == typeof(IRootObjectProvider))
+                    return this;
                 return _parentProvider?.GetService(serviceType);
             }
+
+            public object RootObject { get; }
         }
 
 
