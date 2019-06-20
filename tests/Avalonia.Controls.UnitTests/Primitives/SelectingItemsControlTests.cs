@@ -797,8 +797,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Presenter.ApplyTemplate();
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
-            var panel = target.Presenter.Panel;
-
             Assert.Equal(3, target.SelectedIndex);
         }
 
@@ -815,9 +813,33 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Presenter.ApplyTemplate();
             _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
-            var panel = target.Presenter.Panel;
-
             Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[3].Classes);
+        }
+
+        [Fact]
+        public void Adding_Item_Before_SelectedItem_Should_Update_SelectedIndex()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 1,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            items.Insert(0, "Qux");
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
         }
 
         private FuncControlTemplate Template()
