@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
@@ -784,6 +785,45 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
+        public void SelectAll_Sets_SelectedIndex_And_SelectedItem()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectAll();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Foo", target.SelectedItem);
+        }
+
+        [Fact]
+        public void UnselectAll_Clears_SelectedIndex_And_SelectedItem()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                SelectionMode = SelectionMode.Multiple,
+                SelectedIndex = 0,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.UnselectAll();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Equal(null, target.SelectedItem);
+        }
+
+        [Fact]
         public void SelectAll_Handles_Duplicate_Items()
         {
             var target = new TestSelector
@@ -836,9 +876,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
 
             public new void SelectAll() => base.SelectAll();
-
+            public new void UnselectAll() => base.UnselectAll();
             public void SelectRange(int index) => UpdateSelection(index, true, true);
-
             public void Toggle(int index) => UpdateSelection(index, true, false, true);
         }
 

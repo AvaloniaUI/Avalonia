@@ -495,6 +495,8 @@ namespace Avalonia.Controls.Primitives
                     _selection.Add(i);
                 }
 
+                UpdateSelectedItem(0, false);
+
                 foreach (var container in ItemContainerGenerator.Containers)
                 {
                     MarkItemSelected(container.Index, true);
@@ -507,20 +509,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Deselects all items in the control.
         /// </summary>
-        protected void UnselectAll()
-        {
-            UpdateSelectedItems(() =>
-            {
-                _selection.Clear();
-
-                foreach (var container in ItemContainerGenerator.Containers)
-                {
-                    MarkItemSelected(container.Index, false);
-                }
-
-                SelectedItems.Clear();
-            });
-        }
+        protected void UnselectAll() => UpdateSelectedItem(-1);
 
         /// <summary>
         /// Updates the selection for an item based on user interaction.
