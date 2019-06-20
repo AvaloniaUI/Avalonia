@@ -649,28 +649,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Makes a list of objects equal another (though doesn't preserve order).
-        /// </summary>
-        /// <param name="items">The items collection.</param>
-        /// <param name="desired">The desired items.</param>
-        internal static void SynchronizeItems(IList items, IEnumerable<object> desired)
-        {
-            var list = items.Cast<object>().ToList();
-            var toRemove = list.Except(desired).ToList();
-            var toAdd = desired.Except(list).ToList();
-
-            foreach(var i in toRemove)
-            {
-                items.Remove(i);
-            }
-
-            foreach (var i in toAdd)
-            {
-                items.Add(i);
-            }
-        }
-
-        /// <summary>
         /// Gets a range of items from an IEnumerable.
         /// </summary>
         /// <param name="items">The items.</param>
