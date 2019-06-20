@@ -841,7 +841,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Adding_Item_Before_SelectedItems_Should_Update_Indexes()
+        public void Adding_Item_Before_SelectedItems_Should_Update_Selection()
         {
             var items = new ObservableCollection<string>
             {
@@ -865,8 +865,97 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Foo", target.SelectedItem);
+            Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 1, 2, 3 }, SelectedContainers(target));
         }
 
+        [Fact]
+        public void Removing_Item_Before_SelectedItem_Should_Update_Selection()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectedIndex = 1;
+            target.SelectRange(2);
+
+            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+
+            items.RemoveAt(0);
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
+            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+        }
+
+        [Fact]
+        public void Removing_SelectedItem_With_Multiple_Selection_Active_Should_Update_Selection()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectAll();
+            items.RemoveAt(0);
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
+            Assert.Equal(new[] { "Bar", "Baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1 }, SelectedContainers(target));
+        }
+
+        [Fact]
+        public void Replacing_Selected_Item_Should_Update_SelectedItems()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectAll();
+            items[1] = "Qux";
+
+            Assert.Equal(new[] { "Foo", "Qux", "Baz" }, target.SelectedItems);
+        }
 
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {

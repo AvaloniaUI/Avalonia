@@ -307,31 +307,23 @@ namespace Avalonia.Controls.Primitives
                     {
                         SelectedIndex = 0;
                     }
-                    else if (e.NewStartingIndex <= SelectedIndex)
+                    else
                     {
-                        UpdateSelectedItem(SelectedIndex + e.NewItems.Count, false);
+                        _selection.ItemsInserted(e.NewStartingIndex, e.NewItems.Count);
+                        UpdateSelectedItem(_selection.First(), false);
                     }
 
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                case NotifyCollectionChangedAction.Replace:
-                    if (SelectedIndex >= e.OldStartingIndex && SelectedIndex < e.OldStartingIndex + e.OldItems.Count)
-                    {
-                        if (!AlwaysSelected)
-                        {
-                            SelectedIndex = -1;
-                        }
-                        else
-                        {
-                            LostSelection();
-                        }
-                    }
-                    else if (e.OldStartingIndex <= SelectedIndex)
-                    {
-                        UpdateSelectedItem(SelectedIndex - e.OldItems.Count, false);
-                    }
+                    _selection.ItemsRemoved(e.OldStartingIndex, e.OldItems.Count);
+                    UpdateSelectedItem(_selection.First(), false);
+                    ResetSelectedItems();
+                    break;
 
+                case NotifyCollectionChangedAction.Replace:
+                    UpdateSelectedItem(SelectedIndex, false);
+                    ResetSelectedItems();
                     break;
 
                 case NotifyCollectionChangedAction.Move:
@@ -498,7 +490,7 @@ namespace Avalonia.Controls.Primitives
                     MarkItemSelected(container.Index, true);
                 }
 
-                ResetSelectedItems(GetRange(Items, 0, ItemCount - 1));
+                ResetSelectedItems();
             });
         }
 
@@ -534,15 +526,19 @@ namespace Avalonia.Controls.Primitives
                         UpdateSelectedItems(() =>
                         {
                             var start = SelectedIndex != -1 ? SelectedIndex : 0;
-                            var first = Math.Min(start, index);
-                            var last = Math.Max(start, index);
+                            var step = start < index ? 1 : -1;
 
-                            for (var i = first; i < last; ++i)
+                            _selection.Clear();
+
+                            for (var i = start; i != index; i += step)
                             {
                                 _selection.Add(i);
                             }
 
-                            _selection.Add(last);
+                            _selection.Add(index);
+
+                            var first = Math.Min(start, index);
+                            var last = Math.Max(start, index);
 
                             foreach (var container in ItemContainerGenerator.Containers)
                             {
@@ -551,7 +547,7 @@ namespace Avalonia.Controls.Primitives
                                     container.Index >= first && container.Index <= last);
                             }
 
-                            ResetSelectedItems(GetRange(Items, start, index));
+                            ResetSelectedItems();
                         });
                     }
                     else if (multi && toggle)
@@ -805,14 +801,17 @@ namespace Avalonia.Controls.Primitives
             return index;
         }
 
-        private void ResetSelectedItems(IEnumerable<object> items)
+        private void ResetSelectedItems()
         {
-            SelectedItems.Clear();
-
-            foreach (var i in items)
+            UpdateSelectedItems(() =>
             {
-                SelectedItems.Add(i);
-            }
+                SelectedItems.Clear();
+
+                foreach (var i in _selection)
+                {
+                    SelectedItems.Add(ElementAt(Items, i));
+                }
+            });
         }
 
         /// <summary>
@@ -1133,6 +1132,54 @@ namespace Avalonia.Controls.Primitives
                 _list.Clear();
                 _set = new HashSet<int>();
                 return result;
+            }
+
+            public void ItemsInserted(int index, int count)
+            {
+                _set = new HashSet<int>();
+
+                for (var i = 0; i < _list.Count; ++i)
+                {
+                    var ix = _list[i];
+
+                    if (ix >= index)
+                    {
+                        var newIndex = ix + count;
+                        _list[i] = newIndex;
+                        _set.Add(newIndex);
+                    }
+                    else
+                    {
+                        _set.Add(ix);
+                    }
+                }
+            }
+
+            public void ItemsRemoved(int index, int count)
+            {
+                var last = (index + count) - 1;
+
+                _set = new HashSet<int>();
+
+                for (var i = 0; i < _list.Count; ++i)
+                {
+                    var ix = _list[i];
+
+                    if (ix >= index && ix <= last)
+                    {
+                        _list.RemoveAt(i--);
+                    }
+                    else if (ix > last)
+                    {
+                        var newIndex = ix - count;
+                        _list[i] = newIndex;
+                        _set.Add(newIndex);
+                    }
+                    else
+                    {
+                        _set.Add(ix);
+                    }
+                }
             }
 
             public bool Contains(int index) => _set.Contains(index);
