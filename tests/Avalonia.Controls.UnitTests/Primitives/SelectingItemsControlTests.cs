@@ -536,6 +536,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 SelectedIndex = 1,
             };
 
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
             var called = false;
 
             target.SelectionChanged += (s, e) =>
@@ -545,8 +548,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 called = true;
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
             target.SelectedIndex = -1;
 
             Assert.True(called);
@@ -781,6 +782,42 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(2, target.SelectedIndex);
             Assert.Equal(2, vm.Child.SelectedIndex);
+        }
+
+        [Fact]
+        public void Should_Select_Correct_Item_When_Duplicate_Items_Are_Present()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz"},
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
+
+            var panel = target.Presenter.Panel;
+
+            Assert.Equal(3, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Should_Apply_Selected_Pseudoclass_To_Correct_Item_When_Duplicate_Items_Are_Present()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
+
+            var panel = target.Presenter.Panel;
+
+            Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[3].Classes);
         }
 
         private FuncControlTemplate Template()
