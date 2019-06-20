@@ -307,6 +307,10 @@ namespace Avalonia.Controls.Primitives
                     {
                         SelectedIndex = 0;
                     }
+                    else if (e.NewStartingIndex <= SelectedIndex)
+                    {
+                        UpdateSelectedItem(SelectedIndex + e.NewItems.Count, false);
+                    }
 
                     break;
 
