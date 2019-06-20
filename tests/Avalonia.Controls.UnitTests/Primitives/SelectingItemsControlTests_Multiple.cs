@@ -840,6 +840,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" }, target.SelectedItems);
         }
 
+        [Fact]
+        public void Adding_Item_Before_SelectedItems_Should_Update_Indexes()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            target.SelectAll();
+            items.Insert(0, "Qux");
+
+            Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal("Foo", target.SelectedItem);
+        }
+
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children

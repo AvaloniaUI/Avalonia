@@ -842,6 +842,32 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal("Bar", target.SelectedItem);
         }
 
+        [Fact]
+        public void Removing_Item_Before_SelectedItem_Should_Update_SelectedIndex()
+        {
+            var items = new ObservableCollection<string>
+            {
+               "Foo",
+               "Bar",
+               "Baz"
+            };
+
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = items,
+                SelectedIndex = 1,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            items.RemoveAt(0);
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal("Bar", target.SelectedItem);
+        }
+
         private FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>(control =>

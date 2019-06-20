@@ -316,26 +316,22 @@ namespace Avalonia.Controls.Primitives
 
                 case NotifyCollectionChangedAction.Remove:
                 case NotifyCollectionChangedAction.Replace:
-                    var selectedIndex = SelectedIndex;
-
-                    if (selectedIndex >= e.OldStartingIndex &&
-                        selectedIndex < e.OldStartingIndex + e.OldItems.Count)
+                    if (SelectedIndex >= e.OldStartingIndex && SelectedIndex < e.OldStartingIndex + e.OldItems.Count)
                     {
                         if (!AlwaysSelected)
                         {
-                            selectedIndex = SelectedIndex = -1;
+                            SelectedIndex = -1;
                         }
                         else
                         {
                             LostSelection();
                         }
                     }
-
-                    var items = Items?.Cast<object>();
-                    if (selectedIndex >= items.Count())
+                    else if (e.OldStartingIndex <= SelectedIndex)
                     {
-                        selectedIndex = SelectedIndex = items.Count() - 1;
+                        UpdateSelectedItem(SelectedIndex - e.OldItems.Count, false);
                     }
+
                     break;
 
                 case NotifyCollectionChangedAction.Move:
