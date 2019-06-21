@@ -425,7 +425,7 @@ namespace Avalonia.Controls.UnitTests
         {
             // HACK: We really need a decent way to have "statics" that can be scoped to
             // AvaloniaLocator scopes.
-            Application.Current.Windows.Clear();
+            Application.Current.Windows.CloseAll();
         }
     }
 }

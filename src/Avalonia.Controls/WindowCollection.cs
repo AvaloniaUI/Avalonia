@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,6 +13,7 @@ namespace Avalonia
     {
         private readonly Application _application;
         private readonly List<Window> _windows = new List<Window>();
+        public event Action<Window> OnWindowClosed;
 
         public WindowCollection(Application application)
         {
@@ -92,7 +94,7 @@ namespace Avalonia
         /// <summary>
         /// Closes all windows and removes them from the underlying collection.
         /// </summary>
-        internal void Clear()
+        public void CloseAll()
         {
             while (_windows.Count > 0)
             {
@@ -102,33 +104,8 @@ namespace Avalonia
 
         private void OnRemoveWindow(Window window)
         {
-            if (window == null)
-            {
-                return;
-            }
-
-            if (_application.IsShuttingDown)
-            {
-                return;
-            }
-
-            switch (_application.ShutdownMode)
-            {
-                case ShutdownMode.OnLastWindowClose:
-                    if (Count == 0)
-                    {
-                        _application.Shutdown();
-                    }
-
-                    break;
-                case ShutdownMode.OnMainWindowClose:
-                    if (window == _application.MainWindow)
-                    {
-                        _application.Shutdown();
-                    }
-
-                    break;                   
-            }
+            if (window != null)
+                OnWindowClosed?.Invoke(window);
         }
     }
 }

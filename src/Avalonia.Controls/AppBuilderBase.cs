@@ -117,6 +117,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <typeparam name="TMainWindow">The window type.</typeparam>
         /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
+        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
         public void Start<TMainWindow>(Func<object> dataContextProvider = null)
             where TMainWindow : Window, new()
         {
@@ -135,6 +136,7 @@ namespace Avalonia.Controls
         /// <typeparam name="TMainWindow">The window type.</typeparam>
         /// <param name="mainWindow">Instance of type TMainWindow to use when starting the app</param>
         /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
+        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
         public void Start<TMainWindow>(TMainWindow mainWindow, Func<object> dataContextProvider = null)
             where TMainWindow : Window
         {
@@ -148,6 +150,7 @@ namespace Avalonia.Controls
 
         public delegate void AppMainDelegate(Application app, string[] args);
 
+        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
         public void Start()
         {
             Setup();
@@ -223,17 +226,6 @@ namespace Avalonia.Controls
         };
 
         public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
-
-        /// <summary>
-        /// Sets the shutdown mode of the application.
-        /// </summary>
-        /// <param name="shutdownMode">The shutdown mode.</param>
-        /// <returns></returns>
-        public TAppBuilder SetShutdownMode(ShutdownMode shutdownMode)
-        {
-            Instance.ShutdownMode = shutdownMode;
-            return Self;
-        }
 
         protected virtual bool CheckSetup => true;
 
@@ -313,6 +305,7 @@ namespace Avalonia.Controls
             Instance.RegisterServices();
             Instance.Initialize();
             AfterSetupCallback(Self);
+            Instance.OnFrameworkInitializationCompleted();
         }
     }
 }

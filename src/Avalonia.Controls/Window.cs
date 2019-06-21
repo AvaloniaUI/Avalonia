@@ -277,12 +277,6 @@ namespace Avalonia.Controls
             Close(false);
         }
 
-        protected override void HandleApplicationExiting()
-        {
-            base.HandleApplicationExiting();
-            Close(true);
-        }
-
         /// <summary>
         /// Closes a dialog window with the specified result.
         /// </summary>
@@ -583,18 +577,5 @@ namespace Avalonia.Controls
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
-    }
-}
-
-namespace Avalonia
-{
-    public static class WindowApplicationExtensions
-    {
-        public static void RunWithMainWindow<TWindow>(this Application app) where TWindow : Avalonia.Controls.Window, new()
-        {
-            var window = new TWindow();
-            window.Show();
-            app.Run(window);
-        }
     }
 }
