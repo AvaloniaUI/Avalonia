@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using HarfBuzzSharp;
 using SkiaSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 
 namespace Avalonia.Skia.Text
 {
-    internal class TextRunsBuilder
+    internal static class TextRunsBuilder
     {
         /// <summary>
         ///     Builds a list of text runs.
@@ -17,7 +18,8 @@ namespace Avalonia.Skia.Text
         /// <param name="defaultTypeface">The default typeface to match against.</param>
         /// <param name="textPointer">The position within the text to build the runs from.</param>
         /// <returns>A list of text runs.</returns>
-        public static List<TextRunProperties> Build(ReadOnlySpan<char> text, SKTypeface defaultTypeface, SKTextPointer textPointer = default)
+        public static List<TextRunProperties> Build(ReadOnlySpan<char> text, SKTypeface defaultTypeface,
+            SKTextPointer textPointer)
         {
             var textRuns = new List<TextRunProperties>();
             var textPosition = textPointer.StartingIndex;
@@ -31,19 +33,16 @@ namespace Avalonia.Skia.Text
                 {
                     var currentTypeface = defaultTypeface;
 
-                    var count = CountSupportedCharacters(currentTypeface, defaultTypeface, buffer, bufferPosition, out var charCount);
-
-                    if (count == 0)
+                    if (!TryGetRunProperties(currentTypeface, defaultTypeface, buffer, bufferPosition, out var count,
+                        out var charCount, out var script))
                     {
                         var codepoint = (int)buffer.GlyphInfos[bufferPosition].Codepoint;
 
                         currentTypeface = SKFontManager.Default.MatchCharacter(codepoint);
 
-                        if (currentTypeface != null)
-                        {
-                            count = CountSupportedCharacters(currentTypeface, defaultTypeface, buffer, bufferPosition, out charCount);
-                        }
-                        else
+                        if (currentTypeface == null || !TryGetRunProperties(currentTypeface, defaultTypeface, buffer,
+                                bufferPosition, out count,
+                                out charCount, out script))
                         {
                             // no fallback found
                             currentTypeface = defaultTypeface;
@@ -63,15 +62,10 @@ namespace Avalonia.Skia.Text
                                 charCount += glyphInfo.Codepoint > ushort.MaxValue ? 2 : 1;
                             }
                         }
-
-                        // an error has occurred probably corrupted text
-                        if (count == 0)
-                        {
-                            break;
-                        }
                     }
 
-                    textRuns.Add(new TextRunProperties(new SKTextPointer(textPosition, charCount), currentTypeface));
+                    textRuns.Add(new TextRunProperties(new SKTextPointer(textPosition, charCount), currentTypeface,
+                        script));
 
                     bufferPosition += count;
                     textPosition += charCount;
@@ -82,20 +76,32 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Counts the number of characters that can be mapped to glyphs./>
+        ///     Tries to get run properties./>
         /// </summary>
         /// <param name="defaultTypeface"></param>
         /// <param name="typeface">The typeface that is used to find matching characters.</param>
         /// <param name="buffer">The buffer to count on.</param>
         /// <param name="startingIndex">The starting index within the buffer.</param>
+        /// <param name="count"></param>
         /// <param name="charCount">Count of matching characters.</param>
-        /// <returns>Count of matching codepoints.</returns>
-        private static int CountSupportedCharacters(SKTypeface typeface, SKTypeface defaultTypeface, Buffer buffer, int startingIndex, out int charCount)
+        /// <param name="script">The run's script.</param>
+        /// <returns></returns>
+        private static bool TryGetRunProperties(SKTypeface typeface, SKTypeface defaultTypeface, Buffer buffer,
+            int startingIndex, out int count, out int charCount, out Script script)
         {
+            if (buffer.Length == 0)
+            {
+                count = 0;
+                charCount = 0;
+                script = Script.Unknown;
+                return false;
+            }
+
             var isFallback = typeface != defaultTypeface;
 
+            count = 0;
             charCount = 0;
-            var count = 0;
+            script = UnicodeFunctions.Default.GetScript(buffer.GlyphInfos[startingIndex].Codepoint);
 
             var font = TableLoader.Get(typeface).Font;
             var defaultFont = TableLoader.Get(defaultTypeface).Font;
@@ -103,6 +109,11 @@ namespace Avalonia.Skia.Text
             for (var i = startingIndex; i < buffer.Length; i++)
             {
                 var glyphInfo = buffer.GlyphInfos[i];
+
+                if (UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint) != script)
+                {
+                    break;
+                }
 
                 if (isFallback)
                 {
@@ -146,7 +157,7 @@ namespace Avalonia.Skia.Text
                 charCount += glyphInfo.Codepoint > ushort.MaxValue ? 2 : 1;
             }
 
-            return count;
+            return count > 0;
         }
     }
 }
