@@ -156,7 +156,7 @@ namespace Avalonia
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
         /// Currently supported lifetimes are:
         /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
-        /// - <see cref="ISingleViewLifetime"/>
+        /// - <see cref="ISingleViewApplicationLifetime"/>
         /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
         public IApplicationLifetime ApplicationLifetime { get; set; }

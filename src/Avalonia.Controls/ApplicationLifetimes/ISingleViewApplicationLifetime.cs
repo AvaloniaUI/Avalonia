@@ -1,6 +1,6 @@
 namespace Avalonia.Controls.ApplicationLifetimes
 {
-    public interface ISingleViewLifetime : IApplicationLifetime
+    public interface ISingleViewApplicationLifetime : IApplicationLifetime
     {
         Control MainView { get; set; }
     }

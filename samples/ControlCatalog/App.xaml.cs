@@ -15,7 +15,7 @@ namespace ControlCatalog
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
                 desktopLifetime.MainWindow = new MainWindow();
-            else if (ApplicationLifetime is ISingleViewLifetime singleViewLifetime)
+            else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
                 singleViewLifetime.MainView = new MainView();
             
             base.OnFrameworkInitializationCompleted();

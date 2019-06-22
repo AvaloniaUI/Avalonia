@@ -49,7 +49,7 @@ namespace Avalonia.LinuxFramebuffer
         }
     }
 
-    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewLifetime
+    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly LinuxFramebuffer _fb;
         private TopLevel _topLevel;
