@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -122,15 +123,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         private const string BuilderMethodName = "BuildAvaloniaApp";
-
-        class NeverClose : ICloseable
-        {
-            public event EventHandler Closed
-            {
-                add {}
-                remove {}
-            }
-        }
         
         public static void Main(string[] cmdline)
         {
@@ -155,7 +147,7 @@ namespace Avalonia.DesignerSupport.Remote
             transport.OnException += (t, e) => Die(e.ToString());
             Log("Sending StartDesignerSessionMessage");
             transport.Send(new StartDesignerSessionMessage {SessionId = args.SessionId});
-            app.Run(new NeverClose());
+            Dispatcher.UIThread.MainLoop(CancellationToken.None);
         }
 
 
