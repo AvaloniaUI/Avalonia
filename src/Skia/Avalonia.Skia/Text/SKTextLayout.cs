@@ -2,11 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Media;
 
 using HarfBuzzSharp;
@@ -19,8 +17,6 @@ namespace Avalonia.Skia.Text
 {
     internal class SKTextLayout
     {
-        private static readonly UnicodeFunctions s_unicodeFunctions = UnicodeFunctions.Default;
-        private static readonly ConcurrentDictionary<SKTypeface, TableLoader> s_tableLoaderCache = new ConcurrentDictionary<SKTypeface, TableLoader>();
         private static readonly char[] s_ellipsis = { '\u2026' };
 
         private readonly SKTypeface _typeface;
@@ -515,50 +511,6 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Determines whether [c] is a break char.
-        /// </summary>
-        /// <param name="c">The character.</param>
-        /// <returns>
-        ///     <c>true</c> if [is break character] [the specified c]; otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsBreakChar(uint c)
-        {
-            switch (c)
-            {
-                case '\u000A':
-                case '\u000B':
-                case '\u000C':
-                case '\u000D':
-                case '\u0085':
-                case '\u2028':
-                case '\u2029':
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
-        ///     Determines whether [c] is a zero space char.
-        /// </summary>
-        /// <param name="c">The character.</param>
-        /// <returns>
-        ///     <c>true</c> if [is zero space character] [the specified c]; otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsZeroSpace(uint c)
-        {
-            switch (s_unicodeFunctions.GetGeneralCategory(c))
-            {
-                case UnicodeGeneralCategory.Control:
-                case UnicodeGeneralCategory.NonSpacingMark:
-                case UnicodeGeneralCategory.Format:
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         ///     Breaks a glyph run into segments that fit into available width.
         /// </summary>
         /// <param name="glyphRun">The glyph run.</param>
@@ -585,16 +537,6 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Creates a new <see cref="TableLoader"/> on demand.
-        /// </summary>
-        /// <param name="typeface">The typeface.</param>
-        /// <returns>The table loader.</returns>
-        private static TableLoader GetTableLoader(SKTypeface typeface)
-        {
-            return s_tableLoaderCache.GetOrAdd(typeface, new TableLoader(typeface));
-        }
-
-        /// <summary>
         ///     Creates glyph clusters from specified buffer.
         /// </summary>
         /// <param name="buffer">The buffer.</param>
@@ -614,7 +556,7 @@ namespace Avalonia.Skia.Text
             out SKPoint[] glyphPositions,
             out float width)
         {
-            var loader = GetTableLoader(textFormat.Typeface);
+            var loader = TableLoader.Get(textFormat.Typeface);
 
             var font = loader.Font;
 
@@ -748,7 +690,7 @@ namespace Avalonia.Skia.Text
             {
                 var c = text[index];
 
-                if (!IsBreakChar(c))
+                if (!UnicodeUtility.IsBreakChar(c))
                 {
                     continue;
                 }
@@ -807,7 +749,7 @@ namespace Avalonia.Skia.Text
         {
             charCount = 0;
             var count = 0;
-            var loader = GetTableLoader(typeface);
+            var loader = TableLoader.Get(typeface);
 
             for (var i = startingIndex; i < buffer.Length; i++)
             {
@@ -815,14 +757,14 @@ namespace Avalonia.Skia.Text
 
                 if (loader.Font.GetGlyph(glyphInfo.Codepoint) == 0)
                 {
-                    if (IsZeroSpace(glyphInfo.Codepoint))
+                    if (UnicodeUtility.IsZeroSpace(glyphInfo.Codepoint))
                     {
                         count++;
                         charCount++;
                         continue;
                     }
 
-                    if (IsBreakChar(glyphInfo.Codepoint))
+                    if (UnicodeUtility.IsBreakChar(glyphInfo.Codepoint))
                     {
                         count++;
                         charCount++;
@@ -1346,7 +1288,7 @@ namespace Avalonia.Skia.Text
 
                 var breakCharPosition = textPointer.StartingIndex + textPointer.Length - 1;
 
-                if (IsBreakChar(text[breakCharPosition]))
+                if (UnicodeUtility.IsBreakChar(text[breakCharPosition]))
                 {
                     int breakCharCount;
 
@@ -1452,7 +1394,7 @@ namespace Avalonia.Skia.Text
                             // no fallback found
                             typeface = _typeface;
 
-                            var loader = GetTableLoader(typeface);
+                            var loader = TableLoader.Get(typeface);
 
                             for (var i = textPosition; i < buffer.GlyphInfos.Length; i++)
                             {
@@ -1895,94 +1837,6 @@ namespace Avalonia.Skia.Text
             ///     The second text line.
             /// </value>
             public IReadOnlyList<SKTextRun> SecondTextRuns { get; }
-        }
-
-        private class TableLoader : IDisposable
-        {
-            private readonly SKTypeface _typeface;
-            private readonly Dictionary<Tag, Blob> _tableCache = new Dictionary<Tag, Blob>();
-            private bool _isDisposed;
-
-            public TableLoader(SKTypeface typeface)
-            {
-                _typeface = typeface;
-                Font = CreateFont();
-            }
-
-            public Font Font { get; }
-
-            private Font CreateFont()
-            {
-                var face = new Face(GetTable, null, Destroy)
-                {
-                    UnitsPerEm = _typeface.UnitsPerEm
-                };
-
-                var font = new Font(face);
-
-                font.SetFunctionsOpenType();
-
-                return font;
-            }
-
-            private Blob GetTable(Face face, Tag tag, object context)
-            {
-                Blob blob;
-
-                if (_tableCache.ContainsKey(tag))
-                {
-                    blob = _tableCache[tag];
-                }
-                else
-                {
-                    blob = CreateBlob(tag);
-                    _tableCache.Add(tag, blob);
-                }
-
-                return blob;
-            }
-
-            private void Destroy(object context)
-            {
-                Dispose();
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
-                _isDisposed = true;
-
-                if (!disposing)
-                {
-                    return;
-                }
-
-                foreach (var blob in _tableCache.Values)
-                {
-                    blob?.Dispose();
-                }
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private Blob CreateBlob(Tag tag)
-            {
-                var size = _typeface.GetTableSize(tag);
-
-                var data = Marshal.AllocCoTaskMem(size);
-
-                return _typeface.TryGetTableData(tag, 0, size, data) ?
-                    new Blob(data, size, MemoryMode.Writeable, data, ctx => Marshal.FreeCoTaskMem((IntPtr)ctx)) :
-                    null;
-            }
         }
     }
 }

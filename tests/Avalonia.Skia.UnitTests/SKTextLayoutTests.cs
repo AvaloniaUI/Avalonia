@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Avalonia.Media;
@@ -245,7 +246,7 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Foreground);
         }
 
-        [Fact(Skip="Currently fails on Linux because of not present Emojis font")]
+        [Fact(Skip = "Currently fails on Linux because of not present Emojis font")]
         public void ShouldHitTestSurrogatePair()
         {
             const string Text = "😄";
@@ -291,6 +292,39 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(6, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters.Count);
 
             Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters[5].Length);
+        }
+
+        [Theory]
+        [InlineData("\r\r", 2)]
+        [InlineData("\n\n", 2)]
+        [InlineData("abcde\r\n", 1)]
+        [InlineData("abcde\n\r", 1)]
+        [InlineData("abcde\r\nabcde\r\n", 2)]
+        [InlineData("abcde\n\rabcde\r\n", 2)]
+        [InlineData("abcde\r\nabcde\r\nabcde\r\n", 3)]
+        [InlineData("abcde\n\rabcde\r\nabcde\r\n", 3)]
+        public void ShouldBreak(string text, int numberOfLines)
+        {
+            var breaker = TextLinesBuilder.Build(text.AsSpan());
+
+            var lines = breaker.ToArray();
+
+            Assert.Equal(numberOfLines, lines.Length);
+        }
+
+        [Theory]
+        [InlineData("0123", 1)]
+        [InlineData("\r\n", 1)]
+        [InlineData("👍b", 2)]
+        [InlineData("a👍b", 3)]
+        [InlineData("a👍子b", 4)]
+        public void ShouldProduceRuns(string text, int numberOfRuns)
+        {
+            var breaker = TextRunsBuilder.Build(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
+
+            var runs = breaker.ToArray();
+
+            Assert.Equal(numberOfRuns, runs.Length);
         }
     }
 }
