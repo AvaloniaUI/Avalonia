@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
@@ -24,5 +25,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// The main window.
         /// </value>
         Window MainWindow { get; set; }
+        
+        IReadOnlyList<Window> Windows { get; }
     }
 }

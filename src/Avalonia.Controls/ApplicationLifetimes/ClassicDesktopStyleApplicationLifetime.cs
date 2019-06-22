@@ -1,21 +1,46 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
-    public class ClassicDesktopStyleApplicationLifetime : IClassicDesktopStyleApplicationLifetime
+    public class ClassicDesktopStyleApplicationLifetime : IClassicDesktopStyleApplicationLifetime, IDisposable
     {
         private readonly Application _app;
         private int _exitCode;
         private CancellationTokenSource _cts;
         private bool _isShuttingDown;
+        private HashSet<Window> _windows = new HashSet<Window>();
+
+        private static ClassicDesktopStyleApplicationLifetime _activeLifetime;
+        static ClassicDesktopStyleApplicationLifetime()
+        {
+            Window.WindowOpenedEvent.AddClassHandler(typeof(Window), OnWindowOpened);
+            Window.WindowClosedEvent.AddClassHandler(typeof(Window), WindowClosedEvent);
+        }
+
+        private static void WindowClosedEvent(object sender, RoutedEventArgs e)
+        {
+            _activeLifetime?._windows.Remove((Window)sender);
+            _activeLifetime?.HandleWindowClosed((Window)sender);
+        }
+
+        private static void OnWindowOpened(object sender, RoutedEventArgs e)
+        {
+            _activeLifetime?._windows.Add((Window)sender);
+        }
 
         public ClassicDesktopStyleApplicationLifetime(Application app)
         {
+            if (_activeLifetime != null)
+                throw new InvalidOperationException(
+                    "Can not have multiple active ClassicDesktopStyleApplicationLifetime instances and the previously created one was not disposed");
             _app = app;
-            app.Windows.OnWindowClosed += HandleWindowClosed;
+            _activeLifetime = this;
         }
         
         /// <inheritdoc/>
@@ -29,6 +54,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <inheritdoc/>
         public Window MainWindow { get; set; }
 
+        public IReadOnlyList<Window> Windows => _windows.ToList();
+
         private void HandleWindowClosed(Window window)
         {
             if (window == null)
@@ -37,7 +64,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             if (_isShuttingDown)
                 return;
 
-            if (ShutdownMode == ShutdownMode.OnLastWindowClose && _app.Windows.Count == 0)
+            if (ShutdownMode == ShutdownMode.OnLastWindowClose && _windows.Count == 0)
                 Shutdown();
             else if (ShutdownMode == ShutdownMode.OnMainWindowClose && window == MainWindow)
                 Shutdown();
@@ -56,7 +83,8 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
             try
             {
-                _app.Windows.CloseAll();
+                foreach (var w in Windows)
+                    w.Close();
                 var e = new ControlledApplicationLifetimeExitEventArgs(exitCode);
                 Exit?.Invoke(this, e);
                 _exitCode = e.ApplicationExitCode;                
@@ -78,6 +106,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
             _app.Run(_cts.Token);
             Environment.ExitCode = _exitCode;
             return _exitCode;
+        }
+
+        public void Dispose()
+        {
+            if (_activeLifetime == this)
+                _activeLifetime = null;
         }
     }
 }

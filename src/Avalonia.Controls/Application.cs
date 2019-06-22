@@ -45,14 +45,6 @@ namespace Avalonia
         private Styles _styles;
         private IResourceDictionary _resources;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Application"/> class.
-        /// </summary>
-        public Application()
-        {
-            Windows = new WindowCollection(this);
-        }
-
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
 
@@ -159,14 +151,6 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
-
-        /// <summary>
-        /// Gets the open windows of the application.
-        /// </summary>
-        /// <value>
-        /// The windows.
-        /// </value>
-        public WindowCollection Windows { get; }
         
         /// <summary>
         /// Application lifetime, use it for things like setting the main window and exiting the app from code
