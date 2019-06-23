@@ -69,6 +69,91 @@ namespace Avalonia.Animation.UnitTests
 
         }
 
+
+        [Fact]
+        public void Test_SCB_Animations_Failure_Mode()
+        {
+            using (UnitTestApplication.Start(TestServices.RealStyler))
+            {
+                var kf1 = new KeyFrame()
+                {
+                    Setters =
+                    {
+                        new Setter(null, Colors.White)
+                        { PropertyPath = new PropertyPathBuilder().Property(Border.BackgroundProperty).Build() }
+                    },
+                    Cue = new Cue(0d)
+                };
+
+                var kf2 = new KeyFrame()
+                {
+                    Setters =
+                    {
+                        new Setter(null, Colors.Black)
+                        { PropertyPath = new PropertyPathBuilder().Property(Border.BackgroundProperty).Build() }
+                    },
+                    Cue = new Cue(1d)
+                };
+
+
+                var animation = new Animation()
+                {
+                    FillMode = FillMode.Both,
+                    Duration = TimeSpan.FromSeconds(3),
+
+                    Children =
+                    {
+                        kf1,
+                        kf2
+                    }
+                };
+
+                Grid target = new Grid();
+                var testClk = new TestClock();
+
+                var root = new TestRoot
+                {
+                    Clock = testClk,
+                    Style = 
+                    {
+                        new Style(x => x.OfType<Border>().Class("Rect"))
+                            {
+                                Setters = new[]
+                                {
+                                    new Setter(
+                                        Border.HeightProperty,
+                                        100),
+                                    new Setter(
+                                        Border.WidthProperty,
+                                        100),
+                                }
+                            }
+                    },
+                    Child = target
+                };
+
+                var b1 = new Border()
+                {
+                    Classes = new Classes(new string[] { "Rect" }),
+                };
+
+                var b2 = new Border()
+                {
+                    Classes = new Classes(new string[] { "Rect" })
+                };
+
+                target.Children.Add(b1);
+                target.Children.Add(b2);
+
+                testClk.Step(TimeSpan.Zero);
+                testClk.Step(TimeSpan.FromSeconds(3)); 
+
+                Assert.Equal(Colors.Black, ((SolidColorBrush)b1.Background).Color);
+                Assert.Equal(Colors.Black, ((SolidColorBrush)b2.Background).Color);
+
+            }
+        }
+
         public class TestSelectorObservable : IObservable<bool>, IDisposable
         {
             IObserver<bool> testObserver;
