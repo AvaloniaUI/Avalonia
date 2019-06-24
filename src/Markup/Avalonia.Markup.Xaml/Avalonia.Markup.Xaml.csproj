@@ -43,9 +43,10 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlConstructorServiceProviderTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDataContextTypeTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDesignPropertiesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlMetadataRemover.cs" />
-        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlPropertyPathTransformer.cs"/>
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlPropertyPathTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransformInstanceAttachedProperties.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlTransitionsTypeMetadataTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlWellKnownTypes.cs" />
