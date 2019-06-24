@@ -180,16 +180,23 @@ namespace Avalonia.Skia.Text
 
                         InitializePaintForTextRun(_paint, context, textLine, textRun, foregroundWrapper);
 
-                        fixed (ushort* buffer = textRun.GlyphRun.GlyphIndices)
+                        using (var builder = new SKTextBlobBuilder())
                         {
-                            var p = (IntPtr)buffer;
+                            var runBuffer = builder.AllocateRunPositioned(_paint,
+                                textRun.GlyphRun.GlyphIndices.Length, 0, null);
 
-                            // This expects an byte array so we need to pass the right length
-                            canvas.DrawPositionedText(
-                                p,
-                                textRun.GlyphRun.GlyphIndices.Length * 2,
-                                textRun.GlyphRun.GlyphOffsets,
-                                _paint);
+                            var glyphs = runBuffer.GetGlyphSpan();
+                            var positions = runBuffer.GetPositionSpan();
+
+                            for (var i = 0; i < textRun.GlyphRun.GlyphIndices.Length; i++)
+                            {
+                                glyphs[i] = textRun.GlyphRun.GlyphIndices[i];
+                                positions[i] = textRun.GlyphRun.GlyphPositions[i];
+                            }
+
+                            var blob = builder.Build();
+
+                            canvas.DrawText(blob, 0, 0, _paint);
                         }
 
                         canvas.Translate(textRun.Width, 0);
@@ -568,9 +575,9 @@ namespace Avalonia.Skia.Text
 
             var len = buffer.Length;
 
-            var info = buffer.GetGlyphInfoReferences();
+            var info = buffer.GetGlyphInfoSpan();
 
-            var pos = buffer.GetGlyphPositionReferences();
+            var pos = buffer.GetGlyphPositionSpan();
 
             glyphPositions = new SKPoint[len];
 
@@ -1659,7 +1666,7 @@ namespace Avalonia.Skia.Text
             {
                 var firstGlyphRun = new SKGlyphRun(
                     textRun.GlyphRun.GlyphIndices.Take(length).ToArray(),
-                    textRun.GlyphRun.GlyphOffsets.Take(length).ToArray(),
+                    textRun.GlyphRun.GlyphPositions.Take(length).ToArray(),
                     textRun.GlyphRun.GlyphClusters.Take(length).ToArray());
                 firstTextRun = new SKTextRun(
                     new SKTextPointer(startingIndex, length),
