@@ -18,7 +18,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             _fb = fb;
             Invalidate(default(Rect));
-            var mice = new Mice(ClientSize.Width, ClientSize.Height);
+            var mice = new Mice(this, ClientSize.Width, ClientSize.Height);
             mice.Start();
             mice.Event += e => Input?.Invoke(e);
         }
