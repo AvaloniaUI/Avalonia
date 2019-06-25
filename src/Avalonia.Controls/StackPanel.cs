@@ -1,10 +1,10 @@
-// Copyright (c) The Avalonia Project. All rights reserved.
-// Licensed under the MIT license. See licence.md file in the project root for full license information.
+// This source file is adapted from the Windows Presentation Foundation project. 
+// (https://github.com/dotnet/wpf/) 
+// 
+// Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
-using System.Linq;
 using Avalonia.Input;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -155,106 +155,124 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Measures the control.
+        /// General StackPanel layout behavior is to grow unbounded in the "stacking" direction (Size To Content).
+        /// Children in this dimension are encouraged to be as large as they like.  In the other dimension,
+        /// StackPanel will assume the maximum size of its children.
         /// </summary>
-        /// <param name="availableSize">The available size.</param>
-        /// <returns>The desired size of the control.</returns>
+        /// <param name="availableSize">Constraint</param>
+        /// <returns>Desired size</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            double childAvailableWidth = double.PositiveInfinity;
-            double childAvailableHeight = double.PositiveInfinity;
+            Size stackDesiredSize = new Size();
+            var children = Children;
+            Size layoutSlotSize = availableSize;
+            bool fHorizontal = (Orientation == Orientation.Horizontal);
+            double spacing = Spacing;
+            bool hasVisibleChild = false;
 
-            if (Orientation == Orientation.Vertical)
+            //
+            // Initialize child sizing and iterator data
+            // Allow children as much size as they want along the stack.
+            //
+            if (fHorizontal)
             {
-                childAvailableWidth = availableSize.Width;
-
-                if (!double.IsNaN(Width))
-                {
-                    childAvailableWidth = Width;
-                }
-
-                childAvailableWidth = Math.Min(childAvailableWidth, MaxWidth);
-                childAvailableWidth = Math.Max(childAvailableWidth, MinWidth);
+                layoutSlotSize = layoutSlotSize.WithWidth(Double.PositiveInfinity);
             }
             else
             {
-                childAvailableHeight = availableSize.Height;
-
-                if (!double.IsNaN(Height))
-                {
-                    childAvailableHeight = Height;
-                }
-
-                childAvailableHeight = Math.Min(childAvailableHeight, MaxHeight);
-                childAvailableHeight = Math.Max(childAvailableHeight, MinHeight);
+                layoutSlotSize = layoutSlotSize.WithHeight(Double.PositiveInfinity);
             }
 
-            double measuredWidth = 0;
-            double measuredHeight = 0;
-            double spacing = Spacing;
-            bool hasVisibleChild = Children.Any(c => c.IsVisible);
-
-            foreach (Control child in Children)
+            //
+            //  Iterate through children.
+            //  While we still supported virtualization, this was hidden in a child iterator (see source history).
+            //
+            for (int i = 0, count = children.Count; i < count; ++i)
             {
-                child.Measure(new Size(childAvailableWidth, childAvailableHeight));
-                Size size = child.DesiredSize;
+                // Get next child.
+                var child = children[i];
 
-                if (Orientation == Orientation.Vertical)
+                if (child == null)
+                { continue; }
+
+                bool isVisible = child.IsVisible;
+
+                if (isVisible && !hasVisibleChild)
                 {
-                    measuredHeight += size.Height + (child.IsVisible ? spacing : 0);
-                    measuredWidth = Math.Max(measuredWidth, size.Width);
+                    hasVisibleChild = true;
+                }
+
+                // Measure the child.
+                child.Measure(layoutSlotSize);
+                Size childDesiredSize = child.DesiredSize;
+
+                // Accumulate child size.
+                if (fHorizontal)
+                {
+                    stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width + (isVisible ? spacing : 0) + childDesiredSize.Width);
+                    stackDesiredSize = stackDesiredSize.WithHeight(Math.Max(stackDesiredSize.Height, childDesiredSize.Height));
                 }
                 else
                 {
-                    measuredWidth += size.Width + (child.IsVisible ? spacing : 0);   
-                    measuredHeight = Math.Max(measuredHeight, size.Height);
+                    stackDesiredSize = stackDesiredSize.WithWidth(Math.Max(stackDesiredSize.Width, childDesiredSize.Width));
+                    stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height + (isVisible ? spacing : 0) + childDesiredSize.Height);
                 }
             }
 
-            if (Orientation == Orientation.Vertical)
+            if (fHorizontal)
             {
-                measuredHeight -= (hasVisibleChild ? spacing : 0);
+                stackDesiredSize = stackDesiredSize.WithWidth(stackDesiredSize.Width - (hasVisibleChild ? spacing : 0));
             }
             else
-            {
-                measuredWidth -= (hasVisibleChild ? spacing : 0);
+            { 
+                stackDesiredSize = stackDesiredSize.WithHeight(stackDesiredSize.Height - (hasVisibleChild ? spacing : 0));
             }
 
-            return new Size(measuredWidth, measuredHeight).Constrain(availableSize);
+            // TODO: In WPF `.Constrain(availableSize)` is not used.
+            //return stackDesiredSize;
+            return stackDesiredSize.Constrain(availableSize); 
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Content arrangement.
+        /// </summary>
+        /// <param name="finalSize">Arrange size</param>
         protected override Size ArrangeOverride(Size finalSize)
         {
-            var orientation = Orientation;
+            var children = Children;
+            bool fHorizontal = (Orientation == Orientation.Horizontal);
+            Rect rcChild = new Rect(finalSize);
+            double previousChildSize = 0.0;
             var spacing = Spacing;
-            var finalRect = new Rect(finalSize);
-            var pos = 0.0;
 
-            foreach (Control child in Children)
+            //
+            // Arrange and Position Children.
+            //
+            for (int i = 0, count = children.Count; i < count; ++i)
             {
-                if (!child.IsVisible)
-                {
-                    continue;
-                }
+                var child = children[i];
 
-                double childWidth = child.DesiredSize.Width;
-                double childHeight = child.DesiredSize.Height;
+                if (child == null)
+                { continue; }
 
-                if (orientation == Orientation.Vertical)
+                if (fHorizontal)
                 {
-                    var rect = new Rect(0, pos, childWidth, childHeight)
-                        .Align(finalRect, child.HorizontalAlignment, VerticalAlignment.Top);
-                    ArrangeChild(child, rect, finalSize, orientation);
-                    pos += childHeight + spacing;
+                    rcChild = rcChild.WithX(rcChild.X + previousChildSize);
+                    previousChildSize = child.DesiredSize.Width;
+                    rcChild = rcChild.WithWidth(previousChildSize);
+                    rcChild = rcChild.WithHeight(Math.Max(finalSize.Height, child.DesiredSize.Height));
+                    previousChildSize += spacing;
                 }
                 else
                 {
-                    var rect = new Rect(pos, 0, childWidth, childHeight)
-                        .Align(finalRect, HorizontalAlignment.Left, child.VerticalAlignment);
-                    ArrangeChild(child, rect, finalSize, orientation);
-                    pos += childWidth + spacing;
+                    rcChild = rcChild.WithY(rcChild.Y + previousChildSize);
+                    previousChildSize = child.DesiredSize.Height;
+                    rcChild = rcChild.WithHeight(previousChildSize);
+                    rcChild = rcChild.WithWidth(Math.Max(finalSize.Width, child.DesiredSize.Width));
+                    previousChildSize += spacing;
                 }
+
+                child.Arrange(rcChild);
             }
 
             return finalSize;
