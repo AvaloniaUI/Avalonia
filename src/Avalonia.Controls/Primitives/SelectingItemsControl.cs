@@ -104,7 +104,7 @@ namespace Avalonia.Controls.Primitives
 
         private static readonly IList Empty = Array.Empty<object>();
 
-        private Selection _selection = new Selection();
+        private readonly Selection _selection = new Selection();
         private int _selectedIndex = -1;
         private object _selectedItem;
         private IList _selectedItems;
@@ -1071,7 +1071,7 @@ namespace Avalonia.Controls.Primitives
 
         private class Selection : IEnumerable<int>
         {
-            private List<int> _list = new List<int>();
+            private readonly List<int> _list = new List<int>();
             private HashSet<int> _set = new HashSet<int>();
 
             public bool HasItems => _set.Count > 0;
