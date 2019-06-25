@@ -11,7 +11,7 @@ namespace Avalonia.Controls.Repeaters
 
         public ItemTemplateWrapper(IDataTemplate dataTemplate) => _dataTemplate = dataTemplate;
 
-        public IControl GetElement(ElementFactoryGetArgs args)
+        public IControl GetElement(IControl parent, object data)
         {
             var selectedTemplate = _dataTemplate;
             var recyclePool = RecyclePool.GetPoolInstance(selectedTemplate);
@@ -20,13 +20,13 @@ namespace Avalonia.Controls.Repeaters
             if (recyclePool != null)
             {
                 // try to get an element from the recycle pool.
-                element = recyclePool.TryGetElement(string.Empty, args.Parent);
+                element = recyclePool.TryGetElement(string.Empty, parent);
             }
 
             if (element == null)
             {
                 // no element was found in recycle pool, create a new element
-                element = selectedTemplate.Build(args.Data);
+                element = selectedTemplate.Build(data);
 
                 // Associate template with element
                 element.SetValue(RecyclePool.OriginTemplateProperty, selectedTemplate);
@@ -35,9 +35,8 @@ namespace Avalonia.Controls.Repeaters
             return element;
         }
 
-        public void RecycleElement(ElementFactoryRecycleArgs args)
+        public void RecycleElement(IControl parent, IControl element)
         {
-            var element = args.Element;
             var selectedTemplate = _dataTemplate;
             var recyclePool = RecyclePool.GetPoolInstance(selectedTemplate);
             if (recyclePool == null)
@@ -47,7 +46,7 @@ namespace Avalonia.Controls.Repeaters
                 RecyclePool.SetPoolInstance(selectedTemplate, recyclePool);
             }
 
-            recyclePool.PutElement(args.Element, "" /* key */, args.Parent);
+            recyclePool.PutElement(element, "" /* key */, parent);
         }
     }
 }

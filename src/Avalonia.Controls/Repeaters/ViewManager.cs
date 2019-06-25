@@ -18,8 +18,6 @@ namespace Avalonia.Controls.Repeaters
         private readonly UniqueIdElementPool _resetPool;
         private IControl _lastFocusedElement;
         private bool _isDataSourceStableResetPending;
-        private ElementFactoryGetArgs _elementFactoryGetArgs;
-        private ElementFactoryRecycleArgs _elementFactoryRecycleArgs;
         private int _firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
         private int _lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
         private bool _eventsSubscribed;
@@ -107,21 +105,7 @@ namespace Avalonia.Controls.Repeaters
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             var clearedIndex = virtInfo.Index;
             _owner.OnElementClearing(element);
-
-            if (_elementFactoryRecycleArgs == null)
-            {
-                // Create one.
-                _elementFactoryRecycleArgs = new ElementFactoryRecycleArgs();
-            }
-
-            var context = _elementFactoryRecycleArgs;
-            context.Element = element;
-            context.Parent = _owner;
-
-            _owner.ItemTemplateShim.RecycleElement(context);
-
-            context.Element = null;
-            context.Parent = null;
+            _owner.ItemTemplateShim.RecycleElement(_owner, element);
 
             virtInfo.MoveOwnershipToElementFactory();
             //_phaser.StopPhasing(element, virtInfo);
@@ -579,22 +563,7 @@ namespace Avalonia.Controls.Repeaters
             }
 
             var data = _owner.ItemsSourceView.GetAt(index);
-
-            if (_elementFactoryGetArgs == null)
-            {
-                // Create one.
-                _elementFactoryGetArgs = new ElementFactoryGetArgs();
-            }
-
-            var args = _elementFactoryGetArgs;
-            args.Data = data;
-            args.Parent = _owner;
-            args.Index= index;
-
-            var element = itemTemplateFactory.GetElement(args);
-
-            args.Data = null;
-            args.Parent = null;
+            var element = itemTemplateFactory.GetElement(_owner, data);
 
             var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
             if (virtInfo == null)
