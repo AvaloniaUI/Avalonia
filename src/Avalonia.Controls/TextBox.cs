@@ -31,6 +31,12 @@ namespace Avalonia.Controls
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
+                
+        public static readonly DirectProperty<TextBox, int> MaxLengthProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, int>(
+                nameof(MaxLength),
+                o => o.MaxLength,
+                (o, v) => o.MaxLength = v);
 
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
@@ -230,6 +236,12 @@ namespace Avalonia.Controls
                     CaretIndex = SelectionEnd;
                 }
             }
+        }
+        
+        public int MaxLength
+        {
+            get { return GetValue(MaxLengthProperty); }
+            set { SetValue(MaxLengthProperty, value); }
         }
 
         [Content]
