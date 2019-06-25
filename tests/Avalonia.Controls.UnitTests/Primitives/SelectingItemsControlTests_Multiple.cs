@@ -981,6 +981,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { 0 }, SelectedContainers(target));
         }
 
+        [Fact]
+        public void Right_Click_On_SelectedItem_Should_Not_Clear_Existing_Selection()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectAll();
+
+            Assert.Equal(3, target.SelectedItems.Count);
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
+
+            Assert.Equal(3, target.SelectedItems.Count);
+        }
+
+        [Fact]
+        public void Right_Click_On_UnselectedItem_Should_Clear_Existing_Selection()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: InputModifiers.Shift);
+
+            Assert.Equal(2, target.SelectedItems.Count);
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right);
+
+            Assert.Equal(1, target.SelectedItems.Count);
+        }
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
