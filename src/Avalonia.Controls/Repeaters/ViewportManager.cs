@@ -62,7 +62,6 @@ namespace Avalonia.Controls.Repeaters
                 {
                     ValidateCacheLength(value);
                     _maximumHorizontalCacheLength = value;
-                    ResetCacheBuffer();
                 }
             }
         }
@@ -76,7 +75,6 @@ namespace Avalonia.Controls.Repeaters
                 {
                     ValidateCacheLength(value);
                     _maximumVerticalCacheLength = value;
-                    ResetCacheBuffer();
                 }
             }
         }
@@ -182,7 +180,6 @@ namespace Avalonia.Controls.Repeaters
             _expectedViewportShift = default;
             _pendingViewportShift = default;
             _unshiftableShift = default;
-            ResetCacheBuffer();
 
             _effectiveViewportChangedRevoker?.Dispose();
 
@@ -250,10 +247,6 @@ namespace Avalonia.Controls.Repeaters
 
                         _horizontalCacheBufferPerSide = Math.Min(_horizontalCacheBufferPerSide, maximumHorizontalCacheBufferPerSide);
                         _verticalCacheBufferPerSide = Math.Min(_verticalCacheBufferPerSide, maximumVerticalCacheBufferPerSide);
-
-                        // Since we grow the cache buffer at the end of the arrange pass,
-                        // we need to register work even if we just reached cache potential.
-                        RegisterCacheBuildWork();
                     }
                 }
             }
@@ -294,14 +287,6 @@ namespace Avalonia.Controls.Repeaters
         {
             if (!_managingViewportDisabled)
             {
-                // We do not animate bring-into-view operations where the anchor is disconnected because
-                // it doesn't look good (the blank space is obvious because the layout can't keep track
-                // of two realized ranges while the animation is going on).
-                if (_isAnchorOutsideRealizedRange)
-                {
-                    ////args.AnimationDesired(false);
-                }
-
                 // During the time between a bring into view request and the element coming into view we do not
                 // want the anchor provider to pick some anchor and jump to it. Instead we want to anchor on the
                 // element that is being brought into view. We can do this by making just that element as a potential
@@ -389,8 +374,6 @@ namespace Avalonia.Controls.Repeaters
 
         private void UpdateViewport(Rect viewport)
         {
-            //assert(!m_managingViewportDisabled);
-            var previousVisibleWindow = _visibleWindow;
             var currentVisibleWindow = viewport;
 
             if (-currentVisibleWindow.X <= ItemsRepeater.ClearedElementsArrangePosition.X &&
@@ -407,43 +390,11 @@ namespace Avalonia.Controls.Repeaters
             TryInvalidateMeasure();
         }
 
-        private void ResetCacheBuffer()
-        {
-            _horizontalCacheBufferPerSide = 0.0;
-            _verticalCacheBufferPerSide = 0.0;
-
-            if (!_managingViewportDisabled)
-            {
-                // We need to start building the realization buffer again.
-                RegisterCacheBuildWork();
-            }
-        }
-
         private static void ValidateCacheLength(double cacheLength)
         {
             if (cacheLength < 0.0 || double.IsInfinity(cacheLength) || double.IsNaN(cacheLength))
             {
                 throw new ArgumentException("The maximum cache length must be equal or superior to zero.");
-            }
-        }
-
-        private void RegisterCacheBuildWork()
-        {
-            ////assert(!m_managingViewportDisabled);
-            if (_owner.Layout != null &&
-                _cacheBuildAction == null)
-            {
-                // We capture 'owner' (a strong refernce on ItemsRepeater) to make sure ItemsRepeater is still around
-                // when the async action completes. By protecting ItemsRepeater, we also ensure that this instance
-                // of ViewportManager (referenced by 'this' pointer) is valid because the lifetime of ItemsRepeater
-                // and ViewportManager is the same (see ItemsRepeater::m_viewportManager).
-                // We can't simply hold a strong reference on ViewportManager because it's not a COM object.
-                ////auto strongOwner = m_owner->get_strong();
-                ////m_cacheBuildAction.set(
-                ////    m_owner->Dispatcher().RunIdleAsync([this, strongOwner](const winrt::IdleDispatchedHandlerArgs&)
-                ////{
-                ////    OnCacheBuildActionCompleted();
-                ////}));
             }
         }
 

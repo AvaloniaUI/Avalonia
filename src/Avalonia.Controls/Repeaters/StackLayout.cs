@@ -53,7 +53,6 @@ namespace Avalonia.Controls.Repeaters
             {
                 if (firstRealized != null)
                 {
-                    //MUX_ASSERT(lastRealized);
                     _orientation.SetMajorStart(
                         ref extent,
                         _orientation.MajorStart(firstRealizedLayoutBounds) - firstRealizedItemIndex * averageElementSize);

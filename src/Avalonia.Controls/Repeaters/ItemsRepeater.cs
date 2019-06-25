@@ -243,19 +243,11 @@ namespace Avalonia.Controls.Repeaters
                     else
                     {
                         var newBounds = element.Bounds;
-
-                        //if (virtInfo.ArrangeBounds != ItemsRepeater.InvalidRect &&
-                        //    newBounds != virtInfo.ArrangeBounds)
-                        //{
-                        //    _animationManager.OnElementBoundsChanged(element, virtInfo.ArrangeBounds, newBounds);
-                        //}
-
                         virtInfo.ArrangeBounds = newBounds;
                     }
                 }
 
                 _viewportManager.OnOwnerArranged();
-                //_animationManager.OnOwnerArranged();
 
                 return arrangeSize;
             }
@@ -299,10 +291,6 @@ namespace Avalonia.Controls.Repeaters
             {
                 OnLayoutChanged((Layout)args.OldValue, (Layout)args.NewValue);
             }
-            //else if (property == AnimatorProperty)
-            //{
-            //    OnAnimatorChanged((ElementAnimator)args.OldValue, (ElementAnimator)args.NewValue);
-            //}
             else if (property == HorizontalCacheLengthProperty)
             {
                 _viewportManager.HorizontalCacheLength = (double)args.NewValue;
@@ -592,7 +580,6 @@ namespace Avalonia.Controls.Repeaters
 
             try
             {
-                //_animationManager.OnItemsSourceChanged(sender, args);
                 _viewManager.OnItemsSourceChanged(sender, args);
 
                 if (Layout != null)

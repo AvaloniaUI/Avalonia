@@ -407,7 +407,6 @@ namespace Avalonia.Controls.Repeaters
             _elementManager.ClearRealizedRange();
             // FlowLayout requires that the anchor is the first element in the row.
             var internalAnchor = _algorithmCallbacks.Algorithm_GetAnchorForTargetElement(index, availableSize, context);
-            //MUX_ASSERT(internalAnchor.Index <= index);
 
             // No need to set the position of the anchor.
             // (0,0) is fine for now since the extent can
@@ -505,7 +504,6 @@ namespace Avalonia.Controls.Repeaters
                 int realizedElementCount = _elementManager.GetRealizedElementCount();
                 if (realizedElementCount > 0)
                 {
-                    //MUX_ASSERT(_firstRealizedDataIndexInsideRealizationWindow != -1 && _lastRealizedDataIndexInsideRealizationWindow != -1);
                     int countInLine = 0;
                     var previousElementBounds = _elementManager.GetLayoutBoundsForDataIndex(_firstRealizedDataIndexInsideRealizationWindow);
                     var currentLineOffset = _orientation.MajorStart(previousElementBounds);
@@ -661,12 +659,6 @@ namespace Avalonia.Controls.Repeaters
             if (IsVirtualizingContext)
             {
                 _context.LayoutOrigin = new Point(_lastExtent.X, _lastExtent.Y);
-            }
-            else
-            {
-                // Should have 0 origin for non-virtualizing layout since we always start from 
-                // the first item
-                //MUX_ASSERT(m_lastExtent.X == 0 && m_lastExtent.Y == 0);
             }
         }
 

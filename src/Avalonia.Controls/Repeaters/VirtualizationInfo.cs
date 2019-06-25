@@ -37,7 +37,6 @@ namespace Avalonia.Controls.Repeaters
 
         public void MoveOwnershipToLayoutFromElementFactory(int index, string uniqueId)
         {
-            //MUX_ASSERT(_owner == ElementOwner.ElementFactory);
             Owner = ElementOwner.Layout;
             Index = index;
             UniqueId = uniqueId;
@@ -45,20 +44,16 @@ namespace Avalonia.Controls.Repeaters
 
         public void MoveOwnershipToLayoutFromUniqueIdResetPool()
         {
-            //MUX_ASSERT(_owner == ElementOwner.UniqueIdResetPool);
             Owner = ElementOwner.Layout;
         }
 
         public void MoveOwnershipToLayoutFromPinnedPool()
         {
-            //MUX_ASSERT(_owner == ElementOwner.PinnedPool);
-            //MUX_ASSERT(IsPinned());
             Owner = ElementOwner.Layout;
         }
 
         public void MoveOwnershipToElementFactory()
         {
-            //MUX_ASSERT(_owner != ElementOwner.ElementFactory);
             Owner = ElementOwner.ElementFactory;
             _pinCounter = 0;
             Index = -1;
@@ -68,7 +63,6 @@ namespace Avalonia.Controls.Repeaters
 
         public void MoveOwnershipToUniqueIdResetPoolFromLayout()
         {
-            //MUX_ASSERT(_owner == ElementOwner.Layout);
             Owner = ElementOwner.UniqueIdResetPool;
             // Keep the pinCounter the same. If the container survives the reset
             // it can go on being pinned as if nothing happened.
@@ -79,7 +73,6 @@ namespace Avalonia.Controls.Repeaters
             // During a unique id reset, some elements might get removed.
             // Their ownership will go from the UniqueIdResetPool to the Animator.
             // The common path though is for ownership to go from Layout to Animator.
-            //MUX_ASSERT(_owner == ElementOwner.Layout || _owner == ElementOwner.UniqueIdResetPool);
             Owner = ElementOwner.Animator;
             Index = -1;
             _pinCounter = 0;
@@ -87,7 +80,6 @@ namespace Avalonia.Controls.Repeaters
 
         public void MoveOwnershipToPinnedPool()
         {
-            //MUX_ASSERT(_owner == ElementOwner.Layout);
             Owner = ElementOwner.PinnedPool;
         }
 

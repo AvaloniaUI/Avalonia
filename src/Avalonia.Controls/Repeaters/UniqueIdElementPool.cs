@@ -14,8 +14,6 @@ namespace Avalonia.Controls.Repeaters
 
         public void Add(IControl element)
         {
-            //MUX_ASSERT(_owner.ItemsSourceView.HasKeyIndexMapping);
-
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             var key = virtInfo.UniqueId;
 
@@ -29,8 +27,6 @@ namespace Avalonia.Controls.Repeaters
 
         public IControl Remove(int index)
         {
-            //MUX_ASSERT(_owner.ItemsSourceView.HasKeyIndexMapping);
-
             // Check if there is already a element in the mapping and if so, use it.
             string key = _owner.ItemsSourceView.KeyFromIndex(index);
 
@@ -44,7 +40,6 @@ namespace Avalonia.Controls.Repeaters
 
         public void Clear()
         {
-            //MUX_ASSERT(_owner.ItemsSourceView.HasKeyIndexMapping);
             _elementMap.Clear();
         }
 
