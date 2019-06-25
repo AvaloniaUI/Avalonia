@@ -85,7 +85,13 @@ namespace Avalonia.X11.Glx
             ImmediateContext = CreateContext(pbuffers[0],null);
             DeferredContext = CreateContext(pbuffers[1], ImmediateContext);
             ImmediateContext.MakeCurrent();
-            var err = Glx.GetError();
+            var renderer = Glx.GetString(GlConsts.GL_RENDERER);
+            if (renderer == null)
+                throw new OpenGlException("Unable to query GL_RENDERER");
+
+            if (renderer.ToLowerInvariant().Contains("llvmpipe"))
+                throw new OpenGlException(
+                    "Graphics hardware not found probably due some configuration issues, refusing to use llvmpipe to avoid segfaults");
             
             GlInterface = new GlInterface(GlxInterface.GlxGetProcAddress);
             if (GlInterface.Version == null)

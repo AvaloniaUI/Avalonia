@@ -84,6 +84,18 @@ namespace Avalonia.X11.Glx
         [GlEntryPoint("glGetError")]
         public GlGetError GetError { get; }
 
+        public delegate IntPtr GlGetString(int name);
+        [GlEntryPoint("glGetString")]
+        public GlGetString GlGetStringDelegate { get; }
+
+        public string GetString(int name)
+        {
+            var rv = GlGetStringDelegate(name);
+            if (rv == IntPtr.Zero)
+                return null;
+            return Marshal.PtrToStringAnsi(rv);
+        }
+
         public GlxInterface() : base(GlxGetProcAddress)
         {
         }
