@@ -23,6 +23,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Minimum = 100,
                 Maximum = 50,
             };
+            var root = new TestRoot(target);
 
             Assert.Equal(100, target.Minimum);
             Assert.Equal(100, target.Maximum);
@@ -37,6 +38,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 50,
                 Value = 100,
             };
+            var root = new TestRoot(target);
 
             Assert.Equal(0, target.Minimum);
             Assert.Equal(50, target.Maximum);
@@ -52,6 +54,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 100,
                 Value = 50,
             };
+            var root = new TestRoot(target);
 
             target.Minimum = 200;
 
@@ -69,6 +72,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 100,
                 Value = 100,
             };
+            var root = new TestRoot(target);
 
             target.Maximum = 50;
 
