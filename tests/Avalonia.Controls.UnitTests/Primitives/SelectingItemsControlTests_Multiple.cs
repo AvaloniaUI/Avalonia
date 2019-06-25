@@ -957,6 +957,30 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Foo", "Qux", "Baz" }, target.SelectedItems);
         }
 
+        [Fact]
+        public void Left_Click_On_SelectedItem_Should_Clear_Existing_Selection()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectAll();
+
+            Assert.Equal(3, target.SelectedItems.Count);
+
+            _helper.Down((Interactive)target.Presenter.Panel.Children[0]);
+
+            Assert.Equal(1, target.SelectedItems.Count);
+            Assert.Equal(new[] { "Foo", }, target.SelectedItems);
+            Assert.Equal(new[] { 0 }, SelectedContainers(target));
+        }
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children

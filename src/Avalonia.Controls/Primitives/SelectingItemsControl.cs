@@ -999,26 +999,6 @@ namespace Avalonia.Controls.Primitives
                     SelectedItemProperty,
                     oldItem,
                     item);
-
-                UpdateSelectedItems(() =>
-                {
-                    if (clear)
-                    {
-                        SelectedItems.Clear();
-
-                        if (index != -1)
-                        {
-                            SelectedItems.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        if (added != -1)
-                        {
-                            SelectedItems.Add(added);
-                        }
-                    }
-                });
             }
 
             if (removed != null && index != -1)
@@ -1028,6 +1008,8 @@ namespace Avalonia.Controls.Primitives
 
             if (added != -1 || removed?.Count > 0)
             {
+                ResetSelectedItems();
+
                 var e = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
                     added != -1 ? new[] { ElementAt(Items, added) } : Array.Empty<object>(),
