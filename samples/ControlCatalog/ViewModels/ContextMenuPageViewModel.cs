@@ -2,12 +2,14 @@
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
     public class ContextMenuPageViewModel
     {
+        public Control View { get; set; }
         public ContextMenuPageViewModel()
         {
             OpenCommand = ReactiveCommand.CreateFromTask(Open);
@@ -48,8 +50,11 @@ namespace ControlCatalog.ViewModels
 
         public async Task Open()
         {
+            var window = View?.GetVisualRoot() as Window;
+            if (window == null)
+                return;
             var dialog = new OpenFileDialog();
-            var result = await dialog.ShowAsync(App.Current.MainWindow);
+            var result = await dialog.ShowAsync(window);
 
             if (result != null)
             {
