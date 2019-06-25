@@ -128,7 +128,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                    (e.InputModifiers & InputModifiers.Control) != 0,
+                    e.MouseButton == MouseButton.Right);
             }
         }
 

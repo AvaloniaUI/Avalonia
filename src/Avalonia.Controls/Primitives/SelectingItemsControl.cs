@@ -506,11 +506,13 @@ namespace Avalonia.Controls.Primitives
         /// <param name="select">Whether the item should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         protected void UpdateSelection(
             int index,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             if (index != -1)
             {
@@ -580,7 +582,7 @@ namespace Avalonia.Controls.Primitives
                     }
                     else
                     {
-                        SelectedIndex = index;
+                        UpdateSelectedItem(index, !(rightButton && _selection.Contains(index)));
                     }
 
                     if (Presenter?.Panel != null)
@@ -605,17 +607,19 @@ namespace Avalonia.Controls.Primitives
         /// <param name="select">Whether the container should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         protected void UpdateSelection(
             IControl container,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
 
             if (index != -1)
             {
-                UpdateSelection(index, select, rangeModifier, toggleModifier);
+                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton);
             }
         }
 
@@ -627,6 +631,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="select">Whether the container should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
@@ -635,13 +640,14 @@ namespace Avalonia.Controls.Primitives
             IInteractive eventSource,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelection(container, select, rangeModifier, toggleModifier);
+                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton);
                 return true;
             }
 
