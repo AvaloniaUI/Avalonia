@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Linq;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 
 namespace Avalonia.Controls
@@ -106,19 +107,28 @@ namespace Avalonia.Controls
         public void Start<TMainWindow>(Func<object> dataContextProvider = null)
             where TMainWindow : Window, new()
         {
-            var window = new TMainWindow();
-            if (dataContextProvider != null)
-                window.DataContext = dataContextProvider();
-            Instance.Run(window);
+            AfterSetup(builder =>
+            {
+                var window = new TMainWindow();
+                if (dataContextProvider != null)
+                    window.DataContext = dataContextProvider();
+                ((IClassicDesktopStyleApplicationLifetime)builder.Instance.ApplicationLifetime)
+                    .MainWindow = window;
+            });
+            
+            // Copy-pasted because we can't call extension methods due to generic constraints
+            var lifetime = new ClassicDesktopStyleApplicationLifetime(Instance) {ShutdownMode = ShutdownMode.OnMainWindowClose};
+            Instance.ApplicationLifetime = lifetime;
+            SetupWithoutStarting();
+            lifetime.Start(Array.Empty<string>());
         }
 
         public delegate void AppMainDelegate(Application app, string[] args);
 
-        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
+        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details", true)]
         public void Start()
         {
-            Setup();
-            Instance.Run();
+            throw new NotSupportedException();
         }
 
         public void Start(AppMainDelegate main, string[] args)
