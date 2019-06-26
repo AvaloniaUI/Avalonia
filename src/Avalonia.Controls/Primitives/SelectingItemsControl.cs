@@ -342,23 +342,35 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnContainersMaterialized(e);
 
-            var selectedIndex = SelectedIndex;
-            var selectedContainer = e.Containers
-                .FirstOrDefault(x => (x.ContainerControl as ISelectable)?.IsSelected == true);
+            var resetSelectedItems = false;
 
-            if (selectedContainer != null)
+            foreach (var container in e.Containers)
             {
-                SelectedIndex = selectedContainer.Index;
-            }
-            else if (selectedIndex >= e.StartingIndex &&
-                     selectedIndex < e.StartingIndex + e.Containers.Count)
-            {
-                var container = e.Containers[selectedIndex - e.StartingIndex];
+                if ((container.ContainerControl as ISelectable)?.IsSelected == true)
+                {
+                    if (SelectedIndex == -1)
+                    {
+                        SelectedIndex = container.Index;
+                    }
+                    else
+                    {
+                        if (_selection.Add(container.Index))
+                        {
+                            resetSelectedItems = true;
+                        }
+                    }
 
-                if (container.ContainerControl != null)
+                    MarkContainerSelected(container.ContainerControl, true);
+                }
+                else if (_selection.Contains(container.Index))
                 {
                     MarkContainerSelected(container.ContainerControl, true);
                 }
+            }
+
+            if (resetSelectedItems)
+            {
+                ResetSelectedItems();
             }
         }
 

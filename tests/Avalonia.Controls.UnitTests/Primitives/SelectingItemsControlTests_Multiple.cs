@@ -1068,6 +1068,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, target.SelectedItems.Count);
         }
 
+        [Fact]
+        public void Adding_Selected_ItemContainers_Should_Update_Selection()
+        {
+            var items = new AvaloniaList<ItemContainer>(new[]
+            {
+                new ItemContainer(),
+                new ItemContainer(),
+            });
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            items.Add(new ItemContainer { IsSelected = true });
+            items.Add(new ItemContainer { IsSelected = true });
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(items[2], target.SelectedItem);
+            Assert.Equal(new[] { items[2], items[3] }, target.SelectedItems);
+        }
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
@@ -1119,6 +1144,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public List<string> Items { get; } 
             public List<string> SelectedItems { get; }
+        }
+
+        private class ItemContainer : Control, ISelectable
+        {
+            public string Value { get; set; }
+            public bool IsSelected { get; set; }
         }
     }
 }
