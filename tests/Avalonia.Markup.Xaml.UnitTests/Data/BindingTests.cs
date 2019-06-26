@@ -24,6 +24,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
                 var window = (Window)loader.Load(xaml);
                 var textBlock = window.FindControl<TextBlock>("textBlock");
 
+                window.DataContext = "foo";
+                window.ApplyTemplate();
+
+                Assert.Equal("foo", textBlock.Text);
+            }
+        }
+
+        [Fact]
+        public void Binding_To_DoNothing_Works()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock Name='textBlock' Text='{Binding}'/>
+</Window>";
+                var loader = new AvaloniaXamlLoader();
+                var window = (Window)loader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+
                 window.ApplyTemplate();
 
                 window.DataContext = "foo";
