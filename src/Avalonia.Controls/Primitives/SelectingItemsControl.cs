@@ -222,6 +222,10 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
+        /// <remarks>
+        /// Note that the selection mode only applies to selections made via user interaction.
+        /// Multiple selections can be made programatically regardless of the value of this property.
+        /// </remarks>
         protected SelectionMode SelectionMode
         {
             get { return GetValue(SelectionModeProperty); }
