@@ -22,12 +22,6 @@ namespace Avalonia.Controls
     /// </summary>
     public class Grid : Panel
     {
-        //------------------------------------------------------
-        //
-        //  Constructors
-        //
-        //------------------------------------------------------
-
         static Grid()
         {
             IsSharedSizeScopeProperty.Changed.AddClassHandler<Control>(DefinitionBase.OnIsSharedSizeScopePropertyChanged);
@@ -46,42 +40,6 @@ namespace Avalonia.Controls
         public Grid()
         {
         }
-
-        //------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //------------------------------------------------------
-
-
-        /// <summary>
-        /// <see cref="FrameworkElement.LogicalChildren"/>
-        /// </summary>
-        /*  protected internal override IEnumerator LogicalChildren
-        {
-            get
-            {
-                // empty panel or a panel being used as the items
-                // host has *no* logical children; give empty enumerator
-                bool noChildren = (base.VisualChildrenCount == 0) || IsItemsHost;
-
-                if (noChildren)
-                {
-                    ExtendedData extData = ExtData;
-
-                    if (    extData == null
-                        ||  (   (extData.ColumnDefinitions == null || extData.ColumnDefinitions.Count == 0)
-                            &&  (extData.RowDefinitions    == null || extData.RowDefinitions.Count    == 0) )
-                       )
-                    {
-                        //  grid is empty
-                        return EmptyEnumerator.Instance;
-                    }
-                }
-
-                return (new GridChildrenCollectionEnumeratorSimple(this, !noChildren));
-            }
-        } */
 
         /// <summary>
         /// Helper for setting Column property on a Control.
@@ -193,12 +151,6 @@ namespace Avalonia.Controls
             return element.GetValue(IsSharedSizeScopeProperty);
         }
 
-        //------------------------------------------------------
-        //
-        //  Public Properties
-        //
-        //------------------------------------------------------
-
         /// <summary>
         /// ShowGridLines property.
         /// </summary>
@@ -248,52 +200,6 @@ namespace Avalonia.Controls
             }
         }
 
-        //------------------------------------------------------
-        //
-        //  Protected Methods
-        //
-        //------------------------------------------------------
-
-        /* /// <summary>
-        ///   Derived class must implement to support Visual children. The method must return
-        ///    the child at the specified index. Index must be between 0 and GetVisualChildrenCount-1.
-        ///
-        ///    By default a Visual does not have any children.
-        ///
-        ///  Remark:
-        ///       During this virtual call it is not valid to modify the Visual tree.
-        /// </summary>
-        protected override Visual GetVisualChild(int index)
-        {
-            // because "base.Count + 1" for GridLinesRenderer
-            // argument checking done at the base class
-            if(index == base.VisualChildrenCount)
-            {
-                if (_gridLinesRenderer == null)
-                {
-                    throw new ArgumentOutOfRangeException("index", index, SR.Get(SRID.Visual_ArgumentOutOfRange));
-                }
-                return _gridLinesRenderer;
-            }
-            else return base.GetVisualChild(index);
-        }
-
-        /// <summary>
-        ///  Derived classes override this property to enable the Visual code to enumerate
-        ///  the Visual children. Derived classes need to return the number of children
-        ///  from this method.
-        ///
-        ///    By default a Visual does not have any children.
-        ///
-        ///  Remark: During this virtual method the Visual tree must not be modified.
-        /// </summary>
-        protected override int VisualChildrenCount
-        {
-            //since GridLinesRenderer has not been added as a child, so we do not subtract
-            get { return base.VisualChildrenCount + (_gridLinesRenderer != null ? 1 : 0); }
-        }*/
-
-
         /// <summary>
         /// Content measurement.
         /// </summary>
@@ -306,8 +212,6 @@ namespace Avalonia.Controls
 
             try
             {
-                
-
                 ListenToNotifications = true;
                 MeasureOverrideInProgress = true;
 
@@ -550,7 +454,7 @@ namespace Avalonia.Controls
                                 // also use a count heuristic to break a loop in case of one.
 
                                 bool hasDesiredSizeUChanged = false;
-                                int cnt=0;
+                                int cnt = 0;
 
                                 // Cache Group2MinWidths & Group3MinHeights
                                 double[] group2MinSizes = CacheMinSizes(extData.CellGroup2, false);
@@ -582,17 +486,14 @@ namespace Avalonia.Controls
 
                     MeasureCellsGroup(extData.CellGroup4, constraint, false, false);
 
-                    
                     gridDesiredSize = new Size(
                             CalculateDesiredSize(DefinitionsU),
                             CalculateDesiredSize(DefinitionsV));
-                    
                 }
             }
             finally
             {
                 MeasureOverrideInProgress = false;
-                
             }
 
             return (gridDesiredSize);
@@ -606,8 +507,6 @@ namespace Avalonia.Controls
         {
             try
             {
-                
-
                 ArrangeOverrideInProgress = true;
 
                 if (_data == null)
@@ -627,12 +526,8 @@ namespace Avalonia.Controls
                 {
                     Debug.Assert(DefinitionsU.Count > 0 && DefinitionsV.Count > 0);
 
-                    
-
                     SetFinalSize(DefinitionsU, arrangeSize.Width, true);
                     SetFinalSize(DefinitionsV, arrangeSize.Height, false);
-
-                    
 
                     var children = this.Children;
 
@@ -653,11 +548,11 @@ namespace Avalonia.Controls
                             columnIndex == 0 ? 0.0 : DefinitionsU[columnIndex].FinalOffset,
                             rowIndex == 0 ? 0.0 : DefinitionsV[rowIndex].FinalOffset,
                             GetFinalSizeForRange(DefinitionsU, columnIndex, columnSpan),
-                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan)   );
+                            GetFinalSizeForRange(DefinitionsV, rowIndex, rowSpan));
 
-                        
+
                         cell.Arrange(cellRect);
-                        
+
                     }
 
                     //  update render bound on grid lines renderer visual
@@ -669,31 +564,12 @@ namespace Avalonia.Controls
             {
                 SetValid();
                 ArrangeOverrideInProgress = false;
-                
             }
             return (arrangeSize);
         }
 
         /// <summary>
-        /// <see cref="Visual.OnVisualChildrenChanged"/>
-        /// </summary>
-        /*protected internal override void OnVisualChildrenChanged(
-            AvaloniaObject visualAdded,
-            AvaloniaObject visualRemoved)
-        {
-            CellsStructureDirty = true;
-
-            base.OnVisualChildrenChanged(visualAdded, visualRemoved);
-        }*/
-
-        //------------------------------------------------------
-        //
-        //  Internal Methods
-        //
-        //------------------------------------------------------
-
-        /// <summary>
-        ///     Invalidates grid caches and makes the grid dirty for measure.
+        /// Invalidates grid caches and makes the grid dirty for measure.
         /// </summary>
         internal void Invalidate()
         {
@@ -702,10 +578,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        ///     Returns final width for a column.
+        /// Returns final width for a column.
         /// </summary>
         /// <remarks>
-        ///     Used from public ColumnDefinition ActualWidth. Calculates final width using offset data.
+        /// Used from public ColumnDefinition ActualWidth. Calculates final width using offset data.
         /// </remarks>
         internal double GetFinalColumnDefinitionWidth(int columnIndex)
         {
@@ -724,10 +600,10 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        ///     Returns final height for a row.
+        /// Returns final height for a row.
         /// </summary>
         /// <remarks>
-        ///     Used from public RowDefinition ActualHeight. Calculates final height using offset data.
+        /// Used from public RowDefinition ActualHeight. Calculates final height using offset data.
         /// </remarks>
         internal double GetFinalRowDefinitionHeight(int rowIndex)
         {
@@ -744,12 +620,6 @@ namespace Avalonia.Controls
             }
             return (value);
         }
-
-        //------------------------------------------------------
-        //
-        //  Internal Properties
-        //
-        //------------------------------------------------------
 
         /// <summary>
         /// Convenience accessor to MeasureOverrideInProgress bit flag.
@@ -781,32 +651,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Convenience accessor to ValidDefinitionsVStructure bit flag.
         /// </summary>
-        internal bool RowDefinitionsDirty 
+        internal bool RowDefinitionsDirty
         {
             get => RowDefinitions?.IsDirty ?? false;
             set => RowDefinitions.IsDirty = value;
         }
-
-        //------------------------------------------------------
-        //
-        //  Private Methods
-        //
-        //------------------------------------------------------
 
         /// <summary>
         /// Lays out cells according to rows and columns, and creates lookup grids.
         /// </summary>
         private void ValidateCells()
         {
-            
-
             if (CellsStructureDirty)
             {
                 ValidateCellsCore();
                 CellsStructureDirty = false;
             }
-
-            
         }
 
         /// <summary>
@@ -837,11 +697,8 @@ namespace Avalonia.Controls
 
                 CellCache cell = new CellCache();
 
-                //
-                //  read and cache child positioning properties
-                //
 
-                //  read indices from the corresponding properties
+                //  Read indices from the corresponding properties:
                 //      clamp to value < number_of_columns
                 //      column >= 0 is guaranteed by property value validation callback
                 cell.ColumnIndex = Math.Min(GetColumn((Control)child), DefinitionsU.Count - 1);
@@ -849,7 +706,7 @@ namespace Avalonia.Controls
                 //      row >= 0 is guaranteed by property value validation callback
                 cell.RowIndex = Math.Min(GetRow((Control)child), DefinitionsV.Count - 1);
 
-                //  read span properties
+                //  Read span properties:
                 //      clamp to not exceed beyond right side of the grid
                 //      column_span > 0 is guaranteed by property value validation callback
                 cell.ColumnSpan = Math.Min(GetColumnSpan((Control)child), DefinitionsU.Count - cell.ColumnIndex);
@@ -861,9 +718,7 @@ namespace Avalonia.Controls
                 Debug.Assert(0 <= cell.ColumnIndex && cell.ColumnIndex < DefinitionsU.Count);
                 Debug.Assert(0 <= cell.RowIndex && cell.RowIndex < DefinitionsV.Count);
 
-                //
-                //  calculate and cache length types for the child
-                //
+                //  Calculate and cache length types for the child.
 
                 cell.SizeTypeU = GetLengthTypeForRange(DefinitionsU, cell.ColumnIndex, cell.ColumnSpan);
                 cell.SizeTypeV = GetLengthTypeForRange(DefinitionsV, cell.RowIndex, cell.RowSpan);
@@ -871,9 +726,7 @@ namespace Avalonia.Controls
                 hasStarCellsU |= cell.IsStarU;
                 hasStarCellsV |= cell.IsStarV;
 
-                //
-                //  distribute cells into four groups.
-                //
+                //  Distribute cells into four groups.
 
                 if (!cell.IsStarV)
                 {
@@ -887,15 +740,15 @@ namespace Avalonia.Controls
                         cell.Next = extData.CellGroup3;
                         extData.CellGroup3 = i;
 
-                        //  remember if this cell belongs to auto row
+                        //  Remember if this cell belongs to auto row
                         hasGroup3CellsInAutoRows |= cell.IsAutoV;
                     }
                 }
                 else
                 {
-                    if (    cell.IsAutoU
-                            //  note below: if spans through Star column it is NOT Auto
-                        &&  !cell.IsStarU )
+                    if (cell.IsAutoU
+                        //  Note below: if spans through Star column it is NOT Auto
+                        && !cell.IsStarU)
                     {
                         cell.Next = extData.CellGroup2;
                         extData.CellGroup2 = i;
@@ -986,7 +839,7 @@ namespace Avalonia.Controls
                         extData.DefinitionsV = new DefinitionBase[] { new RowDefinition() { Parent = this } };
                     }
                     else
-                    {                       
+                    {
                         extData.DefinitionsV = extData.RowDefinitions;
                     }
                 }
@@ -1053,7 +906,7 @@ namespace Avalonia.Controls
         {
             double[] minSizes = isRows ? new double[DefinitionsV.Count] : new double[DefinitionsU.Count];
 
-            for (int j=0; j<minSizes.Length; j++)
+            for (int j = 0; j < minSizes.Length; j++)
             {
                 minSizes[j] = -1;
             }
@@ -1078,7 +931,7 @@ namespace Avalonia.Controls
 
         private void ApplyCachedMinSizes(double[] minSizes, bool isRows)
         {
-            for (int i=0; i<minSizes.Length; i++)
+            for (int i = 0; i < minSizes.Length; i++)
             {
                 if (MathUtilities.GreaterThanOrClose(minSizes[i], 0))
                 {
@@ -1218,8 +1071,8 @@ namespace Avalonia.Controls
             SpanKey key = new SpanKey(start, count, u);
             object o = store[key];
 
-            if (    o == null
-                ||  value > (double)o   )
+            if (o == null
+                || value > (double)o)
             {
                 store[key] = value;
             }
@@ -1235,13 +1088,13 @@ namespace Avalonia.Controls
             int cell,
             bool forceInfinityV)
         {
-            
+
 
             double cellMeasureWidth;
             double cellMeasureHeight;
 
-            if (    PrivateCells[cell].IsAutoU
-                &&  !PrivateCells[cell].IsStarU   )
+            if (PrivateCells[cell].IsAutoU
+                && !PrivateCells[cell].IsStarU)
             {
                 //  if cell belongs to at least one Auto column and not a single Star column
                 //  then it should be calculated "to content", thus it is possible to "shortcut"
@@ -1261,8 +1114,8 @@ namespace Avalonia.Controls
             {
                 cellMeasureHeight = double.PositiveInfinity;
             }
-            else if (   PrivateCells[cell].IsAutoV
-                    &&  !PrivateCells[cell].IsStarV   )
+            else if (PrivateCells[cell].IsAutoV
+                    && !PrivateCells[cell].IsStarV)
             {
                 //  if cell belongs to at least one Auto row and not a single Star row
                 //  then it should be calculated "to content", thus it is possible to "shortcut"
@@ -1277,18 +1130,17 @@ namespace Avalonia.Controls
                                         PrivateCells[cell].RowSpan);
             }
 
-            
+
             var child = this.Children[cell];
             if (child != null)
             {
                 Size childConstraint = new Size(cellMeasureWidth, cellMeasureHeight);
                 child.Measure(childConstraint);
             }
-            
 
-            
+
+
         }
-
 
         /// <summary>
         /// Calculates one dimensional measure size for given definitions' range.
@@ -1393,12 +1245,12 @@ namespace Avalonia.Controls
 
                     //  sanity check: no matter what, but min size must always be the smaller;
                     //  max size must be the biggest; and preferred should be in between
-                    Debug.Assert(   minSize <= preferredSize
-                                &&  preferredSize <= maxSize
-                                &&  rangeMinSize <= rangePreferredSize
-                                &&  rangePreferredSize <= rangeMaxSize  );
+                    Debug.Assert(minSize <= preferredSize
+                                && preferredSize <= maxSize
+                                && rangeMinSize <= rangePreferredSize
+                                && rangePreferredSize <= rangeMaxSize);
 
-                    if (maxMaxSize < maxSize)   maxMaxSize = maxSize;
+                    if (maxMaxSize < maxSize) maxMaxSize = maxSize;
                     if (definitions[i].UserSize.IsAuto) autoDefinitionsCount++;
                     tempDefinitions[i - start] = definitions[i];
                 }
@@ -1492,8 +1344,8 @@ namespace Avalonia.Controls
                         //
                         double equalSize = requestedSize / count;
 
-                        if (    equalSize < maxMaxSize
-                            &&  !_AreClose(equalSize, maxMaxSize)   )
+                        if (equalSize < maxMaxSize
+                            && !_AreClose(equalSize, maxMaxSize))
                         {
                             //  equi-size is less than maximum of maxSizes.
                             //  in this case distribute so that smaller definitions grow faster than
@@ -1502,12 +1354,12 @@ namespace Avalonia.Controls
                             double sizeToDistribute = requestedSize - rangeMaxSize;
 
                             //  sanity check: totalRemainingSize and sizeToDistribute must be real positive numbers
-                            Debug.Assert(   !double.IsInfinity(totalRemainingSize)
-                                        &&  !double.IsNaN(totalRemainingSize)
-                                        &&  totalRemainingSize > 0
-                                        &&  !double.IsInfinity(sizeToDistribute)
-                                        &&  !double.IsNaN(sizeToDistribute)
-                                        &&  sizeToDistribute > 0    );
+                            Debug.Assert(!double.IsInfinity(totalRemainingSize)
+                                        && !double.IsNaN(totalRemainingSize)
+                                        && totalRemainingSize > 0
+                                        && !double.IsInfinity(sizeToDistribute)
+                                        && !double.IsNaN(sizeToDistribute)
+                                        && sizeToDistribute > 0);
 
                             for (int i = 0; i < count; ++i)
                             {
@@ -1543,105 +1395,10 @@ namespace Avalonia.Controls
             IReadOnlyList<DefinitionBase> definitions,
             double availableSize)
         {
-            // if (FrameworkAppContextSwitches.GridStarDefinitionsCanExceedAvailableSpace)
-            // {
-            //     ResolveStarLegacy(definitions, availableSize);
-            // }
-            // else
-            // {
-                ResolveStarMaxDiscrepancy(definitions, availableSize);
-            // }
+            ResolveStarMaxDiscrepancy(definitions, availableSize);
         }
 
-        // original implementation, used from 3.0 through 4.6.2
-        private void ResolveStarLegacy(
-            IReadOnlyList<DefinitionBase> definitions,
-            double availableSize)
-        {
-            DefinitionBase[] tempDefinitions = TempDefinitions;
-            int starDefinitionsCount = 0;
-            double takenSize = 0;
-
-            for (int i = 0; i < definitions.Count; ++i)
-            {
-                switch (definitions[i].SizeType)
-                {
-                    case (LayoutTimeSizeType.Auto):
-                        takenSize += definitions[i].MinSize;
-                        break;
-                    case (LayoutTimeSizeType.Pixel):
-                        takenSize += definitions[i].MeasureSize;
-                        break;
-                    case (LayoutTimeSizeType.Star):
-                        {
-                            tempDefinitions[starDefinitionsCount++] = definitions[i];
-
-                            double starValue = definitions[i].UserSize.Value;
-
-                            if (_IsZero(starValue))
-                            {
-                                definitions[i].MeasureSize = 0;
-                                definitions[i].SizeCache = 0;
-                            }
-                            else
-                            {
-                                //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
-                                //  can be summed up without overflow
-                                starValue = Math.Min(starValue, c_starClip);
-
-                                //  Note: normalized star value is temporary cached into MeasureSize
-                                definitions[i].MeasureSize = starValue;
-                                double maxSize             = Math.Max(definitions[i].MinSize, definitions[i].UserMaxSize);
-                                maxSize                    = Math.Min(maxSize, c_starClip);
-                                definitions[i].SizeCache   = maxSize / starValue;
-                            }
-                        }
-                        break;
-                }
-            }
-
-            if (starDefinitionsCount > 0)
-            {
-                Array.Sort(tempDefinitions, 0, starDefinitionsCount, s_starDistributionOrderComparer);
-
-                //  the 'do {} while' loop below calculates sum of star weights in order to avoid fp overflow...
-                //  partial sum value is stored in each definition's SizeCache member.
-                //  this way the algorithm guarantees (starValue <= definition.SizeCache) and thus
-                //  (starValue / definition.SizeCache) will never overflow due to sum of star weights becoming zero.
-                //  this is an important change from previous implementation where the following was possible:
-                //  ((BigValueStar + SmallValueStar) - BigValueStar) resulting in 0...
-                double allStarWeights = 0;
-                int i = starDefinitionsCount - 1;
-                do
-                {
-                    allStarWeights += tempDefinitions[i].MeasureSize;
-                    tempDefinitions[i].SizeCache = allStarWeights;
-                } while (--i >= 0);
-
-                i = 0;
-                do
-                {
-                    double resolvedSize;
-                    double starValue = tempDefinitions[i].MeasureSize;
-
-                    if (_IsZero(starValue))
-                    {
-                        resolvedSize = tempDefinitions[i].MinSize;
-                    }
-                    else
-                    {
-                        double userSize = Math.Max(availableSize - takenSize, 0.0) * (starValue / tempDefinitions[i].SizeCache);
-                        resolvedSize    = Math.Min(userSize, tempDefinitions[i].UserMaxSize);
-                        resolvedSize    = Math.Max(tempDefinitions[i].MinSize, resolvedSize);
-                    }
-
-                    tempDefinitions[i].MeasureSize = resolvedSize;
-                    takenSize                     += resolvedSize;
-                } while (++i < starDefinitionsCount);
-            }
-        }
-
-        // new implementation as of 4.7.  Several improvements:
+        // New implementation as of 4.7.  Several improvements:
         // 1. Allocate to *-defs hitting their min or max constraints, before allocating
         //      to other *-defs.  A def that hits its min uses more space than its
         //      proportional share, reducing the space available to everyone else.
@@ -1668,7 +1425,7 @@ namespace Avalonia.Controls
 
             // Phase 1.  Determine the maximum *-weight and prepare to adjust *-weights
             double maxStar = 0.0;
-            for (int i=0; i<defCount; ++i)
+            for (int i = 0; i < defCount; ++i)
             {
                 DefinitionBase def = definitions[i];
 
@@ -1703,7 +1460,7 @@ namespace Avalonia.Controls
             // normally Phases 2 and 3 execute only once.  But certain unusual combinations of weights
             // and constraints can defeat the algorithm, in which case we repeat Phases 2 and 3.
             // More explanation below...
-            for (bool runPhase2and3=true; runPhase2and3; )
+            for (bool runPhase2and3 = true; runPhase2and3;)
             {
                 // Phase 2.   Compute total *-weight W and available space S.
                 // For *-items that have Min or Max constraints, compute the ratios used to decide
@@ -1715,7 +1472,7 @@ namespace Avalonia.Controls
                 takenSize = 0.0;
                 minCount = maxCount = 0;
 
-                for (int i=0; i<defCount; ++i)
+                for (int i = 0; i < defCount; ++i)
                 {
                     DefinitionBase def = definitions[i];
 
@@ -1896,7 +1653,7 @@ namespace Avalonia.Controls
 
             // Phase 4.  Resolve the remaining defs proportionally.
             starCount = 0;
-            for (int i=0; i<defCount; ++i)
+            for (int i = 0; i < defCount; ++i)
             {
                 DefinitionBase def = definitions[i];
 
@@ -1975,253 +1732,7 @@ namespace Avalonia.Controls
             double finalSize,
             bool columns)
         {
-            // if (FrameworkAppContextSwitches.GridStarDefinitionsCanExceedAvailableSpace)
-            // {
-            //     SetFinalSizeLegacy(definitions, finalSize, columns);
-            // }
-            // else
-            // {
-                SetFinalSizeMaxDiscrepancy(definitions, finalSize, columns);
-            // }
-        }
-
-        // original implementation, used from 3.0 through 4.6.2
-        private void SetFinalSizeLegacy(
-            IReadOnlyList<DefinitionBase> definitions,
-            double finalSize,
-            bool columns)
-        {
-            int starDefinitionsCount = 0;                       //  traverses form the first entry up
-            int nonStarIndex = definitions.Count;              //  traverses from the last entry down
-            double allPreferredArrangeSize = 0;
-            bool useLayoutRounding = this.UseLayoutRounding;
-            int[] definitionIndices = DefinitionIndices;
-            double[] roundingErrors = null;
-
-            // If using layout rounding, check whether rounding needs to compensate for high DPI
-            double dpi = 1.0;
-
-            if (useLayoutRounding)
-            {
-                // DpiScale dpiScale = GetDpi();
-                // dpi = columns ? dpiScale.DpiScaleX : dpiScale.DpiScaleY;
-                dpi = (VisualRoot as Layout.ILayoutRoot)?.LayoutScaling ?? 1.0;
-                roundingErrors = RoundingErrors;
-            }
-
-            for (int i = 0; i < definitions.Count; ++i)
-            {
-                //  if definition is shared then is cannot be star
-                Debug.Assert(!definitions[i].IsShared || !definitions[i].UserSize.IsStar);
-
-                if (definitions[i].UserSize.IsStar)
-                {
-                    double starValue = definitions[i].UserSize.Value;
-
-                    if (_IsZero(starValue))
-                    {
-                        //  cach normilized star value temporary into MeasureSize
-                        definitions[i].MeasureSize = 0;
-                        definitions[i].SizeCache = 0;
-                    }
-                    else
-                    {
-                        //  clipping by c_starClip guarantees that sum of even a very big number of max'ed out star values
-                        //  can be summed up without overflow
-                        starValue = Math.Min(starValue, c_starClip);
-
-                        //  Note: normalized star value is temporary cached into MeasureSize
-                        definitions[i].MeasureSize = starValue;
-                        double maxSize = Math.Max(definitions[i].MinSizeForArrange, definitions[i].UserMaxSize);
-                        maxSize = Math.Min(maxSize, c_starClip);
-                        definitions[i].SizeCache = maxSize / starValue;
-                        if (useLayoutRounding)
-                        {
-                            roundingErrors[i] = definitions[i].SizeCache;
-                            definitions[i].SizeCache = MathUtilities.RoundLayoutValue(definitions[i].SizeCache, dpi);
-                        }
-                    }
-                    definitionIndices[starDefinitionsCount++] = i;
-                }
-                else
-                {
-                    double userSize = 0;
-
-                    switch (definitions[i].UserSize.GridUnitType)
-                    {
-                        case (GridUnitType.Pixel):
-                            userSize = definitions[i].UserSize.Value;
-                            break;
-
-                        case (GridUnitType.Auto):
-                            userSize = definitions[i].MinSizeForArrange;
-                            break;
-                    }
-
-                    double userMaxSize;
-
-                    if (definitions[i].IsShared)
-                    {
-                        //  overriding userMaxSize effectively prevents squishy-ness.
-                        //  this is a "solution" to avoid shared definitions from been sized to
-                        //  different final size at arrange time, if / when different grids receive
-                        //  different final sizes.
-                        userMaxSize = userSize;
-                    }
-                    else
-                    {
-                        userMaxSize = definitions[i].UserMaxSize;
-                    }
-
-                    definitions[i].SizeCache = Math.Max(definitions[i].MinSizeForArrange, Math.Min(userSize, userMaxSize));
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[i] = definitions[i].SizeCache;
-                        definitions[i].SizeCache = MathUtilities.RoundLayoutValue(definitions[i].SizeCache, dpi);
-                    }
-
-                    allPreferredArrangeSize += definitions[i].SizeCache;
-                    definitionIndices[--nonStarIndex] = i;
-                }
-            }
-
-            //  indices should meet
-            Debug.Assert(nonStarIndex == starDefinitionsCount);
-
-            if (starDefinitionsCount > 0)
-            {
-                StarDistributionOrderIndexComparer starDistributionOrderIndexComparer = new StarDistributionOrderIndexComparer(definitions);
-                Array.Sort(definitionIndices, 0, starDefinitionsCount, starDistributionOrderIndexComparer);
-
-                //  the 'do {} while' loop below calculates sum of star weights in order to avoid fp overflow...
-                //  partial sum value is stored in each definition's SizeCache member.
-                //  this way the algorithm guarantees (starValue <= definition.SizeCache) and thus
-                //  (starValue / definition.SizeCache) will never overflow due to sum of star weights becoming zero.
-                //  this is an important change from previous implementation where the following was possible:
-                //  ((BigValueStar + SmallValueStar) - BigValueStar) resulting in 0...
-                double allStarWeights = 0;
-                int i = starDefinitionsCount - 1;
-                do
-                {
-                    allStarWeights += definitions[definitionIndices[i]].MeasureSize;
-                    definitions[definitionIndices[i]].SizeCache = allStarWeights;
-                } while (--i >= 0);
-
-                i = 0;
-                do
-                {
-                    double resolvedSize;
-                    double starValue = definitions[definitionIndices[i]].MeasureSize;
-
-                    if (_IsZero(starValue))
-                    {
-                        resolvedSize = definitions[definitionIndices[i]].MinSizeForArrange;
-                    }
-                    else
-                    {
-                        double userSize = Math.Max(finalSize - allPreferredArrangeSize, 0.0) * (starValue / definitions[definitionIndices[i]].SizeCache);
-                        resolvedSize = Math.Min(userSize, definitions[definitionIndices[i]].UserMaxSize);
-                        resolvedSize = Math.Max(definitions[definitionIndices[i]].MinSizeForArrange, resolvedSize);
-                    }
-
-                    definitions[definitionIndices[i]].SizeCache = resolvedSize;
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[definitionIndices[i]] = definitions[definitionIndices[i]].SizeCache;
-                        definitions[definitionIndices[i]].SizeCache = MathUtilities.RoundLayoutValue(definitions[definitionIndices[i]].SizeCache, dpi);
-                    }
-
-                    allPreferredArrangeSize += definitions[definitionIndices[i]].SizeCache;
-                } while (++i < starDefinitionsCount);
-            }
-
-            if (    allPreferredArrangeSize > finalSize
-                &&  !_AreClose(allPreferredArrangeSize, finalSize)  )
-            {
-                DistributionOrderIndexComparer distributionOrderIndexComparer = new DistributionOrderIndexComparer(definitions);
-                Array.Sort(definitionIndices, 0, definitions.Count, distributionOrderIndexComparer);
-                double sizeToDistribute = finalSize - allPreferredArrangeSize;
-
-                for (int i = 0; i < definitions.Count; ++i)
-                {
-                    int definitionIndex = definitionIndices[i];
-                    double final = definitions[definitionIndex].SizeCache + (sizeToDistribute / (definitions.Count - i));
-                    double finalOld = final;
-                    final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
-                    final = Math.Min(final, definitions[definitionIndex].SizeCache);
-
-                    if (useLayoutRounding)
-                    {
-                        roundingErrors[definitionIndex] = final;
-                        final = MathUtilities.RoundLayoutValue(finalOld, dpi);
-                        final = Math.Max(final, definitions[definitionIndex].MinSizeForArrange);
-                        final = Math.Min(final, definitions[definitionIndex].SizeCache);
-                    }
-
-                    sizeToDistribute -= (final - definitions[definitionIndex].SizeCache);
-                    definitions[definitionIndex].SizeCache = final;
-                }
-
-                allPreferredArrangeSize = finalSize - sizeToDistribute;
-            }
-
-            if (useLayoutRounding)
-            {
-                if (!_AreClose(allPreferredArrangeSize, finalSize))
-                {
-                    // Compute deltas
-                    for (int i = 0; i < definitions.Count; ++i)
-                    {
-                        roundingErrors[i] = roundingErrors[i] - definitions[i].SizeCache;
-                        definitionIndices[i] = i;
-                    }
-
-                    // Sort rounding errors
-                    RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
-                    Array.Sort(definitionIndices, 0, definitions.Count, roundingErrorIndexComparer);
-                    double adjustedSize = allPreferredArrangeSize;
-                    double dpiIncrement = MathUtilities.RoundLayoutValue(1.0, dpi);
-
-                    if (allPreferredArrangeSize > finalSize)
-                    {
-                        int i = definitions.Count - 1;
-                        while ((adjustedSize > finalSize && !_AreClose(adjustedSize, finalSize)) && i >= 0)
-                        {
-                            DefinitionBase definition = definitions[definitionIndices[i]];
-                            double final = definition.SizeCache - dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
-                            if (final < definition.SizeCache)
-                            {
-                                adjustedSize -= dpiIncrement;
-                            }
-                            definition.SizeCache = final;
-                            i--;
-                        }
-                    }
-                    else if (allPreferredArrangeSize < finalSize)
-                    {
-                        int i = 0;
-                        while ((adjustedSize < finalSize && !_AreClose(adjustedSize, finalSize)) && i < definitions.Count)
-                        {
-                            DefinitionBase definition = definitions[definitionIndices[i]];
-                            double final = definition.SizeCache + dpiIncrement;
-                            final = Math.Max(final, definition.MinSizeForArrange);
-                            if (final > definition.SizeCache)
-                            {
-                                adjustedSize += dpiIncrement;
-                            }
-                            definition.SizeCache = final;
-                            i++;
-                        }
-                    }
-                }
-            }
-
-            definitions[0].FinalOffset = 0.0;
-            for (int i = 0; i < definitions.Count; ++i)
-            {
-                definitions[(i + 1) % definitions.Count].FinalOffset = definitions[i].FinalOffset + definitions[i].SizeCache;
-            }
+            SetFinalSizeMaxDiscrepancy(definitions, finalSize, columns);
         }
 
         // new implementation, as of 4.7.  This incorporates the same algorithm
@@ -2251,7 +1762,7 @@ namespace Avalonia.Controls
 
             // Phase 1.  Determine the maximum *-weight and prepare to adjust *-weights
             double maxStar = 0.0;
-            for (int i=0; i<defCount; ++i)
+            for (int i = 0; i < defCount; ++i)
             {
                 DefinitionBase def = definitions[i];
 
@@ -2283,11 +1794,10 @@ namespace Avalonia.Controls
                 }
             }
 
-
             // normally Phases 2 and 3 execute only once.  But certain unusual combinations of weights
             // and constraints can defeat the algorithm, in which case we repeat Phases 2 and 3.
             // More explanation below...
-            for (bool runPhase2and3=true; runPhase2and3; )
+            for (bool runPhase2and3 = true; runPhase2and3;)
             {
                 // Phase 2.   Compute total *-weight W and available space S.
                 // For *-items that have Min or Max constraints, compute the ratios used to decide
@@ -2299,7 +1809,7 @@ namespace Avalonia.Controls
                 takenSize = 0.0;
                 minCount = maxCount = 0;
 
-                for (int i=0; i<defCount; ++i)
+                for (int i = 0; i < defCount; ++i)
                 {
                     DefinitionBase def = definitions[i];
 
@@ -2513,7 +2023,7 @@ namespace Avalonia.Controls
 
             // Phase 4.  Resolve the remaining defs proportionally.
             starCount = 0;
-            for (int i=0; i<defCount; ++i)
+            for (int i = 0; i < defCount; ++i)
             {
                 DefinitionBase def = definitions[i];
 
@@ -2640,7 +2150,7 @@ namespace Avalonia.Controls
                     RoundingErrorIndexComparer roundingErrorIndexComparer = new RoundingErrorIndexComparer(roundingErrors);
                     Array.Sort(definitionIndices, 0, definitions.Count, roundingErrorIndexComparer);
                     double adjustedSize = roundedTakenSize;
-                    double dpiIncrement = 1.0/dpi;
+                    double dpiIncrement = 1.0 / dpi;
 
                     if (roundedTakenSize > finalSize)
                     {
@@ -2694,7 +2204,7 @@ namespace Avalonia.Controls
         ///                 if the max constraint has higher discrepancy
         ///     null    if proportion doesn't fail a min or max constraint
         /// The discrepancy is the ratio of the proportion to the max- or min-ratio.
-        /// When both ratios hit the constraint,  minRatio &lt; proportion &gt; maxRatio,
+        /// When both ratios hit the constraint,  minRatio &lt; proportion &lt; maxRatio,
         /// and the minRatio has higher discrepancy if
         ///         (proportion / minRatio) &gt; (maxRatio / proportion)
         /// </summary>
@@ -2782,8 +2292,8 @@ namespace Avalonia.Controls
             ExtendedData extData = ExtData;
             if (extData != null)
             {
-//                for (int i = 0; i < PrivateColumnCount; ++i) DefinitionsU[i].SetValid ();
-//                for (int i = 0; i < PrivateRowCount; ++i) DefinitionsV[i].SetValid ();
+                //                for (int i = 0; i < PrivateColumnCount; ++i) DefinitionsU[i].SetValid ();
+                //                for (int i = 0; i < PrivateRowCount; ++i) DefinitionsV[i].SetValid ();
 
                 if (extData.TempDefinitions != null)
                 {
@@ -2793,29 +2303,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        /// <summary>
-        /// Returns <c>true</c> if ColumnDefinitions collection is not empty
-        /// </summary>
-        public bool ShouldSerializeColumnDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (    extData != null
-                    &&  extData.ColumnDefinitions != null
-                    &&  extData.ColumnDefinitions.Count > 0   );
-        }
-
-        /// <summary>
-        /// Returns <c>true</c> if RowDefinitions collection is not empty
-        /// </summary>
-        public bool ShouldSerializeRowDefinitions()
-        {
-            ExtendedData extData = ExtData;
-            return (    extData != null
-                    &&  extData.RowDefinitions != null
-                    &&  extData.RowDefinitions.Count > 0  );
-        }
-
+ 
         /// <summary>
         /// Synchronized ShowGridLines property with the state of the grid's visual collection
         /// by adding / removing GridLinesRenderer visual.
@@ -2872,25 +2360,19 @@ namespace Avalonia.Controls
             return (flags == 0 || (_flags & flags) != 0);
         }
 
-        /// <summary>
-        /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
-        /// </summary>
         private static void OnShowGridLinesPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             Grid grid = (Grid)d;
 
-            if (    grid.ExtData != null    // trivial grid is 1 by 1. there is no grid lines anyway
-                &&  grid.ListenToNotifications)
+            if (grid.ExtData != null    // trivial grid is 1 by 1. there is no grid lines anyway
+                && grid.ListenToNotifications)
             {
                 grid.InvalidateVisual();
             }
 
-            grid.SetFlags((bool) e.NewValue, Flags.ShowGridLinesPropertyValue);
+            grid.SetFlags((bool)e.NewValue, Flags.ShowGridLinesPropertyValue);
         }
 
-        /// <summary>
-        /// <see cref="PropertyMetadata.PropertyChangedCallback"/>
-        /// </summary>
         private static void OnCellAttachedPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
         {
             Visual child = d as Visual;
@@ -2898,36 +2380,20 @@ namespace Avalonia.Controls
             if (child != null)
             {
                 Grid grid = child.GetVisualParent<Grid>();
-                if (    grid != null
-                    &&  grid.ExtData != null
-                    &&  grid.ListenToNotifications  )
+                if (grid != null
+                    && grid.ExtData != null
+                    && grid.ListenToNotifications)
                 {
                     grid.CellsStructureDirty = true;
                 }
             }
         }
 
-        /* /// <summary>
-        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
-        /// </summary>
-        private static bool IsIntValueNotNegative(object value)
-        {
-            return ((int)value >= 0);
-        }
-
-        /// <summary>
-        /// <see cref="AvaloniaProperty.ValidateValueCallback"/>
-        /// </summary>
-        private static bool IsIntValueGreaterThanZero(object value)
-        {
-            return ((int)value > 0);
-        }*/
-
         /// <summary>
         /// Helper for Comparer methods.
         /// </summary>
         /// <returns>
-        /// true iff one or both of x and y are null, in which case result holds
+        /// true if one or both of x and y are null, in which case result holds
         /// the relative sort order.
         /// </returns>
         private static bool CompareNullRefs(object x, object y, out int result)
@@ -2956,12 +2422,6 @@ namespace Avalonia.Controls
             return (result != 2);
         }
 
-        //------------------------------------------------------
-        //
-        //  Private Properties
-        //
-        //------------------------------------------------------
-
         /// <summary>
         /// Private version returning array of column definitions.
         /// </summary>
@@ -2988,8 +2448,8 @@ namespace Avalonia.Controls
                 ExtendedData extData = ExtData;
                 int requiredLength = Math.Max(DefinitionsU.Count, DefinitionsV.Count) * 2;
 
-                if (    extData.TempDefinitions == null
-                    ||  extData.TempDefinitions.Length < requiredLength   )
+                if (extData.TempDefinitions == null
+                    || extData.TempDefinitions.Length < requiredLength)
                 {
                     WeakReference tempDefinitionsWeakRef = (WeakReference)Thread.GetData(s_tempDefinitionsDataSlot);
                     if (tempDefinitionsWeakRef == null)
@@ -3000,8 +2460,8 @@ namespace Avalonia.Controls
                     else
                     {
                         extData.TempDefinitions = (DefinitionBase[])tempDefinitionsWeakRef.Target;
-                        if (    extData.TempDefinitions == null
-                            ||  extData.TempDefinitions.Length < requiredLength   )
+                        if (extData.TempDefinitions == null
+                            || extData.TempDefinitions.Length < requiredLength)
                         {
                             extData.TempDefinitions = new DefinitionBase[requiredLength];
                             tempDefinitionsWeakRef.Target = extData.TempDefinitions;
@@ -3129,7 +2589,7 @@ namespace Avalonia.Controls
         /// <returns><c>true</c> if d == 0.</returns>
         private static bool _IsZero(double d)
         {
-            return (Math.Abs(d) < c_epsilon);
+            return (Math.Abs(d) < double.Epsilon);
         }
 
         /// <summary>
@@ -3140,7 +2600,7 @@ namespace Avalonia.Controls
         /// <returns><c>true</c> if d1 == d2</returns>
         private static bool _AreClose(double d1, double d2)
         {
-            return (Math.Abs(d1 - d2) < c_epsilon);
+            return (Math.Abs(d1 - d2) < double.Epsilon);
         }
 
         /// <summary>
@@ -3169,13 +2629,11 @@ namespace Avalonia.Controls
             }
         }
 
-        //------------------------------------------------------
-        //
-        //  Private Fields
-        //
-        //------------------------------------------------------
-        private ExtendedData _data;                             //  extended data instantiated on demand, for non-trivial case handling only
-        private Flags _flags;                                   //  grid validity / property caches dirtiness flags
+        // Extended data instantiated on demand, for non-trivial case handling only
+        private ExtendedData _data;
+
+        // Grid validity / property caches dirtiness flags
+        private Flags _flags;
         private GridLinesRenderer _gridLinesRenderer;
 
         // Keeps track of definition indices.
@@ -3184,28 +2642,15 @@ namespace Avalonia.Controls
         // Stores unrounded values and rounding errors during layout rounding.
         double[] _roundingErrors;
 
-        //------------------------------------------------------
-        //
-        //  Static Fields
-        //
-        //------------------------------------------------------
-        private const double c_epsilon = 1e-5;                  //  used in fp calculations
-        private const double c_starClip = 1e298;                //  used as maximum for clipping star values during normalization
-        private const int c_layoutLoopMaxCount = 5;             // 5 is an arbitrary constant chosen to end the measure loop
+        // 5 is an arbitrary constant chosen to end the measure loop
+        private const int c_layoutLoopMaxCount = 5;
+
         private static readonly LocalDataStoreSlot s_tempDefinitionsDataSlot = Thread.AllocateDataSlot();
         private static readonly IComparer s_spanPreferredDistributionOrderComparer = new SpanPreferredDistributionOrderComparer();
         private static readonly IComparer s_spanMaxDistributionOrderComparer = new SpanMaxDistributionOrderComparer();
-        private static readonly IComparer s_starDistributionOrderComparer = new StarDistributionOrderComparer();
-        private static readonly IComparer s_distributionOrderComparer = new DistributionOrderComparer();
         private static readonly IComparer s_minRatioComparer = new MinRatioComparer();
         private static readonly IComparer s_maxRatioComparer = new MaxRatioComparer();
         private static readonly IComparer s_starWeightComparer = new StarWeightComparer();
-
-        //------------------------------------------------------
-        //
-        //  Private Structures / Classes
-        //
-        //------------------------------------------------------
 
         /// <summary>
         /// Extended data instantiated on demand, when grid handles non-trivial case.
@@ -3237,33 +2682,27 @@ namespace Avalonia.Controls
             //  * Valid???Layout flags indicate that layout time portion of the information
             //    stored on the objects should be updated.
             //
-            ValidDefinitionsUStructure              = 0x00000001,
-            ValidDefinitionsVStructure              = 0x00000002,
-            ValidCellsStructure                     = 0x00000004,
+            ValidDefinitionsUStructure = 0x00000001,
+            ValidDefinitionsVStructure = 0x00000002,
+            ValidCellsStructure = 0x00000004,
 
             //
             //  boolean properties state
             //
-            ShowGridLinesPropertyValue              = 0x00000100,   //  show grid lines ?
+            ShowGridLinesPropertyValue = 0x00000100,   //  show grid lines ?
 
             //
             //  boolean flags
             //
-            ListenToNotifications                   = 0x00001000,   //  "0" when all notifications are ignored
-            SizeToContentU                          = 0x00002000,   //  "1" if calculating to content in U direction
-            SizeToContentV                          = 0x00004000,   //  "1" if calculating to content in V direction
-            HasStarCellsU                           = 0x00008000,   //  "1" if at least one cell belongs to a Star column
-            HasStarCellsV                           = 0x00010000,   //  "1" if at least one cell belongs to a Star row
-            HasGroup3CellsInAutoRows                = 0x00020000,   //  "1" if at least one cell of group 3 belongs to an Auto row
-            MeasureOverrideInProgress               = 0x00040000,   //  "1" while in the context of Grid.MeasureOverride
-            ArrangeOverrideInProgress               = 0x00080000,   //  "1" while in the context of Grid.ArrangeOverride
+            ListenToNotifications = 0x00001000,   //  "0" when all notifications are ignored
+            SizeToContentU = 0x00002000,   //  "1" if calculating to content in U direction
+            SizeToContentV = 0x00004000,   //  "1" if calculating to content in V direction
+            HasStarCellsU = 0x00008000,   //  "1" if at least one cell belongs to a Star column
+            HasStarCellsV = 0x00010000,   //  "1" if at least one cell belongs to a Star row
+            HasGroup3CellsInAutoRows = 0x00020000,   //  "1" if at least one cell of group 3 belongs to an Auto row
+            MeasureOverrideInProgress = 0x00040000,   //  "1" while in the context of Grid.MeasureOverride
+            ArrangeOverrideInProgress = 0x00080000,   //  "1" while in the context of Grid.ArrangeOverride
         }
-
-        //------------------------------------------------------
-        //
-        //  Properties
-        //
-        //------------------------------------------------------
 
         /// <summary>
         /// ShowGridLines property. This property is used mostly
@@ -3289,8 +2728,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Column",
                 defaultValue: 0,
-                validate: (_, v) => { if (v >= 0) return v; 
-                                      else throw new ArgumentException("Invalid Grid.Column value."); });
+                validate: (_, v) =>
+                {
+                    if (v >= 0) return v;
+                    else throw new ArgumentException("Invalid Grid.Column value.");
+                });
 
         /// <summary>
         /// Row property. This is an attached property.
@@ -3307,8 +2749,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "Row",
                 defaultValue: 0,
-                validate: (_, v) => { if (v >= 0) return v; 
-                                      else throw new ArgumentException("Invalid Grid.Row value."); });
+                validate: (_, v) =>
+                {
+                    if (v >= 0) return v;
+                    else throw new ArgumentException("Invalid Grid.Row value.");
+                });
 
         /// <summary>
         /// ColumnSpan property. This is an attached property.
@@ -3324,8 +2769,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "ColumnSpan",
                 defaultValue: 1,
-                validate: (_, v) => { if (v >= 1) return v; 
-                                      else throw new ArgumentException("Invalid Grid.ColumnSpan value."); });
+                validate: (_, v) =>
+                {
+                    if (v >= 1) return v;
+                    else throw new ArgumentException("Invalid Grid.ColumnSpan value.");
+                });
 
         /// <summary>
         /// RowSpan property. This is an attached property.
@@ -3341,8 +2789,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, int>(
                 "RowSpan",
                 defaultValue: 1,
-                validate: (_, v) => { if (v >= 1) return v; 
-                                      else throw new ArgumentException("Invalid Grid.RowSpan value."); });
+                validate: (_, v) =>
+                {
+                    if (v >= 1) return v;
+                    else throw new ArgumentException("Invalid Grid.RowSpan value.");
+                });
 
         /// <summary>
         /// IsSharedSizeScope property marks scoping element for shared size.
@@ -3351,29 +2802,17 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Grid, Control, bool>(
                 "IsSharedSizeScope");
 
-        //------------------------------------------------------
-        //
-        //  Internal Structures / Classes
-        //
-        //------------------------------------------------------
-
         /// <summary>
         /// LayoutTimeSizeType is used internally and reflects layout-time size type.
         /// </summary>
         [System.Flags]
         internal enum LayoutTimeSizeType : byte
         {
-            None        = 0x00,
-            Pixel       = 0x01,
-            Auto        = 0x02,
-            Star        = 0x04,
+            None = 0x00,
+            Pixel = 0x01,
+            Auto = 0x02,
+            Star = 0x04,
         }
-
-        //------------------------------------------------------
-        //
-        //  Private Structures / Classes
-        //
-        //------------------------------------------------------
 
         /// <summary>
         /// CellCache stored calculated values of
@@ -3422,7 +2861,7 @@ namespace Avalonia.Controls
                 int hash = (_start ^ (_count << 2));
 
                 if (_u) hash &= 0x7ffffff;
-                else    hash |= 0x8000000;
+                else hash |= 0x8000000;
 
                 return (hash);
             }
@@ -3433,10 +2872,10 @@ namespace Avalonia.Controls
             public override bool Equals(object obj)
             {
                 SpanKey sk = obj as SpanKey;
-                return (    sk != null
-                        &&  sk._start == _start
-                        &&  sk._count == _count
-                        &&  sk._u == _u );
+                return (sk != null
+                        && sk._start == _start
+                        && sk._count == _count
+                        && sk._u == _u);
             }
 
             /// <summary>
@@ -3543,51 +2982,6 @@ namespace Avalonia.Controls
                 return result;
             }
         }
-
-        /// <summary>
-        /// StarDistributionOrderComparer.
-        /// </summary>
-        private class StarDistributionOrderComparer : IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    result = definitionX.SizeCache.CompareTo(definitionY.SizeCache);
-                }
-
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// DistributionOrderComparer.
-        /// </summary>
-        private class DistributionOrderComparer: IComparer
-        {
-            public int Compare(object x, object y)
-            {
-                DefinitionBase definitionX = x as DefinitionBase;
-                DefinitionBase definitionY = y as DefinitionBase;
-
-                int result;
-
-                if (!CompareNullRefs(definitionX, definitionY, out result))
-                {
-                    double xprime = definitionX.SizeCache - definitionX.MinSizeForArrange;
-                    double yprime = definitionY.SizeCache - definitionY.MinSizeForArrange;
-                    result = xprime.CompareTo(yprime);
-                }
-
-                return result;
-            }
-        }
-
 
         /// <summary>
         /// StarDistributionOrderIndexComparer.
@@ -3895,94 +3289,8 @@ namespace Avalonia.Controls
             }
         }
 
-        /*  /// <summary>
-        /// Implementation of a simple enumerator of grid's logical children
-        /// </summary>
-        private class GridChildrenCollectionEnumeratorSimple : IEnumerator
-        {
-            internal GridChildrenCollectionEnumeratorSimple(Grid grid, bool includeChildren)
-            {
-                Debug.Assert(grid != null);
-                _currentEnumerator = -1;
-                _enumerator0 = new ColumnDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.ColumnDefinitions : null);
-                _enumerator1 = new RowDefinitions.Enumerator(grid.ExtData != null ? grid.ExtData.RowDefinitions : null);
-                // GridLineRenderer is NOT included into this enumerator.
-                _enumerator2Index = 0;
-                if (includeChildren)
-                {
-                    _enumerator2Collection = grid.Children;
-                    _enumerator2Count = _enumerator2Collection.Count;
-                }
-                else
-                {
-                    _enumerator2Collection = null;
-                    _enumerator2Count = 0;
-                }
-            }
-
-            public bool MoveNext()
-            {
-                while (_currentEnumerator < 3)
-                {
-                    if (_currentEnumerator >= 0)
-                    {
-                        switch (_currentEnumerator)
-                        {
-                            case (0): if (_enumerator0.MoveNext()) { _currentChild = _enumerator0.Current; return (true); } break;
-                            case (1): if (_enumerator1.MoveNext()) { _currentChild = _enumerator1.Current; return (true); } break;
-                            case (2): if (_enumerator2Index < _enumerator2Count)
-                                      {
-                                          _currentChild = _enumerator2Collection[_enumerator2Index];
-                                          _enumerator2Index++;
-                                          return (true);
-                                      }
-                                      break;
-                        }
-                    }
-                    _currentEnumerator++;
-                }
-                return (false);
-            }
-
-            public Object Current
-            {
-                get
-                {
-                    if (_currentEnumerator == -1)
-                    {
-                        throw new InvalidOperationException(SR.Get(SRID.EnumeratorNotStarted));
-                    }
-                    if (_currentEnumerator >= 3)
-                    {
-                        throw new InvalidOperationException(SR.Get(SRID.EnumeratorReachedEnd));
-                    }
-
-                    //  assert below is not true anymore since Controls allowes for null children
-                    //Debug.Assert(_currentChild != null);
-                    return (_currentChild);
-                }
-            }
-
-            public void Reset()
-            {
-                _currentEnumerator = -1;
-                _currentChild = null;
-                _enumerator0.Reset();
-                _enumerator1.Reset();
-                _enumerator2Index = 0;
-            }
-
-            private int _currentEnumerator;
-            private Object _currentChild;
-            private ColumnDefinitions.Enumerator _enumerator0;
-            private RowDefinitions.Enumerator _enumerator1;
-            private Controls _enumerator2Collection;
-            private int _enumerator2Index;
-            private int _enumerator2Count;
-        }*/
-
         /// <summary>
-        /// Helper to render grid lines.
+        /// Helper for rendering grid lines.
         /// </summary>
         internal class GridLinesRenderer : Control
         {
@@ -3995,15 +3303,15 @@ namespace Avalonia.Controls
 
                 var ds1 = new DashStyle(dashArray, 0);
                 _oddDashPen = new Pen(Brushes.Blue,
-                                    _penWidth,
-                                    lineCap: PenLineCap.Flat,
-                                    dashStyle: ds1);
+                                      _penWidth,
+                                      lineCap: PenLineCap.Flat,
+                                      dashStyle: ds1);
 
                 var ds2 = new DashStyle(dashArray, _dashLength);
                 _evenDashPen = new Pen(Brushes.Yellow,
-                                    _penWidth,
-                                    lineCap: PenLineCap.Flat,
-                                    dashStyle: ds2);
+                                       _penWidth,
+                                       lineCap: PenLineCap.Flat,
+                                       dashStyle: ds2);
             }
 
             /// <summary>
@@ -4052,7 +3360,6 @@ namespace Avalonia.Controls
             internal void UpdateRenderBounds(Size arrangeSize)
             {
                 _lastArrangeSize = arrangeSize;
-                this.InvalidateMeasure();
                 this.InvalidateVisual();
             }
 
@@ -4061,6 +3368,6 @@ namespace Avalonia.Controls
             private const double _penWidth = 1.0;      //
             private static readonly Pen _oddDashPen;   //  first pen to draw dash
             private static readonly Pen _evenDashPen;  //  second pen to draw dash
-        }   
+        }
     }
 }
