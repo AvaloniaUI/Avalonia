@@ -28,10 +28,12 @@ namespace Avalonia.Input
             AvaloniaProperty.Register<InputElement, bool>(nameof(IsEnabled), true);
 
         /// <summary>
-        /// Defines the <see cref="IsEnabledCore"/> property.
+        /// Defines the <see cref="IsEffectivelyEnabled"/> property.
         /// </summary>
-        public static readonly StyledProperty<bool> IsEnabledCoreProperty =
-            AvaloniaProperty.Register<InputElement, bool>(nameof(IsEnabledCore), true);
+        public static readonly DirectProperty<InputElement, bool> IsEffectivelyEnabledProperty =
+            AvaloniaProperty.RegisterDirect<InputElement, bool>(
+                nameof(IsEffectivelyEnabled),
+                o => o.IsEffectivelyEnabled);
 
         /// <summary>
         /// Gets or sets associated mouse cursor.
@@ -155,6 +157,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
+        private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isPointerOver;
         private GestureRecognizerCollection _gestureRecognizers;
@@ -179,7 +182,7 @@ namespace Avalonia.Input
             PointerCaptureLostEvent.AddClassHandler<InputElement>(x => x.OnPointerCaptureLost);
             PointerWheelChangedEvent.AddClassHandler<InputElement>(x => x.OnPointerWheelChanged);
 
-            PseudoClass<InputElement, bool>(IsEnabledCoreProperty, x => !x, ":disabled");
+            PseudoClass<InputElement, bool>(IsEffectivelyEnabledProperty, x => !x, ":disabled");
             PseudoClass<InputElement>(IsFocusedProperty, ":focus");
             PseudoClass<InputElement>(IsPointerOverProperty, ":pointerover");
         }
@@ -365,31 +368,25 @@ namespace Avalonia.Input
             internal set { SetAndRaise(IsPointerOverProperty, ref _isPointerOver, value); }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the control is effectively enabled for user interaction.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
-        /// <see cref="IsEnabled"/> value of this control and its parent controls.
-        /// </remarks>
-        bool IInputElement.IsEnabledCore => IsEnabledCore;
-
-        /// <summary>
-        /// Gets a value indicating whether the control is effectively enabled for user interaction.
-        /// </summary>
-        /// <remarks>
-        /// The <see cref="IsEnabled"/> property is used to toggle the enabled state for individual
-        /// controls. The <see cref="IsEnabledCore"/> property takes into account the
-        /// <see cref="IsEnabled"/> value of this control and its parent controls.
-        /// </remarks>
-        protected bool IsEnabledCore
+        /// <inheritdoc/>
+        public bool IsEffectivelyEnabled
         {
-            get { return GetValue(IsEnabledCoreProperty); }
-            set { SetValue(IsEnabledCoreProperty, value); }
+            get => _isEffectivelyEnabled;
+            private set => SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
         }
 
         public List<KeyBinding> KeyBindings { get; } = new List<KeyBinding>();
+
+        /// <summary>
+        /// Allows a derived class to override the enabled state of the control.
+        /// </summary>
+        /// <remarks>
+        /// Derived controls may wish to disable the enabled state of the control without overwriting the
+        /// user-supplied <see cref="IsEnabled"/> setting. This can be done by overriding this property
+        /// to return the overridden enabled state. If the value returned from <see cref="IsEnabledCore"/>
+        /// should change, then the derived control should call <see cref="UpdateIsEffectivelyEnabled()"/>.
+        /// </remarks>
+        protected virtual bool IsEnabledCore => IsEnabled;
 
         public GestureRecognizerCollection GestureRecognizers
             => _gestureRecognizers ?? (_gestureRecognizers = new GestureRecognizerCollection(this));
@@ -417,7 +414,7 @@ namespace Avalonia.Input
         protected override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTreeCore(e);
-            UpdateIsEnabledCore();
+            UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
@@ -525,9 +522,18 @@ namespace Avalonia.Input
         {
         }
 
+        /// <summary>
+        /// Updates the <see cref="IsEffectivelyEnabled"/> property value according to the parent
+        /// control's enabled state and <see cref="IsEnabledCore"/>.
+        /// </summary>
+        protected void UpdateIsEffectivelyEnabled()
+        {
+            UpdateIsEffectivelyEnabled(this.GetVisualParent<InputElement>());
+        }
+
         private static void IsEnabledChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            ((InputElement)e.Sender).UpdateIsEnabledCore();
+            ((InputElement)e.Sender).UpdateIsEffectivelyEnabled();
         }
 
         /// <summary>
@@ -551,32 +557,17 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Updates the <see cref="IsEnabledCore"/> property value.
-        /// </summary>
-        private void UpdateIsEnabledCore()
-        {
-            UpdateIsEnabledCore(this.GetVisualParent<InputElement>());
-        }
-
-        /// <summary>
-        /// Updates the <see cref="IsEnabledCore"/> property based on the parent's
-        /// <see cref="IsEnabledCore"/>.
+        /// Updates the <see cref="IsEffectivelyEnabled"/> property based on the parent's
+        /// <see cref="IsEffectivelyEnabled"/>.
         /// </summary>
         /// <param name="parent">The parent control.</param>
-        private void UpdateIsEnabledCore(InputElement parent)
+        private void UpdateIsEffectivelyEnabled(InputElement parent)
         {
-            if (parent != null)
-            {
-                IsEnabledCore = IsEnabled && parent.IsEnabledCore;
-            }
-            else
-            {
-                IsEnabledCore = IsEnabled;
-            }
+            IsEffectivelyEnabled = IsEnabledCore && (parent?.IsEffectivelyEnabled ?? true);
 
             foreach (var child in this.GetVisualChildren().OfType<InputElement>())
             {
-                child.UpdateIsEnabledCore(this);
+                child.UpdateIsEffectivelyEnabled(this);
             }
         }
     }

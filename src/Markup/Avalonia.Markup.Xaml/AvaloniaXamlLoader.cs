@@ -2,18 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text;
-using System.Xml.Linq;
 using Avalonia.Markup.Xaml.XamlIl;
-using Avalonia.Controls;
-using Avalonia.Markup.Data;
-using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml

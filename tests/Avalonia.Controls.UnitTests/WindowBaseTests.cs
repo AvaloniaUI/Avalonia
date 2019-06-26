@@ -276,12 +276,6 @@ namespace Avalonia.Controls.UnitTests
                 : base(impl)
             {
             }
-
-            protected override void HandleApplicationExiting()
-            {
-                base.HandleApplicationExiting();
-                IsClosed = true;
-            }
         }
     }
 }
