@@ -333,8 +333,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                var selector = MemberSelector;
-                SelectionBoxItem = selector != null ? selector.Select(item) : item;
+                SelectionBoxItem = item;
             }
         }
 

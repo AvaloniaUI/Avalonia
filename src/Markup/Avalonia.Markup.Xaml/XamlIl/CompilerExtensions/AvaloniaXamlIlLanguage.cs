@@ -81,8 +81,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 var ilist = typeSystem.GetType("System.Collections.Generic.IList`1");
                 AddType(ilist.MakeGenericType(typeSystem.GetType("Avalonia.Point")),
                     typeSystem.GetType("Avalonia.Markup.Xaml.Converters.PointsListTypeConverter"));
-                Add("Avalonia.Controls.Templates.IMemberSelector",
-                    "Avalonia.Markup.Xaml.Converters.MemberSelectorTypeConverter");
                 Add("Avalonia.Controls.WindowIcon","Avalonia.Markup.Xaml.Converters.IconTypeConverter");
                 Add("System.Globalization.CultureInfo", "System.ComponentModel.CultureInfoConverter");
                 Add("System.Uri", "Avalonia.Markup.Xaml.Converters.AvaloniaUriTypeConverter");

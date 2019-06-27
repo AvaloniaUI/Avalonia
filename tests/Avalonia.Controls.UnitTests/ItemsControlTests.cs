@@ -431,27 +431,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void MemberSelector_Should_Select_Member()
-        {
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = new[] { new Item("Foo"), new Item("Bar") },
-                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var text = target.Presenter.Panel.Children
-                .Cast<ContentPresenter>()
-                .Select(x => x.Content)
-                .ToList();
-
-            Assert.Equal(new[] { "Foo", "Bar" }, text);
-        }
-
-        [Fact]
         public void Control_Item_Should_Not_Be_NameScope()
         {
             var items = new object[]
@@ -586,7 +565,6 @@ namespace Avalonia.Controls.UnitTests
                     Child = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }
                 };

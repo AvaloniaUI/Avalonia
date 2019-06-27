@@ -345,7 +345,6 @@ namespace Avalonia.Controls
         /// </summary>
         private IDisposable _collectionChangeSubscription;
 
-        private IMemberSelector _valueMemberSelector;
         private Func<string, CancellationToken, Task<IEnumerable<object>>> _asyncPopulator;
         private CancellationTokenSource _populationCancellationTokenSource;
 
@@ -540,12 +539,6 @@ namespace Avalonia.Controls
                 nameof(Items),
                 o => o.Items,
                 (o, v) => o.Items = v);
-
-        public static readonly DirectProperty<AutoCompleteBox, IMemberSelector> ValueMemberSelectorProperty =
-            AvaloniaProperty.RegisterDirect<AutoCompleteBox, IMemberSelector>(
-                nameof(ValueMemberSelector),
-                o => o.ValueMemberSelector,
-                (o, v) => o.ValueMemberSelector = v);
 
         public static readonly DirectProperty<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>> AsyncPopulatorProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, Func<string, CancellationToken, Task<IEnumerable<object>>>>(
@@ -956,20 +949,6 @@ namespace Avalonia.Controls
                     OnValueMemberBindingChanged(value);
                 }
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the MemberSelector that is used to get values for
-        /// display in the text portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
-        /// </summary>
-        /// <value>The MemberSelector that is used to get values for display in
-        /// the text portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
-        public IMemberSelector ValueMemberSelector
-        {
-            get { return _valueMemberSelector; }
-            set { SetAndRaise(ValueMemberSelectorProperty, ref _valueMemberSelector, value); }
         }
 
         /// <summary>
@@ -1839,11 +1818,6 @@ namespace Avalonia.Controls
             if (_valueBindingEvaluator != null)
             {
                 return _valueBindingEvaluator.GetDynamicValue(value) ?? String.Empty;
-            }
-
-            if (_valueMemberSelector != null)
-            {
-                value = _valueMemberSelector.Select(value);
             }
 
             return value == null ? String.Empty : value.ToString();
