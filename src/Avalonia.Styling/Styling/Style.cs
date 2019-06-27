@@ -131,7 +131,7 @@ namespace Avalonia.Styling
                                 obsMatch = Observable.Return(true);
                             }
 
-                            var sub = animation.Apply(animatable, null, obsMatch);
+                            var sub = animation.Apply(animatable, animatable.Clock ?? null, obsMatch);
                             subs.Add(sub);
                         } 
                     }
