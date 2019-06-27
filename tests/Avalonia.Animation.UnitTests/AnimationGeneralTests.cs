@@ -75,6 +75,10 @@ namespace Avalonia.Animation.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.RealStyler))
             {
+
+                // initialize SCB handler
+                var initSCB = new SolidColorBrush();
+                
                 var kf1 = new KeyFrame()
                 {
                     Setters =
@@ -114,7 +118,7 @@ namespace Avalonia.Animation.UnitTests
                 var root = new TestRoot
                 {
                     Clock = testClk,
-                    Style = 
+                    Styles = 
                     {
                         new Style(x => x.OfType<Border>().Class("Rect"))
                             {
@@ -126,6 +130,10 @@ namespace Avalonia.Animation.UnitTests
                                     new Setter(
                                         Border.WidthProperty,
                                         100),
+                                },
+                                Animations = 
+                                {
+                                    animation
                                 }
                             }
                     },
