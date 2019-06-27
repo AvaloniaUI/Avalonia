@@ -8,9 +8,9 @@
 
 ## About
 
-Avalonia is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of OSs: Windows (.NET Framework, .NET Core), Linux (libX11), MacOS, Android (experimental) and iOS (exprerimental).
+**Avalonia** is a WPF/UWP-inspired cross-platform XAML-based UI framework providing a flexible styling system and supporting a wide range of Operating Systems such as Windows (.NET Framework, .NET Core), Linux (via Xorg), MacOS and with experimental support for Android and iOS.
 
-**Avalonia is currently in beta** which means that the framework is generally usable for writing applications, but there may be some bugs and breaking changes as we continue development, for more details about the status see https://github.com/AvaloniaUI/Avalonia/issues/2239
+**Avalonia** is ready for **General-Purpose Desktop App Development**. However there may be some bugs and breaking changes as we continue along into this project's development. To see the status for some of our features, please see our [Roadmap here](https://github.com/AvaloniaUI/Avalonia/issues/2239).
 
 | Control catalog | Desktop platforms | Mobile platforms |
 |---|---|---|
@@ -40,11 +40,11 @@ https://github.com/AvaloniaUI/Avalonia/wiki/Using-nightly-build-feed
 
 ## Documentation
 
-As mentioned above, Avalonia is still in beta and as such there's not much documentation yet. You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia).
+You can take a look at the [getting started page](http://avaloniaui.net/docs/quickstart/) for an overview of how to get started but probably the best thing to do for now is to already know a little bit about WPF/Silverlight/UWP/XAML and ask questions in our [Gitter room](https://gitter.im/AvaloniaUI/Avalonia). 
 
 There's also a high-level [architecture document](http://avaloniaui.net/architecture/project-structure) that is currently a little bit out of date, and I've also started writing blog posts on Avalonia at http://grokys.github.io/.
 
-Contributions are always welcome!
+Contributions for our docs are always welcome!
 
 ## Building and Using
 
@@ -80,6 +80,4 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/6/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/6/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/7/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/7/avatar.svg"></a>
 <a href="https://opencollective.com/Avalonia/sponsor/8/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
-
-
+<a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a> 

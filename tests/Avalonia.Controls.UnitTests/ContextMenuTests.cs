@@ -59,9 +59,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
-
-                Avalonia.Application.Current.MainWindow = window;
-
+                
                 _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);

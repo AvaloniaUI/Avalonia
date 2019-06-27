@@ -44,13 +44,13 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="SmallChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SmallChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 0.1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(SmallChange), 1);
 
         /// <summary>
         /// Defines the <see cref="LargeChange"/> property.
         /// </summary>
         public static readonly StyledProperty<double> LargeChangeProperty =
-            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 1);
+            AvaloniaProperty.Register<RangeBase, double>(nameof(LargeChange), 10);
 
         private double _minimum;
         private double _maximum = 100.0;
@@ -75,10 +75,18 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateMinimum(value);
-                SetAndRaise(MinimumProperty, ref _minimum, value);
-                Maximum = ValidateMaximum(Maximum);
-                Value = ValidateValue(Value);
+                ValidateDouble(value, "Minimum");
+
+                if (IsInitialized)
+                {
+                    SetAndRaise(MinimumProperty, ref _minimum, value);
+                    Maximum = ValidateMaximum(Maximum);
+                    Value = ValidateValue(Value);
+                }
+                else
+                {
+                    SetAndRaise(MinimumProperty, ref _minimum, value);
+                }
             }
         }
 
@@ -94,9 +102,18 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateMaximum(value);
-                SetAndRaise(MaximumProperty, ref _maximum, value);
-                Value = ValidateValue(Value);
+                ValidateDouble(value, "Maximum");
+
+                if (IsInitialized)
+                {
+                    value = ValidateMaximum(value);
+                    SetAndRaise(MaximumProperty, ref _maximum, value);
+                    Value = ValidateValue(Value);
+                }
+                else
+                {
+                    SetAndRaise(MaximumProperty, ref _maximum, value);
+                }
             }
         }
 
@@ -112,8 +129,17 @@ namespace Avalonia.Controls.Primitives
 
             set
             {
-                value = ValidateValue(value);
-                SetAndRaise(ValueProperty, ref _value, value);
+                ValidateDouble(value, "Value");
+
+                if (IsInitialized)
+                {
+                    value = ValidateValue(value);
+                    SetAndRaise(ValueProperty, ref _value, value);
+                }
+                else
+                {
+                    SetAndRaise(ValueProperty, ref _value, value);
+                }
             }
         }
 
@@ -127,6 +153,14 @@ namespace Avalonia.Controls.Primitives
         {
             get => GetValue(LargeChangeProperty);
             set => SetValue(LargeChangeProperty, value);
+        }
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            Maximum = ValidateMaximum(Maximum);
+            Value = ValidateValue(Value);
         }
 
         /// <summary>
@@ -143,24 +177,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Validates the <see cref="Minimum"/> property.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The coerced value.</returns>
-        private double ValidateMinimum(double value)
-        {
-            ValidateDouble(value, "Minimum");
-            return value;
-        }
-
-        /// <summary>
         /// Validates/coerces the <see cref="Maximum"/> property.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>The coerced value.</returns>
         private double ValidateMaximum(double value)
         {
-            ValidateDouble(value, "Maximum");
             return Math.Max(value, Minimum);
         }
 
@@ -171,7 +193,6 @@ namespace Avalonia.Controls.Primitives
         /// <returns>The coerced value.</returns>
         private double ValidateValue(double value)
         {
-            ValidateDouble(value, "Value");
             return MathUtilities.Clamp(value, Minimum, Maximum);
         }
     }

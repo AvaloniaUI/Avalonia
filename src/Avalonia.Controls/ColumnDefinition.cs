@@ -62,8 +62,15 @@ namespace Avalonia.Controls
         /// </summary>
         public double MaxWidth
         {
-            get { return GetValue(MaxWidthProperty); }
-            set { SetValue(MaxWidthProperty, value); }
+            get
+            {
+                return GetValue(MaxWidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MaxWidthProperty, value);
+            }
         }
 
         /// <summary>
@@ -71,8 +78,15 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinWidth
         {
-            get { return GetValue(MinWidthProperty); }
-            set { SetValue(MinWidthProperty, value); }
+            get
+            {
+                return GetValue(MinWidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MinWidthProperty, value);
+            }
         }
 
         /// <summary>
@@ -80,8 +94,15 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Width
         {
-            get { return GetValue(WidthProperty); }
-            set { SetValue(WidthProperty, value); }
+            get
+            {
+                return GetValue(WidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(WidthProperty, value);
+            }
         }
 
         internal override GridLength UserSizeValueCache => this.Width;

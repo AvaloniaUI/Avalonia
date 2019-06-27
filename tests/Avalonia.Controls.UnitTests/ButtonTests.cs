@@ -26,11 +26,26 @@ namespace Avalonia.Controls.UnitTests
             };
             var root = new TestRoot { Child = target };
 
-            Assert.False(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
             command.IsEnabled = true;
-            Assert.True(target.IsEnabled);
+            Assert.True(target.IsEffectivelyEnabled);
             command.IsEnabled = false;
-            Assert.False(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+        }
+
+        [Fact]
+        public void Button_Is_Disabled_When_Command_Is_Enabled_But_IsEnabled_Is_False()
+        {
+            var command = new TestCommand(true);
+            var target = new Button
+            {
+                IsEnabled = false,
+                Command = command,
+            };
+
+            var root = new TestRoot { Child = target };
+
+            Assert.False(((IInputElement)target).IsEffectivelyEnabled);
         }
 
         [Fact]
@@ -41,7 +56,8 @@ namespace Avalonia.Controls.UnitTests
                 [!Button.CommandProperty] = new Binding("Command"),
             };
 
-            Assert.False(target.IsEnabled);
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
         }
 
         [Fact]
@@ -59,8 +75,12 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Assert.True(target.IsEnabled);
+            Assert.True(target.IsEffectivelyEnabled);
+
             target.DataContext = null;
-            Assert.False(target.IsEnabled);
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
         }
 
         [Fact]
@@ -77,9 +97,13 @@ namespace Avalonia.Controls.UnitTests
                 [!Button.CommandProperty] = new Binding("Command"),
             };
 
-            Assert.False(target.IsEnabled);
-            target.DataContext = viewModel;
             Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+
+            target.DataContext = viewModel;
+
+            Assert.True(target.IsEnabled);
+            Assert.True(target.IsEffectivelyEnabled);
         }
 
         [Fact]
@@ -96,9 +120,13 @@ namespace Avalonia.Controls.UnitTests
                 [!Button.CommandProperty] = new Binding("Command"),
             };
 
-            Assert.False(target.IsEnabled);
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
+
             target.DataContext = viewModel;
-            Assert.False(target.IsEnabled);
+
+            Assert.True(target.IsEnabled);
+            Assert.False(target.IsEffectivelyEnabled);
         }
 
         [Fact]

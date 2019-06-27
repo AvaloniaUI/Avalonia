@@ -116,16 +116,5 @@ namespace Avalonia.VisualTree
         /// </summary>
         /// <param name="context">The context.</param>
         void Render(DrawingContext context);
-
-        /// <summary>
-        /// Returns a transform that transforms the visual's coordinates into the coordinates
-        /// of the specified <paramref name="visual"/>.
-        /// </summary>
-        /// <param name="visual">The visual to translate the coordinates to.</param>
-        /// <returns>
-        /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
-        /// common ancestor.
-        /// </returns>
-        Matrix? TransformToVisual(IVisual visual);
     }
 }
