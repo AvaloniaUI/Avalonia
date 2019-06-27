@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Skia;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 
 namespace ControlCatalog.NetCore
 {
@@ -31,6 +32,10 @@ namespace ControlCatalog.NetCore
             {
                 System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
                 return builder.StartLinuxFramebuffer(args);
+            }
+            else if (args.Contains("--vnc"))
+            {
+                return builder.StartWithHeadlessVncPlatform(null, 5901, args, ShutdownMode.OnMainWindowClose);
             }
             else
                 return builder.StartWithClassicDesktopLifetime(args);

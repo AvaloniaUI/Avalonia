@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Avalonia.Headless\Avalonia.Headless.csproj" />
+      <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.21" />
+    </ItemGroup>
+
+</Project>
