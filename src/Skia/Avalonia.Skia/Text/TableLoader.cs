@@ -38,7 +38,7 @@ namespace Avalonia.Skia.Text
 
         private Font CreateFont()
         {
-            var face = new Face(GetTable, null, Destroy)
+            var face = new Face(GetTable, Dispose)
             {
                 UnitsPerEm = _typeface.UnitsPerEm
             };
@@ -50,7 +50,7 @@ namespace Avalonia.Skia.Text
             return font;
         }
 
-        private Blob GetTable(Face face, Tag tag, object context)
+        private Blob GetTable(Face face, Tag tag)
         {
             Blob blob;
 
@@ -65,11 +65,6 @@ namespace Avalonia.Skia.Text
             }
 
             return blob;
-        }
-
-        private void Destroy(object context)
-        {
-            Dispose();
         }
 
         private void Dispose(bool disposing)
@@ -104,9 +99,10 @@ namespace Avalonia.Skia.Text
 
             var data = Marshal.AllocCoTaskMem(size);
 
+            var releaseDelegate = new ReleaseDelegate(() => Marshal.FreeCoTaskMem(data));
+
             return _typeface.TryGetTableData(tag, 0, size, data) ?
-                new Blob(data, size, MemoryMode.Writeable, data, ctx => Marshal.FreeCoTaskMem((IntPtr)ctx)) :
-                null;
+                new Blob(data, size, MemoryMode.Writeable, releaseDelegate) : null;
         }
     }
 }

@@ -9,21 +9,21 @@ using Buffer = HarfBuzzSharp.Buffer;
 
 namespace Avalonia.Skia.Text
 {
-    internal static class TextRunsBuilder
+    internal static class TextRunIterator
     {
         /// <summary>
-        ///     Builds a list of text runs.
+        ///     Creates a list of text runs with unique properties.
         /// </summary>
-        /// <param name="text">The text to build text runs from.</param>
+        /// <param name="text">The text to create text runs from.</param>
         /// <param name="defaultTypeface">The default typeface to match against.</param>
         /// <param name="textPointer">The position within the text to build the runs from.</param>
         /// <returns>A list of text runs.</returns>
-        public static List<TextRunProperties> Build(ReadOnlySpan<char> text, SKTypeface defaultTypeface,
+        public static List<TextRunProperties> Create(ReadOnlySpan<char> text, SKTypeface defaultTypeface,
             SKTextPointer textPointer)
         {
             var textRuns = new List<TextRunProperties>();
-            var textPosition = textPointer.StartingIndex;
-            var bufferPosition = textPointer.StartingIndex;
+            var textPosition = 0;
+            var bufferPosition = 0;
 
             using (var buffer = new Buffer())
             {
@@ -53,7 +53,7 @@ namespace Avalonia.Skia.Text
                             {
                                 var glyphInfo = buffer.GlyphInfos[i];
 
-                                if (loader.Font.GetGlyph(glyphInfo.Codepoint) != 0)
+                                if (loader.Font.TryGetGlyph(glyphInfo.Codepoint, out _))
                                 {
                                     break;
                                 }
@@ -64,7 +64,8 @@ namespace Avalonia.Skia.Text
                         }
                     }
 
-                    textRuns.Add(new TextRunProperties(new SKTextPointer(textPosition, charCount), currentTypeface,
+                    textRuns.Add(new TextRunProperties(
+                        new SKTextPointer(textPointer.StartingIndex + textPosition, charCount), currentTypeface,
                         script));
 
                     bufferPosition += count;
@@ -101,7 +102,8 @@ namespace Avalonia.Skia.Text
 
             count = 0;
             charCount = 0;
-            script = UnicodeFunctions.Default.GetScript(buffer.GlyphInfos[startingIndex].Codepoint);
+            script = Script.Common;
+            var currentScript = script;
 
             var font = TableLoader.Get(typeface).Font;
             var defaultFont = TableLoader.Get(defaultTypeface).Font;
@@ -110,20 +112,29 @@ namespace Avalonia.Skia.Text
             {
                 var glyphInfo = buffer.GlyphInfos[i];
 
-                if (UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint) != script)
-                {
-                    break;
-                }
+                script = UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint);
 
-                if (isFallback)
+                if (script != currentScript)
                 {
-                    if (defaultFont.GetGlyph(glyphInfo.Codepoint) != 0)
+                    if (currentScript == Script.Inherited || currentScript == Script.Common)
+                    {
+                        currentScript = script;
+                    }
+                    else if (script != Script.Inherited && script != Script.Common)
                     {
                         break;
                     }
                 }
 
-                if (font.GetGlyph(glyphInfo.Codepoint) == 0)
+                if (isFallback)
+                {
+                    if (defaultFont.TryGetGlyph(glyphInfo.Codepoint, out _))
+                    {
+                        break;
+                    }
+                }
+
+                if (!font.TryGetGlyph(glyphInfo.Codepoint, out _))
                 {
                     if (UnicodeUtility.IsZeroSpace(glyphInfo.Codepoint))
                     {

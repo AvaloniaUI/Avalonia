@@ -295,17 +295,17 @@ namespace Avalonia.Skia.UnitTests
         }
 
         [Theory]
-        [InlineData("\r\r", 2)]
-        [InlineData("\n\n", 2)]
-        [InlineData("abcde\r\n", 1)]
-        [InlineData("abcde\n\r", 1)]
-        [InlineData("abcde\r\nabcde\r\n", 2)]
-        [InlineData("abcde\n\rabcde\r\n", 2)]
-        [InlineData("abcde\r\nabcde\r\nabcde\r\n", 3)]
-        [InlineData("abcde\n\rabcde\r\nabcde\r\n", 3)]
+        [InlineData("\r\r", 3)]
+        [InlineData("\n\n", 3)]
+        [InlineData("abcde\r\n", 2)]
+        [InlineData("abcde\n\r", 2)]
+        [InlineData("abcde\r\nabcde\r\n", 3)]
+        [InlineData("abcde\n\rabcde\r\n", 3)]
+        [InlineData("abcde\r\nabcde\r\nabcde\r\n", 4)]
+        [InlineData("abcde\n\rabcde\r\nabcde\r\n", 4)]
         public void ShouldBreak(string text, int numberOfLines)
         {
-            var breaker = TextLinesBuilder.Build(text.AsSpan());
+            var breaker = LineBreakIterator.Create(text.AsSpan());
 
             var lines = breaker.ToArray();
 
@@ -320,7 +320,7 @@ namespace Avalonia.Skia.UnitTests
         [InlineData("a👍子b", 4)]
         public void ShouldProduceRuns(string text, int numberOfRuns)
         {
-            var breaker = TextRunsBuilder.Build(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
+            var breaker = TextRunIterator.Create(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
 
             var runs = breaker.ToArray();
 

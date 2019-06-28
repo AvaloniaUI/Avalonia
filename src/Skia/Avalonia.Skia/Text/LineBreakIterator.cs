@@ -6,14 +6,14 @@ using System.Collections.Generic;
 
 namespace Avalonia.Skia.Text
 {
-    internal static class TextLinesBuilder
+    internal static class LineBreakIterator
     {
         /// <summary>
-        ///     Builds a list of text lines.
+        ///     Creates a list of text lines that are split by break indicators.
         /// </summary>
-        /// <param name="text">The text to build text lines from.</param>
-        /// <returns>A list of build text lines.</returns>
-        public static List<SKTextPointer> Build(ReadOnlySpan<char> text)
+        /// <param name="text">The text to create text lines from.</param>
+        /// <returns>A list of text lines.</returns>
+        public static List<SKTextPointer> Create(ReadOnlySpan<char> text)
         {
             var currentPosition = 0;
 
@@ -35,6 +35,11 @@ namespace Avalonia.Skia.Text
                 {
                     lines.Add(new SKTextPointer(currentPosition, text.Length - currentPosition));
                     break;
+                }
+
+                if (currentPosition == text.Length)
+                {
+                    lines.Add(new SKTextPointer(text.Length, 0));
                 }
             }
 
