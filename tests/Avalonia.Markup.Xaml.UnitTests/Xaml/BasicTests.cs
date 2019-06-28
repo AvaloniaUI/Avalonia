@@ -907,6 +907,25 @@ do we need it?")]
             }
         }
 
+        [Fact]
+        public void Slider_Properties_Can_Be_Set_In_Any_Order()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+    <Slider Width='400' Value='500' Minimum='0' Maximum='1000'/>
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var slider = (Slider)window.Content;
+
+                Assert.Equal(0, slider.Minimum);
+                Assert.Equal(1000, slider.Maximum);
+                Assert.Equal(500, slider.Value);
+            }
+        }
+
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
