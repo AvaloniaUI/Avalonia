@@ -118,8 +118,12 @@ namespace Avalonia.Headless
 
         void DoResize(Size clientSize)
         {
-            ClientSize = clientSize;
-            Resized?.Invoke(clientSize);
+            // Uncomment this check and experience a weird bug in layout engine
+            if (ClientSize != clientSize)
+            {
+                ClientSize = clientSize;
+                Resized?.Invoke(clientSize);
+            }
         }
 
         public void SetMinMaxSize(Size minSize, Size maxSize)
