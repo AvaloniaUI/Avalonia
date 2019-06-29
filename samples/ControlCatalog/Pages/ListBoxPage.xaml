@@ -10,7 +10,7 @@
               HorizontalAlignment="Center"
               Spacing="16">
       <StackPanel Orientation="Vertical" Spacing="8">
-        <ListBox x:Name="listBox" Items="{Binding Items}" Width="250" Height="350" SelectionMode="{Binding SelectionMode}"></ListBox>
+        <ListBox Items="{Binding Items}" SelectedItems="{Binding SelectedItems}" SelectionMode="{Binding SelectionMode}" Width="250" Height="350"></ListBox>
 
         <Button Command="{Binding AddItemCommand}">Add</Button>
 

@@ -12,7 +12,7 @@ namespace ControlCatalog.Pages
         public TreeViewPage()
         {
             InitializeComponent();
-            DataContext = new PageViewModel(this.Find<TreeView>("treeView"));
+            DataContext = new PageViewModel();
         }
 
         private void InitializeComponent()
@@ -22,30 +22,28 @@ namespace ControlCatalog.Pages
 
         private class PageViewModel : ReactiveObject
         {
-            private readonly TreeView _treeView;
             private SelectionMode _selectionMode;
 
-            public PageViewModel(TreeView treeView)
+            public PageViewModel()
             {
-                _treeView = treeView;
-
                 Node root = new Node();
                 Items = root.Children;
+                SelectedItems = new ObservableCollection<Node>();
 
                 AddItemCommand = ReactiveCommand.Create(() =>
                 {
-                    Node selectedItem = _treeView.SelectedItems.Count > 0 ? (Node)_treeView.SelectedItems[0] : root;
-                    selectedItem.AddNewItem();
+                    Node parentItem = SelectedItems.Count > 0 ? SelectedItems[0] : root;
+                    parentItem.AddNewItem();
                 });
 
                 RemoveItemCommand = ReactiveCommand.Create(() =>
                 {
-                    foreach (Node selectedItem in _treeView.SelectedItems)
+                    while (SelectedItems.Count > 0)
                     {
-                        RecursiveRemove(Items, selectedItem);
+                        Node lastItem = SelectedItems[0];
+                        RecursiveRemove(Items, lastItem);
+                        SelectedItems.Remove(lastItem);
                     }
-
-                    _treeView.SelectedItems.Clear();
 
                     bool RecursiveRemove(ObservableCollection<Node> items, Node selectedItem)
                     {
@@ -69,6 +67,8 @@ namespace ControlCatalog.Pages
 
             public ObservableCollection<Node> Items { get; }
 
+            public ObservableCollection<Node> SelectedItems { get; }
+
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
             public ReactiveCommand<Unit, Unit> RemoveItemCommand { get; }
@@ -78,7 +78,7 @@ namespace ControlCatalog.Pages
                 get => _selectionMode;
                 set
                 {
-                    _treeView.SelectedItems.Clear();
+                    SelectedItems.Clear();
                     this.RaiseAndSetIfChanged(ref _selectionMode, value);
                 }
             }

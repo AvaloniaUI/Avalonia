@@ -12,7 +12,7 @@ namespace ControlCatalog.Pages
         public ListBoxPage()
         {
             InitializeComponent();
-            DataContext = new PageViewModel(this.Find<ListBox>("listBox"));
+            DataContext = new PageViewModel();
         }
 
         private void InitializeComponent()
@@ -22,28 +22,28 @@ namespace ControlCatalog.Pages
 
         private class PageViewModel : ReactiveObject
         {
-            private readonly ListBox _listBox;
             private int _counter;
             private SelectionMode _selectionMode;
 
-            public PageViewModel(ListBox listBox)
+            public PageViewModel()
             {
-                _listBox = listBox;
-
                 Items = new ObservableCollection<string>(Enumerable.Range(1, 10).Select(i => GenerateItem()));
+                SelectedItems = new ObservableCollection<string>();
 
                 AddItemCommand = ReactiveCommand.Create(() => Items.Add(GenerateItem()));
 
                 RemoveItemCommand = ReactiveCommand.Create(() =>
                 {
-                    foreach (string selectedItem in _listBox.SelectedItems)
+                    while (SelectedItems.Count > 0)
                     {
-                        Items.Remove(selectedItem);
+                        Items.Remove(SelectedItems[0]);
                     }
                 });
             }
 
             public ObservableCollection<string> Items { get; }
+
+            public ObservableCollection<string> SelectedItems { get; }
 
             public ReactiveCommand<Unit, Unit> AddItemCommand { get; }
 
@@ -54,7 +54,7 @@ namespace ControlCatalog.Pages
                 get => _selectionMode;
                 set
                 {
-                    _listBox.SelectedItems.Clear();
+                    SelectedItems.Clear();
                     this.RaiseAndSetIfChanged(ref _selectionMode, value);
                 }
             }
