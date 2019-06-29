@@ -36,7 +36,7 @@ namespace ControlCatalog.Pages
 
                 RemoveItemCommand = ReactiveCommand.Create(() =>
                 {
-                    foreach (string selectedItem in listBox.SelectedItems)
+                    foreach (string selectedItem in _listBox.SelectedItems)
                     {
                         Items.Remove(selectedItem);
                     }
