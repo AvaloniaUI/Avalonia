@@ -11,6 +11,8 @@ using System.Reactive.Linq;
 using System.Reactive;
 using ReactiveUI;
 using System;
+using Avalonia.Controls.ApplicationLifetimes;
+using Splat;
 
 namespace Avalonia.ReactiveUI
 {
@@ -19,26 +21,67 @@ namespace Avalonia.ReactiveUI
     /// Avalonia applications. Call its constructor in your app's composition root,
     /// before calling the RxApp.SuspensionHost.SetupDefaultSuspendResume method.
     /// </summary>
-    public sealed class AutoSuspendHelper
+    public sealed class AutoSuspendHelper : IEnableLogger, IDisposable
     {
-        public AutoSuspendHelper(Application app)
+        private readonly Subject<IDisposable> _shouldPersistState = new Subject<IDisposable>();
+        private readonly Subject<Unit> _isLaunchingNew = new Subject<Unit>();
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutoSuspendHelper"/> class.
+        /// </summary>
+        /// <param name="lifetime">Pass in the Application.ApplicationLifetime property.</param>
+        public AutoSuspendHelper(IApplicationLifetime lifetime)
         {
             RxApp.SuspensionHost.IsResuming = Observable.Never<Unit>();
-            RxApp.SuspensionHost.IsLaunchingNew = Observable.Return(Unit.Default);
+            RxApp.SuspensionHost.IsLaunchingNew = _isLaunchingNew;
 
-            var exiting = new Subject<IDisposable>();
-            app.Exit += (o, e) =>
+            if (lifetime is IControlledApplicationLifetime controlled)
             {
-                // This is required to prevent the app from shutting down too early.
-                var manual = new ManualResetEvent(false);
-                exiting.OnNext(Disposable.Create(() => manual.Set()));
-                manual.WaitOne();
-            };
-            RxApp.SuspensionHost.ShouldPersistState = exiting;
+                this.Log().Debug("Using IControlledApplicationLifetime events to handle app exit.");
+                controlled.Exit += (sender, args) => OnControlledApplicationLifetimeExit();
+                RxApp.SuspensionHost.ShouldPersistState = _shouldPersistState;
+            }
+            else if (lifetime != null)
+            {
+                var type = lifetime.GetType().FullName;
+                var message = $"Don't know how to detect app exit event for {type}.";
+                throw new NotSupportedException(message);
+            }
+            else 
+            {
+                var message = "ApplicationLifetime is null. "
+                            + "Ensure you are initializing AutoSuspendHelper "
+                            + "when Avalonia application initialization is completed.";
+                throw new ArgumentNullException(message);
+            }
             
             var errored = new Subject<Unit>();
             AppDomain.CurrentDomain.UnhandledException += (o, e) => errored.OnNext(Unit.Default);
             RxApp.SuspensionHost.ShouldInvalidateState = errored;
+        }
+
+        /// <summary>
+        /// Call this method in your App.OnFrameworkInitializationCompleted method.
+        /// </summary>
+        public void OnFrameworkInitializationCompleted() => _isLaunchingNew.OnNext(Unit.Default);
+
+        /// <summary>
+        /// Disposes internally stored observers.
+        /// </summary>
+        public void Dispose()
+        {
+            _shouldPersistState.Dispose();
+            _isLaunchingNew.Dispose();
+        }
+
+        private void OnControlledApplicationLifetimeExit()
+        {
+            this.Log().Debug("Received IControlledApplicationLifetime exit event.");
+            var manual = new ManualResetEvent(false);
+            _shouldPersistState.OnNext(Disposable.Create(() => manual.Set()));
+                    
+            manual.WaitOne();
+            this.Log().Debug("Completed actions on IControlledApplicationLifetime exit event.");
         }
     }
 }

@@ -21,6 +21,7 @@ using Avalonia.ReactiveUI;
 using System.Reactive.Subjects;
 using System.Reactive.Linq;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -33,9 +34,10 @@ namespace Avalonia.ReactiveUI.UnitTests
             {
                 var isLaunchingReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
-                var suspension = new AutoSuspendHelper(application);
+                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
 
                 RxApp.SuspensionHost.IsLaunchingNew.Subscribe(_ => isLaunchingReceived = true);
+                suspension.OnFrameworkInitializationCompleted();
                 Assert.True(isLaunchingReceived);
             }
         }
@@ -47,12 +49,16 @@ namespace Avalonia.ReactiveUI.UnitTests
             {
                 var shouldPersistReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
-                var suspension = new AutoSuspendHelper(application);
+                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
 
-                RxApp.SuspensionHost.ShouldPersistState.Subscribe(_ => shouldPersistReceived = true);
                 RxApp.SuspensionHost.SetupDefaultSuspendResume(new DummySuspensionDriver());
+                RxApp.SuspensionHost.ShouldPersistState.Subscribe(_ => shouldPersistReceived = true);
+                suspension.OnFrameworkInitializationCompleted();
 
-                application.Shutdown();
+                var source = new CancellationTokenSource();
+                source.CancelAfter(TimeSpan.FromMilliseconds(100));
+                application.Run(source.Token);
+                
                 Assert.True(shouldPersistReceived);
             }
         }
