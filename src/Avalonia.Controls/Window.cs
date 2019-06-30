@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using System.ComponentModel;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -96,6 +97,20 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
+
+        /// <summary>
+        /// Routed event that can be used for global tracking of window destruction
+        /// </summary>
+        public static readonly RoutedEvent WindowClosedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
+        
+        /// <summary>
+        /// Routed event that can be used for global tracking of opening windows
+        /// </summary>
+        public static readonly RoutedEvent WindowOpenedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
+
+
 
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
@@ -249,38 +264,12 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<CancelEventArgs> Closing;      
 
-        private static void AddWindow(Window window)
-        {
-            if (Application.Current == null)
-            {
-                return;
-            }
-
-            Application.Current.Windows.Add(window);
-        }
-
-        private static void RemoveWindow(Window window)
-        {
-            if (Application.Current == null)
-            {
-                return;
-            }
-
-            Application.Current.Windows.Remove(window);
-        }
-
         /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
             Close(false);
-        }
-
-        protected override void HandleApplicationExiting()
-        {
-            base.HandleApplicationExiting();
-            Close(true);
         }
 
         /// <summary>
@@ -382,7 +371,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            AddWindow(this);
+            this.RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -444,7 +433,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The window is already being shown.");
             }
 
-            AddWindow(this);
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -557,7 +546,7 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            RemoveWindow(this);
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             base.HandleClosed();
         }
@@ -583,18 +572,5 @@ namespace Avalonia.Controls
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
-    }
-}
-
-namespace Avalonia
-{
-    public static class WindowApplicationExtensions
-    {
-        public static void RunWithMainWindow<TWindow>(this Application app) where TWindow : Avalonia.Controls.Window, new()
-        {
-            var window = new TWindow();
-            window.Show();
-            app.Run(window);
-        }
     }
 }
