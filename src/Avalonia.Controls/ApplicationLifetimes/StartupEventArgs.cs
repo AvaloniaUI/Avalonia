@@ -8,7 +8,7 @@ using System.Linq;
 namespace Avalonia.Controls.ApplicationLifetimes
 {
     /// <summary>
-    /// Contains the arguments for the <see cref="IClassicDesktopStyleApplicationLifetime.Startup"/> event.
+    /// Contains the arguments for the <see cref="IControlledApplicationLifetime.Startup"/> event.
     /// </summary>
     public class ControlledApplicationLifetimeStartupEventArgs : EventArgs
     {

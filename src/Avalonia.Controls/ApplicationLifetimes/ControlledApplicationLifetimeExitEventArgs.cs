@@ -6,7 +6,7 @@ using System;
 namespace Avalonia.Controls.ApplicationLifetimes
 {
     /// <summary>
-    /// Contains the arguments for the <see cref="IClassicDesktopStyleApplicationLifetime.Exit"/> event.
+    /// Contains the arguments for the <see cref="IControlledApplicationLifetime.Exit"/> event.
     /// </summary>
     public class ControlledApplicationLifetimeExitEventArgs : EventArgs
     {
