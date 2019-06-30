@@ -4,40 +4,53 @@
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using System.Reactive;
+using System.Reactive.Subjects;
+using System.Reactive.Linq;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Threading;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
 using Avalonia.Rendering;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 using Avalonia;
 using ReactiveUI;
 using DynamicData;
 using Xunit;
 using Splat;
-using Avalonia.Markup.Xaml;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Reactive;
-using Avalonia.ReactiveUI;
-using System.Reactive.Subjects;
-using System.Reactive.Linq;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AutoSuspendHelperTest
     {
+        [DataContract]
+        public class AppState
+        {
+            [DataMember]
+            public string Example { get; set; }
+        }
+
         [Fact]
         public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew() 
         {
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime(Application.Current))
             {
                 var isLaunchingReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
-                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
+                application.ApplicationLifetime = lifetime;
 
+                // Initialize ReactiveUI Suspension as in real-world scenario.
+                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
                 RxApp.SuspensionHost.IsLaunchingNew.Subscribe(_ => isLaunchingReceived = true);
                 suspension.OnFrameworkInitializationCompleted();
+
                 Assert.True(isLaunchingReceived);
             }
         }
@@ -45,21 +58,23 @@ namespace Avalonia.ReactiveUI.UnitTests
         [Fact]
         public void ShouldPersistState_Should_Fire_On_App_Exit_When_SuspensionDriver_Is_Initialized() 
         {
-            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            using (var lifetime = new ClassicDesktopStyleApplicationLifetime(Application.Current)) 
             {
                 var shouldPersistReceived = false;
                 var application = AvaloniaLocator.Current.GetService<Application>();
-                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
+                application.ApplicationLifetime = lifetime;
 
-                RxApp.SuspensionHost.SetupDefaultSuspendResume(new DummySuspensionDriver());
+                // Initialize ReactiveUI Suspension as in real-world scenario.
+                var suspension = new AutoSuspendHelper(application.ApplicationLifetime);
+                RxApp.SuspensionHost.CreateNewAppState = () => new AppState { Example = "Foo" };
                 RxApp.SuspensionHost.ShouldPersistState.Subscribe(_ => shouldPersistReceived = true);
+                RxApp.SuspensionHost.SetupDefaultSuspendResume(new DummySuspensionDriver());
                 suspension.OnFrameworkInitializationCompleted();
 
-                var source = new CancellationTokenSource();
-                source.CancelAfter(TimeSpan.FromMilliseconds(100));
-                application.Run(source.Token);
-                
+                lifetime.Shutdown();
                 Assert.True(shouldPersistReceived);
+                Assert.Equal("Foo", RxApp.SuspensionHost.GetAppState<AppState>().Example);
             }
         }
     }
