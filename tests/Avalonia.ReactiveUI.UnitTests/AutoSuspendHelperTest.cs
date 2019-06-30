@@ -36,6 +36,11 @@ namespace Avalonia.ReactiveUI.UnitTests
             public string Example { get; set; }
         }
 
+        public class ExoticApplicationLifetimeWithoutLifecycleEvents : IDisposable, IApplicationLifetime
+        {
+            public void Dispose() { }
+        }
+
         [Fact]
         public void AutoSuspendHelper_Should_Immediately_Fire_IsLaunchingNew() 
         {
@@ -75,6 +80,18 @@ namespace Avalonia.ReactiveUI.UnitTests
                 lifetime.Shutdown();
                 Assert.True(shouldPersistReceived);
                 Assert.Equal("Foo", RxApp.SuspensionHost.GetAppState<AppState>().Example);
+            }
+        }
+
+        [Fact]
+        public void AutoSuspendHelper_Should_Throw_For_Not_Supported_Lifetimes()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
+            {
+                var application = AvaloniaLocator.Current.GetService<Application>();
+                application.ApplicationLifetime = lifetime;
+                Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
             }
         }
     }
