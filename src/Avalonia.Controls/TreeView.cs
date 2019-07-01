@@ -165,6 +165,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Expands the specified <see cref="TreeViewItem"/> all descendent <see cref="TreeViewItem"/>s.
+        /// </summary>
+        /// <param name="item">The item to expand.</param>
+        public void ExpandSubTree(TreeViewItem item)
+        {
+            item.IsExpanded = true;
+
+            var panel = item.Presenter.Panel;
+
+            if (panel != null)
+            {
+                foreach (var child in panel.Children)
+                {
+                    if (child is TreeViewItem treeViewItem)
+                    {
+                        ExpandSubTree(treeViewItem);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Selects all items in the <see cref="TreeView"/>.
+        /// </summary>
+        /// <remarks>
+        /// Note that this method only selects nodes currently visible due to their parent nodes
+        /// being expanded: it does not expand nodes.
+        /// </remarks>
+        public void SelectAll()
+        {
+            SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+        }
+
+        /// <summary>
+        /// Deselects all items in the <see cref="TreeView"/>.
+        /// </summary>
+        public void UnselectAll()
+        {
+            SelectedItems.Clear();
+        }
+
+        /// <summary>
         /// Subscribes to the <see cref="SelectedItems"/> CollectionChanged event, if any.
         /// </summary>
         private void SubscribeToSelectedItems()
@@ -409,7 +451,7 @@ namespace Avalonia.Controls
 
                 if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
                 {
-                    SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+                    SelectAll();
                     e.Handled = true;
                 }
             }
