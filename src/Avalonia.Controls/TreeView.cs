@@ -105,32 +105,21 @@ namespace Avalonia.Controls
             get => _selectedItem;
             set
             {
-                SetAndRaise(SelectedItemProperty, ref _selectedItem,
-                    (object val, ref object backing, Action<Action> notifyWrapper) =>
+                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+
+                if (value != null)
+                {
+                    if (SelectedItems.Count != 1 || SelectedItems[0] != value)
                     {
-                        var old = backing;
-                        backing = val;
-
-                        notifyWrapper(() =>
-                            RaisePropertyChanged(
-                                SelectedItemProperty,
-                                old,
-                                val));
-
-                        if (val != null)
-                        {
-                            if (SelectedItems.Count != 1 || SelectedItems[0] != val)
-                            {
-                                _syncingSelectedItems = true;
-                                SelectSingleItem(val);
-                                _syncingSelectedItems = false;
-                            }
-                        }
-                        else if (SelectedItems.Count > 0)
-                        {
-                            SelectedItems.Clear();
-                        }
-                    }, value);
+                        _syncingSelectedItems = true;
+                        SelectSingleItem(value);
+                        _syncingSelectedItems = false;
+                    }
+                }
+                else if (SelectedItems.Count > 0)
+                {
+                    SelectedItems.Clear();
+                }
             }
         }
 
