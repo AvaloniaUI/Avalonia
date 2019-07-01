@@ -97,7 +97,12 @@ namespace Avalonia.Data
             var culture = CultureInfo.CurrentCulture;
             var converted = converter.Convert(values, targetType, ConverterParameter, culture);
 
-            if (converted == AvaloniaProperty.UnsetValue && FallbackValue != null)
+            if (converted == BindingOperations.DoNothing)
+            {
+                return converted;
+            }
+
+            if (converted == AvaloniaProperty.UnsetValue)
             {
                 converted = FallbackValue;
             }
