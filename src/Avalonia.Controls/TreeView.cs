@@ -510,7 +510,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                    (e.InputModifiers & InputModifiers.Control) != 0,
+                    e.MouseButton == MouseButton.Right);
             }
         }
 
@@ -521,11 +522,13 @@ namespace Avalonia.Controls
         /// <param name="select">Whether the item should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         protected void UpdateSelectionFromContainer(
             IControl container,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var item = ItemContainerGenerator.Index.ItemFromContainer(container);
 
@@ -546,7 +549,14 @@ namespace Avalonia.Controls
             var multi = (mode & SelectionMode.Multiple) != 0;
             var range = multi && selectedContainer != null && rangeModifier;
 
-            if (!toggle && !range)
+            if (rightButton)
+            {
+                if (!SelectedItems.Contains(item))
+                {
+                    SelectSingleItem(item);
+                }
+            }
+            else if (!toggle && !range)
             {
                 SelectSingleItem(item);
             }
@@ -715,6 +725,7 @@ namespace Avalonia.Controls
         /// <param name="select">Whether the container should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
@@ -723,13 +734,14 @@ namespace Avalonia.Controls
             IInteractive eventSource,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelectionFromContainer(container, select, rangeModifier, toggleModifier);
+                UpdateSelectionFromContainer(container, select, rangeModifier, toggleModifier, rightButton);
                 return true;
             }
 
