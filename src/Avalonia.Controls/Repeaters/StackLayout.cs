@@ -8,34 +8,57 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Arranges elements into a single line (with spacing) that can be oriented horizontally or vertically.
+    /// </summary>
     public class StackLayout : VirtualizingLayout, IFlowLayoutAlgorithmDelegates
     {
+        /// <summary>
+        /// Defines the <see cref="Orientation"/> property.
+        /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
             StackPanel.OrientationProperty.AddOwner<StackLayout>();
 
+        /// <summary>
+        /// Defines the <see cref="Spacing"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> SpacingProperty =
             StackPanel.SpacingProperty.AddOwner<StackLayout>();
 
         private readonly OrientationBasedMeasures _orientation = new OrientationBasedMeasures();
 
+        /// <summary>
+        /// Initializes a new instance of the StackLayout class.
+        /// </summary>
         public StackLayout()
         {
             LayoutId = "StackLayout";
         }
 
+        /// <summary>
+        /// Gets or sets the axis along which items are laid out.
+        /// </summary>
+        /// <value>
+        /// One of the enumeration values that specifies the axis along which items are laid out.
+        /// The default is Vertical.
+        /// </value>
         public Orientation Orientation
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a uniform distance (in pixels) between stacked items. It is applied in the
+        /// direction of the StackLayout's Orientation.
+        /// </summary>
         public double Spacing
         {
             get => GetValue(SpacingProperty);
             set => SetValue(SpacingProperty, value);
         }
 
-        public Rect GetExtent(
+        internal Rect GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
             IControl firstRealized,
@@ -73,7 +96,7 @@ namespace Avalonia.Controls.Repeaters
             return extent;
         }
 
-        public void OnElementMeasured(
+        internal void OnElementMeasured(
             IControl element,
             int index,
             Size availableSize,

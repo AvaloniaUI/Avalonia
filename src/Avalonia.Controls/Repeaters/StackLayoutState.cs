@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Represents the state of a StackLayout.
+    /// </summary>
     public class StackLayoutState
     {
         private const int BufferSize = 100;

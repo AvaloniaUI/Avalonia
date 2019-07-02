@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Represents the state of a <see cref="UniformGridLayout"/>.
+    /// </summary>
     public class UniformGridLayoutState
     {
         // We need to measure the element at index 0 to know what size to measure all other items. 

@@ -3,9 +3,6 @@
 //
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls.Repeaters

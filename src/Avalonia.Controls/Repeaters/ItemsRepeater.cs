@@ -11,18 +11,42 @@ using Avalonia.Input;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Represents a data-driven collection control that incorporates a flexible layout system,
+    /// custom views, and virtualization.
+    /// </summary>
     public class ItemsRepeater : Panel
     {
+        /// <summary>
+        /// Defines the <see cref="HorizontalCacheLength"/> property.
+        /// </summary>
         public static readonly AvaloniaProperty<double> HorizontalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(HorizontalCacheLength), 2.0);
+
+        /// <summary>
+        /// Defines the <see cref="ItemTemplate"/> property.
+        /// </summary>
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsRepeater>();
+
+        /// <summary>
+        /// Defines the <see cref="Items"/> property.
+        /// </summary>
         public static readonly DirectProperty<ItemsRepeater, IEnumerable> ItemsProperty =
             ItemsControl.ItemsProperty.AddOwner<ItemsRepeater>(o => o.Items, (o, v) => o.Items = v);
+
+        /// <summary>
+        /// Defines the <see cref="Layout"/> property.
+        /// </summary>
         public static readonly AvaloniaProperty<Layout> LayoutProperty =
             AvaloniaProperty.Register<ItemsRepeater, Layout>(nameof(Layout), new StackLayout());
+
+        /// <summary>
+        /// Defines the <see cref="VerticalCacheLength"/> property.
+        /// </summary>
         public static readonly AvaloniaProperty<double> VerticalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
+
         private static readonly AttachedProperty<VirtualizationInfo> VirtualizationInfoProperty =
             AvaloniaProperty.RegisterAttached<ItemsRepeater, IControl, VirtualizationInfo>("VirtualizationInfo");
 
@@ -40,6 +64,9 @@ namespace Avalonia.Controls.Repeaters
         private ItemsRepeaterElementClearingEventArgs _elementClearingArgs;
         private ItemsRepeaterElementIndexChangedEventArgs _elementIndexChangedArgs;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemsRepeater"/> class.
+        /// </summary>
         public ItemsRepeater()
         {
             _viewManager = new ViewManager(this);
@@ -53,36 +80,61 @@ namespace Avalonia.Controls.Repeaters
             ClipToBoundsProperty.OverrideDefaultValue<ItemsRepeater>(true);
         }
 
+        /// <summary>
+        /// Gets or sets the layout used to size and position elements in the ItemsRepeater.
+        /// </summary>
+        /// <value>
+        /// The layout used to size and position elements. The default is a StackLayout with
+        /// vertical orientation.
+        /// </value>
         public Layout Layout
         {
             get => GetValue(LayoutProperty);
             set => SetValue(LayoutProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets an object source used to generate the content of the ItemsRepeater.
+        /// </summary>
         public IEnumerable Items
         {
             get => _items;
             set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
+        /// <summary>
+        /// Gets or sets the template used to display each item.
+        /// </summary>
         public IDataTemplate ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);
             set => SetValue(ItemTemplateProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates the size of the buffer used to realize items when
+        /// panning or scrolling horizontally.
+        /// </summary>
         public double HorizontalCacheLength
         {
             get => GetValue(HorizontalCacheLengthProperty);
             set => SetValue(HorizontalCacheLengthProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates the size of the buffer used to realize items when
+        /// panning or scrolling vertically.
+        /// </summary>
         public double VerticalCacheLength
         {
             get => GetValue(VerticalCacheLengthProperty);
             set => SetValue(VerticalCacheLengthProperty, value);
         }
 
+        /// <summary>
+        /// Gets a standardized view of the supported interactions between a given Items object and
+        /// the ItemsRepeater control and its associated components.
+        /// </summary>
         public ItemsSourceView ItemsSourceView { get; private set; }
 
         internal ItemTemplateWrapper ItemTemplateShim { get; set; }
@@ -107,19 +159,69 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
+        /// <summary>
+        /// Occurs each time an element is cleared and made available to be re-used.
+        /// </summary>
+        /// <remarks>
+        /// This event is raised immediately each time an element is cleared, such as when it falls
+        /// outside the range of realized items. Elements are cleared when they become available
+        /// for re-use.
+        /// </remarks>
         public event EventHandler<ItemsRepeaterElementClearingEventArgs> ElementClearing;
+
+        /// <summary>
+        /// Occurs for each realized <see cref="IControl"/> when the index for the item it
+        /// represents has changed.
+        /// </summary>
+        /// <remarks>
+        /// When you use ItemsRepeater to build a more complex control that supports specific
+        /// interactions on the child elements (such as selection or click), it is useful to be
+        /// able to keep an up-to-date identifier for the backing data item.
+        ///
+        /// This event is raised for each realized IControl where the index for the item it
+        /// represents has changed. For example, when another item is added or removed in the data
+        /// source, the index for items that come after in the ordering will be impacted.
+        /// </remarks>
         public event EventHandler<ItemsRepeaterElementIndexChangedEventArgs> ElementIndexChanged;
+
+        /// <summary>
+        /// Occurs each time an element is prepared for use.
+        /// </summary>
+        /// <remarks>
+        /// The prepared element might be newly created or an existing element that is being re-
+        /// used.
+        /// </remarks>
         public event EventHandler<ItemsRepeaterElementPreparedEventArgs> ElementPrepared;
 
+        /// <summary>
+        /// Retrieves the index of the item from the data source that corresponds to the specified
+        /// <see cref="IControl"/>.
+        /// </summary>
+        /// <param name="element">
+        /// The element that corresponds to the item to get the index of.
+        /// </param>
+        /// <returns>
+        /// The index of the item from the data source that corresponds to the specified UIElement,
+        /// or -1 if the element is not supported.
+        /// </returns>
         public int GetElementIndex(IControl element) => GetElementIndexImpl(element);
 
+        /// <summary>
+        /// Retrieves the realized UIElement that corresponds to the item at the specified index in
+        /// the data source.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <returns>
+        /// he UIElement that corresponds to the item at the specified index if the item is
+        /// realized, or null if the item is not realized.
+        /// </returns>
         public IControl TryGetElement(int index) => GetElementFromIndexImpl(index);
 
-        public void PinElement(IControl element) => _viewManager.UpdatePin(element, true);
+        internal void PinElement(IControl element) => _viewManager.UpdatePin(element, true);
 
-        public void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
+        internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
 
-        public IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
+        internal IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
 
         internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
         {

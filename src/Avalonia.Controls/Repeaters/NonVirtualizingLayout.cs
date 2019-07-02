@@ -3,12 +3,12 @@
 //
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Represents the base class for an object that sizes and arranges child elements for a host
+    /// and and does not support virtualization.
+    /// </summary>
     public abstract class NonVirtualizingLayout : Layout
     {
     }

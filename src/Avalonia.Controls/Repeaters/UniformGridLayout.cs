@@ -8,43 +8,111 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Defines constants that specify how items are aligned on the non-scrolling or non-virtualizing axis.
+    /// </summary>
     public enum UniformGridLayoutItemsJustification
     {
+        /// <summary>
+        /// Items are aligned with the start of the row or column, with extra space at the end.
+        /// Spacing between items does not change.
+        /// </summary>
         Start = 0,
+
+        /// <summary>
+        /// Items are aligned in the center of the row or column, with extra space at the start and
+        /// end. Spacing between items does not change.
+        /// </summary>
         Center = 1,
+
+        /// <summary>
+        /// Items are aligned with the end of the row or column, with extra space at the start.
+        /// Spacing between items does not change.
+        /// </summary>
         End = 2,
+
+        /// <summary>
+        /// Items are aligned so that extra space is added evenly before and after each item.
+        /// </summary>
         SpaceAround = 3,
+
+        /// <summary>
+        /// Items are aligned so that extra space is added evenly between adjacent items. No space
+        /// is added at the start or end.
+        /// </summary>
         SpaceBetween = 4,
+
         SpaceEvenly = 5,
     };
 
+    /// <summary>
+    /// Defines constants that specify how items are sized to fill the available space.
+    /// </summary>
     public enum UniformGridLayoutItemsStretch
     {
+        /// <summary>
+        /// The item retains its natural size. Use of extra space is determined by the
+        /// <see cref="UniformGridLayout.ItemsJustification"/> property.
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// The item is sized to fill the available space in the non-scrolling direction. Item size
+        /// in the scrolling direction is not changed.
+        /// </summary>
         Fill = 1,
+
+        /// <summary>
+        /// The item is sized to both fill the available space in the non-scrolling direction and
+        /// maintain its aspect ratio.
+        /// </summary>
         Uniform = 2,
     };
 
+    /// <summary>
+    /// Positions elements sequentially from left to right or top to bottom in a wrapping layout.
+    /// </summary>
     public class UniformGridLayout : VirtualizingLayout, IFlowLayoutAlgorithmDelegates
     {
+        /// <summary>
+        /// Defines the <see cref="ItemsJustification"/> property.
+        /// </summary>
         public static readonly StyledProperty<UniformGridLayoutItemsJustification> ItemsJustificationProperty =
             AvaloniaProperty.Register<UniformGridLayout, UniformGridLayoutItemsJustification>(nameof(ItemsJustification));
 
+        /// <summary>
+        /// Defines the <see cref="ItemsStretch"/> property.
+        /// </summary>
         public static readonly StyledProperty<UniformGridLayoutItemsStretch> ItemsStretchProperty =
             AvaloniaProperty.Register<UniformGridLayout, UniformGridLayoutItemsStretch>(nameof(ItemsStretch));
 
+        /// <summary>
+        /// Defines the <see cref="MinColumnSpacing"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> MinColumnSpacingProperty =
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinColumnSpacing));
 
+        /// <summary>
+        /// Defines the <see cref="MinItemHeight"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> MinItemHeightProperty =
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinItemHeight));
 
+        /// <summary>
+        /// Defines the <see cref="MinItemWidth"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> MinItemWidthProperty =
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinItemWidth));
 
+        /// <summary>
+        /// Defines the <see cref="MinRowSpacing"/> property.
+        /// </summary>
         public static readonly StyledProperty<double> MinRowSpacingProperty =
             AvaloniaProperty.Register<UniformGridLayout, double>(nameof(MinRowSpacing));
 
+        /// <summary>
+        /// Defines the <see cref="Orientation"/> property.
+        /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
             StackPanel.OrientationProperty.AddOwner<StackLayout>();
 
@@ -56,6 +124,9 @@ namespace Avalonia.Controls.Repeaters
         private UniformGridLayoutItemsJustification _itemsJustification;
         private UniformGridLayoutItemsStretch _itemsStretch;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UniformGridLayout"/> class.
+        /// </summary>
         public UniformGridLayout()
         {
             LayoutId = "UniformGridLayout";
@@ -66,42 +137,95 @@ namespace Avalonia.Controls.Repeaters
             OrientationProperty.OverrideDefaultValue<UniformGridLayout>(Orientation.Horizontal);
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates how items are aligned on the non-scrolling or non-
+        /// virtualizing axis.
+        /// </summary>
+        /// <value>
+        /// An enumeration value that indicates how items are aligned. The default is Start.
+        /// </value>
         public UniformGridLayoutItemsJustification ItemsJustification
         {
             get => GetValue(ItemsJustificationProperty);
             set => SetValue(ItemsJustificationProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that indicates how items are sized to fill the available space.
+        /// </summary>
+        /// <value>
+        /// An enumeration value that indicates how items are sized to fill the available space.
+        /// The default is None.
+        /// </value>
+        /// <remarks>
+        /// This property enables adaptive layout behavior where the items are sized to fill the
+        /// available space along the non-scrolling axis, and optionally maintain their aspect ratio.
+        /// </remarks>
         public UniformGridLayoutItemsStretch ItemsStretch
         {
             get => GetValue(ItemsStretchProperty);
             set => SetValue(ItemsStretchProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the minimum space between items on the horizontal axis.
+        /// </summary>
+        /// <remarks>
+        /// The spacing may exceed this minimum value when <see cref="ItemsJustification"/> is set
+        /// to SpaceEvenly, SpaceAround, or SpaceBetween.
+        /// </remarks>
         public double MinColumnSpacing
         {
             get => GetValue(MinColumnSpacingProperty);
             set => SetValue(MinColumnSpacingProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the minimum height of each item.
+        /// </summary>
+        /// <value>
+        /// The minimum height (in pixels) of each item. The default is NaN, in which case the
+        /// height of the first item is used as the minimum.
+        /// </value>
         public double MinItemHeight
         {
             get => GetValue(MinItemHeightProperty);
             set => SetValue(MinItemHeightProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the minimum width of each item.
+        /// </summary>
+        /// <value>
+        /// The minimum width (in pixels) of each item. The default is NaN, in which case the width
+        /// of the first item is used as the minimum.
+        /// </value>
         public double MinItemWidth
         {
             get => GetValue(MinItemWidthProperty);
             set => SetValue(MinItemWidthProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the minimum space between items on the vertical axis.
+        /// </summary>
+        /// <remarks>
+        /// The spacing may exceed this minimum value when <see cref="ItemsJustification"/> is set
+        /// to SpaceEvenly, SpaceAround, or SpaceBetween.
+        /// </remarks>
         public double MinRowSpacing
         {
             get => GetValue(MinRowSpacingProperty);
             set => SetValue(MinRowSpacingProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the axis along which items are laid out.
+        /// </summary>
+        /// <value>
+        /// One of the enumeration values that specifies the axis along which items are laid out.
+        /// The default is Vertical.
+        /// </value>
         public Orientation Orientation
         {
             get => GetValue(OrientationProperty);

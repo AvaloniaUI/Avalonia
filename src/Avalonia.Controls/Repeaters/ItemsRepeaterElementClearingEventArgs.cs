@@ -7,10 +7,18 @@ using System;
 
 namespace Avalonia.Controls.Repeaters
 {
+    /// <summary>
+    /// Provides data for the <see cref="ItemsRepeater.ElementClearing"/> event.
+    /// </summary>
     public class ItemsRepeaterElementClearingEventArgs : EventArgs
     {
         internal ItemsRepeaterElementClearingEventArgs(IControl element) => Element = element;
+
+        /// <summary>
+        /// Gets the element that is being cleared for re-use.
+        /// </summary>
         public IControl Element { get; private set; }
+
         internal void Update(IControl element) => Element = element;
     }
 }
