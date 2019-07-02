@@ -1026,6 +1026,46 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, target.SelectedItems.Count);
         }
 
+        [Fact]
+        public void Shift_Right_Click_Should_Not_Select_Mutiple()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: InputModifiers.Shift);
+
+            Assert.Equal(1, target.SelectedItems.Count);
+        }
+
+        [Fact]
+        public void Ctrl_Right_Click_Should_Not_Select_Mutiple()
+        {
+            var target = new ListBox
+            {
+                Template = Template(),
+                Items = new[] { "Foo", "Bar", "Baz" },
+                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                SelectionMode = SelectionMode.Multiple,
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
+            _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: InputModifiers.Control);
+
+            Assert.Equal(1, target.SelectedItems.Count);
+        }
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
