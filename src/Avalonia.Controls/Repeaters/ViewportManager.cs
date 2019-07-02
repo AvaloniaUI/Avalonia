@@ -365,7 +365,7 @@ namespace Avalonia.Controls.Repeaters
         public void ResetScrollers()
         {
             _scroller = null;
-            _effectiveViewportChangedRevoker.Dispose();
+            _effectiveViewportChangedRevoker?.Dispose();
             _effectiveViewportChangedRevoker = null;
             _ensuredScroller = false;
         }
