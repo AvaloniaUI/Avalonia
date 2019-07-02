@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Specialized;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Defines constants that specify how items are aligned on the non-scrolling or non-virtualizing axis.
@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Repeaters
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            StackPanel.OrientationProperty.AddOwner<StackLayout>();
+            StackLayout.OrientationProperty.AddOwner<UniformGridLayout>();
 
         private readonly OrientationBasedMeasures _orientation = new OrientationBasedMeasures();
         private double _minItemWidth = double.NaN;
@@ -316,10 +316,10 @@ namespace Avalonia.Controls.Repeaters
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            IControl firstRealized,
+            ILayoutable firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            IControl lastRealized,
+            ILayoutable lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -359,7 +359,7 @@ namespace Avalonia.Controls.Repeaters
             return extent;
         }
 
-        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(IControl element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
+        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(ILayoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
         {
         }
 
@@ -440,7 +440,7 @@ namespace Avalonia.Controls.Repeaters
 
                 //Note: For UniformGridLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
                 //i.e. the properties are the inverse of each other.
-                var scrollOrientation = (orientation == Orientation.Horizontal) ? Orientation.Vertical : Orientation.Horizontal;
+                var scrollOrientation = (orientation == Orientation.Horizontal) ? ScrollOrientation.Vertical : ScrollOrientation.Horizontal;
                 _orientation.ScrollOrientation = scrollOrientation;
             }
             else if (args.Property == MinColumnSpacingProperty)
@@ -475,7 +475,7 @@ namespace Avalonia.Controls.Repeaters
         {
             var minItemSpacing = MinItemSpacing;
             var gridState = (UniformGridLayoutState)context.LayoutState;
-            return _orientation.ScrollOrientation == Orientation.Vertical?
+            return _orientation.ScrollOrientation == ScrollOrientation.Vertical?
                 gridState.EffectiveItemWidth + minItemSpacing :
                 gridState.EffectiveItemHeight + minItemSpacing;
         }
@@ -484,7 +484,7 @@ namespace Avalonia.Controls.Repeaters
         {
             var lineSpacing = LineSpacing;
             var gridState = (UniformGridLayoutState)context.LayoutState;
-            return _orientation.ScrollOrientation == Orientation.Vertical ?
+            return _orientation.ScrollOrientation == ScrollOrientation.Vertical ?
                 gridState.EffectiveItemHeight + lineSpacing :
                 gridState.EffectiveItemWidth + lineSpacing;
         }
@@ -503,8 +503,8 @@ namespace Avalonia.Controls.Repeaters
             Rect bounds = _orientation.MinorMajorRect(
                 indexInRow * GetMinorSizeWithSpacing(context) + _orientation.MinorStart(lastExtent),
                 rowIndex * GetMajorSizeWithSpacing(context) + _orientation.MajorStart(lastExtent),
-                _orientation.ScrollOrientation == Orientation.Vertical ? gridState.EffectiveItemWidth : gridState.EffectiveItemHeight,
-                _orientation.ScrollOrientation == Orientation.Vertical ? gridState.EffectiveItemHeight : gridState.EffectiveItemWidth);
+                _orientation.ScrollOrientation == ScrollOrientation.Vertical ? gridState.EffectiveItemWidth : gridState.EffectiveItemHeight,
+                _orientation.ScrollOrientation == ScrollOrientation.Vertical ? gridState.EffectiveItemHeight : gridState.EffectiveItemWidth);
 
             return bounds;
         }

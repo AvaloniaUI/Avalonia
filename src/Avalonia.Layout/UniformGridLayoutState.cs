@@ -4,11 +4,9 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Represents the state of a <see cref="UniformGridLayout"/>.
@@ -20,7 +18,7 @@ namespace Avalonia.Controls.Repeaters
         // If it does not, then we need to do context.GetElement(0) at which point we have requested an element and are on point to clear it.
         // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid. 
         // If we are not (because FlowLayoutAlgorithm is holding it for us) then we just null out this field and use the one from FlowLayoutAlgorithm.
-        private IControl _cachedFirstElement;
+        private ILayoutable _cachedFirstElement;
 
         internal FlowLayoutAlgorithm FlowAlgorithm { get; } = new FlowLayoutAlgorithm();
         internal double EffectiveItemWidth { get; private set; }
@@ -86,7 +84,7 @@ namespace Avalonia.Controls.Repeaters
         }
 
         private void SetSize(
-            IControl element,
+            ILayoutable element,
             double layoutItemWidth,
             double LayoutItemHeight,
             Size availableSize,

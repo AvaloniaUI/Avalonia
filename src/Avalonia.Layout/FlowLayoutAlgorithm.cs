@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Specialized;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     internal class FlowLayoutAlgorithm
     {
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Repeaters
             bool isWrapping,
             double minItemSpacing,
             double lineSpacing,
-            Orientation orientation,
+            ScrollOrientation orientation,
             string layoutId)
         {
             _orientation.ScrollOrientation = orientation;
@@ -135,7 +135,7 @@ namespace Avalonia.Controls.Repeaters
         }
 
         public Size MeasureElement(
-            IControl element,
+            ILayoutable element,
             int index,
             Size availableSize,
             VirtualizingLayoutContext context)
@@ -469,9 +469,9 @@ namespace Avalonia.Controls.Repeaters
 
         private Rect EstimateExtent(Size availableSize, string layoutId)
         {
-            IControl firstRealizedElement = null;
+            ILayoutable firstRealizedElement = null;
             Rect firstBounds = new Rect();
-            IControl lastRealizedElement = null;
+            ILayoutable lastRealizedElement = null;
             Rect lastBounds = new Rect();
             int firstDataIndex = -1;
             int lastDataIndex = -1;
@@ -667,7 +667,7 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
-        public IControl GetElementIfRealized(int dataIndex)
+        public ILayoutable GetElementIfRealized(int dataIndex)
         {
             if (_elementManager.IsDataIndexRealized(dataIndex))
             {
@@ -677,7 +677,7 @@ namespace Avalonia.Controls.Repeaters
             return null;
         }
 
-        public bool TryAddElement0(IControl element)
+        public bool TryAddElement0(ILayoutable element)
         {
             if (_elementManager.GetRealizedElementCount() == 0)
             {

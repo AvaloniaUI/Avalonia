@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Defines constants that specify whether to suppress automatic recycling of the retrieved
@@ -114,7 +114,7 @@ namespace Avalonia.Controls.Repeaters
         /// This method calls <see cref="GetOrCreateElementAtCore(int, ElementRealizationOptions)"/>
         /// with options set to None. GetElementAtCore must be implemented in a derived class.
         /// </remarks>
-        public IControl GetOrCreateElementAt(int index)
+        public ILayoutable GetOrCreateElementAt(int index)
             => GetOrCreateElementAtCore(index, ElementRealizationOptions.None);
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.Repeaters
         /// advanced layouts that choose to explicitly manage the realization and recycling of
         /// elements as a performance optimization.
         /// </remarks>
-        public IControl GetOrCreateElementAt(int index, ElementRealizationOptions options)
+        public ILayoutable GetOrCreateElementAt(int index, ElementRealizationOptions options)
             => GetOrCreateElementAtCore(index, options);
 
         /// <summary>
@@ -146,10 +146,10 @@ namespace Avalonia.Controls.Repeaters
         /// </summary>
         /// <param name="element">The element to clear.</param>
         /// <remarks>
-        /// This method calls <see cref="RecycleElementCore(IControl)"/>, which must be implemented
+        /// This method calls <see cref="RecycleElementCore(ILayoutable)"/>, which must be implemented
         /// in a derived class.
         /// </remarks>
-        public void RecycleElement(IControl element) => RecycleElementCore(element);
+        public void RecycleElement(ILayoutable element) => RecycleElementCore(element);
 
         /// <summary>
         /// When implemented in a derived class, retrieves the number of items in the data.
@@ -178,13 +178,13 @@ namespace Avalonia.Controls.Repeaters
         /// A value of <see cref="ElementRealizationOptions"/> that specifies whether to suppress
         /// automatic recycling of the retrieved element or force creation of a new element.
         /// </param>
-        protected abstract IControl GetOrCreateElementAtCore(int index, ElementRealizationOptions options);
+        protected abstract ILayoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options);
 
         /// <summary>
         /// When implemented in a derived class, clears the specified UIElement and allows it to be
         /// either re-used or released.
         /// </summary>
         /// <param name="element">The element to clear.</param>
-        protected abstract void RecycleElementCore(IControl element);
+        protected abstract void RecycleElementCore(ILayoutable element);
     }
 }

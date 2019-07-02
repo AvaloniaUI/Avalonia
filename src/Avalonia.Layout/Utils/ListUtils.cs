@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Avalonia.Controls.Utils
+namespace Avalonia.Layout.Utils
 {
     internal static class ListUtils
     {

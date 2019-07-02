@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Specialized;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Arranges elements into a single line (with spacing) that can be oriented horizontally or vertically.
@@ -17,13 +17,13 @@ namespace Avalonia.Controls.Repeaters
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            StackPanel.OrientationProperty.AddOwner<StackLayout>();
+            AvaloniaProperty.Register<StackLayout, Orientation>(nameof(Orientation), Orientation.Vertical);
 
         /// <summary>
         /// Defines the <see cref="Spacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SpacingProperty =
-            StackPanel.SpacingProperty.AddOwner<StackLayout>();
+            AvaloniaProperty.Register<StackLayout, double>(nameof(Spacing));
 
         private readonly OrientationBasedMeasures _orientation = new OrientationBasedMeasures();
 
@@ -61,10 +61,10 @@ namespace Avalonia.Controls.Repeaters
         internal Rect GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            IControl firstRealized,
+            ILayoutable firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            IControl lastRealized,
+            ILayoutable lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -97,7 +97,7 @@ namespace Avalonia.Controls.Repeaters
         }
 
         internal void OnElementMeasured(
-            IControl element,
+            ILayoutable element,
             int index,
             Size availableSize,
             Size measureSize,
@@ -164,10 +164,10 @@ namespace Avalonia.Controls.Repeaters
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            IControl firstRealized,
+            ILayoutable firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            IControl lastRealized,
+            ILayoutable lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -182,7 +182,7 @@ namespace Avalonia.Controls.Repeaters
                 lastRealizedLayoutBounds);
         }
 
-        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(IControl element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
+        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(ILayoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
         {
             OnElementMeasured(
                 element,
@@ -295,7 +295,7 @@ namespace Avalonia.Controls.Repeaters
             {
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.
-                _orientation.ScrollOrientation = (Orientation)e.NewValue;
+                _orientation.ScrollOrientation = (ScrollOrientation)e.NewValue;
             }
 
             InvalidateLayout();

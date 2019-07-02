@@ -234,7 +234,7 @@ namespace Avalonia.Controls.Repeaters
             ////element.CanBeScrollAnchor(true);
         }
 
-        public void OnElementCleared(IControl element)
+        public void OnElementCleared(ILayoutable element)
         {
             ////element.CanBeScrollAnchor(false);
         }

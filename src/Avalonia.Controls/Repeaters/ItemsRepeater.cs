@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Repeaters
 {
@@ -38,8 +39,8 @@ namespace Avalonia.Controls.Repeaters
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
         /// </summary>
-        public static readonly AvaloniaProperty<Layout> LayoutProperty =
-            AvaloniaProperty.Register<ItemsRepeater, Layout>(nameof(Layout), new StackLayout());
+        public static readonly AvaloniaProperty<AttachedLayout> LayoutProperty =
+            AvaloniaProperty.Register<ItemsRepeater, AttachedLayout>(nameof(Layout), new StackLayout());
 
         /// <summary>
         /// Defines the <see cref="VerticalCacheLength"/> property.
@@ -58,7 +59,6 @@ namespace Avalonia.Controls.Repeaters
         private IEnumerable _items;
         private VirtualizingLayoutContext _layoutContext;
         private NotifyCollectionChangedEventArgs _processingItemsSourceChange;
-        private Size _lastAvailableSize;
         private bool _isLayoutInProgress;
         private ItemsRepeaterElementPreparedEventArgs _elementPreparedArgs;
         private ItemsRepeaterElementClearingEventArgs _elementClearingArgs;
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Repeaters
         /// The layout used to size and position elements. The default is a StackLayout with
         /// vertical orientation.
         /// </value>
-        public Layout Layout
+        public AttachedLayout Layout
         {
             get => GetValue(LayoutProperty);
             set => SetValue(LayoutProperty, value);
@@ -300,7 +300,6 @@ namespace Avalonia.Controls.Repeaters
                 }
 
                 _viewportManager.SetLayoutExtent(extent);
-                _lastAvailableSize = availableSize;
                 return desiredSize;
             }
             finally
@@ -396,7 +395,7 @@ namespace Avalonia.Controls.Repeaters
             }
             else if (property == LayoutProperty)
             {
-                OnLayoutChanged((Layout)args.OldValue, (Layout)args.NewValue);
+                OnLayoutChanged((AttachedLayout)args.OldValue, (AttachedLayout)args.NewValue);
             }
             else if (property == HorizontalCacheLengthProperty)
             {
@@ -479,7 +478,7 @@ namespace Avalonia.Controls.Repeaters
                     throw new InvalidOperationException("Cannot make an Anchor when there is no attached layout.");
                 }
 
-                element = GetLayoutContext().GetOrCreateElementAt(index);
+                element = (IControl)GetLayoutContext().GetOrCreateElementAt(index);
                 element.Measure(Size.Infinity);
             }
 
@@ -566,7 +565,7 @@ namespace Avalonia.Controls.Repeaters
                 if (Layout is VirtualizingLayout virtualLayout)
                 {
                     var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-                    virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+                    virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
                 }
                 else if (Layout is NonVirtualizingLayout nonVirtualLayout)
                 {
@@ -605,14 +604,14 @@ namespace Avalonia.Controls.Repeaters
 
                     try
                     {
-                        virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
+                        virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
                     }
                     finally
                     {
                         _processingItemsSourceChange = null;
                     }
                 }
-                else if (Layout is NonVirtualizingLayout nonVirtualLayout)
+                else if (Layout is NonVirtualizingLayout)
                 {
                     // Walk through all the elements and make sure they are cleared for
                     // non-virtualizing layouts.
@@ -631,7 +630,7 @@ namespace Avalonia.Controls.Repeaters
             InvalidateMeasure();
         }
 
-        private void OnLayoutChanged(Layout oldValue, Layout newValue)
+        private void OnLayoutChanged(AttachedLayout oldValue, AttachedLayout newValue)
         {
             if (_isLayoutInProgress)
             {
@@ -693,7 +692,7 @@ namespace Avalonia.Controls.Repeaters
                 {
                     if (Layout is VirtualizingLayout virtualLayout)
                     {
-                        virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
+                        virtualLayout.OnItemsChanged(GetLayoutContext(), sender, args);
                     }
                     else
                     {

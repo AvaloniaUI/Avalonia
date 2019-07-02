@@ -6,14 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Text;
-using Avalonia.Controls.Utils;
+using Avalonia.Layout.Utils;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     internal class ElementManager
     {
-        private readonly List<IControl> _realizedElements = new List<IControl>();
+        private readonly List<ILayoutable> _realizedElements = new List<ILayoutable>();
         private readonly List<Rect> _realizedElementLayoutBounds = new List<Rect>();
         private int _firstRealizedDataIndex;
         private VirtualizingLayoutContext _context;
@@ -34,7 +33,7 @@ namespace Avalonia.Controls.Repeaters
 
         public void SetContext(VirtualizingLayoutContext virtualContext) => _context = virtualContext;
 
-        public void OnBeginMeasure(Orientation orientation)
+        public void OnBeginMeasure(ScrollOrientation orientation)
         {
             if (_context != null)
             {
@@ -69,9 +68,9 @@ namespace Avalonia.Controls.Repeaters
             return IsVirtualizingContext ? _realizedElements.Count : _context.ItemCount;
         }
 
-        public IControl GetAt(int realizedIndex)
+        public ILayoutable GetAt(int realizedIndex)
         {
-            IControl element;
+            ILayoutable element;
 
             if (IsVirtualizingContext)
             {
@@ -100,7 +99,7 @@ namespace Avalonia.Controls.Repeaters
             return element;
         }
 
-        public void Add(IControl element, int dataIndex)
+        public void Add(ILayoutable element, int dataIndex)
         {
             if (_realizedElements.Count == 0)
             {
@@ -111,7 +110,7 @@ namespace Avalonia.Controls.Repeaters
             _realizedElementLayoutBounds.Add(default);
         }
 
-        public void Insert(int realizedIndex, int dataIndex, IControl element)
+        public void Insert(int realizedIndex, int dataIndex, ILayoutable element)
         {
             if (realizedIndex == 0)
             {
@@ -208,7 +207,7 @@ namespace Avalonia.Controls.Repeaters
 
         public bool IsIndexValidInData(int currentIndex) => currentIndex >= 0 && currentIndex < _context.ItemCount;
 
-        public IControl GetRealizedElement(int dataIndex)
+        public ILayoutable GetRealizedElement(int dataIndex)
         {
             return IsVirtualizingContext ?
                 GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) : 
@@ -236,7 +235,7 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
-        public bool IsWindowConnected(in Rect window, Orientation orientation, bool scrollOrientationSameAsFlow)
+        public bool IsWindowConnected(in Rect window, ScrollOrientation orientation, bool scrollOrientationSameAsFlow)
         {
             bool intersects = false;
 
@@ -246,14 +245,14 @@ namespace Avalonia.Controls.Repeaters
                 var lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
 
                 var effectiveOrientation = scrollOrientationSameAsFlow ?
-                    (orientation == Orientation.Vertical ? Orientation.Horizontal : Orientation.Vertical) :
+                    (orientation == ScrollOrientation.Vertical ? ScrollOrientation.Horizontal : ScrollOrientation.Vertical) :
                     orientation;
 
 
-                var windowStart = effectiveOrientation == Orientation.Vertical ? window.Y : window.X;
-                var windowEnd = effectiveOrientation == Orientation.Vertical ? window.Y + window.Height : window.X + window.Width;
-                var firstElementStart = effectiveOrientation == Orientation.Vertical ? firstElementBounds.Y : firstElementBounds.X;
-                var lastElementEnd = effectiveOrientation == Orientation.Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
+                var windowStart = effectiveOrientation == ScrollOrientation.Vertical ? window.Y : window.X;
+                var windowEnd = effectiveOrientation == ScrollOrientation.Vertical ? window.Y + window.Height : window.X + window.Width;
+                var firstElementStart = effectiveOrientation == ScrollOrientation.Vertical ? firstElementBounds.Y : firstElementBounds.X;
+                var lastElementEnd = effectiveOrientation == ScrollOrientation.Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
 
                 intersects =
                     firstElementStart <= windowEnd &&
@@ -298,7 +297,7 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
-        public int GetElementDataIndex(IControl suggestedAnchor)
+        public int GetElementDataIndex(ILayoutable suggestedAnchor)
         {
             var it = _realizedElements.IndexOf(suggestedAnchor);
             return it != -1 ? GetDataIndexFromRealizedRangeIndex(it) : -1;
@@ -314,7 +313,7 @@ namespace Avalonia.Controls.Repeaters
             return IsVirtualizingContext ? dataIndex - _firstRealizedDataIndex : dataIndex;
         }
 
-        private void DiscardElementsOutsideWindow(in Rect window, Orientation orientation)
+        private void DiscardElementsOutsideWindow(in Rect window, ScrollOrientation orientation)
         {
             // The following illustration explains the cutoff indices.
             // We will clear all the realized elements from both ends
@@ -369,12 +368,12 @@ namespace Avalonia.Controls.Repeaters
             }
         }
 
-        private static bool Intersects(in Rect lhs, in Rect rhs, Orientation orientation)
+        private static bool Intersects(in Rect lhs, in Rect rhs, ScrollOrientation orientation)
         {
-            var lhsStart = orientation == Orientation.Vertical ? lhs.Y : lhs.X;
-            var lhsEnd = orientation == Orientation.Vertical ? lhs.Y + lhs.Height : lhs.X + lhs.Width;
-            var rhsStart = orientation == Orientation.Vertical ? rhs.Y : rhs.X;
-            var rhsEnd = orientation == Orientation.Vertical ? rhs.Y + rhs.Height : rhs.X + rhs.Width;
+            var lhsStart = orientation == ScrollOrientation.Vertical ? lhs.Y : lhs.X;
+            var lhsEnd = orientation == ScrollOrientation.Vertical ? lhs.Y + lhs.Height : lhs.X + lhs.Width;
+            var rhsStart = orientation == ScrollOrientation.Vertical ? rhs.Y : rhs.X;
+            var rhsEnd = orientation == ScrollOrientation.Vertical ? rhs.Y + rhs.Height : rhs.X + rhs.Width;
 
             return lhsEnd >= rhsStart && lhsStart <= rhsEnd;
         }

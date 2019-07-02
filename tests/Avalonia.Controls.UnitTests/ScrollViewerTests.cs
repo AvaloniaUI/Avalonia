@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests

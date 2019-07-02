@@ -5,6 +5,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {

@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Repeaters

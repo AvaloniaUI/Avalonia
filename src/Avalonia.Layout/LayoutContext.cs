@@ -3,7 +3,7 @@
 //
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Represents the base class for an object that facilitates communication between an attached

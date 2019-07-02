@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Repeaters
 {
@@ -47,7 +48,7 @@ namespace Avalonia.Controls.Repeaters
 
         protected override int ItemCountCore() => _owner.ItemsSourceView?.Count ?? 0;
 
-        protected override IControl GetOrCreateElementAtCore(int index, ElementRealizationOptions options)
+        protected override ILayoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options)
         {
             return _owner.GetElementImpl(
                 index,
@@ -57,7 +58,7 @@ namespace Avalonia.Controls.Repeaters
 
         protected override object GetItemAtCore(int index) => _owner.ItemsSourceView.GetAt(index);
 
-        protected override void RecycleElementCore(IControl element) => _owner.ClearElementImpl(element);
+        protected override void RecycleElementCore(ILayoutable element) => _owner.ClearElementImpl((IControl)element);
 
         protected override Rect RealizationRectCore() => _owner.RealizationWindow;
     }

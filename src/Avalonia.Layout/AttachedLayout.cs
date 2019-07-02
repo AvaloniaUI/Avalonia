@@ -5,12 +5,12 @@
 
 using System;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Represents the base class for an object that sizes and arranges child elements for a host.
     /// </summary>
-    public abstract class Layout : AvaloniaObject
+    public abstract class AttachedLayout : AvaloniaObject
     {
         internal string LayoutId { get; set; }
 
@@ -26,7 +26,7 @@ namespace Avalonia.Controls.Repeaters
 
         /// <summary>
         /// Initializes any per-container state the layout requires when it is attached to an
-        /// <see cref="IControl"/> container.
+        /// <see cref="ILayoutable"/> container.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host
@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Repeaters
         public abstract void InitializeForContext(LayoutContext context);
 
         /// <summary>
-        /// Removes any state the layout previously stored on the IControl container.
+        /// Removes any state the layout previously stored on the ILayoutable container.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Repeaters
         /// Suggests a DesiredSize for a container element. A container element that supports
         /// attached layouts should call this method from their own MeasureOverride implementations
         /// to form a recursive layout update. The attached layout is expected to call the Measure
-        /// for each of the container’s IControl children.
+        /// for each of the container’s ILayoutable children.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host
@@ -91,7 +91,7 @@ namespace Avalonia.Controls.Repeaters
         public abstract Size Arrange(LayoutContext context, Size finalSize);
 
         /// <summary>
-        /// Invalidates the measurement state (layout) for all IControl containers that reference
+        /// Invalidates the measurement state (layout) for all ILayoutable containers that reference
         /// this layout.
         /// </summary>
         protected void InvalidateMeasure() => MeasureInvalidated?.Invoke(this, EventArgs.Empty);

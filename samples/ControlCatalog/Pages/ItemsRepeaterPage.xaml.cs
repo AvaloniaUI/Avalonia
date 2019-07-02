@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Repeaters;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages

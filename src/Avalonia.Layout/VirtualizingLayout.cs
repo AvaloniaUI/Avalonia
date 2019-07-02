@@ -5,13 +5,13 @@
 
 using System.Collections.Specialized;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     /// <summary>
     /// Represents the base class for an object that sizes and arranges child elements for a host
     /// and supports virtualization.
     /// </summary>
-    public abstract class VirtualizingLayout : Layout
+    public abstract class VirtualizingLayout : AttachedLayout
     {
         /// <inheritdoc/>
         public sealed override void InitializeForContext(LayoutContext context)
@@ -38,8 +38,27 @@ namespace Avalonia.Controls.Repeaters
         }
 
         /// <summary>
+        /// Notifies the layout when the data collection assigned to the container element (Items)
+        /// has changed.
+        /// </summary>
+        /// <param name="context">
+        /// The context object that facilitates communication between the layout and its host
+        /// container.
+        /// </param>
+        /// <param name="source">The data source.</param>
+        /// <param name="args">Data about the collection change.</param>
+        /// <remarks>
+        /// Override <see cref="OnItemsChangedCore(VirtualizingLayoutContext, object, NotifyCollectionChangedEventArgs)"/>
+        /// to provide the behavior for this method in a derived class.
+        /// </remarks>
+        public void OnItemsChanged(
+            VirtualizingLayoutContext context,
+            object source,
+            NotifyCollectionChangedEventArgs args) => OnItemsChangedCore(context, source, args);
+
+        /// <summary>
         /// When overridden in a derived class, initializes any per-container state the layout
-        /// requires when it is attached to an IControl container.
+        /// requires when it is attached to an ILayoutable container.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host
@@ -51,7 +70,7 @@ namespace Avalonia.Controls.Repeaters
 
         /// <summary>
         /// When overridden in a derived class, removes any state the layout previously stored on
-        /// the IControl container.
+        /// the ILayoutable container.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host

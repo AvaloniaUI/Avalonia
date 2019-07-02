@@ -3,11 +3,7 @@
 //
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Layout
 {
     internal struct FlowLayoutAnchorInfo
     {
@@ -25,14 +21,14 @@ namespace Avalonia.Controls.Repeaters
         Rect Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            IControl firstRealized,
+            ILayoutable firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            IControl lastRealized,
+            ILayoutable lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds);
         void Algorithm_OnElementMeasured(
-            IControl element,
+            ILayoutable element,
             int index,
             Size availableSize,
             Size measureSize,

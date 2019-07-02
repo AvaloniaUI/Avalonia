@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
