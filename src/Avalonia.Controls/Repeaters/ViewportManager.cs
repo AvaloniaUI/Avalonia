@@ -17,6 +17,8 @@ namespace Avalonia.Controls.Repeaters
     {
         private const double CacheBufferPerSideInflationPixelDelta = 40.0;
         private readonly ItemsRepeater _owner;
+        private bool _ensuredScroller;
+        private IScrollAnchorProvider _scroller;
         private IControl _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
         private Task _cacheBuildAction;
@@ -50,11 +52,45 @@ namespace Avalonia.Controls.Repeaters
             _owner = owner;
         }
 
-        // TODO: Implement
-        public IControl SuggestedAnchor => null;
+        public IControl SuggestedAnchor
+        {
+            get
+            {
+                // The element generated during the ItemsRepeater.MakeAnchor call has precedence over the next tick.
+                var suggestedAnchor = _makeAnchorElement;
+                var owner = _owner;
 
-        // TODO: Implement
-        public bool HasScroller => false;
+                if (suggestedAnchor == null)
+                {
+                    var anchorElement = _scroller?.CurrentAnchor;
+
+                    if (anchorElement != null)
+                    {
+                        // We can't simply return anchorElement because, in case of nested Repeaters, it may not
+                        // be a direct child of ours, or even an indirect child. We need to walk up the tree starting
+                        // from anchorElement to figure out what child of ours (if any) to use as the suggested element.
+                        var child = anchorElement;
+                        var parent = child.VisualParent as IControl;
+
+                        while (parent != null)
+                        {
+                            if (parent == owner)
+                            {
+                                suggestedAnchor = child;
+                                break;
+                            }
+
+                            child = parent;
+                            parent = parent.VisualParent as IControl;
+                        }
+                    }
+                }
+
+                return suggestedAnchor;
+            }
+        }
+
+        public bool HasScroller => _scroller != null;
 
         public IControl MadeAnchor => _makeAnchorElement;
 
@@ -169,13 +205,10 @@ namespace Avalonia.Controls.Repeaters
 
             // We just finished a measure pass and have a new extent.
             // Let's make sure the scrollers will run its arrange so that they track the anchor.
-            ////if (_scroller != null)
-            ////{
-            ////    ((IControl)_scroller).InvalidateArrange();
-            ////}
+            ((IControl)_scroller)?.InvalidateArrange();
         }
 
-        public Point GetOrigin() => throw new NotImplementedException();
+        public Point GetOrigin() => _layoutExtent.TopLeft;
 
         public void OnLayoutChanged(bool isVirtualizing)
         {
@@ -190,18 +223,7 @@ namespace Avalonia.Controls.Repeaters
 
             if (!_managingViewportDisabled)
             {
-                // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
-                // we can get this from TransformedBounds, but this property is updated after layout has
-                // run, resulting in the UI being updated too late when scrolling quickly. We can
-                // partially remedey this by triggering also on Bounds changes, but this won't work so 
-                // well for nested ItemsRepeaters.
-                //
-                // UWP uses the EffectiveBoundsChanged event (which I think was implemented specially
-                // for this case): we need to implement that in Avalonia.
-                _effectiveViewportChangedRevoker = _owner.GetObservable(Visual.TransformedBoundsProperty)
-                    .Merge(_owner.GetObservable(Visual.BoundsProperty).Select(_ => _owner.TransformedBounds))
-                    .Skip(1)
-                    .Subscribe(OnEffectiveViewportChanged);
+                _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
             }
         }
 
@@ -222,7 +244,7 @@ namespace Avalonia.Controls.Repeaters
             // This is because of a bug that causes effective viewport to not
             // fire if you register during arrange.
             // Bug 17411076: EffectiveViewport: registering for effective viewport in arrange should invalidate viewport
-            //EnsureScroller();
+            EnsureScroller();
         }
 
         public void OnOwnerArranged()
@@ -342,9 +364,10 @@ namespace Avalonia.Controls.Repeaters
 
         public void ResetScrollers()
         {
-            ////_scroller = null;
-            ////_effectiveViewportChangedRevoker.Dispose();
-            ////m_ensuredScroller = false;
+            _scroller = null;
+            _effectiveViewportChangedRevoker.Dispose();
+            _effectiveViewportChangedRevoker = null;
+            _ensuredScroller = false;
         }
 
         private void OnEffectiveViewportChanged(TransformedBounds? bounds)
@@ -374,6 +397,40 @@ namespace Avalonia.Controls.Repeaters
             if (_layoutUpdatedSubscribed)
             {
                 _owner.LayoutUpdated -= OnLayoutUpdated;
+            }
+        }
+
+        private void EnsureScroller()
+        {
+            if (!_ensuredScroller)
+            {
+                ResetScrollers();
+
+                var parent = _owner.GetVisualParent();
+                while (parent != null)
+                {
+                    if (parent is IScrollAnchorProvider scroller)
+                    {
+                        _scroller = scroller;
+                        break;
+                    }
+
+                    parent = parent.VisualParent;
+                }
+
+                if (_scroller == null)
+                {
+                    // We usually update the viewport in the post arrange handler. But, since we don't have
+                    // a scroller, let's do it now.
+                    UpdateViewport(Rect.Empty);
+                }
+                else if (!_managingViewportDisabled)
+                {
+                    _effectiveViewportChangedRevoker?.Dispose();
+                    _effectiveViewportChangedRevoker = SubscribeToEffectiveViewportChanged(_owner);
+                }
+
+                _ensuredScroller = true;
             }
         }
 
@@ -413,6 +470,22 @@ namespace Avalonia.Controls.Repeaters
                 // avoid layout cycles.
                 _owner.InvalidateMeasure();
             }
+        }
+
+        private IDisposable SubscribeToEffectiveViewportChanged(IControl control)
+        {
+            // HACK: This is a bit of a hack. We need the effective viewport of the ItemsRepeater -
+            // we can get this from TransformedBounds, but this property is updated after layout has
+            // run, resulting in the UI being updated too late when scrolling quickly. We can
+            // partially remedey this by triggering also on Bounds changes, but this won't work so 
+            // well for nested ItemsRepeaters.
+            //
+            // UWP uses the EffectiveBoundsChanged event (which I think was implemented specially
+            // for this case): we need to implement that in Avalonia.
+            return control.GetObservable(Visual.TransformedBoundsProperty)
+                .Merge(control.GetObservable(Visual.BoundsProperty).Select(_ => control.TransformedBounds))
+                .Skip(1)
+                .Subscribe(OnEffectiveViewportChanged);
         }
 
         private class ScrollerInfo
