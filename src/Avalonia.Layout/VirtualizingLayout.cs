@@ -11,6 +11,12 @@ namespace Avalonia.Layout
     /// Represents the base class for an object that sizes and arranges child elements for a host
     /// and supports virtualization.
     /// </summary>
+    /// <remarks>
+    /// <see cref="VirtualizingLayout"/> is the base class for layouts that support virtualization.
+    /// You can use one of the provided derived class, or inherit from it to create your own layout.
+    /// Provided concrete virtualizing layout classes are <see cref="StackLayout"/> and 
+    /// <see cref="UniformGridLayout"/>.
+    /// </remarks>
     public abstract class VirtualizingLayout : AttachedLayout
     {
         /// <inheritdoc/>
