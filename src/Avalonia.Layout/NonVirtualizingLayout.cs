@@ -11,5 +11,87 @@ namespace Avalonia.Layout
     /// </summary>
     public abstract class NonVirtualizingLayout : AttachedLayout
     {
+        /// <inheritdoc/>
+        public sealed override void InitializeForContext(LayoutContext context)
+        {
+            InitializeForContextCore((VirtualizingLayoutContext)context);
+        }
+
+        /// <inheritdoc/>
+        public sealed override void UninitializeForContext(LayoutContext context)
+        {
+            UninitializeForContextCore((VirtualizingLayoutContext)context);
+        }
+
+        /// <inheritdoc/>
+        public sealed override Size Measure(LayoutContext context, Size availableSize)
+        {
+            return MeasureOverride((VirtualizingLayoutContext)context, availableSize);
+        }
+
+        /// <inheritdoc/>
+        public sealed override Size Arrange(LayoutContext context, Size finalSize)
+        {
+            return ArrangeOverride((VirtualizingLayoutContext)context, finalSize);
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, initializes any per-container state the layout
+        /// requires when it is attached to an ILayoutable container.
+        /// </summary>
+        /// <param name="context">
+        /// The context object that facilitates communication between the layout and its host
+        /// container.
+        /// </param>
+        protected virtual void InitializeForContextCore(VirtualizingLayoutContext context)
+        {
+        }
+
+        /// <summary>
+        /// When overridden in a derived class, removes any state the layout previously stored on
+        /// the ILayoutable container.
+        /// </summary>
+        /// <param name="context">
+        /// The context object that facilitates communication between the layout and its host
+        /// container.
+        /// </param>
+        protected virtual void UninitializeForContextCore(VirtualizingLayoutContext context)
+        {
+        }
+
+        /// <summary>
+        /// Provides the behavior for the "Measure" pass of the layout cycle. Classes can override
+        /// this method to define their own "Measure" pass behavior.
+        /// </summary>
+        /// <param name="context">
+        /// The context object that facilitates communication between the layout and its host
+        /// container.
+        /// </param>
+        /// <param name="availableSize">
+        /// The available size that this object can give to child objects. Infinity can be
+        /// specified as a value to indicate that the object will size to whatever content is
+        /// available.
+        /// </param>
+        /// <returns>
+        /// The size that this object determines it needs during layout, based on its calculations
+        /// of the allocated sizes for child objects or based on other considerations such as a
+        /// fixed container size.
+        /// </returns>
+        protected abstract Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize);
+
+        /// <summary>
+        /// When implemented in a derived class, provides the behavior for the "Arrange" pass of
+        /// layout. Classes can override this method to define their own "Arrange" pass behavior.
+        /// </summary>
+        /// <param name="context">
+        /// The context object that facilitates communication between the layout and its host
+        /// container.
+        /// </param>
+        /// <param name="finalSize">
+        /// The final area within the container that this object should use to arrange itself and
+        /// its children.
+        /// </param>
+        /// <returns>The actual size that is used after the element is arranged in layout.</returns>
+        protected virtual Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize) => finalSize;
     }
 }
