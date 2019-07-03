@@ -293,9 +293,11 @@ namespace Avalonia.Layout
         {
             if (e.Property == OrientationProperty)
             {
+                var orientation = (Orientation)e.NewValue;
+
                 //Note: For StackLayout Vertical Orientation means we have a Vertical ScrollOrientation.
                 //Horizontal Orientation means we have a Horizontal ScrollOrientation.
-                _orientation.ScrollOrientation = (ScrollOrientation)e.NewValue;
+                _orientation.ScrollOrientation = orientation == Orientation.Horizontal ? ScrollOrientation.Horizontal : ScrollOrientation.Vertical;
             }
 
             InvalidateLayout();
