@@ -281,6 +281,7 @@ namespace Avalonia.Layout
                 var lineOffset = _orientation.MajorStart(anchorBounds);
                 var lineMajorSize = _orientation.MajorSize(anchorBounds);
                 int countInLine = 1;
+                int count = 0;
                 bool lineNeedsReposition = false;
 
                 while (_elementManager.IsIndexValidInData(currentIndex) &&
@@ -290,6 +291,7 @@ namespace Avalonia.Layout
                     _elementManager.EnsureElementRealized(direction == GenerateDirection.Forward, currentIndex, layoutId);
                     var currentElement = _elementManager.GetRealizedElement(currentIndex);
                     var desiredSize = MeasureElement(currentElement, currentIndex, availableSize, _context);
+                    ++count;
 
                     // Lay it out.
                     var previousElement = _elementManager.GetRealizedElement(previousIndex);
@@ -387,17 +389,20 @@ namespace Avalonia.Layout
                 // If we did not reach the top or bottom of the extent, we realized one 
                 // extra item before we knew we were outside the realization window. Do not
                 // account for that element in the indicies inside the realization window.
-                if (direction == GenerateDirection.Forward)
+                if (count > 0)
                 {
-                    int dataCount = _context.ItemCount;
-                    _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
-                    _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
-                }
-                else
-                {
-                    int dataCount = _context.ItemCount;
-                    _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
-                    _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
+                    if (direction == GenerateDirection.Forward)
+                    {
+                        int dataCount = _context.ItemCount;
+                        _lastRealizedDataIndexInsideRealizationWindow = previousIndex == dataCount - 1 ? dataCount - 1 : previousIndex - 1;
+                        _lastRealizedDataIndexInsideRealizationWindow = Math.Max(0, _lastRealizedDataIndexInsideRealizationWindow);
+                    }
+                    else
+                    {
+                        int dataCount = _context.ItemCount;
+                        _firstRealizedDataIndexInsideRealizationWindow = previousIndex == 0 ? 0 : previousIndex + 1;
+                        _firstRealizedDataIndexInsideRealizationWindow = Math.Min(dataCount - 1, _firstRealizedDataIndexInsideRealizationWindow);
+                    }
                 }
 
                 _elementManager.DiscardElementsOutsideWindow(direction == GenerateDirection.Forward, currentIndex);
