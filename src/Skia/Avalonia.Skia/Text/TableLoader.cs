@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using HarfBuzzSharp;
 using SkiaSharp;
@@ -12,16 +11,25 @@ namespace Avalonia.Skia.Text
 {
     internal class TableLoader : IDisposable
     {
+        //ToDo: Introduce a proper cache that limits memory usage etc.
         private static readonly ConcurrentDictionary<SKTypeface, TableLoader> s_tableLoaderCache = new ConcurrentDictionary<SKTypeface, TableLoader>();
 
         private readonly SKTypeface _typeface;
-        private readonly Dictionary<Tag, Blob> _tableCache = new Dictionary<Tag, Blob>();
+        private readonly Face _face;
         private bool _isDisposed;
 
         public TableLoader(SKTypeface typeface)
         {
             _typeface = typeface;
-            Font = CreateFont();
+
+            _face = new Face(GetTable, Dispose)
+            {
+                UnitsPerEm = _typeface.UnitsPerEm
+            };
+
+            Font = new Font(_face);
+
+            Font.SetFunctionsOpenType();
         }
 
         public Font Font { get; }
@@ -33,39 +41,15 @@ namespace Avalonia.Skia.Text
         /// <returns>The table loader.</returns>
         public static TableLoader Get(SKTypeface typeface)
         {
-            return s_tableLoaderCache.GetOrAdd(typeface, new TableLoader(typeface));
+            return s_tableLoaderCache.GetOrAdd(typeface, CreateTableLoader);
         }
 
-        private Font CreateFont()
+        private static TableLoader CreateTableLoader(SKTypeface typeface)
         {
-            var face = new Face(GetTable, Dispose)
-            {
-                UnitsPerEm = _typeface.UnitsPerEm
-            };
-
-            var font = new Font(face);
-
-            font.SetFunctionsOpenType();
-
-            return font;
+            return new TableLoader(typeface);
         }
 
-        private Blob GetTable(Face face, Tag tag)
-        {
-            Blob blob;
-
-            if (_tableCache.ContainsKey(tag))
-            {
-                blob = _tableCache[tag];
-            }
-            else
-            {
-                blob = CreateBlob(tag);
-                _tableCache.Add(tag, blob);
-            }
-
-            return blob;
-        }
+        private Blob GetTable(Face face, Tag tag) => CreateBlob(tag);
 
         private void Dispose(bool disposing)
         {
@@ -81,10 +65,8 @@ namespace Avalonia.Skia.Text
                 return;
             }
 
-            foreach (var blob in _tableCache.Values)
-            {
-                blob?.Dispose();
-            }
+            Font?.Dispose();
+            _face?.Dispose();
         }
 
         public void Dispose()

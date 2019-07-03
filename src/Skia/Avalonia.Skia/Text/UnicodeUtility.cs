@@ -45,6 +45,23 @@ namespace Avalonia.Skia.Text
                 case UnicodeGeneralCategory.Control:
                 case UnicodeGeneralCategory.NonSpacingMark:
                 case UnicodeGeneralCategory.Format:
+                case UnicodeGeneralCategory.SpaceSeparator:
+                case UnicodeGeneralCategory.SpacingMark:
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsWhiteSpace(uint c)
+        {
+            switch (UnicodeFunctions.Default.GetGeneralCategory(c))
+            {
+                case UnicodeGeneralCategory.Control:
+                case UnicodeGeneralCategory.NonSpacingMark:
+                case UnicodeGeneralCategory.Format:
+                case UnicodeGeneralCategory.SpaceSeparator:
+                case UnicodeGeneralCategory.SpacingMark:
                     return true;
             }
 

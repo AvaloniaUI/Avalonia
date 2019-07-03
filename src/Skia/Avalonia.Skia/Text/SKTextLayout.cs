@@ -1127,6 +1127,9 @@ namespace Avalonia.Skia.Text
 
             foreach (var textStyleSpan in spans)
             {
+                // ToDo: Refactor this
+                // Apply spans before we shape and before we break
+                // Keep this to be able mutate the layout
                 ApplyTextStyleSpan(text, textLines, textStyleSpan);
             }
 

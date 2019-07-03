@@ -11,6 +11,8 @@ namespace Avalonia.Skia.Text
 {
     internal static class TextRunIterator
     {
+        private static readonly SKFontManager s_fontManager = SKFontManager.Default;
+
         /// <summary>
         ///     Creates a list of text runs with unique properties.
         /// </summary>
@@ -38,7 +40,7 @@ namespace Avalonia.Skia.Text
                     {
                         var codepoint = (int)buffer.GlyphInfos[bufferPosition].Codepoint;
 
-                        currentTypeface = SKFontManager.Default.MatchCharacter(codepoint);
+                        currentTypeface = s_fontManager.MatchCharacter(codepoint);
 
                         if (currentTypeface == null || !TryGetRunProperties(currentTypeface, defaultTypeface, buffer,
                                 bufferPosition, out count,
@@ -49,11 +51,12 @@ namespace Avalonia.Skia.Text
 
                             var loader = TableLoader.Get(currentTypeface);
 
-                            for (var i = textPosition; i < buffer.GlyphInfos.Length; i++)
+                            for (var i = bufferPosition; i < buffer.GlyphInfos.Length; i++)
                             {
                                 var glyphInfo = buffer.GlyphInfos[i];
 
-                                if (loader.Font.TryGetGlyph(glyphInfo.Codepoint, out _))
+                                if (!UnicodeUtility.IsZeroSpace(glyphInfo.Codepoint) &&
+                                    loader.Font.TryGetGlyph(glyphInfo.Codepoint, out _))
                                 {
                                     break;
                                 }
@@ -120,8 +123,9 @@ namespace Avalonia.Skia.Text
                     {
                         currentScript = script;
                     }
-                    else if (script != Script.Inherited && script != Script.Common)
+                    else
                     {
+                        script = currentScript;
                         break;
                     }
                 }
