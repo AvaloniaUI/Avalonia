@@ -409,6 +409,10 @@ namespace Avalonia.Layout
                 _orientation.ScrollOrientation,
                 LayoutId);
 
+            // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,
+            // and only use the layout when to clear it when it's done.
+            gridState.EnsureFirstElementOwnership(context);
+
             return new Size(desiredSize.Width, desiredSize.Height);
         }
 

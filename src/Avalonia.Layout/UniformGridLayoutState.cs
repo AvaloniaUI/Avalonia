@@ -134,10 +134,13 @@ namespace Avalonia.Layout
             }
         }
 
-        internal void EnsureFirstElementOwnership()
+        internal void EnsureFirstElementOwnership(VirtualizingLayoutContext context)
         {
-            if (FlowAlgorithm.GetElementIfRealized(0) != null)
+            if (_cachedFirstElement != null && FlowAlgorithm.GetElementIfRealized(0) != null)
             {
+                // We created the element, but then flowlayout algorithm took ownership, so we can clear it and
+                // let flowlayout algorithm do its thing.
+                context.RecycleElement(_cachedFirstElement);
                 _cachedFirstElement = null;
             }
         }

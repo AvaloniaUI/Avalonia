@@ -276,8 +276,38 @@ namespace Avalonia.Layout
 
                     case NotifyCollectionChangedAction.Replace:
                     {
-                        OnItemsRemoved(args.OldStartingIndex, args.OldItems.Count);
-                        OnItemsAdded(args.NewStartingIndex, args.NewItems.Count);
+                        int oldSize = args.OldItems.Count;
+                        int newSize = args.NewItems.Count;
+                        int oldStartIndex = args.OldStartingIndex;
+                        int newStartIndex = args.NewStartingIndex;
+
+                        if (oldSize == newSize &&
+                            oldStartIndex == newStartIndex &&
+                            IsDataIndexRealized(oldStartIndex) &&
+                            IsDataIndexRealized(oldStartIndex + oldSize -1))
+                        {
+                            // Straight up replace of n items within the realization window.
+                            // Removing and adding might causes us to lose the anchor causing us
+                            // to throw away all containers and start from scratch.
+                            // Instead, we can just clear those items and set the element to
+                            // null (sentinel) and let the next measure get new containers for them.
+                            var startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
+                            for (int realizedIndex = startRealizedIndex; realizedIndex < startRealizedIndex + oldSize; realizedIndex++)
+                            {
+                                var elementRef = _realizedElements[realizedIndex];
+
+                                if (elementRef != null)
+                                {
+                                    _context.RecycleElement(elementRef);
+                                    _realizedElements[realizedIndex] = null;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            OnItemsRemoved(oldStartIndex, oldSize);
+                            OnItemsAdded(newStartIndex, newSize);
+                        }
                     }
                     break;
 
