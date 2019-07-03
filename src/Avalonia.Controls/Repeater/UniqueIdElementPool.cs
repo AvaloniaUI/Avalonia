@@ -8,7 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal class UniqueIdElementPool : IEnumerable<KeyValuePair<string, IControl>>
     {

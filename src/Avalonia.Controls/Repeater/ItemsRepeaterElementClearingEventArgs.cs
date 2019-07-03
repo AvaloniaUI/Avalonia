@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Provides data for the <see cref="ItemsRepeater.ElementClearing"/> event.

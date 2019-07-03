@@ -12,7 +12,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal sealed class ViewManager
     {

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a standardized view of the supported interactions between a given ItemsSource

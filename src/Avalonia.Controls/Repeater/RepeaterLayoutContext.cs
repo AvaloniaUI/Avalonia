@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Layout;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal class RepeaterLayoutContext : VirtualizingLayoutContext
     {

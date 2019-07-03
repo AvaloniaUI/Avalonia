@@ -10,7 +10,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Layout;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a data-driven collection control that incorporates a flexible layout system,

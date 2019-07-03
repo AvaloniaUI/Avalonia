@@ -11,7 +11,7 @@ using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal class ViewportManager
     {

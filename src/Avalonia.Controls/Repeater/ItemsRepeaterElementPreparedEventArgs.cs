@@ -3,7 +3,7 @@
 //
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Provides data for the <see cref="ItemsRepeater.ElementPrepared"/> event.

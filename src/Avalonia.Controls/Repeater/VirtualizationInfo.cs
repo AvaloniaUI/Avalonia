@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal enum ElementOwner
     {

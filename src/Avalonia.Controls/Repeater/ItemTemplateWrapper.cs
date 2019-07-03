@@ -5,7 +5,7 @@
 
 using Avalonia.Controls.Templates;
 
-namespace Avalonia.Controls.Repeaters
+namespace Avalonia.Controls
 {
     internal class ItemTemplateWrapper
     {
