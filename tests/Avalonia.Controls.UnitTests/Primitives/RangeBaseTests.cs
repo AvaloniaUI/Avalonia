@@ -9,6 +9,7 @@ using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Markup.Data;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -23,6 +24,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Minimum = 100,
                 Maximum = 50,
             };
+            var root = new TestRoot(target);
 
             Assert.Equal(100, target.Minimum);
             Assert.Equal(100, target.Maximum);
@@ -37,6 +39,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 50,
                 Value = 100,
             };
+            var root = new TestRoot(target);
 
             Assert.Equal(0, target.Minimum);
             Assert.Equal(50, target.Maximum);
@@ -52,6 +55,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 100,
                 Value = 50,
             };
+            var root = new TestRoot(target);
 
             target.Minimum = 200;
 
@@ -69,6 +73,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Maximum = 100,
                 Value = 100,
             };
+            var root = new TestRoot(target);
 
             target.Maximum = 50;
 
@@ -159,6 +164,38 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(expected, viewModel.Value);
             Assert.Equal(expected, target.Value);
             Assert.Equal(expected, track.Value);
+        }
+
+        [Fact]
+        public void Coercion_Should_Not_Be_Done_During_Initialization()
+        {
+            var target = new TestRange();
+
+            target.BeginInit();
+
+            var root = new TestRoot(target);
+            target.Minimum = 1;
+            Assert.Equal(0, target.Value);
+
+            target.Value = 50;
+            target.EndInit();
+
+            Assert.Equal(50, target.Value);
+        }
+
+        [Fact]
+        public void Coercion_Should_Be_Done_After_Initialization()
+        {
+            var target = new TestRange();
+
+            target.BeginInit();
+
+            var root = new TestRoot(target);
+            target.Minimum = 1;
+
+            target.EndInit();
+
+            Assert.Equal(1, target.Value);
         }
 
         private class TestRange : RangeBase

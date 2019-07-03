@@ -392,6 +392,7 @@ namespace Avalonia
             if (_initCount == 0 && !IsInitialized)
             {
                 IsInitialized = true;
+                OnInitialized();
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -608,7 +609,14 @@ namespace Avalonia
         protected virtual void OnDataContextEndUpdate()
         {
         }
-        
+
+        /// <summary>
+        /// Called when the control finishes initialization.
+        /// </summary>
+        protected virtual void OnInitialized()
+        {
+        }
+
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
