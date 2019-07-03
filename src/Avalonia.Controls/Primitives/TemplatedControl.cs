@@ -258,12 +258,15 @@ namespace Avalonia.Controls.Primitives
                     Logger.Verbose(LogArea.Control, this, "Creating control template");
 
                     var child = template.Build(this);
-                    var nameScope = new NameScope();
-                    NameScope.SetNameScope((Control)child, nameScope);
                     ApplyTemplatedParent(child);
-                    RegisterNames(child, nameScope);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
+
+                    var nameScope = (child is StyledElement styledChild) ? NameScope.GetNameScope(styledChild) : null;
+                    
+                    // Existing code kinda expect to see a NameScope even if it's empty
+                    if (nameScope == null)
+                        nameScope = new NameScope();
 
                     OnTemplateApplied(new TemplateAppliedEventArgs(nameScope));
                 }
@@ -339,27 +342,6 @@ namespace Avalonia.Controls.Primitives
                 if (child is IControl c)
                 {
                     ApplyTemplatedParent(c);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Registers each control with its name scope.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="nameScope">The name scope.</param>
-        private void RegisterNames(IControl control, INameScope nameScope)
-        {
-            if (control.Name != null)
-            {
-                nameScope.Register(control.Name, control);
-            }
-
-            if (control.TemplatedParent == this)
-            {
-                foreach (IControl child in control.GetLogicalChildren())
-                {
-                    RegisterNames(child, nameScope);
                 }
             }
         }

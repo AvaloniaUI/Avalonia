@@ -13,13 +13,13 @@ namespace Avalonia.Controls.Templates
     public class FuncTemplate<TParam, TControl> : ITemplate<TParam, TControl>
         where TControl : IControl
     {
-        private readonly Func<TParam, TControl> _func;
+        private readonly Func<TParam, INameScope, TControl> _func;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FuncTemplate{TControl, TParam}"/> class.
         /// </summary>
         /// <param name="func">The function used to create the control.</param>
-        public FuncTemplate(Func<TParam, TControl> func)
+        public FuncTemplate(Func<TParam, INameScope, TControl> func)
         {
             Contract.Requires<ArgumentNullException>(func != null);
 
@@ -35,7 +35,12 @@ namespace Avalonia.Controls.Templates
         /// </returns>
         public TControl Build(TParam param)
         {
-            return _func(param);
+            var scope = new NameScope();
+            var rv = _func(param, scope);
+            // TODO: May be return the name scope alongside with the control instead?
+            if (rv is StyledElement sl)
+                NameScope.SetNameScope(sl, scope);
+            return rv;
         }
     }
 }

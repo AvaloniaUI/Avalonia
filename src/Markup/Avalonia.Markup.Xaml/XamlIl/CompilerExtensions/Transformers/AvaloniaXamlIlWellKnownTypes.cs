@@ -19,6 +19,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType Transitions { get; }
         public IXamlIlType AssignBindingAttribute { get; }
         public IXamlIlType UnsetValueType { get; }
+        public IXamlIlType StyledElement { get; }
+        public IXamlIlType NameScope { get; }
+        public IXamlIlMethod NameScopeStaticRegister { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
         {
@@ -37,6 +40,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 AvaloniaProperty,
                 IBinding, ctx.Configuration.WellKnownTypes.Object);
             UnsetValueType = ctx.Configuration.TypeSystem.GetType("Avalonia.UnsetValueType");
+            StyledElement = ctx.Configuration.TypeSystem.GetType("Avalonia.StyledElement");
+            NameScope = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScope");
+            NameScopeStaticRegister = NameScope.FindMethod(
+                new FindMethodMethodSignature("Register", XamlIlTypes.Void,
+                     StyledElement, XamlIlTypes.String, XamlIlTypes.Object)
+                {
+                    IsStatic = true, DeclaringOnly = true, IsExactMatch = true
+                });
+
             AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
         }

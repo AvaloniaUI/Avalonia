@@ -25,7 +25,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 Items = new[] { "Foo" },
-                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             Prepare(target);
@@ -113,7 +113,7 @@ namespace Avalonia.Controls.UnitTests
                     DataContext = "Base",
                     DataTemplates =
                     {
-                        new FuncDataTemplate<Item>(x => new Button { Content = x })
+                        new FuncDataTemplate<Item>((x, _) => new Button { Content = x })
                     },
                     Items = items,
                 };
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                 SelectedIndex = 0,
             };
 
@@ -162,7 +162,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 Items = Enumerable.Range(0, 20).Select(x => $"Item {x}").ToList(),
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                 SelectedIndex = 0,
             };
 
@@ -181,7 +181,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                 SelectedIndex = 0,
             };
 
@@ -205,7 +205,7 @@ namespace Avalonia.Controls.UnitTests
                 Template = ListBoxTemplate(),
                 Items = items,
                 SelectionMode = SelectionMode.Toggle,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 })
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 })
             };
 
             Prepare(target);
@@ -239,7 +239,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Template = ListBoxTemplate(),
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 11 })
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 11 })
             };
 
             Prepare(target);
@@ -287,7 +287,7 @@ namespace Avalonia.Controls.UnitTests
                 target.DataContext = items;
                 target.VirtualizationMode = virtualizationMode;
 
-                target.ItemTemplate = new FuncDataTemplate<object>(c =>
+                target.ItemTemplate = new FuncDataTemplate<object>((c, _) =>
                 {
                     var tb = new TextBlock() { Height = 10, Width = 30 };
                     tb.Bind(TextBlock.TextProperty, new Data.Binding());
@@ -334,7 +334,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate ListBoxTemplate()
         {
-            return new FuncControlTemplate<ListBox>(parent =>
+            return new FuncControlTemplate<ListBox>((parent, scope) =>
                 new ScrollViewer
                 {
                     Name = "PART_ScrollViewer",
@@ -345,24 +345,24 @@ namespace Avalonia.Controls.UnitTests
                         [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
                         [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).ToBinding(),
-                    }
-                });
+                    }.RegisterInNameScope(scope)
+                }.RegisterInNameScope(scope).WithNameScope(scope));
         }
 
         private FuncControlTemplate ListBoxItemTemplate()
         {
-            return new FuncControlTemplate<ListBoxItem>(parent =>
+            return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
-                });
+                }.RegisterInNameScope(scope).WithNameScope(scope));
         }
 
         private FuncControlTemplate ScrollViewerTemplate()
         {
-            return new FuncControlTemplate<ScrollViewer>(parent =>
+            return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
                 new ScrollContentPresenter
                 {
                     Name = "PART_ContentPresenter",
@@ -370,7 +370,7 @@ namespace Avalonia.Controls.UnitTests
                     [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
                     [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
                     [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                });
+                }.RegisterInNameScope(scope).WithNameScope(scope));
         }
 
         private void Prepare(ListBox target)

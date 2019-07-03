@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             var target = new TestRange()
             {
-                Template = new FuncControlTemplate<RangeBase>(c =>
+                Template = new FuncControlTemplate<RangeBase>((c, scope) =>
                 {
                     track = new Track()
                     {
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                         Name = "PART_Track",
                         Thumb = new Thumb()
-                    };
+                    }.RegisterInNameScope(scope);
 
                     if (useXamlBinding)
                     {
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         track[~~Track.ValueProperty] = c[~~RangeBase.ValueProperty];
                     }
 
-                    return track;
+                    return track.WithNameScope(scope);
                 }),
                 Minimum = 0,
                 Maximum = 100,

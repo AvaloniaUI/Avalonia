@@ -34,6 +34,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
             };
 
+            root.RegisterChildrenNames();
+            
             var binding = new Binding
             {
                 ElementName = "source",
@@ -69,6 +71,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     }
                 }
             };
+            root.RegisterChildrenNames();
 
             var binding = new Binding
             {
@@ -99,7 +102,8 @@ namespace Avalonia.Markup.UnitTests.Data
                     }
                 }
             };
-
+            root.RegisterChildrenNames();
+            
             var binding = new Binding
             {
                 ElementName = "source",
@@ -113,7 +117,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Name = "source",
                 Text = "foo",
             });
-
+            root.RegisterChildrenNames();
             Assert.Equal("foo", target.Text);
         }
 
@@ -136,6 +140,7 @@ namespace Avalonia.Markup.UnitTests.Data
                     }
                 }
             };
+            root.RegisterChildrenNames();
 
             var binding = new Binding
             {
@@ -151,6 +156,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             stackPanel.Children.Add(source);
+            root.RegisterChildrenNames();
 
             Assert.Same(source, target.Content);
         }

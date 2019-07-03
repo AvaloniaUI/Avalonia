@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             target.Items = new[] { "Foo" };
@@ -411,7 +411,7 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
@@ -578,7 +578,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ItemsControl>(parent =>
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -588,8 +588,8 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ItemsPresenter",
                         MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }
-                };
+                    }.RegisterInNameScope(scope)
+                }.WithNameScope(scope);
             });
         }
 

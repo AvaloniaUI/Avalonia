@@ -80,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ComboBox>(parent =>
+            return new FuncControlTemplate<ComboBox>((parent, scope) =>
             {
                 return new Panel
                 {
@@ -94,7 +94,7 @@ namespace Avalonia.Controls.UnitTests
                         new ToggleButton
                         {
                             Name = "toggle",
-                        },
+                        }.RegisterInNameScope(scope),
                         new Popup
                         {
                             Name = "PART_Popup",
@@ -102,10 +102,10 @@ namespace Avalonia.Controls.UnitTests
                             {
                                 Name = "PART_ItemsPresenter",
                                 [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
-                            }
-                        }
+                            }.RegisterInNameScope(scope)
+                        }.RegisterInNameScope(scope)
                     }
-                };
+                }.WithNameScope(scope);
             });
         }
     }

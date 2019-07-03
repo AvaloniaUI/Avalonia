@@ -84,13 +84,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private FuncControlTemplate Template()
         {
-            return new FuncControlTemplate<SelectingItemsControl>(control =>
+            return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                });
+                }.RegisterInNameScope(scope).WithNameScope(scope));
         }
 
         private class TestSelector : SelectingItemsControl

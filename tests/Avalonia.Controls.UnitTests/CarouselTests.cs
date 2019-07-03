@@ -302,7 +302,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("FooBar", target.SelectedItem);
         }
 
-        private Control CreateTemplate(Carousel control)
+        private Control CreateTemplate(Carousel control, INameScope scope)
         {
             return new CarouselPresenter
             {
@@ -312,7 +312,7 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
-            };
+            }.RegisterInNameScope(scope).WithNameScope(scope);
         }
     }
 }

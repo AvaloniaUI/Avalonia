@@ -470,7 +470,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 VirtualizationMode = ItemVirtualizationMode.None,
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
             };
 
             target.ApplyTemplate();
@@ -1046,7 +1046,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static IDataTemplate StringDataTemplate()
         {
-            return new FuncDataTemplate<string>(x => new Canvas
+            return new FuncDataTemplate<string>((x, _) => new Canvas
             {
                 Width = 10,
                 Height = 10,
@@ -1095,12 +1095,12 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             public TestContainer()
             {
-                Template = new FuncControlTemplate<TestContainer>(parent => new ContentPresenter
+                Template = new FuncControlTemplate<TestContainer>((parent, scope) => new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
-                });
+                }.RegisterInNameScope(scope).WithNameScope(scope));
             }
         }
     }

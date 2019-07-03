@@ -9,11 +9,12 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, INameScope, IRenderRoot, IStyleRoot
+    public class TestRoot : Decorator, IFocusScope, ILayoutRoot, IInputRoot, IRenderRoot, IStyleRoot
     {
         private readonly NameScope _nameScope = new NameScope();
 
@@ -27,22 +28,6 @@ namespace Avalonia.UnitTests
         {
             Child = child;
         }
-
-        event EventHandler<NameScopeEventArgs> INameScope.Registered
-        {
-            add { _nameScope.Registered += value; ++NameScopeRegisteredSubscribers; }
-            remove { _nameScope.Registered -= value; --NameScopeRegisteredSubscribers; }
-        }
-
-        public event EventHandler<NameScopeEventArgs> Unregistered
-        {
-            add { _nameScope.Unregistered += value; ++NameScopeUnregisteredSubscribers; }
-            remove { _nameScope.Unregistered -= value; --NameScopeUnregisteredSubscribers; }
-        }
-
-        public int NameScopeRegisteredSubscribers { get; private set; }
-
-        public int NameScopeUnregisteredSubscribers { get; private set; }
 
         public Size ClientSize { get; set; } = new Size(100, 100);
 
@@ -94,19 +79,24 @@ namespace Avalonia.UnitTests
 
         public PixelPoint PointToScreen(Point p) => PixelPoint.FromPoint(p, 1);
 
-        void INameScope.Register(string name, object element)
+        public void RegisterChildrenNames()
         {
-            _nameScope.Register(name, element);
-        }
+            var scope = NameScope.GetNameScope(this) ?? new NameScope();
+            NameScope.SetNameScope(this, scope);
+            void Visit(StyledElement element, bool force = false)
+            {
+                if (element.Name != null)
+                {
+                    if (scope.Find(element.Name) != element)
+                        NameScope.Register(this, element.Name, element);
+                }
 
-        object INameScope.Find(string name)
-        {
-            return _nameScope.Find(name);
-        }
-
-        void INameScope.Unregister(string name)
-        {
-            _nameScope.Unregister(name);
+                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                    foreach(var child in visual.GetVisualChildren())
+                        if (child is StyledElement styledChild)
+                            Visit(styledChild);
+            }
+            Visit(this, true);
         }
     }
 }

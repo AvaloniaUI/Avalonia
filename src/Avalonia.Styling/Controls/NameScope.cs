@@ -107,6 +107,21 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Registers an element in the name scope associated with the scopeElement.
+        /// Creates the scope if one isn't associated with the element yet
+        /// </summary>
+        /// <param name="scopeElement"></param>
+        /// <param name="name"></param>
+        /// <param name="element"></param>
+        public static void Register(StyledElement scopeElement, string name, object element)
+        {
+            var scope = scopeElement as INameScope ?? GetNameScope(scopeElement);
+            if(scope == null)
+                SetNameScope(scopeElement, scope = new NameScope());
+            scope.Register(name, element);
+        }
+        
+        /// <summary>
         /// Finds a named element in the name scope.
         /// </summary>
         /// <param name="name">The name.</param>

@@ -16,7 +16,7 @@ namespace Avalonia.Controls.Templates
         /// Initializes a new instance of the <see cref="FuncControlTemplate"/> class.
         /// </summary>
         /// <param name="build">The build function.</param>
-        public FuncControlTemplate(Func<ITemplatedControl, IControl> build)
+        public FuncControlTemplate(Func<ITemplatedControl, INameScope, IControl> build)
             : base(build)
         {
         }

@@ -56,6 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             }
 
             public object RootObject { get; }
+            public object IntermediateRootObject => RootObject;
         }
 
 

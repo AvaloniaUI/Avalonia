@@ -35,6 +35,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 ProvideValueTarget = typeSystem.GetType("Avalonia.Markup.Xaml.IProvideValueTarget"),
                 RootObjectProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IRootObjectProvider"),
+                RootObjectProviderIntermediateRootPropertyName = "IntermediateRootObject",
                 UriContextProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IUriContext"),
                 ParentStackProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlParentStackProvider"),

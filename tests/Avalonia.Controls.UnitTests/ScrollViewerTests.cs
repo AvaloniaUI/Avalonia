@@ -64,7 +64,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Vector(10, 10), target.Offset);
         }
 
-        private Control CreateTemplate(ScrollViewer control)
+        private Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
             {
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
                         [~~ScrollContentPresenter.OffsetProperty] = control[~~ScrollViewer.OffsetProperty],
                         [~~ScrollContentPresenter.ViewportProperty] = control[~~ScrollViewer.ViewportProperty],
                         [~ScrollContentPresenter.CanHorizontallyScrollProperty] = control[~ScrollViewer.CanHorizontallyScrollProperty],
-                    },
+                    }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "horizontalScrollBar",
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.UnitTests
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.HorizontalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.HorizontalScrollBarVisibilityProperty],
                         [Grid.RowProperty] = 1,
-                    },
+                    }.RegisterInNameScope(scope),
                     new ScrollBar
                     {
                         Name = "verticalScrollBar",
@@ -108,9 +108,9 @@ namespace Avalonia.Controls.UnitTests
                         [~ScrollBar.ViewportSizeProperty] = control[~ScrollViewer.VerticalScrollBarViewportSizeProperty],
                         [~ScrollBar.VisibilityProperty] = control[~ScrollViewer.VerticalScrollBarVisibilityProperty],
                         [Grid.ColumnProperty] = 1,
-                    },
+                    }.RegisterInNameScope(scope),
                 },
-            };
+            }.WithNameScope(scope);
         }
     }
 }
