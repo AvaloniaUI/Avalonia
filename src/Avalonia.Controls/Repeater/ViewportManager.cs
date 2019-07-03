@@ -35,8 +35,8 @@ namespace Avalonia.Controls
         // actually happened. This can happen in cases where no scrollviewer
         // in the parent chain can scroll in the shift direction.
         private Point _unshiftableShift;
-        private double _maximumHorizontalCacheLength = 2.0;
-        private double _maximumVerticalCacheLength = 2.0;
+        private double _maximumHorizontalCacheLength = 0.0;
+        private double _maximumVerticalCacheLength = 0.0;
         private double _horizontalCacheBufferPerSide;
         private double _verticalCacheBufferPerSide;
         private bool _isBringIntoViewInProgress;
