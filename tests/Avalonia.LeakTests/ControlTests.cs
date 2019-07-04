@@ -67,13 +67,14 @@ namespace Avalonia.LeakTests
             {
                 Func<Window> run = () =>
                 {
+                    var scope = new NameScope();
                     var window = new Window
                     {
                         Content = new Canvas
                         {
                             Name = "foo"
-                        }
-                    };
+                        }.RegisterInNameScope(scope)
+                    }.WithNameScope(scope);
 
                     window.Show();
 
@@ -84,6 +85,7 @@ namespace Avalonia.LeakTests
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
+                    scope.Unregister("foo");
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 
