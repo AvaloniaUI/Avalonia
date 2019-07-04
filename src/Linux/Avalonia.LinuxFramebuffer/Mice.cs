@@ -7,8 +7,9 @@ using Avalonia.Platform;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    public unsafe class Mice
+    unsafe class Mice
     {
+        private readonly FramebufferToplevelImpl _topLevel;
         private readonly double _width;
         private readonly double _height;
         private double _x;
@@ -16,8 +17,9 @@ namespace Avalonia.LinuxFramebuffer
 
         public event Action<RawInputEventArgs> Event;
 
-        public Mice(double width, double height)
+        public Mice(FramebufferToplevelImpl topLevel, double width, double height)
         {
+            _topLevel = topLevel;
             _width = width;
             _height = height;
         }
@@ -78,7 +80,7 @@ namespace Avalonia.LinuxFramebuffer
                     return;
                 Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
-                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
+                    _topLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
                     InputModifiers.None));
             }
             if (ev.type ==(int) EvType.EV_ABS)
@@ -91,7 +93,7 @@ namespace Avalonia.LinuxFramebuffer
                     return;
                 Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
-                    LinuxFramebufferPlatform.TopLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
+                    _topLevel.InputRoot, RawPointerEventType.Move, new Point(_x, _y),
                     InputModifiers.None));
             }
             if (ev.type == (short) EvType.EV_KEY)
@@ -108,7 +110,7 @@ namespace Avalonia.LinuxFramebuffer
 
                 Event?.Invoke(new RawPointerEventArgs(LinuxFramebufferPlatform.MouseDevice,
                     LinuxFramebufferPlatform.Timestamp,
-                    LinuxFramebufferPlatform.TopLevel.InputRoot, type.Value, new Point(_x, _y), default(InputModifiers)));
+                    _topLevel.InputRoot, type.Value, new Point(_x, _y), default(InputModifiers)));
             }
         }
     }
