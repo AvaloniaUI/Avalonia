@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -180,38 +181,10 @@ namespace Avalonia.Controls
                 }
             }
 
-            // Find the next element if one exists, if not use the previous element.
+            // TODO: Find the next element if one exists, if not use the previous element.
             // If the container itself is not focusable, find a descendent that is.
-            IControl focusCandidate = null;
-            if (nextElement != null)
-            {
-                focusCandidate = nextElement as IControl;
-                if (focusCandidate != null)
-                {
-                    var firstFocus = KeyboardNavigationHandler.GetNext(nextElement, NavigationDirection.First);
 
-                    if (firstFocus != null)
-                    {
-                        focusCandidate = firstFocus as IControl;
-                    }
-                }
-            }
-
-            if (focusCandidate == null && previousElement != null)
-            {
-                focusCandidate = previousElement as IControl;
-                if (previousElement != null)
-                {
-                    var lastFocus = KeyboardNavigationHandler.GetNext(previousElement, NavigationDirection.Last);
-
-                    if (lastFocus != null)
-                    {
-                        focusCandidate = lastFocus as IControl;
-                    }
-                }
-            }
-
-            return focusCandidate;
+            return nextElement;
         }
 
         public int GetElementIndex(VirtualizationInfo virtInfo)
