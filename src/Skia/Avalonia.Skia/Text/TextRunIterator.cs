@@ -55,7 +55,7 @@ namespace Avalonia.Skia.Text
                             {
                                 var glyphInfo = buffer.GlyphInfos[i];
 
-                                if (!UnicodeUtility.IsZeroSpace(glyphInfo.Codepoint) &&
+                                if (!UnicodeUtility.IsWhiteSpace(glyphInfo.Codepoint) &&
                                     loader.Font.TryGetGlyph(glyphInfo.Codepoint, out _))
                                 {
                                     break;
@@ -106,7 +106,6 @@ namespace Avalonia.Skia.Text
             count = 0;
             charCount = 0;
             script = Script.Common;
-            var currentScript = script;
 
             var font = TableLoader.Get(typeface).Font;
             var defaultFont = TableLoader.Get(defaultTypeface).Font;
@@ -115,18 +114,20 @@ namespace Avalonia.Skia.Text
             {
                 var glyphInfo = buffer.GlyphInfos[i];
 
-                script = UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint);
+                var currentScript = UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint);
 
-                if (script != currentScript)
+                if (currentScript != script)
                 {
-                    if (currentScript == Script.Inherited || currentScript == Script.Common)
+                    if (currentScript != Script.Inherited && currentScript != Script.Common)
                     {
-                        currentScript = script;
-                    }
-                    else
-                    {
-                        script = currentScript;
-                        break;
+                        if (script == Script.Inherited || script == Script.Common)
+                        {
+                            script = currentScript;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -140,7 +141,7 @@ namespace Avalonia.Skia.Text
 
                 if (!font.TryGetGlyph(glyphInfo.Codepoint, out _))
                 {
-                    if (UnicodeUtility.IsZeroSpace(glyphInfo.Codepoint))
+                    if (UnicodeUtility.IsWhiteSpace(glyphInfo.Codepoint))
                     {
                         count++;
                         charCount++;

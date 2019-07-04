@@ -31,28 +31,6 @@ namespace Avalonia.Skia.Text
             }
         }
 
-        /// <summary>
-        ///     Determines whether [c] is a zero space char.
-        /// </summary>
-        /// <param name="c">The character.</param>
-        /// <returns>
-        ///     <c>true</c> if [is zero space character] [the specified c]; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsZeroSpace(uint c)
-        {
-            switch (UnicodeFunctions.Default.GetGeneralCategory(c))
-            {
-                case UnicodeGeneralCategory.Control:
-                case UnicodeGeneralCategory.NonSpacingMark:
-                case UnicodeGeneralCategory.Format:
-                case UnicodeGeneralCategory.SpaceSeparator:
-                case UnicodeGeneralCategory.SpacingMark:
-                    return true;
-            }
-
-            return false;
-        }
-
         public static bool IsWhiteSpace(uint c)
         {
             switch (UnicodeFunctions.Default.GetGeneralCategory(c))

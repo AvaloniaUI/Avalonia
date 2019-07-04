@@ -294,6 +294,21 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters[5].Length);
         }
 
+        [Fact]
+        public void ShouldHaveOneRunWithCommonScript()
+        {
+            var layout = new SKTextLayout(
+                "abcde\r\n",
+                SKTypeface.Default,
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                TextTrimming.None,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
+        }
+
         [Theory]
         [InlineData("\r\r", 3)]
         [InlineData("\n\n", 3)]
