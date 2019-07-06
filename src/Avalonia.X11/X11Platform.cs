@@ -95,6 +95,14 @@ namespace Avalonia
     {
         public bool UseEGL { get; set; }
         public bool UseGpu { get; set; } = true;
+
+        public List<string> GlxRendererBlacklist { get; set; } = new List<string>
+        {
+            // llvmpipe is a software GL rasterizer. If it's returned by glGetString,
+            // that usually means that something in the system is horribly misconfigured
+            // and sometimes attempts to use GLX might cause a segfault
+            "llvmpipe"
+        };
         public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
     }
     public static class AvaloniaX11PlatformExtensions
