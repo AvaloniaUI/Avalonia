@@ -80,7 +80,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         appendNotNode = !appendNotNode;
                         break;
                     case BindingExpressionGrammar.StreamNode _:
-                        var observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")));
+                        var observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) ?? false);
                         if (observableType != null)
                         {
                             nodes.Add(new XamlIlStreamObservablePathElementNode(observableType.GenericArguments[0]));

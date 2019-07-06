@@ -13,7 +13,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Data
 {
-    public abstract class BindingBase
+    public abstract class BindingBase : IBinding
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Binding"/> class.
