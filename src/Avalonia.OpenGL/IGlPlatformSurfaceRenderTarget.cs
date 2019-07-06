@@ -6,4 +6,9 @@ namespace Avalonia.OpenGL
     {
         IGlPlatformSurfaceRenderingSession BeginDraw();
     }
+
+    public interface IGlPlatformSurfaceRenderTargetWithCorruptionInfo : IGlPlatformSurfaceRenderTarget
+    {
+        bool IsCorrupted { get; }
+    }
 }

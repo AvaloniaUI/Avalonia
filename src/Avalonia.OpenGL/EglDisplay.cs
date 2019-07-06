@@ -97,6 +97,7 @@ namespace Avalonia.OpenGL
         
         public GlDisplayType Type { get; }
         public GlInterface GlInterface { get; }
+        public EglInterface EglInterface => _egl;
         public IGlContext CreateContext(IGlContext share)
         {
             var shareCtx = (EglContext)share;

@@ -21,6 +21,8 @@ namespace Avalonia.Skia
 
         public void Dispose() => _surface.Dispose();
 
+        public bool IsCorrupted => (_surface as IGlPlatformSurfaceRenderTargetWithCorruptionInfo)?.IsCorrupted == true;
+        
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
         {
             var session = _surface.BeginDraw();
