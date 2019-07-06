@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Avalonia;
-using Avalonia.Skia;
-using Avalonia.ReactiveUI;
 
 namespace ControlCatalog.NetCore
 {
@@ -46,10 +44,8 @@ namespace ControlCatalog.NetCore
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new X11PlatformOptions {EnableMultiTouch = true})
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch = true,
                     AllowEglInitialization = true
                 })
                 .UseSkia()
