@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 
@@ -90,6 +91,31 @@ namespace Avalonia.OpenGL
         public delegate bool EglGetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);
         [GlEntryPoint("eglGetConfigAttrib")]
         public EglGetConfigAttrib GetConfigAttrib { get; }
+
+        public delegate bool EglWaitGL();
+        [GlEntryPoint("eglWaitGL")]
+        public EglWaitGL WaitGL { get; }
+        
+        public delegate bool EglWaitClient();
+        [GlEntryPoint("eglWaitClient")]
+        public EglWaitGL WaitClient { get; }
+        
+        public delegate bool EglWaitNative();
+        [GlEntryPoint("eglWaitNative")]
+        public EglWaitGL WaitNative { get; }
+        
+        public delegate IntPtr EglQueryString(IntPtr display, int i);
+        
+        [GlEntryPoint("eglQueryString")]
+        public EglQueryString QueryStringNative { get; }
+
+        public string QueryString(IntPtr display, int i)
+        {
+            var rv = QueryStringNative(display, i);
+            if (rv == IntPtr.Zero)
+                return null;
+            return Marshal.PtrToStringAnsi(rv);
+        }
 
         // ReSharper restore UnassignedGetOnlyAutoProperty
     }
