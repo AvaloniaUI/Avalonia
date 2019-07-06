@@ -290,8 +290,19 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal(typeof(ScaleTransform), ((EnsureTypePropertyPathElement)s3e[1]).Type);
                 Assert.IsType<ChildTraversalPropertyPathElement>(s3e[2]);
                 Assert.Equal("ScaleX", ((AvaloniaProperty)((PropertyPropertyPathElement)s3e[3]).Property).Name);
-                
-                
+            }
+        }
+
+        [Fact]
+        public void DataContextType_Resolution()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = AvaloniaXamlLoader.Parse<UserControl>(@"
+<UserControl 
+    xmlns='https://github.com/avaloniaui'
+    xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests;assembly=Avalonia.Markup.Xaml.UnitTests'
+    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:DataContextType='{x:Type local:XamlIlBugTestsDataContext}' />");
             }
         }
     }

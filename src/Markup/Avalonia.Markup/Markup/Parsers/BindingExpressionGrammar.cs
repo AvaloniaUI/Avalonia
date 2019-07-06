@@ -2,19 +2,18 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers.Nodes;
 using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal enum SourceMode
+    public enum SourceMode
     {
         Data,
         Control
     }
+
     internal static class BindingExpressionGrammar
     {
         public static (IList<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
@@ -191,7 +190,7 @@ namespace Avalonia.Markup.Parsers
         {
             var name = r.ParseIdentifier();
 
-            if (name == null)
+            if (name.IsEmpty)
             {
                 throw new ExpressionParseException(r.Position, "Element name expected after '#'.");
             }
@@ -204,11 +203,11 @@ namespace Avalonia.Markup.Parsers
         {
             var mode = r.ParseIdentifier();
 
-            if (mode.Equals("self".AsSpan(), StringComparison.InvariantCulture))
+            if (mode.SequenceEqual("self".AsSpan()))
             {
                 nodes.Add(new SelfNode());
             }
-            else if (mode.Equals("parent".AsSpan(), StringComparison.InvariantCulture))
+            else if (mode.SequenceEqual("parent".AsSpan()))
             {
                 string ancestorNamespace = null;
                 string ancestorType = null;

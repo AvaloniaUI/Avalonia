@@ -4,7 +4,7 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    internal class FindAncestorNode : ExpressionNode
+    public class FindAncestorNode : ExpressionNode
     {
         private readonly int _level;
         private readonly Type _ancestorType;

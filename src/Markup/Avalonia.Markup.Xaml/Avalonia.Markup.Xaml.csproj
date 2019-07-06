@@ -16,6 +16,12 @@
         <Compile Include="Converters\TimeSpanTypeConverter.cs" />
         <Compile Include="Extensions.cs" />
         <Compile Include="MarkupExtension.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\NotifyingPropertyInfoHelpers.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\ObservableStreamPlugin.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorPlugin.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -41,6 +47,7 @@
         <Compile Include="XamlIl\CompilerExtensions\AvaloniaXamlIlCompilerConfiguration.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaBindingExtensionHackTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlAvaloniaPropertyResolver.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlBindingPathTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlConstructorServiceProviderTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlDataContextTypeTransformer.cs" />
@@ -58,6 +65,7 @@
         <Compile Include="XamlIl\CompilerExtensions\Transformers\IgnoredDirectivesTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\AvaloniaXamlIlSelectorTransformer.cs" />
         <Compile Include="XamlIl\CompilerExtensions\Transformers\XNameTransformer.cs" />
+        <Compile Include="XamlIl\CompilerExtensions\XamlIlBindingPathHelper.cs" />
         <Compile Include="XamlIl\CompilerExtensions\XamlIlClrPropertyInfoHelper.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
@@ -67,6 +75,7 @@
         <Compile Condition="$(UseCecil) == true" Include="XamlIl\xamlil.github\src\XamlIl.Cecil\**\*.cs" />
         <Compile Remove="XamlIl\xamlil.github\**\obj\**\*.cs" />
         <Compile Include="..\Avalonia.Markup\Markup\Parsers\SelectorGrammar.cs" />
+        <Compile Include="..\Avalonia.Markup\Markup\Parsers\BindingExpressionGrammar.cs" />
         <Compile Include="XamlTypes.cs" />
     </ItemGroup>
   <ItemGroup>
@@ -78,7 +87,9 @@
     <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
+    <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj">
+      <Aliases>global,Markup,%(Aliases)</Aliases>
+    </ProjectReference>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Condition="$(UseCecil) == true" Include="Mono.Cecil" Version="0.10.3" />
   </ItemGroup>

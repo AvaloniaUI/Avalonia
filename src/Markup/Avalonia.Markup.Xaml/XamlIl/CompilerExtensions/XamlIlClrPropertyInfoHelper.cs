@@ -23,8 +23,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         static string GetKey(IXamlIlProperty property) 
             => property.Getter.DeclaringType.GetFullName() + "." + property.Name;
 
-        public IXamlIlType Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlProperty property)
+        public IXamlIlType Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen, IXamlIlProperty property, IEnumerable<IXamlIlAstValueNode> indexerArguments = null)
         {
+            indexerArguments = indexerArguments ?? Enumerable.Empty<IXamlIlAstValueNode>();
             var types = context.GetAvaloniaTypes();
             IXamlIlMethod Get()
             {
@@ -55,6 +56,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         cg.Unbox(m.DeclaringType);
                     else
                         cg.Castclass(m.DeclaringType);
+
+                    foreach (var indexerArg in indexerArguments)
+                    {
+                        context.Emit(indexerArg, cg, indexerArg.Type.GetClrType());
+                    }
                 }
 
                 var getter = property.Getter == null ?
@@ -95,7 +101,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
 
                 var ctor = types.ClrPropertyInfo.Constructors.First(c =>
-                    c.Parameters.Count == 3 && c.IsStatic == false);
+                    c.Parameters.Count == 4 && c.IsStatic == false);
                 
                 var cacheMiss = get.Generator.DefineLabel();
                 get.Generator
@@ -124,6 +130,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 EmitFunc(get.Generator, getter, ctor.Parameters[1]);
                 EmitFunc(get.Generator, setter, ctor.Parameters[2]);
                 get.Generator
+                    .Ldtype(property.PropertyType)
                     .Newobj(ctor)
                     .Stsfld(field)
                     .Ldsfld(field)

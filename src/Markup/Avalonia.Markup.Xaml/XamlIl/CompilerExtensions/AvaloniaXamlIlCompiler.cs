@@ -48,13 +48,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
-                new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
-                new AvaloniaXamlIlDataContextTypeTransformer()
+                new AvaloniaXamlIlTransitionsTypeMetadataTransformer()
             );
-            
+
             // After everything else
-            
-            Transformers.Add(new AddNameScopeRegistration());
+
+            InsertBefore<XamlIlNewObjectTransformer>(
+                new AddNameScopeRegistration(),
+                new AvaloniaXamlIlDataContextTypeTransformer(),
+                new AvaloniaXamlIlBindingPathTransformer()
+                );
+
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
 
         }

@@ -7,7 +7,10 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal static class ArgumentListParser
+#if !BUILDTASK
+    public
+#endif
+    static class ArgumentListParser
     {
         public static IList<string> ParseArguments(this ref CharacterReader r, char open, char close, char delimiter = ',')
         {

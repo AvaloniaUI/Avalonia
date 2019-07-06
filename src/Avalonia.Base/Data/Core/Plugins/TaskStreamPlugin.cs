@@ -57,7 +57,7 @@ namespace Avalonia.Data.Core.Plugins
             return Observable.Empty<object>();
         }
 
-        protected IObservable<object> HandleCompleted(Task task)
+        private IObservable<object> HandleCompleted(Task task)
         {
             var resultProperty = task.GetType().GetRuntimeProperty("Result");
             

@@ -187,6 +187,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         emitter.Unbox_Any(Parent.PropertyType);
 
                 }
+
+                public IXamlIlMethod MakeGenericMethod(IReadOnlyList<IXamlIlType> typeArguments)
+                {
+                    throw new System.InvalidOperationException();
+                }
             }
         }
     }

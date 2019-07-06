@@ -11,12 +11,20 @@ namespace Avalonia.Data.Core
     public class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
+        private IPropertyAccessorPlugin _customPlugin;
         private IPropertyAccessor _accessor;
 
         public PropertyAccessorNode(string propertyName, bool enableValidation)
         {
             PropertyName = propertyName;
             _enableValidation = enableValidation;
+        }
+
+        public PropertyAccessorNode(string propertyName, bool enableValidation, IPropertyAccessorPlugin customPlugin)
+        {
+            PropertyName = propertyName;
+            _enableValidation = enableValidation;
+            _customPlugin = customPlugin;
         }
 
         public override string Description => PropertyName;
@@ -39,7 +47,7 @@ namespace Avalonia.Data.Core
 
         protected override void StartListeningCore(WeakReference reference)
         {
-            var plugin = ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(reference.Target, PropertyName));
+            var plugin = _customPlugin ?? GetPropertyAccessorPluginForObject(reference.Target);
             var accessor = plugin?.Start(reference, PropertyName);
 
             if (_enableValidation && Next == null)
@@ -53,14 +61,14 @@ namespace Avalonia.Data.Core
                 }
             }
 
-            if (accessor == null)
-            {
-                throw new NotSupportedException(
+            _accessor = accessor ?? throw new NotSupportedException(
                     $"Could not find a matching property accessor for {PropertyName}.");
-            }
-
-            _accessor = accessor;
             accessor.Subscribe(ValueChanged);
+        }
+
+        private IPropertyAccessorPlugin GetPropertyAccessorPluginForObject(object target)
+        {
+            return ExpressionObserver.PropertyAccessors.FirstOrDefault(x => x.Match(target, PropertyName));
         }
 
         protected override void StopListeningCore()

@@ -9,14 +9,17 @@ namespace Avalonia.Data.Core
         private readonly Func<object, object> _getter;
         private readonly Action<object, object> _setter;
 
-        public ClrPropertyInfo(string name, Func<object, object> getter, Action<object, object> setter)
+        public ClrPropertyInfo(string name, Func<object, object> getter, Action<object, object> setter, Type propertyType)
         {
             _getter = getter;
             _setter = setter;
+            PropertyType = propertyType;
             Name = name;
         }
 
         public string Name { get; }
+        public Type PropertyType { get; }
+
         public object Get(object target)
         {
             if (_getter == null)
@@ -62,7 +65,7 @@ namespace Avalonia.Data.Core
         }
 
         public ReflectionClrPropertyInfo(PropertyInfo info) : base(info.Name,
-            CreateGetter(info), CreateSetter(info))
+            CreateGetter(info), CreateSetter(info), info.PropertyType)
         {
             
         }

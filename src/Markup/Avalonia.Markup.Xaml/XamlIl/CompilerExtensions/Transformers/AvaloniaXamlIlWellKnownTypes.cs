@@ -23,7 +23,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlType ClrPropertyInfo { get; }
         public IXamlIlType PropertyPath { get; }
         public IXamlIlType PropertyPathBuilder { get; }
-        
+        public IXamlIlType NotifyingPropertyInfoHelpers { get; }
+        public IXamlIlType CompiledBindingPathBuilder { get; }
+        public IXamlIlType CompiledBindingPath { get; }
+        public IXamlIlType CompiledBindingExtension { get; }
+
         public AvaloniaXamlIlWellKnownTypes(XamlIlTransformerConfiguration cfg)
         {
             XamlIlTypes = cfg.WellKnownTypes;
@@ -47,6 +51,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ClrPropertyInfo = cfg.TypeSystem.GetType("Avalonia.Data.Core.ClrPropertyInfo");
             PropertyPath = cfg.TypeSystem.GetType("Avalonia.Data.Core.PropertyPath");
             PropertyPathBuilder = cfg.TypeSystem.GetType("Avalonia.Data.Core.PropertyPathBuilder");
+            NotifyingPropertyInfoHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.NotifyingPropertyInfoHelpers");
+            CompiledBindingPathBuilder = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPathBuilder");
+            CompiledBindingPath = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings.CompiledBindingPath");
+            CompiledBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindingExtension");
         }
     }
 

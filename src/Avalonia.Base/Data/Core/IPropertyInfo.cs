@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Data.Core
 {
     public interface IPropertyInfo
@@ -7,5 +9,6 @@ namespace Avalonia.Data.Core
         void Set(object target, object value);
         bool CanSet { get; }
         bool CanGet { get; }
+        Type PropertyType { get; }
     }
 }

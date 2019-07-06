@@ -4,7 +4,7 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    internal class ElementNameNode : ExpressionNode
+    public class ElementNameNode : ExpressionNode
     {
         private readonly string _name;
         private IDisposable _subscription;
