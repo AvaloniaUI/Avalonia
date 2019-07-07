@@ -87,9 +87,7 @@
     <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
     <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj">
-      <Aliases>global,Markup,%(Aliases)</Aliases>
-    </ProjectReference>
+    <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Condition="$(UseCecil) == true" Include="Mono.Cecil" Version="0.10.3" />
   </ItemGroup>
