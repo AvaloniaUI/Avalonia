@@ -67,7 +67,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         private static IXamlIlBindingPathNode TransformBindingPath(XamlIlAstTransformationContext context, IXamlIlLineInfo lineInfo, IXamlIlType startType, IEnumerable<BindingExpressionGrammar.INode> bindingExpression)
         {
-            bool appendNotNode = false;
+            List<IXamlIlBindingPathElementNode> transformNodes = new List<IXamlIlBindingPathElementNode>();
             List<IXamlIlBindingPathElementNode> nodes = new List<IXamlIlBindingPathElementNode>();
             foreach (var astNode in bindingExpression)
             {
@@ -77,10 +77,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     case BindingExpressionGrammar.EmptyExpressionNode _:
                         break;
                     case BindingExpressionGrammar.NotNode _:
-                        appendNotNode = !appendNotNode;
+                        transformNodes.Add(new XamlIlNotPathElementNode(context.Configuration.WellKnownTypes.Boolean));
                         break;
                     case BindingExpressionGrammar.StreamNode _:
-                        var observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) ?? false);
+                        IXamlIlType observableType;
+                        if (targetType.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) == true)
+                        {
+                            observableType = targetType;
+                        }
+                        else
+                        {
+                            observableType = targetType.GetAllInterfaces().FirstOrDefault(i => i.GenericTypeDefinition?.Equals(context.Configuration.TypeSystem.FindType("System.IObservable`1")) ?? false);
+                        }
+
                         if (observableType != null)
                         {
                             nodes.Add(new XamlIlStreamObservablePathElementNode(observableType.GenericArguments[0]));
@@ -179,16 +188,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         nodes.Add(new ElementNamePathElementNode(elementName.Name, elementType));
                         break;
                 }
-
             }
 
-            if (appendNotNode)
-            {
-                // TODO: Fix Not behavior
-                nodes.Add(new XamlIlNotPathElementNode(context.Configuration.WellKnownTypes.Boolean));
-            }
-
-            return new XamlIlBindingPathNode(lineInfo, context.GetAvaloniaTypes().CompiledBindingPath, nodes);
+            return new XamlIlBindingPathNode(lineInfo, context.GetAvaloniaTypes().CompiledBindingPath, transformNodes, nodes);
 
             IXamlIlType GetType(string ns, string name)
             {
@@ -422,17 +424,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
         class XamlIlBindingPathNode : XamlIlAstNode, IXamlIlBindingPathNode, IXamlIlAstEmitableNode
         {
+            private readonly List<IXamlIlBindingPathElementNode> _transformElements;
             private readonly List<IXamlIlBindingPathElementNode> _elements;
 
             public XamlIlBindingPathNode(IXamlIlLineInfo lineInfo,
                 IXamlIlType bindingPathType,
+                List<IXamlIlBindingPathElementNode> transformElements,
                 List<IXamlIlBindingPathElementNode> elements) : base(lineInfo)
             {
                 Type = new XamlIlAstClrTypeReference(lineInfo, bindingPathType, false);
+                _transformElements = transformElements;
                 _elements = elements;
             }
 
-            public IXamlIlType BindingResultType => _elements[_elements.Count - 1].Type;
+            public IXamlIlType BindingResultType
+                => _transformElements.Count > 0
+                    ? _transformElements[0].Type
+                    : _elements[_elements.Count - 1].Type;
 
             public IXamlIlAstTypeReference Type { get; }
 
@@ -440,6 +448,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var types = context.GetAvaloniaTypes();
                 codeGen.Newobj(types.CompiledBindingPathBuilder.FindConstructor());
+
+                foreach (var transform in _transformElements)
+                {
+                    transform.Emit(context, codeGen);
+                }
 
                 foreach (var element in _elements)
                 {
