@@ -1,10 +1,9 @@
-﻿extern alias Markup;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Parsers.Nodes;
-using SourceMode = Markup::Avalonia.Markup.Parsers.SourceMode;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
@@ -56,7 +55,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return pathRoot ?? new EmptyExpressionNode();
         }
 
-        public SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
+        internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
     }
 
     public class CompiledBindingPathBuilder

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Avalonia.Markup.Parsers
 {
-    public enum SourceMode
+    internal enum SourceMode
     {
         Data,
         Control

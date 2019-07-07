@@ -1,13 +1,10 @@
-﻿extern alias Markup;
-using System;
+﻿using System;
 using Avalonia.Data;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings;
 using Avalonia.Data.Core;
-
-using SourceMode = Markup::Avalonia.Markup.Parsers.SourceMode;
-using Avalonia.Data.Converters;
+using Avalonia.Markup.Parsers;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
