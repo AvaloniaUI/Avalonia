@@ -51,7 +51,7 @@ namespace BindingDemo.ViewModels
             });
 
             CurrentTimeObservable = Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(1))
-                .Select(x => DateTimeOffset.Now.ToString());
+                .Select(x => DateTimeOffset.Now);
         }
 
         public ObservableCollection<TestItem> Items { get; }
@@ -88,7 +88,7 @@ namespace BindingDemo.ViewModels
             private set { this.RaiseAndSetIfChanged(ref _currentTime, value); }
         }
 
-        public IObservable<string> CurrentTimeObservable { get; }
+        public IObservable<DateTimeOffset> CurrentTimeObservable { get; }
         public ReactiveCommand StringValueCommand { get; }
 
         public DataAnnotationsErrorViewModel DataAnnotationsValidation { get; } = new DataAnnotationsErrorViewModel();

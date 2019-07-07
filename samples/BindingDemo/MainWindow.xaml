@@ -5,7 +5,8 @@
         xmlns:local="clr-namespace:BindingDemo"
         Title="AvaloniaUI Bindings Test"
         Width="800"
-        Height="600">
+        Height="600"
+        x:DataContextType="{x:Type vm:MainWindowViewModel}">
   <Window.Styles>
     <Style Selector="TextBlock.h1">
       <Setter Property="FontSize" Value="18"/>
@@ -57,7 +58,7 @@
             <TextBlock FontSize="16" Text="Scheduler"/>
             <TextBox Watermark="Background Thread" Text="{Binding CurrentTime, Mode=OneWay}"/>
             <TextBlock FontSize="16" Text="Stream Operator"/>
-            <TextBox Watermark="StreamOperator" Text="{Binding CurrentTimeObservable^, Mode=OneWay}"/>
+            <TextBox Watermark="StreamOperator" Text="{CompiledBinding CurrentTimeObservable^, Mode=OneWay}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
