@@ -17,7 +17,7 @@ namespace Avalonia.Skia.Text
 {
     internal class SKTextLayout
     {
-        private static readonly char[] s_ellipsis = {'\u2026'};
+        private static readonly char[] s_ellipsis = { '\u2026' };
 
         private readonly SKTypeface _typeface;
 
@@ -539,7 +539,7 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Creates glyph clusters from specified buffer.
+        ///     Shapes specified buffer and returns glyph clusters formed by the shaped result.
         /// </summary>
         /// <param name="buffer">The buffer.</param>
         /// <param name="textPointer">The text pointer.</param>
@@ -549,7 +549,7 @@ namespace Avalonia.Skia.Text
         /// <param name="glyphPositions">The glyph positions after shaping.</param>
         /// <param name="width">The final width of the shaped text.</param>
         /// <returns></returns>
-        private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
+        private static IReadOnlyList<SKGlyphCluster> ShapeGlyphRun(
             Buffer buffer,
             SKTextPointer textPointer,
             SKTextFormat textFormat,
@@ -613,11 +613,11 @@ namespace Avalonia.Skia.Text
         /// <summary>
         ///     Creates the glyph clusters.
         /// </summary>
-        /// <param name="textPointer"></param>
-        /// <param name="fontMetrics"></param>
+        /// <param name="textPointer">The text pointer.</param>
+        /// <param name="fontMetrics">The font metrics.</param>
         /// <param name="clusters">The clusters.</param>
-        /// <param name="glyphAdvances"></param>
-        /// <param name="glyphPositions">The glyph offsets.</param>
+        /// <param name="glyphAdvances">The glyph advances.</param>
+        /// <param name="glyphPositions">The glyph positions.</param>
         /// <returns></returns>
         private static IReadOnlyList<SKGlyphCluster> CreateGlyphClusters(
             SKTextPointer textPointer,
@@ -630,49 +630,49 @@ namespace Avalonia.Skia.Text
 
             var height = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
 
-            var currentCluster = 0;
+            var lastPosition = clusters.Length - 1;
 
-            var lastCluster = clusters.Length - 1;
+            var lastCluster = clusters[lastPosition];
 
-            while (currentCluster <= lastCluster)
+            var currentPosition = 0;
+
+            while (currentPosition <= lastPosition)
             {
-                var currentPosition = clusters[currentCluster];
+                var currentCluster = clusters[currentPosition];
 
                 // ToDo: Need a custom implementation that searches for the next cluster.
-                var nextCluster = Array.BinarySearch(clusters, currentPosition + 1);
+                var nextPosition = Array.BinarySearch(clusters, currentCluster + 1);
 
-                if (nextCluster < 0)
+                if (nextPosition < 0)
                 {
-                    nextCluster = ~nextCluster;
+                    nextPosition = ~nextPosition;
                 }
 
                 int length;
 
-                if (nextCluster > lastCluster || currentCluster == lastCluster)
+                if (nextPosition > lastPosition || currentCluster == lastCluster)
                 {
-                    length = textPointer.StartingIndex + textPointer.Length - currentPosition;
+                    length = textPointer.StartingIndex + textPointer.Length - currentCluster;
                 }
                 else
                 {
-                    var nextPosition = clusters[nextCluster];
-
-                    length = nextPosition - currentPosition;
+                    length = clusters[nextPosition] - currentCluster;
                 }
 
                 var clusterWidth = 0f;
 
-                for (var clusterIndex = currentCluster; clusterIndex < nextCluster; clusterIndex++)
+                for (var clusterIndex = currentPosition; clusterIndex < nextPosition; clusterIndex++)
                 {
                     clusterWidth += glyphAdvances[clusterIndex];
                 }
 
-                var point = glyphPositions[currentCluster];
+                var point = glyphPositions[currentPosition];
 
                 var rect = new SKRect(point.X, point.Y, point.X + clusterWidth, point.Y + height);
 
-                glyphClusters.Add(new SKGlyphCluster(currentPosition, length, rect));
+                glyphClusters.Add(new SKGlyphCluster(currentCluster, length, rect));
 
-                currentCluster = nextCluster;
+                currentPosition = nextPosition;
             }
 
             return glyphClusters;
@@ -1088,7 +1088,7 @@ namespace Avalonia.Skia.Text
             {
                 var emptyTextLine = CreateEmptyTextLine(0);
 
-                return new List<SKTextLine> {emptyTextLine};
+                return new List<SKTextLine> { emptyTextLine };
             }
 
             var textLines = new List<SKTextLine>();
@@ -1210,7 +1210,7 @@ namespace Avalonia.Skia.Text
 
                 buffer.GuessSegmentProperties();
 
-                var glyphClusters = CreateGlyphClusters(
+                var glyphClusters = ShapeGlyphRun(
                     buffer,
                     textPointer,
                     textFormat,
@@ -1240,7 +1240,7 @@ namespace Avalonia.Skia.Text
 
             var height = fontMetrics.Descent - fontMetrics.Ascent + fontMetrics.Leading;
 
-            var glyphClusters = new[] {new SKGlyphCluster(0, 0, new SKRect(0, 0, 0, height))};
+            var glyphClusters = new[] { new SKGlyphCluster(0, 0, new SKRect(0, 0, 0, height)) };
 
             var glyphs = new SKGlyphRun(Array.Empty<ushort>(), Array.Empty<SKPoint>(), glyphClusters);
 
@@ -1258,7 +1258,7 @@ namespace Avalonia.Skia.Text
         {
             if (textLine.LineMetrics.Size.Width < _constraint.Width)
             {
-                return new[] {textLine};
+                return new[] { textLine };
             }
 
             if (_textTrimming != TextTrimming.None)
@@ -1266,7 +1266,7 @@ namespace Avalonia.Skia.Text
                 return PerformTextTrimming(text, textLine);
             }
 
-            return _textWrapping == TextWrapping.Wrap ? PerformTextWrapping(text, textLine) : new[] {textLine};
+            return _textWrapping == TextWrapping.Wrap ? PerformTextWrapping(text, textLine) : new[] { textLine };
         }
 
         /// <summary>
