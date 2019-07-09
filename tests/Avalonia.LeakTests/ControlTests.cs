@@ -75,6 +75,7 @@ namespace Avalonia.LeakTests
                             Name = "foo"
                         }.RegisterInNameScope(scope)
                     };
+                    NameScope.SetNameScope(window, scope);
 
                     window.Show();
 
@@ -85,6 +86,7 @@ namespace Avalonia.LeakTests
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
+                    NameScope.SetNameScope(window, null);
 
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
