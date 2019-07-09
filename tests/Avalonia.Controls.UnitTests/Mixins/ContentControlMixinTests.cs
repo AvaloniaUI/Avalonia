@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests.Mixins
                         new ContentPresenter {Name = "Content_1_Presenter"}.RegisterInNameScope(scope),
                         new ContentPresenter {Name = "Content_2_Presenter"}.RegisterInNameScope(scope)
                     }
-                }.WithNameScope(scope))
+                })
             };
             
 
@@ -51,7 +51,7 @@ namespace Avalonia.Controls.UnitTests.Mixins
                         p1.RegisterInNameScope(scope),
                         p2.RegisterInNameScope(scope)
                     }
-                }.WithNameScope(scope))
+                })
             };
             target.ApplyTemplate();
 

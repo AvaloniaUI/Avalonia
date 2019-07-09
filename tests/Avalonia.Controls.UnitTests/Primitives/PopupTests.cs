@@ -321,7 +321,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-            }.RegisterInNameScope(scope).WithNameScope(scope);
+            }.RegisterInNameScope(scope);
         }
 
         private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
@@ -333,7 +333,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
-            }.RegisterInNameScope(scope).WithNameScope(scope);
+            }.RegisterInNameScope(scope);
         }
 
         private class PopupContentControl : ContentControl

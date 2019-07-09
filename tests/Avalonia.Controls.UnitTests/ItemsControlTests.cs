@@ -589,7 +589,7 @@ namespace Avalonia.Controls.UnitTests
                         MemberSelector = parent.MemberSelector,
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }.RegisterInNameScope(scope)
-                }.WithNameScope(scope);
+                };
             });
         }
 

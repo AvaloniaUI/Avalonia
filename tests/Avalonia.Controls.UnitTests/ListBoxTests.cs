@@ -346,7 +346,7 @@ namespace Avalonia.Controls.UnitTests
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
                         [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).ToBinding(),
                     }.RegisterInNameScope(scope)
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
 
         private FuncControlTemplate ListBoxItemTemplate()
@@ -357,7 +357,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = parent[!ListBoxItem.ContentProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!ListBoxItem.ContentTemplateProperty],
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
 
         private FuncControlTemplate ScrollViewerTemplate()
@@ -370,7 +370,7 @@ namespace Avalonia.Controls.UnitTests
                     [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
                     [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
                     [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
 
         private void Prepare(ListBox target)

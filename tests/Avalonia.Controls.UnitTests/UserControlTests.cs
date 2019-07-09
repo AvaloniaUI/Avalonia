@@ -50,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     }.RegisterInNameScope(scope)
-                }.WithNameScope(scope);
+                };
             });
         }
     }

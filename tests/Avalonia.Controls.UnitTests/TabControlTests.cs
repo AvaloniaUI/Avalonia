@@ -307,7 +307,7 @@ namespace Avalonia.Controls.UnitTests
                             [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
                         }.RegisterInNameScope(scope)
                     }
-                }.WithNameScope(scope));
+                });
         }
 
         private IControlTemplate TabItemTemplate()
@@ -318,7 +318,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
 
         private void ApplyTemplate(TabControl target)

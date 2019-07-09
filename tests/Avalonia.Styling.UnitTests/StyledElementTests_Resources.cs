@@ -227,7 +227,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
     }
 }

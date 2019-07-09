@@ -803,7 +803,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Name = "PART_ItemsPresenter",
                 [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-            }.RegisterInNameScope(scope).WithNameScope(scope));
+            }.RegisterInNameScope(scope));
         }
 
         private IControlTemplate CreateTreeViewItemTemplate()
@@ -823,7 +823,7 @@ namespace Avalonia.Controls.UnitTests
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                     }.RegisterInNameScope(scope)
                 }
-            }.WithNameScope(scope));
+            });
         }
 
         private List<string> ExtractItemHeader(TreeView tree, int level)

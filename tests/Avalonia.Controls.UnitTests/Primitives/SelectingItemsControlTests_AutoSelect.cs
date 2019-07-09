@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Name = "itemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
         }
 
         private class TestSelector : SelectingItemsControl

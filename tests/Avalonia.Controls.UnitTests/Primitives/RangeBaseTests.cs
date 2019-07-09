@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         track[~~Track.ValueProperty] = c[~~RangeBase.ValueProperty];
                     }
 
-                    return track.WithNameScope(scope);
+                    return track;
                 }),
                 Minimum = 0,
                 Maximum = 100,

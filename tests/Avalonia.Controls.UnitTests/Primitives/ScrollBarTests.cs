@@ -186,7 +186,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                         Template = new FuncControlTemplate<Thumb>(ThumbTemplate),
                     },
                 }.RegisterInNameScope(scope),
-            }.WithNameScope(scope);
+            };
         }
 
         private static Control ThumbTemplate(Thumb control, INameScope scope)

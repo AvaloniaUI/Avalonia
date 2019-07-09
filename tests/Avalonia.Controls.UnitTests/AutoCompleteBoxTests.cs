@@ -1030,7 +1030,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_Popup"
                     }.RegisterInNameScope(scope);
 
-                var panel = new Panel().WithNameScope(scope);
+                var panel = new Panel();
                 panel.Children.Add(textBox);
                 panel.Children.Add(popup);
                 panel.Children.Add(listbox);

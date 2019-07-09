@@ -110,7 +110,7 @@ namespace Avalonia.Controls.UnitTests
                         [Grid.ColumnProperty] = 1,
                     }.RegisterInNameScope(scope),
                 },
-            }.WithNameScope(scope);
+            };
         }
     }
 }

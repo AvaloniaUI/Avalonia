@@ -74,7 +74,7 @@ namespace Avalonia.LeakTests
                         {
                             Name = "foo"
                         }.RegisterInNameScope(scope)
-                    }.WithNameScope(scope);
+                    };
 
                     window.Show();
 

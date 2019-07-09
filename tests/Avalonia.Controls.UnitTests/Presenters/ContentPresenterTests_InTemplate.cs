@@ -300,7 +300,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
-                    }.RegisterInNameScope(s).WithNameScope(s)),
+                    }.RegisterInNameScope(s)),
             };
             var root = new TestRoot { Child = templatedParent };
 

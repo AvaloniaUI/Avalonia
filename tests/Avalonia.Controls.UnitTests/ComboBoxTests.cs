@@ -105,7 +105,7 @@ namespace Avalonia.Controls.UnitTests
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope)
                     }
-                }.WithNameScope(scope);
+                };
             });
         }
     }

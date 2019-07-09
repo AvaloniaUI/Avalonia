@@ -139,7 +139,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         Name = "PART_ContentPresenter",
                         [!ContentPresenter.ContentProperty] = parent[!PopupRoot.ContentProperty],
-                    }.RegisterInNameScope(scope).WithNameScope(scope)),
+                    }.RegisterInNameScope(scope)),
             };
 
             result.ApplyTemplate();

@@ -652,7 +652,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                             {
                                 Name = "PART_ContentPresenter",
                                 [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
-                            }.RegisterInNameScope(scope).WithNameScope(scope)))
+                            }.RegisterInNameScope(scope)))
                 }
             };
         }

@@ -21,7 +21,7 @@ namespace Avalonia.UnitTests
             Template = new FuncControlTemplate<TestTemplatedRoot>((x, scope) => new ContentPresenter
             {
                 Name = "PART_ContentPresenter",
-            }.RegisterInNameScope(scope).WithNameScope(scope));
+            }.RegisterInNameScope(scope));
         }
 
         public Size ClientSize => new Size(100, 100);

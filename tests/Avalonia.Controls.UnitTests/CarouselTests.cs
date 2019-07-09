@@ -312,7 +312,7 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
-            }.RegisterInNameScope(scope).WithNameScope(scope);
+            }.RegisterInNameScope(scope);
         }
     }
 }

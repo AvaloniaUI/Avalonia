@@ -98,7 +98,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = c[~ContentControl.ContentProperty],
                     [~ContentPresenter.ContentTemplateProperty] = c[~ContentControl.ContentTemplateProperty]
-                }.RegisterInNameScope(scope).WithNameScope(scope)),
+                }.RegisterInNameScope(scope)),
                 ContentTemplate =
                     new FuncDataTemplate<string>((t, _) => new ContentControl() { Content = t }, false)
             };

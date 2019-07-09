@@ -1100,7 +1100,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                     Name = "PART_ContentPresenter",
                     [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                     [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
-                }.RegisterInNameScope(scope).WithNameScope(scope));
+                }.RegisterInNameScope(scope));
             }
         }
     }

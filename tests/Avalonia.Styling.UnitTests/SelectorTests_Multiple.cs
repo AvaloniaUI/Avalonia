@@ -21,7 +21,7 @@ namespace Avalonia.Styling.UnitTests
                 return new Border
                 {
                     Name = "border",
-                }.RegisterInNameScope(scope).WithNameScope(scope);
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button
@@ -60,7 +60,7 @@ namespace Avalonia.Styling.UnitTests
                 return new Border
                 {
                     Name = "border",
-                }.RegisterInNameScope(scope).WithNameScope(scope);
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button
@@ -93,7 +93,7 @@ namespace Avalonia.Styling.UnitTests
                 return new Border
                 {
                     Name = "border",
-                }.RegisterInNameScope(scope).WithNameScope(scope);
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button

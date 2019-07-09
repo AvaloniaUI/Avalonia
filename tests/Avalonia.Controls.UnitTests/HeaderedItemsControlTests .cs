@@ -72,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_HeaderPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~HeaderedItemsControl.HeaderProperty],
                     }.RegisterInNameScope(scope)
-                }.WithNameScope(scope);
+                };
             });
         }
     }

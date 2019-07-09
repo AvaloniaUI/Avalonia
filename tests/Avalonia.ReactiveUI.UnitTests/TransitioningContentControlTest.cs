@@ -56,7 +56,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                         [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
                     }.RegisterInNameScope(scope)
-                }.WithNameScope(scope);
+                };
             });
         }
     }

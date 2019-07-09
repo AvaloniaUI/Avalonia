@@ -255,7 +255,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
-            }.WithNameScope(scope);
+            };
         }
 
         private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
@@ -265,7 +265,7 @@ namespace Avalonia.Controls.UnitTests
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] =
                     parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
-            }.RegisterInNameScope(scope).WithNameScope(scope);
+            }.RegisterInNameScope(scope);
         }
 
         private void ApplyTemplate(ListBox target)
