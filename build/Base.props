@@ -1,6 +1,10 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.3" />
+    <!--
+       Do not upgrade, see 
+       https://github.com/xamarin/xamarin-android/issues/1879#issuecomment-412281057 
+    -->
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
   </ItemGroup>
 </Project>
