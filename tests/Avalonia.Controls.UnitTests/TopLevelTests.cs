@@ -208,19 +208,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Exiting_Application_Notifies_Top_Level()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = new Mock<ITopLevelImpl>();
-                impl.SetupAllProperties();
-                var target = new TestTopLevel(impl.Object);
-                UnitTestApplication.Current.Shutdown();
-                Assert.True(target.IsClosed);
-            }
-        }
-
-        [Fact]
         public void Adding_Resource_To_Application_Should_Raise_ResourcesChanged()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -259,12 +246,6 @@ namespace Avalonia.Controls.UnitTests
             }
 
             protected override ILayoutManager CreateLayoutManager() => _layoutManager;
-
-            protected override void HandleApplicationExiting()
-            {
-                base.HandleApplicationExiting();
-                IsClosed = true;
-            }
         }
     }
 }

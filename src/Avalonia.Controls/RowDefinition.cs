@@ -55,19 +55,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated height of the row.
         /// </summary>
-        public double ActualHeight
-        {
-            get;
-            internal set;
-        }
+        public double ActualHeight => Parent?.GetFinalRowDefinitionHeight(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum height of the row in DIPs.
         /// </summary>
         public double MaxHeight
         {
-            get { return GetValue(MaxHeightProperty); }
-            set { SetValue(MaxHeightProperty, value); }
+            get
+            {
+                return GetValue(MaxHeightProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MaxHeightProperty, value);
+            }
         }
 
         /// <summary>
@@ -75,8 +78,15 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinHeight
         {
-            get { return GetValue(MinHeightProperty); }
-            set { SetValue(MinHeightProperty, value); }
+            get
+            {
+                return GetValue(MinHeightProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MinHeightProperty, value);
+            }
         }
 
         /// <summary>
@@ -84,8 +94,19 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Height
         {
-            get { return GetValue(HeightProperty); }
-            set { SetValue(HeightProperty, value); }
+            get
+            {
+                return GetValue(HeightProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(HeightProperty, value);
+            }
         }
+
+        internal override GridLength UserSizeValueCache => this.Height;
+        internal override double UserMinSizeValueCache => this.MinHeight;
+        internal override double UserMaxSizeValueCache => this.MaxHeight;
     }
 }

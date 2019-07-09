@@ -7,7 +7,6 @@ using System.Globalization;
 
 using Avalonia.Media;
 
-using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
 {

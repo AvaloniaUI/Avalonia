@@ -101,6 +101,7 @@ namespace Avalonia.Skia
         public SKCanvas Canvas { get; }
 
         SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
+        GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
 
         /// <inheritdoc />
         public void Clear(Color color)

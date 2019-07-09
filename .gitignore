@@ -198,3 +198,10 @@ info.plist
 build-intermediate
 obj-Direct2D1/
 obj-Skia/
+
+
+##################
+# Vim
+##################
+.vim
+.ccls-cache

@@ -39,6 +39,8 @@
             <Button Command="{Binding RecreateCommand}">Recreate</Button>
             <Button Command="{Binding SelectFirstCommand}">Select First</Button>
             <Button Command="{Binding SelectLastCommand}">Select Last</Button>
+            <Button Command="{Binding RandomizeSize}">Randomize Size</Button>
+            <Button Command="{Binding ResetSize}">Reset Size</Button>
         </StackPanel>
 
         <ListBox Name="listBox" 
@@ -55,7 +57,7 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding Header}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Header}" Height="{Binding Height}" TextWrapping="Wrap"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

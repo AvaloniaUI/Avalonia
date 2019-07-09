@@ -41,6 +41,7 @@ namespace Avalonia.Win32
         private static readonly Dictionary<StandardCursorType, int> CursorTypeMapping = new Dictionary
             <StandardCursorType, int>
         {
+            {StandardCursorType.None, 0},
             {StandardCursorType.AppStarting, 32650},
             {StandardCursorType.Arrow, 32512},
             {StandardCursorType.Cross, 32515},
