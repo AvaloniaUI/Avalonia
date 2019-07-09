@@ -26,7 +26,7 @@ const int kVK_ANSI_3 = 0x14;
 const int kVK_ANSI_4 = 0x15;
 const int kVK_ANSI_6 = 0x16;
 const int kVK_ANSI_5 = 0x17;
-//const int kVK_ANSI_Equal = 0x18;
+const int kVK_ANSI_Equal = 0x18;
 const int kVK_ANSI_9 = 0x19;
 const int kVK_ANSI_7 = 0x1A;
 const int kVK_ANSI_Minus = 0x1B;
@@ -45,11 +45,11 @@ const int kVK_ANSI_K = 0x28;
 const int kVK_ANSI_Semicolon = 0x29;
 const int kVK_ANSI_Backslash = 0x2A;
 const int kVK_ANSI_Comma = 0x2B;
-//const int kVK_ANSI_Slash = 0x2C;
+const int kVK_ANSI_Slash = 0x2C;
 const int kVK_ANSI_N = 0x2D;
 const int kVK_ANSI_M = 0x2E;
 const int kVK_ANSI_Period = 0x2F;
-//const int kVK_ANSI_Grave = 0x32;
+const int kVK_ANSI_Grave = 0x32;
 const int kVK_ANSI_KeypadDecimal = 0x41;
 const int kVK_ANSI_KeypadMultiply = 0x43;
 const int kVK_ANSI_KeypadPlus = 0x45;
@@ -57,7 +57,7 @@ const int kVK_ANSI_KeypadClear = 0x47;
 const int kVK_ANSI_KeypadDivide = 0x4B;
 const int kVK_ANSI_KeypadEnter = 0x4C;
 const int kVK_ANSI_KeypadMinus = 0x4E;
-//const int kVK_ANSI_KeypadEquals = 0x51;
+const int kVK_ANSI_KeypadEquals = 0x51;
 const int kVK_ANSI_Keypad0 = 0x52;
 const int kVK_ANSI_Keypad1 = 0x53;
 const int kVK_ANSI_Keypad2 = 0x54;
@@ -121,7 +121,7 @@ const int kVK_UpArrow = 0x7E;
 //const int kVK_JIS_Underscore = 0x5E;
 //const int kVK_JIS_KeypadComma = 0x5F;
 //const int kVK_JIS_Eisu = 0x66;
-//const int kVK_JIS_Kana = 0x68;
+const int kVK_JIS_Kana = 0x68;
 
  std::map<int, AvnKey> s_KeyMap =
  {
@@ -148,7 +148,7 @@ const int kVK_UpArrow = 0x7E;
     {kVK_ANSI_4, D4},
     {kVK_ANSI_6, D6},
     {kVK_ANSI_5, D5},
-    //{kVK_ANSI_Equal, ?},
+    {kVK_ANSI_Equal, OemPlus},
     {kVK_ANSI_9, D9},
     {kVK_ANSI_7, D7},
     {kVK_ANSI_Minus, OemMinus},
@@ -167,11 +167,11 @@ const int kVK_UpArrow = 0x7E;
     {kVK_ANSI_Semicolon, OemSemicolon},
     {kVK_ANSI_Backslash, OemBackslash},
     {kVK_ANSI_Comma, OemComma},
-    //{kVK_ANSI_Slash, ?},
+    {kVK_ANSI_Slash, Oem2},
     {kVK_ANSI_N, N},
     {kVK_ANSI_M, M},
     {kVK_ANSI_Period, OemPeriod},
-    //{kVK_ANSI_Grave, ?},
+    {kVK_ANSI_Grave, OemTilde},
     {kVK_ANSI_KeypadDecimal, Decimal},
     {kVK_ANSI_KeypadMultiply, Multiply},
     {kVK_ANSI_KeypadPlus, OemPlus},
@@ -179,7 +179,7 @@ const int kVK_UpArrow = 0x7E;
     {kVK_ANSI_KeypadDivide, Divide},
     {kVK_ANSI_KeypadEnter, AvnKeyEnter},
     {kVK_ANSI_KeypadMinus, OemMinus},
-    //{kVK_ANSI_KeypadEquals, ?},
+    {kVK_ANSI_KeypadEquals, OemPlus},
     {kVK_ANSI_Keypad0, NumPad0},
     {kVK_ANSI_Keypad1, NumPad1},
     {kVK_ANSI_Keypad2, NumPad2},
@@ -237,5 +237,6 @@ const int kVK_UpArrow = 0x7E;
     {kVK_LeftArrow, Left},
     {kVK_RightArrow, Right},
     {kVK_DownArrow, Down},
-    {kVK_UpArrow, Up}
+    {kVK_UpArrow, Up},
+    {kVK_JIS_Kana, AvnKeyKanaMode},
 };
