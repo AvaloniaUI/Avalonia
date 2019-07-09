@@ -333,13 +333,25 @@ namespace Avalonia.Skia.UnitTests
         [InlineData("👍b", 2)]
         [InlineData("a👍b", 3)]
         [InlineData("a👍子b", 4)]
-        public void ShouldProduceRuns(string text, int numberOfRuns)
+        public void ShouldProduceUniqueRuns(string text, int numberOfRuns)
         {
             var breaker = TextRunIterator.Create(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
 
             var runs = breaker.ToArray();
 
             Assert.Equal(numberOfRuns, runs.Length);
+        }
+
+        [Fact]
+        public void ShouldSplitRunOnDirection()
+        {
+            var text = "1234الدولي";
+
+            var breaker = TextRunIterator.Create(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
+
+            Assert.Equal(2, breaker.Count);
+
+            Assert.Equal (4, breaker[0].TextPointer.Length);
         }
     }
 }

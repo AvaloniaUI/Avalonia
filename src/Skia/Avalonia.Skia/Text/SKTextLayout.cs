@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
 
@@ -641,6 +640,7 @@ namespace Avalonia.Skia.Text
                 var currentCluster = clusters[currentPosition];
 
                 // ToDo: Need a custom implementation that searches for the next cluster.
+                // This should work with RTL (descending order)
                 var nextPosition = Array.BinarySearch(clusters, currentCluster + 1);
 
                 if (nextPosition < 0)
@@ -1171,8 +1171,6 @@ namespace Avalonia.Skia.Text
             using (var buffer = new Buffer())
             {
                 buffer.ContentType = ContentType.Unicode;
-
-                buffer.Language = new Language(CultureInfo.CurrentCulture);
 
                 buffer.Script = textFormat.Script;
 

@@ -106,6 +106,7 @@ namespace Avalonia.Skia.Text
             count = 0;
             charCount = 0;
             script = Script.Common;
+            var direction = Direction.Invalid;
 
             var font = TableLoader.Get(typeface).Font;
             var defaultFont = TableLoader.Get(defaultTypeface).Font;
@@ -115,6 +116,22 @@ namespace Avalonia.Skia.Text
                 var glyphInfo = buffer.GlyphInfos[i];
 
                 var currentScript = UnicodeFunctions.Default.GetScript(glyphInfo.Codepoint);
+
+                // ToDo: Implement BiDi algorithm
+                if (currentScript.HorizontalDirection != direction)
+                {
+                    if (direction == Direction.Invalid)
+                    {
+                        direction = currentScript.HorizontalDirection;
+                    }
+                    else
+                    {
+                        if (!UnicodeUtility.IsWhiteSpace(glyphInfo.Codepoint))
+                        {
+                            break;
+                        }
+                    }
+                }
 
                 if (currentScript != script)
                 {
