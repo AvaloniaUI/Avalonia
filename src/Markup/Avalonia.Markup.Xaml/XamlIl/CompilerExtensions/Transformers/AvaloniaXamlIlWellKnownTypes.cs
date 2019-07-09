@@ -16,16 +16,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlMethod AvaloniaObjectSetValueMethod { get; }
         public IXamlIlType IDisposable { get; }
         public XamlIlTypeWellKnownTypes XamlIlTypes { get; }
+        public XamlIlLanguageTypeMappings XamlIlMappings { get; }
         public IXamlIlType Transitions { get; }
         public IXamlIlType AssignBindingAttribute { get; }
         public IXamlIlType UnsetValueType { get; }
         public IXamlIlType StyledElement { get; }
         public IXamlIlType NameScope { get; }
-        public IXamlIlMethod NameScopeStaticRegister { get; }
+        public IXamlIlMethod NameScopeSetNameScope { get; }
+        public IXamlIlType INameScope { get; }
+        public IXamlIlMethod INameScopeRegister { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
         {
             XamlIlTypes = ctx.Configuration.WellKnownTypes;
+            XamlIlMappings = ctx.Configuration.TypeMappings;
             AvaloniaObject = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaObject");
             IAvaloniaObject = ctx.Configuration.TypeSystem.GetType("Avalonia.IAvaloniaObject");
             AvaloniaObjectExtensions = ctx.Configuration.TypeSystem.GetType("Avalonia.AvaloniaObjectExtensions");
@@ -41,16 +45,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 IBinding, ctx.Configuration.WellKnownTypes.Object);
             UnsetValueType = ctx.Configuration.TypeSystem.GetType("Avalonia.UnsetValueType");
             StyledElement = ctx.Configuration.TypeSystem.GetType("Avalonia.StyledElement");
-            NameScope = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScope");
-            NameScopeStaticRegister = NameScope.FindMethod(
+            INameScope = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.INameScope");
+            INameScopeRegister = INameScope.GetMethod(
                 new FindMethodMethodSignature("Register", XamlIlTypes.Void,
-                     StyledElement, XamlIlTypes.String, XamlIlTypes.Object)
+                     XamlIlTypes.String, XamlIlTypes.Object)
                 {
-                    IsStatic = true, DeclaringOnly = true, IsExactMatch = true
+                    IsStatic = false, DeclaringOnly = true, IsExactMatch = true
                 });
+            NameScope = ctx.Configuration.TypeSystem.GetType("Avalonia.Controls.NameScope");
+            NameScopeSetNameScope = NameScope.GetMethod(new FindMethodMethodSignature("SetNameScope",
+                XamlIlTypes.Void, StyledElement, INameScope) {IsStatic = true});
 
             AvaloniaObjectSetValueMethod = AvaloniaObject.FindMethod("SetValue", XamlIlTypes.Void,
                 false, AvaloniaProperty, XamlIlTypes.Object, BindingPriority);
+            
         }
     }
 

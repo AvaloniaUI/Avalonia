@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Markup.Data;
@@ -40,6 +41,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 ElementName = "source",
                 Path = "Text",
+                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
             };
 
             target.Bind(TextBox.TextProperty, binding);
@@ -76,6 +78,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
+                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
             };
 
             target.Bind(ContentControl.ContentProperty, binding);
@@ -108,6 +111,7 @@ namespace Avalonia.Markup.UnitTests.Data
             {
                 ElementName = "source",
                 Path = "Text",
+                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
             };
 
             target.Bind(TextBox.TextProperty, binding);
@@ -145,6 +149,7 @@ namespace Avalonia.Markup.UnitTests.Data
             var binding = new Binding
             {
                 ElementName = "source",
+                NameScope = new WeakReference<INameScope>(NameScope.GetNameScope(root))
             };
 
             target.Bind(ContentControl.ContentProperty, binding);

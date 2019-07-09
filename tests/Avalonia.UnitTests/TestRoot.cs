@@ -88,7 +88,7 @@ namespace Avalonia.UnitTests
                 if (element.Name != null)
                 {
                     if (scope.Find(element.Name) != element)
-                        NameScope.Register(this, element.Name, element);
+                        scope.Register(element.Name, element);
                 }
 
                 if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))

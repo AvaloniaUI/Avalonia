@@ -472,7 +472,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
         }
 
-        [Fact]
+        [Fact(Skip="We are using name scopes from IServiceProvider now")]
         public void DataTemplate_Created_Content_Should_Be_NameScope()
         {
             var items = new object[]

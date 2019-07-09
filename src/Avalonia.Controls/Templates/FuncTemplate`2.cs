@@ -35,12 +35,14 @@ namespace Avalonia.Controls.Templates
         /// </returns>
         public TControl Build(TParam param)
         {
+            return BuildWithNameScope(param).Item1;
+        }
+
+        protected (TControl, INameScope) BuildWithNameScope(TParam param)
+        {
             var scope = new NameScope();
             var rv = _func(param, scope);
-            // TODO: May be return the name scope alongside with the control instead?
-            if (rv is StyledElement sl)
-                NameScope.SetNameScope(sl, scope);
-            return rv;
+            return (rv, scope);
         }
     }
 }

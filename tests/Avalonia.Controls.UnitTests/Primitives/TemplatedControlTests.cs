@@ -92,7 +92,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Empty(target.GetLogicalChildren());
         }
 
-        [Fact]
+        [Fact(Skip = "We are using name scopes from IServiceProvider now")]
         public void Templated_Child_Should_Be_NameScope()
         {
             var target = new TemplatedControl

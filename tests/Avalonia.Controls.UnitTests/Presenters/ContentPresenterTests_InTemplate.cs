@@ -136,7 +136,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Null(NameScope.GetNameScope((Control)target.Child));
         }
 
-        [Fact]
+        [Fact(Skip = "We are using name scopes from IServiceProvider now")]
         public void DataTemplate_Created_Control_Should_Be_NameScope()
         {
             var (target, _) = CreateTarget();

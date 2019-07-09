@@ -7,6 +7,7 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -20,10 +21,12 @@ namespace Avalonia.Markup.Parsers
     {
         private readonly bool _enableValidation;
         private readonly Func<string, string, Type> _typeResolver;
+        private readonly INameScope _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver, INameScope nameScope)
         {
             _typeResolver = typeResolver;
+            _nameScope = nameScope;
             _enableValidation = enableValidation;
         }
 
@@ -213,7 +216,7 @@ namespace Avalonia.Markup.Parsers
                 throw new ExpressionParseException(r.Position, "Element name expected after '#'.");
             }
 
-            nodes.Add(new ElementNameNode(name.ToString()));
+            nodes.Add(new ElementNameNode(_nameScope, name.ToString()));
             return State.AfterMember;
         }
 

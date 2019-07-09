@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive;
+using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
@@ -7,7 +8,8 @@ namespace Avalonia.Markup.Parsers
 {
     public static class ExpressionObserverBuilder
     {
-        internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type> typeResolver = null)
+        internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type> typeResolver = null,
+            INameScope nameScope = null)
         {
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -15,7 +17,7 @@ namespace Avalonia.Markup.Parsers
             }
             
             var reader = new CharacterReader(expression.AsSpan());
-            var parser = new ExpressionParser(enableValidation, typeResolver);
+            var parser = new ExpressionParser(enableValidation, typeResolver, nameScope);
             var node = parser.Parse(ref reader);
 
             if (!reader.End)

@@ -20,5 +20,11 @@ namespace Avalonia.Controls.Templates
             : base(build)
         {
         }
+
+        public new ControlTemplateResult Build(ITemplatedControl param)
+        {
+            var (control, scope) = BuildWithNameScope(param);
+            return new ControlTemplateResult(control, scope);
+        }
     }
 }

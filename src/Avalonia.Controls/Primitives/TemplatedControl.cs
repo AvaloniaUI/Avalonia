@@ -257,12 +257,10 @@ namespace Avalonia.Controls.Primitives
                 {
                     Logger.Verbose(LogArea.Control, this, "Creating control template");
 
-                    var child = template.Build(this);
+                    var (child, nameScope) = template.Build(this);
                     ApplyTemplatedParent(child);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
-
-                    var nameScope = (child is StyledElement styledChild) ? NameScope.GetNameScope(styledChild) : null;
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
