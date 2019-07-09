@@ -5,7 +5,7 @@ using System;
 
 namespace Avalonia.Media
 {
-    public interface IGlyphTypefaceImpl : IDisposable
+    public interface IGlyphTypefaceImpl
     {
         short DesignEmHeight { get; }
         int Ascent { get; }
@@ -15,8 +15,7 @@ namespace Avalonia.Media
         int UnderlineThickness { get; }
         int StrikethroughPosition { get; }
         int StrikethroughThickness { get; }
-        ushort[] GetGlyphs(ReadOnlySpan<int> codePoints);
-        ushort[] GetGlyphs(int[] codePoints);
-        ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs);
+        ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints);
+        ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<ushort> glyphs);
     }
 }

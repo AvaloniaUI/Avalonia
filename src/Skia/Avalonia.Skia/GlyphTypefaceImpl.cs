@@ -2,39 +2,41 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using Avalonia.Media;
-using HarfBuzzSharp;
+using Avalonia.Skia.Text;
 
 using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    // ToDo: Use this for the TextLayout
     internal class GlyphTypefaceImpl : IGlyphTypefaceImpl
     {
         private readonly TableLoader _tableLoader;
 
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            _tableLoader = new TableLoader(typeface);
+            Typeface = typeface;
 
-            Font.GetScale(out var xScale, out _);
+            _tableLoader = TableLoader.Get(typeface);
+
+            _tableLoader.Font.GetScale(out var xScale, out _);
 
             DesignEmHeight = (short)xScale;
 
-            var horizontalFontExtents = Font.HorizontalFontExtents;
+            if (!_tableLoader.Font.TryGetHorizontalFontExtents(out var fontExtents) &&
+                !_tableLoader.Font.TryGetVerticalFontExtents(out fontExtents))
+            {
+                return;
+            }
 
-            Ascent = -horizontalFontExtents.Ascender;
+            Ascent = -fontExtents.Ascender;
 
-            Descent = -horizontalFontExtents.Descender;
+            Descent = -fontExtents.Descender;
 
-            LineGap = horizontalFontExtents.LineGap;
+            LineGap = fontExtents.LineGap;
         }
 
-        public SKTypeface Typeface => _tableLoader.Typeface;
-
-        public Font Font => _tableLoader.Font;
+        public SKTypeface Typeface { get; }
 
         public short DesignEmHeight { get; }
 
@@ -52,135 +54,31 @@ namespace Avalonia.Skia
 
         public int StrikethroughThickness => 0;
 
-        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints)
+        public ushort[] GetGlyphs(ReadOnlySpan<uint> codePoints)
         {
             var glyphs = new ushort[codePoints.Length];
 
             for (var i = 0; i < codePoints.Length; i++)
             {
-                glyphs[i] = (ushort)Font.GetGlyph(codePoints[i]);
+                if (_tableLoader.Font.TryGetGlyph(codePoints[i], out var glyph))
+                {
+                    glyphs[i] = (ushort)glyph;
+                }
             }
 
             return glyphs;
         }
 
-        public ushort[] GetGlyphs(int[] codePoints)
+        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
-            var glyphs = new ushort[codePoints.Length];
-
-            for (var i = 0; i < codePoints.Length; i++)
-            {
-                glyphs[i] = (ushort)Font.GetGlyph(codePoints[i]);
-            }
-
-            return glyphs;
-        }
-
-        public ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs)
-        {
-            var indices = new int[glyphs.Length];
+            var glyphIndices = new uint[glyphs.Length];
 
             for (var i = 0; i < glyphs.Length; i++)
             {
-                indices[i] = glyphs[i];
+                glyphIndices[i] = glyphs[i];
             }
 
-            return Font.GetHorizontalGlyphAdvances(indices);
-        }
-
-        public void Dispose()
-        {
-            _tableLoader.Dispose();
-        }
-
-        private class TableLoader : IDisposable
-        {
-
-            private readonly Dictionary<Tag, Blob> _tableCache = new Dictionary<Tag, Blob>();
-            private bool _isDisposed;
-
-            public TableLoader(SKTypeface typeface)
-            {
-                Typeface = typeface;
-                Font = CreateFont(typeface);
-            }
-
-            public SKTypeface Typeface { get; }
-
-
-            public Font Font { get; }
-
-            private Font CreateFont(SKTypeface typeface)
-            {
-                var face = new Face(GetTable, Dispose)
-                {
-                    UnitsPerEm = typeface.UnitsPerEm
-                };
-
-                var font = new Font(face);
-
-                font.SetFunctionsOpenType();
-
-                return font;
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
-                _isDisposed = true;
-
-                if (!disposing)
-                {
-                    return;
-                }
-
-                foreach (var blob in _tableCache.Values)
-                {
-                    blob?.Dispose();
-                }
-
-                Font.Dispose();
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private unsafe Blob CreateBlob(Tag tag)
-            {
-                if (Typeface.TryGetTableData(tag, out var table))
-                {
-                    fixed (byte* tablePtr = table)
-                    {
-                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
-                    }
-                }
-
-                return null;
-            }
-
-            private IntPtr GetTable(IntPtr face, Tag tag, IntPtr userData)
-            {
-                Blob blob;
-
-                if (_tableCache.ContainsKey(tag))
-                {
-                    blob = _tableCache[tag];
-                }
-                else
-                {
-                    blob = CreateBlob(tag);
-                    _tableCache.Add(tag, blob);
-                }
-
-                return blob?.Handle ?? IntPtr.Zero;
-            }
+            return _tableLoader.Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
     }
 }

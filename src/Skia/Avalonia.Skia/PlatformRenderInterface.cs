@@ -97,7 +97,7 @@ namespace Avalonia.Skia
 
         public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
         {
-            return new GlyphTypefaceImpl(TypefaceCache.GetSKTypeface(typeface));
+            return new GlyphTypefaceImpl(TypefaceCache.GetTypeface(typeface));
         }
 
         /// <inheritdoc />

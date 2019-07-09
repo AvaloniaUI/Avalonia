@@ -27,7 +27,7 @@ namespace ControlCatalog.Pages
 
             var bytes = Encoding.UTF32.GetBytes("1234567890");
 
-            var codePoints = new int[bytes.Length / 4];
+            var codePoints = new uint[bytes.Length / 4];
 
             Buffer.BlockCopy(bytes, 0, codePoints, 0, bytes.Length);
 

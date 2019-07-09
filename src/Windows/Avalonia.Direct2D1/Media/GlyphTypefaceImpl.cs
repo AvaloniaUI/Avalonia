@@ -66,19 +66,16 @@ namespace Avalonia.Direct2D1.Media
 
         public int StrikethroughThickness { get; }
 
-        public void Dispose()
+        public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
-            _fontFace.Dispose();
-        }
+            var copiedCodepoints = new int[codepoints.Length];
 
-        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints)
-        {
-            return GetGlyphs(codePoints.ToArray());
-        }
+            for (var i = 0; i < codepoints.Length; i++)
+            {
+                copiedCodepoints[i] = (int)codepoints[i];
+            }
 
-        public ushort[] GetGlyphs(int[] codePoints)
-        {
-            var indices = _fontFace.GetGlyphIndices(codePoints);
+            var indices = _fontFace.GetGlyphIndices(copiedCodepoints);
 
             var glyphs = new ushort[indices.Length];
 
@@ -90,7 +87,7 @@ namespace Avalonia.Direct2D1.Media
             return glyphs;
         }
 
-        public ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs)
+        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
             var indices = new short[glyphs.Length];
 

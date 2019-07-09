@@ -231,6 +231,8 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public unsafe void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
+            // ToDo: Implement lazy GlyphRunImpl for caching and also use SKTextBlob
+
             using (var paint = CreatePaint(foreground, glyphRun.Size))
             {
                 var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.GlyphTypefaceImpl;

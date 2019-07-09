@@ -21,10 +21,6 @@ namespace Avalonia.Media
 
         public IGlyphTypefaceImpl GlyphTypefaceImpl => _glyphTypefaceImpl.Value;
 
-        public FontStyle Style => _typeface.Style;
-
-        public FontWeight Weight => _typeface.Weight;
-
         public short DesignEmHeight => GlyphTypefaceImpl.DesignEmHeight;
 
         public int Ascent => GlyphTypefaceImpl.Ascent;
@@ -41,11 +37,9 @@ namespace Avalonia.Media
 
         public int StrikethroughThickness => GlyphTypefaceImpl.StrikethroughThickness;
 
-        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
+        public ushort[] GetGlyphs(ReadOnlySpan<uint> codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
 
-        public ushort[] GetGlyphs(int[] codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
-
-        public ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
+        public ReadOnlySpan<int> GetHorizontalGlyphAdvances(ushort[] glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
 
         private IGlyphTypefaceImpl CreateGlyphTypefaceImpl()
         {

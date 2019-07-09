@@ -52,7 +52,7 @@ namespace Avalonia.Media
             }
             else
             {
-                var glyphAdvances = GlyphTypeface.GetGlyphAdvances(GlyphIndices);
+                var glyphAdvances = GlyphTypeface.GetHorizontalGlyphAdvances(GlyphIndices);
 
                 foreach (var advance in glyphAdvances)
                 {
