@@ -25,6 +25,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlIlMethod NameScopeSetNameScope { get; }
         public IXamlIlType INameScope { get; }
         public IXamlIlMethod INameScopeRegister { get; }
+        public IXamlIlMethod INameScopeComplete { get; }
         
         public AvaloniaXamlIlWellKnownTypes(XamlIlAstTransformationContext ctx)
         {
@@ -49,6 +50,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             INameScopeRegister = INameScope.GetMethod(
                 new FindMethodMethodSignature("Register", XamlIlTypes.Void,
                      XamlIlTypes.String, XamlIlTypes.Object)
+                {
+                    IsStatic = false, DeclaringOnly = true, IsExactMatch = true
+                });
+            INameScopeComplete = INameScope.GetMethod(
+                new FindMethodMethodSignature("Complete", XamlIlTypes.Void)
                 {
                     IsStatic = false, DeclaringOnly = true, IsExactMatch = true
                 });

@@ -21,8 +21,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
             return sp =>
             {
-                var scope = new NameScope();
-                var obj =  builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
+                var parentScope = sp.GetService<INameScope>();
+                var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
+                var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
+                scope.Complete();
                 return new ControlTemplateResult((IControl)obj, scope);
             };
         }

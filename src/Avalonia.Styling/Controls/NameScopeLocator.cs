@@ -1,6 +1,9 @@
 using System;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 
@@ -17,63 +20,44 @@ namespace Avalonia.Controls
         /// <param name="name">The name of the control to find.</param>
         public static IObservable<object> Track(INameScope scope, string name)
         {
-            return new ScopeTracker(scope, name);
+            return new NeverEndingValueTaskObservable<object>(scope.FindAsync(name));
         }
         
-        private class ScopeTracker : LightweightObservableBase<object>
+        // This class is implemented in such weird way because for some reason
+        // our binding system doesn't expect OnCompleted to be ever called and
+        // seems to treat it as binding cancellation or something 
+
+        private class NeverEndingValueTaskObservable<T> : IObservable<T>
         {
-            private readonly string _name;
-            INameScope _nameScope;
-            object _value;
+            private T _value;
+            private Task<T> _task;
 
-            public ScopeTracker(INameScope nameScope, string name)
+            public NeverEndingValueTaskObservable(ValueTask<T> task)
             {
-                _nameScope = nameScope;
-                _name = name;
+                if (task.IsCompleted)
+                    _value = task.Result;
+                else
+                    _task = task.AsTask();
             }
-
-
-            protected override void Initialize()
+            
+            public IDisposable Subscribe(IObserver<T> observer)
             {
-                _nameScope.Registered += Registered;
-                _nameScope.Unregistered += Unregistered;
-                _value = _nameScope.Find<ILogical>(_name);
-            }
-
-            protected override void Deinitialize()
-            {
-                if (_nameScope != null)
+                if (_task?.IsCompleted == true)
                 {
-                    _nameScope.Registered -= Registered;
-                    _nameScope.Unregistered -= Unregistered;
+                    _value = _task.Result;
+                    _task = null;
                 }
 
-                _value = null;
+                if (_task != null)
+                    _task.ContinueWith(t =>
+                    {
+                        observer.OnNext(t.Result);
+                    }, TaskContinuationOptions.ExecuteSynchronously);
+                else
+                    observer.OnNext(_value);
+                
+                return Disposable.Empty;
             }
-
-            protected override void Subscribed(IObserver<object> observer, bool first)
-            {
-                observer.OnNext(_value);
-            }
-
-            private void Registered(object sender, NameScopeEventArgs e)
-            {
-                if (e.Name == _name)
-                {
-                    _value = e.Element;
-                    PublishNext(_value);
-                }
-            }
-
-            private void Unregistered(object sender, NameScopeEventArgs e)
-            {
-                if (e.Name == _name)
-                {
-                    _value = null;
-                    PublishNext(null);
-                }
-            }
-
         }
     }
 }

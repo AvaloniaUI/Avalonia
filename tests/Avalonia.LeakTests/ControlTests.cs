@@ -85,7 +85,7 @@ namespace Avalonia.LeakTests
 
                     // Clear the content and ensure the Canvas is removed.
                     window.Content = null;
-                    scope.Unregister("foo");
+
                     window.LayoutManager.ExecuteLayoutPass();
                     Assert.Null(window.Presenter.Child);
 

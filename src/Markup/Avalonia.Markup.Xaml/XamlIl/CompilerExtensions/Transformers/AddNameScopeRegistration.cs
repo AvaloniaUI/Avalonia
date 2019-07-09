@@ -53,17 +53,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     new[]
                     {
                         mnode.Manipulation,
-                        new AddNameScopeToRootObjectXamlIlNode(mnode, context.GetAvaloniaTypes())
+                        new HandleRootObjectScopeNode(mnode, context.GetAvaloniaTypes())
                     });
             }
             return node;
         }
 
-        class AddNameScopeToRootObjectXamlIlNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
+        class HandleRootObjectScopeNode : XamlIlAstNode, IXamlIlAstManipulationNode, IXamlIlAstEmitableNode
         {
             private readonly AvaloniaXamlIlWellKnownTypes _types;
 
-            public AddNameScopeToRootObjectXamlIlNode(IXamlIlLineInfo lineInfo,
+            public HandleRootObjectScopeNode(IXamlIlLineInfo lineInfo,
                 AvaloniaXamlIlWellKnownTypes types) : base(lineInfo)
             {
                 _types = types;
@@ -72,6 +72,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public XamlIlNodeEmitResult Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
             {
                 var next = codeGen.DefineLabel();
+                var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
+                    f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
                 using (var local = codeGen.LocalsPool.GetLocal(_types.StyledElement))
                 {
                     codeGen
@@ -81,11 +83,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         .Brfalse(next)
                         .Ldloc(local.Local)
                         .Ldloc(context.ContextLocal)
-                        .Ldfld(context.RuntimeContext.ContextType.Fields.First(f =>
-                            f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName))
-                        .EmitCall(_types.NameScopeSetNameScope)
-                        .MarkLabel(next);
-
+                        .Ldfld(scopeField)
+                        .EmitCall(_types.NameScopeSetNameScope, true)
+                        .MarkLabel(next)
+                        .Ldloc(context.ContextLocal)
+                        .Ldfld(scopeField)
+                        .EmitCall(_types.INameScopeComplete, true);
                 }
 
                 return XamlIlNodeEmitResult.Void(1);
