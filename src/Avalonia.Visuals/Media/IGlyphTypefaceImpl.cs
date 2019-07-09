@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Media
 {
@@ -15,7 +16,9 @@ namespace Avalonia.Media
         int UnderlineThickness { get; }
         int StrikethroughPosition { get; }
         int StrikethroughThickness { get; }
-        ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints);
-        ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<ushort> glyphs);
+        ushort[] GetGlyphs(ReadOnlySpan<uint> codePoints);
+        int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs);
+        IGlyphRunImpl CreateGlyphRun(float fontRenderingEmSize, Point baselineOrigin, IReadOnlyList<ushort> glyphIndices,
+            IReadOnlyList<float> glyphAdvances, IReadOnlyList<Vector> glyphOffsets);
     }
 }

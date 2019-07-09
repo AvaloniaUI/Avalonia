@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 
 using Avalonia.Media;
 
@@ -66,16 +67,19 @@ namespace Avalonia.Direct2D1.Media
 
         public int StrikethroughThickness { get; }
 
-        public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
+        public void Dispose()
         {
-            var copiedCodepoints = new int[codepoints.Length];
+            _fontFace.Dispose();
+        }
 
-            for (var i = 0; i < codepoints.Length; i++)
-            {
-                copiedCodepoints[i] = (int)codepoints[i];
-            }
+        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints)
+        {
+            return GetGlyphs(codePoints.ToArray());
+        }
 
-            var indices = _fontFace.GetGlyphIndices(copiedCodepoints);
+        public ushort[] GetGlyphs(int[] codePoints)
+        {
+            var indices = _fontFace.GetGlyphIndices(codePoints);
 
             var glyphs = new ushort[indices.Length];
 
@@ -87,7 +91,7 @@ namespace Avalonia.Direct2D1.Media
             return glyphs;
         }
 
-        public ReadOnlySpan<int> GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
+        public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
             var indices = new short[glyphs.Length];
 
@@ -106,6 +110,11 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return glyphAdvances;
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(float fontRenderingEmSize, Point baselineOrigin, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<float> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        {
+            throw new NotImplementedException();
         }
     }
 }

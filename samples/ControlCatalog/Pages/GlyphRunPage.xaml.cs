@@ -33,15 +33,15 @@ namespace ControlCatalog.Pages
 
             var glyphs = glyphTypeface.GetGlyphs(codePoints);
 
-            var baselineOrigin = new Point(Bounds.X, Bounds.Y);
+            var baselineOrigin = new Point(15, 15);
 
-            for (var i = 18; i < 30; i++)
+            for (var i = 12; i < 32; i++)
             {
+                var spacing = i * 0.3;
+
                 var scale = (float)i / glyphTypeface.DesignEmHeight;
 
-                baselineOrigin += new Point(0, i * 1.5f);
-
-                var advances = Enumerable.Repeat(i * 0.6f, 10).ToArray();
+                baselineOrigin += new Point(0, -glyphTypeface.Ascent * scale);
 
                 var offsets = new Vector[10];
 
@@ -52,30 +52,31 @@ namespace ControlCatalog.Pages
                     offsets[j] = new Vector(0, offsetY++ * i * 0.06);
                 }
 
+                var maxY = offsetY;
+
                 for (var j = 5; j < 10; j++)
                 {
                     offsets[j] = new Vector(0, offsetY-- * i * 0.06);
                 }
 
-                var glyphRun = new GlyphRun(glyphTypeface, i, baselineOrigin, glyphs, advances, offsets);
+                var glyphRun = new GlyphRun(glyphTypeface, i, baselineOrigin, glyphs, null, offsets);
 
-                drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
+                using (drawingContext.PushTransformContainer())
+                {
+                    drawingContext.DrawRectangle(new Pen(Brushes.Orange), glyphRun.Bounds);
+                }
 
-                var overline = baselineOrigin + new Point(0, glyphTypeface.Ascent * scale);
+                using (drawingContext.PushTransformContainer())
+                {
+                    drawingContext.DrawLine(new Pen(Brushes.Blue), baselineOrigin, baselineOrigin + new Point(glyphRun.Bounds.Width, 0));
+                }
 
-                drawingContext.DrawLine(new Pen(Brushes.Red), overline, overline + new Point(glyphRun.Size.Width, 0));
+                using (drawingContext.PushTransformContainer())
+                {
+                    drawingContext.DrawGlyphRun(Brushes.Black, glyphRun);
+                }
 
-                drawingContext.DrawLine(new Pen(Brushes.Transparent), overline, overline - new Point(glyphRun.Size.Width, 0));
-
-                drawingContext.DrawLine(new Pen(Brushes.Blue), baselineOrigin, baselineOrigin + new Point(glyphRun.Size.Width, 0));
-
-                drawingContext.DrawLine(new Pen(Brushes.Transparent), baselineOrigin, baselineOrigin - new Point(glyphRun.Size.Width, 0));
-
-                var underline = baselineOrigin + new Point(0, (glyphTypeface.Descent + glyphTypeface.LineGap) * scale);
-
-                drawingContext.DrawLine(new Pen(Brushes.Green), underline, underline + new Point(glyphRun.Size.Width, 0));
-
-                drawingContext.DrawLine(new Pen(Brushes.Transparent), underline, underline - new Point(glyphRun.Size.Width, 0));
+                baselineOrigin += new Point(0, maxY + spacing);
             }
         }
     }

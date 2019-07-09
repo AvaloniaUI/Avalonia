@@ -11,15 +11,14 @@ namespace Avalonia.Media
     {
         private readonly Typeface _typeface;
 
-        private readonly Lazy<IGlyphTypefaceImpl> _glyphTypefaceImpl;
+        private IGlyphTypefaceImpl _glyphTypefaceImpl;
 
         public GlyphTypeface(Typeface typeface)
         {
             _typeface = typeface;
-            _glyphTypefaceImpl = new Lazy<IGlyphTypefaceImpl>(CreateGlyphTypefaceImpl);
         }
 
-        public IGlyphTypefaceImpl GlyphTypefaceImpl => _glyphTypefaceImpl.Value;
+        public IGlyphTypefaceImpl GlyphTypefaceImpl => _glyphTypefaceImpl ?? (_glyphTypefaceImpl = CreateGlyphTypefaceImpl());
 
         public short DesignEmHeight => GlyphTypefaceImpl.DesignEmHeight;
 
@@ -39,7 +38,7 @@ namespace Avalonia.Media
 
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codePoints) => GlyphTypefaceImpl.GetGlyphs(codePoints);
 
-        public ReadOnlySpan<int> GetHorizontalGlyphAdvances(ushort[] glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
+        public ReadOnlySpan<int> GetGlyphAdvances(ushort[] glyphs) => GlyphTypefaceImpl.GetGlyphAdvances(glyphs);
 
         private IGlyphTypefaceImpl CreateGlyphTypefaceImpl()
         {
