@@ -51,7 +51,15 @@ namespace Avalonia.Media
         public Size Constraint
         {
             get => _constraint;
-            set => Set(ref _constraint, value);
+            set
+            {
+                if (value == _constraint)
+                {
+                    return;
+                }
+
+                Set(ref _constraint, value);
+            }
         }
 
         /// <summary>

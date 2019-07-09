@@ -30,7 +30,7 @@ namespace Avalonia.Skia
 
             Text = text ?? string.Empty;
 
-            var skiaTypeface = TypefaceCache.GetSKTypeface(typeface);
+            var skiaTypeface = TypefaceCache.GetTypeface(typeface);
 
             TextLayout = new SKTextLayout(text, skiaTypeface, (float)fontSize, textAlignment, textWrapping, textTrimming, constraint, spans);
 

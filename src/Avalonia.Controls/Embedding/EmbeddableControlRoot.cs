@@ -45,7 +45,10 @@ namespace Avalonia.Controls.Embedding
         {
             if (EnforceClientSize)
                 availableSize = PlatformImpl?.ClientSize ?? default(Size);
-            return base.MeasureOverride(availableSize);
+            var rv = base.MeasureOverride(availableSize);
+            if (EnforceClientSize)
+                return availableSize;
+            return rv;
         }
 
         private readonly NameScope _nameScope = new NameScope();

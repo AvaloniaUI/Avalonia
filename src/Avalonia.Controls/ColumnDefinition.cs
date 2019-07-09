@@ -55,19 +55,22 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the actual calculated width of the column.
         /// </summary>
-        public double ActualWidth
-        {
-            get;
-            internal set;
-        }
+        public double ActualWidth => Parent?.GetFinalColumnDefinitionWidth(Index) ?? 0d;
 
         /// <summary>
         /// Gets or sets the maximum width of the column in DIPs.
         /// </summary>
         public double MaxWidth
         {
-            get { return GetValue(MaxWidthProperty); }
-            set { SetValue(MaxWidthProperty, value); }
+            get
+            {
+                return GetValue(MaxWidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MaxWidthProperty, value);
+            }
         }
 
         /// <summary>
@@ -75,8 +78,15 @@ namespace Avalonia.Controls
         /// </summary>
         public double MinWidth
         {
-            get { return GetValue(MinWidthProperty); }
-            set { SetValue(MinWidthProperty, value); }
+            get
+            {
+                return GetValue(MinWidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(MinWidthProperty, value);
+            }
         }
 
         /// <summary>
@@ -84,8 +94,19 @@ namespace Avalonia.Controls
         /// </summary>
         public GridLength Width
         {
-            get { return GetValue(WidthProperty); }
-            set { SetValue(WidthProperty, value); }
+            get
+            {
+                return GetValue(WidthProperty);
+            }
+            set
+            {
+                Parent?.InvalidateMeasure();
+                SetValue(WidthProperty, value);
+            }
         }
+
+        internal override GridLength UserSizeValueCache => this.Width;
+        internal override double UserMinSizeValueCache => this.MinWidth;
+        internal override double UserMaxSizeValueCache => this.MaxWidth;
     }
 }

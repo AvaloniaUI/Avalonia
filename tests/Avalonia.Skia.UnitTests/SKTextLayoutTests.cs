@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Avalonia.Media;
@@ -18,7 +19,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextInBetween()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -53,7 +54,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtStart()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -88,7 +89,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToTextAtEnd()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -123,7 +124,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToSingleCharacter()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -156,7 +157,7 @@ namespace Avalonia.Skia.UnitTests
         {
             const string Text = "😄😄😄😄";
 
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -223,7 +224,7 @@ namespace Avalonia.Skia.UnitTests
         [Fact]
         public void ShouldApplyTextStyleSpanToMultiLine()
         {
-            var foreground = new SolidColorBrush(Colors.Red);
+            var foreground = new SolidColorBrush(Colors.Red).ToImmutable();
 
             var spans = new List<FormattedTextStyleSpan>
                         {
@@ -245,7 +246,7 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(foreground, layout.TextLines[2].TextRuns[0].Foreground);
         }
 
-        [Fact(Skip="Currently fails on Linux because of not present Emojis font")]
+        [Fact(Skip = "Currently fails on Linux because of not present Emojis font")]
         public void ShouldHitTestSurrogatePair()
         {
             const string Text = "😄";
@@ -291,6 +292,66 @@ namespace Avalonia.Skia.UnitTests
             Assert.Equal(6, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters.Count);
 
             Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters[5].Length);
+        }
+
+        [Fact]
+        public void ShouldHaveOneRunWithCommonScript()
+        {
+            var layout = new SKTextLayout(
+                "abcde\r\n",
+                SKTypeface.Default,
+                12.0f,
+                TextAlignment.Left,
+                TextWrapping.NoWrap,
+                TextTrimming.None,
+                new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
+        }
+
+        [Theory]
+        [InlineData("\r\r", 3)]
+        [InlineData("\n\n", 3)]
+        [InlineData("abcde\r\n", 2)]
+        [InlineData("abcde\n\r", 2)]
+        [InlineData("abcde\r\nabcde\r\n", 3)]
+        [InlineData("abcde\n\rabcde\r\n", 3)]
+        [InlineData("abcde\r\nabcde\r\nabcde\r\n", 4)]
+        [InlineData("abcde\n\rabcde\r\nabcde\r\n", 4)]
+        public void ShouldBreak(string text, int numberOfLines)
+        {
+            var breaker = LineBreakIterator.Create(text.AsSpan());
+
+            var lines = breaker.ToArray();
+
+            Assert.Equal(numberOfLines, lines.Length);
+        }
+
+        [Theory]
+        [InlineData("0123", 1)]
+        [InlineData("\r\n", 1)]
+        [InlineData("👍b", 2)]
+        [InlineData("a👍b", 3)]
+        [InlineData("a👍子b", 4)]
+        public void ShouldProduceUniqueRuns(string text, int numberOfRuns)
+        {
+            var breaker = TextRunIterator.Create(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
+
+            var runs = breaker.ToArray();
+
+            Assert.Equal(numberOfRuns, runs.Length);
+        }
+
+        [Fact]
+        public void ShouldSplitRunOnDirection()
+        {
+            var text = "1234الدولي";
+
+            var breaker = TextRunIterator.Create(text.AsSpan(), SKTypeface.Default, new SKTextPointer(0, text.Length));
+
+            Assert.Equal(2, breaker.Count);
+
+            Assert.Equal (4, breaker[0].TextPointer.Length);
         }
     }
 }

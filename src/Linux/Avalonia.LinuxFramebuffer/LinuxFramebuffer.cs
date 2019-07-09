@@ -43,12 +43,10 @@ namespace Avalonia.LinuxFramebuffer
 
                 SetBpp();
 
-                _varInfo.yoffset = 100;
                 if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo))
                     _varInfo.transp = new fb_bitfield();
 
-                if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo))
-                    throw new Exception("FBIOPUT_VSCREENINFO error: " + Marshal.GetLastWin32Error());
+                NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOPUT_VSCREENINFO, pnfo);
 
                 if (-1 == NativeUnsafeMethods.ioctl(_fd, FbIoCtl.FBIOGET_VSCREENINFO, pnfo))
                     throw new Exception("FBIOGET_VSCREENINFO error: " + Marshal.GetLastWin32Error());

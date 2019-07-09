@@ -30,6 +30,7 @@ namespace Avalonia.Utilities
         /// LessThan - Returns whether or not the first double is less than the second double.
         /// That is, whether or not the first is strictly less than *and* not within epsilon of
         /// the other number.
+        /// </summary>
         /// <param name="value1"> The first double to compare. </param>
         /// <param name="value2"> The second double to compare. </param>
         public static bool LessThan(double value1, double value2)
@@ -41,6 +42,7 @@ namespace Avalonia.Utilities
         /// GreaterThan - Returns whether or not the first double is greater than the second double.
         /// That is, whether or not the first is strictly greater than *and* not within epsilon of
         /// the other number.
+        /// </summary>
         /// <param name="value1"> The first double to compare. </param>
         /// <param name="value2"> The second double to compare. </param>
         public static bool GreaterThan(double value1, double value2)
@@ -52,6 +54,7 @@ namespace Avalonia.Utilities
         /// LessThanOrClose - Returns whether or not the first double is less than or close to
         /// the second double.  That is, whether or not the first is strictly less than or within
         /// epsilon of the other number.
+        /// </summary>
         /// <param name="value1"> The first double to compare. </param>
         /// <param name="value2"> The second double to compare. </param>
         public static bool LessThanOrClose(double value1, double value2)

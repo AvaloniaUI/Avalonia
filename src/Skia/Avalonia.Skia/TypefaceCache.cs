@@ -11,59 +11,20 @@ namespace Avalonia.Skia
     /// Cache for Skia typefaces.
     /// </summary>
     internal static class TypefaceCache
-    {      
-        private static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> s_cache = new Dictionary<string, Dictionary<FontKey, SKTypeface>>();
+    {
+        private static readonly string s_defaultFamilyName = CreateDefaultFamilyName();
 
-        public static SKTypeface Default { get; } =
-            SKTypeface.FromFamilyName(FontFamily.Default.Name) ?? SKTypeface.FromFamilyName(null);
+        private static readonly Dictionary<string, Dictionary<FontKey, SKTypeface>> s_cache =
+            new Dictionary<string, Dictionary<FontKey, SKTypeface>>();
 
-        public static SKTypeface GetSKTypeface(Typeface typeface)
+        private static string CreateDefaultFamilyName()
         {
-            if (typeface.FontFamily?.Name == null)
-            {
-                return SKTypeface.Default;
-            }
+            var defaultTypeface = SKTypeface.CreateDefault();
 
-            if (typeface.FontFamily.Key != null)
-            {
-                var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-
-                return typefaceCollection.GetTypeFace(typeface);
-            }
-
-            var fontStyleSlant = SKFontStyleSlant.Upright;
-
-            switch (typeface.Style)
-            {
-                case FontStyle.Italic:
-                    fontStyleSlant = SKFontStyleSlant.Italic;
-                    break;
-
-                case FontStyle.Oblique:
-                    fontStyleSlant = SKFontStyleSlant.Oblique;
-                    break;
-            }
-
-            if (typeface.FontFamily.FamilyNames.HasFallbacks)
-            {
-                var skiaTypeface = Default;
-
-                foreach (var familyName in typeface.FontFamily.FamilyNames)
-                {
-                    skiaTypeface = GetSKTypeface(familyName, new FontKey((SKFontStyleWeight)typeface.Weight, fontStyleSlant));
-                    if (skiaTypeface != Default)
-                    {
-                        break;
-                    }
-                }
-
-                return skiaTypeface;
-            }
-
-            return GetSKTypeface(typeface.FontFamily.Name, new FontKey((SKFontStyleWeight)typeface.Weight, fontStyleSlant));
+            return defaultTypeface.FamilyName;
         }
 
-        private static SKTypeface GetSKTypeface(string name, FontKey key)
+        private static SKTypeface GetTypeface(string name, FontKey key)
         {
             var familyKey = name;
 
@@ -74,8 +35,8 @@ namespace Avalonia.Skia
 
             if (!entry.TryGetValue(key, out var typeface))
             {
-                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant)
-                           ?? Default;
+                typeface = SKTypeface.FromFamilyName(familyKey, key.Weight, SKFontStyleWidth.Normal, key.Slant) ??
+                           GetTypeface(s_defaultFamilyName, key);
 
                 entry[key] = typeface;
             }
@@ -83,38 +44,32 @@ namespace Avalonia.Skia
             return typeface;
         }
 
-        private struct FontKey
+        public static SKTypeface GetTypeface(Typeface typeface)
         {
-            public readonly SKFontStyleSlant Slant;
-            public readonly SKFontStyleWeight Weight;
+            var skStyle = SKFontStyleSlant.Upright;
 
-            public FontKey(SKFontStyleWeight weight, SKFontStyleSlant slant)
+            switch (typeface.Style)
             {
-                Slant = slant;
-                Weight = weight;
+                case FontStyle.Italic:
+                    skStyle = SKFontStyleSlant.Italic;
+                    break;
+
+                case FontStyle.Oblique:
+                    skStyle = SKFontStyleSlant.Oblique;
+                    break;
             }
 
-            public override int GetHashCode()
-            {
-                var hash = 17;
-                hash = (hash * 31) + (int)Slant;
-                hash = (hash * 31) + (int)Weight;
+            var key = new FontKey((SKFontStyleWeight)typeface.Weight, skStyle);
 
-                return hash;
+            if (typeface.FontFamily.Key == null)
+            {
+                return GetTypeface(typeface.FontFamily.Name, key);
             }
 
-            public override bool Equals(object other)
-            {
-                return other is FontKey a && Equals(a);
-            }
+            var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 
-            private bool Equals(FontKey other)
-            {
-                return Slant == other.Slant &&
-                       Weight == other.Weight;
-            }
-
-            // Equals and GetHashCode ommitted
+            return typefaceCollection.GetTypeFace(typeface.FontFamily.Name, key) ??
+                   GetTypeface(s_defaultFamilyName, key);
         }
     }
 }

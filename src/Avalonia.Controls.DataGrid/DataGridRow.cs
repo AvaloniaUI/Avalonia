@@ -881,10 +881,10 @@ namespace Avalonia.Controls
                 && (double.IsNaN(_detailsContent.Height))
                 && (AreDetailsVisible)
                 && (!double.IsNaN(_detailsDesiredHeight))
-                && !DoubleUtil.AreClose(_detailsContent.Bounds.Height, _detailsDesiredHeight)
+                && !DoubleUtil.AreClose(_detailsContent.Bounds.Inflate(_detailsContent.Margin).Height, _detailsDesiredHeight)
                 && Slot != -1)
             {
-                _detailsDesiredHeight = _detailsContent.Bounds.Height;
+                _detailsDesiredHeight = _detailsContent.Bounds.Inflate(_detailsContent.Margin).Height;
 
                 if (true)
                 {
@@ -943,6 +943,16 @@ namespace Avalonia.Controls
                 _previousDetailsHeight = newValue.Height;
             }
         }
+        private void DetailsContent_BoundsChanged(Rect newValue)
+        {
+            if(_detailsContent != null)
+                DetailsContent_SizeChanged(newValue.Inflate(_detailsContent.Margin));
+        }
+        private void DetailsContent_MarginChanged(Thickness newValue)
+        {
+            if (_detailsContent != null)
+                DetailsContent_SizeChanged(_detailsContent.Bounds.Inflate(newValue));
+        }
 
         //TODO Animation
         // Sets AreDetailsVisible on the row and animates if necessary
@@ -997,7 +1007,7 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
         internal void ApplyDetailsTemplate(bool initializeDetailsPreferredHeight)
         {
             if (_detailsElement != null && AreDetailsVisible)
@@ -1023,8 +1033,11 @@ namespace Avalonia.Controls
                     if (_detailsContent != null)
                     {
                         _detailsContentSizeSubscription =
-                            _detailsContent.GetObservable(BoundsProperty)
-                                           .Subscribe(DetailsContent_SizeChanged);
+                            System.Reactive.Disposables.StableCompositeDisposable.Create(
+                                _detailsContent.GetObservable(BoundsProperty)
+                                               .Subscribe(DetailsContent_BoundsChanged),
+                                _detailsContent.GetObservable(MarginProperty)
+                                               .Subscribe(DetailsContent_MarginChanged));
                         _detailsElement.Children.Add(_detailsContent);
                     }
                 }

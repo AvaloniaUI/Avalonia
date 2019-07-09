@@ -9,10 +9,10 @@ namespace Avalonia.Skia.Text
 {
     public class SKGlyphRun
     {
-        public SKGlyphRun(ushort[] glyphIndices, SKPoint[] glyphOffsets, IReadOnlyList<SKGlyphCluster> glyphClusters)
+        public SKGlyphRun(ushort[] glyphIndices, SKPoint[] glyphPositions, IReadOnlyList<SKGlyphCluster> glyphClusters)
         {
             GlyphIndices = glyphIndices;
-            GlyphOffsets = glyphOffsets;
+            GlyphPositions = glyphPositions;
             GlyphClusters = glyphClusters;
         }
 
@@ -30,7 +30,7 @@ namespace Avalonia.Skia.Text
         /// <value>
         /// The glyph positions.
         /// </value>
-        public SKPoint[] GlyphOffsets { get; }
+        public SKPoint[] GlyphPositions { get; }
 
         /// <summary>
         /// Gets the glyph clusters.

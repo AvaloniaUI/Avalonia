@@ -19,6 +19,15 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextPresenter, char>(nameof(PasswordChar));
 
+        public static readonly StyledProperty<IBrush> SelectionBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(SelectionBrushProperty));
+
+        public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(SelectionForegroundBrushProperty));
+
+        public static readonly StyledProperty<IBrush> CaretBrushProperty =
+            AvaloniaProperty.Register<TextPresenter, IBrush>(nameof(CaretBrushProperty));
+
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
                 o => o.SelectionStart,
@@ -34,11 +43,12 @@ namespace Avalonia.Controls.Presenters
         private int _selectionStart;
         private int _selectionEnd;
         private bool _caretBlink;
-        private IBrush _highlightBrush;
-        
+
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(PasswordCharProperty);
+            AffectsRender<TextPresenter>(PasswordCharProperty,
+                SelectionBrushProperty, SelectionForegroundBrushProperty,
+                SelectionStartProperty, SelectionEndProperty);
         }
 
         public TextPresenter()
@@ -77,6 +87,24 @@ namespace Avalonia.Controls.Presenters
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
+        }
+
+        public IBrush SelectionBrush
+        {
+            get => GetValue(SelectionBrushProperty);
+            set => SetValue(SelectionBrushProperty, value);
+        }
+
+        public IBrush SelectionForegroundBrush
+        {
+            get => GetValue(SelectionForegroundBrushProperty);
+            set => SetValue(SelectionForegroundBrushProperty, value);
+        }
+
+        public IBrush CaretBrush
+        {
+            get => GetValue(CaretBrushProperty);
+            set => SetValue(CaretBrushProperty, value);
         }
 
         public int SelectionStart
@@ -120,6 +148,8 @@ namespace Avalonia.Controls.Presenters
 
             if (selectionStart != selectionEnd)
             {
+                var selectionBrush = SelectionBrush;
+
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
 
@@ -129,14 +159,9 @@ namespace Avalonia.Controls.Presenters
 
                 var rects = FormattedText.HitTestTextRange(start, length);
 
-                if (_highlightBrush == null)
-                {
-                    _highlightBrush = (IBrush)this.FindResource("HighlightBrush");
-                }
-
                 foreach (var rect in rects)
                 {
-                    context.FillRectangle(_highlightBrush, rect);
+                    context.FillRectangle(selectionBrush, rect);
                 }
             }
 
@@ -144,16 +169,23 @@ namespace Avalonia.Controls.Presenters
 
             if (selectionStart == selectionEnd)
             {
-                var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
-                var caretBrush = Brushes.Black;
+                var caretBrush = CaretBrush;
 
-                if (backgroundColor.HasValue)
+                if (caretBrush is null)
                 {
-                    byte red = (byte)~(backgroundColor.Value.R);
-                    byte green = (byte)~(backgroundColor.Value.G);
-                    byte blue = (byte)~(backgroundColor.Value.B);
+                    var backgroundColor = (((Control)TemplatedParent).GetValue(BackgroundProperty) as SolidColorBrush)?.Color;
+                    if (backgroundColor.HasValue)
+                    {
+                        byte red = (byte)~(backgroundColor.Value.R);
+                        byte green = (byte)~(backgroundColor.Value.G);
+                        byte blue = (byte)~(backgroundColor.Value.B);
 
-                    caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                        caretBrush = new SolidColorBrush(Color.FromRgb(red, green, blue));
+                    }
+                    else
+                    {
+                        caretBrush = Brushes.Black;
+                    }
                 }
 
                 if (_caretBlink)
@@ -175,14 +207,12 @@ namespace Avalonia.Controls.Presenters
         {
             _caretBlink = true;
             _caretTimer.Start();
-            InvalidateVisual();
         }
 
         public void HideCaret()
         {
             _caretBlink = false;
             _caretTimer.Stop();
-            InvalidateVisual();
         }
 
         internal void CaretIndexChanged(int caretIndex)
@@ -194,12 +224,10 @@ namespace Avalonia.Controls.Presenters
                     _caretBlink = true;
                     _caretTimer.Stop();
                     _caretTimer.Start();
-                    InvalidateVisual();
                 }
                 else
                 {
                     _caretTimer.Start();
-                    InvalidateVisual();
                     _caretTimer.Stop();
                 }
 
@@ -250,10 +278,7 @@ namespace Avalonia.Controls.Presenters
 
             if (length > 0)
             {
-                result.Spans = new[]
-                {
-                    new FormattedTextStyleSpan(start, length, foreground: Brushes.White),
-                };
+                result.Spans = new[] { new FormattedTextStyleSpan(start, length, foreground: SelectionForegroundBrush) };
             }
 
             return result;

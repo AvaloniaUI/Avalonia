@@ -3,23 +3,18 @@
 
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
 using System.ComponentModel;
-using Portable.Xaml.Markup;
 using System;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    [MarkupExtensionReturnType(typeof(IStyle))]
-    public class StyleIncludeExtension : MarkupExtension
+    public class StyleIncludeExtension
     {
         public StyleIncludeExtension()
         {
         }
 
-        public override object ProvideValue(IServiceProvider serviceProvider) => ProvideTypedValue(serviceProvider);
-        public IStyle ProvideTypedValue(IServiceProvider serviceProvider)
+        public IStyle ProvideValue(IServiceProvider serviceProvider)
         {
             return new StyleInclude(serviceProvider.GetContextBaseUri()) { Source = Source };
         }

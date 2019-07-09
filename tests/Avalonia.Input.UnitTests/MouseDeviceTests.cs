@@ -15,7 +15,7 @@ namespace Avalonia.Input.UnitTests
     public class MouseDeviceTests
     {
         [Fact]
-        public void Capture_Is_Cleared_When_Control_Removed()
+        public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
             Canvas control;
             var root = new TestRoot
@@ -29,7 +29,7 @@ namespace Avalonia.Input.UnitTests
 
             root.Child = null;
 
-            Assert.Null(target.Captured);
+            Assert.Same(root, target.Captured);
         }
 
         [Fact]
