@@ -72,14 +72,11 @@ namespace Avalonia.Direct2D1.Media
             _fontFace.Dispose();
         }
 
-        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints)
+        public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
-            return GetGlyphs(codePoints.ToArray());
-        }
+            var copiedCodepoints = new int[codepoints.Length];
 
-        public ushort[] GetGlyphs(int[] codePoints)
-        {
-            var indices = _fontFace.GetGlyphIndices(codePoints);
+            var indices = _fontFace.GetGlyphIndices(copiedCodepoints);
 
             var glyphs = new ushort[indices.Length];
 

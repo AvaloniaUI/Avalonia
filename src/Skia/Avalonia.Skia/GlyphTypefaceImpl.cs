@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Skia.Text;
 using HarfBuzzSharp;
 
 using SkiaSharp;
@@ -17,24 +18,29 @@ namespace Avalonia.Skia
 
         public GlyphTypefaceImpl(SKTypeface typeface)
         {
-            _tableLoader = new TableLoader(typeface);
+            Typeface = typeface;
+
+            _tableLoader = new TableLoader(Typeface);
 
             Font.GetScale(out var xScale, out _);
 
             DesignEmHeight = (short)xScale;
 
-            var horizontalFontExtents = Font.HorizontalFontExtents;
+            if (!Font.TryGetHorizontalFontExtents(out var fontExtents))
+            {
+                return;
+            }
 
-            Ascent = -horizontalFontExtents.Ascender;
+            Ascent = -fontExtents.Ascender;
 
-            Descent = -horizontalFontExtents.Descender;
+            Descent = -fontExtents.Descender;
 
-            LineGap = horizontalFontExtents.LineGap;
+            LineGap = fontExtents.LineGap;
         }
 
-        public SKTypeface Typeface => _tableLoader.Typeface;
+        private Font Font => _tableLoader.Font;
 
-        public Font Font => _tableLoader.Font;
+        public SKTypeface Typeface { get; }
 
         public short DesignEmHeight { get; }
 
@@ -52,13 +58,16 @@ namespace Avalonia.Skia
 
         public int StrikethroughThickness => 0;
 
-        public ushort[] GetGlyphs(ReadOnlySpan<int> codePoints)
+        public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
-            var glyphs = new ushort[codePoints.Length];
+            var glyphs = new ushort[codepoints.Length];
 
-            for (var i = 0; i < codePoints.Length; i++)
+            for (var i = 0; i < codepoints.Length; i++)
             {
-                glyphs[i] = (ushort)Font.GetGlyph(codePoints[i]);
+                if (Font.TryGetGlyph(codepoints[i], out var glyph))
+                {
+                    glyphs[i] = (ushort)glyph;
+                }
             }
 
             return glyphs;
@@ -66,7 +75,7 @@ namespace Avalonia.Skia
 
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
-            var glyphIndices = new int[glyphs.Length];
+            var glyphIndices = new uint[glyphs.Length];
 
             for (var i = 0; i < glyphs.Length; i++)
             {
@@ -113,101 +122,6 @@ namespace Avalonia.Skia
             var bounds = new Rect(baselineOrigin.X, baselineOrigin.Y + Ascent * scale, currentX, (Descent - Ascent + LineGap) * scale);
 
             return new GlyphRunImpl(glyphPositions, bounds);
-        }
-
-        public void Dispose()
-        {
-            _tableLoader.Dispose();
-        }
-
-        private class TableLoader : IDisposable
-        {
-
-            private readonly Dictionary<Tag, Blob> _tableCache = new Dictionary<Tag, Blob>();
-            private bool _isDisposed;
-
-            public TableLoader(SKTypeface typeface)
-            {
-                Typeface = typeface;
-                Font = CreateFont(typeface);
-            }
-
-            public SKTypeface Typeface { get; }
-
-
-            public Font Font { get; }
-
-            private Font CreateFont(SKTypeface typeface)
-            {
-                var face = new Face(GetTable, Dispose)
-                {
-                    UnitsPerEm = typeface.UnitsPerEm
-                };
-
-                var font = new Font(face);
-
-                font.SetFunctionsOpenType();
-
-                return font;
-            }
-
-            private void Dispose(bool disposing)
-            {
-                if (_isDisposed)
-                {
-                    return;
-                }
-
-                _isDisposed = true;
-
-                if (!disposing)
-                {
-                    return;
-                }
-
-                foreach (var blob in _tableCache.Values)
-                {
-                    blob?.Dispose();
-                }
-
-                Font.Dispose();
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private unsafe Blob CreateBlob(Tag tag)
-            {
-                if (Typeface.TryGetTableData(tag, out var table))
-                {
-                    fixed (byte* tablePtr = table)
-                    {
-                        return new Blob((IntPtr)tablePtr, table.Length, MemoryMode.Duplicate);
-                    }
-                }
-
-                return null;
-            }
-
-            private IntPtr GetTable(IntPtr face, Tag tag, IntPtr userData)
-            {
-                Blob blob;
-
-                if (_tableCache.ContainsKey(tag))
-                {
-                    blob = _tableCache[tag];
-                }
-                else
-                {
-                    blob = CreateBlob(tag);
-                    _tableCache.Add(tag, blob);
-                }
-
-                return blob?.Handle ?? IntPtr.Zero;
-            }
         }
     }
 }
