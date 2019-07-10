@@ -92,29 +92,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Empty(target.GetLogicalChildren());
         }
 
-        [Fact(Skip = "We are using name scopes from IServiceProvider now")]
-        public void Templated_Child_Should_Be_NameScope()
-        {
-            var target = new TemplatedControl
-            {
-                Template = new FuncControlTemplate((_, __) => new Decorator
-                {
-                    Child = new Panel
-                    {
-                        Children =
-                        {
-                            new TextBlock(),
-                            new Border(),
-                        }
-                    }
-                }),
-            };
-
-            target.ApplyTemplate();
-
-            Assert.NotNull(NameScope.GetNameScope((Control)target.GetVisualChildren().Single()));
-        }
-
         [Fact]
         public void Templated_Children_Should_Have_TemplatedParent_Set()
         {

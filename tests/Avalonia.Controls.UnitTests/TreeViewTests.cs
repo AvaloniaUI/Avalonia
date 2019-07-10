@@ -513,27 +513,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(NameScope.GetNameScope((TreeViewItem)item));
         }
 
-        [Fact(Skip = "Is this behavior needed anymore?")]
-        public void DataTemplate_Created_Item_Should_Be_NameScope()
-        {
-            var items = new object[]
-            {
-                "foo",
-            };
-
-            var target = new TreeView
-            {
-                Template = CreateTreeViewTemplate(),
-                Items = items,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var item = target.Presenter.Panel.LogicalChildren[0];
-            Assert.NotNull(NameScope.GetNameScope((TreeViewItem)item));
-        }
-
         [Fact]
         public void Should_React_To_Children_Changing()
         {

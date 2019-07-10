@@ -472,29 +472,6 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
         }
 
-        [Fact(Skip="We are using name scopes from IServiceProvider now")]
-        public void DataTemplate_Created_Content_Should_Be_NameScope()
-        {
-            var items = new object[]
-            {
-                "foo",
-            };
-
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = items,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var container = (ContentPresenter)target.Presenter.Panel.LogicalChildren[0];
-            container.UpdateChild();
-
-            Assert.NotNull(NameScope.GetNameScope((TextBlock)container.Child));
-        }
-
         [Fact]
         public void Focuses_Next_Item_On_Key_Down()
         {

@@ -136,17 +136,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Null(NameScope.GetNameScope((Control)target.Child));
         }
 
-        [Fact(Skip = "We are using name scopes from IServiceProvider now")]
-        public void DataTemplate_Created_Control_Should_Be_NameScope()
-        {
-            var (target, _) = CreateTarget();
-
-            target.Content = "Foo";
-
-            Assert.IsType<TextBlock>(target.Child);
-            Assert.NotNull(NameScope.GetNameScope((Control)target.Child));
-        }
-
         [Fact]
         public void Assigning_Control_To_Content_Should_Not_Set_DataContext()
         {
