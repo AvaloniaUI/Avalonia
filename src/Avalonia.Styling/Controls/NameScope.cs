@@ -71,8 +71,11 @@ namespace Avalonia.Controls
             else
             {
                 _inner.Add(name, element);
-                if(_pendingSearches.TryGetValue(name, out var tcs))
+                if (_pendingSearches.TryGetValue(name, out var tcs))
+                {
+                    _pendingSearches.Remove(name);
                     tcs.SetResult(element);
+                }
             }
         }
 
