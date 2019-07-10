@@ -49,6 +49,9 @@ namespace Avalonia.Controls
                 }
 
                 if (_task != null)
+                    // We expect everything to handle callbacks synchronously,
+                    // so the object graph is ready after its built
+                    // so keep TaskContinuationOptions.ExecuteSynchronously
                     _task.ContinueWith(t =>
                     {
                         observer.OnNext(t.Result);

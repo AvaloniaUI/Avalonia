@@ -51,6 +51,13 @@ namespace Avalonia.Controls.UnitTests
             Assert.Throws<InvalidOperationException>(() => target.Register("bar", element));
         }
 
+        
+        /*
+         `async void` here is intentional since we expect the continuation to be
+         executed *synchronously* and behave more like an event handler to make sure that
+         that the object graph is completely ready to use after it's built
+         rather than have pending continuations queued by SynchronizationContext.
+        */
         object _found = null;
         async void FindAsync(INameScope scope, string name)
         {

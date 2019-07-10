@@ -20,6 +20,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Finds a named element in the name scope, waits for the scope to be completely populated before returning null
+        /// Returned task is configured to run any continuations synchronously.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>The element, or null if the name was not found.</returns>
