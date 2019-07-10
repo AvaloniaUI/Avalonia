@@ -243,7 +243,7 @@ namespace Avalonia.Skia.Text
                             continue;
                         }
 
-                        foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
+                        foreach (var glyphCluster in textRun.GlyphClusters)
                         {
                             if (currentX + glyphCluster.Bounds.Width < point.X)
                             {
@@ -275,7 +275,7 @@ namespace Avalonia.Skia.Text
                     {
                         var textRun = textLine.TextRuns.LastOrDefault();
 
-                        var glyphCluster = textRun?.GlyphRun.GlyphClusters.LastOrDefault();
+                        var glyphCluster = textRun?.GlyphClusters.LastOrDefault();
 
                         if (glyphCluster != null)
                         {
@@ -302,7 +302,7 @@ namespace Avalonia.Skia.Text
 
             var lastRun = lastLine.TextRuns.LastOrDefault();
 
-            var lastCluster = lastRun?.GlyphRun.GlyphClusters.LastOrDefault();
+            var lastCluster = lastRun?.GlyphClusters.LastOrDefault();
 
             return new TextHitTestResult
             {
@@ -360,7 +360,7 @@ namespace Avalonia.Skia.Text
                         continue;
                     }
 
-                    foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
+                    foreach (var glyphCluster in textRun.GlyphClusters)
                     {
                         if (glyphCluster.TextPosition + glyphCluster.Length - 1 < textPosition)
                         {
@@ -411,7 +411,7 @@ namespace Avalonia.Skia.Text
                         continue;
                     }
 
-                    foreach (var glyphCluster in textRun.GlyphRun.GlyphClusters)
+                    foreach (var glyphCluster in textRun.GlyphClusters)
                     {
                         if (glyphCluster.TextPosition < textPosition)
                         {
@@ -510,17 +510,17 @@ namespace Avalonia.Skia.Text
         }
 
         /// <summary>
-        ///     Breaks a glyph run into segments that fit into available width.
+        ///     Breaks a text run into segments that fit into available width.
         /// </summary>
-        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="textRun">The text run.</param>
         /// <param name="availableWidth">The available width.</param>
         /// <returns></returns>
-        private static int BreakGlyphRun(SKGlyphRun glyphRun, float availableWidth)
+        private static int BreakTextRun(SKTextRun textRun, float availableWidth)
         {
             var count = 0;
             var currentWidth = 0.0f;
 
-            foreach (var cluster in glyphRun.GlyphClusters)
+            foreach (var cluster in textRun.GlyphClusters)
             {
                 if (currentWidth + cluster.Bounds.Width > availableWidth)
                 {
@@ -1024,6 +1024,7 @@ namespace Avalonia.Skia.Text
             var textPointer = textRun.TextPointer;
             var textFormat = textRun.TextFormat;
             var glyphRun = textRun.GlyphRun;
+            var glyphClusters = textRun.GlyphClusters;
             var fontMetrics = textRun.FontMetrics;
             var width = textRun.Width;
             var drawingEffect = span.Foreground?.ToImmutable() ?? textRun.Foreground;
@@ -1048,7 +1049,7 @@ namespace Avalonia.Skia.Text
 
             needsUpdate = false;
 
-            return new SKTextRun(textPointer, glyphRun, textFormat, fontMetrics, width, drawingEffect);
+            return new SKTextRun(textPointer, glyphRun, glyphClusters, textFormat, fontMetrics, width, drawingEffect);
         }
 
         /// <summary>
@@ -1163,7 +1164,7 @@ namespace Avalonia.Skia.Text
 
             if (!shapeRun)
             {
-                return new SKTextRun(textPointer, null, textFormat, fontMetrics, 0, foreground);
+                return new SKTextRun(textPointer, null, null, textFormat, fontMetrics, 0, foreground);
             }
 
             using (var buffer = new Buffer())
@@ -1215,9 +1216,9 @@ namespace Avalonia.Skia.Text
                     out var glyphPositions,
                     out var width);
 
-                var glyphs = new SKGlyphRun(glyphIndices, glyphPositions, glyphClusters);
+                var glyphRun = new SKGlyphRun(glyphIndices, glyphPositions);
 
-                return new SKTextRun(textPointer, glyphs, textFormat, fontMetrics, width, foreground);
+                return new SKTextRun(textPointer, glyphRun, glyphClusters, textFormat, fontMetrics, width, foreground);
             }
         }
 
@@ -1238,9 +1239,9 @@ namespace Avalonia.Skia.Text
 
             var glyphClusters = new[] { new SKGlyphCluster(0, 0, new SKRect(0, 0, 0, height)) };
 
-            var glyphs = new SKGlyphRun(Array.Empty<ushort>(), Array.Empty<SKPoint>(), glyphClusters);
+            var glyphs = new SKGlyphRun(Array.Empty<ushort>(), Array.Empty<SKPoint>());
 
-            return new SKTextRun(new SKTextPointer(), glyphs, textFormat, fontMetrics, 0);
+            return new SKTextRun(new SKTextPointer(), glyphs, glyphClusters, textFormat, fontMetrics, 0);
         }
 
         /// <summary>
@@ -1289,7 +1290,7 @@ namespace Avalonia.Skia.Text
                 {
                     var ellipsisRun = CreateEllipsisRun(currentRun.TextFormat, currentRun.Foreground);
 
-                    var measuredLength = BreakGlyphRun(currentRun.GlyphRun, availableLength - ellipsisRun.Width);
+                    var measuredLength = BreakTextRun(currentRun, availableLength - ellipsisRun.Width);
 
                     if (_textTrimming == TextTrimming.WordEllipsis && measuredLength < currentRun.TextPointer.Length)
                     {
@@ -1364,7 +1365,7 @@ namespace Avalonia.Skia.Text
 
                 if (currentWidth > availableLength)
                 {
-                    var measuredLength = BreakGlyphRun(currentRun.GlyphRun, availableLength);
+                    var measuredLength = BreakTextRun(currentRun, availableLength);
 
                     if (measuredLength < currentRun.TextPointer.Length)
                     {
@@ -1470,18 +1471,20 @@ namespace Avalonia.Skia.Text
             {
                 var firstGlyphRun = new SKGlyphRun(
                     textRun.GlyphRun.GlyphIndices.Take(length).ToArray(),
-                    textRun.GlyphRun.GlyphPositions.Take(length).ToArray(),
-                    textRun.GlyphRun.GlyphClusters.Take(length).ToArray());
+                    textRun.GlyphRun.GlyphPositions.Take(length).ToArray());
+
+                var firstGlyphClusters = textRun.GlyphClusters.Take(length).ToArray();
 
                 firstTextRun = new SKTextRun(
                     new SKTextPointer(startingIndex, length),
                     firstGlyphRun,
+                    firstGlyphClusters,
                     textFormat,
                     textRun.FontMetrics,
-                    firstGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    firstGlyphClusters.Sum(x => x.Bounds.Width),
                     textRun.Foreground);
 
-                var secondGlyphClusters = textRun.GlyphRun.GlyphClusters.Skip(length).Select(
+                var secondGlyphClusters = textRun.GlyphClusters.Skip(length).Select(
                     cluster => new SKGlyphCluster(
                         cluster.TextPosition,
                         cluster.Length,
@@ -1496,15 +1499,15 @@ namespace Avalonia.Skia.Text
 
                 var secondGlyphRun = new SKGlyphRun(
                     textRun.GlyphRun.GlyphIndices.Skip(length).ToArray(),
-                    secondGlyphOffsets,
-                    secondGlyphClusters);
+                    secondGlyphOffsets);
 
                 secondTextRun = new SKTextRun(
                     new SKTextPointer(startingIndex + length, textRun.TextPointer.Length - length),
                     secondGlyphRun,
+                    secondGlyphClusters,
                     textFormat,
                     textRun.FontMetrics,
-                    secondGlyphRun.GlyphClusters.Sum(x => x.Bounds.Width),
+                    secondGlyphClusters.Sum(x => x.Bounds.Width),
                     textRun.Foreground);
             }
             else
@@ -1524,8 +1527,6 @@ namespace Avalonia.Skia.Text
 
             return new SplitTextRunResult(firstTextRun, secondTextRun);
         }
-
-
 
         private class SplitTextRunResult
         {

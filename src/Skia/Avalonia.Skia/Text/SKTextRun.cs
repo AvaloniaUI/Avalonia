@@ -1,6 +1,7 @@
 ﻿// Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System.Collections.Generic;
 using Avalonia.Media;
 
 using SkiaSharp;
@@ -12,6 +13,7 @@ namespace Avalonia.Skia.Text
         public SKTextRun(
             SKTextPointer textPointer,
             SKGlyphRun glyphRun,
+            IReadOnlyList<SKGlyphCluster> glyphClusters,
             SKTextFormat textFormat,
             SKFontMetrics fontMetrics,
             float width,
@@ -19,6 +21,7 @@ namespace Avalonia.Skia.Text
         {
             TextPointer = textPointer;
             GlyphRun = glyphRun;
+            GlyphClusters = glyphClusters;
             TextFormat = textFormat;
             FontMetrics = fontMetrics;
             Width = width;
@@ -40,6 +43,14 @@ namespace Avalonia.Skia.Text
         /// The glyphs.
         /// </value>
         public SKGlyphRun GlyphRun { get; }
+
+        /// <summary>
+        /// Gets the glyph clusters.
+        /// </summary>
+        /// <value>
+        /// The glyph clusters.
+        /// </value>
+        public IReadOnlyList<SKGlyphCluster> GlyphClusters { get; }
 
         /// <summary>
         /// Gets the text format.
