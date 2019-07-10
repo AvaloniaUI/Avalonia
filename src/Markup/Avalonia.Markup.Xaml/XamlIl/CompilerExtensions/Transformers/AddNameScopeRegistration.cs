@@ -10,46 +10,60 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlIlAstNode Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
         {
-            if (node is XamlIlPropertyAssignmentNode pa
-                && pa.Property.Name == "Name"
-                && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
+            if (node is XamlIlPropertyAssignmentNode pa)
             {
-                if (context.ParentNodes().FirstOrDefault() is XamlIlManipulationGroupNode mg
-                    && mg.Children.OfType<ScopeRegistrationNode>().Any())
-                    return node;
-                
-                IXamlIlAstValueNode value = null;
-                for (var c = 0; c < pa.Values.Count; c++)
-                    if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
-                    {
-                        value = pa.Values[c];
-                        if (!(value is XamlIlAstTextNode))
-                        {
-                            var local = new XamlIlAstCompilerLocalNode(value);
-                            // Wrap original in local initialization
-                            pa.Values[c] = new XamlIlAstLocalInitializationNodeEmitter(value, value, local);
-                            // Use local
-                            value = local;
-                        }
-
-                        break;
-                    }
-
-                if (value != null)
+                if (pa.Property.Name == "Name"
+                    && pa.Property.DeclaringType.FullName == "Avalonia.StyledElement")
                 {
-                    var objectType = context.ParentNodes().OfType<XamlIlAstObjectNode>().FirstOrDefault()?.Type.GetClrType();
-                    return new XamlIlManipulationGroupNode(pa)
-                    {
-                        Children =
+                    if (context.ParentNodes().FirstOrDefault() is XamlIlManipulationGroupNode mg
+                        && mg.Children.OfType<ScopeRegistrationNode>().Any())
+                        return node;
+                
+                    IXamlIlAstValueNode value = null;
+                    for (var c = 0; c < pa.Values.Count; c++)
+                        if (pa.Values[c].Type.GetClrType().Equals(context.Configuration.WellKnownTypes.String))
                         {
-                            pa,
-                            new ScopeRegistrationNode(value, objectType)
+                            value = pa.Values[c];
+                            if (!(value is XamlIlAstTextNode))
+                            {
+                                var local = new XamlIlAstCompilerLocalNode(value);
+                                // Wrap original in local initialization
+                                pa.Values[c] = new XamlIlAstLocalInitializationNodeEmitter(value, value, local);
+                                // Use local
+                                value = local;
+                            }
+
+                            break;
                         }
-                    };
+
+                    if (value != null)
+                    {
+                        var objectType = context.ParentNodes().OfType<XamlIlAstObjectNode>().FirstOrDefault()?.Type.GetClrType();
+                        return new XamlIlManipulationGroupNode(pa)
+                        {
+                            Children =
+                            {
+                                pa,
+                                new ScopeRegistrationNode(value, objectType)
+                            }
+                        };
+                    }
+                }
+                else if (pa.Property.CustomAttributes.Select(attr => attr.Type).Intersect(context.Configuration.TypeMappings.DeferredContentPropertyAttributes).Any())
+                {
+                    pa.Values[pa.Values.Count - 1] =
+                        new NestedScopeMetadataNode(pa.Values[pa.Values.Count - 1]);
                 }
             }
 
             return node;
+        }
+    }
+
+    class NestedScopeMetadataNode : XamlIlValueWithSideEffectNodeBase
+    {
+        public NestedScopeMetadataNode(IXamlIlAstValueNode value) : base(value, value)
+        {
         }
     }
 

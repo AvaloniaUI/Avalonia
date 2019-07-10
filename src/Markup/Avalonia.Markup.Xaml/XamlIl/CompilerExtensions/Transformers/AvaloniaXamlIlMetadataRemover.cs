@@ -14,6 +14,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (node is AvaloniaXamlIlDataContextTypeMetadataNode dataContextTypeMetadata)
                 return dataContextTypeMetadata.Value;
 
+            if (node is NestedScopeMetadataNode nestedScope)
+                return nestedScope.Value;
+
             return node;
         }
     }

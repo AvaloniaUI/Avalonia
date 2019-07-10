@@ -180,7 +180,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         nodes.Add(new FindAncestorPathElementNode(GetType(ancestor.Namespace, ancestor.TypeName), ancestor.Level));
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
-                        var elementType = ScopeRegistrationFinder.GetControlType(context, context.RootObject, elementName.Name);
+                        IXamlIlType elementType = null;
+                        foreach (var deferredContent in context.ParentNodes().OfType<NestedScopeMetadataNode>())
+                        {
+                            elementType = ScopeRegistrationFinder.GetControlType(deferredContent, elementName.Name);
+                            if (!(elementType is null))
+                            {
+                                break;
+                            }
+                        }
+                        if (elementType is null)
+                        {
+                            elementType = ScopeRegistrationFinder.GetControlType(context.RootObject, elementName.Name);
+                        }
+
                         if (elementType is null)
                         {
                             throw new XamlIlParseException($"Unable to find element '{elementName.Name}' in the current namescope. Unable to use a compiled binding with a name binding if the name cannot be found at compile time.", lineInfo);
@@ -199,8 +212,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             }
         }
 
-        class ScopeRegistrationFinder : IXamlIlAstTransformer
+        class ScopeRegistrationFinder : IXamlIlAstVisitor
         {
+            private Stack<IXamlIlAstNode> _stack = new Stack<IXamlIlAstNode>();
+            private Stack<IXamlIlAstNode> _childScopesStack = new Stack<IXamlIlAstNode>();
+
             private ScopeRegistrationFinder(string name)
             {
                 Name = name;
@@ -210,16 +226,34 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             IXamlIlType ControlType { get; set; }
 
-            public static IXamlIlType GetControlType(XamlIlAstTransformationContext context, IXamlIlAstNode namescopeRoot, string name)
+            public static IXamlIlType GetControlType(IXamlIlAstNode namescopeRoot, string name)
             {
                 var finder = new ScopeRegistrationFinder(name);
-                context.Visit(namescopeRoot, finder);
+                namescopeRoot.Visit(finder);
                 return finder.ControlType;
             }
 
-            IXamlIlAstNode IXamlIlAstTransformer.Transform(XamlIlAstTransformationContext context, IXamlIlAstNode node)
+            void IXamlIlAstVisitor.Pop()
             {
-                if (node is ScopeRegistrationNode registration)
+                var node = _stack.Pop();
+                if (_childScopesStack.Count > 0 && node == _childScopesStack.Peek())
+                {
+                    _childScopesStack.Pop();
+                }
+            }
+
+            void IXamlIlAstVisitor.Push(IXamlIlAstNode node)
+            {
+                _stack.Push(node);
+                if (node is NestedScopeMetadataNode)
+                {
+                    _childScopesStack.Push(node);
+                }
+            }
+
+            IXamlIlAstNode IXamlIlAstVisitor.Visit(IXamlIlAstNode node)
+            {
+                if (_childScopesStack.Count == 0 && node is ScopeRegistrationNode registration)
                 {
                     if (registration.Value is XamlIlAstTextNode text && text.Text == Name)
                     {
