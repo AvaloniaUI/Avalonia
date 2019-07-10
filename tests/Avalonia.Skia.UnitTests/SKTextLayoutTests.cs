@@ -289,9 +289,9 @@ namespace Avalonia.Skia.UnitTests
 
             Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
 
-            Assert.Equal(6, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters.Count);
+            Assert.Equal(6, layout.TextLines[0].TextRuns[0].GlyphClusters.Count);
 
-            Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphRun.GlyphClusters[5].Length);
+            Assert.Equal(2, layout.TextLines[0].TextRuns[0].GlyphClusters[5].Length);
         }
 
         [Fact]
