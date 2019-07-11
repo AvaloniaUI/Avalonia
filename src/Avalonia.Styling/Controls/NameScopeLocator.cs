@@ -31,31 +31,28 @@ namespace Avalonia.Controls
         private class NeverEndingSynchronousCompletionAsyncResultObservable<T> : IObservable<T>
         {
             private T _value;
-            private SynchronousCompletionAsyncResult<T>? _task;
+            private SynchronousCompletionAsyncResult<T>? _asyncResult;
 
             public NeverEndingSynchronousCompletionAsyncResultObservable(SynchronousCompletionAsyncResult<T> task)
             {
                 if (task.IsCompleted)
                     _value = task.GetResult();
                 else
-                    _task = task;
+                    _asyncResult = task;
             }
             
             public IDisposable Subscribe(IObserver<T> observer)
             {
-                if (_task?.IsCompleted == true)
+                if (_asyncResult?.IsCompleted == true)
                 {
-                    _value = _task.Value.GetResult();
-                    _task = null;
+                    _value = _asyncResult.Value.GetResult();
+                    _asyncResult = null;
                 }
 
-                if (_task != null)
-                    // We expect everything to handle callbacks synchronously,
-                    // so the object graph is ready after its built
-                    // so keep TaskContinuationOptions.ExecuteSynchronously
-                    _task.Value.OnCompleted(() =>
+                if (_asyncResult != null)
+                    _asyncResult.Value.OnCompleted(() =>
                     {
-                        observer.OnNext(_task.Value.GetResult());
+                        observer.OnNext(_asyncResult.Value.GetResult());
                     });
                 else
                     observer.OnNext(_value);
