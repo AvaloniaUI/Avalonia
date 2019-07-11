@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.LogicalTree;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -24,8 +25,8 @@ namespace Avalonia.Controls
         
         private readonly Dictionary<string, object> _inner = new Dictionary<string, object>();
 
-        private readonly Dictionary<string, TaskCompletionSource<object>> _pendingSearches =
-            new Dictionary<string, TaskCompletionSource<object>>();
+        private readonly Dictionary<string, SynchronousCompletionAsyncResultSource<object>> _pendingSearches =
+            new Dictionary<string, SynchronousCompletionAsyncResultSource<object>>();
         
         /// <summary>
         /// Gets the value of the attached <see cref="NameScopeProperty"/> on a styled element.
@@ -79,18 +80,18 @@ namespace Avalonia.Controls
             }
         }
 
-        public ValueTask<object> FindAsync(string name)
+        public SynchronousCompletionAsyncResult<object> FindAsync(string name)
         {
             var found = Find(name);
             if (found != null)
-                return new ValueTask<object>(found);
+                return new SynchronousCompletionAsyncResult<object>(found);
             if (IsCompleted)
-                return new ValueTask<object>((object)null);
+                return new SynchronousCompletionAsyncResult<object>((object)null);
             if (!_pendingSearches.TryGetValue(name, out var tcs))
                 // We are intentionally running continuations synchronously here
-                _pendingSearches[name] = tcs = new TaskCompletionSource<object>();
-            
-            return new ValueTask<object>(tcs.Task);
+                _pendingSearches[name] = tcs = new SynchronousCompletionAsyncResultSource<object>();
+
+            return tcs.AsyncResult;
         }
 
         /// <inheritdoc />

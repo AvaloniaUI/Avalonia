@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -24,7 +25,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>The element, or null if the name was not found.</returns>
-        ValueTask<object> FindAsync(string name);
+        SynchronousCompletionAsyncResult<object> FindAsync(string name);
         
         /// <summary>
         /// Finds a named element in the name scope, returns immediately, doesn't traverse the name scope stack

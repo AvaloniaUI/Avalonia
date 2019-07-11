@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -20,31 +21,31 @@ namespace Avalonia.Controls
         /// <param name="name">The name of the control to find.</param>
         public static IObservable<object> Track(INameScope scope, string name)
         {
-            return new NeverEndingValueTaskObservable<object>(scope.FindAsync(name));
+            return new NeverEndingSynchronousCompletionAsyncResultObservable<object>(scope.FindAsync(name));
         }
         
         // This class is implemented in such weird way because for some reason
         // our binding system doesn't expect OnCompleted to be ever called and
         // seems to treat it as binding cancellation or something 
 
-        private class NeverEndingValueTaskObservable<T> : IObservable<T>
+        private class NeverEndingSynchronousCompletionAsyncResultObservable<T> : IObservable<T>
         {
             private T _value;
-            private Task<T> _task;
+            private SynchronousCompletionAsyncResult<T>? _task;
 
-            public NeverEndingValueTaskObservable(ValueTask<T> task)
+            public NeverEndingSynchronousCompletionAsyncResultObservable(SynchronousCompletionAsyncResult<T> task)
             {
                 if (task.IsCompleted)
-                    _value = task.Result;
+                    _value = task.GetResult();
                 else
-                    _task = task.AsTask();
+                    _task = task;
             }
             
             public IDisposable Subscribe(IObserver<T> observer)
             {
                 if (_task?.IsCompleted == true)
                 {
-                    _value = _task.Result;
+                    _value = _task.Value.GetResult();
                     _task = null;
                 }
 
@@ -52,10 +53,10 @@ namespace Avalonia.Controls
                     // We expect everything to handle callbacks synchronously,
                     // so the object graph is ready after its built
                     // so keep TaskContinuationOptions.ExecuteSynchronously
-                    _task.ContinueWith(t =>
+                    _task.Value.OnCompleted(() =>
                     {
-                        observer.OnNext(t.Result);
-                    }, TaskContinuationOptions.ExecuteSynchronously);
+                        observer.OnNext(_task.Value.GetResult());
+                    });
                 else
                     observer.OnNext(_value);
                 

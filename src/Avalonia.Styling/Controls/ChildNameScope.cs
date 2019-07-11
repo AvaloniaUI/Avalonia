@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -14,27 +15,45 @@ namespace Avalonia.Controls
         
         public void Register(string name, object element) => _inner.Register(name, element);
 
-        public ValueTask<object> FindAsync(string name)
+        public SynchronousCompletionAsyncResult<object> FindAsync(string name)
         {
             var found = Find(name);
             if (found != null)
-                return new ValueTask<object>(found);
-            // Not found and both current and parent scope are in completed stage
+                return new SynchronousCompletionAsyncResult<object>(found);
+            // Not found and both current and parent scope are in completed state
             if(IsCompleted)
-                return new ValueTask<object>(null);
+                return new SynchronousCompletionAsyncResult<object>(null);
             return DoFindAsync(name);
         }
 
-        async ValueTask<object> DoFindAsync(string name)
+        public SynchronousCompletionAsyncResult<object> DoFindAsync(string name)
         {
+            var src = new SynchronousCompletionAsyncResultSource<object>();
+
+            void ParentSearch()
+            {
+                var parentSearch = _parentScope.FindAsync(name);
+                if (parentSearch.IsCompleted)
+                    src.SetResult(parentSearch.GetResult());
+                else
+                    parentSearch.OnCompleted(() => src.SetResult(parentSearch.GetResult()));
+            }
             if (!_inner.IsCompleted)
             {
-                var found = await _inner.FindAsync(name);
-                if (found != null)
-                    return found;
+                // Guaranteed to be incomplete at this point
+                var innerSearch = _inner.FindAsync(name);
+                innerSearch.OnCompleted(() =>
+                {
+                    var value = innerSearch.GetResult();
+                    if (value != null)
+                        src.SetResult(value);
+                    else ParentSearch();
+                });
             }
+            else
+                ParentSearch();
 
-            return await _parentScope.FindAsync(name);
+            return src.AsyncResult;
         }
 
         public object Find(string name)
