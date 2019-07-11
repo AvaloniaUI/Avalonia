@@ -253,12 +253,12 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate<TestWindowBase> CreateTemplate()
         {
-            return new FuncControlTemplate<TestWindowBase>(x =>
+            return new FuncControlTemplate<TestWindowBase>((x, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private class TestWindowBase : WindowBase

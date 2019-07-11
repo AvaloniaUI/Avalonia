@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Data;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
@@ -17,7 +19,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             var resourceNodes = provider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents
                 .OfType<IResourceNode>().ToList();
             var rootObject = provider.GetService<IRootObjectProvider>().RootObject;
-            return sp => builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject));
+            return sp =>
+            {
+                var parentScope = sp.GetService<INameScope>();
+                var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
+                var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
+                scope.Complete();
+                return new ControlTemplateResult((IControl)obj, scope);
+            };
         }
 
         class DeferredParentServiceProvider :
@@ -27,12 +36,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         {
             private readonly IServiceProvider _parentProvider;
             private readonly List<IResourceNode> _parentResourceNodes;
+            private readonly INameScope _nameScope;
 
             public DeferredParentServiceProvider(IServiceProvider parentProvider, List<IResourceNode> parentResourceNodes,
-                object rootObject)
+                object rootObject, INameScope nameScope)
             {
                 _parentProvider = parentProvider;
                 _parentResourceNodes = parentResourceNodes;
+                _nameScope = nameScope;
                 RootObject = rootObject;
             }
 
@@ -48,6 +59,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
 
             public object GetService(Type serviceType)
             {
+                if (serviceType == typeof(INameScope))
+                    return _nameScope;
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
                 if (serviceType == typeof(IRootObjectProvider))
@@ -56,6 +69,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             }
 
             public object RootObject { get; }
+            public object IntermediateRootObject => RootObject;
         }
 
 
@@ -132,12 +146,28 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             }
         }
         
-        public static readonly IServiceProvider RootServiceProviderV1 = new RootServiceProvider();
+        [Obsolete("Don't use", true)]
+        public static readonly IServiceProvider RootServiceProviderV1 = new RootServiceProvider(null);
 
+        [DebuggerStepThrough]
+        public static IServiceProvider CreateRootServiceProviderV2()
+        {
+            return new RootServiceProvider(new NameScope());
+        }
+        
         class RootServiceProvider : IServiceProvider, IAvaloniaXamlIlParentStackProvider
         {
+            private readonly INameScope _nameScope;
+
+            public RootServiceProvider(INameScope nameScope)
+            {
+                _nameScope = nameScope;
+            }
+            
             public object GetService(Type serviceType)
             {
+                if (serviceType == typeof(INameScope))
+                    return _nameScope;
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
                 return null;
