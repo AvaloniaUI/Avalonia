@@ -498,6 +498,10 @@ namespace Avalonia.Win32
                             KeyInterop.KeyFromVirtualKey(ToInt32(wParam)), WindowsKeyboardDevice.Instance.Modifiers);
                     break;
 
+                case UnmanagedMethods.WindowsMessage.WM_MENUCHAR:
+                    // mute the system beep
+                    return (IntPtr)((Int32)UnmanagedMethods.MenuCharParam.MNC_CLOSE << 16);
+
                 case UnmanagedMethods.WindowsMessage.WM_KEYUP:
                 case UnmanagedMethods.WindowsMessage.WM_SYSKEYUP:
                     e = new RawKeyEventArgs(
