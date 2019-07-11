@@ -1,8 +1,18 @@
 ﻿<Window xmlns="https://github.com/avaloniaui" MinWidth="500" MinHeight="300"
+        xmlns:pages="clr-namespace:ControlCatalog.Pages"
         Title="Avalonia Control Gallery"
         Icon="/Assets/test_icon.ico"
         xmlns:local="clr-namespace:ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ControlCatalog.ViewModels"
+        xmlns:v="clr-namespace:ControlCatalog.Views"
         x:Class="ControlCatalog.MainWindow">
-    <local:MainView/>
+    <Window.DataTemplates>
+        <DataTemplate DataType="vm:NotificationViewModel">
+            <v:CustomNotificationView />
+        </DataTemplate>
+    </Window.DataTemplates>
+    <Panel>
+        <local:MainView/>
+    </Panel>
 </Window>

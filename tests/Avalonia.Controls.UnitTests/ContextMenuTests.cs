@@ -14,6 +14,7 @@ namespace Avalonia.Controls.UnitTests
     public class ContextMenuTests
     {
         private Mock<IPopupImpl> popupImpl;
+        private MouseTestHelper _mouse = new MouseTestHelper();
 
         [Fact]
         public void Clicking_On_Control_Toggles_ContextMenu()
@@ -31,19 +32,11 @@ namespace Avalonia.Controls.UnitTests
 
                 new Window { Content = target };
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.Right
-                });
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.None
-                });
+                _mouse.Click(target);
 
                 Assert.False(sut.IsOpen);
                 popupImpl.Verify(x => x.Show(), Times.Once);
@@ -66,22 +59,12 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
-
-                Avalonia.Application.Current.MainWindow = window;
-
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.Right
-                });
+                
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.Right
-                });
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
                 popupImpl.Verify(x => x.Hide(), Times.Once);
@@ -106,11 +89,7 @@ namespace Avalonia.Controls.UnitTests
 
                 sut.ContextMenuOpening += (c, e) => { eventCalled = true; e.Cancel = true; };
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.Right
-                });
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(eventCalled);
                 Assert.False(sut.IsOpen);
@@ -136,19 +115,11 @@ namespace Avalonia.Controls.UnitTests
 
                 sut.ContextMenuClosing += (c, e) => { eventCalled = true; e.Cancel = true; };
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.Right
-                });
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(sut.IsOpen);
 
-                target.RaiseEvent(new PointerReleasedEventArgs
-                {
-                    RoutedEvent = InputElement.PointerReleasedEvent,
-                    MouseButton = MouseButton.None
-                });
+                _mouse.Click(target, MouseButton.Right);
 
                 Assert.True(eventCalled);
                 Assert.True(sut.IsOpen);

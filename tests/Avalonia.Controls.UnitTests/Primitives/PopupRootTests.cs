@@ -134,12 +134,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             var result = new PopupRoot
             {
-                Template = new FuncControlTemplate<PopupRoot>(parent =>
+                Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter
                     {
                         Name = "PART_ContentPresenter",
                         [!ContentPresenter.ContentProperty] = parent[!PopupRoot.ContentProperty],
-                    }),
+                    }.RegisterInNameScope(scope)),
             };
 
             result.ApplyTemplate();
@@ -154,7 +154,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public TemplatedControlWithPopup()
             {
-                Template = new FuncControlTemplate<TemplatedControlWithPopup>(parent =>
+                Template = new FuncControlTemplate<TemplatedControlWithPopup>((parent, _) =>
                     new Popup
                     {
                         [!Popup.ChildProperty] = parent[!TemplatedControlWithPopup.PopupContentProperty],

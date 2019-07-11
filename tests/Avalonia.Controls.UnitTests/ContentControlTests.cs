@@ -126,7 +126,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ContentControl
             {
                 Template = GetTemplate(),
-                ContentTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             target.Content = "Foo";
@@ -302,8 +302,8 @@ namespace Avalonia.Controls.UnitTests
 
             var target = new ContentControl
             {
-                Template = new FuncControlTemplate<ContentControl>(_ => presenter),
-                ContentTemplate = new FuncDataTemplate<string>(x => new Canvas()),
+                Template = new FuncControlTemplate<ContentControl>((_, __) => presenter),
+                ContentTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 Content = "foo",
             };
                         
@@ -333,7 +333,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ContentControl>(parent =>
+            return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -343,7 +343,7 @@ namespace Avalonia.Controls.UnitTests
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
                         [~ContentPresenter.ContentTemplateProperty] = parent[~ContentControl.ContentTemplateProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

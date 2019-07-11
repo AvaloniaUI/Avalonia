@@ -153,6 +153,29 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Selected_Item_Changes_To_First_Item_When_Item_Added()
+        {
+            var items = new ObservableCollection<string>();
+            var target = new Carousel
+            {
+                Template = new FuncControlTemplate<Carousel>(CreateTemplate),
+                Items = items,
+                IsVirtualized = false
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.Empty(target.GetLogicalChildren());
+
+            items.Add("Foo");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Single(target.GetLogicalChildren());
+        }
+
+        [Fact]
         public void Selected_Index_Changes_To_When_Items_Assigned_Null()
         {
             var items = new ObservableCollection<string>
@@ -279,7 +302,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal("FooBar", target.SelectedItem);
         }
 
-        private Control CreateTemplate(Carousel control)
+        private Control CreateTemplate(Carousel control, INameScope scope)
         {
             return new CarouselPresenter
             {
@@ -289,7 +312,7 @@ namespace Avalonia.Controls.UnitTests
                 [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
-            };
+            }.RegisterInNameScope(scope);
         }
     }
 }

@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib">
+        xmlns:sys="clr-namespace:System;assembly=netstandard">
   
   <Style Selector="MenuItem">
     <Setter Property="Background" Value="Transparent"/>

@@ -26,8 +26,7 @@ namespace ControlCatalog
             => AppBuilder.Configure<App>()
                 .LogToDebug()
                 .UsePlatformDetect()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .UseReactiveUI();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

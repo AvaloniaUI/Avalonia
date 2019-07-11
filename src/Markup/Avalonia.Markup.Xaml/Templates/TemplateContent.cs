@@ -1,43 +1,23 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Controls;
 using System.Collections.Generic;
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Markup.Xaml.Templates
 {
-    using Portable.Xaml;
-
-    public class TemplateContent
+    
+    public static class TemplateContent
     {
-        public TemplateContent(IEnumerable<NamespaceDeclaration> namespaces, XamlReader reader,
-            IAmbientProvider ambientProvider)
+        public static ControlTemplateResult Load(object templateContent)
         {
-            ParentAmbientProvider = ambientProvider;
-            List = new XamlNodeList(reader.SchemaContext);
-
-            //we need to rpeserve all namespace and prefixes to writer
-            //otherwise they are lost. a bug in Portable.xaml or by design ??
-            foreach (var ns in namespaces)
+            if (templateContent is Func<IServiceProvider, object> direct)
             {
-                List.Writer.WriteNamespace(ns);
+                return (ControlTemplateResult)direct(null);
             }
-
-            XamlServices.Transform(reader, List.Writer);
-        }
-
-        public XamlNodeList List { get; }
-
-        private IAmbientProvider ParentAmbientProvider { get; }
-
-        public IControl Load()
-        {
-            return (IControl)AvaloniaXamlLoader.LoadFromReader(List.GetReader(), parentAmbientProvider: ParentAmbientProvider);
-        }
-
-        public static IControl Load(object templateContent)
-        {
-            return ((TemplateContent)templateContent).Load();
+            throw new ArgumentException(nameof(templateContent));
         }
     }
 }

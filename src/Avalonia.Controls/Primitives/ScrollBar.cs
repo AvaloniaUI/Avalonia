@@ -216,25 +216,25 @@ namespace Avalonia.Controls.Primitives
 
         private void SmallDecrement()
         {
-            Value = Math.Max(Value - SmallChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - SmallChange, Minimum);
             OnScroll(ScrollEventType.SmallDecrement);
         }
 
         private void SmallIncrement()
         {
-            Value = Math.Min(Value + SmallChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + SmallChange, Maximum);
             OnScroll(ScrollEventType.SmallIncrement);
         }
 
         private void LargeDecrement()
         {
-            Value = Math.Max(Value - LargeChange * ViewportSize, Minimum);
+            Value = Math.Max(Value - LargeChange, Minimum);
             OnScroll(ScrollEventType.LargeDecrement);
         }
 
         private void LargeIncrement()
         {
-            Value = Math.Min(Value + LargeChange * ViewportSize, Maximum);
+            Value = Math.Min(Value + LargeChange, Maximum);
             OnScroll(ScrollEventType.LargeIncrement);
         }
 

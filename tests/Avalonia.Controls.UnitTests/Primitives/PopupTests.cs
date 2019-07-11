@@ -315,16 +315,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return result;
         }
 
-        private static IControl PopupRootTemplate(PopupRoot control)
+        private static IControl PopupRootTemplate(PopupRoot control, INameScope scope)
         {
             return new ContentPresenter
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
-            };
+            }.RegisterInNameScope(scope);
         }
 
-        private static IControl PopupContentControlTemplate(PopupContentControl control)
+        private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
         {
             return new Popup
             {
@@ -333,7 +333,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],
                 }
-            };
+            }.RegisterInNameScope(scope);
         }
 
         private class PopupContentControl : ContentControl

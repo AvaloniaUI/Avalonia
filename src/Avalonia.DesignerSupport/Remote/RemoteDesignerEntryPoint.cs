@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
+using System.Threading;
+using System.Xml;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Designer;
 using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Threading;
-using Portable.Xaml;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -122,15 +123,6 @@ namespace Avalonia.DesignerSupport.Remote
         }
 
         private const string BuilderMethodName = "BuildAvaloniaApp";
-
-        class NeverClose : ICloseable
-        {
-            public event EventHandler Closed
-            {
-                add {}
-                remove {}
-            }
-        }
         
         public static void Main(string[] cmdline)
         {
@@ -155,7 +147,7 @@ namespace Avalonia.DesignerSupport.Remote
             transport.OnException += (t, e) => Die(e.ToString());
             Log("Sending StartDesignerSessionMessage");
             transport.Send(new StartDesignerSessionMessage {SessionId = args.SessionId});
-            app.Run(new NeverClose());
+            Dispatcher.UIThread.MainLoop(CancellationToken.None);
         }
 
 
@@ -205,8 +197,8 @@ namespace Avalonia.DesignerSupport.Remote
                 }
                 catch (Exception e)
                 {
-                    var xamlException = e as XamlException;
-
+                    var xmlException = e as XmlException;
+                    
                     s_transport.Send(new UpdateXamlResultMessage
                     {
                         Error = e.ToString(),
@@ -214,8 +206,8 @@ namespace Avalonia.DesignerSupport.Remote
                         {
                             ExceptionType = e.GetType().FullName,
                             Message = e.Message.ToString(),
-                            LineNumber = xamlException?.LineNumber,
-                            LinePosition = xamlException?.LinePosition,
+                            LineNumber = xmlException?.LineNumber,
+                            LinePosition = xmlException?.LinePosition,
                         }
                     });
                 }

@@ -18,7 +18,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Button
             {
-                Template = new FuncControlTemplate<Button>(parent =>
+                Template = new FuncControlTemplate<Button>((parent, _) =>
                     new ContentPresenter
                     {
                         [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty)
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Button
             {
-                Template = new FuncControlTemplate<Button>(parent =>
+                Template = new FuncControlTemplate<Button>((parent, _) =>
                     new ContentPresenter
                     {
                         [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty)
@@ -67,7 +67,7 @@ namespace Avalonia.Markup.UnitTests.Data
         {
             var source = new Button
             {
-                Template = new FuncControlTemplate<Button>(parent =>
+                Template = new FuncControlTemplate<Button>((parent, _) =>
                     new ContentPresenter
                     {
                         [~ContentPresenter.ContentProperty] = new TemplateBinding(ContentControl.ContentProperty)

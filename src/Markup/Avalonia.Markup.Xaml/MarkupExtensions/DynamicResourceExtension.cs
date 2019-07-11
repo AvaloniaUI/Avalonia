@@ -7,13 +7,10 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Portable.Xaml;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    public class DynamicResourceExtension : MarkupExtension, IBinding
+    public class DynamicResourceExtension : IBinding
     {
         private IResourceNode _anchor;
 
@@ -26,16 +23,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             ResourceKey = resourceKey;
         }
 
-        public string ResourceKey { get; set; }
+        public object ResourceKey { get; set; }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public IBinding ProvideValue(IServiceProvider serviceProvider)
         {
-            var context = (ITypeDescriptorContext)serviceProvider;
-            var provideTarget = context.GetService<IProvideValueTarget>();
+            var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
             if (!(provideTarget.TargetObject is IResourceNode))
             {
-                _anchor = GetAnchor<IResourceNode>(context);
+                _anchor = serviceProvider.GetFirstParent<IResourceNode>();
             }
 
             return this;
@@ -55,17 +51,6 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             }
 
             return null;
-        }
-
-        private T GetAnchor<T>(ITypeDescriptorContext context) where T : class
-        {
-            var schemaContext = context.GetService<IXamlSchemaContextProvider>().SchemaContext;
-            var ambientProvider = context.GetService<IAmbientProvider>();
-            var xamlType = schemaContext.GetXamlType(typeof(T));
-
-            // We override XamlType.CanAssignTo in BindingXamlType so the results we get back
-            // from GetAllAmbientValues aren't necessarily of the correct type.
-            return ambientProvider.GetAllAmbientValues(xamlType).OfType<T>().FirstOrDefault();
         }
     }
 }

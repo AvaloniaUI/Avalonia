@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 DataTemplates =
                 {
-                    new FuncDataTemplate<string>(x => new Decorator()),
+                    new FuncDataTemplate<string>((x, _) => new Decorator()),
                 },
             };
 

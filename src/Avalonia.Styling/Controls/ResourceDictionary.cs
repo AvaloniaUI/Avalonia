@@ -69,7 +69,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public bool TryGetResource(string key, out object value)
+        public bool TryGetResource(object key, out object value)
         {
             if (TryGetValue(key, out value))
             {

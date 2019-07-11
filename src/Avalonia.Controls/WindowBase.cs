@@ -63,6 +63,7 @@ namespace Avalonia.Controls
 
         public WindowBase(IWindowBaseImpl impl, IAvaloniaDependencyResolver dependencyResolver) : base(impl, dependencyResolver)
         {
+            Screens = new Screens(PlatformImpl?.Screen);
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
@@ -108,6 +109,8 @@ namespace Avalonia.Controls
                     impl.Position = value;
             }
         }
+        
+        public Screens Screens { get; private set; }
 
         /// <summary>
         /// Whether an auto-size operation is in progress.
