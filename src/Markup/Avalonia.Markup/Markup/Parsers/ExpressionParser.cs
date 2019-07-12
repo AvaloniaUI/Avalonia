@@ -7,6 +7,7 @@ using Avalonia.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Controls;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -14,10 +15,12 @@ namespace Avalonia.Markup.Parsers
     {
         private readonly bool _enableValidation;
         private readonly Func<string, string, Type> _typeResolver;
+        private readonly INameScope _nameScope;
 
-        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver)
+        public ExpressionParser(bool enableValidation, Func<string, string, Type> typeResolver, INameScope nameScope)
         {
             _typeResolver = typeResolver;
+            _nameScope = nameScope;
             _enableValidation = enableValidation;
         }
 
@@ -56,7 +59,7 @@ namespace Avalonia.Markup.Parsers
                         nextNode = ParseFindAncestor(ancestor);
                         break;
                     case BindingExpressionGrammar.NameNode elementName:
-                        nextNode = new ElementNameNode(elementName.Name);
+                        nextNode = new ElementNameNode(_nameScope, elementName.Name);
                         break;
                 }
                 if (node is null)

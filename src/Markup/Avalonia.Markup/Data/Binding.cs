@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
@@ -65,7 +66,14 @@ namespace Avalonia.Data
 
         protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
         {
-            var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver);
+            Contract.Requires<ArgumentNullException>(target != null);
+            anchor = anchor ?? DefaultAnchor?.Target;
+            
+            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
+
+            NameScope.TryGetTarget(out var nameScope);
+
+            var (node, mode) = ExpressionObserverBuilder.Parse(Path, enableDataValidation, TypeResolver, nameScope);
 
             if (ElementName != null)
             {
@@ -131,7 +139,6 @@ namespace Avalonia.Data
             {
                 throw new NotSupportedException();
             }
-
         }
     }
 }

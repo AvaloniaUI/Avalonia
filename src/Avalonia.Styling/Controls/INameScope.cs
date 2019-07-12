@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Threading.Tasks;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -11,16 +13,6 @@ namespace Avalonia.Controls
     public interface INameScope
     {
         /// <summary>
-        /// Raised when an element is registered with the name scope.
-        /// </summary>
-        event EventHandler<NameScopeEventArgs> Registered;
-
-        /// <summary>
-        /// Raised when an element is unregistered with the name scope.
-        /// </summary>
-        event EventHandler<NameScopeEventArgs> Unregistered;
-
-        /// <summary>
         /// Registers an element in the name scope.
         /// </summary>
         /// <param name="name">The element name.</param>
@@ -28,16 +20,30 @@ namespace Avalonia.Controls
         void Register(string name, object element);
 
         /// <summary>
-        /// Finds a named element in the name scope.
+        /// Finds a named element in the name scope, waits for the scope to be completely populated before returning null
+        /// Returned task is configured to run any continuations synchronously.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>The element, or null if the name was not found.</returns>
+        SynchronousCompletionAsyncResult<object> FindAsync(string name);
+        
+        /// <summary>
+        /// Finds a named element in the name scope, returns immediately, doesn't traverse the name scope stack
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>The element, or null if the name was not found.</returns>
         object Find(string name);
 
         /// <summary>
-        /// Unregisters an element with the name scope.
+        /// Marks the name scope as completed, no further registrations will be allowed
         /// </summary>
-        /// <param name="name">The name.</param>
-        void Unregister(string name);
+        void Complete();
+        
+        /// <summary>
+        /// Returns whether further registrations are allowed on the scope
+        /// </summary>
+        bool IsCompleted { get; }
+
+
     }
 }

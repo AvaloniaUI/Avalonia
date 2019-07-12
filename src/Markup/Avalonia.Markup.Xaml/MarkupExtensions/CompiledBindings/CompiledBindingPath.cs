@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Parsers;
@@ -40,7 +41,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                         node = new SelfNode();
                         break;
                     case ElementNameElement name:
-                        node = new ElementNameNode(name.Name);
+                        node = new ElementNameNode(name.NameScope, name.Name);
                         break;
                     case IStronglyTypedStreamElement stream:
                         node = new StreamNode(stream.CreatePlugin());
@@ -98,9 +99,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return this;
         }
 
-        public CompiledBindingPathBuilder ElementName(string name)
+        public CompiledBindingPathBuilder ElementName(INameScope nameScope, string name)
         {
-            _elements.Add(new ElementNameElement(name));
+            _elements.Add(new ElementNameElement(nameScope, name));
             return this;
         }
 
@@ -166,11 +167,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
     internal class ElementNameElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
     {
-        public ElementNameElement(string name)
+        public ElementNameElement(INameScope nameScope, string name)
         {
+            NameScope = nameScope;
             Name = name;
         }
 
+        public INameScope NameScope { get; }
         public string Name { get; }
     }
 }

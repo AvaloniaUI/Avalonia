@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Templates
         /// items.
         /// </param>
         public FuncTreeDataTemplate(
-            Func<T, Control> build,
+            Func<T, INameScope, Control> build,
             Func<T, IEnumerable> itemsSelector)
             : base(
                 typeof(T),
@@ -46,7 +46,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         public FuncTreeDataTemplate(
             Func<T, bool> match,
-            Func<T, Control> build,
+            Func<T, INameScope, Control> build,
             Func<T, IEnumerable> itemsSelector)
             : base(
                 CastMatch(match),
@@ -65,6 +65,17 @@ namespace Avalonia.Controls.Templates
             return o => (o is T) && f((T)o);
         }
 
+        /// <summary>
+        /// Casts a function with a typed parameter to an untyped function.
+        /// </summary>
+        /// <typeparam name="TResult">The result.</typeparam>
+        /// <param name="f">The typed function.</param>
+        /// <returns>The untyped function.</returns>
+        private static Func<object, INameScope, TResult> Cast<TResult>(Func<T, INameScope, TResult> f)
+        {
+            return (o, s) => f((T)o, s);
+        }
+        
         /// <summary>
         /// Casts a function with a typed parameter to an untyped function.
         /// </summary>

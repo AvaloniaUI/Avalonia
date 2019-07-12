@@ -35,6 +35,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 ProvideValueTarget = typeSystem.GetType("Avalonia.Markup.Xaml.IProvideValueTarget"),
                 RootObjectProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IRootObjectProvider"),
+                RootObjectProviderIntermediateRootPropertyName = "IntermediateRootObject",
                 UriContextProvider = typeSystem.GetType("Avalonia.Markup.Xaml.IUriContext"),
                 ParentStackProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlParentStackProvider"),
@@ -53,8 +54,29 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 ProvideValueTargetPropertyEmitter = XamlIlAvaloniaPropertyHelper.EmitProvideValueTarget,
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
+            rv.ContextTypeBuilderCallback = (b, c) => EmitNameScopeField(rv, typeSystem, b, c);
             return rv;
         }
+
+        public const string ContextNameScopeFieldName = "AvaloniaNameScope";
+
+        private static void EmitNameScopeField(XamlIlLanguageTypeMappings mappings,
+            IXamlIlTypeSystem typeSystem,
+            IXamlIlTypeBuilder typebuilder, IXamlIlEmitter constructor)
+        {
+
+            var nameScopeType = typeSystem.FindType("Avalonia.Controls.INameScope");
+            var field = typebuilder.DefineField(nameScopeType, 
+                ContextNameScopeFieldName, true, false);
+            constructor
+                .Ldarg_0()
+                .Ldarg(1)
+                .Ldtype(nameScopeType)
+                .EmitCall(mappings.ServiceProvider.GetMethod(new FindMethodMethodSignature("GetService",
+                    typeSystem.FindType("System.Object"), typeSystem.FindType("System.Type"))))
+                .Stfld(field);
+        }
+        
 
         class AttributeResolver : IXamlIlCustomAttributeResolver
         {

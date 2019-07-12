@@ -296,7 +296,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var parent = (ContentControl)template.Build(new ContentControl());
+            var parent = (ContentControl)template.Build(new ContentControl()).Control;
 
             Assert.Equal("parent", parent.Name);
 
@@ -320,7 +320,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 ";
             var template = AvaloniaXamlLoader.Parse<ControlTemplate>(xaml);
 
-            var panel = (Panel)template.Build(new ContentControl());
+            var panel = (Panel)template.Build(new ContentControl()).Control;
 
             Assert.Equal(2, panel.Children.Count);
 
@@ -681,7 +681,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             var control = new ContentControl();
 
-            var result = (ContentPresenter)template.Build(control);
+            var result = (ContentPresenter)template.Build(control).Control;
 
             Assert.NotNull(result);
         }
@@ -904,6 +904,25 @@ do we need it?")]
                         Assert.False(obj.IsSet(Design.HeightProperty));
                     }
                 }
+            }
+        }
+
+        [Fact]
+        public void Slider_Properties_Can_Be_Set_In_Any_Order()
+        {
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'>
+    <Slider Width='400' Value='500' Minimum='0' Maximum='1000'/>
+</Window>";
+
+                var window = AvaloniaXamlLoader.Parse<Window>(xaml);
+                var slider = (Slider)window.Content;
+
+                Assert.Equal(0, slider.Minimum);
+                Assert.Equal(1000, slider.Maximum);
+                Assert.Equal(500, slider.Value);
             }
         }
 

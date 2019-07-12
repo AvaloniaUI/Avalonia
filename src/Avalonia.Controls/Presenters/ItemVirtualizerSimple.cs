@@ -20,6 +20,8 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal class ItemVirtualizerSimple : ItemVirtualizer
     {
+        private int _anchor;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemVirtualizerSimple"/> class.
         /// </summary>
@@ -362,7 +364,10 @@ namespace Avalonia.Controls.Presenters
 
             if (panel.OverflowCount > 0)
             {
-                RemoveContainers(panel.OverflowCount);
+                if (_anchor <= FirstIndex)
+                {
+                    RemoveContainers(panel.OverflowCount);
+                }
             }
         }
 
@@ -540,7 +545,9 @@ namespace Avalonia.Controls.Presenters
                 // it means we're running a unit test.
                 if (container != null && layoutManager != null)
                 {
+                    _anchor = index;
                     layoutManager.ExecuteLayoutPass();
+                    _anchor = -1;
 
                     if (newOffset != -1 && newOffset != OffsetValue)
                     {

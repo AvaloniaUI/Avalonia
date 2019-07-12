@@ -56,11 +56,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<XamlIlNewObjectTransformer>(
                 new AddNameScopeRegistration(),
                 new AvaloniaXamlIlDataContextTypeTransformer(),
-                new AvaloniaXamlIlBindingPathTransformer()
+                new AvaloniaXamlIlBindingPathTransformer(),
+                new AvaloniaXamlIlNestedScopeMetadataRemover()
                 );
 
             Transformers.Add(new AvaloniaXamlIlMetadataRemover());
-
+            Transformers.Add(new AvaloniaXamlIlRootObjectScope());
         }
 
         public AvaloniaXamlIlCompiler(AvaloniaXamlIlCompilerConfiguration configuration,

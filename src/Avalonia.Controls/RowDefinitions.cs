@@ -14,10 +14,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="RowDefinitions"/> class.
         /// </summary>
-        public RowDefinitions()
+        public RowDefinitions() : base()
         {
-            ResetBehavior = ResetBehavior.Remove;
-            CollectionChanged += OnCollectionChanged;
         }
 
         /// <summary>

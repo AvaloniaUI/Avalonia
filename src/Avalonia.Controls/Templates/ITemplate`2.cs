@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Templates
     /// </summary>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <typeparam name="TControl">The type of control.</typeparam>
-    public interface ITemplate<TParam, TControl> where TControl : IControl
+    public interface ITemplate<TParam, TControl>
     {
         /// <summary>
         /// Creates the control.

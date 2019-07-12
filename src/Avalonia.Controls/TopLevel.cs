@@ -51,7 +51,6 @@ namespace Avalonia.Controls
         private readonly IInputManager _inputManager;
         private readonly IAccessKeyHandler _accessKeyHandler;
         private readonly IKeyboardNavigationHandler _keyboardNavigationHandler;
-        private readonly IApplicationLifecycle _applicationLifecycle;
         private readonly IPlatformRenderInterface _renderInterface;
         private Size _clientSize;
         private ILayoutManager _layoutManager;
@@ -96,7 +95,6 @@ namespace Avalonia.Controls
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            _applicationLifecycle = TryGetService<IApplicationLifecycle>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
@@ -124,11 +122,6 @@ namespace Avalonia.Controls
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
                 .Switch().Subscribe(cursor => PlatformImpl?.SetCursor(cursor?.PlatformCursor));
-
-            if (_applicationLifecycle != null)
-            {
-                _applicationLifecycle.Exit += OnApplicationExiting;
-            }
 
             if (((IStyleHost)this).StylingParent is IResourceProvider applicationResources)
             {
@@ -281,7 +274,6 @@ namespace Avalonia.Controls
             Closed?.Invoke(this, EventArgs.Empty);
             Renderer?.Dispose();
             Renderer = null;
-            _applicationLifecycle.Exit -= OnApplicationExiting;
         }
 
         /// <summary>
@@ -346,18 +338,6 @@ namespace Avalonia.Controls
             }
 
             return result;
-        }
-
-        private void OnApplicationExiting(object sender, EventArgs args)
-        {
-            HandleApplicationExiting();
-        }
-
-        /// <summary>
-        /// Handles the application exiting, either from the last window closing, or a call to <see cref="IApplicationLifecycle.Exit"/>.
-        /// </summary>
-        protected virtual void HandleApplicationExiting()
-        {
         }
 
         /// <summary>

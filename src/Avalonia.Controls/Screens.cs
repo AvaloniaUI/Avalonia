@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -11,7 +12,7 @@ namespace Avalonia.Controls
         private readonly IScreenImpl _iScreenImpl;
 
         public int ScreenCount => _iScreenImpl.ScreenCount;
-        public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens;
+        public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
         public Screen Primary => All.FirstOrDefault(x => x.Primary);
 
         public Screens(IScreenImpl iScreenImpl)

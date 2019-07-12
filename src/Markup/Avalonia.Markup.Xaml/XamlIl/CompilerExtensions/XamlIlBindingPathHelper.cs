@@ -253,9 +253,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             IXamlIlAstNode IXamlIlAstVisitor.Visit(IXamlIlAstNode node)
             {
-                if (_childScopesStack.Count == 0 && node is ScopeRegistrationNode registration)
+                if (_childScopesStack.Count == 0 && node is AvaloniaNameScopeRegistrationXamlIlNode registration)
                 {
-                    if (registration.Value is XamlIlAstTextNode text && text.Text == Name)
+                    if (registration.Name is XamlIlAstTextNode text && text.Text == Name)
                     {
                         ControlType = registration.ControlType;
                     }
@@ -365,7 +365,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             public void Emit(XamlIlEmitContext context, IXamlIlEmitter codeGen)
             {
-                codeGen.Ldstr(_name)
+                var scopeField = context.RuntimeContext.ContextType.Fields.First(f =>
+                    f.Name == AvaloniaXamlIlLanguage.ContextNameScopeFieldName);
+
+                codeGen
+                    .Ldloc(context.ContextLocal)
+                    .Ldfld(scopeField)
+                    .Ldstr(_name)
                     .EmitCall(context.GetAvaloniaTypes().CompiledBindingPathBuilder.FindMethod(m => m.Name == "ElementName"));
             }
         }

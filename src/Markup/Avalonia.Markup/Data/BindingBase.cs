@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
@@ -63,6 +64,8 @@ namespace Avalonia.Data
         public string StringFormat { get; set; }
 
         public WeakReference DefaultAnchor { get; set; }
+
+        public WeakReference<INameScope> NameScope { get; set; }
 
         protected abstract ExpressionObserver CreateExpressionObserver(
             IAvaloniaObject target,
@@ -162,8 +165,11 @@ namespace Avalonia.Data
         {
             Contract.Requires<ArgumentNullException>(target != null);
 
+            NameScope.TryGetTarget(out var scope);
+            if (scope == null)
+                throw new InvalidOperationException("Name scope is null or was already collected");
             var result = new ExpressionObserver(
-                ControlLocator.Track(target, elementName),
+                NameScopeLocator.Track(scope, elementName),
                 node,
                 null);
             return result;

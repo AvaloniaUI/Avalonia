@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using System.ComponentModel;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -47,7 +48,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -97,6 +98,20 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> CanResizeProperty =
             AvaloniaProperty.Register<Window, bool>(nameof(CanResize), true);
 
+        /// <summary>
+        /// Routed event that can be used for global tracking of window destruction
+        /// </summary>
+        public static readonly RoutedEvent WindowClosedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>("WindowClosed", RoutingStrategies.Direct);
+        
+        /// <summary>
+        /// Routed event that can be used for global tracking of opening windows
+        /// </summary>
+        public static readonly RoutedEvent WindowOpenedEvent =
+            RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
+
+
+
         private readonly NameScope _nameScope = new NameScope();
         private object _dialogResult;
         private readonly Size _maxPlatformClientSize;
@@ -140,24 +155,7 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
-            Screens = new Screens(PlatformImpl?.Screen);
         }
-
-        /// <inheritdoc/>
-        event EventHandler<NameScopeEventArgs> INameScope.Registered
-        {
-            add { _nameScope.Registered += value; }
-            remove { _nameScope.Registered -= value; }
-        }
-
-        /// <inheritdoc/>
-        event EventHandler<NameScopeEventArgs> INameScope.Unregistered
-        {
-            add { _nameScope.Unregistered += value; }
-            remove { _nameScope.Unregistered -= value; }
-        }
-
-        public Screens Screens { get; private set; }
 
         /// <summary>
         /// Gets the platform-specific window implementation.
@@ -252,38 +250,12 @@ namespace Avalonia.Controls
         /// </summary>
         public event EventHandler<CancelEventArgs> Closing;      
 
-        private static void AddWindow(Window window)
-        {
-            if (Application.Current == null)
-            {
-                return;
-            }
-
-            Application.Current.Windows.Add(window);
-        }
-
-        private static void RemoveWindow(Window window)
-        {
-            if (Application.Current == null)
-            {
-                return;
-            }
-
-            Application.Current.Windows.Remove(window);
-        }
-
         /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
             Close(false);
-        }
-
-        protected override void HandleApplicationExiting()
-        {
-            base.HandleApplicationExiting();
-            Close(true);
         }
 
         /// <summary>
@@ -385,7 +357,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            AddWindow(this);
+            this.RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -447,7 +419,7 @@ namespace Avalonia.Controls
                 throw new InvalidOperationException("The window is already being shown.");
             }
 
-            AddWindow(this);
+            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
             IsVisible = true;
@@ -509,24 +481,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        void INameScope.Register(string name, object element)
-        {
-            _nameScope.Register(name, element);
-        }
-
-        /// <inheritdoc/>
-        object INameScope.Find(string name)
-        {
-            return _nameScope.Find(name);
-        }
-
-        /// <inheritdoc/>
-        void INameScope.Unregister(string name)
-        {
-            _nameScope.Unregister(name);
-        }
-
-        /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
             var sizeToContent = SizeToContent;
@@ -560,7 +514,7 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            RemoveWindow(this);
+            RaiseEvent(new RoutedEventArgs(WindowClosedEvent));
 
             base.HandleClosed();
         }
@@ -586,18 +540,5 @@ namespace Avalonia.Controls
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
         protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
-    }
-}
-
-namespace Avalonia
-{
-    public static class WindowApplicationExtensions
-    {
-        public static void RunWithMainWindow<TWindow>(this Application app) where TWindow : Avalonia.Controls.Window, new()
-        {
-            var window = new TWindow();
-            window.Show();
-            app.Run(window);
-        }
     }
 }

@@ -1,22 +1,19 @@
 using System;
 
-namespace Avalonia.Controls
+namespace Avalonia.Controls.ApplicationLifetimes
 {
-    /// <summary>
-    /// Sends events about the application lifecycle.
-    /// </summary>
-    public interface IApplicationLifecycle
+    public interface IControlledApplicationLifetime : IApplicationLifetime
     {
         /// <summary>
         /// Sent when the application is starting up.
         /// </summary>
-        event EventHandler<StartupEventArgs> Startup;
+        event EventHandler<ControlledApplicationLifetimeStartupEventArgs> Startup;
 
         /// <summary>
         /// Sent when the application is exiting.
         /// </summary>
-        event EventHandler<ExitEventArgs> Exit;
-
+        event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
+        
         /// <summary>
         /// Shuts down the application and sets the exit code that is returned to the operating system when the application exits.
         /// </summary>

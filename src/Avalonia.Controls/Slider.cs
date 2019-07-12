@@ -47,8 +47,6 @@ namespace Avalonia.Controls
             Thumb.DragStartedEvent.AddClassHandler<Slider>(x => x.OnThumbDragStarted, RoutingStrategies.Bubble);
             Thumb.DragDeltaEvent.AddClassHandler<Slider>(x => x.OnThumbDragDelta, RoutingStrategies.Bubble);
             Thumb.DragCompletedEvent.AddClassHandler<Slider>(x => x.OnThumbDragCompleted, RoutingStrategies.Bubble);
-            SmallChangeProperty.OverrideDefaultValue<Slider>(1);
-            LargeChangeProperty.OverrideDefaultValue<Slider>(10);
         }
 
         /// <summary>

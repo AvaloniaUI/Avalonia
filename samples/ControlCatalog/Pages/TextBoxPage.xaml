@@ -26,6 +26,10 @@
         <TextBox Width="200" Text="Left aligned text" TextAlignment="Left" />
         <TextBox Width="200" Text="Center aligned text" TextAlignment="Center" />
         <TextBox Width="200" Text="Right aligned text" TextAlignment="Right" />
+        <TextBox Width="200" Text="Custom selection brush"
+                  SelectionStart="5" SelectionEnd="22"
+                  SelectionBrush="Green" SelectionForegroundBrush="Yellow"/>
+        <TextBox Width="200" Text="Custom caret brush" CaretBrush="DarkOrange"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Spacing="8">

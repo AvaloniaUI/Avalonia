@@ -84,6 +84,16 @@ namespace Avalonia.Controls
             set { SetValue(VirtualizationModeProperty, value); }
         }
 
+        /// <summary>
+        /// Selects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void SelectAll() => base.SelectAll();
+
+        /// <summary>
+        /// Deselects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void UnselectAll() => base.UnselectAll();
+
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
@@ -118,7 +128,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                    (e.InputModifiers & InputModifiers.Control) != 0,
+                    e.MouseButton == MouseButton.Right);
             }
         }
 
