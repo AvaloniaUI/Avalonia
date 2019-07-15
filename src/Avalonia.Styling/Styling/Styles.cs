@@ -180,7 +180,7 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public bool TryGetResource(object key, out object value)
         {
-            if (_resources != null && _resources.TryGetValue(key, out value))
+            if (_resources != null && _resources.TryGetResource(key, out value))
             {
                 return true;
             }
