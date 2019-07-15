@@ -23,7 +23,7 @@
         public static readonly StyledProperty<Pen> PenProperty =
             AvaloniaProperty.Register<GeometryDrawing, Pen>(nameof(Pen));
 
-        public Pen Pen
+        public IPen Pen
         {
             get => GetValue(PenProperty);
             set => SetValue(PenProperty, value);

@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Media.Immutable;
 
 namespace Avalonia.Media
 {
@@ -30,20 +31,11 @@ namespace Avalonia.Media
         /// A copy of the pen with an immutable brush, or <paramref name="pen"/> if the pen's brush
         /// is already immutable or null.
         /// </returns>
-        public static Pen ToImmutable(this Pen pen)
+        public static ImmutablePen ToImmutable(this IPen pen)
         {
             Contract.Requires<ArgumentNullException>(pen != null);
 
-            var brush = pen.Brush?.ToImmutable();
-            return ReferenceEquals(pen.Brush, brush) ?
-                pen :
-                new Pen(
-                    brush,
-                    thickness: pen.Thickness,
-                    dashStyle: pen.DashStyle,                   
-                    lineCap: pen.LineCap,
-                    lineJoin: pen.LineJoin,
-                    miterLimit: pen.MiterLimit);
+            return pen as ImmutablePen ?? ((IMutablePen)pen).ToImmutable();
         }
     }
 }
