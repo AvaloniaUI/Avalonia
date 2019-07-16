@@ -1,12 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
+
 namespace Avalonia.Media.Immutable
 {
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public class ImmutablePen : IPen
+    public class ImmutablePen : IPen, IEquatable<IPen>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Pen"/> class.
@@ -81,5 +83,14 @@ namespace Avalonia.Media.Immutable
         /// The limit on the ratio of the miter length to half this pen's Thickness.
         /// </summary>
         public double MiterLimit { get; }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => Pen.PenEquals(this, obj as IPen);
+
+        /// <inheritdoc/>
+        public bool Equals(IPen other) => Pen.PenEquals(this, other);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Pen.GetHashCode(this);
     }
 }

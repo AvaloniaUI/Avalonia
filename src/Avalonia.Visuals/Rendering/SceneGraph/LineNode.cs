@@ -74,7 +74,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </remarks>
         public bool Equals(Matrix transform, IPen pen, Point p1, Point p2)
         {
-            return transform == Transform && pen == Pen && p1 == P1 && p2 == P2;
+            return transform == Transform && Equals(pen, Pen) && p1 == P1 && p2 == P2;
         }
 
         public override void Render(IDrawingContextImpl context)

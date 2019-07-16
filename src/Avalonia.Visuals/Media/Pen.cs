@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Media.Immutable;
 using Avalonia.Utilities;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public class Pen : AvaloniaObject, IMutablePen
+    public class Pen : AvaloniaObject, IMutablePen, IEquatable<IPen>
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -170,6 +171,15 @@ namespace Avalonia.Media
         /// </summary>
         public event EventHandler Invalidated;
 
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => PenEquals(this, obj as IPen);
+
+        /// <inheritdoc/>
+        public bool Equals(IPen other) => PenEquals(this, other);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => GetHashCode(this);
+
         /// <summary>
         /// Creates an immutable clone of the brush.
         /// </summary>
@@ -231,6 +241,37 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="e">The event args.</param>
         protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
+
+        internal static int GetHashCode(IPen pen)
+        {
+            var hashCode = 1181807663;
+            hashCode = hashCode * -1521134295 + EqualityComparer<IBrush>.Default.GetHashCode(pen.Brush);
+            hashCode = hashCode * -1521134295 + pen.Thickness.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<DashStyle>.Default.GetHashCode(pen.DashStyle);
+            hashCode = hashCode * -1521134295 + pen.LineCap.GetHashCode();
+            hashCode = hashCode * -1521134295 + pen.LineJoin.GetHashCode();
+            hashCode = hashCode * -1521134295 + pen.MiterLimit.GetHashCode();
+            return hashCode;
+        }
+
+        internal static bool PenEquals(IPen a, IPen b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            else if (a is null && !(b is null) || (b is null && !(a is null)))
+            {
+                return false;
+            }
+
+            return EqualityComparer<IBrush>.Default.Equals(a.Brush, b.Brush) &&
+               a.Thickness == b.Thickness &&
+               EqualityComparer<DashStyle>.Default.Equals(a.DashStyle, b.DashStyle) &&
+               a.LineCap == b.LineCap &&
+               a.LineJoin == b.LineJoin &&
+               a.MiterLimit == b.MiterLimit;
+        }
 
         private void AffectsRenderInvalidated(object sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
     }
