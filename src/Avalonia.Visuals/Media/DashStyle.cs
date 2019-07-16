@@ -9,7 +9,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
     /// </summary>
-    public class DashStyle : Animatable, IDashStyle, IAffectsRender
+    public class DashStyle : Animatable, IDashStyle, IAffectsRender, IEquatable<IDashStyle>
     {
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.
@@ -105,10 +105,64 @@ namespace Avalonia.Media
         /// </summary>
         public event EventHandler Invalidated;
 
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => DashEquals(this, obj as IDashStyle);
+
+        /// <inheritdoc/>
+        public bool Equals(IDashStyle other) => DashEquals(this, other);
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => GetHashCode(this);
+
         /// <summary>
         /// Returns an immutable clone of the <see cref="DashStyle"/>.
         /// </summary>
         /// <returns></returns>
         public ImmutableDashStyle ToImmutable() => new ImmutableDashStyle(Dashes, Offset);
+
+        internal static bool DashEquals(IDashStyle a, IDashStyle b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            else if ((a is null && !(b is null)) || (b is null && !(a is null)))
+            {
+                return false;
+            }
+
+            if (a.Offset != b.Offset)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(a.Dashes, b.Dashes))
+            {
+                return true;
+            }
+
+            if ((a.Dashes is null && !(b.Dashes is null)) || (b.Dashes is null && !(a.Dashes is null)))
+            {
+                return false;
+            }
+
+            return a.Dashes.SequenceEqual(b.Dashes);
+        }
+
+        internal static int GetHashCode(IDashStyle style)
+        {
+            var hashCode = 717868523;
+            hashCode = hashCode * -1521134295 + style.Offset.GetHashCode();
+
+            if (style.Dashes != null)
+            {
+                foreach (var i in style.Dashes)
+                {
+                    hashCode = hashCode * -1521134295 + i.GetHashCode();
+                }
+            }
+
+            return hashCode;
+        }
     }
 }
