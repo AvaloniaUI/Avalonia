@@ -177,7 +177,7 @@ namespace Avalonia.Media
         public ImmutablePen ToImmutable()
         {
             return new ImmutablePen(
-                Brush,
+                Brush?.ToImmutable(),
                 Thickness,
                 DashStyle,
                 LineCap,
