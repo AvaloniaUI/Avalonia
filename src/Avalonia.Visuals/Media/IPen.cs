@@ -13,7 +13,7 @@
         /// <summary>
         /// Gets the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        DashStyle DashStyle { get; }
+        IDashStyle DashStyle { get; }
 
         /// <summary>
         /// Gets the type of shape to use on both ends of a line.

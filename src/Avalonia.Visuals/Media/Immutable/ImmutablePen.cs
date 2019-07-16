@@ -22,7 +22,7 @@ namespace Avalonia.Media.Immutable
         public ImmutablePen(
             uint color,
             double thickness = 1.0,
-            DashStyle dashStyle = null,
+            ImmutableDashStyle dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0) : this(new SolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
@@ -41,7 +41,7 @@ namespace Avalonia.Media.Immutable
         public ImmutablePen(
             IBrush brush,
             double thickness = 1.0,
-            DashStyle dashStyle = null,
+            ImmutableDashStyle dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
@@ -67,7 +67,7 @@ namespace Avalonia.Media.Immutable
         /// <summary>
         /// Specifies the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        public DashStyle DashStyle { get; }
+        public IDashStyle DashStyle { get; }
 
         /// <summary>
         /// Specifies the type of graphic shape to use on both ends of a line.

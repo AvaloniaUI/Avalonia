@@ -28,8 +28,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="DashStyle"/> property.
         /// </summary>
-        public static readonly StyledProperty<DashStyle> DashStyleProperty =
-            AvaloniaProperty.Register<Pen, DashStyle>(nameof(DashStyle));
+        public static readonly StyledProperty<IDashStyle> DashStyleProperty =
+            AvaloniaProperty.Register<Pen, IDashStyle>(nameof(DashStyle));
 
         /// <summary>
         /// Defines the <see cref="LineCap"/> property.
@@ -68,7 +68,7 @@ namespace Avalonia.Media
         public Pen(
             uint color,
             double thickness = 1.0,
-            DashStyle dashStyle = null,
+            IDashStyle dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0) : this(new SolidColorBrush(color), thickness, dashStyle, lineCap, lineJoin, miterLimit)
@@ -87,7 +87,7 @@ namespace Avalonia.Media
         public Pen(
             IBrush brush,
             double thickness = 1.0,
-            DashStyle dashStyle = null,
+            IDashStyle dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
@@ -132,7 +132,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the style of dashed lines drawn with a <see cref="Pen"/> object.
         /// </summary>
-        public DashStyle DashStyle
+        public IDashStyle DashStyle
         {
             get => GetValue(DashStyleProperty);
             set => SetValue(DashStyleProperty, value);
@@ -189,7 +189,7 @@ namespace Avalonia.Media
             return new ImmutablePen(
                 Brush?.ToImmutable(),
                 Thickness,
-                DashStyle,
+                DashStyle?.ToImmutable(),
                 LineCap,
                 LineJoin,
                 MiterLimit);
@@ -247,7 +247,7 @@ namespace Avalonia.Media
             var hashCode = 1181807663;
             hashCode = hashCode * -1521134295 + EqualityComparer<IBrush>.Default.GetHashCode(pen.Brush);
             hashCode = hashCode * -1521134295 + pen.Thickness.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<DashStyle>.Default.GetHashCode(pen.DashStyle);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IDashStyle>.Default.GetHashCode(pen.DashStyle);
             hashCode = hashCode * -1521134295 + pen.LineCap.GetHashCode();
             hashCode = hashCode * -1521134295 + pen.LineJoin.GetHashCode();
             hashCode = hashCode * -1521134295 + pen.MiterLimit.GetHashCode();
@@ -267,7 +267,7 @@ namespace Avalonia.Media
 
             return EqualityComparer<IBrush>.Default.Equals(a.Brush, b.Brush) &&
                a.Thickness == b.Thickness &&
-               EqualityComparer<DashStyle>.Default.Equals(a.DashStyle, b.DashStyle) &&
+               EqualityComparer<IDashStyle>.Default.Equals(a.DashStyle, b.DashStyle) &&
                a.LineCap == b.LineCap &&
                a.LineJoin == b.LineJoin &&
                a.MiterLimit == b.MiterLimit;
