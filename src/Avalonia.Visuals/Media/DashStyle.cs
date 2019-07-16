@@ -10,7 +10,7 @@ namespace Avalonia.Media
         {
             get
             {
-                if (dashDotDot == null)
+                if (dash == null)
                 {
                     dash = new DashStyle(new double[] { 2, 2 }, 1);
                 }
