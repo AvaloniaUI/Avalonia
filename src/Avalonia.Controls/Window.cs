@@ -48,7 +48,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A top-level window.
     /// </summary>
-    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot, INameScope
+    public class Window : WindowBase, IStyleable, IFocusScope, ILayoutRoot
     {
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -155,20 +155,6 @@ namespace Avalonia.Controls
             impl.Closing = HandleClosing;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxClientSize ?? default(Size);
-        }
-
-        /// <inheritdoc/>
-        event EventHandler<NameScopeEventArgs> INameScope.Registered
-        {
-            add { _nameScope.Registered += value; }
-            remove { _nameScope.Registered -= value; }
-        }
-
-        /// <inheritdoc/>
-        event EventHandler<NameScopeEventArgs> INameScope.Unregistered
-        {
-            add { _nameScope.Unregistered += value; }
-            remove { _nameScope.Unregistered -= value; }
         }
 
         /// <summary>
@@ -492,24 +478,6 @@ namespace Avalonia.Controls
                     Position = ownerRect.CenterRect(rect).Position;
                 }
             }
-        }
-
-        /// <inheritdoc/>
-        void INameScope.Register(string name, object element)
-        {
-            _nameScope.Register(name, element);
-        }
-
-        /// <inheritdoc/>
-        object INameScope.Find(string name)
-        {
-            return _nameScope.Find(name);
-        }
-
-        /// <inheritdoc/>
-        void INameScope.Unregister(string name)
-        {
-            _nameScope.Unregister(name);
         }
 
         /// <inheritdoc/>

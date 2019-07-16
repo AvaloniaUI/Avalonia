@@ -456,7 +456,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<TextBox>(control =>
+            return new FuncControlTemplate<TextBox>((control, scope) =>
                 new TextPresenter
                 {
                     Name = "PART_TextPresenter",
@@ -467,7 +467,7 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private void RaiseKeyEvent(TextBox textBox, Key key, InputModifiers inputModifiers)
