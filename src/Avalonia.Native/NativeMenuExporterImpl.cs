@@ -7,6 +7,21 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
+    public class MenuActionCallback : CallbackBase, IAvnActionCallback
+    {
+        private Action _action;
+
+        public MenuActionCallback(Action action)
+        {
+            _action = action;
+        }
+        
+        void IAvnActionCallback.Run()
+        {
+            _action?.Invoke();
+        }
+    }
+
     public class NativeMenuExporterImpl : INativeMenuExporter
     {
         private IAvaloniaNativeFactory _factory;
@@ -59,6 +74,8 @@ namespace Avalonia.Native
             foreach (var item in items)
             {
                 var menuItem = _factory.CreateMenuItem();
+                
+                menuItem.SetAction(new MenuActionCallback(()=>item.RaiseClick()));
 
                 if (item.SubItems.Count > 0 || isMainMenu)
                 {

@@ -25,6 +25,8 @@ public:
         
         
         _native = [NSMenuItem new];
+        [_native setKeyEquivalent:@" "];
+        [_native setEnabled:YES];
         
         _callback = nullptr;
     }
@@ -75,6 +77,7 @@ public:
     AvnAppMenu()
     {
         _native = [NSMenu new];
+        [_native setAutoenablesItems:NO];
     }
     
     AvnAppMenu(NSMenu* native)
