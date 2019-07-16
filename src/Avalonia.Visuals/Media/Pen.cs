@@ -3,6 +3,7 @@
 
 using System;
 using Avalonia.Media.Immutable;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -98,6 +99,17 @@ namespace Avalonia.Media
             DashStyle = dashStyle;
         }
 
+        static Pen()
+        {
+            AffectsRender<Pen>(
+                BrushProperty,
+                ThicknessProperty,
+                DashStyleProperty,
+                LineCapProperty,
+                LineJoinProperty,
+                MiterLimitProperty);
+        }
+
         /// <summary>
         /// Gets or sets the brush used to draw the stroke.
         /// </summary>
@@ -172,5 +184,54 @@ namespace Avalonia.Media
                 LineJoin,
                 MiterLimit);
         }
+
+        /// <summary>
+        /// Marks a property as affecting the pen's visual representation.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <remarks>
+        /// After a call to this method in a pen's static constructor, any change to the
+        /// property will cause the <see cref="Invalidated"/> event to be raised on the pen.
+        /// </remarks>
+        protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
+            where T : Pen
+        {
+            void Invalidate(AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Sender is T sender)
+                {
+                    if (e.OldValue is IAffectsRender oldValue)
+                    {
+                        WeakEventHandlerManager.Unsubscribe<EventArgs, T>(
+                            oldValue,
+                            nameof(oldValue.Invalidated),
+                            sender.AffectsRenderInvalidated);
+                    }
+
+                    if (e.NewValue is IAffectsRender newValue)
+                    {
+                        WeakEventHandlerManager.Subscribe<IAffectsRender, EventArgs, T>(
+                            newValue,
+                            nameof(newValue.Invalidated),
+                            sender.AffectsRenderInvalidated);
+                    }
+
+                    sender.RaiseInvalidated(EventArgs.Empty);
+                }
+            }
+
+            foreach (var property in properties)
+            {
+                property.Changed.Subscribe(Invalidate);
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="Invalidated"/> event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
+
+        private void AffectsRenderInvalidated(object sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
     }
 }
