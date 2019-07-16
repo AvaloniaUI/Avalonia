@@ -50,7 +50,7 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(pen != null);
 
-            return pen as ImmutablePen ?? ((IMutablePen)pen).ToImmutable();
+            return pen as ImmutablePen ?? ((Pen)pen).ToImmutable();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public class Pen : AvaloniaObject, IMutablePen, IEquatable<IPen>
+    public class Pen : AvaloniaObject, IPen, IEquatable<IPen>
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
