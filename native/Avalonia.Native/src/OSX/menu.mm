@@ -5,6 +5,7 @@ class AvnAppMenuItem : public ComSingleObject<IAvnAppMenuItem, &IID_IAvnAppMenuI
 {
 private:
     NSMenuItem* _native;
+    IAvnActionCallback* _callback;
 public:
     FORWARD_IUNKNOWN()
     
@@ -24,6 +25,8 @@ public:
         
         
         _native = [NSMenuItem new];
+        
+        _callback = nullptr;
     }
     
     void* GetNative() override
@@ -54,6 +57,9 @@ public:
     
     virtual HRESULT SetAction (IAvnActionCallback* callback) override
     {
+        auto cb = [[ActionCallback alloc] initWithCallback:callback];
+        [_native setTarget:cb];
+        [_native setAction:@selector(action)];
         return S_OK;
     }
 };
