@@ -1,6 +1,7 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
+using System;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
@@ -10,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush
+    public class SolidColorBrush : Brush, ISolidColorBrush, IEquatable<ISolidColorBrush>
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.
@@ -89,5 +90,22 @@ namespace Avalonia.Media
         {
             return new ImmutableSolidColorBrush(this);
         }
+
+        /// <inheritdoc/>
+        public bool Equals(ISolidColorBrush other)
+            => Hash(this) == Hash(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is ISolidColorBrush other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => Hash(this);
+
+        private static int Hash(ISolidColorBrush brush)
+            => (brush.Color, brush.Opacity).GetHashCode();
     }
 }

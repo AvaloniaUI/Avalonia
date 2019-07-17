@@ -55,5 +55,22 @@ namespace Avalonia.Media.Immutable
         {
             return Color.ToString();
         }
+
+        /// <inheritdoc/>
+        public bool Equals(ISolidColorBrush other)
+            => Hash(this) == Hash(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is ISolidColorBrush other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => Hash(this);
+
+        private static int Hash(ISolidColorBrush brush)
+            => (brush.Color, brush.Opacity).GetHashCode();
     }
 }
