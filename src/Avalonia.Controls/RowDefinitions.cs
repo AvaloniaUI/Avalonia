@@ -34,5 +34,19 @@ namespace Avalonia.Controls
         /// <param name="s">The row definitions string.</param>
         /// <returns>The <see cref="RowDefinitions"/>.</returns>
         public static RowDefinitions Parse(string s) => new RowDefinitions(s);
+
+        /// <inheritdoc/>
+        public bool Equals(RowDefinitions other)
+            => this.SequenceEqual(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is RowDefinitions other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => base.GetHashCode();
     }
 }

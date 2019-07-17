@@ -1,12 +1,14 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System;
+
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Holds a row definitions for a <see cref="Grid"/>.
     /// </summary>
-    public class RowDefinition : DefinitionBase
+    public class RowDefinition : DefinitionBase, IEquatable<RowDefinition>
     {
         /// <summary>
         /// Defines the <see cref="MaxHeight"/> property.
@@ -108,5 +110,22 @@ namespace Avalonia.Controls
         internal override GridLength UserSizeValueCache => this.Height;
         internal override double UserMinSizeValueCache => this.MinHeight;
         internal override double UserMaxSizeValueCache => this.MaxHeight;
+
+        /// <inheritdoc/>
+        public bool Equals(RowDefinition other)
+            => Hash(this) == Hash(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is RowDefinition other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => Hash(this);
+
+        private static int Hash(RowDefinition rowDefinition)
+            => (rowDefinition.MaxHeight, rowDefinition.MinHeight, rowDefinition.Height).GetHashCode();
     }
 }
