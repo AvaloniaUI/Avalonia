@@ -58,7 +58,9 @@ namespace Avalonia.Media.Immutable
 
         /// <inheritdoc/>
         public bool Equals(ISolidColorBrush other)
-            => Hash(this) == Hash(other);
+            => other != null
+                ? Hash(this) == Hash(other)
+                : false;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
