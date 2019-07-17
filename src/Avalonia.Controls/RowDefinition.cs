@@ -113,21 +113,29 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         public bool Equals(RowDefinition other)
-            => other != null
+        {
+            return other != null
                 ? Hash(this) == Hash(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
-            => obj is RowDefinition other
+        {
+            return obj is RowDefinition other
                 ? Equals(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
-            => Hash(this);
+        {
+            return Hash(this);
+        }
 
         private static int Hash(RowDefinition rowDefinition)
-            => (rowDefinition.MaxHeight, rowDefinition.MinHeight, rowDefinition.Height).GetHashCode();
+        {
+            return (rowDefinition.MaxHeight, rowDefinition.MinHeight, rowDefinition.Height).GetHashCode();
+        }
     }
 }

@@ -39,18 +39,24 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         public bool Equals(ColumnDefinitions other)
-            => other != null
+        {
+            return other != null
                 ? this.SequenceEqual(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
-            => obj is ColumnDefinitions other
+        {
+            return obj is ColumnDefinitions other
                 ? Equals(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
-            => base.GetHashCode();
+        {
+            return base.GetHashCode();
+        }
     }
 }

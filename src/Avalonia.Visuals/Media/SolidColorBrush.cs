@@ -93,21 +93,29 @@ namespace Avalonia.Media
 
         /// <inheritdoc/>
         public bool Equals(ISolidColorBrush other)
-            => other != null
+        {
+            return other != null
                 ? Hash(this) == Hash(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object obj)
-            => obj is ISolidColorBrush other
+        {
+            return obj is ISolidColorBrush other
                 ? Equals(other)
                 : false;
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
-            => Hash(this);
+        {
+            return Hash(this);
+        }
 
         private static int Hash(ISolidColorBrush brush)
-            => (brush.Color, brush.Opacity).GetHashCode();
+        {
+            return (brush.Color, brush.Opacity).GetHashCode();
+        }
     }
 }
