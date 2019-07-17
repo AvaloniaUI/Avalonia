@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
