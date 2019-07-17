@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A collection of <see cref="ColumnDefinition"/>s.
     /// </summary>
-    public class ColumnDefinitions : DefinitionList<ColumnDefinition>
+    public class ColumnDefinitions : DefinitionList<ColumnDefinition>, IEquatable<ColumnDefinitions>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnDefinitions"/> class.
@@ -36,5 +36,19 @@ namespace Avalonia.Controls
         /// <param name="s">The column definitions string.</param>
         /// <returns>The <see cref="ColumnDefinitions"/>.</returns>
         public static ColumnDefinitions Parse(string s) => new ColumnDefinitions(s);
+
+        /// <inheritdoc/>
+        public bool Equals(ColumnDefinitions other)
+            => this.SequenceEqual(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is ColumnDefinitions other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => base.GetHashCode();
     }
 }

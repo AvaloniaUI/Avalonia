@@ -1,12 +1,13 @@
 // Copyright (c) The Avalonia Project. All rights reserved.
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
+using System;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Holds a column definitions for a <see cref="Grid"/>.
     /// </summary>
-    public class ColumnDefinition : DefinitionBase
+    public class ColumnDefinition : DefinitionBase, IEquatable<ColumnDefinition>
     {
         /// <summary>
         /// Defines the <see cref="MaxWidth"/> property.
@@ -108,5 +109,22 @@ namespace Avalonia.Controls
         internal override GridLength UserSizeValueCache => this.Width;
         internal override double UserMinSizeValueCache => this.MinWidth;
         internal override double UserMaxSizeValueCache => this.MaxWidth;
+
+        /// <inheritdoc/>
+        public bool Equals(ColumnDefinition other)
+            => Hash(this) == Hash(other);
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+            => obj is ColumnDefinition other
+                ? Equals(other)
+                : false;
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+            => Hash(this);
+
+        private static int Hash(ColumnDefinition columnDefinition)
+            => (columnDefinition.MinWidth, columnDefinition.MaxWidth, columnDefinition.Width).GetHashCode();
     }
 }
