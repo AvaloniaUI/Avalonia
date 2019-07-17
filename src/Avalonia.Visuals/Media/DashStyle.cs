@@ -136,17 +136,7 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (ReferenceEquals(a.Dashes, b.Dashes))
-            {
-                return true;
-            }
-
-            if ((a.Dashes is null && !(b.Dashes is null)) || (b.Dashes is null && !(a.Dashes is null)))
-            {
-                return false;
-            }
-
-            return a.Dashes.SequenceEqual(b.Dashes);
+            return SequenceEqual(a.Dashes, b.Dashes);
         }
 
         internal static int GetHashCode(IDashStyle style)
@@ -163,6 +153,29 @@ namespace Avalonia.Media
             }
 
             return hashCode;
+        }
+
+        private static bool SequenceEqual(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        {
+            if (left == right)
+            {
+                return true;
+            }
+
+            if (left == null || right == null || left.Count != right.Count)
+            {
+                return false;
+            }
+
+            for (var c = 0; c < left.Count; c++)
+            {
+                if (left[c] != right[c])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
