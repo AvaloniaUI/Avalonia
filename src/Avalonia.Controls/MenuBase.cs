@@ -31,13 +31,13 @@ namespace Avalonia.Controls
         /// Defines the <see cref="MenuOpened"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> MenuOpenedEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuOpened), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="MenuClosed"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> MenuClosedEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuBase, RoutedEventArgs>(nameof(MenuClosed), RoutingStrategies.Bubble);
 
         private bool _isOpen;
 

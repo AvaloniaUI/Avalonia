@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Moq;
 using Avalonia.Controls.Presenters;
@@ -182,6 +183,53 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.True(popupRoot.IsAttachedToLogicalTree);
                 root.Child = null;
                 Assert.False(((ILogical)target).IsAttachedToLogicalTree);
+            }
+        }
+
+        [Fact]
+        public void Popup_Open_Should_Raise_Single_Opened_Event()
+        {
+            using (CreateServices())
+            {
+                var window = new Window();
+                var target = new Popup();
+
+                window.Content = target;
+
+                int openedCount = 0;
+
+                target.Opened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                target.Open();
+
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void Popup_Close_Should_Raise_Single_Closed_Event()
+        {
+            using (CreateServices())
+            {
+                var window = new Window();
+                var target = new Popup();
+
+                window.Content = target;
+                target.Open();
+
+                int closedCount = 0;
+
+                target.Closed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                target.Close();
+
+                Assert.Equal(1, closedCount);
             }
         }
 
