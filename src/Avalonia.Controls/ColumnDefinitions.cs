@@ -39,7 +39,9 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         public bool Equals(ColumnDefinitions other)
-            => this.SequenceEqual(other);
+            => other != null
+                ? this.SequenceEqual(other)
+                : false;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

@@ -112,7 +112,9 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         public bool Equals(ColumnDefinition other)
-            => Hash(this) == Hash(other);
+            => other != null
+                ? Hash(this) == Hash(other)
+                : false;
 
         /// <inheritdoc/>
         public override bool Equals(object obj)

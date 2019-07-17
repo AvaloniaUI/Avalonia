@@ -1357,5 +1357,157 @@ namespace Avalonia.Controls.UnitTests
             PrintColumnDefinitions(grid);
             Assert.All(grid.ColumnDefinitions.Where(cd => cd.SharedSizeGroup == null), cd => Assert.Equal(50, cd.ActualWidth));
         }
+
+        [Fact]
+        public void ColumnDefinition_Equals_True()
+        {
+            var a = new ColumnDefinition(100.0, GridUnitType.Pixel);
+            var b = new ColumnDefinition(100.0, GridUnitType.Pixel);
+
+            Assert.True(a.Equals(b as ColumnDefinition));
+            Assert.True(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void ColumnDefinition_Equals_False()
+        {
+            var a = new ColumnDefinition(100.0, GridUnitType.Pixel);
+            var b = new ColumnDefinition(100.0, GridUnitType.Star);
+
+            Assert.False(a.Equals(b as ColumnDefinition));
+            Assert.False(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void ColumnDefinition_Null_Equals_False()
+        {
+            var a = new ColumnDefinition();
+
+            Assert.False(a.Equals(obj: null));
+            Assert.False(a.Equals(other: null));
+        }
+
+        [Fact]
+        public void ColumnDefinitions_Equals_True()
+        {
+            var a = new ColumnDefinitions()
+            {
+                new ColumnDefinition(100.0, GridUnitType.Pixel),
+                new ColumnDefinition(200.0, GridUnitType.Pixel)
+            };
+
+            var b = new ColumnDefinitions()
+            {
+                new ColumnDefinition(100.0, GridUnitType.Pixel),
+                new ColumnDefinition(200.0, GridUnitType.Pixel)
+            };
+
+            Assert.True(a.Equals(b as ColumnDefinitions));
+            Assert.True(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void ColumnDefinitions_Equals_False()
+        {
+            var a = new ColumnDefinitions()
+            {
+                new ColumnDefinition(100.0, GridUnitType.Pixel),
+                new ColumnDefinition(200.0, GridUnitType.Pixel)
+            };
+
+            var b = new ColumnDefinitions()
+            {
+                new ColumnDefinition(50.0, GridUnitType.Star),
+                new ColumnDefinition(50.0, GridUnitType.Star)
+            };
+
+            Assert.False(a.Equals(b as ColumnDefinitions));
+            Assert.False(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void ColumnDefinitions_Null_Equals_False()
+        {
+            var a = new ColumnDefinitions();
+
+            Assert.False(a.Equals(obj: null));
+            Assert.False(a.Equals(other: null));
+        }
+
+        [Fact]
+        public void RowDefinition_Equals_True()
+        {
+            var a = new RowDefinition(100.0, GridUnitType.Pixel);
+            var b = new RowDefinition(100.0, GridUnitType.Pixel);
+
+            Assert.True(a.Equals(b as RowDefinition));
+            Assert.True(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void RowDefinition_Equals_False()
+        {
+            var a = new RowDefinition(100.0, GridUnitType.Pixel);
+            var b = new RowDefinition(100.0, GridUnitType.Star);
+
+            Assert.False(a.Equals(b as RowDefinition));
+            Assert.False(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void RowDefinition_Null_Equals_False()
+        {
+            var a = new RowDefinition();
+
+            Assert.False(a.Equals(obj: null));
+            Assert.False(a.Equals(other: null));
+        }
+
+        [Fact]
+        public void RowDefinitions_Equals_True()
+        {
+            var a = new RowDefinitions()
+            {
+                new RowDefinition(100.0, GridUnitType.Pixel),
+                new RowDefinition(200.0, GridUnitType.Pixel),
+            };
+
+            var b = new RowDefinitions()
+            {
+                new RowDefinition(100.0, GridUnitType.Pixel),
+                new RowDefinition(200.0, GridUnitType.Pixel),
+            };
+
+            Assert.True(a.Equals(b as RowDefinitions));
+            Assert.True(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void RowDefinitions_Equals_False()
+        {
+            var a = new RowDefinitions()
+            {
+                new RowDefinition(100.0, GridUnitType.Pixel),
+                new RowDefinition(200.0, GridUnitType.Pixel),
+            };
+
+            var b = new RowDefinitions()
+            {
+                new RowDefinition(50.0, GridUnitType.Star),
+                new RowDefinition(50.0, GridUnitType.Star),
+            };
+
+            Assert.False(a.Equals(b as RowDefinitions));
+            Assert.False(a.Equals(b as object));
+        }
+
+        [Fact]
+        public void RowDefinitions_Null_Equals_False()
+        {
+            var a = new RowDefinitions();
+
+            Assert.False(a.Equals(obj: null));
+            Assert.False(a.Equals(other: null));
+        }
     }
 }
