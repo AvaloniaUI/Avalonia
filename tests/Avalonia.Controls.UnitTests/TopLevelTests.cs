@@ -226,12 +226,12 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
-            return new FuncControlTemplate<TestTopLevel>(x =>
+            return new FuncControlTemplate<TestTopLevel>((x, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private class TestTopLevel : TopLevel

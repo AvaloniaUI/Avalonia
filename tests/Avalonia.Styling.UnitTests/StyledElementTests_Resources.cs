@@ -222,12 +222,12 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate ContentControlTemplate()
         {
-            return new FuncControlTemplate<ContentControl>(x =>
+            return new FuncControlTemplate<ContentControl>((x, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
-                });
+                }.RegisterInNameScope(scope));
         }
     }
 }

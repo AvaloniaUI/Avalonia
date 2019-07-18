@@ -237,21 +237,6 @@ namespace Avalonia.Styling.UnitTests
         }
 
         [Fact]
-        public void Adding_To_Logical_Tree_Should_Register_With_NameScope()
-        {
-            using (AvaloniaLocator.EnterScope())
-            {
-                var root = new TestRoot();
-                var child = new Border();
-
-                child.Name = "foo";
-                root.Child = child;
-
-                Assert.Same(root.FindControl<Border>("foo"), child);
-            }
-        }
-
-        [Fact]
         public void Name_Cannot_Be_Set_After_Added_To_Logical_Tree()
         {
             using (AvaloniaLocator.EnterScope())

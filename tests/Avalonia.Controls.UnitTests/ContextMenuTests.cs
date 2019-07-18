@@ -17,6 +17,60 @@ namespace Avalonia.Controls.UnitTests
         private MouseTestHelper _mouse = new MouseTestHelper();
 
         [Fact]
+        public void Opening_Raises_Single_Opened_Event()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                new Window { Content = target };
+
+                int openedCount = 0;
+
+                sut.MenuOpened += (sender, args) =>
+                {
+                    openedCount++;
+                };
+
+                sut.Open(null);
+
+                Assert.Equal(1, openedCount);
+            }
+        }
+
+        [Fact]
+        public void Closing_Raises_Single_Closed_Event()
+        {
+            using (Application())
+            {
+                var sut = new ContextMenu();
+                var target = new Panel
+                {
+                    ContextMenu = sut
+                };
+
+                new Window { Content = target };
+
+                sut.Open(null);
+
+                int closedCount = 0;
+
+                sut.MenuClosed += (sender, args) =>
+                {
+                    closedCount++;
+                };
+
+                sut.Close();
+
+                Assert.Equal(1, closedCount);
+            }
+        }
+
+        [Fact]
         public void Clicking_On_Control_Toggles_ContextMenu()
         {
             using (Application())

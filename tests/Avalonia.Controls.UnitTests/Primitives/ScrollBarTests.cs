@@ -169,7 +169,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.False(target.IsVisible);
         }
 
-        private static Control Template(ScrollBar control)
+        private static Control Template(ScrollBar control, INameScope scope)
         {
             return new Border
             {
@@ -185,11 +185,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     {
                         Template = new FuncControlTemplate<Thumb>(ThumbTemplate),
                     },
-                },
+                }.RegisterInNameScope(scope),
             };
         }
 
-        private static Control ThumbTemplate(Thumb control)
+        private static Control ThumbTemplate(Thumb control, INameScope scope)
         {
             return new Border
             {

@@ -220,7 +220,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 VirtualizationMode = ItemVirtualizationMode.None,
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
             };
 
             target.ApplyTemplate();
@@ -308,46 +308,6 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var child = target.GetVisualChildren().Single();
 
             Assert.Equal(target.Panel, child);
-        }
-
-        [Fact]
-        public void MemberSelector_Should_Select_Member()
-        {
-            var target = new ItemsPresenter
-            {
-                Items = new[] { new Item("Foo"), new Item("Bar") },
-                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
-            };
-
-            target.ApplyTemplate();
-
-            var text = target.Panel.Children
-                .Cast<ContentPresenter>()
-                .Select(x => x.Content)
-                .ToList();
-
-            Assert.Equal(new[] { "Foo", "Bar" }, text);
-        }
-
-        [Fact]
-        public void MemberSelector_Should_Set_DataContext()
-        {
-            var items = new[] { new Item("Foo"), new Item("Bar") };
-            var target = new ItemsPresenter
-            {
-                Items = items,
-                MemberSelector = new FuncMemberSelector<Item, string>(x => x.Value),
-            };
-
-            target.ApplyTemplate();
-
-            var dataContexts = target.Panel.Children
-                .Cast<ContentPresenter>()
-                .Do(x => x.UpdateChild())
-                .Select(x => x.DataContext)
-                .ToList();
-
-            Assert.Equal(new[] { "Foo", "Bar" }, dataContexts);
         }
 
         private class Item

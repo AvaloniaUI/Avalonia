@@ -222,6 +222,10 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the selection mode.
         /// </summary>
+        /// <remarks>
+        /// Note that the selection mode only applies to selections made via user interaction.
+        /// Multiple selections can be made programatically regardless of the value of this property.
+        /// </remarks>
         protected SelectionMode SelectionMode
         {
             get { return GetValue(SelectionModeProperty); }
@@ -338,23 +342,35 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnContainersMaterialized(e);
 
-            var selectedIndex = SelectedIndex;
-            var selectedContainer = e.Containers
-                .FirstOrDefault(x => (x.ContainerControl as ISelectable)?.IsSelected == true);
+            var resetSelectedItems = false;
 
-            if (selectedContainer != null)
+            foreach (var container in e.Containers)
             {
-                SelectedIndex = selectedContainer.Index;
-            }
-            else if (selectedIndex >= e.StartingIndex &&
-                     selectedIndex < e.StartingIndex + e.Containers.Count)
-            {
-                var container = e.Containers[selectedIndex - e.StartingIndex];
+                if ((container.ContainerControl as ISelectable)?.IsSelected == true)
+                {
+                    if (SelectedIndex == -1)
+                    {
+                        SelectedIndex = container.Index;
+                    }
+                    else
+                    {
+                        if (_selection.Add(container.Index))
+                        {
+                            resetSelectedItems = true;
+                        }
+                    }
 
-                if (container.ContainerControl != null)
+                    MarkContainerSelected(container.ContainerControl, true);
+                }
+                else if (_selection.Contains(container.Index))
                 {
                     MarkContainerSelected(container.ContainerControl, true);
                 }
+            }
+
+            if (resetSelectedItems)
+            {
+                ResetSelectedItems();
             }
         }
 

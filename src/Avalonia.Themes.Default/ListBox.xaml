@@ -18,7 +18,6 @@
                           ItemsPanel="{TemplateBinding ItemsPanel}"
                           ItemTemplate="{TemplateBinding ItemTemplate}"
                           Margin="{TemplateBinding Padding}"
-                          MemberSelector="{TemplateBinding MemberSelector}"
                           VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
         </ScrollViewer>
       </Border>

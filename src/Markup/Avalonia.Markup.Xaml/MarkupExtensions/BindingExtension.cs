@@ -40,7 +40,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 Source = Source,
                 StringFormat = StringFormat,
                 RelativeSource = RelativeSource,
-                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext))
+                DefaultAnchor = new WeakReference(GetDefaultAnchor(descriptorContext)),
+                NameScope = new WeakReference<INameScope>(serviceProvider.GetService<INameScope>())
             };
         }
 
