@@ -50,11 +50,5 @@ namespace Avalonia.Controls
                 ? Equals(other)
                 : false;
         }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
     }
 }

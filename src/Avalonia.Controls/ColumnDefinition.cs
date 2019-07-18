@@ -113,9 +113,13 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public bool Equals(ColumnDefinition other)
         {
-            return other != null
-                ? Hash(this) == Hash(other)
-                : false;
+            if (other == null)
+                return false;
+
+            return
+                MaxWidth == other.MaxWidth &&
+                MinWidth == other.MinWidth &&
+                Width == other.Width;
         }
 
         /// <inheritdoc/>
@@ -124,17 +128,6 @@ namespace Avalonia.Controls
             return obj is ColumnDefinition other
                 ? Equals(other)
                 : false;
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            return Hash(this);
-        }
-
-        private static int Hash(ColumnDefinition columnDefinition)
-        {
-            return (columnDefinition.MinWidth, columnDefinition.MaxWidth, columnDefinition.Width).GetHashCode();
         }
     }
 }

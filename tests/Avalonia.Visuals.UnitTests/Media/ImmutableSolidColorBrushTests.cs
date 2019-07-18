@@ -22,9 +22,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         {
             var red1 = new ImmutableSolidColorBrush(Colors.Red);
             var red2 = new ImmutableSolidColorBrush(Colors.Red);
+            var red3 = new SolidColorBrush(Colors.Red);
 
             Assert.True(red1.Equals(red2 as object));
             Assert.True(red1.Equals(red2 as ISolidColorBrush));
+
+            Assert.True(red1.Equals(red3 as object));
+            Assert.True(red1.Equals(red3 as ISolidColorBrush));
         }
 
         [Fact]
@@ -32,9 +36,13 @@ namespace Avalonia.Visuals.UnitTests.Media
         {
             var red1 = new ImmutableSolidColorBrush(Colors.Red);
             var red2 = new ImmutableSolidColorBrush(Colors.Red, 0.0);
+            var red3 = new SolidColorBrush(Colors.Red, 0.0);
 
             Assert.False(red1.Equals(red2 as object));
             Assert.False(red1.Equals(red2 as ISolidColorBrush));
+
+            Assert.False(red1.Equals(red3 as object));
+            Assert.False(red1.Equals(red3 as ISolidColorBrush));
         }
     }
 }
