@@ -17,7 +17,7 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         public static readonly FuncDataTemplate Default =
             new FuncDataTemplate<object>(
-                data =>
+                (data, s) =>
                 {
                     if (data != null)
                     {
@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Type type, 
-            Func<object, IControl> build,
+            Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
         {
@@ -67,7 +67,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Func<object, bool> match,
-            Func<object, IControl> build,
+            Func<object, INameScope, IControl> build,
             bool supportsRecycling = false)
             : base(build)
         {

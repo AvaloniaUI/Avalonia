@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using Avalonia.Controls;
 using Xunit;
 
 namespace Avalonia.Styling.UnitTests
@@ -110,6 +111,29 @@ namespace Avalonia.Styling.UnitTests
             style2.Resources.Add("foo", "bar");
 
             Assert.False(raised);
+        }
+
+
+        [Fact]
+        public void Finds_Resource_In_Merged_Dictionary()
+        {
+            var target = new Styles
+            {
+                Resources = new ResourceDictionary
+                {
+                    MergedDictionaries =
+                    {
+                        new ResourceDictionary
+                        {
+                            { "foo", "bar" },
+                        }
+                    }
+                }
+            };
+
+            var result = target.FindResource("foo");
+
+            Assert.Equal("bar", result);
         }
     }
 }

@@ -409,7 +409,7 @@ namespace Avalonia.Controls
 
                 if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
                 {
-                    SelectingItemsControl.SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+                    SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
                     e.Handled = true;
                 }
             }
@@ -521,7 +521,7 @@ namespace Avalonia.Controls
             }
             else if (multi && range)
             {
-                SelectingItemsControl.SynchronizeItems(
+                SynchronizeItems(
                     SelectedItems,
                     GetItemsInRange(selectedContainer as TreeViewItem, container as TreeViewItem));
             }
@@ -776,6 +776,28 @@ namespace Avalonia.Controls
             else
             {
                 container.Classes.Set(":selected", selected);
+            }
+        }
+
+        /// <summary>
+        /// Makes a list of objects equal another (though doesn't preserve order).
+        /// </summary>
+        /// <param name="items">The items collection.</param>
+        /// <param name="desired">The desired items.</param>
+        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        {
+            var list = items.Cast<object>().ToList();
+            var toRemove = list.Except(desired).ToList();
+            var toAdd = desired.Except(list).ToList();
+
+            foreach (var i in toRemove)
+            {
+                items.Remove(i);
+            }
+
+            foreach (var i in toAdd)
+            {
+                items.Add(i);
             }
         }
     }

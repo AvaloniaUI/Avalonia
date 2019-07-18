@@ -608,6 +608,14 @@ namespace Avalonia.Win32.Interop
             GWL_USERDATA = -21
         }
 
+        public enum MenuCharParam
+        {
+            MNC_IGNORE = 0,
+            MNC_CLOSE = 1,
+            MNC_EXECUTE = 2,
+            MNC_SELECT = 3
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
         {

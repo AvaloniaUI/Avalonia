@@ -93,28 +93,28 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<DatePicker>(control =>
+            return new FuncControlTemplate<DatePicker>((control, scope) =>
             {
                 var textBox = 
                     new TextBox
                     {
                         Name = "PART_TextBox"
-                    };
+                    }.RegisterInNameScope(scope);
                 var button =
                     new Button
                     {
                         Name = "PART_Button"
-                    };
+                    }.RegisterInNameScope(scope);
                 var calendar =
                     new Calendar
                     {
                         Name = "PART_Calendar"
-                    };
+                    }.RegisterInNameScope(scope);
                 var popup =
                     new Popup
                     {
                         Name = "PART_Popup"
-                    };
+                    }.RegisterInNameScope(scope);
 
                 var panel = new Panel();
                 panel.Children.Add(textBox);
