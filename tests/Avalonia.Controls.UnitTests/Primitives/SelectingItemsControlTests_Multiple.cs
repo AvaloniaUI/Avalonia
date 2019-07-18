@@ -53,7 +53,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Assigning_SelectedItems_Should_Set_SelectedIndex()
+        public void Assigning_Single_SelectedItems_Should_Set_SelectedIndex()
         {
             var target = new TestSelector
             {
@@ -62,9 +62,51 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
             target.SelectedItems = new AvaloniaList<object>("bar");
 
             Assert.Equal(1, target.SelectedIndex);
+            Assert.Equal(new[] { "bar" }, target.SelectedItems);
+            Assert.Equal(new[] { 1 }, SelectedContainers(target));
+        }
+
+        [Fact]
+        public void Assigning_Multiple_SelectedItems_Should_Set_SelectedIndex()
+        {
+            // Note that we don't need SelectionMode = Multiple here. Multiple selections can always
+            // be made in code.
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            target.SelectedItems = new AvaloniaList<string>("foo", "bar", "baz");
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { "foo", "bar", "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
+        }
+
+        [Fact]
+        public void Selected_Items_Should_Be_Marked_When_Panel_Created_After_SelectedItems_Is_Set()
+        {
+            // Issue #2565.
+            var target = new TestSelector
+            {
+                Items = new[] { "foo", "bar", "baz" },
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.SelectedItems = new AvaloniaList<string>("foo", "bar", "baz");
+            target.Presenter.ApplyTemplate();
+
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(new[] { "foo", "bar", "baz" }, target.SelectedItems);
+            Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
         }
 
         [Fact]
@@ -1026,6 +1068,31 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(1, target.SelectedItems.Count);
         }
 
+        [Fact]
+        public void Adding_Selected_ItemContainers_Should_Update_Selection()
+        {
+            var items = new AvaloniaList<ItemContainer>(new[]
+            {
+                new ItemContainer(),
+                new ItemContainer(),
+            });
+
+            var target = new TestSelector
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+            items.Add(new ItemContainer { IsSelected = true });
+            items.Add(new ItemContainer { IsSelected = true });
+
+            Assert.Equal(2, target.SelectedIndex);
+            Assert.Equal(items[2], target.SelectedItem);
+            Assert.Equal(new[] { items[2], items[3] }, target.SelectedItems);
+        }
+
         private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
@@ -1077,6 +1144,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             public List<string> Items { get; } 
             public List<string> SelectedItems { get; }
+        }
+
+        private class ItemContainer : Control, ISelectable
+        {
+            public string Value { get; set; }
+            public bool IsSelected { get; set; }
         }
     }
 }
