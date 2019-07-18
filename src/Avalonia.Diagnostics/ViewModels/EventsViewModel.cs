@@ -5,8 +5,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Input;
-
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
@@ -14,20 +12,23 @@ using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class EventsViewModel : ViewModelBase
+    internal class EventsViewModel : ViewModelBase, IDevToolViewModel
     {
         private readonly IControl _root;
         private FiredEvent _selectedEvent;
 
         public EventsViewModel(IControl root)
         {
-            this._root = root;
-            this.Nodes = RoutedEventRegistry.Instance.GetAllRegistered()
+            _root = root;
+
+            Nodes = RoutedEventRegistry.Instance.GetAllRegistered()
                 .GroupBy(e => e.OwnerType)
                 .OrderBy(e => e.Key.Name)
                 .Select(g => new EventOwnerTreeNode(g.Key, g, this))
                 .ToArray();
         }
+
+        public string Name => "Events";
 
         public EventTreeNodeBase[] Nodes { get; }
 
@@ -49,7 +50,7 @@ namespace Avalonia.Diagnostics.ViewModels
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Brushes.LightGreen : Brushes.Transparent;
+            return (bool)value ? Brushes.Green : Brushes.Transparent;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
