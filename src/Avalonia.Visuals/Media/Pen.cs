@@ -244,14 +244,8 @@ namespace Avalonia.Media
 
         internal static int GetHashCode(IPen pen)
         {
-            var hashCode = 1181807663;
-            hashCode = hashCode * -1521134295 + EqualityComparer<IBrush>.Default.GetHashCode(pen.Brush);
-            hashCode = hashCode * -1521134295 + pen.Thickness.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<IDashStyle>.Default.GetHashCode(pen.DashStyle);
-            hashCode = hashCode * -1521134295 + pen.LineCap.GetHashCode();
-            hashCode = hashCode * -1521134295 + pen.LineJoin.GetHashCode();
-            hashCode = hashCode * -1521134295 + pen.MiterLimit.GetHashCode();
-            return hashCode;
+            return (pen.Brush, pen.Thickness, pen.DashStyle, pen.LineCap, pen.LineJoin, pen.MiterLimit)
+                .GetHashCode();
         }
 
         internal static bool PenEquals(IPen a, IPen b)
