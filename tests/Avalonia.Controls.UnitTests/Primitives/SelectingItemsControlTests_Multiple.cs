@@ -1094,7 +1094,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Shift_Right_Click_Should_Not_Select_Mutiple()
+        public void Shift_Right_Click_Should_Not_Select_Multiple()
         {
             var target = new ListBox
             {
@@ -1114,7 +1114,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Ctrl_Right_Click_Should_Not_Select_Mutiple()
+        public void Ctrl_Right_Click_Should_Not_Select_Multiple()
         {
             var target = new ListBox
             {

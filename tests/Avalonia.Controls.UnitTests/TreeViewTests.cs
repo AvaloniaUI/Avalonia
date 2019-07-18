@@ -784,7 +784,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Shift_Right_Click_Should_Not_Select_Mutiple()
+        public void Shift_Right_Click_Should_Not_Select_Multiple()
         {
             var tree = CreateTestTreeData();
             var target = new TreeView
@@ -814,7 +814,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Ctrl_Right_Click_Should_Not_Select_Mutiple()
+        public void Ctrl_Right_Click_Should_Not_Select_Multiple()
         {
             var tree = CreateTestTreeData();
             var target = new TreeView
