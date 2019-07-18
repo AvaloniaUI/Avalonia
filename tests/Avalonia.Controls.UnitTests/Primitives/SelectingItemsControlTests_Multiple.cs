@@ -1006,7 +1006,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Template = Template(),
                 Items = new[] { "Foo", "Bar", "Baz" },
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1030,7 +1030,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Template = Template(),
                 Items = new[] { "Foo", "Bar", "Baz" },
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1052,7 +1052,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Template = Template(),
                 Items = new[] { "Foo", "Bar", "Baz" },
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Width = 20, Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                 SelectionMode = SelectionMode.Multiple,
             };
 
@@ -1102,13 +1102,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private FuncControlTemplate Template()
         {
-            return new FuncControlTemplate<SelectingItemsControl>(control =>
+            return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
                     [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private class TestSelector : SelectingItemsControl

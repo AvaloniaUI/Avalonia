@@ -129,7 +129,7 @@ namespace Avalonia.Controls.UnitTests
                 },
             };
 
-            var template = new FuncControlTemplate<TabItem>(x => new Decorator());
+            var template = new FuncControlTemplate<TabItem>((x, __) => new Decorator());
 
             using (UnitTestApplication.Start(TestServices.RealStyler))
             {
@@ -176,7 +176,7 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
@@ -273,7 +273,7 @@ namespace Avalonia.Controls.UnitTests
             TabControl target = new TabControl
             {
                 Template = TabControlTemplate(),
-                ContentTemplate = new FuncDataTemplate<string>(x =>
+                ContentTemplate = new FuncDataTemplate<string>((x, _) =>
                     new TextBlock { Tag = "bar", Text = x }),
                 Items = new[] { "Foo" },
             };
@@ -289,7 +289,7 @@ namespace Avalonia.Controls.UnitTests
 
         private IControlTemplate TabControlTemplate()
         {
-            return new FuncControlTemplate<TabControl>(parent =>
+            return new FuncControlTemplate<TabControl>((parent, scope) =>
                 new StackPanel
                 {
                     Children =
@@ -299,26 +299,26 @@ namespace Avalonia.Controls.UnitTests
                             Name = "PART_ItemsPresenter",
                             [!TabStrip.ItemsProperty] = parent[!TabControl.ItemsProperty],
                             [!TabStrip.ItemTemplateProperty] = parent[!TabControl.ItemTemplateProperty],
-                        },
+                        }.RegisterInNameScope(scope),
                         new ContentPresenter
                         {
                             Name = "PART_SelectedContentHost",
                             [!ContentPresenter.ContentProperty] = parent[!TabControl.SelectedContentProperty],
                             [!ContentPresenter.ContentTemplateProperty] = parent[!TabControl.SelectedContentTemplateProperty],
-                        }
+                        }.RegisterInNameScope(scope)
                     }
                 });
         }
 
         private IControlTemplate TabItemTemplate()
         {
-            return new FuncControlTemplate<TabItem>(parent =>
+            return new FuncControlTemplate<TabItem>((parent, scope) =>
                 new ContentPresenter
                 {
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = parent[!TabItem.HeaderProperty],
                     [!ContentPresenter.ContentTemplateProperty] = parent[!TabItem.HeaderTemplateProperty]
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private void ApplyTemplate(TabControl target)

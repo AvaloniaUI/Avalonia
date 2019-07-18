@@ -61,7 +61,6 @@ namespace Avalonia
         private readonly Classes _classes = new Classes();
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
-        private INameScope _nameScope;
         private IResourceDictionary _resources;
         private Styles _styles;
         private bool _styled;
@@ -82,7 +81,6 @@ namespace Avalonia
         /// </summary>
         public StyledElement()
         {
-            _nameScope = this as INameScope;
             _isAttachedToLogicalTree = this is IStyleRoot;
         }
 
@@ -381,7 +379,6 @@ namespace Avalonia
         {
             if (_initCount == 0 && (!_styled || force))
             {
-                RegisterWithNameScope();
                 ApplyStyling();
                 _styled = true;
             }
@@ -675,19 +672,6 @@ namespace Avalonia
             AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
         }
 
-        private void RegisterWithNameScope()
-        {
-            if (_nameScope == null)
-            {
-                _nameScope = NameScope.GetNameScope(this) ?? ((StyledElement)Parent)?._nameScope;
-            }
-
-            if (Name != null)
-            {
-                _nameScope?.Register(Name, this);
-            }
-        }
-
         private static void ValidateLogicalChild(ILogical c)
         {
             if (c == null)
@@ -724,11 +708,6 @@ namespace Avalonia
         {
             if (_isAttachedToLogicalTree)
             {
-                if (Name != null)
-                {
-                    _nameScope?.Unregister(Name);
-                }
-
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);

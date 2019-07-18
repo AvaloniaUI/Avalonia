@@ -20,6 +20,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Detects_Horizontal_Orientation()
         {
+            GridSplitter splitter;
             var grid = new Grid()
                        {
                             RowDefinitions = new RowDefinitions("*,Auto,*"),
@@ -27,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
                             Children =
                             {
                                 new Border { [Grid.RowProperty] = 0 },
-                                new GridSplitter { [Grid.RowProperty] = 1, Name = "splitter" },
+                                (splitter = new GridSplitter { [Grid.RowProperty] = 1 }),
                                 new Border { [Grid.RowProperty] = 2 }
                             }
                        };
@@ -35,12 +36,13 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = grid };
             root.Measure(new Size(100, 300));
             root.Arrange(new Rect(0, 0, 100, 300));
-            Assert.Contains(grid.FindControl<GridSplitter>("splitter").Classes, ":horizontal".Equals);
+            Assert.Contains(splitter.Classes, ":horizontal".Equals);
         }
 
         [Fact]
         public void Detects_Vertical_Orientation()
         {
+            GridSplitter splitter;
             var grid = new Grid()
                        {
                             ColumnDefinitions = new ColumnDefinitions("*,Auto,*"),
@@ -48,7 +50,7 @@ namespace Avalonia.Controls.UnitTests
                             Children =
                             {
                                 new Border { [Grid.ColumnProperty] = 0 },
-                                new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
+                                (splitter = new GridSplitter { [Grid.ColumnProperty] = 1}),
                                 new Border { [Grid.ColumnProperty] = 2 },
                             }
                        };
@@ -56,12 +58,13 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = grid };
             root.Measure(new Size(100, 300));
             root.Arrange(new Rect(0, 0, 100, 300));
-            Assert.Contains(grid.FindControl<GridSplitter>("splitter").Classes, ":vertical".Equals);
+            Assert.Contains(splitter.Classes, ":vertical".Equals);
         }
 
         [Fact]
         public void Detects_With_Both_Auto()
         {
+            GridSplitter splitter;
             var grid = new Grid()
                        {
                             ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto"),
@@ -69,7 +72,7 @@ namespace Avalonia.Controls.UnitTests
                             Children =
                             {
                                 new Border { [Grid.ColumnProperty] = 0 },
-                                new GridSplitter { [Grid.ColumnProperty] = 1, Name = "splitter" },
+                                (splitter = new GridSplitter { [Grid.ColumnProperty] = 1}),
                                 new Border { [Grid.ColumnProperty] = 2 },
                             }
                        };
@@ -77,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = grid };
             root.Measure(new Size(100, 300));
             root.Arrange(new Rect(0, 0, 100, 300));
-            Assert.Contains(grid.FindControl<GridSplitter>("splitter").Classes, ":vertical".Equals);
+            Assert.Contains(splitter.Classes, ":vertical".Equals);
         }
 
         [Fact]
@@ -129,13 +132,14 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void In_First_Position_Doesnt_Throw_Exception()
         {
+            GridSplitter splitter;
             var grid = new Grid()
                        {
                             ColumnDefinitions = new ColumnDefinitions("Auto,*,*"),
                             RowDefinitions = new RowDefinitions("*,*"),
                             Children =
                             {
-                                new GridSplitter { [Grid.ColumnProperty] = 0, Name = "splitter" },
+                                (splitter = new GridSplitter { [Grid.ColumnProperty] = 0} ),
                                 new Border { [Grid.ColumnProperty] = 1 },
                                 new Border { [Grid.ColumnProperty] = 2 },
                             }
@@ -144,7 +148,6 @@ namespace Avalonia.Controls.UnitTests
             var root = new TestRoot { Child = grid };
             root.Measure(new Size(100, 300));
             root.Arrange(new Rect(0, 0, 100, 300));
-            var splitter = grid.FindControl<GridSplitter>("splitter");
             splitter.RaiseEvent(new VectorEventArgs
                                 {
                                     RoutedEvent = Thumb.DragDeltaEvent,
