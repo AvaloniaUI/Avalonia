@@ -1,12 +1,12 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Controls
@@ -90,9 +90,14 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
+            if (IsOpen)
+            {
+                return;
+            }
+
             if (_popup == null)
             {
-                _popup = new Popup()
+                _popup = new Popup
                 {
                     PlacementMode = PlacementMode.Pointer,
                     PlacementTarget = control,
@@ -107,7 +112,14 @@ namespace Avalonia.Controls
             ((ISetLogicalParent)_popup).SetParent(control);
             _popup.Child = this;
             _popup.IsOpen = true;
+
             IsOpen = true;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuOpenedEvent,
+                Source = this,
+            });
         }
 
         /// <summary>
@@ -115,18 +127,32 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Close()
         {
+            if (!IsOpen)
+            {
+                return;
+            }
+
             if (_popup != null && _popup.IsVisible)
             {
                 _popup.IsOpen = false;
             }
-
-            SelectedIndex = -1;
-            IsOpen = false;
         }
 
         protected override IItemContainerGenerator CreateItemContainerGenerator()
         {
             return new MenuItemContainerGenerator(this);
+        }
+
+        private void CloseCore()
+        {
+            SelectedIndex = -1;
+            IsOpen = false;
+
+            RaiseEvent(new RoutedEventArgs
+            {
+                RoutedEvent = MenuClosedEvent,
+                Source = this,
+            });
         }
 
         private void PopupOpened(object sender, EventArgs e)
@@ -145,8 +171,7 @@ namespace Avalonia.Controls
                     i.IsSubMenuOpen = false;
                 }
 
-                contextMenu.IsOpen = false;
-                contextMenu.SelectedIndex = -1;
+                contextMenu.CloseCore();
             }
         }
 

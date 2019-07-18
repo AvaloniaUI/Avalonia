@@ -8,7 +8,6 @@
                            Items="{TemplateBinding Items}"
                            ItemsPanel="{TemplateBinding ItemsPanel}"
                            Margin="{TemplateBinding Padding}"
-                           MemberSelector="{TemplateBinding MemberSelector}"
                            SelectedIndex="{TemplateBinding SelectedIndex}"
                            PageTransition="{TemplateBinding PageTransition}"/>
       </Border>
