@@ -444,6 +444,22 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_Bound_Text_To_Null_Works()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "bar" };
+                var target = new TextBox { DataContext = source };
+
+                target.Bind(TextBox.TextProperty, new Binding("Bar"));
+
+                Assert.Equal("bar", target.Text);
+                source.Bar = null;
+                Assert.Null(target.Text);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
@@ -492,11 +508,18 @@ namespace Avalonia.Controls.UnitTests
         private class Class1 : NotifyingBase
         {
             private int _foo;
+            private string _bar;
 
             public int Foo
             {
                 get { return _foo; }
                 set { _foo = value; RaisePropertyChanged(); }
+            }
+
+            public string Bar
+            {
+                get { return _bar; }
+                set { _bar = value; RaisePropertyChanged(); }
             }
         }
     }
