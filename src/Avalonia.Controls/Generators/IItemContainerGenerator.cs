@@ -49,12 +49,8 @@ namespace Avalonia.Controls.Generators
         /// The index of the item of data in the control's items.
         /// </param>
         /// <param name="item">The item.</param>
-        /// <param name="selector">An optional member selector.</param>
         /// <returns>The created controls.</returns>
-        ItemContainerInfo Materialize(
-            int index,
-            object item,
-            IMemberSelector selector);
+        ItemContainerInfo Materialize(int index, object item);
 
         /// <summary>
         /// Removes a set of created containers.
@@ -84,11 +80,7 @@ namespace Avalonia.Controls.Generators
         /// <returns>The removed containers.</returns>
         IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count);
 
-        bool TryRecycle(
-            int oldIndex,
-            int newIndex,
-            object item,
-            IMemberSelector selector);
+        bool TryRecycle(int oldIndex, int newIndex, object item);
 
         /// <summary>
         /// Clears all created containers and returns the removed controls.
