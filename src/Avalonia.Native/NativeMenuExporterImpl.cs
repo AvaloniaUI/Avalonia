@@ -51,6 +51,7 @@ namespace Avalonia.Native
                     menuItem.Title = buffer.DangerousGetHandle();
                 }
 
+                menuItem.SetAction(new MenuActionCallback(()=>{item.RaiseClick();}));
                 menu.AddItem(menuItem);
 
                 if (item.SubItems.Count > 0)

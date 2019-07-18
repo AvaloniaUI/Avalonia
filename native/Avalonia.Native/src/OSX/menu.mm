@@ -61,7 +61,7 @@ public:
     {
         auto cb = [[ActionCallback alloc] initWithCallback:callback];
         [_native setTarget:cb];
-        [_native setAction:@selector(action)];
+        [_native setAction:@selector(action:)];
         return S_OK;
     }
 };
