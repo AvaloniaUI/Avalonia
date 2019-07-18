@@ -114,6 +114,11 @@ namespace Avalonia.Data.Core
         /// <inheritdoc/>
         public void OnNext(object value)
         {
+            if (value == BindingOperations.DoNothing)
+            {
+                return;
+            }
+
             using (_inner.Subscribe(_ => { }))
             {
                 var type = _inner.ResultType;
@@ -125,6 +130,11 @@ namespace Avalonia.Data.Core
                         type,
                         ConverterParameter,
                         CultureInfo.CurrentCulture);
+
+                    if (converted == BindingOperations.DoNothing)
+                    {
+                        return;
+                    }
 
                     if (converted == AvaloniaProperty.UnsetValue)
                     {
@@ -186,6 +196,11 @@ namespace Avalonia.Data.Core
         /// <inheritdoc/>
         private object ConvertValue(object value)
         {
+            if (value == BindingOperations.DoNothing)
+            {
+                return value;
+            }
+
             var notification = value as BindingNotification;
 
             if (notification == null)
@@ -195,6 +210,11 @@ namespace Avalonia.Data.Core
                     _targetType,
                     ConverterParameter,
                     CultureInfo.CurrentCulture);
+
+                if (converted == BindingOperations.DoNothing)
+                {
+                    return converted;
+                }
 
                 notification = converted as BindingNotification;
 
@@ -327,7 +347,18 @@ namespace Avalonia.Data.Core
 
             public void OnNext(object value)
             {
+                if (value == BindingOperations.DoNothing)
+                {
+                    return;
+                }
+
                 var converted = _owner.ConvertValue(value);
+
+                if (converted == BindingOperations.DoNothing)
+                {
+                    return;
+                }
+
                 _owner._value = new WeakReference<object>(converted);
                 _owner.PublishNext(converted);
             }

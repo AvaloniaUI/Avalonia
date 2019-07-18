@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests
             var target = new ItemsControl
             {
                 Template = GetTemplate(),
-                ItemTemplate = new FuncDataTemplate<string>(_ => new Canvas()),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
             };
 
             target.Items = new[] { "Foo" };
@@ -411,7 +411,7 @@ namespace Avalonia.Controls.UnitTests
                 DataContext = "Base",
                 DataTemplates =
                 {
-                    new FuncDataTemplate<Item>(x => new Button { Content = x })
+                    new FuncDataTemplate<Item>((x, __) => new Button { Content = x })
                 },
                 Items = items,
             };
@@ -449,29 +449,6 @@ namespace Avalonia.Controls.UnitTests
 
             var item = target.Presenter.Panel.LogicalChildren[0];
             Assert.Null(NameScope.GetNameScope((TextBlock)item));
-        }
-
-        [Fact]
-        public void DataTemplate_Created_Content_Should_Be_NameScope()
-        {
-            var items = new object[]
-            {
-                "foo",
-            };
-
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = items,
-            };
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-
-            var container = (ContentPresenter)target.Presenter.Panel.LogicalChildren[0];
-            container.UpdateChild();
-
-            Assert.NotNull(NameScope.GetNameScope((TextBlock)container.Child));
         }
 
         [Fact]
@@ -557,7 +534,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ItemsControl>(parent =>
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -566,7 +543,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ItemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

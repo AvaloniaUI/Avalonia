@@ -221,12 +221,8 @@ namespace Avalonia.X11
             //{ X11Key.?, Key.DeadCharProcessed }
         };
 
-        public static Key ConvertKey(IntPtr key)
-        {
-            var ikey = key.ToInt32();
-            Key result;
-            return KeyDic.TryGetValue((X11Key)ikey, out result) ? result : Key.None;
-        }
-}
+        public static Key ConvertKey(X11Key key) 
+            => KeyDic.TryGetValue(key, out var result) ? result : Key.None;
+    }
     
 }

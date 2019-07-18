@@ -16,7 +16,7 @@ namespace Avalonia.ReactiveUI
     /// </summary>
     public class AutoDataTemplateBindingHook : IPropertyBindingHook
     {
-        private static FuncDataTemplate DefaultItemTemplate = new FuncDataTemplate<object>(x =>
+        private static FuncDataTemplate DefaultItemTemplate = new FuncDataTemplate<object>((x, _) =>
         {
             var control = new ViewModelViewHost();
             var context = control.GetObservable(Control.DataContextProperty);

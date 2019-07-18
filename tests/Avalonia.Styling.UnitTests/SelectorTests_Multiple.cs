@@ -16,12 +16,12 @@ namespace Avalonia.Styling.UnitTests
         [Fact]
         public void Named_Template_Child_Of_Control_With_Two_Classes()
         {
-            var template = new FuncControlTemplate(parent =>
+            var template = new FuncControlTemplate((parent, scope) =>
             {
                 return new Border
                 {
                     Name = "border",
-                };
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button
@@ -55,12 +55,12 @@ namespace Avalonia.Styling.UnitTests
         [Fact]
         public void Named_OfType_Template_Child_Of_Control_With_Two_Classes_Wrong_Type()
         {
-            var template = new FuncControlTemplate(parent =>
+            var template = new FuncControlTemplate((parent, scope) =>
             {
                 return new Border
                 {
                     Name = "border",
-                };
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button
@@ -88,12 +88,12 @@ namespace Avalonia.Styling.UnitTests
         [Fact]
         public void Named_Class_Template_Child_Of_Control()
         {
-            var template = new FuncControlTemplate(parent =>
+            var template = new FuncControlTemplate((parent, scope) =>
             {
                 return new Border
                 {
                     Name = "border",
-                };
+                }.RegisterInNameScope(scope);
             });
 
             var control = new Button

@@ -220,7 +220,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             {
                 VirtualizationMode = ItemVirtualizationMode.None,
                 Items = items,
-                ItemTemplate = new FuncDataTemplate<string>(x => new TextBlock { Height = 10 }),
+                ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
             };
 
             target.ApplyTemplate();

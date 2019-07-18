@@ -788,7 +788,7 @@ namespace Avalonia.Controls
                 var template =
                     new FuncDataTemplate(
                         typeof(object),
-                        o =>
+                        (o, _) =>
                         {
                             var control = new ContentControl();
                             control.Bind(ContentControl.ContentProperty, value);

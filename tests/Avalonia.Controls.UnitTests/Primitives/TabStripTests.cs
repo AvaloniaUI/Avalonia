@@ -105,13 +105,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Same("3rd", ((TabItem)target.SelectedItem).Name);
         }
 
-        private Control CreateTabStripTemplate(TabStrip parent)
+        private Control CreateTabStripTemplate(TabStrip parent, INameScope scope)
         {
             return new ItemsPresenter
             {
                 Name = "itemsPresenter",
                 [!ItemsPresenter.ItemsProperty] = parent[!ItemsControl.ItemsProperty],
-            };
+            }.RegisterInNameScope(scope);
         }
     }
 }

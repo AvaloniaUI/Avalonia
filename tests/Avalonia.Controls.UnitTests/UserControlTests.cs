@@ -40,7 +40,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<UserControl>(parent =>
+            return new FuncControlTemplate<UserControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -49,7 +49,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Name = "PART_ContentPresenter",
                         [~ContentPresenter.ContentProperty] = parent[~ContentControl.ContentProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

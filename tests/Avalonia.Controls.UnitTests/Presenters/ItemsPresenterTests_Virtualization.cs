@@ -309,7 +309,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
         private static IDataTemplate ItemTemplate()
         {
-            return new FuncDataTemplate<string>(x => new Canvas
+            return new FuncDataTemplate<string>((x, _) => new Canvas
             {
                 Width = 10,
                 Height = 10,

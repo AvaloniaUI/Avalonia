@@ -98,7 +98,7 @@ namespace Avalonia.ReactiveUI.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ItemsControl>(parent =>
+            return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {
                 return new Border
                 {
@@ -107,7 +107,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                     {
                         Name = "PART_ItemsPresenter",
                         [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
-                    }
+                    }.RegisterInNameScope(scope)
                 };
             });
         }

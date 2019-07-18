@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.LogicalTree;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -18,44 +20,14 @@ namespace Avalonia.Controls
         public static readonly AttachedProperty<INameScope> NameScopeProperty =
             AvaloniaProperty.RegisterAttached<NameScope, StyledElement, INameScope>("NameScope");
 
+        /// <inheritdoc/>
+        public bool IsCompleted { get; private set; }
+        
         private readonly Dictionary<string, object> _inner = new Dictionary<string, object>();
 
-        /// <summary>
-        /// Raised when an element is registered with the name scope.
-        /// </summary>
-        public event EventHandler<NameScopeEventArgs> Registered;
-
-        /// <summary>
-        /// Raised when an element is unregistered with the name scope.
-        /// </summary>
-        public event EventHandler<NameScopeEventArgs> Unregistered;
-
-        /// <summary>
-        /// Finds the containing name scope for a styled element.
-        /// </summary>
-        /// <param name="styled">The styled element.</param>
-        /// <returns>The containing name scope.</returns>
-        public static INameScope FindNameScope(StyledElement styled)
-        {
-            Contract.Requires<ArgumentNullException>(styled != null);
-
-            INameScope result;
-
-            while (styled != null)
-            {
-                result = styled as INameScope ?? GetNameScope(styled);
-
-                if (result != null)
-                {
-                    return result;
-                }
-
-                styled = (styled as ILogical)?.LogicalParent as StyledElement;
-            }
-
-            return null;
-        }
-
+        private readonly Dictionary<string, SynchronousCompletionAsyncResultSource<object>> _pendingSearches =
+            new Dictionary<string, SynchronousCompletionAsyncResultSource<object>>();
+        
         /// <summary>
         /// Gets the value of the attached <see cref="NameScopeProperty"/> on a styled element.
         /// </summary>
@@ -80,13 +52,11 @@ namespace Avalonia.Controls
             styled.SetValue(NameScopeProperty, value);
         }
 
-        /// <summary>
-        /// Registers an element with the name scope.
-        /// </summary>
-        /// <param name="name">The element name.</param>
-        /// <param name="element">The element.</param>
+        /// <inheritdoc />
         public void Register(string name, object element)
         {
+            if (IsCompleted)
+                throw new InvalidOperationException("NameScope is completed, no further registrations are allowed");
             Contract.Requires<ArgumentNullException>(name != null);
             Contract.Requires<ArgumentNullException>(element != null);
 
@@ -102,15 +72,29 @@ namespace Avalonia.Controls
             else
             {
                 _inner.Add(name, element);
-                Registered?.Invoke(this, new NameScopeEventArgs(name, element));
+                if (_pendingSearches.TryGetValue(name, out var tcs))
+                {
+                    _pendingSearches.Remove(name);
+                    tcs.SetResult(element);
+                }
             }
         }
 
-        /// <summary>
-        /// Finds a named element in the name scope.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>The element, or null if the name was not found.</returns>
+        public SynchronousCompletionAsyncResult<object> FindAsync(string name)
+        {
+            var found = Find(name);
+            if (found != null)
+                return new SynchronousCompletionAsyncResult<object>(found);
+            if (IsCompleted)
+                return new SynchronousCompletionAsyncResult<object>((object)null);
+            if (!_pendingSearches.TryGetValue(name, out var tcs))
+                // We are intentionally running continuations synchronously here
+                _pendingSearches[name] = tcs = new SynchronousCompletionAsyncResultSource<object>();
+
+            return tcs.AsyncResult;
+        }
+
+        /// <inheritdoc />
         public object Find(string name)
         {
             Contract.Requires<ArgumentNullException>(name != null);
@@ -120,21 +104,14 @@ namespace Avalonia.Controls
             return result;
         }
 
-        /// <summary>
-        /// Unregisters an element with the name scope.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        public void Unregister(string name)
+        public void Complete()
         {
-            Contract.Requires<ArgumentNullException>(name != null);
-
-            object element;
-
-            if (_inner.TryGetValue(name, out element))
-            {
-                _inner.Remove(name);
-                Unregistered?.Invoke(this, new NameScopeEventArgs(name, element));
-            }
+            IsCompleted = true;
+            foreach (var kp in _pendingSearches)
+                kp.Value.TrySetResult(null);
+            _pendingSearches.Clear();
         }
+
+        
     }
 }

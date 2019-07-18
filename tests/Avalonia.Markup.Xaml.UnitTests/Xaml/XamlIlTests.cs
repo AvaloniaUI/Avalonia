@@ -234,6 +234,38 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 Assert.Equal(100, XamlIlBugTestsStaticClassWithAttachedProperty.GetTestInt(tb));
             }
         }
+
+        [Fact]
+        public void DataTemplates_Should_Resolve_Named_Controls_From_Parent_Scope()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parsed = (Window)AvaloniaXamlLoader.Parse(@"
+<Window
+  xmlns='https://github.com/avaloniaui'
+  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+>
+  <StackPanel>
+    <StackPanel.DataTemplates>
+      <DataTemplate DataType='{x:Type x:String}'>
+       <TextBlock Classes='target' Text='{Binding #txt.Text}'/>
+      </DataTemplate>
+    </StackPanel.DataTemplates>
+    <TextBlock Text='Test' Name='txt'/>
+    <ContentControl Content='tst'/>
+  </StackPanel>
+</Window>
+");
+                parsed.DataContext = new List<string>() {"Test"};
+                parsed.Show();
+                parsed.ApplyTemplate();
+                var cc = ((ContentControl)((StackPanel)parsed.Content).Children.Last());
+                cc.ApplyTemplate();
+                var templated = cc.GetVisualDescendants().OfType<TextBlock>()
+                    .First(x => x.Classes.Contains("target"));
+                Assert.Equal("Test", templated.Text);
+            }
+        }
     }
     
     public class XamlIlBugTestsEventHandlerCodeBehind : Window

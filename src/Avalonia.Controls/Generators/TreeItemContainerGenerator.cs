@@ -92,7 +92,6 @@ namespace Avalonia.Controls.Generators
                     result.DataContext = item;
                 }
 
-                NameScope.SetNameScope((Control)(object)result, new NameScope());
                 Index.Add(item, result);
 
                 return result;
@@ -120,11 +119,20 @@ namespace Avalonia.Controls.Generators
 
         public override bool TryRecycle(int oldIndex, int newIndex, object item) => false;
 
+        class WrapperTreeDataTemplate : ITreeDataTemplate
+        {
+            private readonly IDataTemplate _inner;
+            public WrapperTreeDataTemplate(IDataTemplate inner) => _inner = inner;
+            public IControl Build(object param) => _inner.Build(param);
+            public bool SupportsRecycling => _inner.SupportsRecycling;
+            public bool Match(object data) => _inner.Match(data);
+            public InstancedBinding ItemsSelector(object item) => null;
+        }
+
         private ITreeDataTemplate GetTreeDataTemplate(object item, IDataTemplate primary)
         {
             var template = Owner.FindDataTemplate(item, primary) ?? FuncDataTemplate.Default;
-            var treeTemplate = template as ITreeDataTemplate ??
-                new FuncTreeDataTemplate(typeof(object), template.Build, x => null);
+            var treeTemplate = template as ITreeDataTemplate ?? new WrapperTreeDataTemplate(template);
             return treeTemplate;
         }
     }
