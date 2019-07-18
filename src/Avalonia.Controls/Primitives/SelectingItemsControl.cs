@@ -485,11 +485,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         protected void SelectAll()
         {
-            if ((SelectionMode & (SelectionMode.Multiple | SelectionMode.Toggle)) == 0)
-            {
-                throw new NotSupportedException("Multiple selection is not enabled on this control.");
-            }
-
             UpdateSelectedItems(() =>
             {
                 _selection.Clear();
@@ -539,7 +534,14 @@ namespace Avalonia.Controls.Primitives
                     var toggle = (toggleModifier || (mode & SelectionMode.Toggle) != 0);
                     var range = multi && rangeModifier;
 
-                    if (range)
+                    if (rightButton)
+                    {
+                        if (!_selection.Contains(index))
+                        {
+                            UpdateSelectedItem(index);
+                        }
+                    }
+                    else if (range)
                     {
                         UpdateSelectedItems(() =>
                         {
@@ -598,7 +600,7 @@ namespace Avalonia.Controls.Primitives
                     }
                     else
                     {
-                        UpdateSelectedItem(index, !(rightButton && _selection.Contains(index)));
+                        UpdateSelectedItem(index);
                     }
 
                     if (Presenter?.Panel != null)
