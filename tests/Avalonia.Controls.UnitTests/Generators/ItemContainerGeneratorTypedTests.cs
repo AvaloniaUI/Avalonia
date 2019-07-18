@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests.Generators
 
             foreach (var item in items)
             {
-                var container = generator.Materialize(index++, item, null);
+                var container = generator.Materialize(index++, item);
                 result.Add(container);
             }
 

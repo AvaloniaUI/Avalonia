@@ -54,13 +54,9 @@ namespace Avalonia.Controls.Generators
         public virtual Type ContainerType => null;
 
         /// <inheritdoc/>
-        public ItemContainerInfo Materialize(
-            int index,
-            object item,
-            IMemberSelector selector)
+        public ItemContainerInfo Materialize(int index, object item)
         {
-            var i = selector != null ? selector.Select(item) : item;
-            var container = new ItemContainerInfo(CreateContainer(i), item, index);
+            var container = new ItemContainerInfo(CreateContainer(item), item, index);
 
             _containers.Add(container.Index, container);
             Materialized?.Invoke(this, new ItemContainerEventArgs(container));
@@ -138,14 +134,7 @@ namespace Avalonia.Controls.Generators
         }
 
         /// <inheritdoc/>
-        public virtual bool TryRecycle(
-            int oldIndex,
-            int newIndex,
-            object item,
-            IMemberSelector selector)
-        {
-            return false;
-        }
+        public virtual bool TryRecycle(int oldIndex, int newIndex, object item) => false;
 
         /// <inheritdoc/>
         public virtual IEnumerable<ItemContainerInfo> Clear()

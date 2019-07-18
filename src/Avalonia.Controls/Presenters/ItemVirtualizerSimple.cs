@@ -314,7 +314,6 @@ namespace Avalonia.Controls.Presenters
 
             if (!panel.IsFull && Items != null && panel.IsAttachedToVisualTree)
             {
-                var memberSelector = Owner.MemberSelector;
                 var index = NextIndex;
                 var step = 1;
 
@@ -337,7 +336,7 @@ namespace Avalonia.Controls.Presenters
                         }
                     }
 
-                    var materialized = generator.Materialize(index, Items.ElementAt(index), memberSelector);
+                    var materialized = generator.Materialize(index, Items.ElementAt(index));
 
                     if (step == 1)
                     {
@@ -383,7 +382,6 @@ namespace Avalonia.Controls.Presenters
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
             var containers = generator.Containers.ToList();
             var itemIndex = FirstIndex;
 
@@ -393,7 +391,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (!object.Equals(container.Item, item))
                 {
-                    if (!generator.TryRecycle(itemIndex, itemIndex, item, selector))
+                    if (!generator.TryRecycle(itemIndex, itemIndex, item))
                     {
                         throw new NotImplementedException();
                     }
@@ -420,7 +418,6 @@ namespace Avalonia.Controls.Presenters
         {
             var panel = VirtualizingPanel;
             var generator = Owner.ItemContainerGenerator;
-            var selector = Owner.MemberSelector;
 
             //validate delta it should never overflow last index or generate index < 0 
             delta = MathUtilities.Clamp(delta, -FirstIndex, ItemCount - FirstIndex - panel.Children.Count);
@@ -437,7 +434,7 @@ namespace Avalonia.Controls.Presenters
 
                 var item = Items.ElementAt(newItemIndex);
 
-                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item, selector))
+                if (!generator.TryRecycle(oldItemIndex, newItemIndex, item))
                 {
                     throw new NotImplementedException();
                 }
