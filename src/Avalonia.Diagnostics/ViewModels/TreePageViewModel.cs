@@ -6,15 +6,18 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class TreePageViewModel : ViewModelBase
+    internal class TreePageViewModel : ViewModelBase, IDevToolViewModel
     {
         private TreeNode _selected;
         private ControlDetailsViewModel _details;
 
-        public TreePageViewModel(TreeNode[] nodes)
+        public TreePageViewModel(TreeNode[] nodes, string name)
         {
             Nodes = nodes;
+            Name = name;
         }
+
+        public string Name { get; }
 
         public TreeNode[] Nodes { get; protected set; }
 
