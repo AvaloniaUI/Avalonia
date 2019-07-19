@@ -45,7 +45,6 @@
                                           Items="{TemplateBinding Items}"
                                           ItemsPanel="{TemplateBinding ItemsPanel}"
                                           ItemTemplate="{TemplateBinding ItemTemplate}"
-                                          MemberSelector="{TemplateBinding MemberSelector}"
                                           VirtualizationMode="{TemplateBinding VirtualizationMode}"
                                   />
                       </ScrollViewer>

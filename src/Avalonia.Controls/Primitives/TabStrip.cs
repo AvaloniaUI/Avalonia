@@ -12,11 +12,8 @@ namespace Avalonia.Controls.Primitives
         private static readonly FuncTemplate<IPanel> DefaultPanel =
             new FuncTemplate<IPanel>(() => new WrapPanel { Orientation = Orientation.Horizontal });
 
-        private static IMemberSelector s_MemberSelector = new FuncMemberSelector<object, object>(SelectHeader);
-
         static TabStrip()
         {
-            MemberSelectorProperty.OverrideDefaultValue<TabStrip>(s_MemberSelector);
             SelectionModeProperty.OverrideDefaultValue<TabStrip>(SelectionMode.AlwaysSelected);
             FocusableProperty.OverrideDefaultValue(typeof(TabStrip), false);
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
@@ -50,12 +47,6 @@ namespace Avalonia.Controls.Primitives
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
-        }
-
-        private static object SelectHeader(object o)
-        {
-            var headered = o as IHeadered;
-            return (headered != null) ? (headered.Header ?? string.Empty) : o;
         }
     }
 }
