@@ -95,7 +95,7 @@ namespace Avalonia.Utilities
             return true;
         }
 
-        public void AddValueInternal(AvaloniaProperty property, TValue value)
+        public void AddValue(AvaloniaProperty property, TValue value)
         {
             Entry[] entries = new Entry[_entries.Length + 1];
 
@@ -117,7 +117,7 @@ namespace Avalonia.Utilities
             _entries = entries;
         }
 
-        public void SetValueInternal(AvaloniaProperty property, TValue value)
+        public void SetValue(AvaloniaProperty property, TValue value)
         {
             _entries[TryFindEntry(property.Id).Item1].Value = value;
         }

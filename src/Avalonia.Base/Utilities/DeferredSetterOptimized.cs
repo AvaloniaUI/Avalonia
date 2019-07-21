@@ -17,20 +17,26 @@ namespace Avalonia.Utilities
             _pendingValues = new SingleOrQueue<TSetRecord>();
         }
 
+        private static void SetAndRaisePropertyChanged(AvaloniaObject source, AvaloniaProperty<TSetRecord> property, ref TSetRecord backing, TSetRecord value)
+        {
+            var old = backing;
+
+            backing = value;
+
+            source.RaisePropertyChanged(property, old, value);
+        }
+
         public bool SetAndNotify(
             AvaloniaObject source,
             AvaloniaProperty<TSetRecord> property,
-            ISetterHandler handler,
             ref TSetRecord backing,
             TSetRecord value)
         {
             if (!_isNotifying)
             {
-                bool updated;
-
                 using (new NotifyDisposable(this))
                 {
-                    updated = handler.Update(source, property, ref backing, value);
+                    SetAndRaisePropertyChanged(source, property, ref backing, value);
                 }
 
                 if (!_pendingValues.Empty)
@@ -39,12 +45,12 @@ namespace Avalonia.Utilities
                     {
                         while (!_pendingValues.Empty)
                         {
-                            updated = handler.Update(source, property, ref backing, _pendingValues.Dequeue());
+                            SetAndRaisePropertyChanged(source, property, ref backing, _pendingValues.Dequeue());
                         }
                     }
                 }
 
-                return updated;
+                return true;
             }
 
             _pendingValues.Enqueue(value);
@@ -70,15 +76,6 @@ namespace Avalonia.Utilities
             {
                 _setter._isNotifying = false;
             }
-        }
-
-        public interface ISetterHandler
-        {
-            bool Update(
-                AvaloniaObject source, 
-                AvaloniaProperty<TSetRecord> property, 
-                ref TSetRecord backing,
-                TSetRecord value);
         }
     }
 }

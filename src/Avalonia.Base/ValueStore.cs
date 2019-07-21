@@ -33,13 +33,13 @@ namespace Avalonia
                 {
                     priorityValue = CreatePriorityValue(property);
                     priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                    _propertyValues.SetValueInternal(property, priorityValue);
+                    _propertyValues.SetValue(property, priorityValue);
                 }
             }
             else
             {
                 priorityValue = CreatePriorityValue(property);
-                _propertyValues.AddValueInternal(property, priorityValue);
+                _propertyValues.AddValue(property, priorityValue);
             }
 
             return priorityValue.Add(source, (int)priority);
@@ -57,7 +57,7 @@ namespace Avalonia
                 {
                     if (priority == (int)BindingPriority.LocalValue)
                     {
-                        _propertyValues.SetValueInternal(property, Validate(property, value));
+                        _propertyValues.SetValue(property, Validate(property, value));
                         Changed(property, priority, v, value);
                         return;
                     }
@@ -65,7 +65,7 @@ namespace Avalonia
                     {
                         priorityValue = CreatePriorityValue(property);
                         priorityValue.SetValue(v, (int)BindingPriority.LocalValue);
-                        _propertyValues.SetValueInternal(property, priorityValue);
+                        _propertyValues.SetValue(property, priorityValue);
                     }
                 }
             }
@@ -78,14 +78,14 @@ namespace Avalonia
 
                 if (priority == (int)BindingPriority.LocalValue)
                 {
-                    _propertyValues.AddValueInternal(property, Validate(property, value));
+                    _propertyValues.AddValue(property, Validate(property, value));
                     Changed(property, priority, AvaloniaProperty.UnsetValue, value);
                     return;
                 }
                 else
                 {
                     priorityValue = CreatePriorityValue(property);
-                    _propertyValues.AddValueInternal(property, priorityValue);
+                    _propertyValues.AddValue(property, priorityValue);
                 }
             }
 
@@ -187,7 +187,7 @@ namespace Avalonia
 
             var newDeferredSetter = new DeferredSetterOptimized<T>();
 
-            _deferredSetters.AddValueInternal(property, newDeferredSetter);
+            _deferredSetters.AddValue(property, newDeferredSetter);
 
             return newDeferredSetter;
         }
