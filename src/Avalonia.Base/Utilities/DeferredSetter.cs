@@ -6,6 +6,15 @@ using System;
 namespace Avalonia.Utilities
 {
     /// <summary>
+    /// Callback invoked when deferred setter wants to set a value.
+    /// </summary>
+    /// <typeparam name="TValue">Value type.</typeparam>
+    /// <param name="property">Property being set.</param>
+    /// <param name="backing">Backing field reference.</param>
+    /// <param name="value">New value.</param>
+    internal delegate void SetAndNotifyCallback<TValue>(AvaloniaProperty property, ref TValue backing, TValue value);
+
+    /// <summary>
     /// A utility class to enable deferring assignment until after property-changed notifications are sent.
     /// Used to fix #855.
     /// </summary>
@@ -49,6 +58,35 @@ namespace Avalonia.Utilities
                         while (!_pendingValues.Empty)
                         {
                             SetAndRaisePropertyChanged(source, property, ref backing, _pendingValues.Dequeue());
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            _pendingValues.Enqueue(value);
+
+            return false;
+        }
+
+        public bool SetAndNotifyCallback<TValue>(AvaloniaProperty property, SetAndNotifyCallback<TValue> setAndNotifyCallback, ref TValue backing, TValue value)
+            where TValue : TSetRecord
+        {
+            if (!_isNotifying)
+            {
+                using (new NotifyDisposable(this))
+                {
+                    setAndNotifyCallback(property, ref backing, value);
+                }
+
+                if (!_pendingValues.Empty)
+                {
+                    using (new NotifyDisposable(this))
+                    {
+                        while (!_pendingValues.Empty)
+                        {
+                            setAndNotifyCallback(property, ref backing, (TValue) _pendingValues.Dequeue());
                         }
                     }
                 }

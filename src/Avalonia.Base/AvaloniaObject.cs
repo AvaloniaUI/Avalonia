@@ -528,7 +528,7 @@ namespace Avalonia
                 return false;
             }
 
-            DeferredSetter<T> setter = Values.GetDeferredSetter(property);
+            DeferredSetter<T> setter = Values.GetDirectDeferredSetter(property);
 
             return setter.SetAndNotify(this, property, ref field, value);
         }

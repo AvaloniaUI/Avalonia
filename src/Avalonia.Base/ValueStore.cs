@@ -178,7 +178,7 @@ namespace Avalonia
             return value;
         }
 
-        public DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty<T> property)
+        private DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty property)
         {
             if (_deferredSetters.TryGetValue(property, out var deferredSetter))
             {
@@ -192,15 +192,14 @@ namespace Avalonia
             return newDeferredSetter;
         }
 
-        private DeferredSetter<object> _deferredSetter;
-
-        public DeferredSetter<object> Setter
+        public DeferredSetter<object> GetNonDirectDeferredSetter(AvaloniaProperty property)
         {
-            get
-            {
-                return _deferredSetter ??
-                    (_deferredSetter = new DeferredSetter<object>());
-            }
+            return GetDeferredSetter<object>(property);
+        }
+
+        public DeferredSetter<T> GetDirectDeferredSetter<T>(AvaloniaProperty<T> property)
+        {
+            return GetDeferredSetter<T>(property);
         }
     }
 }
