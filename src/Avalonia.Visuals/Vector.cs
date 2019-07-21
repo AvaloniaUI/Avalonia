@@ -65,9 +65,7 @@ namespace Avalonia
         /// <param name="b">Second vector</param>
         /// <returns>The dot product</returns>
         public static double operator *(Vector a, Vector b)
-        {
-            return a.X * b.X + a.Y * b.Y;
-        }
+            => Dot(a, b);
 
         /// <summary>
         /// Scales a vector.
@@ -76,9 +74,7 @@ namespace Avalonia
         /// <param name="scale">The scaling factor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator *(Vector vector, double scale)
-        {
-            return new Vector(vector._x * scale, vector._y * scale);
-        }
+            => Multiply(vector, scale);
 
         /// <summary>
         /// Scales a vector.
@@ -87,9 +83,7 @@ namespace Avalonia
         /// <param name="scale">The divisor.</param>
         /// <returns>The scaled vector.</returns>
         public static Vector operator /(Vector vector, double scale)
-        {
-            return new Vector(vector._x / scale, vector._y / scale);
-        }
+            => Divide(vector, scale);
 
         /// <summary>
         /// Length of the vector
@@ -102,9 +96,7 @@ namespace Avalonia
         /// <param name="a">The vector.</param>
         /// <returns>The negated vector.</returns>
         public static Vector operator -(Vector a)
-        {
-            return new Vector(-a._x, -a._y);
-        }
+            => Negate(a);
 
         /// <summary>
         /// Adds two vectors.
@@ -113,9 +105,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>A vector that is the result of the addition.</returns>
         public static Vector operator +(Vector a, Vector b)
-        {
-            return new Vector(a._x + b._x, a._y + b._y);
-        }
+            => Add(a, b);
 
         /// <summary>
         /// Subtracts two vectors.
@@ -124,9 +114,7 @@ namespace Avalonia
         /// <param name="b">The second vector.</param>
         /// <returns>A vector that is the result of the subtraction.</returns>
         public static Vector operator -(Vector a, Vector b)
-        {
-            return new Vector(a._x - b._x, a._y - b._y);
-        }
+            => Subtract(a, b);
 
         /// <summary>
         /// Check if two vectors are equal (bitwise).
@@ -155,7 +143,8 @@ namespace Avalonia
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(null, obj))
+                return false;
 
             return obj is Vector vector && Equals(vector);
         }
@@ -206,5 +195,93 @@ namespace Avalonia
         {
             return new Vector(_x, y);
         }
+
+        /// <summary>
+        /// Returns the dot product of two vectors.
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The dot product.</returns>
+        public static double Dot(Vector a, Vector b)
+            => a._x * b._x + a._y * b._y;
+
+        /// <summary>
+        /// Returns the cross product of two vectors.
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The cross product.</returns>
+        public static double Cross(Vector a, Vector b)
+            => a._x * b._y - a._y * b._x;
+
+        /// <summary>
+        /// Normalizes the given vector.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <returns>The normalized vector.</returns>
+        public static Vector Normalize(Vector vector)
+            => Divide(vector, vector.Length);
+        
+        /// <summary>
+        /// Divides the first vector by the second.
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector Divide(Vector a, Vector b)
+            => new Vector(a._x / b._x, a._y / b._y);
+
+        /// <summary>
+        /// Divides the vector by the given scalar.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scalar">The scalar value</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector Divide(Vector vector, double scalar)
+            => new Vector(vector._x / scalar, vector._y / scalar);
+
+        /// <summary>
+        /// Multiplies the first vector by the second.
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector Multiply(Vector a, Vector b)
+            => new Vector(a._x * b._x, a._y * b._y);
+
+        /// <summary>
+        /// Multiplies the vector by the given scalar.
+        /// </summary>
+        /// <param name="vector">The vector</param>
+        /// <param name="scalar">The scalar value</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector Multiply(Vector vector, double scalar)
+            => new Vector(vector._x * scalar, vector._y * scalar);
+
+        /// <summary>
+        /// Adds the second to the first vector
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The summed vector.</returns>
+        public static Vector Add(Vector a, Vector b)
+            => new Vector(a._x + b._x, a._y + b._y);
+
+        /// <summary>
+        /// Subtracts the second from the first vector
+        /// </summary>
+        /// <param name="a">The first vector.</param>
+        /// <param name="b">The second vector.</param>
+        /// <returns>The difference vector.</returns>
+        public static Vector Subtract(Vector a, Vector b)
+            => new Vector(a._x - b._x, a._y - b._y);
+
+        /// <summary>
+        /// Negates the vector
+        /// </summary>
+        /// <param name="vector">The vector to negate.</param>
+        /// <returns>The scaled vector.</returns>
+        public static Vector Negate(Vector vector)
+            => new Vector(-vector._x, -vector._y);
     }
 }
