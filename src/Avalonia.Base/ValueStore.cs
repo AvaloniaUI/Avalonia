@@ -7,15 +7,15 @@ namespace Avalonia
 {
     internal class ValueStore : IPriorityValueOwner
     {
-        private readonly AvaloniaPropertyCollection<object> _propertyValues;
-        private readonly AvaloniaPropertyCollection<object> _deferredSetters;
+        private readonly AvaloniaPropertyValueStore<object> _propertyValues;
+        private readonly AvaloniaPropertyValueStore<object> _deferredSetters;
         private readonly AvaloniaObject _owner;
 
         public ValueStore(AvaloniaObject owner)
         {
             _owner = owner;
-            _propertyValues = new AvaloniaPropertyCollection<object>();
-            _deferredSetters = new AvaloniaPropertyCollection<object>();
+            _propertyValues = new AvaloniaPropertyValueStore<object>();
+            _deferredSetters = new AvaloniaPropertyValueStore<object>();
         }
 
         public IDisposable AddBinding(
@@ -178,14 +178,14 @@ namespace Avalonia
             return value;
         }
 
-        public DeferredSetterOptimized<T> GetDeferredSetter<T>(AvaloniaProperty<T> property)
+        public DeferredSetter<T> GetDeferredSetter<T>(AvaloniaProperty<T> property)
         {
             if (_deferredSetters.TryGetValue(property, out var deferredSetter))
             {
-                return (DeferredSetterOptimized<T>)deferredSetter;
+                return (DeferredSetter<T>)deferredSetter;
             }
 
-            var newDeferredSetter = new DeferredSetterOptimized<T>();
+            var newDeferredSetter = new DeferredSetter<T>();
 
             _deferredSetters.AddValue(property, newDeferredSetter);
 

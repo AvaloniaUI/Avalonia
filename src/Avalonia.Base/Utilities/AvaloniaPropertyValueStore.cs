@@ -1,13 +1,20 @@
-﻿using System;
+﻿// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Utilities
 {
-    internal sealed class AvaloniaPropertyCollection<TValue>
+    /// <summary>
+    /// Stores values with <see cref="AvaloniaProperty"/> as key.
+    /// </summary>
+    /// <typeparam name="TValue">Stored value type.</typeparam>
+    internal sealed class AvaloniaPropertyValueStore<TValue>
     {
         private Entry[] _entries;
 
-        public AvaloniaPropertyCollection()
+        public AvaloniaPropertyValueStore()
         {
             // The last item in the list is always int.MaxValue
             _entries = new[] { new Entry { PropertyId = int.MaxValue, Value = default } };

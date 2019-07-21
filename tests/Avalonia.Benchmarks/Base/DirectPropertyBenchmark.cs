@@ -17,17 +17,6 @@ namespace Avalonia.Benchmarks.Base
         }
 
         [Benchmark]
-        public void SetAndRaiseOptimized()
-        {
-            var obj = new DirectClass();
-
-            for (var i = 0; i < 100; ++i)
-            {
-                obj.IntValueOptimized += 1;
-            }
-        }
-
-        [Benchmark]
         public void SetAndRaiseSimple()
         {
             var obj = new DirectClass();
@@ -51,12 +40,6 @@ namespace Avalonia.Benchmarks.Base
             {
                 get => _intValue;
                 set => SetAndRaise(IntValueProperty, ref _intValue, value);
-            }
-
-            public int IntValueOptimized
-            {
-                get => _intValue;
-                set => SetAndRaiseOptimized(IntValueProperty, ref _intValue, value);
             }
 
             public int IntValueSimple
