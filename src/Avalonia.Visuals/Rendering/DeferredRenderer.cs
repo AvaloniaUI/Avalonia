@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
@@ -13,7 +12,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using System.Threading.Tasks;
 
 namespace Avalonia.Rendering
 {
@@ -33,7 +31,6 @@ namespace Avalonia.Rendering
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
         private IRef<IRenderTargetBitmapImpl> _overlay;
-        private object _rendering = new object();
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
         private IRef<IDrawOperation> _currentDraw;
@@ -248,6 +245,11 @@ namespace Avalonia.Rendering
                         {
                             if (context != null)
                                 return context;
+                            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+                            {
+                                RenderTarget.Dispose();
+                                RenderTarget = null;
+                            }
                             if (RenderTarget == null)
                                 RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
                             return context = RenderTarget.CreateDrawingContext(this);
@@ -267,7 +269,7 @@ namespace Avalonia.Rendering
                                     RenderOverlay(scene.Item, GetContext());
                                 if (updated || forceComposite || overlay)
                                     RenderComposite(scene.Item, GetContext());
-                             }
+                            }
                         }
                     }
                     finally
@@ -321,15 +323,15 @@ namespace Avalonia.Rendering
                         var (rs, _) = UpdateRenderLayersAndConsumeSceneIfNeeded(contextFactory, true);
                         return (rs, true);
                     }
-                    
+
                     // Indicate that we have updated the layers
                     return (sceneRef.Clone(), true);
                 }
-                
+
                 // Just return scene, layers weren't updated
                 return (sceneRef.Clone(), false);
             }
-            
+
         }
 
 
@@ -456,7 +458,7 @@ namespace Avalonia.Rendering
         private void RenderComposite(Scene scene, IDrawingContextImpl context)
         {
             context.Clear(Colors.Transparent);
-            
+
             var clientRect = new Rect(scene.Size);
 
             foreach (var layer in scene.Layers)
@@ -531,6 +533,8 @@ namespace Avalonia.Rendering
                     oldScene?.Dispose();
                 }
 
+                _dirty.Clear();
+
                 if (SceneInvalidated != null)
                 {
                     var rect = new Rect();
@@ -543,10 +547,9 @@ namespace Avalonia.Rendering
                         }
                     }
 
+                    System.Diagnostics.Debug.WriteLine("Invalidated " + rect);
                     SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
-
-                _dirty.Clear();
             }
             else
             {

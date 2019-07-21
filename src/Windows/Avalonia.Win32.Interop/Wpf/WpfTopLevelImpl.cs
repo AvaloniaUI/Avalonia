@@ -160,19 +160,19 @@ namespace Avalonia.Win32.Interop.Wpf
             return rv;
         }
 
-        void MouseEvent(RawMouseEventType type, MouseEventArgs e)
-            => _ttl.Input?.Invoke(new RawMouseEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
+        void MouseEvent(RawPointerEventType type, MouseEventArgs e)
+            => _ttl.Input?.Invoke(new RawPointerEventArgs(_mouse, (uint)e.Timestamp, _inputRoot, type,
             e.GetPosition(this).ToAvaloniaPoint(), GetModifiers()));
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            RawMouseEventType type;
+            RawPointerEventType type;
             if(e.ChangedButton == MouseButton.Left)
-                type = RawMouseEventType.LeftButtonDown;
+                type = RawPointerEventType.LeftButtonDown;
             else if (e.ChangedButton == MouseButton.Middle)
-                type = RawMouseEventType.MiddleButtonDown;
+                type = RawPointerEventType.MiddleButtonDown;
             else if (e.ChangedButton == MouseButton.Right)
-                type = RawMouseEventType.RightButtonDown;
+                type = RawPointerEventType.RightButtonDown;
             else
                 return;
             MouseEvent(type, e);
@@ -181,13 +181,13 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            RawMouseEventType type;
+            RawPointerEventType type;
             if (e.ChangedButton == MouseButton.Left)
-                type = RawMouseEventType.LeftButtonUp;
+                type = RawPointerEventType.LeftButtonUp;
             else if (e.ChangedButton == MouseButton.Middle)
-                type = RawMouseEventType.MiddleButtonUp;
+                type = RawPointerEventType.MiddleButtonUp;
             else if (e.ChangedButton == MouseButton.Right)
-                type = RawMouseEventType.RightButtonUp;
+                type = RawPointerEventType.RightButtonUp;
             else
                 return;
             MouseEvent(type, e);
@@ -196,14 +196,14 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            MouseEvent(RawMouseEventType.Move, e);
+            MouseEvent(RawPointerEventType.Move, e);
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e) =>
             _ttl.Input?.Invoke(new RawMouseWheelEventArgs(_mouse, (uint) e.Timestamp, _inputRoot,
                 e.GetPosition(this).ToAvaloniaPoint(), new Vector(0, e.Delta), GetModifiers()));
 
-        protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawMouseEventType.LeaveWindow, e);
+        protected override void OnMouseLeave(MouseEventArgs e) => MouseEvent(RawPointerEventType.LeaveWindow, e);
 
         protected override void OnKeyDown(KeyEventArgs e)
             => _ttl.Input?.Invoke(new RawKeyEventArgs(_keyboard, (uint) e.Timestamp, RawKeyEventType.KeyDown,

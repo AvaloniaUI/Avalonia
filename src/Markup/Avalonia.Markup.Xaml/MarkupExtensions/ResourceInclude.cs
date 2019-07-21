@@ -1,15 +1,13 @@
 ﻿using System;
 using System.ComponentModel;
 using Avalonia.Controls;
-using Portable.Xaml.ComponentModel;
-using Portable.Xaml.Markup;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
-    public class ResourceInclude : MarkupExtension, IResourceProvider
+    public class ResourceInclude :IResourceProvider
     {
         private Uri _baseUri;
         private IResourceDictionary _loaded;
@@ -47,16 +45,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         bool IResourceProvider.HasResources => Loaded.HasResources;
 
         /// <inhertidoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             return Loaded.TryGetResource(key, out value);
         }
 
-        /// <inhertidoc/>
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public ResourceInclude ProvideValue(IServiceProvider serviceProvider)
         {
             var tdc = (ITypeDescriptorContext)serviceProvider;
-            _baseUri = tdc?.GetBaseUri();
+            _baseUri = tdc?.GetContextBaseUri();
             return this;
         }
     }

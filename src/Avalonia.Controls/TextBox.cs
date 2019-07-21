@@ -38,6 +38,15 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
+        public static readonly StyledProperty<IBrush> SelectionBrushProperty =
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionBrushProperty));
+
+        public static readonly StyledProperty<IBrush> SelectionForegroundBrushProperty =
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(SelectionForegroundBrushProperty));
+
+        public static readonly StyledProperty<IBrush> CaretBrushProperty =
+            AvaloniaProperty.Register<TextBox, IBrush>(nameof(CaretBrushProperty));
+
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
@@ -169,6 +178,24 @@ namespace Avalonia.Controls
             set => SetValue(PasswordCharProperty, value);
         }
 
+        public IBrush SelectionBrush
+        {
+            get => GetValue(SelectionBrushProperty);
+            set => SetValue(SelectionBrushProperty, value);
+        }
+
+        public IBrush SelectionForegroundBrush
+        {
+            get => GetValue(SelectionForegroundBrushProperty);
+            set => SetValue(SelectionForegroundBrushProperty, value);
+        }
+
+        public IBrush CaretBrush
+        {
+            get => GetValue(CaretBrushProperty);
+            set => SetValue(CaretBrushProperty, value);
+        }
+
         public int SelectionStart
         {
             get
@@ -214,9 +241,9 @@ namespace Avalonia.Controls
                 if (!_ignoreTextChanges)
                 {
                     var caretIndex = CaretIndex;
-                    SelectionStart = CoerceCaretIndex(SelectionStart, value?.Length ?? 0);
-                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value?.Length ?? 0);
-                    CaretIndex = CoerceCaretIndex(caretIndex, value?.Length ?? 0);
+                    SelectionStart = CoerceCaretIndex(SelectionStart, value);
+                    SelectionEnd = CoerceCaretIndex(SelectionEnd, value);
+                    CaretIndex = CoerceCaretIndex(caretIndex, value);
 
                     if (SetAndRaise(TextProperty, ref _text, value) && !_isUndoingRedoing)
                     {
@@ -287,16 +314,11 @@ namespace Avalonia.Controls
             {
                 DecideCaretVisibility();
             }
-
-            e.Handled = true;
         }
 
         private void DecideCaretVisibility()
         {
-            if (!IsReadOnly)
-                _presenter?.ShowCaret();
-            else
-                _presenter?.HideCaret();
+            _presenter.ShowCaret();
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
@@ -456,7 +478,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = false;
                 handled = true;
-                
+
             }
             else if (Match(keymap.MoveCursorToTheEndOfLine))
             {
@@ -485,7 +507,7 @@ namespace Avalonia.Controls
                 movement = true;
                 selection = true;
                 handled = true;
-                
+
             }
             else if (Match(keymap.MoveCursorToTheEndOfLineWithSelection))
             {
@@ -677,11 +699,15 @@ namespace Avalonia.Controls
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text?.Length ?? 0);
+        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
 
-        private int CoerceCaretIndex(int value, int length)
+        private int CoerceCaretIndex(int value, string text)
         {
-            var text = Text;
+            if (text == null)
+            {
+                return 0;
+            }
+            var length = text.Length;
 
             if (value < 0)
             {
@@ -691,7 +717,7 @@ namespace Avalonia.Controls
             {
                 return length;
             }
-            else if (value > 0 && text[value - 1] == '\r' && text[value] == '\n')
+            else if (value > 0 && text[value - 1] == '\r' && value < length && text[value] == '\n')
             {
                 return value + 1;
             }

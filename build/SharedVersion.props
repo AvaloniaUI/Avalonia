@@ -2,8 +2,8 @@
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Product>Avalonia</Product>
-    <Version>0.7.1</Version>
-    <Copyright>Copyright 2018 &#169; The AvaloniaUI Project</Copyright>
+    <Version>0.8.999</Version>
+    <Copyright>Copyright 2019 &#169; The AvaloniaUI Project</Copyright>
     <PackageLicenseUrl>https://github.com/AvaloniaUI/Avalonia/blob/master/licence.md</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/AvaloniaUI/Avalonia/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>

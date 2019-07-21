@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Avalonia.Platform;
+using Avalonia.ReactiveUI;
 using Serilog;
 
 namespace ControlCatalog
@@ -25,8 +26,7 @@ namespace ControlCatalog
             => AppBuilder.Configure<App>()
                 .LogToDebug()
                 .UsePlatformDetect()
-                .UseReactiveUI()
-                .UseDataGrid();
+                .UseReactiveUI();
 
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {

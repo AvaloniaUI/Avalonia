@@ -1,17 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using ReactiveUI;
 
 namespace ControlCatalog.ViewModels
 {
     public class MenuPageViewModel
     {
+        public Control View { get; set; }
         public MenuPageViewModel()
         {
             OpenCommand = ReactiveCommand.CreateFromTask(Open);
-            SaveCommand = ReactiveCommand.Create(Save);
+            SaveCommand = ReactiveCommand.Create(Save, Observable.Return(false));
             OpenRecentCommand = ReactiveCommand.Create<string>(OpenRecent);
 
             MenuItems = new[]
@@ -64,8 +67,11 @@ namespace ControlCatalog.ViewModels
 
         public async Task Open()
         {
+            var window = View?.GetVisualRoot() as Window;
+            if (window == null)
+                return;
             var dialog = new OpenFileDialog();
-            var result = await dialog.ShowAsync(App.Current.MainWindow);
+            var result = await dialog.ShowAsync(window);
 
             if (result != null)
             {

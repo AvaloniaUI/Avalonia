@@ -385,13 +385,94 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(target.SelectionEnd <= "123".Length);
             }
         }
+        [Fact]
+        public void CoerceCaretIndex_Doesnt_Cause_Exception_with_malformed_line_ending()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123456789\r"
+                };
+                target.CaretIndex = 11;
+
+                Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public void TextBox_GotFocus_And_LostFocus_Work_Properly()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target1 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "1234"
+                };
+                var target2 = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "5678"
+                };
+                var sp = new StackPanel();
+                sp.Children.Add(target1);
+                sp.Children.Add(target2);
+
+                target1.ApplyTemplate();
+                target2.ApplyTemplate();
+                
+                var root = new TestRoot { Child = sp };
+
+                var gfcount = 0;
+                var lfcount = 0;
+
+                target1.GotFocus += (s, e) => gfcount++;
+                target2.LostFocus += (s, e) => lfcount++;
+
+                target2.Focus();
+                Assert.False(target1.IsFocused);
+                Assert.True(target2.IsFocused);
+
+                target1.Focus();
+                Assert.False(target2.IsFocused);
+                Assert.True(target1.IsFocused);
+
+                Assert.Equal(1, gfcount);
+                Assert.Equal(1, lfcount);
+            }
+        }
+
+        [Fact]
+        public void Setting_Bound_Text_To_Null_Works()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var source = new Class1 { Bar = "bar" };
+                var target = new TextBox { DataContext = source };
+
+                target.Bind(TextBox.TextProperty, new Binding("Bar"));
+
+                Assert.Equal("bar", target.Text);
+                source.Bar = null;
+                Assert.Null(target.Text);
+            }
+        }
+
+        private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
+            focusManager: new FocusManager(),
+            keyboardDevice: () => new KeyboardDevice(),
+            keyboardNavigation: new KeyboardNavigationHandler(),
+            inputManager: new InputManager(),
+            standardCursorFactory: Mock.Of<IStandardCursorFactory>());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             standardCursorFactory: Mock.Of<IStandardCursorFactory>());
 
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<TextBox>(control =>
+            return new FuncControlTemplate<TextBox>((control, scope) =>
                 new TextPresenter
                 {
                     Name = "PART_TextPresenter",
@@ -402,7 +483,7 @@ namespace Avalonia.Controls.UnitTests
                         Priority = BindingPriority.TemplatedParent,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
-                });
+                }.RegisterInNameScope(scope));
         }
 
         private void RaiseKeyEvent(TextBox textBox, Key key, InputModifiers inputModifiers)
@@ -427,11 +508,18 @@ namespace Avalonia.Controls.UnitTests
         private class Class1 : NotifyingBase
         {
             private int _foo;
+            private string _bar;
 
             public int Foo
             {
                 get { return _foo; }
                 set { _foo = value; RaisePropertyChanged(); }
+            }
+
+            public string Bar
+            {
+                get { return _bar; }
+                set { _bar = value; RaisePropertyChanged(); }
             }
         }
     }

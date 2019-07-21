@@ -934,22 +934,6 @@ namespace Avalonia.Controls.Primitives
                 // The button is in Pressed state. Change the state to normal.
                 if (e.Device.Captured == b)
                     e.Device.Capture(null);
-                // null check is added for unit tests
-                if (_downEventArg != null)
-                {
-                    var arg =
-                        new PointerReleasedEventArgs()
-                        {
-                            Device = _downEventArg.Device,
-                            MouseButton = _downEventArg.MouseButton,
-                            Handled = _downEventArg.Handled,
-                            InputModifiers = _downEventArg.InputModifiers,
-                            Route = _downEventArg.Route,
-                            Source = _downEventArg.Source
-                        };
-
-                    b.SendMouseLeftButtonUp(arg);
-                }
                 _lastCalendarDayButton = b;
             }
         }
@@ -1221,21 +1205,7 @@ namespace Avalonia.Controls.Primitives
                 if (e.Device.Captured == b)
                     e.Device.Capture(null);
                 //b.ReleaseMouseCapture();
-                if (_downEventArgYearView != null)
-                {
-                    var args =
-                        new PointerReleasedEventArgs()
-                        {
-                            Device = _downEventArgYearView.Device,
-                            MouseButton = _downEventArgYearView.MouseButton,
-                            Handled = _downEventArgYearView.Handled,
-                            InputModifiers = _downEventArgYearView.InputModifiers,
-                            Route = _downEventArgYearView.Route,
-                            Source = _downEventArgYearView.Source
-                        };
 
-                    b.SendMouseLeftButtonUp(args);
-                }
                 _lastCalendarButton = b;
             }
         }

@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -33,12 +34,6 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
-
-        /// <summary>
-        /// Defines the <see cref="MemberSelector"/> property.
-        /// </summary>
-        public static readonly StyledProperty<IMemberSelector> MemberSelectorProperty =
-            ItemsControl.MemberSelectorProperty.AddOwner<ItemsPresenterBase>();
 
         private IEnumerable _items;
         private IDisposable _itemsSubscription;
@@ -127,15 +122,6 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Selects a member from <see cref="Items"/> to use as the list item.
-        /// </summary>
-        public IMemberSelector MemberSelector
-        {
-            get { return GetValue(MemberSelectorProperty); }
-            set { SetValue(MemberSelectorProperty, value); }
-        }
-
-        /// <summary>
         /// Gets the panel used to display the items.
         /// </summary>
         public IPanel Panel
@@ -205,7 +191,13 @@ namespace Avalonia.Controls.Presenters
         /// has been set, the items collection has been modified, or the panel has been created.
         /// </summary>
         /// <param name="e">A description of the change.</param>
-        protected abstract void ItemsChanged(NotifyCollectionChangedEventArgs e);
+        /// <remarks>
+        /// The panel is guaranteed to be created when this method is called.
+        /// </remarks>
+        protected virtual void ItemsChanged(NotifyCollectionChangedEventArgs e)
+        {
+            ItemContainerSync.ItemsChanged(this, Items, e);
+        }
 
         /// <summary>
         /// Creates the <see cref="Panel"/> when <see cref="ApplyTemplate"/> is called for the first

@@ -6,7 +6,6 @@ using System.Linq;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.VisualTree;
@@ -270,9 +269,10 @@ namespace Avalonia.Controls.Primitives
                 _popupRoot.SnapInsideScreenEdges();
             }
 
-            _ignoreIsOpenChanged = true;
-            IsOpen = true;
-            _ignoreIsOpenChanged = false;
+            using (BeginIgnoringIsOpen())
+            {
+                IsOpen = true;
+            }
 
             Opened?.Invoke(this, EventArgs.Empty);
         }
@@ -305,7 +305,11 @@ namespace Avalonia.Controls.Primitives
                 _popupRoot.Hide();
             }
 
-            IsOpen = false;
+            using (BeginIgnoringIsOpen())
+            {
+                IsOpen = false;
+            }
+
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -421,9 +425,9 @@ namespace Avalonia.Controls.Primitives
 
         private void ListenForNonClientClick(RawInputEventArgs e)
         {
-            var mouse = e as RawMouseEventArgs;
+            var mouse = e as RawPointerEventArgs;
 
-            if (!StaysOpen && mouse?.Type == RawMouseEventType.NonClientLeftButtonDown)
+            if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
             {
                 Close();
             }
@@ -465,6 +469,27 @@ namespace Avalonia.Controls.Primitives
             if (!StaysOpen)
             {
                 Close();
+            }
+        }
+
+        private IgnoreIsOpenScope BeginIgnoringIsOpen()
+        {
+            return new IgnoreIsOpenScope(this);
+        }
+
+        private readonly struct IgnoreIsOpenScope : IDisposable
+        {
+            private readonly Popup _owner;
+
+            public IgnoreIsOpenScope(Popup owner)
+            {
+                _owner = owner;
+                _owner._ignoreIsOpenChanged = true;
+            }
+
+            public void Dispose()
+            {
+                _owner._ignoreIsOpenChanged = false;
             }
         }
     }

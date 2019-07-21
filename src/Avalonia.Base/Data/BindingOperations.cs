@@ -10,6 +10,8 @@ namespace Avalonia.Data
 {
     public static class BindingOperations
     {
+        public static readonly object DoNothing = new object();
+
         /// <summary>
         /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
         /// </summary>
@@ -65,7 +67,11 @@ namespace Avalonia.Data
                         return Disposable.Empty;
                     }
                 case BindingMode.OneWayToSource:
-                    return target.GetObservable(property).Subscribe(binding.Subject);
+                    return Observable.CombineLatest(
+                        binding.Observable,
+                        target.GetObservable(property),
+                        (_, v) => v)
+                    .Subscribe(x => binding.Subject.OnNext(x));
                 default:
                     throw new ArgumentException("Invalid binding mode.");
             }

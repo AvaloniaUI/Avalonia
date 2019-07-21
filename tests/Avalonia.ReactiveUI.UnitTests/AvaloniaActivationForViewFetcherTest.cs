@@ -1,3 +1,6 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
@@ -11,8 +14,9 @@ using DynamicData;
 using Xunit;
 using Splat;
 using Avalonia.Markup.Xaml;
+using Avalonia.ReactiveUI;
 
-namespace Avalonia 
+namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AvaloniaActivationForViewFetcherTest
     {
@@ -167,7 +171,7 @@ namespace Avalonia
         [Fact]
         public void Activation_For_View_Fetcher_Should_Support_Windows() 
         {
-            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
             {
                 var window = new TestWindowWithWhenActivated();
                 Assert.False(window.Active);
@@ -183,7 +187,7 @@ namespace Avalonia
         [Fact]
         public void Activatable_Window_View_Model_Is_Activated_And_Deactivated() 
         {
-            using (var application = UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
+            using (UnitTestApplication.Start(TestServices.MockWindowingPlatform)) 
             {
                 var viewModel = new ActivatableViewModel();
                 var window = new ActivatableWindow { ViewModel = viewModel };

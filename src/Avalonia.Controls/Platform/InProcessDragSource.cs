@@ -43,7 +43,7 @@ namespace Avalonia.Platform
                 _lastPosition = default(Point);
                 _allowedEffects = allowedEffects;
 
-                using (_inputManager.PreProcess.OfType<RawMouseEventArgs>().Subscribe(ProcessMouseEvents))
+                using (_inputManager.PreProcess.OfType<RawPointerEventArgs>().Subscribe(ProcessMouseEvents))
                 {
                     using (_inputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(ProcessKeyEvents))
                     {
@@ -147,10 +147,13 @@ namespace Avalonia.Platform
                 e.Handled = true;
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
-                RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastRoot, _lastPosition, e.Modifiers);
+            {
+                if (_lastRoot != null)
+                    RaiseEventAndUpdateCursor(RawDragEventType.DragOver, _lastRoot, _lastPosition, e.Modifiers);
+            }
         }
 
-        private void ProcessMouseEvents(RawMouseEventArgs e)
+        private void ProcessMouseEvents(RawPointerEventArgs e)
         {
             if (!_initialInputModifiers.HasValue)
                 _initialInputModifiers = e.InputModifiers & MOUSE_INPUTMODIFIERS;
@@ -171,22 +174,22 @@ namespace Avalonia.Platform
             
             switch (e.Type)
             {
-                case RawMouseEventType.LeftButtonDown:
-                case RawMouseEventType.RightButtonDown:
-                case RawMouseEventType.MiddleButtonDown:
-                case RawMouseEventType.NonClientLeftButtonDown:
+                case RawPointerEventType.LeftButtonDown:
+                case RawPointerEventType.RightButtonDown:
+                case RawPointerEventType.MiddleButtonDown:
+                case RawPointerEventType.NonClientLeftButtonDown:
                     CancelDragging();
                     e.Handled = true;
                     return;
-                case RawMouseEventType.LeaveWindow:
+                case RawPointerEventType.LeaveWindow:
                     RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, e.Root, e.Position,  e.InputModifiers); break;
-                case RawMouseEventType.LeftButtonUp:
+                case RawPointerEventType.LeftButtonUp:
                     CheckDraggingAccepted(InputModifiers.LeftMouseButton); break;
-                case RawMouseEventType.MiddleButtonUp:
+                case RawPointerEventType.MiddleButtonUp:
                     CheckDraggingAccepted(InputModifiers.MiddleMouseButton); break;
-                case RawMouseEventType.RightButtonUp:
+                case RawPointerEventType.RightButtonUp:
                     CheckDraggingAccepted(InputModifiers.RightMouseButton); break;
-                case RawMouseEventType.Move:
+                case RawPointerEventType.Move:
                     var mods = e.InputModifiers & MOUSE_INPUTMODIFIERS;
                     if (_initialInputModifiers.Value != mods)
                     {

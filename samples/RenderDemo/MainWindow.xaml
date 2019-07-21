@@ -1,4 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="RenderDemo.MainWindow"
         Title="AvaloniaUI Rendering Test"
         xmlns:pages="clr-namespace:RenderDemo.Pages"
         Width="800"
@@ -32,6 +34,12 @@
       </TabItem>
       <TabItem Header="Drawing">
         <pages:DrawingPage/>
+      </TabItem>
+      <TabItem Header="SkCanvas">
+        <pages:CustomSkiaPage/>
+      </TabItem>
+      <TabItem Header="RenderTargetBitmap">
+        <pages:RenderTargetBitmapPage/>
       </TabItem>
     </TabControl>
   </DockPanel>

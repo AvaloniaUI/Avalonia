@@ -18,8 +18,26 @@ namespace Avalonia.Controls.Templates
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
-        public FuncDataTemplate(Func<T, IControl> build, bool supportsRecycling = false)
+        public FuncDataTemplate(Func<T, INameScope, IControl> build, bool supportsRecycling = false)
             : base(typeof(T), CastBuild(build), supportsRecycling)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FuncDataTemplate{T}"/> class.
+        /// </summary>
+        /// <param name="match">
+        /// A function which determines whether the data template matches the specified data.
+        /// </param>
+        /// <param name="build">
+        /// A function which when passed an object of <typeparamref name="T"/> returns a control.
+        /// </param>
+        /// <param name="supportsRecycling">Whether the control can be recycled.</param>
+        public FuncDataTemplate(
+            Func<T, bool> match,
+            Func<T, INameScope, IControl> build,
+            bool supportsRecycling = false)
+            : base(CastMatch(match), CastBuild(build), supportsRecycling)
         {
         }
 
@@ -37,7 +55,7 @@ namespace Avalonia.Controls.Templates
             Func<T, bool> match,
             Func<T, IControl> build,
             bool supportsRecycling = false)
-            : base(CastMatch(match), CastBuild(build), supportsRecycling)
+            : this(match, (a, _) => build(a), supportsRecycling)
         {
         }
 
@@ -57,9 +75,9 @@ namespace Avalonia.Controls.Templates
         /// <typeparam name="TResult">The strong data type.</typeparam>
         /// <param name="f">The strongly typed function.</param>
         /// <returns>The weakly typed function.</returns>
-        private static Func<object, TResult> CastBuild<TResult>(Func<T, TResult> f)
+        private static Func<object, INameScope, TResult> CastBuild<TResult>(Func<T, INameScope, TResult> f)
         {
-            return o => f((T)o);
+            return (o, s) => f((T)o, s);
         }
     }
 }

@@ -1,13 +1,17 @@
+// Copyright (c) The Avalonia Project. All rights reserved.
+// Licensed under the MIT license. See licence.md file in the project root for full license information.
+
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using Avalonia;
 using ReactiveUI;
 using Splat;
 
-namespace Avalonia
+namespace Avalonia.ReactiveUI
 {
     /// <summary>
     /// This control hosts the View associated with ReactiveUI RoutingState,
@@ -49,33 +53,13 @@ namespace Avalonia
     /// ReactiveUI routing documentation website</see> for more info.
     /// </para>
     /// </remarks>
-    public class RoutedViewHost : UserControl, IActivatable, IEnableLogger
+    public class RoutedViewHost : TransitioningContentControl, IActivatable, IEnableLogger
     {
         /// <summary>
-        /// The router dependency property.
+        /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
         /// </summary>
         public static readonly AvaloniaProperty<RoutingState> RouterProperty =
             AvaloniaProperty.Register<RoutedViewHost, RoutingState>(nameof(Router));
-        
-        /// <summary>
-        /// The default content property.
-        /// </summary> 
-        public static readonly AvaloniaProperty<object> DefaultContentProperty =
-            AvaloniaProperty.Register<RoutedViewHost, object>(nameof(DefaultContent));
-
-        /// <summary>
-        /// Fade in animation property.
-        /// </summary>
-        public static readonly AvaloniaProperty<IAnimation> FadeInAnimationProperty =
-            AvaloniaProperty.Register<RoutedViewHost, IAnimation>(nameof(DefaultContent),
-                CreateOpacityAnimation(0d, 1d, TimeSpan.FromSeconds(0.25)));
-
-        /// <summary>
-        /// Fade out animation property.
-        /// </summary>
-        public static readonly AvaloniaProperty<IAnimation> FadeOutAnimationProperty =
-            AvaloniaProperty.Register<RoutedViewHost, IAnimation>(nameof(DefaultContent),
-                CreateOpacityAnimation(1d, 0d, TimeSpan.FromSeconds(0.25)));
     
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
@@ -101,42 +85,6 @@ namespace Avalonia
         }
         
         /// <summary>
-        /// Gets or sets the content displayed whenever there is no page currently routed.
-        /// </summary>
-        public object DefaultContent
-        {
-            get => GetValue(DefaultContentProperty);
-            set => SetValue(DefaultContentProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the animation played when page appears.
-        /// </summary>
-        public IAnimation FadeInAnimation
-        {
-            get => GetValue(FadeInAnimationProperty);
-            set => SetValue(FadeInAnimationProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the animation played when page disappears.
-        /// </summary>
-        public IAnimation FadeOutAnimation
-        {
-            get => GetValue(FadeOutAnimationProperty);
-            set => SetValue(FadeOutAnimationProperty, value);
-        }
-    
-        /// <summary>
-        /// Duplicates the Content property with a private setter.
-        /// </summary>
-        public new object Content
-        {
-            get => base.Content;
-            private set => base.Content = value;
-        }
-
-        /// <summary>
         /// Gets or sets the ReactiveUI view locator used by this router.
         /// </summary>
         public IViewLocator ViewLocator { get; set; }
@@ -145,82 +93,29 @@ namespace Avalonia
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>
         /// <param name="viewModel">ViewModel to which the user navigates.</param>
-        /// <exception cref="Exception">
-        /// Thrown when ViewLocator is unable to find the appropriate view.
-        /// </exception>
-        private void NavigateToViewModel(IRoutableViewModel viewModel)
+        private void NavigateToViewModel(object viewModel)
         {
             if (viewModel == null)
             {
-                this.Log().Info("ViewModel is null, falling back to default content.");
-                UpdateContent(DefaultContent);
+                this.Log().Info("ViewModel is null. Falling back to default content.");
+                Content = DefaultContent;
                 return;
             }
     
-            var viewLocator = ViewLocator ?? ReactiveUI.ViewLocator.Current;
-            var view = viewLocator.ResolveView(viewModel);
-            if (view == null) throw new Exception($"Couldn't find view for '{viewModel}'. Is it registered?");
-    
-            this.Log().Info($"Ready to show {view} with autowired {viewModel}.");
-            view.ViewModel = viewModel;
-            if (view is IStyledElement styled)
-                styled.DataContext = viewModel;
-            UpdateContent(view);
-        }
-    
-        /// <summary>
-        /// Updates the content with transitions.
-        /// </summary>
-        /// <param name="newContent">New content to set.</param>
-        private async void UpdateContent(object newContent)
-        {
-            if (FadeOutAnimation != null)
-                await FadeOutAnimation.RunAsync(this, Clock);
-            Content = newContent;
-            if (FadeInAnimation != null)
-                await FadeInAnimation.RunAsync(this, Clock);
-        }
-    
-        /// <summary>
-        /// Creates opacity animation for this routed view host.
-        /// </summary>
-        /// <param name="from">Opacity to start from.</param>
-        /// <param name="to">Opacity to finish with.</param>
-        /// <param name="duration">Duration of the animation.</param>
-        /// <returns>Animation object instance.</returns>
-        private static IAnimation CreateOpacityAnimation(double from, double to, TimeSpan duration) 
-        {
-            return new Avalonia.Animation.Animation
+            var viewLocator = ViewLocator ?? global::ReactiveUI.ViewLocator.Current;
+            var viewInstance = viewLocator.ResolveView(viewModel);
+            if (viewInstance == null)
             {
-                Duration = duration,
-                Children =
-                {
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter
-                            {
-                                Property = OpacityProperty,
-                                Value = from
-                            }
-                        },
-                        Cue = new Cue(0d)
-                    },
-                    new KeyFrame
-                    {
-                        Setters =
-                        {
-                            new Setter
-                            {
-                                Property = OpacityProperty,
-                                Value = to
-                            }
-                        },
-                        Cue = new Cue(1d)
-                    }
-                }
-            };
+                this.Log().Warn($"Couldn't find view for '{viewModel}'. Is it registered? Falling back to default content.");
+                Content = DefaultContent;
+                return;
+            }
+    
+            this.Log().Info($"Ready to show {viewInstance} with autowired {viewModel}.");
+            viewInstance.ViewModel = viewModel;
+            if (viewInstance is IStyledElement styled)
+                styled.DataContext = viewModel;
+            Content = viewInstance;
         }
     }
 }

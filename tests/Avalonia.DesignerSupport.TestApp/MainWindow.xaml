@@ -1,5 +1,7 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:pages="clr-namespace:ControlCatalog.Pages;assembly=ControlCatalog"
-        Title="TESTAPP">
+        Title="TESTAPP"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Avalonia.DesignerSupport.TestApp.MainWindow">
     <Button/>
 </Window>

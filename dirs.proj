@@ -6,12 +6,13 @@
     <ProjectReference Include="packages/**/*.*proj" />
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
+    <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/XamlIl/**/*.*proj" />
   </ItemGroup>
   <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\Android')">
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\iOS')">
+  <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\iOS') Or $([MSBuild]::IsOsPlatform('Windows')) ">
     <ProjectReference Remove="src/iOS/**/*.*proj" />
     <ProjectReference Remove="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
   </ItemGroup>

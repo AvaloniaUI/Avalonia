@@ -6,6 +6,7 @@ using System.Reactive.Concurrency;
 using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -31,7 +32,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : IApplicationLifecycle, IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
+    public class Application : IGlobalDataTemplates, IGlobalStyles, IStyleRoot, IResourceNode
     {
         /// <summary>
         /// The application-global data templates.
@@ -43,18 +44,6 @@ namespace Avalonia
         private readonly Styler _styler = new Styler();
         private Styles _styles;
         private IResourceDictionary _resources;
-
-        private CancellationTokenSource _mainLoopCancellationTokenSource;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Application"/> class.
-        /// </summary>
-        public Application()
-        {
-            Windows = new WindowCollection(this);
-
-            OnExit += OnExiting;
-        }
 
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs> ResourcesChanged;
@@ -162,158 +151,27 @@ namespace Avalonia
 
         /// <inheritdoc/>
         IResourceNode IResourceNode.ResourceParent => null;
-
+        
         /// <summary>
-        /// Gets or sets the <see cref="ExitMode"/>. This property indicates whether the application exits explicitly or implicitly. 
-        /// If <see cref="ExitMode"/> is set to OnExplicitExit the application is only closes if Exit is called.
-        /// The default is OnLastWindowClose
+        /// Application lifetime, use it for things like setting the main window and exiting the app from code
+        /// Currently supported lifetimes are:
+        /// - <see cref="IClassicDesktopStyleApplicationLifetime"/>
+        /// - <see cref="ISingleViewApplicationLifetime"/>
+        /// - <see cref="IControlledApplicationLifetime"/> 
         /// </summary>
-        /// <value>
-        /// The shutdown mode.
-        /// </value>
-        public ExitMode ExitMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the main window of the application.
-        /// </summary>
-        /// <value>
-        /// The main window.
-        /// </value>
-        public Window MainWindow { get; set; }
-
-        /// <summary>
-        /// Gets the open windows of the application.
-        /// </summary>
-        /// <value>
-        /// The windows.
-        /// </value>
-        public WindowCollection Windows { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is existing.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is existing; otherwise, <c>false</c>.
-        /// </value>
-        internal bool IsExiting { get; set; }
+        public IApplicationLifetime ApplicationLifetime { get; set; }
 
         /// <summary>
         /// Initializes the application by loading XAML etc.
         /// </summary>
-        public virtual void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until the <see cref="ICloseable"/> is closed.
-        /// </summary>
-        /// <param name="closable">The closable to track</param>
-        public void Run(ICloseable closable)
-        {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            closable.Closed += (s, e) => Exit();
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until some condition occurs that is specified by ExitMode.
-        /// </summary>
-        /// <param name="mainWindow">The main window</param>
-        public void Run(Window mainWindow)
-        {
-            if (_mainLoopCancellationTokenSource != null)
-            {
-                throw new Exception("Run should only called once");
-            }
-
-            _mainLoopCancellationTokenSource = new CancellationTokenSource();
-
-            if (MainWindow == null)
-            {
-                if (mainWindow == null)
-                {
-                    throw new ArgumentNullException(nameof(mainWindow));
-                }
-
-                if (!mainWindow.IsVisible)
-                {
-                    mainWindow.Show();
-                }
-
-                MainWindow = mainWindow;
-            }           
-
-            Dispatcher.UIThread.MainLoop(_mainLoopCancellationTokenSource.Token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Runs the application's main loop until the <see cref="CancellationToken"/> is canceled.
-        /// </summary>
-        /// <param name="token">The token to track</param>
-        public void Run(CancellationToken token)
-        {
-            Dispatcher.UIThread.MainLoop(token);
-
-            // Make sure we call OnExit in case an error happened and Exit() wasn't called explicitly
-            if (!IsExiting)
-            {
-                OnExit?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Exits the application
-        /// </summary>
-        public void Exit()
-        {
-            IsExiting = true;
-
-            Windows.Clear();
-
-            OnExit?.Invoke(this, EventArgs.Empty);
-
-            _mainLoopCancellationTokenSource?.Cancel();
-        }
+        public virtual void Initialize() { }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
                    Styles.TryGetResource(key, out value);
-        }
-
-        /// <summary>
-        /// Sent when the application is exiting.
-        /// </summary>
-        public event EventHandler OnExit;
-
-        /// <summary>
-        /// Called when the application is exiting.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected virtual void OnExiting(object sender, EventArgs e)
-        {
         }
 
         /// <summary>
@@ -333,7 +191,6 @@ namespace Avalonia
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
                 .Bind<IStyler>().ToConstant(_styler)
-                .Bind<IApplicationLifecycle>().ToConstant(this)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance)
                 .Bind<IPlatformDragSource>().ToTransient<InProcessDragSource>();
@@ -342,6 +199,11 @@ namespace Avalonia
             AvaloniaLocator.CurrentMutable
                 .Bind<IGlobalClock>().ToConstant(clock)
                 .GetService<IRenderLoop>()?.Add(clock);
+        }
+
+        public virtual void OnFrameworkInitializationCompleted()
+        {
+            
         }
 
         private void ThisResourcesChanged(object sender, ResourcesChangedEventArgs e)

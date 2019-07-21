@@ -13,18 +13,11 @@ namespace Avalonia.Controls
 
     public class Expander : HeaderedContentControl
     {
-        public static readonly DirectProperty<Expander, IPageTransition> ContentTransitionProperty =
-            AvaloniaProperty.RegisterDirect<Expander, IPageTransition>(
-                nameof(ContentTransition),
-                o => o.ContentTransition,
-                (o, v) => o.ContentTransition = v);
+        public static readonly StyledProperty<IPageTransition> ContentTransitionProperty =
+            AvaloniaProperty.Register<Expander, IPageTransition>(nameof(ContentTransition));
 
-        public static readonly DirectProperty<Expander, ExpandDirection> ExpandDirectionProperty =
-            AvaloniaProperty.RegisterDirect<Expander, ExpandDirection>(
-                nameof(ExpandDirection),
-                o => o.ExpandDirection,
-                (o, v) => o.ExpandDirection = v,
-                ExpandDirection.Down);
+        public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
+            AvaloniaProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
 
         public static readonly DirectProperty<Expander, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<Expander, bool>(
@@ -32,6 +25,8 @@ namespace Avalonia.Controls
                 o => o.IsExpanded,
                 (o, v) => o.IsExpanded = v,
                 defaultBindingMode: Data.BindingMode.TwoWay);
+
+        private bool _isExpanded;
 
         static Expander()
         {
@@ -47,14 +42,14 @@ namespace Avalonia.Controls
 
         public IPageTransition ContentTransition
         {
-            get { return _contentTransition; }
-            set { SetAndRaise(ContentTransitionProperty, ref _contentTransition, value); }
+            get => GetValue(ContentTransitionProperty);
+            set => SetValue(ContentTransitionProperty, value);
         }
 
         public ExpandDirection ExpandDirection
         {
-            get { return _expandDirection; }
-            set { SetAndRaise(ExpandDirectionProperty, ref _expandDirection, value); }
+            get => GetValue(ExpandDirectionProperty);
+            set => SetValue(ExpandDirectionProperty, value);
         }
 
         public bool IsExpanded
@@ -79,9 +74,5 @@ namespace Avalonia.Controls
                 }
             }
         }
-
-        private IPageTransition _contentTransition;
-        private ExpandDirection _expandDirection;
-        private bool _isExpanded;
     }
 }

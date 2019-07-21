@@ -40,17 +40,15 @@ namespace Avalonia.Controls
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
         public static readonly DirectProperty<TreeView, IList> SelectedItemsProperty =
-            AvaloniaProperty.RegisterDirect<TreeView, IList>(
-                nameof(SelectedItems),
+            ListBox.SelectedItemsProperty.AddOwner<TreeView>(
                 o => o.SelectedItems,
                 (o, v) => o.SelectedItems = v);
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        protected static readonly StyledProperty<SelectionMode> SelectionModeProperty =
-            AvaloniaProperty.Register<SelectingItemsControl, SelectionMode>(
-                nameof(SelectionMode));
+        public static readonly StyledProperty<SelectionMode> SelectionModeProperty =
+            ListBox.SelectionModeProperty.AddOwner<TreeView>();
 
         private static readonly IList Empty = new object[0];
         private object _selectedItem;
@@ -107,32 +105,21 @@ namespace Avalonia.Controls
             get => _selectedItem;
             set
             {
-                SetAndRaise(SelectedItemProperty, ref _selectedItem,
-                    (object val, ref object backing, Action<Action> notifyWrapper) =>
+                SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
+
+                if (value != null)
+                {
+                    if (SelectedItems.Count != 1 || SelectedItems[0] != value)
                     {
-                        var old = backing;
-                        backing = val;
-
-                        notifyWrapper(() =>
-                            RaisePropertyChanged(
-                                SelectedItemProperty,
-                                old,
-                                val));
-
-                        if (val != null)
-                        {
-                            if (SelectedItems.Count != 1 || SelectedItems[0] != val)
-                            {
-                                _syncingSelectedItems = true;
-                                SelectSingleItem(val);
-                                _syncingSelectedItems = false;
-                            }
-                        }
-                        else if (SelectedItems.Count > 0)
-                        {
-                            SelectedItems.Clear();
-                        }
-                    }, value);
+                        _syncingSelectedItems = true;
+                        SelectSingleItem(value);
+                        _syncingSelectedItems = false;
+                    }
+                }
+                else if (SelectedItems.Count > 0)
+                {
+                    SelectedItems.Clear();
+                }
             }
         }
 
@@ -164,6 +151,48 @@ namespace Avalonia.Controls
                 _selectedItems = value ?? new AvaloniaList<object>();
                 SubscribeToSelectedItems();
             }
+        }
+
+        /// <summary>
+        /// Expands the specified <see cref="TreeViewItem"/> all descendent <see cref="TreeViewItem"/>s.
+        /// </summary>
+        /// <param name="item">The item to expand.</param>
+        public void ExpandSubTree(TreeViewItem item)
+        {
+            item.IsExpanded = true;
+
+            var panel = item.Presenter.Panel;
+
+            if (panel != null)
+            {
+                foreach (var child in panel.Children)
+                {
+                    if (child is TreeViewItem treeViewItem)
+                    {
+                        ExpandSubTree(treeViewItem);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Selects all items in the <see cref="TreeView"/>.
+        /// </summary>
+        /// <remarks>
+        /// Note that this method only selects nodes currently visible due to their parent nodes
+        /// being expanded: it does not expand nodes.
+        /// </remarks>
+        public void SelectAll()
+        {
+            SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+        }
+
+        /// <summary>
+        /// Deselects all items in the <see cref="TreeView"/>.
+        /// </summary>
+        public void UnselectAll()
+        {
+            SelectedItems.Clear();
         }
 
         /// <summary>
@@ -411,7 +440,7 @@ namespace Avalonia.Controls
 
                 if (this.SelectionMode == SelectionMode.Multiple && Match(keymap.SelectAll))
                 {
-                    SelectingItemsControl.SynchronizeItems(SelectedItems, ItemContainerGenerator.Index.Items);
+                    SelectAll();
                     e.Handled = true;
                 }
             }
@@ -481,7 +510,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                    (e.InputModifiers & InputModifiers.Control) != 0,
+                    e.MouseButton == MouseButton.Right);
             }
         }
 
@@ -492,11 +522,13 @@ namespace Avalonia.Controls
         /// <param name="select">Whether the item should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         protected void UpdateSelectionFromContainer(
             IControl container,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var item = ItemContainerGenerator.Index.ItemFromContainer(container);
 
@@ -517,13 +549,20 @@ namespace Avalonia.Controls
             var multi = (mode & SelectionMode.Multiple) != 0;
             var range = multi && selectedContainer != null && rangeModifier;
 
-            if (!toggle && !range)
+            if (rightButton)
+            {
+                if (!SelectedItems.Contains(item))
+                {
+                    SelectSingleItem(item);
+                }
+            }
+            else if (!toggle && !range)
             {
                 SelectSingleItem(item);
             }
             else if (multi && range)
             {
-                SelectingItemsControl.SynchronizeItems(
+                SynchronizeItems(
                     SelectedItems,
                     GetItemsInRange(selectedContainer as TreeViewItem, container as TreeViewItem));
             }
@@ -686,6 +725,7 @@ namespace Avalonia.Controls
         /// <param name="select">Whether the container should be selected or unselected.</param>
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
+        /// <param name="rightButton">Whether the event is a right-click.</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
@@ -694,13 +734,14 @@ namespace Avalonia.Controls
             IInteractive eventSource,
             bool select = true,
             bool rangeModifier = false,
-            bool toggleModifier = false)
+            bool toggleModifier = false,
+            bool rightButton = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelectionFromContainer(container, select, rangeModifier, toggleModifier);
+                UpdateSelectionFromContainer(container, select, rangeModifier, toggleModifier, rightButton);
                 return true;
             }
 
@@ -778,6 +819,28 @@ namespace Avalonia.Controls
             else
             {
                 container.Classes.Set(":selected", selected);
+            }
+        }
+
+        /// <summary>
+        /// Makes a list of objects equal another (though doesn't preserve order).
+        /// </summary>
+        /// <param name="items">The items collection.</param>
+        /// <param name="desired">The desired items.</param>
+        private static void SynchronizeItems(IList items, IEnumerable<object> desired)
+        {
+            var list = items.Cast<object>().ToList();
+            var toRemove = list.Except(desired).ToList();
+            var toAdd = desired.Except(list).ToList();
+
+            foreach (var i in toRemove)
+            {
+                items.Remove(i);
+            }
+
+            foreach (var i in toAdd)
+            {
+                items.Add(i);
             }
         }
     }

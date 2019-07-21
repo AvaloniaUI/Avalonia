@@ -19,7 +19,7 @@ using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
-
+using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -30,7 +30,26 @@ using static Nuke.Common.Tools.Xunit.XunitTasks;
  */
 
 partial class Build : NukeBuild
-{   
+{
+    static Lazy<string> MsBuildExe = new Lazy<string>(() =>
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return null;
+
+        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
+
+        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
+        {
+            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
+            if (!System.IO.File.Exists(msBuildExe))
+                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
+
+            return msBuildExe;
+        }
+
+        return null;
+    }, false);
+
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
@@ -70,6 +89,29 @@ partial class Build : NukeBuild
 
     }
 
+    IReadOnlyCollection<Output> MsBuildCommon(
+        string projectFile,
+        Configure<MSBuildSettings> configurator = null)
+    {
+        return MSBuild(projectFile, c =>
+        {
+            // This is required for VS2019 image on Azure Pipelines
+            if (Parameters.IsRunningOnWindows && Parameters.IsRunningOnAzure)
+            {
+                var javaSdk = Environment.GetEnvironmentVariable("JAVA_HOME_8_X64");
+                if (javaSdk != null)
+                    c = c.AddProperty("JavaSdkDirectory", javaSdk);
+            }
+
+            c = c.AddProperty("PackageVersion", Parameters.Version)
+                .AddProperty("iOSRoslynPathHackRequired", "true")
+                .SetToolPath(MsBuildExe.Value)
+                .SetConfiguration(Parameters.Configuration)
+                .SetVerbosity(MSBuildVerbosity.Minimal);
+            c = configurator?.Invoke(c) ?? c;
+            return c;
+        });
+    }
     Target Clean => _ => _.Executes(() =>
     {
         DeleteDirectories(Parameters.BuildDirs);
@@ -85,15 +127,9 @@ partial class Build : NukeBuild
         .DependsOn(Clean)
         .Executes(() =>
         {
-
             if (Parameters.IsRunningOnWindows)
-                MSBuild(Parameters.MSBuildSolution, c => c
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .SetArgumentConfigurator(a => a.Add("/r"))
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolsVersion(MSBuildToolsVersion._15_0)
                     .AddTargets("Build")
                 );
 
@@ -122,6 +158,14 @@ partial class Build : NukeBuild
         
         foreach(var fw in frameworks)
         {
+            if (fw.StartsWith("net4")
+                && RuntimeInformation.IsOSPlatform(OSPlatform.Linux) 
+                && Environment.GetEnvironmentVariable("FORCE_LINUX_TESTS") != "1")
+            {
+                Information($"Skipping {fw} tests on Linux - https://github.com/mono/mono/issues/13969");
+                continue;
+            }
+
             Information("Running for " + fw);
             DotNetTest(c =>
             {
@@ -211,12 +255,7 @@ partial class Build : NukeBuild
         {
             if (Parameters.IsRunningOnWindows)
 
-                MSBuild(Parameters.MSBuildSolution, c => c
-                    .SetConfiguration(Parameters.Configuration)
-                    .SetVerbosity(MSBuildVerbosity.Minimal)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .AddProperty("iOSRoslynPathHackRequired", "true")
-                    .SetToolsVersion(MSBuildToolsVersion._15_0)
+                MsBuildCommon(Parameters.MSBuildSolution, c => c
                     .AddTargets("Pack"));
             else
                 DotNetPack(Parameters.MSBuildSolution, c =>

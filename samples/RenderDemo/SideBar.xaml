@@ -20,8 +20,7 @@
                                 Name="PART_ItemsPresenter"                          
                                 Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                MemberSelector="{TemplateBinding MemberSelector}">
+                                ItemTemplate="{TemplateBinding ItemTemplate}">
                             </ItemsPresenter>
                         </ScrollViewer>
                         <ContentPresenter
@@ -47,7 +46,7 @@
         <Setter Property="Opacity" Value="0.5"/>
         <Setter Property="Transitions">
             <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.5"/>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.150"/>
             </Transitions>
         </Setter>
     </Style>

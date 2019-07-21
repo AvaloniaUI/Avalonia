@@ -7,7 +7,6 @@ using System.Globalization;
 
 using Avalonia.Media;
 
-using Portable.Xaml.ComponentModel;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
@@ -22,7 +21,7 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             var s = (string)value;
 
-            return FontFamily.Parse(s, context.GetBaseUri());
+            return FontFamily.Parse(s, context.GetContextBaseUri());
         }
     }
 }

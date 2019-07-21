@@ -173,7 +173,7 @@ namespace Avalonia.Rendering.SceneGraph
                 if (node.GeometryClip != null)
                 {
                     var controlPoint = Root.Visual.TranslatePoint(p, node.Visual);
-                    clipped = !node.GeometryClip.FillContains(controlPoint);
+                    clipped = !node.GeometryClip.FillContains(controlPoint.Value);
                 }
 
                 if (!clipped)

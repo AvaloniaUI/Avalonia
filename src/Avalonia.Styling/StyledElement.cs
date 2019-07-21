@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -60,7 +61,6 @@ namespace Avalonia
         private readonly Classes _classes = new Classes();
         private bool _isAttachedToLogicalTree;
         private IAvaloniaList<ILogical> _logicalChildren;
-        private INameScope _nameScope;
         private IResourceDictionary _resources;
         private Styles _styles;
         private bool _styled;
@@ -81,7 +81,6 @@ namespace Avalonia
         /// </summary>
         public StyledElement()
         {
-            _nameScope = this as INameScope;
             _isAttachedToLogicalTree = this is IStyleRoot;
         }
 
@@ -380,7 +379,6 @@ namespace Avalonia
         {
             if (_initCount == 0 && (!_styled || force))
             {
-                RegisterWithNameScope();
                 ApplyStyling();
                 _styled = true;
             }
@@ -391,6 +389,7 @@ namespace Avalonia
             if (_initCount == 0 && !IsInitialized)
             {
                 IsInitialized = true;
+                OnInitialized();
                 Initialized?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -414,7 +413,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        bool IResourceProvider.TryGetResource(string key, out object value)
+        bool IResourceProvider.TryGetResource(object key, out object value)
         {
             value = null;
             return (_resources?.TryGetResource(key, out value) ?? false) ||
@@ -607,7 +606,14 @@ namespace Avalonia
         protected virtual void OnDataContextEndUpdate()
         {
         }
-        
+
+        /// <summary>
+        /// Called when the control finishes initialization.
+        /// </summary>
+        protected virtual void OnInitialized()
+        {
+        }
+
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
@@ -666,36 +672,6 @@ namespace Avalonia
             AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
         }
 
-        private void RegisterWithNameScope()
-        {
-            if (_nameScope == null)
-            {
-                _nameScope = NameScope.GetNameScope(this) ?? ((StyledElement)Parent)?._nameScope;
-            }
-
-            if (Name != null)
-            {
-                _nameScope?.Register(Name, this);
-
-                var visualParent = Parent as StyledElement;
-
-                if (this is INameScope && visualParent != null)
-                {
-                    // If we have e.g. a named UserControl in a window then we want that control
-                    // to be findable by name from the Window, so register with both name scopes.
-                    // This differs from WPF's behavior in that XAML manually registers controls 
-                    // with name scopes based on the XAML file in which the name attribute appears,
-                    // but we're trying to avoid XAML magic in Avalonia in order to made code-
-                    // created UIs easy. This will cause problems if a UserControl declares a name
-                    // in its XAML and that control is included multiple times in a parent control
-                    // (as the name will be duplicated), however at the moment I'm fine with saying
-                    // "don't do that".
-                    var parentNameScope = NameScope.FindNameScope(visualParent);
-                    parentNameScope?.Register(Name, this);
-                }
-            }
-        }
-
         private static void ValidateLogicalChild(ILogical c)
         {
             if (c == null)
@@ -732,11 +708,6 @@ namespace Avalonia
         {
             if (_isAttachedToLogicalTree)
             {
-                if (Name != null)
-                {
-                    _nameScope?.Unregister(Name);
-                }
-
                 _isAttachedToLogicalTree = false;
                 _styleDetach.OnNext(this);
                 OnDetachedFromLogicalTree(e);

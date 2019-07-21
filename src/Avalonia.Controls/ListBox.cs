@@ -30,13 +30,13 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
         /// Defines the <see cref="SelectionMode"/> property.
         /// </summary>
-        public static readonly new AvaloniaProperty<SelectionMode> SelectionModeProperty = 
+        public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
         /// <summary>
@@ -68,7 +68,13 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public new IList SelectedItems => base.SelectedItems;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the selection mode.
+        /// </summary>
+        /// <remarks>
+        /// Note that the selection mode only applies to selections made via user interaction.
+        /// Multiple selections can be made programatically regardless of the value of this property.
+        /// </remarks>
         public new SelectionMode SelectionMode
         {
             get { return base.SelectionMode; }
@@ -83,6 +89,16 @@ namespace Avalonia.Controls
             get { return GetValue(VirtualizationModeProperty); }
             set { SetValue(VirtualizationModeProperty, value); }
         }
+
+        /// <summary>
+        /// Selects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void SelectAll() => base.SelectAll();
+
+        /// <summary>
+        /// Deselects all items in the <see cref="ListBox"/>.
+        /// </summary>
+        public new void UnselectAll() => base.UnselectAll();
 
         /// <inheritdoc/>
         protected override IItemContainerGenerator CreateItemContainerGenerator()
@@ -118,7 +134,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     (e.InputModifiers & InputModifiers.Shift) != 0,
-                    (e.InputModifiers & InputModifiers.Control) != 0);
+                    (e.InputModifiers & InputModifiers.Control) != 0,
+                    e.MouseButton == MouseButton.Right);
             }
         }
 

@@ -927,7 +927,7 @@ namespace Avalonia.Collections
         /// <remarks>
         /// <p>
         /// Clear a sort criteria by assigning SortDescription.Empty to this property.
-        /// One or more sort criteria in form of <seealso cref="SortDescription"/>
+        /// One or more sort criteria in form of <seealso cref="DataGridSortDescription"/>
         /// can be used, each specifying a property and direction to sort by.
         /// </p>
         /// </remarks>

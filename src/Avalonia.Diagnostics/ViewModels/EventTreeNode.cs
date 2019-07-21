@@ -56,6 +56,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             if (IsEnabled.GetValueOrDefault() && !_isRegistered)
             {
+                // FIXME: This leaks event handlers.
                 _event.AddClassHandler(typeof(object), HandleEvent, (RoutingStrategies)7, handledEventsToo: true);
                 _isRegistered = true;
             }

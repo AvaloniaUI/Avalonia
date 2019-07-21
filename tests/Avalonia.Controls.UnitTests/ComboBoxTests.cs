@@ -15,6 +15,8 @@ namespace Avalonia.Controls.UnitTests
 {
     public class ComboBoxTests
     {
+        MouseTestHelper _helper = new MouseTestHelper();
+        
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
@@ -23,17 +25,11 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo", "Bar" },
             };
 
-            target.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-            });
-
+            _helper.Down(target);
+            _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
 
-            target.RaiseEvent(new PointerPressedEventArgs
-            {
-                RoutedEvent = InputElement.PointerPressedEvent,
-            });
+            _helper.Down(target);
 
             Assert.False(target.IsDropDownOpen);
         }
@@ -84,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
 
         private FuncControlTemplate GetTemplate()
         {
-            return new FuncControlTemplate<ComboBox>(parent =>
+            return new FuncControlTemplate<ComboBox>((parent, scope) =>
             {
                 return new Panel
                 {
@@ -98,7 +94,7 @@ namespace Avalonia.Controls.UnitTests
                         new ToggleButton
                         {
                             Name = "toggle",
-                        },
+                        }.RegisterInNameScope(scope),
                         new Popup
                         {
                             Name = "PART_Popup",
@@ -106,8 +102,8 @@ namespace Avalonia.Controls.UnitTests
                             {
                                 Name = "PART_ItemsPresenter",
                                 [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
-                            }
-                        }
+                            }.RegisterInNameScope(scope)
+                        }.RegisterInNameScope(scope)
                     }
                 };
             });

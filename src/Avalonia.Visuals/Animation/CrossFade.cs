@@ -14,8 +14,8 @@ namespace Avalonia.Animation
     /// </summary>
     public class CrossFade : IPageTransition
     {
-        private Animation _fadeOutAnimation;
-        private Animation _fadeInAnimation;
+        private readonly Animation _fadeOutAnimation;
+        private readonly Animation _fadeInAnimation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CrossFade"/> class.
@@ -61,10 +61,10 @@ namespace Avalonia.Animation
                             new Setter
                             {
                                 Property = Visual.OpacityProperty,
-                                Value = 0d
+                                Value = 1d
                             }
                         },
-                        Cue = new Cue(0d)
+                        Cue = new Cue(1d)
                     }
 
                 }

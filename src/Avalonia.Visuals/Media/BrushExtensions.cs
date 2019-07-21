@@ -34,16 +34,14 @@ namespace Avalonia.Media
         {
             Contract.Requires<ArgumentNullException>(pen != null);
 
-            var brush = pen?.Brush?.ToImmutable();
-            return pen == null || ReferenceEquals(pen?.Brush, brush) ?
+            var brush = pen.Brush?.ToImmutable();
+            return ReferenceEquals(pen.Brush, brush) ?
                 pen :
                 new Pen(
                     brush,
                     thickness: pen.Thickness,
-                    dashStyle: pen.DashStyle,
-                    dashCap: pen.DashCap,
-                    startLineCap: pen.StartLineCap,
-                    endLineCap: pen.EndLineCap,
+                    dashStyle: pen.DashStyle,                   
+                    lineCap: pen.LineCap,
                     lineJoin: pen.LineJoin,
                     miterLimit: pen.MiterLimit);
         }
