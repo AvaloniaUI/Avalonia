@@ -188,7 +188,7 @@ namespace Avalonia.LinuxFramebuffer
     unsafe struct fd_set
     {
         public int count;
-        public fixed int fds [256];
+        public fixed byte fds [256];
     }
 
     enum AxisEventCode

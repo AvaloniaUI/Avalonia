@@ -61,6 +61,12 @@ namespace Avalonia.Input
                         pointer.IsPrimary ? MouseButton.Left : MouseButton.None));
                 }
             }
+            if (args.Type == RawPointerEventType.TouchCancel)
+            {
+                _pointers.Remove(args.TouchPointId);
+                using (pointer)
+                    pointer.Capture(null);
+            }
 
             if (args.Type == RawPointerEventType.TouchUpdate)
             {
@@ -68,6 +74,8 @@ namespace Avalonia.Input
                 target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,
                     args.Position, ev.Timestamp, new PointerPointProperties(modifiers), modifiers));
             }
+
+            
         }
         
     }

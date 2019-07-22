@@ -8,6 +8,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LinuxFramebuffer;
+using Avalonia.LinuxFramebuffer.Input.LibInput;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -69,7 +70,7 @@ namespace Avalonia.LinuxFramebuffer
                 if (_topLevel == null)
                 {
 
-                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb));
+                    var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, new LibInputBackend()));
                     tl.Prepare();
                     _topLevel = tl;
                 }

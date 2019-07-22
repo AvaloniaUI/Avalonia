@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.LinuxFramebuffer.Input;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    class FramebufferToplevelImpl : IEmbeddableWindowImpl
+    class FramebufferToplevelImpl : IEmbeddableWindowImpl, IScreenInfoProvider
     {
         private readonly LinuxFramebuffer _fb;
+        private readonly IInputBackend _inputBackend;
         private bool _renderQueued;
         public IInputRoot InputRoot { get; private set; }
 
-        public FramebufferToplevelImpl(LinuxFramebuffer fb)
+        public FramebufferToplevelImpl(LinuxFramebuffer fb, IInputBackend inputBackend)
         {
             _fb = fb;
+            _inputBackend = inputBackend;
             Invalidate(default(Rect));
-            var mice = new Mice(this, ClientSize.Width, ClientSize.Height);
-            mice.Start();
-            mice.Event += e => Input?.Invoke(e);
+            _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
@@ -49,6 +50,7 @@ namespace Avalonia.LinuxFramebuffer
         public void SetInputRoot(IInputRoot inputRoot)
         {
             InputRoot = inputRoot;
+            _inputBackend.SetInputRoot(inputRoot);
         }
 
         public Point PointToClient(PixelPoint p) => p.ToPoint(1);
@@ -73,5 +75,7 @@ namespace Avalonia.LinuxFramebuffer
             add {}
             remove {}
         }
+
+        public Size ScaledSize => _fb.PixelSize / Scaling;
     }
 }
