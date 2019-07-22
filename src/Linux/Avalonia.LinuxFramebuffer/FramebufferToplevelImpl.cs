@@ -26,7 +26,7 @@ namespace Avalonia.LinuxFramebuffer
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
         }
 
         public void Dispose()
@@ -37,14 +37,6 @@ namespace Avalonia.LinuxFramebuffer
         
         public void Invalidate(Rect rect)
         {
-            if(_renderQueued)
-                return;
-            _renderQueued = true;
-            Dispatcher.UIThread.Post(() =>
-            {
-                Paint?.Invoke(new Rect(default(Point), ClientSize));
-                _renderQueued = false;
-            });
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -62,7 +54,7 @@ namespace Avalonia.LinuxFramebuffer
         }
 
         public Size ClientSize => _fb.PixelSize;
-        public IMouseDevice MouseDevice => LinuxFramebufferPlatform.MouseDevice;
+        public IMouseDevice MouseDevice => new MouseDevice();
         public double Scaling => 1;
         public IEnumerable<object> Surfaces => new object[] {_fb};
         public Action<RawInputEventArgs> Input { get; set; }

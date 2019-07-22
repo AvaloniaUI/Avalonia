@@ -9,94 +9,69 @@ using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
-    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface, IRenderTimer
+    public class InternalPlatformThreadingInterface : IPlatformThreadingInterface
     {
         public InternalPlatformThreadingInterface()
         {
             TlsCurrentThreadIsLoopThread = true;
-            StartTimer(
-                DispatcherPriority.Render,
-                new TimeSpan(0, 0, 0, 0, 66),
-                () => Tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount)));
         }
 
         private readonly AutoResetEvent _signaled = new AutoResetEvent(false);
-        private readonly AutoResetEvent _queued = new AutoResetEvent(false);
 
-        private readonly Queue<Action> _actions = new Queue<Action>();
 
         public void RunLoop(CancellationToken cancellationToken)
         {
-            var handles = new[] {_signaled, _queued};
             while (true)
             {
-                if (0 == WaitHandle.WaitAny(handles))
-                    Signaled?.Invoke(null);
-                else
-                {
-                    while (true)
-                    {
-                        Action item;
-                        lock (_actions)
-                            if (_actions.Count == 0)
-                                break;
-                            else
-                                item = _actions.Dequeue();
-                        item();
-                    }
-                }
+                Signaled?.Invoke(null);
+                _signaled.WaitOne();
             }
         }
 
-        public void Send(Action cb)
-        {
-            lock (_actions)
-            {
-                _actions.Enqueue(cb);
-                _queued.Set();
-            }
-        }
 
-        class WatTimer : IDisposable
+        class TimerImpl : IDisposable
         {
-            private readonly IDisposable _timer;
+            private readonly DispatcherPriority _priority;
+            private readonly TimeSpan _interval;
+            private readonly Action _tick;
+            private Timer _timer;
             private GCHandle _handle;
 
-            public WatTimer(IDisposable timer)
+            public TimerImpl(DispatcherPriority priority, TimeSpan interval, Action tick)
             {
-                _timer = timer;
+                _priority = priority;
+                _interval = interval;
+                _tick = tick;
+                _timer = new Timer(OnTimer, null, interval, TimeSpan.FromMilliseconds(-1));
                 _handle = GCHandle.Alloc(_timer);
             }
+
+            private void OnTimer(object state)
+            {
+                if (_timer == null)
+                    return;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    
+                    if (_timer == null)
+                        return;
+                    _tick();
+                    _timer?.Change(_interval, TimeSpan.FromMilliseconds(-1));
+                });
+            }
+
 
             public void Dispose()
             {
                 _handle.Free();
                 _timer.Dispose();
+                _timer = null;
             }
         }
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            return new WatTimer(new System.Threading.Timer(delegate
-            {
-                var tcs = new TaskCompletionSource<int>();
-                Send(() =>
-                {
-                    try
-                    {
-                        tick();
-                    }
-                    finally
-                    {
-                        tcs.SetResult(0);
-                    }
-                });
-
-
-                tcs.Task.Wait();
-            }, null, TimeSpan.Zero, interval));
-
-
+            return new TimerImpl(priority, interval, tick);
         }
 
         public void Signal(DispatcherPriority prio)

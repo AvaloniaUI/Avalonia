@@ -18,8 +18,6 @@ namespace Avalonia.LinuxFramebuffer
     class LinuxFramebufferPlatform
     {
         LinuxFramebuffer _fb;
-        public static KeyboardDevice KeyboardDevice = new KeyboardDevice();
-        public static MouseDevice MouseDevice = new MouseDevice();
         private static readonly Stopwatch St = Stopwatch.StartNew();
         internal static uint Timestamp => (uint)St.ElapsedTicks;
         public static InternalPlatformThreadingInterface Threading;
@@ -33,13 +31,15 @@ namespace Avalonia.LinuxFramebuffer
         {
             Threading = new InternalPlatformThreadingInterface();
             AvaloniaLocator.CurrentMutable
-                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
-                .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
+                .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
-                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>()
-                .Bind<IRenderTimer>().ToConstant(Threading);
+                .Bind<IStandardCursorFactory>().ToTransient<CursorFactoryStub>()
+                .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
+                .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
+                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
+                .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+
         }
 
         internal static LinuxFramebufferLifetime Initialize<T>(T builder, string fbdev = null) where T : AppBuilderBase<T>, new()
@@ -73,7 +73,9 @@ namespace Avalonia.LinuxFramebuffer
                     var tl = new EmbeddableControlRoot(new FramebufferToplevelImpl(_fb, new LibInputBackend()));
                     tl.Prepare();
                     _topLevel = tl;
+                    _topLevel.Renderer.Start();
                 }
+
                 _topLevel.Content = value;
             }
         }

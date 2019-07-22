@@ -40,7 +40,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 libinput_path_add_device(ctx, f);
             while (true)
             {
+                
                 IntPtr ev;
+                libinput_dispatch(ctx);
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {
                     
@@ -50,25 +52,36 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                         HandleTouch(ev, type);
                     
                     libinput_event_destroy(ev);
+                    libinput_dispatch(ctx);
                 }
-                libinput_dispatch(ctx);
+
+                pollfd pfd = new pollfd {fd = fd, events = 1};
+                NativeUnsafeMethods.poll(&pfd, new IntPtr(1), 10);
             }
         }
 
         private void ScheduleInput(RawInputEventArgs ev)
         {
-            _inputQueue.Enqueue(ev);
-            if (_inputQueue.Count == 1)
+            lock (_inputQueue)
             {
-                Dispatcher.UIThread.Post(() =>
+                _inputQueue.Enqueue(ev);
+                if (_inputQueue.Count == 1)
                 {
-                    while (_inputQueue.Count > 0)
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
-                        var dequeuedEvent = _inputQueue.Dequeue();
-                        _onInput?.Invoke(dequeuedEvent);
-                    }
-                }, DispatcherPriority.Input);
+                        while (true)
+                        {
+                            Dispatcher.UIThread.RunJobs(DispatcherPriority.Input + 1);
+                            RawInputEventArgs dequeuedEvent = null;
+                            lock(_inputQueue)
+                                if (_inputQueue.Count != 0)
+                                    dequeuedEvent = _inputQueue.Dequeue();
+                            if (dequeuedEvent == null)
+                                return;
+                            _onInput?.Invoke(dequeuedEvent);
+                        }
+                    }, DispatcherPriority.Input);
+                }
             }
         }
 
