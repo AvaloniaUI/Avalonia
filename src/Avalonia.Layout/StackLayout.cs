@@ -217,7 +217,11 @@ namespace Avalonia.Layout
                 double realizationWindowOffsetInExtent = _orientation.MajorStart(realizationRect) - _orientation.MajorStart(lastExtent);
                 double majorSize = _orientation.MajorSize(lastExtent) == 0 ? Math.Max(0.0, averageElementSize * itemsCount - Spacing) : _orientation.MajorSize(lastExtent);
                 if (itemsCount > 0 &&
-                    _orientation.MajorSize(realizationRect) > 0 &&
+                    _orientation.MajorSize(realizationRect) >= 0 &&
+                    // MajorSize = 0 will account for when a nested repeater is outside the realization rect but still being measured. Also,
+                    // note that if we are measuring this repeater, then we are already realizing an element to figure out the size, so we could
+                    // just keep that element alive. It also helps in XYFocus scenarios to have an element realized for XYFocus to find a candidate
+                    // in the navigating direction.
                     realizationWindowOffsetInExtent + _orientation.MajorSize(realizationRect) >= 0 && realizationWindowOffsetInExtent <= majorSize)
                 {
                     anchorIndex = (int) (realizationWindowOffsetInExtent / averageElementSize);
