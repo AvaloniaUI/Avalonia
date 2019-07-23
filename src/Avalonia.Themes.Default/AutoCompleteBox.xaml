@@ -27,7 +27,6 @@
                        Background="{TemplateBinding Background}"
                        Foreground="{TemplateBinding Foreground}"
                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                       MemberSelector="{TemplateBinding ValueMemberSelector}"
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" />
             </Border>

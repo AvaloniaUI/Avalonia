@@ -1012,23 +1012,23 @@ namespace Avalonia.Controls.UnitTests
         }
         private IControlTemplate CreateTemplate()
         {
-            return new FuncControlTemplate<AutoCompleteBox>(control =>
+            return new FuncControlTemplate<AutoCompleteBox>((control, scope) =>
             {
                 var textBox =
                     new TextBox
                     {
                         Name = "PART_TextBox"
-                    };
+                    }.RegisterInNameScope(scope);
                 var listbox =
                     new ListBox
                     {
                         Name = "PART_SelectingItemsControl"
-                    };
+                    }.RegisterInNameScope(scope);
                 var popup =
                     new Popup
                     {
                         Name = "PART_Popup"
-                    };
+                    }.RegisterInNameScope(scope);
 
                 var panel = new Panel();
                 panel.Children.Add(textBox);

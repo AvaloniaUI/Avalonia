@@ -195,7 +195,6 @@
     <Setter Property="GridLinesVisibility" Value="Vertical" />
     <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
     <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeBorderLightBrush}" />
-    <Setter Property="HeadersVisibility" Value="Column" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderDarkBrush}"/>
     <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
     <Setter Property="DropLocationIndicatorTemplate">

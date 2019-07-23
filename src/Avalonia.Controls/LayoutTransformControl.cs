@@ -45,7 +45,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Utilize the <see cref="RenderTransformProperty"/> for layout transforms.
+        /// Utilize the <see cref="Visual.RenderTransformProperty"/> for layout transforms.
         /// </summary>
         public bool UseRenderTransform
         {

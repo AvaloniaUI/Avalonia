@@ -23,9 +23,10 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Class1(),
             };
 
+            var format = "{0:0.0} + {1:00}";
             var target = new MultiBinding
             {
-                StringFormat = "{0:0.0} + {1:00}",
+                StringFormat = format,
                 Bindings =
                 {
                     new Binding(nameof(Class1.Foo)),
@@ -35,7 +36,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             textBlock.Bind(TextBlock.TextProperty, target);
 
-            Assert.Equal("1.0 + 02", textBlock.Text);
+            Assert.Equal(string.Format(format, 1, 2), textBlock.Text);
         }
 
         [Fact]

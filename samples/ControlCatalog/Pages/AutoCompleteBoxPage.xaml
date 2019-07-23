@@ -37,10 +37,6 @@
 
       <StackPanel Orientation="Vertical">
         
-        <TextBlock Text="ValueMemeberSelector"/>
-        <AutoCompleteBox Width="200"
-                         Margin="0,0,0,8"
-                         ValueMemberSelector="Capital"/>
         <TextBlock Text="ValueMemberBinding"/>
         <AutoCompleteBox Width="200"
                          Margin="0,0,0,8"
