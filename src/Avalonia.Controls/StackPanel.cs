@@ -161,8 +161,8 @@ namespace Avalonia.Controls
         /// <returns>The desired size of the control.</returns>
         protected override Size MeasureOverride(Size availableSize)
         {
-            double childAvailableWidth = availableSize.Width;
-            double childAvailableHeight = availableSize.Height;
+            double childAvailableWidth = double.PositiveInfinity;
+            double childAvailableHeight = double.PositiveInfinity;
 
             if (Orientation == Orientation.Vertical)
             {
