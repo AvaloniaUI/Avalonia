@@ -1,0 +1,7 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
+        xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
+        Title="{Binding Title}" MinWidth="700" MinHeight="500">
+    <internal:ManagedFileChooser Margin="4"/>
+</Window>

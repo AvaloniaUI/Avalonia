@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Skia;
@@ -15,10 +17,13 @@ namespace ControlCatalog.NetCore
         static int Main(string[] args)
         {
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
-            if (args.Contains("--wait-for-attach"))
+            var b = BuildAvaloniaApp();
+            b.SetupWithoutStarting();
+            var window = new Window();
+            window.Show();
+            new OpenFileDialog()
             {
-                Console.WriteLine("Attach debugger and use 'Set next statement'");
-                while (true)
+                Filters = new List<FileDialogFilter>
                 {
                     Thread.Sleep(100);
                     if (Debugger.IsAttached)

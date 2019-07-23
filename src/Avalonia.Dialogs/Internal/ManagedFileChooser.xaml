@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
+             xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal">
+    <UserControl.Resources>
+        <DrawingGroup x:Key="LevelUp">
+            <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
+            <GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M14.5,0L6.39,0 5.39,2 2.504,2C1.677,2,1,2.673,1,3.5L1,10.582 1,10.586 1,15.414 3,13.414 3,16 7,16 7,13.414 9,15.414 9,13 14.5,13C15.327,13,16,12.327,16,11.5L16,1.5C16,0.673,15.327,0,14.5,0" />
+            <GeometryDrawing Brush="#FFDCB679" Geometry="F1M14,3L7.508,3 8.008,2 8.012,2 14,2z M14.5,1L7.008,1 6.008,3 2.504,3C2.227,3,2,3.224,2,3.5L2,9.582 4.998,6.586 9,10.586 9,12 14.5,12C14.775,12,15,11.776,15,11.5L15,1.5C15,1.224,14.775,1,14.5,1" />
+            <GeometryDrawing Brush="#FF00529C" Geometry="F1M8,11L5,8 2,11 2,13 4,11 4,15 6,15 6,11 8,13z" />
+            <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M8.0001,1.9996L7.5001,3.0006 14.0001,3.0006 14.0001,1.9996z" />
+        </DrawingGroup>
+        <dialogs:ResourceSelectorConverter x:Key="Icons">
+            <DrawingGroup x:Key="Icon_Folder"><GeometryDrawing Brush="#00FFFFFF" Geometry="F1M0,0L16,0 16,16 0,16z" /><GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M1.5,1L9.61,1 10.61,3 13.496,3C14.323,3,14.996,3.673,14.996,4.5L14.996,12.5C14.996,13.327,14.323,14,13.496,14L1.5,14C0.673,14,0,13.327,0,12.5L0,2.5C0,1.673,0.673,1,1.5,1" /><GeometryDrawing Brush="#FFDCB67A" Geometry="F1M2,3L8.374,3 8.874,4 2,4z M13.496,4L10,4 9.992,4 8.992,2 1.5,2C1.225,2,1,2.224,1,2.5L1,12.5C1,12.776,1.225,13,1.5,13L13.496,13C13.773,13,13.996,12.776,13.996,12.5L13.996,4.5C13.996,4.224,13.773,4,13.496,4" /><GeometryDrawing Brush="#FFEFEFF0" Geometry="F1M2,3L8.374,3 8.874,4 2,4z" /></DrawingGroup>
+            <DrawingGroup x:Key="Icon_File"><GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" /><GeometryDrawing Brush="#FFF6F6F6" Geometry="F1M4,15C3.03,15,2,14.299,2,13L2,3C2,1.701,3.03,1,4,1L10.061,1 14,4.556 14,13C14,13.97,13.299,15,12,15z" /><GeometryDrawing Brush="#FF9B4E96" Geometry="F1M12,13L4,13 4,3 9,3 9,6 12,6z M9.641,2L3.964,2C3.964,2,3,2,3,3L3,13C3,14,3.964,14,3.964,14L11.965,14C12.965,14,13,13,13,13L13,5z" /><GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M4,3L9,3 9,6 12,6 12,13 4,13z" /></DrawingGroup>
+        </dialogs:ResourceSelectorConverter>
+    </UserControl.Resources>
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="internal:ManagedFileChooserItemViewModel">
+            <StackPanel Background="Transparent" Orientation="Horizontal"
+                        Cursor="Hand">
+                
+                <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                <TextBlock Text="{Binding DisplayName}"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.DataTemplates>
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="5">
+            
+            <dialogs:ChildFitter DockPanel.Dock="Right" Width="{Binding ElementName=Location, Path=Bounds.Height}">
+                <Button Command="{Binding GoUp}" >
+                
+                    <DrawingPresenter Drawing="{StaticResource LevelUp}" Stretch="Fill"/>
+                
+                </Button>
+            </dialogs:ChildFitter>
+            <TextBox x:Name="Location" IsReadOnly="True" Text="{Binding Location}" Margin="0 0 5 0"/>
+        </DockPanel>
+        <DockPanel DockPanel.Dock="Bottom">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                <CheckBox IsChecked="{Binding ShowHiddenFiles}">
+                    <TextBlock>Show hidden files</TextBlock>
+                </CheckBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel.Styles>
+                    <Style Selector="Button">
+                        <Setter Property="Margin">4</Setter>
+                    </Style>
+                </StackPanel.Styles>
+                <Button Command="{Binding Ok}">OK</Button>
+                <Button Command="{Binding Cancel}">Cancel</Button>
+            </StackPanel>
+        </DockPanel>
+        <DropDown DockPanel.Dock="Bottom" 
+                  IsVisible="{Binding ShowFilters}" 
+                  Items="{Binding Filters}"
+                  SelectedItem="{Binding SelectedFilter}"
+                  />
+        <ListBox Margin="5" BorderBrush="Transparent" x:Name="QuickLinks" Items="{Binding QuickLinks}"
+                 SelectedIndex="{Binding QuickLinksSelectedIndex}"
+                 DockPanel.Dock="Left" Background="{DynamicResource ThemeControlMidBrush}" Focusable="False" />
+        <ListBox x:Name="Files"
+                 VirtualizationMode="Simple"
+                 Items="{Binding Items}"
+                 Margin="5"
+                 SelectionMode="{Binding SelectionMode}"
+                 SelectedItems="{Binding SelectedItems}"/>
+    </DockPanel>
+    
+</UserControl>
