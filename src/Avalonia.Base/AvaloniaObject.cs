@@ -164,6 +164,37 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Compares two objects using reference equality.
+        /// </summary>
+        /// <param name="obj">The object to compare.</param>
+        /// <remarks>
+        /// Overriding Equals and GetHashCode on an AvaloniaObject is disallowed for two reasons:
+        /// 
+        /// - AvaloniaObjects are by their nature mutable
+        /// - The presence of attached properties means that the semantics of equality are
+        ///   difficult to define
+        /// 
+        /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
+        /// this.
+        /// </remarks>
+        public sealed override bool Equals(object obj) => base.Equals(obj);
+
+        /// <summary>
+        /// Gets the hash code for the object.
+        /// </summary>
+        /// <remarks>
+        /// Overriding Equals and GetHashCode on an AvaloniaObject is disallowed for two reasons:
+        /// 
+        /// - AvaloniaObjects are by their nature mutable
+        /// - The presence of attached properties means that the semantics of equality are
+        ///   difficult to define
+        /// 
+        /// See https://github.com/AvaloniaUI/Avalonia/pull/2747 for the discussion that prompted
+        /// this.
+        /// </remarks>
+        public sealed override int GetHashCode() => base.GetHashCode();
+
+        /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <param name="property">The property.</param>
