@@ -116,7 +116,24 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static double libinput_event_touch_get_y_transformed(IntPtr ev, int height);
-
-
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_get_pointer_event(IntPtr ev);
+        
+        
+        [DllImport(LibInput)]
+        public extern static ulong libinput_event_pointer_get_time_usec(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_absolute_x_transformed(IntPtr ev, int width);
+        
+        [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_absolute_y_transformed(IntPtr ev, int height);
+        
+        [DllImport(LibInput)]
+        public extern static int libinput_event_pointer_get_button(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static int libinput_event_pointer_get_button_state(IntPtr ev);
     }
 }
