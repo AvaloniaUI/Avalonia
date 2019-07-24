@@ -85,7 +85,7 @@ namespace Avalonia.Rendering.SceneGraph
         {
             return transform == Transform &&
                 Equals(brush, Brush) &&
-                Equals(pen, Pen) &&
+                Equals(Pen, pen) &&
                 rect == Rect &&
                 cornerRadius == CornerRadius;
         }

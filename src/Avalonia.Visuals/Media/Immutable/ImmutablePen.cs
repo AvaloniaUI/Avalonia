@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Avalonia.Media.Immutable
 {
@@ -75,7 +76,8 @@ namespace Avalonia.Media.Immutable
         public PenLineCap LineCap { get; }
 
         /// <summary>
-        /// Specifies how to join consecutive line or curve segments in a <see cref="PathFigure"/> (subpath) contained in a <see cref="PathGeometry"/> object.
+        /// Specifies how to join consecutive line or curve segments in a <see cref="PathFigure"/>
+        /// (subpaths) contained in a <see cref="PathGeometry"/> object.
         /// </summary>
         public PenLineJoin LineJoin { get; }
 
@@ -85,12 +87,32 @@ namespace Avalonia.Media.Immutable
         public double MiterLimit { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Pen.PenEquals(this, obj as IPen);
+        public override bool Equals(object obj) => Equals(obj as IPen);
 
         /// <inheritdoc/>
-        public bool Equals(IPen other) => Pen.PenEquals(this, other);
+        public bool Equals(IPen other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            else if (other is null)
+            {
+                return false;
+            }
+
+            return EqualityComparer<IBrush>.Default.Equals(Brush, other.Brush) &&
+               Thickness == other.Thickness &&
+               EqualityComparer<IDashStyle>.Default.Equals(DashStyle, other.DashStyle) &&
+               LineCap == other.LineCap &&
+               LineJoin == other.LineJoin &&
+               MiterLimit == other.MiterLimit;
+        }
 
         /// <inheritdoc/>
-        public override int GetHashCode() => Pen.GetHashCode(this);
+        public override int GetHashCode()
+        {
+            return (Brush, Thickness, DashStyle, LineCap, LineJoin, MiterLimit).GetHashCode();
+        }
     }
 }

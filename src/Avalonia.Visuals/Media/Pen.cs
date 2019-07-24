@@ -11,7 +11,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
-    public class Pen : AvaloniaObject, IPen, IEquatable<IPen>
+    public class Pen : AvaloniaObject, IPen
     {
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -171,15 +171,6 @@ namespace Avalonia.Media
         /// </summary>
         public event EventHandler Invalidated;
 
-        /// <inheritdoc/>
-        public override bool Equals(object obj) => PenEquals(this, obj as IPen);
-
-        /// <inheritdoc/>
-        public bool Equals(IPen other) => PenEquals(this, other);
-
-        /// <inheritdoc/>
-        public override int GetHashCode() => GetHashCode(this);
-
         /// <summary>
         /// Creates an immutable clone of the brush.
         /// </summary>
@@ -241,31 +232,6 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="e">The event args.</param>
         protected void RaiseInvalidated(EventArgs e) => Invalidated?.Invoke(this, e);
-
-        internal static int GetHashCode(IPen pen)
-        {
-            return (pen.Brush, pen.Thickness, pen.DashStyle, pen.LineCap, pen.LineJoin, pen.MiterLimit)
-                .GetHashCode();
-        }
-
-        internal static bool PenEquals(IPen a, IPen b)
-        {
-            if (ReferenceEquals(a, b))
-            {
-                return true;
-            }
-            else if (a is null && !(b is null) || (b is null && !(a is null)))
-            {
-                return false;
-            }
-
-            return EqualityComparer<IBrush>.Default.Equals(a.Brush, b.Brush) &&
-               a.Thickness == b.Thickness &&
-               EqualityComparer<IDashStyle>.Default.Equals(a.DashStyle, b.DashStyle) &&
-               a.LineCap == b.LineCap &&
-               a.LineJoin == b.LineJoin &&
-               a.MiterLimit == b.MiterLimit;
-        }
 
         private void AffectsRenderInvalidated(object sender, EventArgs e) => RaiseInvalidated(EventArgs.Empty);
     }

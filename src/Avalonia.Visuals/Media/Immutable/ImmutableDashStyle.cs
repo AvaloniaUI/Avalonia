@@ -28,13 +28,66 @@ namespace Avalonia.Media.Immutable
         public double Offset { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => DashStyle.DashEquals(this, obj as IDashStyle);
+        public override bool Equals(object obj) => Equals(this, obj as IDashStyle);
 
         /// <inheritdoc/>
-        public bool Equals(IDashStyle other) => DashStyle.DashEquals(this, other);
+        public bool Equals(IDashStyle other)
+        {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            else if (other is null)
+            {
+                return false;
+            }
+
+            if (Offset != other.Offset)
+            {
+                return false;
+            }
+
+            return SequenceEqual(Dashes, other.Dashes);
+        }
 
         /// <inheritdoc/>
-        public override int GetHashCode() => DashStyle.GetHashCode(this);
+        public override int GetHashCode()
+        {
+            var hashCode = 717868523;
+            hashCode = hashCode * -1521134295 + Offset.GetHashCode();
 
+            if (Dashes != null)
+            {
+                foreach (var i in Dashes)
+                {
+                    hashCode = hashCode * -1521134295 + i.GetHashCode();
+                }
+            }
+
+            return hashCode;
+        }
+
+        private static bool SequenceEqual(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        {
+            if (left == right)
+            {
+                return true;
+            }
+
+            if (left == null || right == null || left.Count != right.Count)
+            {
+                return false;
+            }
+
+            for (var c = 0; c < left.Count; c++)
+            {
+                if (left[c] != right[c])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }
