@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Skia;
 using Avalonia.ReactiveUI;
 
@@ -29,8 +30,13 @@ namespace ControlCatalog.NetCore
             var builder = BuildAvaloniaApp();
             if (args.Contains("--fbdev"))
             {
-                System.Threading.ThreadPool.QueueUserWorkItem(_ => ConsoleSilencer());
-                return builder.StartLinuxFramebuffer(args);
+                SilenceConsole();
+                return builder.StartLinuxFbDev(args);
+            }
+            else if (args.Contains("--drm"))
+            {
+                SilenceConsole();
+                return builder.StartLinuxDrm(args);
             }
             else
                 return builder.StartWithClassicDesktopLifetime(args);
@@ -51,11 +57,14 @@ namespace ControlCatalog.NetCore
                 .UseSkia()
                 .UseReactiveUI();
 
-        static void ConsoleSilencer()
+        static void SilenceConsole()
         {
-            Console.CursorVisible = false;
-            while (true)
-                Console.ReadKey(true);
+            new Thread(() =>
+            {
+                Console.CursorVisible = false;
+                while (true)
+                    Console.ReadKey(true);
+            }) {IsBackground = true}.Start();
         }
     }
 }

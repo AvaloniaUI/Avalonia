@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.LinuxFramebuffer.Input;
+using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
@@ -11,14 +12,14 @@ namespace Avalonia.LinuxFramebuffer
 {
     class FramebufferToplevelImpl : IEmbeddableWindowImpl, IScreenInfoProvider
     {
-        private readonly LinuxFramebuffer _fb;
+        private readonly IOutputBackend _outputBackend;
         private readonly IInputBackend _inputBackend;
         private bool _renderQueued;
         public IInputRoot InputRoot { get; private set; }
 
-        public FramebufferToplevelImpl(LinuxFramebuffer fb, IInputBackend inputBackend)
+        public FramebufferToplevelImpl(IOutputBackend outputBackend, IInputBackend inputBackend)
         {
-            _fb = fb;
+            _outputBackend = outputBackend;
             _inputBackend = inputBackend;
             Invalidate(default(Rect));
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
@@ -26,7 +27,10 @@ namespace Avalonia.LinuxFramebuffer
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            return new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>())
+            {
+                
+            };
         }
 
         public void Dispose()
@@ -53,10 +57,10 @@ namespace Avalonia.LinuxFramebuffer
         {
         }
 
-        public Size ClientSize => _fb.PixelSize;
+        public Size ClientSize => ScaledSize;
         public IMouseDevice MouseDevice => new MouseDevice();
         public double Scaling => 1;
-        public IEnumerable<object> Surfaces => new object[] {_fb};
+        public IEnumerable<object> Surfaces => new object[] {_outputBackend};
         public Action<RawInputEventArgs> Input { get; set; }
         public Action<Rect> Paint { get; set; }
         public Action<Size> Resized { get; set; }
@@ -68,6 +72,6 @@ namespace Avalonia.LinuxFramebuffer
             remove {}
         }
 
-        public Size ScaledSize => _fb.PixelSize / Scaling;
+        public Size ScaledSize => _outputBackend.PixelSize.ToSize(Scaling);
     }
 }
