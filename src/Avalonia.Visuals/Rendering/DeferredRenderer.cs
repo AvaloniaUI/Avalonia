@@ -229,6 +229,8 @@ namespace Avalonia.Rendering
 
         internal void UnitTestRender() => Render(false);
 
+        internal Scene UnitTestScene() => _scene.Item;
+
         private void Render(bool forceComposite)
         {
             using (var l = _lock.TryLock())
