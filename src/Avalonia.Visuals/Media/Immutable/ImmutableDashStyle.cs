@@ -28,7 +28,7 @@ namespace Avalonia.Media.Immutable
         public double Offset { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => Equals(this, obj as IDashStyle);
+        public override bool Equals(object obj) => Equals(obj as IDashStyle);
 
         /// <inheritdoc/>
         public bool Equals(IDashStyle other)
