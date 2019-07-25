@@ -68,4 +68,7 @@
     <Style Selector="TextBox:error">
         <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
     </Style>
+    <Style Selector="TextBox:disabled">
+        <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}"/>
+    </Style>
 </Styles>
