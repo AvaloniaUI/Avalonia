@@ -514,7 +514,9 @@ namespace Avalonia
         /// <param name="e">The event args.</param>
         private static void ZIndexChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var parent = (e.Sender as Visual)?._visualParent;
+            var sender = e.Sender as IVisual;
+            var parent = sender?.VisualParent;
+            sender?.InvalidateVisual();
             parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
         }
 
