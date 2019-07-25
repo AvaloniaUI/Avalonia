@@ -5,12 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Internal\ManagedFileChooser.xaml">
+    <AvaloniaResource Include="**\*.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Internal\ManagedFileDialog.xaml">
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </AvaloniaResource>
   </ItemGroup>
 
   <Import Project="..\..\build\Rx.props" />

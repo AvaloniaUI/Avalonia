@@ -3,7 +3,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
-             xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal">
+             xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
+             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser">
   <UserControl.Resources>
     <internal:FileSizeStringConverter x:Key="FileSizeConverter" />
     <DrawingGroup x:Key="LevelUp">

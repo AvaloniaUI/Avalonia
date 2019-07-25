@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Skia;
 using Avalonia.ReactiveUI;
+using Avalonia.Dialogs;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ControlCatalog.NetCore
 {
@@ -18,13 +19,10 @@ namespace ControlCatalog.NetCore
         static int Main(string[] args)
         {
             Thread.CurrentThread.TrySetApartmentState(ApartmentState.STA);
-            var b = BuildAvaloniaApp();
-            b.SetupWithoutStarting();
-            var window = new Window();
-            window.Show();
-            new OpenFileDialog()
+            if (args.Contains("--wait-for-attach"))
             {
-                Filters = new List<FileDialogFilter>
+                Console.WriteLine("Attach debugger and use 'Set next statement'");
+                while (true)
                 {
                     Thread.Sleep(100);
                     if (Debugger.IsAttached)
@@ -33,6 +31,7 @@ namespace ControlCatalog.NetCore
             }
 
             var builder = BuildAvaloniaApp();
+            
             if (args.Contains("--fbdev"))
             {
                 SilenceConsole();
@@ -60,7 +59,8 @@ namespace ControlCatalog.NetCore
                     AllowEglInitialization = true
                 })
                 .UseSkia()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .UseManagedSystemDialogs();
 
         static void SilenceConsole()
         {

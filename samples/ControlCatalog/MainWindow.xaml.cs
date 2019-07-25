@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using ControlCatalog.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ControlCatalog
@@ -28,6 +29,22 @@ namespace ControlCatalog
             };
 
             DataContext = new MainWindowViewModel(_notificationArea);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                new OpenFileDialog()
+                {
+                    Filters = new List<FileDialogFilter>
+                {
+                    new FileDialogFilter {Name = "All files", Extensions = {"*"}},
+                    new FileDialogFilter {Name = "Image files", Extensions = {"jpg", "png", "gif"}}
+                },
+                    Directory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    Title = "My dialog",
+                    InitialFileName = "config.local.json",
+                    AllowMultiple = true
+                }.ShowAsync(this);
+            });
         }
 
         private void InitializeComponent()

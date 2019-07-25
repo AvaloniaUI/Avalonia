@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
         xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
-        Icon="resm:WalletWasabi.Gui.Assets.WasabiLogo256.png?assembly=WalletWasabi.Gui"
+        x:Class="Avalonia.Dialogs.Internal.ManagedFileDialog"
         Title="{Binding Title}" Width="1100" Height="500" MinWidth="1100" MinHeight="500"
                       FontFamily="{DynamicResource UiFont}" FontSize="14"
                       Foreground="{DynamicResource ThemeForegroundBrush}">
