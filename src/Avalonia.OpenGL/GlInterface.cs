@@ -39,7 +39,7 @@ namespace Avalonia.OpenGL
         [GlEntryPoint("glClearStencil")]
         public GlClearStencil ClearStencil { get; }
 
-        public delegate void GlClearColor(int r, int g, int b, int a);
+        public delegate void GlClearColor(float r, float g, float b, float a);
         [GlEntryPoint("glClearColor")]
         public GlClearColor ClearColor { get; }
 
