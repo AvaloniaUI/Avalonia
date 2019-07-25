@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -12,6 +12,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ReactiveUI.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />

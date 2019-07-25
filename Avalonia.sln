@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Base", "src\Avalonia.Base\Avalonia.Base.csproj", "{B09B78D8-9B26-48B0-9149-D64A2F120F3F}"
 EndProject
@@ -197,9 +197,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformSanityChecks", "sam
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI.UnitTests", "tests\Avalonia.ReactiveUI.UnitTests\Avalonia.ReactiveUI.UnitTests.csproj", "{AF915D5C-AB00-4EA0-B5E6-001F4AE84E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Controls.DataGrid", "src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj", "{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Build.Tasks", "src\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj", "{BF28998D-072C-439A-AFBB-2FE5021241E0}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Dialogs", "src\Avalonia.Dialogs\Avalonia.Dialogs.csproj", "{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.DataGrid", "src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj", "{3278F3A9-9509-4A3F-A15B-BDC8B5BFF632}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Dialogs", "src\Avalonia.Dialogs\Avalonia.Dialogs.csproj", "{4D55985A-1EE2-4F25-AD39-6EA8BC04F8FB}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
