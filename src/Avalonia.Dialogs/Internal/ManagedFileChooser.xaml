@@ -39,7 +39,7 @@
       </dialogs:ChildFitter>
       <TextBox x:Name="Location" Text="{Binding Location}" Margin="0 0 5 0">
         <TextBox.KeyBindings>
-          <KeyBinding Command="{Binding EnterLocationCommand}" Gesture="Enter"/>
+          <KeyBinding Command="{Binding EnterPressed}" Gesture="Enter"/>
         </TextBox.KeyBindings>
       </TextBox>
     </DockPanel>

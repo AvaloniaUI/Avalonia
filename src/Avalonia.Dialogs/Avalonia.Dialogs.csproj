@@ -12,6 +12,7 @@
 
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />
+  <Import Project="..\..\build\BuildTargets.targets" />
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />

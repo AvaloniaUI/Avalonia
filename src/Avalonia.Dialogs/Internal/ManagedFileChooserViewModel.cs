@@ -145,19 +145,19 @@ namespace Avalonia.Dialogs.Internal
 
 			Navigate(directory, (dialog as FileDialog)?.InitialFileName);
 			SelectedItems.CollectionChanged += OnSelectionChangedAsync;
-
-			EnterLocationCommand = ReactiveCommand.Create(() =>
-			{
-				if (Directory.Exists(Location))
-				{
-					Navigate(Location);
-				}
-				else if (File.Exists(Location))
-				{
-					CompleteRequested?.Invoke(new[] { Location });
-				}
-			});
 		}
+
+        public void EnterPressed ()
+        {
+            if (Directory.Exists(Location))
+            {
+                Navigate(Location);
+            }
+            else if (File.Exists(Location))
+            {
+                CompleteRequested?.Invoke(new[] { Location });
+            }
+        }
 
 		private async void OnSelectionChangedAsync(object sender, NotifyCollectionChangedEventArgs e)
 		{
@@ -329,7 +329,5 @@ namespace Avalonia.Dialogs.Internal
 		{
 			CompleteRequested?.Invoke(new[] { item.Path });
 		}
-
-		public ReactiveCommand<Unit, Unit> EnterLocationCommand { get; }
 	}
 }
