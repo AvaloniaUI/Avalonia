@@ -30,6 +30,7 @@ namespace Avalonia.Rendering
         private bool _disposed;
         private volatile IRef<Scene> _scene;
         private DirtyVisuals _dirty;
+        private HashSet<IVisual> _recalculateChildren;
         private IRef<IRenderTargetBitmapImpl> _overlay;
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -134,6 +135,8 @@ namespace Avalonia.Rendering
             Stop();
             DisposeRenderTarget();
         }
+
+        public void RecalculateChildren(IVisual visual) => _recalculateChildren?.Add(visual);
 
         void DisposeRenderTarget()
         {
@@ -518,10 +521,19 @@ namespace Avalonia.Rendering
                 if (_dirty == null)
                 {
                     _dirty = new DirtyVisuals();
+                    _recalculateChildren = new HashSet<IVisual>();
                     _sceneBuilder.UpdateAll(scene);
                 }
-                else if (_dirty.Count > 0)
+                else
                 {
+                    foreach (var visual in _recalculateChildren)
+                    {
+                        var node = scene.FindNode(visual);
+                        ((VisualNode)node)?.SortChildren(scene);
+                    }
+
+                    _recalculateChildren.Clear();
+
                     foreach (var visual in _dirty)
                     {
                         _sceneBuilder.Update(scene, visual);

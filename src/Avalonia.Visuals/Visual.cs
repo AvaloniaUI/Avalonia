@@ -111,6 +111,7 @@ namespace Avalonia
                 IsVisibleProperty,
                 OpacityProperty);
             RenderTransformProperty.Changed.Subscribe(RenderTransformChanged);
+            ZIndexProperty.Changed.Subscribe(ZIndexChanged);
         }
 
         /// <summary>
@@ -345,6 +346,12 @@ namespace Avalonia
             }
         }
 
+        protected override void LogicalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.LogicalChildrenCollectionChanged(sender, e);
+            VisualRoot?.Renderer?.RecalculateChildren(this);
+        }
+
         /// <summary>
         /// Calls the <see cref="OnAttachedToVisualTree(VisualTreeAttachmentEventArgs)"/> method 
         /// for this control and all of its visual descendants.
@@ -499,6 +506,16 @@ namespace Avalonia
             {
                 throw new InvalidOperationException("The control already has a visual parent.");
             }
+        }
+
+        /// <summary>
+        /// Called when the <see cref="ZIndex"/> property changes on any control.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        private static void ZIndexChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            var parent = (e.Sender as Visual)?._visualParent;
+            parent?.VisualRoot?.Renderer?.RecalculateChildren(parent);
         }
 
         /// <summary>
