@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using Avalonia.Controls;
-using Avalonia.Controls.UnitTests;
 using Avalonia.Input;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Interactivity.UnitTests

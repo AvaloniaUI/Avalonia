@@ -9,8 +9,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Data;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
