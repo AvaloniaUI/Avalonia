@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public IReadOnlyList<ManagedPopupPositionerScreenInfo> Screens =>
 
             _parent.Screen.AllScreens.Select(s => new ManagedPopupPositionerScreenInfo(
-                s.Bounds.ToRect(_parent.Scaling), s.WorkingArea.ToRect(_parent.Scaling))).ToList();
+                s.Bounds.ToRect(1), s.WorkingArea.ToRect(1))).ToList();
 
         public Rect ParentClientAreaScreenGeometry
         {
