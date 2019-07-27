@@ -10,8 +10,6 @@
     </AvaloniaResource>
   </ItemGroup>
 
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\ReactiveUI.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
 
   <ItemGroup>
