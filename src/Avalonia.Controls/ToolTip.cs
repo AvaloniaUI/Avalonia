@@ -237,10 +237,10 @@ namespace Avalonia.Controls
 
             _popup = new PopupRoot((TopLevel)control.GetVisualRoot()) {Content = this};
             ((ISetLogicalParent)_popup).SetParent(control);
-            _popup.Position = Popup.GetPosition(control, GetPlacement(control), _popup,
-                GetHorizontalOffset(control), GetVerticalOffset(control));
+            
+            _popup.ConfigurePosition(control, GetPlacement(control), 
+                new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
             _popup.Show();
-            _popup.SnapInsideScreenEdges();
         }
 
         private void Close()

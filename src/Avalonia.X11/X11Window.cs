@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.OpenGL;
@@ -39,6 +40,7 @@ namespace Avalonia.X11
         private bool _mapped;
         private HashSet<X11Window> _transientChildren = new HashSet<X11Window>();
         private X11Window _transientParent;
+        private double? _scalingOverride;
         public object SyncRoot { get; } = new object();
 
         class InputEventContainer
@@ -151,6 +153,8 @@ namespace Avalonia.X11
             _xic = XCreateIC(_x11.Xim, XNames.XNInputStyle, XIMProperties.XIMPreeditNothing | XIMProperties.XIMStatusNothing,
                 XNames.XNClientWindow, _handle, IntPtr.Zero);
             XFlush(_x11.Display);
+            if(_popup)
+                PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
         }
 
         class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
@@ -454,13 +458,20 @@ namespace Avalonia.X11
             }
         }
 
-        private bool UpdateScaling()
+        private bool UpdateScaling(bool skipResize = false)
         {
             lock (SyncRoot)
             {
-                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
-                    .FirstOrDefault(m => m.Bounds.Contains(Position));
-                var newScaling = monitor?.PixelDensity ?? Scaling;
+                double newScaling;
+                if (_scalingOverride.HasValue)
+                    newScaling = _scalingOverride.Value;
+                else
+                {
+                    var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                        .FirstOrDefault(m => m.Bounds.Contains(Position));
+                    newScaling = monitor?.PixelDensity ?? Scaling;
+                }
+
                 if (Scaling != newScaling)
                 {
                     Console.WriteLine(
@@ -469,7 +480,8 @@ namespace Avalonia.X11
                     Scaling = newScaling;
                     ScalingChanged?.Invoke(Scaling);
                     SetMinMaxSize(_scaledMinMaxSize.minSize, _scaledMinMaxSize.maxSize);
-                    Resize(oldScaledSize, true);
+                    if(!skipResize)
+                        Resize(oldScaledSize, true);
                     return true;
                 }
 
@@ -731,6 +743,14 @@ namespace Avalonia.X11
 
 
         public void Resize(Size clientSize) => Resize(clientSize, false);
+        public void Move(PixelPoint point) => Position = point;
+        private void MoveResize(PixelPoint position, Size size, double scaling)
+        {
+            Move(position);
+            _scalingOverride = scaling;
+            UpdateScaling(true);
+            Resize(size, true);
+        }
 
         PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * Scaling), (int)(size.Height * Scaling));
         
@@ -939,6 +959,8 @@ namespace Avalonia.X11
         {
             SendNetWMMessage(_x11.Atoms._NET_WM_STATE,
                 (IntPtr)(value ? 0 : 1), _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR, IntPtr.Zero);
-        }        
+        }
+
+        public IPopupPositioner PopupPositioner { get; }
     }
 }

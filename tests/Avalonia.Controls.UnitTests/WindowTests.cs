@@ -18,6 +18,31 @@ namespace Avalonia.Controls.UnitTests
     public class WindowTests
     {
         [Fact]
+        public void Impl_ClientSize_Should_Be_Set_After_Layout_Pass()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var impl = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
+
+                Mock.Get(impl).Setup(x => x.Resize(It.IsAny<Size>())).Callback(() => { });
+
+                var target = new Window(impl)
+                {
+                    Content = new TextBlock
+                    {
+                        Width = 321,
+                        Height = 432,
+                    },
+                    IsVisible = true,
+                };
+
+                target.LayoutManager.ExecuteInitialLayoutPass(target);
+
+                Mock.Get(impl).Verify(x => x.Resize(new Size(321, 432)));
+            }
+        }
+        
+        [Fact]
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();

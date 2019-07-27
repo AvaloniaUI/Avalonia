@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="ObeyScreenEdges"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges));
+            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges), true);
 
         /// <summary>
         /// Defines the <see cref="HorizontalOffset"/> property.
@@ -147,10 +147,7 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementModeProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the popup positions itself within the nearest screen boundary
-        /// when its opened at a position where it would otherwise overlap the screen edge.
-        /// </summary>
+        [Obsolete("This property has no effect")]
         public bool ObeyScreenEdges
         {
             get => GetValue(ObeyScreenEdgesProperty);
@@ -241,8 +238,9 @@ namespace Avalonia.Controls.Primitives
                 ((ISetLogicalParent)_popupRoot).SetParent(this);
             }
 
-            _popupRoot.Position = GetPosition();
-
+            _popupRoot.ConfigurePosition(PlacementTarget ?? this.GetVisualParent<Control>(),
+                PlacementMode, new Point(HorizontalOffset, VerticalOffset));
+            
             var window = _topLevel as Window;
             if (window != null)
             {
@@ -262,11 +260,6 @@ namespace Avalonia.Controls.Primitives
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
-
-            if (ObeyScreenEdges)
-            {
-                _popupRoot.SnapInsideScreenEdges();
-            }
 
             using (BeginIgnoringIsOpen())
             {
@@ -376,49 +369,6 @@ namespace Avalonia.Controls.Primitives
             {
                 ((ISetLogicalParent)e.NewValue).SetParent(this);
                 LogicalChildren.Add((ILogical)e.NewValue);
-            }
-        }
-
-        /// <summary>
-        /// Gets the position for the popup based on the placement properties.
-        /// </summary>
-        /// <returns>The popup's position in screen coordinates.</returns>
-        protected virtual PixelPoint GetPosition()
-        {
-            var result = GetPosition(PlacementTarget ?? this.GetVisualParent<Control>(), PlacementMode, PopupRoot,
-                HorizontalOffset, VerticalOffset);
-
-            return result;
-        }
-
-        internal static PixelPoint GetPosition(Control target, PlacementMode placement, PopupRoot popupRoot, double horizontalOffset, double verticalOffset)
-        {
-            var root = target?.GetVisualRoot();
-            var mode = root != null ? placement : PlacementMode.Pointer;
-            var scaling = root?.RenderScaling ?? 1;
-
-            switch (mode)
-            {
-                case PlacementMode.Pointer:
-                    if (popupRoot != null)
-                    {
-                        var screenOffset = PixelPoint.FromPoint(new Point(horizontalOffset, verticalOffset), scaling);
-                        var mouseOffset = ((IInputRoot)popupRoot)?.MouseDevice?.Position ?? default;
-                        return new PixelPoint(
-                            screenOffset.X + mouseOffset.X,
-                            screenOffset.Y + mouseOffset.Y);
-                    }
-
-                    return default;
-
-                case PlacementMode.Bottom:
-                    return target?.PointToScreen(new Point(0 + horizontalOffset, target.Bounds.Height + verticalOffset)) ?? default;
-
-                case PlacementMode.Right:
-                    return target?.PointToScreen(new Point(target.Bounds.Width + horizontalOffset, 0 + verticalOffset)) ?? default;
-
-                default:
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
             }
         }
 

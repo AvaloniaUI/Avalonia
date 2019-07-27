@@ -104,6 +104,8 @@ namespace Avalonia.Native
         }
 
         public Func<bool> Closing { get; set; }
-        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts);
+        public void Move(PixelPoint point) => Position = point;
+
+        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts, this);
     }
 }

@@ -131,6 +131,8 @@ namespace Avalonia.Win32
             }
         }
 
+        public void Move(PixelPoint point) => Position = point;
+
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _minSize = minSize;
@@ -250,7 +252,7 @@ namespace Avalonia.Win32
 
         public IPopupImpl CreatePopup()
         {
-            return new PopupImpl();
+            return new PopupImpl(this);
         }
 
         public void Dispose()
