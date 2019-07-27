@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
              xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
-             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser">
+             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser" Margin="12 0 12 6">
     <UserControl.Resources>
         <internal:FileSizeStringConverter x:Key="FileSizeConverter" />
         <DrawingGroup x:Key="LevelUp">
