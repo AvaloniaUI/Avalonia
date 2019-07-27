@@ -11,7 +11,7 @@ namespace Avalonia.Dialogs
 {
 	public static class ManagedFileDialogExtensions
 	{
-        class CustomWindowManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
+        class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
             async Task<string[]> Show(SystemDialog d, IWindowImpl parent)
             {
@@ -50,7 +50,7 @@ namespace Avalonia.Dialogs
 			where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
 		{
 			builder.AfterSetup(_ =>
-				AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<CustomWindowManagedSystemDialogImpl<Window>>());
+				AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<Window>>());
 			return builder;
 		}
 
@@ -58,7 +58,7 @@ namespace Avalonia.Dialogs
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new() where TWindow : Window, new()
         {
             builder.AfterSetup(_ =>
-                AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<CustomWindowManagedSystemDialogImpl<TWindow>>());
+                AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<TWindow>>());
             return builder;
         }
     }
