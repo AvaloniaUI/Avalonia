@@ -59,6 +59,59 @@ namespace Avalonia
         {
             return !(left == right);
         }
+        
+        /// <summary>
+        /// Converts the <see cref="Point"/> to a <see cref="Vector"/>.
+        /// </summary>
+        /// <param name="p">The point.</param>
+        public static implicit operator PixelVector(PixelPoint p)
+        {
+            return new PixelVector(p.X, p.Y);
+        }
+        
+        /// <summary>
+        /// Adds two points.
+        /// </summary>
+        /// <param name="a">The first point.</param>
+        /// <param name="b">The second point.</param>
+        /// <returns>A point that is the result of the addition.</returns>
+        public static PixelPoint operator +(PixelPoint a, PixelPoint b)
+        {
+            return new PixelPoint(a.X + b.X, a.Y + b.Y);
+        }
+
+        /// <summary>
+        /// Adds a vector to a point.
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">The vector.</param>
+        /// <returns>A point that is the result of the addition.</returns>
+        public static PixelPoint operator +(PixelPoint a, PixelVector b)
+        {
+            return new PixelPoint(a.X + b.X, a.Y + b.Y);
+        }
+
+        /// <summary>
+        /// Subtracts two points.
+        /// </summary>
+        /// <param name="a">The first point.</param>
+        /// <param name="b">The second point.</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
+        public static PixelPoint operator -(PixelPoint a, PixelPoint b)
+        {
+            return new PixelPoint(a.X - b.X, a.Y - b.Y);
+        }
+
+        /// <summary>
+        /// Subtracts a vector from a point.
+        /// </summary>
+        /// <param name="a">The point.</param>
+        /// <param name="b">The vector.</param>
+        /// <returns>A point that is the result of the subtraction.</returns>
+        public static PixelPoint operator -(PixelPoint a, PixelVector b)
+        {
+            return new PixelPoint(a.X - b.X, a.Y - b.Y);
+        }
 
         /// <summary>
         /// Parses a <see cref="PixelPoint"/> string.
@@ -106,6 +159,8 @@ namespace Avalonia
                 return hash;
             }
         }
+        
+        
 
         /// <summary>
         /// Returns a new <see cref="PixelPoint"/> with the same Y co-ordinate and the specified X co-ordinate.
