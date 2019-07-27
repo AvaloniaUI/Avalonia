@@ -99,7 +99,7 @@ namespace Avalonia.Controls.Primitives
 
         public Popup()
         {
-            _decorator[~PopupContentHost.ChildProperty] = this[~ChildProperty];
+            
         }
 
         /// <summary>
@@ -261,6 +261,7 @@ namespace Avalonia.Controls.Primitives
             Bind(HeightProperty);
             Bind(MinHeightProperty);
             Bind(MaxHeightProperty);
+            _decorator.Bind(PopupContentHost.ChildProperty, this[~ChildProperty]);
 
             _popupRoot.Content = _decorator;
             
@@ -506,17 +507,6 @@ namespace Avalonia.Controls.Primitives
                 return finalSize;
             }
 
-            protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-            {
-                if (Child != null)
-                    VisualChildren.Add(Child);
-            }
-
-            protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-            {
-                if (Child != null)
-                    VisualChildren.Remove(Child);
-            }
 
             private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
             {
@@ -525,7 +515,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (oldChild != null) VisualChildren.Remove(oldChild);
 
-                if (newChild != null && VisualRoot != null)
+                if (newChild != null)
                     VisualChildren.Add(newChild);
             }
         }
