@@ -76,7 +76,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         public void Update(PopupPositionerParameters parameters)
         {
 
-            Update(_popup.TranslateSize(parameters.Size),
+            Update(_popup.TranslateSize(parameters.Size), parameters.Size,
                 new Rect(_popup.TranslatePoint(parameters.AnchorRectangle.TopLeft),
                     _popup.TranslateSize(parameters.AnchorRectangle.Size)),
                 parameters.Anchor, parameters.Gravity, parameters.ConstraintAdjustment,
@@ -84,7 +84,8 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         }
 
         
-        void Update(Size size, Rect anchorRect, PopupPositioningEdge anchor, PopupPositioningEdge gravity,
+        void Update(Size translatedSize, Size originalSize,
+            Rect anchorRect, PopupPositioningEdge anchor, PopupPositioningEdge gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Point offset)
         {
             var parentGeometry = _popup.ParentClientAreaScreenGeometry;
@@ -127,7 +128,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
             }
 
             Rect GetUnconstrained(PopupPositioningEdge a, PopupPositioningEdge g) =>
-                new Rect(Gravitate(GetAnchorPoint(anchorRect, a), size, g) + offset, size);
+                new Rect(Gravitate(GetAnchorPoint(anchorRect, a), translatedSize, g) + offset, translatedSize);
 
 
             var geo = GetUnconstrained(anchor, gravity);
@@ -168,7 +169,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
                     geo = geo.WithY(bounds.Bottom - geo.Height);
             }
 
-            _popup.MoveAndResize(geo.TopLeft, size);
+            _popup.MoveAndResize(geo.TopLeft, originalSize);
         }
     }
 }
