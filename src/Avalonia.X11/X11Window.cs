@@ -474,8 +474,6 @@ namespace Avalonia.X11
 
                 if (Scaling != newScaling)
                 {
-                    Console.WriteLine(
-                        $"Updating scaling from {Scaling} to {newScaling} as a response to position change to {Position}");
                     var oldScaledSize = ClientSize;
                     Scaling = newScaling;
                     ScalingChanged?.Invoke(Scaling);
