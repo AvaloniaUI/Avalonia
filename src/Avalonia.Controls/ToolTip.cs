@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -234,7 +235,7 @@ namespace Avalonia.Controls
         {
             Close();
 
-            _popup = new PopupRoot { Content = this,  };
+            _popup = new PopupRoot((TopLevel)control.GetVisualRoot()) {Content = this};
             ((ISetLogicalParent)_popup).SetParent(control);
             _popup.Position = Popup.GetPosition(control, GetPlacement(control), _popup,
                 GetHorizontalOffset(control), GetVerticalOffset(control));

@@ -29,6 +29,8 @@ namespace Avalonia.DesignerSupport.Remote
         public Func<bool> Closing { get; set; }
         public Action Closed { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
+        public IPopupImpl CreatePopup() => null;
+
         public PixelPoint Position { get; set; }
         public Action<PixelPoint> PositionChanged { get; set; }
         public WindowState WindowState { get; set; }

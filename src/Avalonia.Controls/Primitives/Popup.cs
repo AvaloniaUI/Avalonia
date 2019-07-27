@@ -218,9 +218,16 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Open()
         {
+            if (PlacementTarget == null)
+                throw new InvalidOperationException("It's not valid to show a popup without a PlacementTarget");
+            
+            
+            if (_topLevel == null && PlacementTarget != null)
+                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
+            
             if (_popupRoot == null)
             {
-                _popupRoot = new PopupRoot(DependencyResolver)
+                _popupRoot = new PopupRoot(_topLevel, DependencyResolver)
                 {
                     [~ContentControl.ContentProperty] = this[~ChildProperty],
                     [~WidthProperty] = this[~WidthProperty],
@@ -236,30 +243,22 @@ namespace Avalonia.Controls.Primitives
 
             _popupRoot.Position = GetPosition();
 
-            if (_topLevel == null && PlacementTarget != null)
+            var window = _topLevel as Window;
+            if (window != null)
             {
-                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
+                window.Deactivated += WindowDeactivated;
             }
-
-            if (_topLevel != null)
+            else
             {
-                var window = _topLevel as Window;
-                if (window != null)
+                var parentPopuproot = _topLevel as PopupRoot;
+                if (parentPopuproot?.Parent is Popup popup)
                 {
-                    window.Deactivated += WindowDeactivated;
+                    popup.Closed += ParentClosed;
                 }
-                else
-                {
-                    var parentPopuproot = _topLevel as PopupRoot;
-                    if (parentPopuproot?.Parent is Popup popup)
-                    {
-                        popup.Closed += ParentClosed;
-                    }
-                }
-                _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
-                _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
             }
-
+            _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
+            _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
+        
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();

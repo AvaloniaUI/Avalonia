@@ -107,5 +107,7 @@ namespace Avalonia.Platform
         /// </summary>
         [CanBeNull]
         IMouseDevice MouseDevice { get; }
+
+        IPopupImpl CreatePopup();
     }
 }

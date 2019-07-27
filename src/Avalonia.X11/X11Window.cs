@@ -21,6 +21,7 @@ namespace Avalonia.X11
     unsafe class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
+        private readonly IWindowImpl _popupParent;
         private readonly bool _popup;
         private readonly X11Info _x11;
         private bool _invalidated;
@@ -47,10 +48,10 @@ namespace Avalonia.X11
         private readonly Queue<InputEventContainer> _inputQueue = new Queue<InputEventContainer>();
         private InputEventContainer _lastEvent;
         private bool _useRenderWindow = false;
-        public X11Window(AvaloniaX11Platform platform, bool popup)
+        public X11Window(AvaloniaX11Platform platform, IWindowImpl popupParent)
         {
             _platform = platform;
-            _popup = popup;
+            _popup = popupParent != null;
             _x11 = platform.Info;
             _mouse = platform.MouseDevice;
             _keyboard = platform.KeyboardDevice;
@@ -66,7 +67,7 @@ namespace Avalonia.X11
                          | SetWindowValuemask.BackPixmap | SetWindowValuemask.BackingStore
                          | SetWindowValuemask.BitGravity | SetWindowValuemask.WinGravity;
 
-            if (popup)
+            if (_popup)
             {
                 attr.override_redirect = true;
                 valueMask |= SetWindowValuemask.OverrideRedirect;
@@ -793,7 +794,8 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
-       
+        public IPopupImpl CreatePopup() => new X11Window(_platform, this);
+
         public void Activate()
         {
             if (_x11.Atoms._NET_ACTIVE_WINDOW != IntPtr.Zero)

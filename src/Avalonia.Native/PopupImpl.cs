@@ -9,8 +9,12 @@ namespace Avalonia.Native
 {
     public class PopupImpl : WindowBaseImpl, IPopupImpl
     {
+        private readonly IAvaloniaNativeFactory _factory;
+        private readonly AvaloniaNativePlatformOptions _opts;
         public PopupImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts) : base(opts)
         {
+            _factory = factory;
+            _opts = opts;
             using (var e = new PopupEvents(this))
             {
                 Init(factory.CreatePopup(e), factory.CreateScreens());
@@ -35,5 +39,7 @@ namespace Avalonia.Native
             {
             }
         }
+
+        public override IPopupImpl CreatePopup() => new PopupImpl(_factory, _opts);
     }
 }

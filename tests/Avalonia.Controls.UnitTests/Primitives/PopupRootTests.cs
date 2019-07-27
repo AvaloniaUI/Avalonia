@@ -21,7 +21,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = CreateTarget();
+                var target = CreateTarget(new Window());
 
                 Assert.True(((ILogical)target).IsAttachedToLogicalTree);
             }
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var target = CreateTarget();
+                var target = CreateTarget(new Window());
 
                 Assert.True(target.Presenter.IsAttachedToLogicalTree);
             }
@@ -63,8 +63,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var child = new Decorator();
-                var target = CreateTarget();
                 var window = new Window();
+                var target = CreateTarget(window);
                 var detachedCount = 0;
                 var attachedCount = 0;
 
@@ -88,8 +88,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var child = new Decorator();
-                var target = CreateTarget();
                 var window = new Window();
+                var target = CreateTarget(window);
                 var detachedCount = 0;
                 var attachedCount = 0;
 
@@ -130,9 +130,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private PopupRoot CreateTarget()
+        private PopupRoot CreateTarget(TopLevel popupParent)
         {
-            var result = new PopupRoot
+            var result = new PopupRoot(popupParent)
             {
                 Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter

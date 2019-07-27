@@ -210,11 +210,6 @@ namespace Avalonia.Win32
             return embedded;
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl();
-        }
-
         public IWindowIconImpl LoadIcon(string fileName)
         {
             using (var stream = File.OpenRead(fileName))

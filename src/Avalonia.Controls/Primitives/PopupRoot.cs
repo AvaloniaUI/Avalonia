@@ -31,8 +31,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
-        public PopupRoot()
-            : this(null)
+        public PopupRoot(TopLevel parent)
+            : this(parent, null)
         {
         }
 
@@ -42,8 +42,8 @@ namespace Avalonia.Controls.Primitives
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public PopupRoot(IAvaloniaDependencyResolver dependencyResolver)
-            : base(PlatformManager.CreatePopup(), dependencyResolver)
+        public PopupRoot(TopLevel parent, IAvaloniaDependencyResolver dependencyResolver)
+            : base(parent.PlatformImpl.CreatePopup(), dependencyResolver)
         {
         }
 

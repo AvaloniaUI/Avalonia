@@ -74,17 +74,12 @@ namespace Avalonia.X11
         public IntPtr Display { get; set; }
         public IWindowImpl CreateWindow()
         {
-            return new X11Window(this, false);
+            return new X11Window(this, null);
         }
 
         public IEmbeddableWindowImpl CreateEmbeddableWindow()
         {
             throw new NotSupportedException();
-        }
-
-        public IPopupImpl CreatePopup()
-        {
-            return new X11Window(this, true);
         }
     }
 }
