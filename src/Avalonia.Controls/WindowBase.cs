@@ -175,11 +175,6 @@ namespace Avalonia.Controls
             }
         }
 
-        protected internal virtual void OnBeforeShow()
-        {
-            
-        }
-
         /// <summary>
         /// Begins an auto-resize operation.
         /// </summary>
