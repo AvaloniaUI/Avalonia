@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Avalonia.Interactivity.UnitTests
 {
-    public class GestureTests
+    public class GesturesTests
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
         
