@@ -46,7 +46,7 @@ namespace Avalonia.Input
                 }
                 else if (s_lastPress?.IsAlive == true && e.ClickCount == 2 && s_lastPress.Target == e.Source)
                 {
-                    if (!ev.Handled)
+                    if (e.MouseButton != MouseButton.Right)
                     {
                         e.Source.RaiseEvent(new RoutedEventArgs(DoubleTappedEvent));
                     }
@@ -62,7 +62,7 @@ namespace Avalonia.Input
 
                 if (s_lastPress?.IsAlive == true && s_lastPress.Target == e.Source)
                 {
-                    if (!ev.Handled)
+                    if (e.MouseButton != MouseButton.Right)
                     {
                         ((IInteractive)s_lastPress.Target).RaiseEvent(new RoutedEventArgs(TappedEvent));
                     }
