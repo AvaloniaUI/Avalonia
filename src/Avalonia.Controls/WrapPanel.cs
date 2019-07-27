@@ -4,6 +4,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Utilities;
 
 using static System.Math;

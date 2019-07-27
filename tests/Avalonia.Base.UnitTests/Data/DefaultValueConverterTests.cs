@@ -8,6 +8,7 @@ using Xunit;
 using System.Windows.Input;
 using System;
 using Avalonia.Data.Converters;
+using Avalonia.Layout;
 
 namespace Avalonia.Base.UnitTests.Data.Converters
 {
