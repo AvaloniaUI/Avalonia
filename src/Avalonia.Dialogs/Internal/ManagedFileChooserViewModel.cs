@@ -2,16 +2,14 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using ReactiveUI;
 
 namespace Avalonia.Dialogs.Internal
 {
-    class ManagedFileChooserViewModel : InternalViewModelBase
+    internal class ManagedFileChooserViewModel : InternalViewModelBase
 	{
 		public event Action CancelRequested;
 		public event Action<string[]> CompleteRequested;

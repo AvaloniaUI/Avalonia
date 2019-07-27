@@ -10,7 +10,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Avalonia.Dialogs.Internal
 {
-	class ManagedFileChooser : UserControl
+    internal class ManagedFileChooser : UserControl
 	{
 		private Control _quickLinksRoot;
 		private ListBox _filesView;

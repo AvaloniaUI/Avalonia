@@ -5,7 +5,7 @@ using Avalonia.Controls;
 
 namespace Avalonia.Dialogs.Internal
 {
-	class ManagedFileChooserFilterViewModel : InternalViewModelBase
+	internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
 	{
 		private readonly string[] _extensions;
 		public string Name { get; }

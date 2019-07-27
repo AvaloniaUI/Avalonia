@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Avalonia.Dialogs.Internal
 {
-	public static class ByteSizeHelper
+    internal static class ByteSizeHelper
 	{
 		private static readonly string[] Prefixes =
 		{

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Avalonia.Dialogs.Internal
 {
-	public class ManagedFileChooserSources
+    internal class ManagedFileChooserSources
 	{
 		public Func<ManagedFileChooserNavigationItem[]> GetUserDirectories { get; set; }
 			= DefaultGetUserDirectories;

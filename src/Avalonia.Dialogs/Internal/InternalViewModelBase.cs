@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace Avalonia.Dialogs.Internal
 {
-    class InternalViewModelBase : INotifyPropertyChanged
+    internal class InternalViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
