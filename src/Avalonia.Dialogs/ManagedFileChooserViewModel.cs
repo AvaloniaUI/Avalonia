@@ -7,7 +7,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
 
-namespace Avalonia.Dialogs.Internal
+namespace Avalonia.Dialogs
 {
     internal class ManagedFileChooserViewModel : InternalViewModelBase
 	{

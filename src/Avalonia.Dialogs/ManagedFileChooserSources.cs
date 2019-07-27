@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace Avalonia.Dialogs.Internal
+namespace Avalonia.Dialogs
 {
     internal class ManagedFileChooserSources
 	{

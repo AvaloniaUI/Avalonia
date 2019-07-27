@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs.Internal;
+using Avalonia.Dialogs;
 using Avalonia.Platform;
 
 namespace Avalonia.Dialogs

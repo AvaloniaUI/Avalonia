@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
-             xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
-             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser" Margin="10">
+             xmlns:dialogs="clr-namespace:Avalonia.Dialogs"
+             xmlns:internal="clr-namespace:Avalonia.Dialogs"
+             x:Class="Avalonia.Dialogs.ManagedFileChooser" Margin="10">
     <UserControl.Resources>
         <internal:FileSizeStringConverter x:Key="FileSizeConverter" />
         <DrawingGroup x:Key="LevelUp">

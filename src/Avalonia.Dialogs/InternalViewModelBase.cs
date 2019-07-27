@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 
-namespace Avalonia.Dialogs.Internal
+namespace Avalonia.Dialogs
 {
     internal class InternalViewModelBase : INotifyPropertyChanged
     {

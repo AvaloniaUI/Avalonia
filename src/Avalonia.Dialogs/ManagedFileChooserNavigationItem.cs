@@ -1,4 +1,4 @@
-﻿namespace Avalonia.Dialogs.Internal
+﻿namespace Avalonia.Dialogs
 {
     internal class ManagedFileChooserNavigationItem
 	{

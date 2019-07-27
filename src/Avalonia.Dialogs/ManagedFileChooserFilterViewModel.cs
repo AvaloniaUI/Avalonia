@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 
-namespace Avalonia.Dialogs.Internal
+namespace Avalonia.Dialogs
 {
 	internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
 	{
