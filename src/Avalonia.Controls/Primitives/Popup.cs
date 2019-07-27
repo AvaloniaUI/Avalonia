@@ -2,7 +2,11 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Disposables;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
@@ -79,6 +83,8 @@ namespace Avalonia.Controls.Primitives
         private TopLevel _topLevel;
         private IDisposable _nonClientListener;
         bool _ignoreIsOpenChanged = false;
+        private List<IDisposable> _bindings = new List<IDisposable>();
+        private PopupContentHost _decorator = new PopupContentHost();
 
         /// <summary>
         /// Initializes static members of the <see cref="Popup"/> class.
@@ -89,6 +95,11 @@ namespace Avalonia.Controls.Primitives
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
             TopmostProperty.Changed.AddClassHandler<Popup>((p, e) => p.PopupRoot.Topmost = (bool)e.NewValue);
+        }
+
+        public Popup()
+        {
+            _decorator[~PopupContentHost.ChildProperty] = this[~ChildProperty];
         }
 
         /// <summary>
@@ -215,38 +226,48 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Open()
         {
-            if (PlacementTarget == null && PlacementMode != PlacementMode.Pointer)
-                throw new InvalidOperationException("It's not valid to show a popup without a PlacementTarget with PlacementMode != Pointer");
+            // Popup is currently open
+            if (_topLevel != null)
+                return;
+            CloseCurrent();
+            var placementTarget = PlacementTarget ?? this.GetLogicalAncestors().OfType<IVisual>().FirstOrDefault();
+            if (placementTarget == null)
+                throw new InvalidOperationException("Popup has no logical parent and PlacementTarget is null");
             
-            if (_topLevel == null && PlacementTarget != null)
-                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().FirstOrDefault(x => x is TopLevel) as TopLevel;
+            _topLevel = placementTarget.GetVisualRoot() as TopLevel;
 
             if (_topLevel == null)
             {
-                if (PlacementTarget == null)
-                    throw new InvalidOperationException(
-                        "Attempted to open a popup not attached to a TopLevel and PlacementTarget is null");
                 throw new InvalidOperationException(
-                    "Attempted to open a popup not attached to a TopLevel and PlacementTarget is also not attached to a TopLevel");
+                    "Attempted to open a popup not attached to a TopLevel");
             }
 
-            if (_popupRoot == null)
+
+            _popupRoot = new PopupRoot(_topLevel, DependencyResolver)
             {
-                _popupRoot = new PopupRoot(_topLevel, DependencyResolver)
-                {
-                    [~ContentControl.ContentProperty] = this[~ChildProperty],
-                    [~WidthProperty] = this[~WidthProperty],
-                    [~HeightProperty] = this[~HeightProperty],
-                    [~MinWidthProperty] = this[~MinWidthProperty],
-                    [~MaxWidthProperty] = this[~MaxWidthProperty],
-                    [~MinHeightProperty] = this[~MinHeightProperty],
-                    [~MaxHeightProperty] = this[~MaxHeightProperty],
-                };
+                [~WidthProperty] = this[~WidthProperty],
+                [~HeightProperty] = this[~HeightProperty],
+                [~MinWidthProperty] = this[~MinWidthProperty],
+                [~MaxWidthProperty] = this[~MaxWidthProperty],
+                [~MinHeightProperty] = this[~MinHeightProperty],
+                [~MaxHeightProperty] = this[~MaxHeightProperty],
+            };
 
-                ((ISetLogicalParent)_popupRoot).SetParent(this);
-            }
+            void Bind(AvaloniaProperty prop) => _bindings.Add(_popupRoot.Bind(prop, this[~prop]));
 
-            _popupRoot.ConfigurePosition(PlacementTarget ?? this.GetVisualParent<Control>(),
+            Bind(WidthProperty);
+            Bind(MinWidthProperty);
+            Bind(MaxWidthProperty);
+            Bind(HeightProperty);
+            Bind(MinHeightProperty);
+            Bind(MaxHeightProperty);
+
+            _popupRoot.Content = _decorator;
+            
+
+            ((ISetLogicalParent)_popupRoot).SetParent(this);
+
+            _popupRoot.ConfigurePosition(placementTarget,
                 PlacementMode, new Point(HorizontalOffset, VerticalOffset));
             
             var window = _topLevel as Window;
@@ -282,35 +303,47 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Close()
         {
-            if (_popupRoot != null)
-            {
-                if (_topLevel != null)
-                {
-                    _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
-                    var window = _topLevel as Window;
-                    if (window != null)
-                        window.Deactivated -= WindowDeactivated;
-                    else
-                    {
-                        var parentPopuproot = _topLevel as PopupRoot;
-                        if (parentPopuproot?.Parent is Popup popup)
-                        {
-                            popup.Closed -= ParentClosed;
-                        }
-                    }
-                    _nonClientListener?.Dispose();
-                    _nonClientListener = null;
-                }
-
-                _popupRoot.Hide();
-            }
-
+            CloseCurrent();
             using (BeginIgnoringIsOpen())
             {
                 IsOpen = false;
             }
 
             Closed?.Invoke(this, EventArgs.Empty);
+        }
+        void CloseCurrent()
+        {
+            if (_topLevel != null)
+            {
+                _topLevel.RemoveHandler(PointerPressedEvent, PointerPressedOutside);
+                var window = _topLevel as Window;
+                if (window != null)
+                    window.Deactivated -= WindowDeactivated;
+                else
+                {
+                    var parentPopuproot = _topLevel as PopupRoot;
+                    if (parentPopuproot?.Parent is Popup popup)
+                    {
+                        popup.Closed -= ParentClosed;
+                    }
+                }
+                _nonClientListener?.Dispose();
+                _nonClientListener = null;
+                
+                _topLevel = null;
+            }
+            if (_popupRoot != null)
+            {
+                foreach(var b in _bindings)
+                    b.Dispose();
+                _bindings.Clear();
+                _popupRoot.Content = null;
+                _popupRoot.Hide();
+                ((ISetLogicalParent)_popupRoot).SetParent(null);
+                _popupRoot.Dispose();
+                _popupRoot = null;
+            }
+
         }
 
         /// <summary>
@@ -324,25 +357,12 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToLogicalTree(e);
-            _topLevel = e.Root as TopLevel;
-        }
-
-        /// <inheritdoc/>
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromLogicalTree(e);
-            _topLevel = null;
-
-            if (_popupRoot != null)
-            {
-                ((ISetLogicalParent)_popupRoot).SetParent(null);
-                _popupRoot.Dispose();
-                _popupRoot = null;
-            }
+            Close();
         }
+
 
         /// <summary>
         /// Called when the <see cref="IsOpen"/> property changes.
@@ -447,6 +467,66 @@ namespace Avalonia.Controls.Primitives
             public void Dispose()
             {
                 _owner._ignoreIsOpenChanged = false;
+            }
+        }
+
+        // For some reason when PopupRoot.Content is bound directly to Child weird stuff happens 
+        class PopupContentHost : Control
+        {
+            /// <summary>
+            /// Defines the <see cref="Child"/> property.
+            /// </summary>
+            public static readonly StyledProperty<IControl> ChildProperty =
+                AvaloniaProperty.Register<Decorator, IControl>(nameof(Child));
+
+            static PopupContentHost()
+            {
+                ChildProperty.Changed.AddClassHandler<PopupContentHost>(x => x.ChildChanged);
+            }
+            
+            public IControl Child
+            {
+                get { return GetValue(ChildProperty); }
+                set { SetValue(ChildProperty, value); }
+            }
+            
+            /// <inheritdoc/>
+            protected override Size MeasureOverride(Size availableSize)
+            {
+                if (Child == null)
+                    return Size.Empty;
+                Child.Measure(availableSize);
+                return Child.DesiredSize;
+            }
+
+            /// <inheritdoc/>
+            protected override Size ArrangeOverride(Size finalSize)
+            {
+                Child?.Arrange(new Rect(finalSize));
+                return finalSize;
+            }
+
+            protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+            {
+                if (Child != null)
+                    VisualChildren.Add(Child);
+            }
+
+            protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+            {
+                if (Child != null)
+                    VisualChildren.Remove(Child);
+            }
+
+            private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
+            {
+                var oldChild = (Control)e.OldValue;
+                var newChild = (Control)e.NewValue;
+
+                if (oldChild != null) VisualChildren.Remove(oldChild);
+
+                if (newChild != null && VisualRoot != null)
+                    VisualChildren.Add(newChild);
             }
         }
     }

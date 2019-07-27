@@ -284,6 +284,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new[]
                     {
                         "ContentPresenter",
+                        "PopupContentHost",
                         "ContentPresenter",
                         "Border",
                     },

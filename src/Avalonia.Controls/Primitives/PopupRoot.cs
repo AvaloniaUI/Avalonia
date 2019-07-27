@@ -2,9 +2,13 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Linq;
+using System.Text;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -125,7 +129,7 @@ namespace Avalonia.Controls.Primitives
             PlatformImpl?.PopupPositioner.Update(_positionerParameters);
         }
 
-        public void ConfigurePosition(Control target, PlacementMode placement, Point offset,
+        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
             PopupPositioningEdge anchor = PopupPositioningEdge.None,
             PopupPositioningEdge gravity = PopupPositioningEdge.None)
         {
