@@ -6,6 +6,7 @@ using System.ComponentModel;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using Avalonia.Markup.Data;
 using Avalonia.Styling;
 using Avalonia.UnitTests;

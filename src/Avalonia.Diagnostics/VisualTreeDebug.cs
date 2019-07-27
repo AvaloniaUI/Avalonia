@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -10,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics
 {
-    public static class Debug
+    public static class VisualTreeDebug
     {
         public static string PrintVisualTree(IVisual visual)
         {
@@ -67,7 +66,7 @@ namespace Avalonia.Diagnostics
 
         private static string Indent(int indent)
         {
-            return string.Join(string.Empty, Enumerable.Repeat("    ", Math.Max(indent, 0)));
+            return new string(' ' , Math.Max(indent, 0) * 4);
         }
     }
 }

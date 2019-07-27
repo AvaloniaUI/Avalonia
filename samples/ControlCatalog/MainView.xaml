@@ -26,6 +26,7 @@
       <TabItem Header="Drag+Drop"><pages:DragAndDropPage/></TabItem>
       <TabItem Header="Expander"><pages:ExpanderPage/></TabItem>
       <TabItem Header="Image"><pages:ImagePage/></TabItem>
+      <TabItem Header="ItemsRepeater"><pages:ItemsRepeaterPage/></TabItem>
       <TabItem Header="LayoutTransformControl"><pages:LayoutTransformControlPage/></TabItem>
       <TabItem Header="ListBox"><pages:ListBoxPage/></TabItem>
       <TabItem Header="Menu"><pages:MenuPage/></TabItem>
