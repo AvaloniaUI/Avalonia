@@ -31,7 +31,7 @@ namespace ControlCatalog.NetCore
             }
 
             var builder = BuildAvaloniaApp();
-            
+
             if (args.Contains("--fbdev"))
             {
                 SilenceConsole();
@@ -45,14 +45,14 @@ namespace ControlCatalog.NetCore
             else
                 return builder.StartWithClassicDesktopLifetime(args);
         }
-        
+
         /// <summary>
         /// This method is needed for IDE previewer infrastructure
         /// </summary>
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new X11PlatformOptions {EnableMultiTouch = true})
+                .With(new X11PlatformOptions { EnableMultiTouch = true })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
@@ -69,7 +69,8 @@ namespace ControlCatalog.NetCore
                 Console.CursorVisible = false;
                 while (true)
                     Console.ReadKey(true);
-            }) {IsBackground = true}.Start();
+            })
+            { IsBackground = true }.Start();
         }
     }
 }

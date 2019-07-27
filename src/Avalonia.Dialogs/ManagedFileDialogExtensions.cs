@@ -9,8 +9,8 @@ using Avalonia.Platform;
 
 namespace Avalonia.Dialogs
 {
-	public static class ManagedFileDialogExtensions
-	{
+    public static class ManagedFileDialogExtensions
+    {
         class ManagedSystemDialogImpl<T> : ISystemDialogImpl where T : Window, new()
         {
             async Task<string[]> Show(SystemDialog d, IWindowImpl parent)
@@ -47,12 +47,12 @@ namespace Avalonia.Dialogs
         }
 
         public static TAppBuilder UseManagedSystemDialogs<TAppBuilder>(this TAppBuilder builder)
-			where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
-		{
-			builder.AfterSetup(_ =>
-				AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<Window>>());
-			return builder;
-		}
+            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        {
+            builder.AfterSetup(_ =>
+                AvaloniaLocator.CurrentMutable.Bind<ISystemDialogImpl>().ToSingleton<ManagedSystemDialogImpl<Window>>());
+            return builder;
+        }
 
         public static TAppBuilder UseManagedSystemDialogs<TAppBuilder, TWindow>(this TAppBuilder builder)
             where TAppBuilder : AppBuilderBase<TAppBuilder>, new() where TWindow : Window, new()

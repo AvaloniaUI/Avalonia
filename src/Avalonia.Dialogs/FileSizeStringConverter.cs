@@ -7,20 +7,20 @@ using System.Text;
 namespace Avalonia.Dialogs
 {
     internal class FileSizeStringConverter : IValueConverter
-	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			if(value is long size && size > 0)
-			{
-				return ByteSizeHelper.ToString(size);
-			}
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is long size && size > 0)
+            {
+                return ByteSizeHelper.ToString(size);
+            }
 
-			return "";
-		}
+            return "";
+        }
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

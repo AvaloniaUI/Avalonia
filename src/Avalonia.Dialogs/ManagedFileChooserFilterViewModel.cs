@@ -5,46 +5,46 @@ using Avalonia.Controls;
 
 namespace Avalonia.Dialogs
 {
-	internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
-	{
-		private readonly string[] _extensions;
-		public string Name { get; }
+    internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
+    {
+        private readonly string[] _extensions;
+        public string Name { get; }
 
-		public ManagedFileChooserFilterViewModel(FileDialogFilter filter)
-		{
-			Name = filter.Name;
+        public ManagedFileChooserFilterViewModel(FileDialogFilter filter)
+        {
+            Name = filter.Name;
 
-			if (filter.Extensions.Contains("*"))
-			{
-				return;
-			}
+            if (filter.Extensions.Contains("*"))
+            {
+                return;
+            }
 
-			_extensions = filter.Extensions?.Select(e => "." + e.ToLowerInvariant()).ToArray();
-		}
+            _extensions = filter.Extensions?.Select(e => "." + e.ToLowerInvariant()).ToArray();
+        }
 
-		public ManagedFileChooserFilterViewModel()
-		{
-			Name = "All files";
-		}
+        public ManagedFileChooserFilterViewModel()
+        {
+            Name = "All files";
+        }
 
-		public bool Match(string filename)
-		{
-			if (_extensions == null)
-			{
-				return true;
-			}
+        public bool Match(string filename)
+        {
+            if (_extensions == null)
+            {
+                return true;
+            }
 
-			foreach (var ext in _extensions)
-			{
-				if (filename.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase))
-				{
-					return true;
-				}
-			}
+            foreach (var ext in _extensions)
+            {
+                if (filename.EndsWith(ext, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return true;
+                }
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public override string ToString() => Name;
-	}
+        public override string ToString() => Name;
+    }
 }

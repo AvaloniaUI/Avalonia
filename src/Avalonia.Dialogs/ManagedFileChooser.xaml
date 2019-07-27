@@ -59,7 +59,7 @@
                 <Button Command="{Binding Cancel}">Cancel</Button>
             </StackPanel>
         </DockPanel>
-        
+
         <DropDown DockPanel.Dock="Bottom" 
                   IsVisible="{Binding ShowFilters}" 
                   Items="{Binding Filters}"
@@ -67,7 +67,7 @@
                   Margin="0 5 0 0" />
 
         <TextBox Text="{Binding FileName}" Watermark="File name" DockPanel.Dock="Bottom" IsVisible="{Binding !SelectingFolder}" />
-        
+
         <ListBox Margin="0 0 5 5" BorderBrush="Transparent" x:Name="QuickLinks" Items="{Binding QuickLinks}"
                  SelectedIndex="{Binding QuickLinksSelectedIndex}"
                  DockPanel.Dock="Left" Background="{DynamicResource ThemeControlMidBrush}" Focusable="False">
