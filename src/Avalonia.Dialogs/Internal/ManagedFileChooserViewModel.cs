@@ -254,7 +254,9 @@ namespace Avalonia.Dialogs.Internal
 						}
 
 						return true;
-					}).Select(info => new ManagedFileChooserItemViewModel
+					})
+                    .Where(x => x.Exists)
+                    .Select(info => new ManagedFileChooserItemViewModel
 					{
 						DisplayName = info.Name,
 						Path = info.FullName,
