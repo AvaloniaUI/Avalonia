@@ -23,12 +23,7 @@ namespace Avalonia.Interactivity.UnitTests
             };
             var result = new List<string>();
 
-            decorator.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("dp"));
-            decorator.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("dr"));
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
-            border.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("bp"));
-            border.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("br"));
-            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
+            AddHandlers(decorator, border, result, false);
 
             _mouse.Click(border);
 
@@ -36,7 +31,7 @@ namespace Avalonia.Interactivity.UnitTests
         }
 
         [Fact]
-        public void Tapped_Should_Be_Raised_Even_When_PointerPressed_Handled()
+        public void Tapped_Should_Be_Raised_Even_When_Pressed_Released_Handled()
         {
             Border border = new Border();
             var decorator = new Decorator
@@ -45,13 +40,45 @@ namespace Avalonia.Interactivity.UnitTests
             };
             var result = new List<string>();
 
-            border.AddHandler(Border.PointerPressedEvent, (s, e) => e.Handled = true);
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
-            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
+            AddHandlers(decorator, border, result, true);
 
             _mouse.Click(border);
 
-            Assert.Equal(new[] { "bt", "dt" }, result);
+            Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt" }, result);
+        }
+
+        [Fact]
+        public void Tapped_Should_Be_Raised_For_Middle_Button()
+        {
+            Border border = new Border();
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.TappedEvent, (s, e) => raised = true);
+
+            _mouse.Click(border, MouseButton.Middle);
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Tapped_Should_Not_Be_Raised_For_Right_Button()
+        {
+            Border border = new Border();
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.TappedEvent, (s, e) => raised = true);
+
+            _mouse.Click(border, MouseButton.Right);
+
+            Assert.False(raised);
         }
 
         [Fact]
@@ -64,14 +91,7 @@ namespace Avalonia.Interactivity.UnitTests
             };
             var result = new List<string>();
 
-            decorator.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("dp"));
-            decorator.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("dr"));
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
-            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("ddt"));
-            border.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("bp"));
-            border.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("br"));
-            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
-            border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
+            AddHandlers(decorator, border, result, false);
 
             _mouse.Click(border);
             _mouse.Down(border, clickCount: 2);
@@ -80,7 +100,7 @@ namespace Avalonia.Interactivity.UnitTests
         }
 
         [Fact]
-        public void DoubleTapped_Should_Not_Be_Rasied_if_Pressed_is_Handled()
+        public void DoubleTapped_Should_Be_Raised_Even_When_Pressed_Released_Handled()
         {
             Border border = new Border();
             var decorator = new Decorator
@@ -89,24 +109,83 @@ namespace Avalonia.Interactivity.UnitTests
             };
             var result = new List<string>();
 
-            decorator.AddHandler(Border.PointerPressedEvent, (s, e) =>
-            {
-                result.Add("dp");
-                e.Handled = true;
-            });
-
-            decorator.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("dr"));
-            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
-            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("ddt"));
-            border.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("bp"));
-            border.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("br"));
-            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
-            border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
+            AddHandlers(decorator, border, result, true);
 
             _mouse.Click(border);
             _mouse.Down(border, clickCount: 2);
 
-            Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt", "bp", "dp" }, result);
+            Assert.Equal(new[] { "bp", "dp", "br", "dr", "bt", "dt", "bp", "dp", "bdt", "ddt" }, result);
+        }
+
+        [Fact]
+        public void DoubleTapped_Should_Be_Raised_For_Middle_Button()
+        {
+            Border border = new Border();
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => raised = true);
+
+            _mouse.Click(border, MouseButton.Middle);
+            _mouse.Down(border, MouseButton.Middle, clickCount: 2);
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void DoubleTapped_Should_Not_Be_Raised_For_Right_Button()
+        {
+            Border border = new Border();
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => raised = true);
+
+            _mouse.Click(border, MouseButton.Right);
+            _mouse.Down(border, MouseButton.Right, clickCount: 2);
+
+            Assert.False(raised);
+        }
+
+        private void AddHandlers(
+            Decorator decorator,
+            Border border,
+            IList<string> result,
+            bool markHandled)
+        {
+            decorator.AddHandler(Border.PointerPressedEvent, (s, e) =>
+            {
+                result.Add("dp");
+
+                if (markHandled)
+                {
+                    e.Handled = true;
+                }
+            });
+
+            decorator.AddHandler(Border.PointerReleasedEvent, (s, e) =>
+            {
+                result.Add("dr");
+
+                if (markHandled)
+                {
+                    e.Handled = true;
+                }
+            });
+
+            border.AddHandler(Border.PointerPressedEvent, (s, e) => result.Add("bp"));
+            border.AddHandler(Border.PointerReleasedEvent, (s, e) => result.Add("br"));
+
+            decorator.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("dt"));
+            decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("ddt"));
+            border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
+            border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
         }
     }
 }
