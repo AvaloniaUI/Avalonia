@@ -14,7 +14,8 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaProperty.RegisterAttached<SimpleGrid, IEnumerable>("Items", typeof(GridRepeater));
 
         public static readonly AttachedProperty<Func<object, IEnumerable<Control>>> TemplateProperty =
-            AvaloniaProperty.RegisterAttached<SimpleGrid, Func<object, IEnumerable<Control>>>("Template", typeof(GridRepeater));
+            AvaloniaProperty.RegisterAttached<SimpleGrid, Func<object, IEnumerable<Control>>>("Template",
+                typeof(GridRepeater));
 
         static GridRepeater()
         {

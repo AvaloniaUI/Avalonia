@@ -26,7 +26,9 @@ namespace Avalonia.Diagnostics.ViewModels
                 Value = diagnostic.Value ?? "(null)";
                 Priority = (diagnostic.Priority != BindingPriority.Unset) ?
                     diagnostic.Priority.ToString() :
-                    diagnostic.Property.Inherits ? "Inherited" : "Unset";
+                    diagnostic.Property.Inherits ?
+                        "Inherited" :
+                        "Unset";
                 Diagnostic = diagnostic.Diagnostic;
             });
         }
@@ -37,20 +39,20 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public string Priority
         {
-            get { return _priority; }
-            private set { RaiseAndSetIfChanged(ref _priority, value); }
+            get => _priority;
+            private set => RaiseAndSetIfChanged(ref _priority, value);
         }
 
         public string Diagnostic
         {
-            get { return _diagnostic; }
-            private set { RaiseAndSetIfChanged(ref _diagnostic, value); }
+            get => _diagnostic;
+            private set => RaiseAndSetIfChanged(ref _diagnostic, value);
         }
 
         public object Value
         {
-            get { return _value; }
-            private set { RaiseAndSetIfChanged(ref _value, value); }
+            get => _value;
+            private set => RaiseAndSetIfChanged(ref _value, value);
         }
     }
 }
