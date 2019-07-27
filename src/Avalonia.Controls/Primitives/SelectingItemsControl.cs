@@ -333,6 +333,11 @@ namespace Avalonia.Controls.Primitives
                 case NotifyCollectionChangedAction.Move:
                 case NotifyCollectionChangedAction.Reset:
                     SelectedIndex = IndexOf(Items, SelectedItem);
+
+                    if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
+                    {
+                        SelectedIndex = 0;
+                    }
                     break;
             }
         }
