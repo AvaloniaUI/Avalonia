@@ -18,6 +18,11 @@ namespace Avalonia.Input
             RoutingStrategies.Bubble,
             typeof(Gestures));
 
+        public static readonly RoutedEvent<RoutedEventArgs> RightTappedEvent = RoutedEvent.Register<RoutedEventArgs>(
+            "RightTapped",
+            RoutingStrategies.Bubble,
+            typeof(Gestures));
+
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
@@ -62,10 +67,8 @@ namespace Avalonia.Input
 
                 if (s_lastPress?.IsAlive == true && s_lastPress.Target == e.Source)
                 {
-                    if (e.MouseButton != MouseButton.Right)
-                    {
-                        ((IInteractive)s_lastPress.Target).RaiseEvent(new RoutedEventArgs(TappedEvent));
-                    }
+                    var et = e.MouseButton != MouseButton.Right ? TappedEvent : RightTappedEvent;
+                    ((IInteractive)s_lastPress.Target).RaiseEvent(new RoutedEventArgs(et));
                 }
             }
         }

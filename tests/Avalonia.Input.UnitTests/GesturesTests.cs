@@ -82,6 +82,23 @@ namespace Avalonia.Interactivity.UnitTests
         }
 
         [Fact]
+        public void RightTapped_Should_Be_Raised_For_Right_Button()
+        {
+            Border border = new Border();
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.RightTappedEvent, (s, e) => raised = true);
+
+            _mouse.Click(border, MouseButton.Right);
+
+            Assert.True(raised);
+        }
+
+        [Fact]
         public void DoubleTapped_Should_Follow_Pointer_Pressed_Released_Pressed()
         {
             Border border = new Border();
