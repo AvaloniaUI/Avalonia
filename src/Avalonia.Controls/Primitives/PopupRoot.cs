@@ -146,7 +146,11 @@ namespace Avalonia.Controls.Primitives
                     throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
                 var matrix = target.TransformToVisual(_parent);
                 if (matrix == null)
+                {
+                    if (target.GetVisualRoot() == null)
+                        throw new InvalidCastException("Target control is not attached to the visual tree");
                     throw new InvalidCastException("Target control is not in the same tree as the popup parent");
+                }
 
                 _positionerParameters.AnchorRectangle = new Rect(default, target.Bounds.Size)
                     .TransformToAABB(matrix.Value);

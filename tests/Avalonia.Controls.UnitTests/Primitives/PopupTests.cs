@@ -146,7 +146,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var target = new Popup();
+                var target = new Popup() {PlacementTarget = new Window()};
 
                 target.Open();
 
@@ -159,7 +159,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var target = new Popup();
+                var target = new Popup() {PlacementTarget = new Window()};
 
                 target.Open();
 
@@ -173,15 +173,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (CreateServices())
             {
-                var target = new Popup();
-                var root = new TestRoot { Child = target };
+                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
+                var root = new Window() { Content = target };
 
                 target.Open();
 
                 var popupRoot = (ILogical)target.PopupRoot;
 
                 Assert.True(popupRoot.IsAttachedToLogicalTree);
-                root.Child = null;
+                root.Content = null;
                 Assert.False(((ILogical)target).IsAttachedToLogicalTree);
             }
         }
@@ -192,7 +192,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = new Window();
-                var target = new Popup();
+                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
 
                 window.Content = target;
 
@@ -215,9 +215,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = new Window();
-                var target = new Popup();
+                var target = new Popup() {PlacementMode = PlacementMode.Pointer};
 
                 window.Content = target;
+                window.ApplyTemplate();
                 target.Open();
 
                 int closedCount = 0;
@@ -239,10 +240,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var window = new Window();
-                var target = new Popup();
+                var target = new Popup {PlacementMode = PlacementMode.Pointer};
                 var child = new Control();
 
                 window.Content = target;
+                window.ApplyTemplate();
                 target.Open();
 
                 Assert.Single(target.PopupRoot.GetVisualChildren());
@@ -259,15 +261,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 PopupContentControl target;
-                var root = new TestRoot
+                var root = new Window()
                 {
-                    Child = target = new PopupContentControl
+                    Content = target = new PopupContentControl
                     {
                         Content = new Border(),
                         Template = new FuncControlTemplate<PopupContentControl>(PopupContentControlTemplate),
                     },
-                    StylingParent = AvaloniaLocator.Current.GetService<IGlobalStyles>()
+                    //StylingParent = AvaloniaLocator.Current.GetService<IGlobalStyles>()
                 };
+                root.ApplyTemplate();
 
                 target.ApplyTemplate();
                 var popup = (Popup)target.GetTemplateChildren().First(x => x.Name == "popup");
@@ -311,6 +314,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 {
                     Child = child = new TestControl(),
                     DataContext = "foo",
+                    PlacementTarget = new Window()
                 };
 
                 var beginCalled = false;
@@ -332,36 +336,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
 
-        private static IDisposable CreateServices()
-        {
-            var result = AvaloniaLocator.EnterScope();
-
-            var styles = new Styles
-            {
-                new Style(x => x.OfType<PopupRoot>())
-                {
-                    Setters = new[]
-                    {
-                        new Setter(TemplatedControl.TemplateProperty, new FuncControlTemplate<PopupRoot>(PopupRootTemplate)),
-                    }
-                },
-            };
-
-            var globalStyles = new Mock<IGlobalStyles>();
-            globalStyles.Setup(x => x.IsStylesInitialized).Returns(true);
-            globalStyles.Setup(x => x.Styles).Returns(styles);
-
-            var renderInterface = new Mock<IPlatformRenderInterface>();
-
-            AvaloniaLocator.CurrentMutable
-                .Bind<IGlobalStyles>().ToFunc(() => globalStyles.Object)
-                .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                .Bind<IStyler>().ToTransient<Styler>()
-                .Bind<IPlatformRenderInterface>().ToFunc(() => renderInterface.Object)
-                .Bind<IInputManager>().ToConstant(new InputManager());
-            
-            return result;
-        }
+        private static IDisposable CreateServices() => UnitTestApplication.Start(TestServices.StyledWindow);
 
         private static IControl PopupRootTemplate(PopupRoot control, INameScope scope)
         {
@@ -377,6 +352,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return new Popup
             {
                 Name = "popup",
+                PlacementTarget = control,
                 Child = new ContentPresenter
                 {
                     [~ContentPresenter.ContentProperty] = control[~ContentControl.ContentProperty],

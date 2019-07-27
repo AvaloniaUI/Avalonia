@@ -18,31 +18,6 @@ namespace Avalonia.Controls.UnitTests
     public class WindowTests
     {
         [Fact]
-        public void Impl_ClientSize_Should_Be_Set_After_Layout_Pass()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var impl = Mock.Of<IWindowImpl>(x => x.Scaling == 1);
-
-                Mock.Get(impl).Setup(x => x.Resize(It.IsAny<Size>())).Callback(() => { });
-
-                var target = new Window(impl)
-                {
-                    Content = new TextBlock
-                    {
-                        Width = 321,
-                        Height = 432,
-                    },
-                    IsVisible = true,
-                };
-
-                target.LayoutManager.ExecuteInitialLayoutPass(target);
-
-                Mock.Get(impl).Verify(x => x.Resize(new Size(321, 432)));
-            }
-        }
-        
-        [Fact]
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
@@ -302,8 +277,7 @@ namespace Avalonia.Controls.UnitTests
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             windowImpl.Setup(x => x.Scaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(screens.Object);
@@ -327,14 +301,12 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Window_Should_Be_Centered_Relative_To_Owner_When_WindowStartupLocation_Is_CenterOwner()
         {
-            var parentWindowImpl = new Mock<IWindowImpl>();
-            parentWindowImpl.SetupProperty(x => x.Position);
+            var parentWindowImpl = MockWindowingPlatform.CreateWindowMock();
             parentWindowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
             parentWindowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             parentWindowImpl.Setup(x => x.Scaling).Returns(1);
 
-            var windowImpl = new Mock<IWindowImpl>();
-            windowImpl.SetupProperty(x => x.Position);
+            var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(320, 200));
             windowImpl.Setup(x => x.MaxClientSize).Returns(new Size(1920, 1080));
             windowImpl.Setup(x => x.Scaling).Returns(1);

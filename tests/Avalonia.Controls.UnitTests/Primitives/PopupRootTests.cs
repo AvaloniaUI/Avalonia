@@ -43,13 +43,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var window = new Window();
                 var target = new TemplatedControlWithPopup
                 {
                     PopupContent = new Canvas(),
                 };
+                window.Content = target;
 
-                var root = new TestRoot { Child = target };
-
+                window.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
 
@@ -117,13 +118,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
+                var window = new Window();
                 var target = new TemplatedControlWithPopup
                 {
                     PopupContent = new Canvas(),
                 };
+                window.Content = target;
 
-                var root = new TestRoot { Child = target };
-
+                window.ApplyTemplate();
                 target.ApplyTemplate();
                 target.Popup.Open();
                 target.PopupContent = null;
@@ -158,6 +160,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     new Popup
                     {
                         [!Popup.ChildProperty] = parent[!TemplatedControlWithPopup.PopupContentProperty],
+                        PlacementTarget = parent
                     });
             }
 

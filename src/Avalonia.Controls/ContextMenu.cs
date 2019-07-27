@@ -90,6 +90,8 @@ namespace Avalonia.Controls
         /// <param name="control">The control.</param>
         public void Open(Control control)
         {
+            if (control == null)
+                throw new ArgumentNullException(nameof(control));
             if (IsOpen)
             {
                 return;

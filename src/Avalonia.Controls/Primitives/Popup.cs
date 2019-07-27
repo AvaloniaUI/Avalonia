@@ -215,13 +215,21 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public void Open()
         {
-            if (PlacementTarget == null)
-                throw new InvalidOperationException("It's not valid to show a popup without a PlacementTarget");
-            
+            if (PlacementTarget == null && PlacementMode != PlacementMode.Pointer)
+                throw new InvalidOperationException("It's not valid to show a popup without a PlacementTarget with PlacementMode != Pointer");
             
             if (_topLevel == null && PlacementTarget != null)
-                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().First(x => x is TopLevel) as TopLevel;
-            
+                _topLevel = PlacementTarget.GetSelfAndLogicalAncestors().FirstOrDefault(x => x is TopLevel) as TopLevel;
+
+            if (_topLevel == null)
+            {
+                if (PlacementTarget == null)
+                    throw new InvalidOperationException(
+                        "Attempted to open a popup not attached to a TopLevel and PlacementTarget is null");
+                throw new InvalidOperationException(
+                    "Attempted to open a popup not attached to a TopLevel and PlacementTarget is also not attached to a TopLevel");
+            }
+
             if (_popupRoot == null)
             {
                 _popupRoot = new PopupRoot(_topLevel, DependencyResolver)
@@ -255,7 +263,7 @@ namespace Avalonia.Controls.Primitives
                 }
             }
             _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
-            _nonClientListener = InputManager.Instance.Process.Subscribe(ListenForNonClientClick);
+            _nonClientListener = InputManager.Instance?.Process.Subscribe(ListenForNonClientClick);
         
             PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
