@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:dialogs="clr-namespace:Avalonia.Dialogs.Internal"
              xmlns:internal="clr-namespace:Avalonia.Dialogs.Internal"
-             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser" Margin="12 0 12 6">
+             x:Class="Avalonia.Dialogs.Internal.ManagedFileChooser" Margin="10">
     <UserControl.Resources>
         <internal:FileSizeStringConverter x:Key="FileSizeConverter" />
         <DrawingGroup x:Key="LevelUp">
@@ -30,7 +30,7 @@
         </dialogs:ResourceSelectorConverter>
     </UserControl.Resources>
     <DockPanel>
-        <DockPanel DockPanel.Dock="Top" Margin="5">
+        <DockPanel DockPanel.Dock="Top" Margin="0 0 0 5">
             <dialogs:ChildFitter DockPanel.Dock="Right" Width="{Binding ElementName=Location, Path=Bounds.Height}">
                 <Button Command="{Binding GoUp}" >
 
@@ -43,13 +43,13 @@
                 </TextBox.KeyBindings>
             </TextBox>
         </DockPanel>
-        <DockPanel DockPanel.Dock="Bottom">
+        <DockPanel Margin="0 5 0 0"  DockPanel.Dock="Bottom">
             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                 <CheckBox IsChecked="{Binding ShowHiddenFiles}">
                     <TextBlock>Show hidden files</TextBlock>
                 </CheckBox>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
                 <StackPanel.Styles>
                     <Style Selector="Button">
                         <Setter Property="Margin">4</Setter>
@@ -59,12 +59,16 @@
                 <Button Command="{Binding Cancel}">Cancel</Button>
             </StackPanel>
         </DockPanel>
+        
         <DropDown DockPanel.Dock="Bottom" 
                   IsVisible="{Binding ShowFilters}" 
                   Items="{Binding Filters}"
                   SelectedItem="{Binding SelectedFilter}"
-                  />
-        <ListBox Margin="5" BorderBrush="Transparent" x:Name="QuickLinks" Items="{Binding QuickLinks}"
+                  Margin="0 5 0 0" />
+
+        <TextBox Text="{Binding FileName}" Watermark="File name" DockPanel.Dock="Bottom" IsVisible="{Binding !SelectingFolder}" />
+        
+        <ListBox Margin="0 0 5 5" BorderBrush="Transparent" x:Name="QuickLinks" Items="{Binding QuickLinks}"
                  SelectedIndex="{Binding QuickLinksSelectedIndex}"
                  DockPanel.Dock="Left" Background="{DynamicResource ThemeControlMidBrush}" Focusable="False">
             <ListBox.ItemTemplate>
@@ -77,7 +81,7 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <DockPanel Grid.IsSharedSizeScope="True">
-            <Grid DockPanel.Dock="Top" Margin="15 0 0 0" HorizontalAlignment="Stretch">
+            <Grid DockPanel.Dock="Top" Margin="15 5 0 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="20" SharedSizeGroup="Icon" />
                     <ColumnDefinition Width="16" SharedSizeGroup="Splitter"  />
@@ -98,11 +102,10 @@
                 <GridSplitter Grid.Column="7" />
                 <TextBlock Grid.Column="8" Text="Size" />
             </Grid>
-            <TextBox Text="{Binding FileName}" Watermark="File name" DockPanel.Dock="Bottom" IsVisible="{Binding !SelectingFolder}" />
             <ListBox x:Name="Files"
                  VirtualizationMode="Simple"
                  Items="{Binding Items}"
-                 Margin="5"
+                 Margin="0 5"
                  SelectionMode="{Binding SelectionMode}"
                  SelectedItems="{Binding SelectedItems}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
