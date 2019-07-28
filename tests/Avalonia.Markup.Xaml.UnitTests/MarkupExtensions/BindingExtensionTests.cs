@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -59,11 +60,15 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                     new Setter(
                         Window.TemplateProperty,
                         new FuncControlTemplate<Window>((x, scope) =>
-                            new ContentPresenter
+                            new VisualLayerManager
                             {
-                                Name = "PART_ContentPresenter",
-                                [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
-                            }.RegisterInNameScope(scope)))
+                                Child =
+                                    new ContentPresenter
+                                    {
+                                        Name = "PART_ContentPresenter",
+                                        [!ContentPresenter.ContentProperty] = x[!Window.ContentProperty],
+                                    }.RegisterInNameScope(scope)
+                            }))
                 }
             };
         }

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Presenters;
@@ -21,7 +23,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost
+    public class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         private readonly TopLevel _parent;
         private IDisposable _presenterSubscription;
@@ -38,8 +40,8 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="PopupRoot"/> class.
         /// </summary>
-        public PopupRoot(TopLevel parent)
-            : this(parent, null)
+        public PopupRoot(TopLevel parent, IPopupImpl impl)
+            : this(parent, impl,null)
         {
         }
 
@@ -49,8 +51,8 @@ namespace Avalonia.Controls.Primitives
         /// <param name="dependencyResolver">
         /// The dependency resolver to use. If null the default dependency resolver will be used.
         /// </param>
-        public PopupRoot(TopLevel parent, IAvaloniaDependencyResolver dependencyResolver)
-            : base(parent.PlatformImpl.CreatePopup(), dependencyResolver)
+        public PopupRoot(TopLevel parent, IPopupImpl impl, IAvaloniaDependencyResolver dependencyResolver)
+            : base(impl, dependencyResolver)
         {
             _parent = parent;
         }
@@ -133,65 +135,36 @@ namespace Avalonia.Controls.Primitives
             PopupPositioningEdge anchor = PopupPositioningEdge.None,
             PopupPositioningEdge gravity = PopupPositioningEdge.None)
         {
-            // We need a better way for tracking the last pointer position
-            var pointer = _parent.PointToClient(_parent.PlatformImpl.MouseDevice.Position);
-            
-            _positionerParameters.Offset = offset;
-            _positionerParameters.ConstraintAdjustment = PopupPositionerConstraintAdjustment.All;
-            if (placement == PlacementMode.Pointer)
-            {
-                _positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
-                _positionerParameters.Anchor = PopupPositioningEdge.BottomRight;
-                _positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
-            }
-            else
-            {
-                if (target == null)
-                    throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
-                var matrix = target.TransformToVisual(_parent);
-                if (matrix == null)
-                {
-                    if (target.GetVisualRoot() == null)
-                        throw new InvalidCastException("Target control is not attached to the visual tree");
-                    throw new InvalidCastException("Target control is not in the same tree as the popup parent");
-                }
-
-                _positionerParameters.AnchorRectangle = new Rect(default, target.Bounds.Size)
-                    .TransformToAABB(matrix.Value);
-
-                if (placement == PlacementMode.Right)
-                {
-                    _positionerParameters.Anchor = PopupPositioningEdge.TopRight;
-                    _positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
-                }
-                else if (placement == PlacementMode.Bottom)
-                {
-                    _positionerParameters.Anchor = PopupPositioningEdge.BottomLeft;
-                    _positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
-                }
-                else if (placement == PlacementMode.Left)
-                {
-                    _positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
-                    _positionerParameters.Gravity = PopupPositioningEdge.BottomLeft;
-                }
-                else if (placement == PlacementMode.Top)
-                {
-                    _positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
-                    _positionerParameters.Gravity = PopupPositioningEdge.TopRight;
-                }
-                else if (placement == PlacementMode.AnchorAndGravity)
-                {
-                    _positionerParameters.Anchor = anchor;
-                    _positionerParameters.Gravity = gravity;
-                }
-                else
-                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
-            }
+            _positionerParameters.ConfigurePosition(_parent, target,
+                placement, offset, anchor, gravity);
 
             if (_positionerParameters.Size != default)
                 UpdatePosition();
         }
+
+        IVisual IPopupHost.VisualRoot => this;
         
+        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
+            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
+            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
+        {
+            var bindings = new List<IDisposable>();
+
+            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
+            Bind(WidthProperty, widthProperty);
+            Bind(MinWidthProperty, minWidthProperty);
+            Bind(MaxWidthProperty, maxWidthProperty);
+            Bind(HeightProperty, heightProperty);
+            Bind(MinHeightProperty, minHeightProperty);
+            Bind(MaxHeightProperty, maxHeightProperty);
+            Bind(TopmostProperty, topmostProperty);
+            return Disposable.Create(() =>
+            {
+                foreach (var x in bindings)
+                    x.Dispose();
+            });
+        }
+
         /// <summary>
         /// Carries out the arrange pass of the window.
         /// </summary>

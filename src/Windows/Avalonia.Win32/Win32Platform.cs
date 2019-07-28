@@ -41,6 +41,7 @@ namespace Avalonia
         public bool UseDeferredRendering { get; set; } = true;
         public bool AllowEglInitialization { get; set; }
         public bool? EnableMultitouch { get; set; }
+        public bool OverlayPopups { get; set; }
     }
 }
 
@@ -61,6 +62,7 @@ namespace Avalonia.Win32
         }
 
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
+        internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }
 
         public Size DoubleClickSize => new Size(

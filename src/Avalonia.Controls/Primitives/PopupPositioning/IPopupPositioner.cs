@@ -45,6 +45,7 @@ Copyright © 2019 Nikita Tsukanov
 */
 
 using System;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives.PopupPositioning
 {
@@ -290,5 +291,68 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
         void Update(PopupPositionerParameters parameters);
     }
 
+    static class PopupPositionerExtensions
+    {
+        public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
+            TopLevel topLevel,
+            IVisual target, PlacementMode placement, Point offset,
+            PopupPositioningEdge anchor, PopupPositioningEdge gravity)
+        {
+            // We need a better way for tracking the last pointer position
+            var pointer = topLevel.PointToClient(topLevel.PlatformImpl.MouseDevice.Position);
+            
+            positionerParameters.Offset = offset;
+            positionerParameters.ConstraintAdjustment = PopupPositionerConstraintAdjustment.All;
+            if (placement == PlacementMode.Pointer)
+            {
+                positionerParameters.AnchorRectangle = new Rect(pointer, new Size(1, 1));
+                positionerParameters.Anchor = PopupPositioningEdge.BottomRight;
+                positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+            }
+            else
+            {
+                if (target == null)
+                    throw new InvalidOperationException("Placement mode is not Pointer and PlacementTarget is null");
+                var matrix = target.TransformToVisual(topLevel);
+                if (matrix == null)
+                {
+                    if (target.GetVisualRoot() == null)
+                        throw new InvalidCastException("Target control is not attached to the visual tree");
+                    throw new InvalidCastException("Target control is not in the same tree as the popup parent");
+                }
+
+                positionerParameters.AnchorRectangle = new Rect(default, target.Bounds.Size)
+                    .TransformToAABB(matrix.Value);
+
+                if (placement == PlacementMode.Right)
+                {
+                    positionerParameters.Anchor = PopupPositioningEdge.TopRight;
+                    positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+                }
+                else if (placement == PlacementMode.Bottom)
+                {
+                    positionerParameters.Anchor = PopupPositioningEdge.BottomLeft;
+                    positionerParameters.Gravity = PopupPositioningEdge.BottomRight;
+                }
+                else if (placement == PlacementMode.Left)
+                {
+                    positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
+                    positionerParameters.Gravity = PopupPositioningEdge.BottomLeft;
+                }
+                else if (placement == PlacementMode.Top)
+                {
+                    positionerParameters.Anchor = PopupPositioningEdge.TopLeft;
+                    positionerParameters.Gravity = PopupPositioningEdge.TopRight;
+                }
+                else if (placement == PlacementMode.AnchorAndGravity)
+                {
+                    positionerParameters.Anchor = anchor;
+                    positionerParameters.Gravity = gravity;
+                }
+                else
+                    throw new InvalidOperationException("Invalid value for Popup.PlacementMode");
+            }
+        }
+    }
 
 }

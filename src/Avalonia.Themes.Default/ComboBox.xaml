@@ -39,7 +39,7 @@
                    StaysOpen="False">
               <Border BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                       BorderThickness="1">
-                  <AdornerDecorator Margin="-1 -1 0 0">
+                  <VisualLayerManager IsPopup="True" Margin="-1 -1 0 0">
                       <ScrollViewer>
                           <ItemsPresenter Name="PART_ItemsPresenter"
                                           Items="{TemplateBinding Items}"
@@ -48,7 +48,7 @@
                                           VirtualizationMode="{TemplateBinding VirtualizationMode}"
                                   />
                       </ScrollViewer>
-                  </AdornerDecorator>
+                  </VisualLayerManager>
               </Border>
             </Popup>
           </Grid>

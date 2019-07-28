@@ -61,7 +61,7 @@ namespace Avalonia.Controls
         private static readonly AttachedProperty<ToolTip> ToolTipProperty =
             AvaloniaProperty.RegisterAttached<ToolTip, Control, ToolTip>("ToolTip");
 
-        private PopupRoot _popup;
+        private IPopupHost _popup;
 
         /// <summary>
         /// Initializes static members of the <see cref="ToolTip"/> class.
@@ -235,7 +235,8 @@ namespace Avalonia.Controls
         {
             Close();
 
-            _popup = new PopupRoot((TopLevel)control.GetVisualRoot()) {Content = this};
+            _popup = PopupHost.CreatePopupHost(control, null);
+            _popup.Content = this;
             ((ISetLogicalParent)_popup).SetParent(control);
             
             _popup.ConfigurePosition(control, GetPlacement(control), 

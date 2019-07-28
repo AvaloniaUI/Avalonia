@@ -79,7 +79,7 @@ namespace Avalonia.Controls.Primitives
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
         private bool _isOpen;
-        private PopupRoot _popupRoot;
+        private IPopupHost _popupRoot;
         private TopLevel _topLevel;
         private IDisposable _nonClientListener;
         bool _ignoreIsOpenChanged = false;
@@ -94,7 +94,6 @@ namespace Avalonia.Controls.Primitives
             IsHitTestVisibleProperty.OverrideDefaultValue<Popup>(false);
             ChildProperty.Changed.AddClassHandler<Popup>(x => x.ChildChanged);
             IsOpenProperty.Changed.AddClassHandler<Popup>(x => x.IsOpenChanged);
-            TopmostProperty.Changed.AddClassHandler<Popup>((p, e) => p.PopupRoot.Topmost = (bool)e.NewValue);
         }
 
         public Popup()
@@ -112,10 +111,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler Opened;
 
-        /// <summary>
-        /// Raised when the popup root has been created, but before it has been shown.
-        /// </summary>
-        public event EventHandler PopupRootCreated;
+        public IPopupHost Host => _popupRoot;
 
         /// <summary>
         /// Gets or sets the control to display in the popup.
@@ -193,11 +189,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets the root of the popup window.
-        /// </summary>
-        public PopupRoot PopupRoot => _popupRoot;
-
-        /// <summary>
         /// Gets or sets a value indicating whether the popup should stay open when the popup is
         /// pressed or loses focus.
         /// </summary>
@@ -219,7 +210,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets the root of the popup window.
         /// </summary>
-        IVisual IVisualTreeHost.Root => _popupRoot;
+        IVisual IVisualTreeHost.Root => _popupRoot?.VisualRoot;
 
         /// <summary>
         /// Opens the popup.
@@ -242,28 +233,13 @@ namespace Avalonia.Controls.Primitives
                     "Attempted to open a popup not attached to a TopLevel");
             }
 
+            _popupRoot = PopupHost.CreatePopupHost(placementTarget, DependencyResolver);
 
-            _popupRoot = new PopupRoot(_topLevel, DependencyResolver)
-            {
-                [~WidthProperty] = this[~WidthProperty],
-                [~HeightProperty] = this[~HeightProperty],
-                [~MinWidthProperty] = this[~MinWidthProperty],
-                [~MaxWidthProperty] = this[~MaxWidthProperty],
-                [~MinHeightProperty] = this[~MinHeightProperty],
-                [~MaxHeightProperty] = this[~MaxHeightProperty],
-            };
+            _bindings.Add(_popupRoot.BindConstraints(this, WidthProperty, MinWidthProperty, MaxWidthProperty,
+                HeightProperty, MinHeightProperty, MaxHeightProperty, TopmostProperty));
+            _bindings.Add(_decorator.Bind(PopupContentHost.ChildProperty, this[~ChildProperty]));
 
-            void Bind(AvaloniaProperty prop) => _bindings.Add(_popupRoot.Bind(prop, this[~prop]));
-
-            Bind(WidthProperty);
-            Bind(MinWidthProperty);
-            Bind(MaxWidthProperty);
-            Bind(HeightProperty);
-            Bind(MinHeightProperty);
-            Bind(MaxHeightProperty);
-            _decorator.Bind(PopupContentHost.ChildProperty, this[~ChildProperty]);
-
-            _popupRoot.Content = _decorator;
+            _popupRoot.SetContent(_decorator);
             
 
             ((ISetLogicalParent)_popupRoot).SetParent(this);
@@ -287,7 +263,6 @@ namespace Avalonia.Controls.Primitives
             _topLevel.AddHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel);
             _nonClientListener = InputManager.Instance?.Process.Subscribe(ListenForNonClientClick);
         
-            PopupRootCreated?.Invoke(this, EventArgs.Empty);
 
             _popupRoot.Show();
 
@@ -338,7 +313,7 @@ namespace Avalonia.Controls.Primitives
                 foreach(var b in _bindings)
                     b.Dispose();
                 _bindings.Clear();
-                _popupRoot.Content = null;
+                _popupRoot.SetContent(null);
                 _popupRoot.Hide();
                 ((ISetLogicalParent)_popupRoot).SetParent(null);
                 _popupRoot.Dispose();
@@ -425,14 +400,15 @@ namespace Avalonia.Controls.Primitives
 
         private bool IsChildOrThis(IVisual child)
         {
-            IVisual root = child.GetVisualRoot();
-            while (root is PopupRoot)
-            {
-                if (root == PopupRoot) return true;
-                root = ((PopupRoot)root).Parent.GetVisualRoot();
-            }
-            return false;
+            return _decorator.FindCommonVisualAncestor(child) == _decorator;
         }
+        
+        public bool IsInsidePopup(IVisual visual)
+        {
+            return _decorator.FindCommonVisualAncestor(visual) == _decorator;
+        }
+
+        public bool IsPointerOverPopup => _decorator.IsPointerOver;
 
         private void WindowDeactivated(object sender, EventArgs e)
         {

@@ -250,10 +250,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.SetActiveWindow(_hwnd);
         }
 
-        public IPopupImpl CreatePopup()
-        {
-            return new PopupImpl(this);
-        }
+        public IPopupImpl CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
 
         public void Dispose()
         {

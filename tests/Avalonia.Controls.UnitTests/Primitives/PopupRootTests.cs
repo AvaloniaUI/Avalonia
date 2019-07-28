@@ -54,10 +54,47 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 target.ApplyTemplate();
                 target.Popup.Open();
 
-                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.PopupRoot).StylingParent);
+                Assert.Equal(target.Popup, ((IStyleHost)target.Popup.Host).StylingParent);
             }
         }
 
+        [Fact]
+        public void PopupRoot_Should_Have_Template_Applied()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window();
+                var target = new Popup {PlacementMode = PlacementMode.Pointer};
+                var child = new Control();
+
+                window.Content = target;
+                window.ApplyTemplate();
+                target.Open();
+
+               
+                Assert.Single(((Visual)target.Host).GetVisualChildren());
+
+                var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
+                Assert.IsType<ContentPresenter>(templatedChild);
+                
+                
+                Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
+            }
+        }
+        
+        [Fact]
+        public void PopupRoot_Should_Have_Null_VisualParent()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new Popup() {PlacementTarget = new Window()};
+
+                target.Open();
+
+                Assert.Null(((Visual)target.Host).GetVisualParent());
+            }
+        }
+        
         [Fact]
         public void Attaching_PopupRoot_To_Parent_Logical_Tree_Raises_DetachedFromLogicalTree_And_AttachedToLogicalTree()
         {
@@ -134,7 +171,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private PopupRoot CreateTarget(TopLevel popupParent)
         {
-            var result = new PopupRoot(popupParent)
+            var result = new PopupRoot(popupParent, popupParent.PlatformImpl.CreatePopup())
             {
                 Template = new FuncControlTemplate<PopupRoot>((parent, scope) =>
                     new ContentPresenter

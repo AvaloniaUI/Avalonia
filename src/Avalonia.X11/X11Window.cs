@@ -812,7 +812,8 @@ namespace Avalonia.X11
         }
 
         public IMouseDevice MouseDevice => _mouse;
-        public IPopupImpl CreatePopup() => new X11Window(_platform, this);
+        public IPopupImpl CreatePopup() 
+            => _platform.Options.OverlayPopups ? null : new X11Window(_platform, this);
 
         public void Activate()
         {

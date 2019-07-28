@@ -23,7 +23,9 @@ namespace Avalonia.UnitTests
             var mock = Mock.Get(win);
             mock.Setup(x => x.CreatePopup()).Returns(() =>
             {
-                return popupImpl?.Invoke() ?? CreatePopupMock().Object;
+                if (popupImpl != null)
+                    return popupImpl();
+                return CreatePopupMock().Object;
 
             });
             PixelPoint pos = default;
