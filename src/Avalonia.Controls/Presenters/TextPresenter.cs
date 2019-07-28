@@ -49,6 +49,14 @@ namespace Avalonia.Controls.Presenters
             AffectsRender<TextPresenter>(PasswordCharProperty,
                 SelectionBrushProperty, SelectionForegroundBrushProperty,
                 SelectionStartProperty, SelectionEndProperty);
+
+            Observable.Merge(
+                SelectionStartProperty.Changed,
+                SelectionEndProperty.Changed,
+                PasswordCharProperty.Changed
+            ).AddClassHandler<TextPresenter>((x,_) => x.InvalidateFormattedText());
+
+            CaretIndexProperty.Changed.AddClassHandler<TextPresenter>((x, e) => x.CaretIndexChanged((int)e.NewValue));
         }
 
         public TextPresenter()
@@ -56,17 +64,6 @@ namespace Avalonia.Controls.Presenters
             _caretTimer = new DispatcherTimer();
             _caretTimer.Interval = TimeSpan.FromMilliseconds(500);
             _caretTimer.Tick += CaretTimerTick;
-
-            Observable.Merge(
-                this.GetObservable(SelectionStartProperty),
-                this.GetObservable(SelectionEndProperty))
-                .Subscribe(_ => InvalidateFormattedText());
-
-            this.GetObservable(CaretIndexProperty)
-                .Subscribe(CaretIndexChanged);
-
-            this.GetObservable(PasswordCharProperty)
-                .Subscribe(_ => InvalidateFormattedText());
         }
 
         public int CaretIndex
