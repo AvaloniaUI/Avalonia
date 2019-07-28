@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Primitives
 {
     public interface IPopupHost : IDisposable
     {
-        object Content { get; set; }
+        void SetContent(IControl control);
         IVisual VisualRoot { get; }
 
         void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,

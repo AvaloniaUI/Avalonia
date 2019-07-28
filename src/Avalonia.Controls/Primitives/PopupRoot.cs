@@ -142,6 +142,8 @@ namespace Avalonia.Controls.Primitives
                 UpdatePosition();
         }
 
+        public void SetContent(IControl control) => Content = control;
+
         IVisual IPopupHost.VisualRoot => this;
         
         public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,

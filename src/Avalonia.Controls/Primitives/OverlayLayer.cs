@@ -117,6 +117,7 @@ namespace Avalonia.Controls.Primitives
         public void Add(Control v)
         {
             VisualChildren.Add(v);
+            InvalidateMeasure();
             InvalidateArrange();
         }
 
