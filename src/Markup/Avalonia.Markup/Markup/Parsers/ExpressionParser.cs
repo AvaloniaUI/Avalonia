@@ -26,6 +26,7 @@ namespace Avalonia.Markup.Parsers
 
         public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
+            ExpressionNode rootNode = null;
             ExpressionNode node = null;
             var (astNodes, mode) = BindingExpressionGrammar.Parse(ref r);
 
@@ -62,9 +63,9 @@ namespace Avalonia.Markup.Parsers
                         nextNode = new ElementNameNode(_nameScope, elementName.Name);
                         break;
                 }
-                if (node is null)
+                if (rootNode is null)
                 {
-                    node = nextNode;
+                    rootNode = node = nextNode;
                 }
                 else
                 {
@@ -73,7 +74,7 @@ namespace Avalonia.Markup.Parsers
                 }
             }
 
-            return (node, mode);
+            return (rootNode, mode);
         }
 
         private FindAncestorNode ParseFindAncestor(BindingExpressionGrammar.AncestorNode node)
