@@ -547,7 +547,6 @@ namespace Avalonia.Rendering
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine("Invalidated " + rect);
                     SceneInvalidated(this, new SceneInvalidatedEventArgs((IRenderRoot)_root, rect));
                 }
             }

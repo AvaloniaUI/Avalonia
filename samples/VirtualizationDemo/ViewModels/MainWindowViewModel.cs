@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using ReactiveUI.Legacy;
 using ReactiveUI;
+using Avalonia.Layout;
 
 namespace VirtualizationDemo.ViewModels
 {

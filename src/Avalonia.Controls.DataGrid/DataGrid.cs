@@ -24,6 +24,7 @@ using System.Linq;
 using Avalonia.Input.Platform;
 using System.ComponentModel.DataAnnotations;
 using Avalonia.Controls.Utils;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {

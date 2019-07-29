@@ -11,7 +11,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control scrolls its content if the content is bigger than the space available.
     /// </summary>
-    public class ScrollViewer : ContentControl, IScrollable
+    public class ScrollViewer : ContentControl, IScrollable, IScrollAnchorProvider
     {
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -333,6 +333,9 @@ namespace Avalonia.Controls
             get { return _viewport.Height; }
         }
 
+        /// <inheritdoc/>
+        IControl IScrollAnchorProvider.CurrentAnchor => null; // TODO: Implement
+
         /// <summary>
         /// Gets the value of the HorizontalScrollBarVisibility attached property.
         /// </summary>
@@ -371,6 +374,16 @@ namespace Avalonia.Controls
         public static void SetVerticalScrollBarVisibility(Control control, ScrollBarVisibility value)
         {
             control.SetValue(VerticalScrollBarVisibilityProperty, value);
+        }
+
+        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        {
+            // TODO: Implement
+        }
+
+        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        {
+            // TODO: Implement
         }
 
         internal static Vector CoerceOffset(Size extent, Size viewport, Vector offset)

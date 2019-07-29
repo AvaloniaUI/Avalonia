@@ -149,11 +149,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         [Obsolete("Don't use", true)]
         public static readonly IServiceProvider RootServiceProviderV1 = new RootServiceProvider(null);
 
-        [DebuggerStepThrough]
+        // Don't emit debug symbols for this code so debugger will be forced to step into XAML instead
+        #line hidden
         public static IServiceProvider CreateRootServiceProviderV2()
         {
             return new RootServiceProvider(new NameScope());
         }
+        #line default
         
         class RootServiceProvider : IServiceProvider, IAvaloniaXamlIlParentStackProvider
         {
